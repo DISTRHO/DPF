@@ -30,6 +30,7 @@ public:
     Image(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
     Image(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
     Image(const Image& image) noexcept;
+    ~Image();
 
     void loadFromMemory(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
     void loadFromMemory(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
@@ -57,6 +58,7 @@ private:
     Size<int> fSize;
     GLenum fFormat;
     GLenum fType;
+    mutable GLuint fTextureId;
 };
 
 // -----------------------------------------------------------------------
