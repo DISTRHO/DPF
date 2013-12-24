@@ -28,6 +28,13 @@ class Window;
 class App
 {
 public:
+    class IdleCallback
+    {
+    public:
+        ~IdleCallback() {}
+        virtual void idleCallback() = 0;
+    };
+
     App();
     ~App();
 
@@ -36,15 +43,18 @@ public:
     void quit();
     bool isQuiting() const;
 
+    void addIdleCallback(IdleCallback* const callback);
+    void removeIdleCallback(IdleCallback* const callback);
+
 private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Window;
 
-    void addWindow(Window* const window);
-    void removeWindow(Window* const window);
-    void oneShown();
-    void oneHidden();
+    void _addWindow(Window* const window);
+    void _removeWindow(Window* const window);
+    void _oneShown();
+    void _oneHidden();
 };
 
 // -----------------------------------------------------------------------

@@ -27,6 +27,7 @@ struct App::PrivateData {
     bool     doLoop;
     unsigned visibleWindows;
     std::list<Window*> windows;
+    std::list<IdleCallback*> idleCallbacks;
 
     PrivateData()
         : doLoop(false),
@@ -43,6 +44,7 @@ App::App()
 App::~App()
 {
     pData->windows.clear();
+    pData->idleCallbacks.clear();
     delete pData;
 }
 
@@ -51,7 +53,13 @@ void App::idle()
     for (std::list<Window*>::iterator it = pData->windows.begin(); it != pData->windows.end(); ++it)
     {
         Window* const window(*it);
-        window->idle();
+        window->_idle();
+    }
+
+    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(); it != pData->idleCallbacks.end(); ++it)
+    {
+        IdleCallback* const idleCallback(*it);
+        idleCallback->idleCallback();
     }
 }
 
@@ -82,25 +90,39 @@ bool App::isQuiting() const
 
 // -----------------------------------------------------------------------
 
-void App::addWindow(Window* const window)
+void App::addIdleCallback(IdleCallback* const callback)
+{
+    if (callback != nullptr)
+        pData->idleCallbacks.push_back(callback);
+}
+
+void App::removeIdleCallback(IdleCallback* const callback)
+{
+    if (callback != nullptr)
+        pData->idleCallbacks.remove(callback);
+}
+
+// -----------------------------------------------------------------------
+
+void App::_addWindow(Window* const window)
 {
     if (window != nullptr)
         pData->windows.push_back(window);
 }
 
-void App::removeWindow(Window* const window)
+void App::_removeWindow(Window* const window)
 {
     if (window != nullptr)
         pData->windows.remove(window);
 }
 
-void App::oneShown()
+void App::_oneShown()
 {
     if (++pData->visibleWindows == 1)
         pData->doLoop = true;
 }
 
-void App::oneHidden()
+void App::_oneHidden()
 {
     if (--pData->visibleWindows == 0)
         pData->doLoop = false;

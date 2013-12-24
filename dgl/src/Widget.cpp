@@ -29,12 +29,12 @@ Widget::Widget(Window& parent)
     : fParent(parent),
       fVisible(true)
 {
-    fParent.addWidget(this);
+    fParent._addWidget(this);
 }
 
 Widget::~Widget()
 {
-    fParent.removeWidget(this);
+    fParent._removeWidget(this);
 }
 
 bool Widget::isVisible() const noexcept

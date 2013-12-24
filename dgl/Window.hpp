@@ -46,7 +46,6 @@ public:
     void exec(bool lockWait = false);
 
     void focus();
-    void idle();
     void repaint();
 
     bool isVisible() const noexcept;
@@ -72,10 +71,12 @@ public:
 private:
     class PrivateData;
     PrivateData* const pData;
+    friend class App;
     friend class Widget;
 
-    void addWidget(Widget* const widget);
-    void removeWidget(Widget* const widget);
+    void _addWidget(Widget* const widget);
+    void _removeWidget(Widget* const widget);
+    void _idle();
 };
 
 // -----------------------------------------------------------------------

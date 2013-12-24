@@ -132,7 +132,7 @@ public:
         init();
 
         DBG("Embed window always visible\n");
-        fApp.oneShown();
+        fApp._oneShown();
         fFirstInit = false;
     }
 
@@ -173,7 +173,7 @@ public:
         // process any initial events
         puglProcessEvents(fView);
 
-        fApp.addWindow(fSelf);
+        fApp._addWindow(fSelf);
     }
 
     ~PrivateData()
@@ -185,7 +185,7 @@ public:
 
         if (fSelf != nullptr && fView != nullptr)
         {
-            fApp.removeWindow(fSelf);
+            fApp._removeWindow(fSelf);
             puglDestroy(fView);
         }
 
@@ -201,7 +201,7 @@ public:
 
         if (! fFirstInit)
         {
-            fApp.oneHidden();
+            fApp._oneHidden();
             fFirstInit = true;
         }
     }
@@ -250,17 +250,9 @@ public:
 #endif
     }
 
-    void idle()
-    {
-        puglProcessEvents(fView);
-
-        if (fVisible && fModal.enabled && fModal.parent != nullptr)
-            fModal.parent->idle();
-    }
-
     void repaint()
     {
-        DBG("Window repaint\n");
+        //DBG("Window repaint\n");
         puglPostRedisplay(fView);
     }
 
@@ -317,7 +309,7 @@ public:
         {
             if (fFirstInit)
             {
-                fApp.oneShown();
+                fApp._oneShown();
                 fFirstInit = false;
             }
         }
@@ -471,6 +463,14 @@ public:
         fWidgets.remove(widget);
     }
 
+    void idle()
+    {
+        puglProcessEvents(fView);
+
+        if (fVisible && fModal.enabled && fModal.parent != nullptr)
+            fModal.parent->idle();
+    }
+
     // -------------------------------------------------------------------
 
     void exec_init()
@@ -522,7 +522,7 @@ public:
 protected:
     void onDisplay()
     {
-        DBG("PUGL: onDisplay\n");
+        //DBG("PUGL: onDisplay\n");
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -783,11 +783,6 @@ void Window::focus()
     pData->focus();
 }
 
-void Window::idle()
-{
-    pData->idle();
-}
-
 void Window::repaint()
 {
     pData->repaint();
@@ -860,14 +855,19 @@ intptr_t Window::getWindowId() const
     return pData->getWindowId();
 }
 
-void Window::addWidget(Widget* const widget)
+void Window::_addWidget(Widget* const widget)
 {
     pData->addWidget(widget);
 }
 
-void Window::removeWidget(Widget* const widget)
+void Window::_removeWidget(Widget* const widget)
 {
     pData->removeWidget(widget);
+}
+
+void Window::_idle()
+{
+    pData->idle();
 }
 
 // -----------------------------------------------------------------------
