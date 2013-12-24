@@ -213,16 +213,16 @@ void ImageKnob::onDisplay()
         glRotatef(normValue*fRotationAngle, 0.0f, 0.0f, 1.0f);
 
         glBegin(GL_QUADS);
-          glTexCoord2f(0.0f, 1.0f);
+          glTexCoord2f(0.0f, 0.0f);
           glVertex2i(-w2, -h2);
 
-          glTexCoord2f(1.0f, 1.0f);
+          glTexCoord2f(1.0f, 0.0f);
           glVertex2i(getWidth()-w2, -h2);
 
-          glTexCoord2f(1.0f, 0.0f);
+          glTexCoord2f(1.0f, 1.0f);
           glVertex2i(getWidth()-w2, getHeight()-h2);
 
-          glTexCoord2f(0.0f, 0.0f);
+          glTexCoord2f(0.0f, 1.0f);
           glVertex2i(-w2, getHeight()-h2);
         glEnd();
 
