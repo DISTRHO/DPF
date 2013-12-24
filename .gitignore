@@ -1,6 +1,14 @@
 *.a
 *.o
 
+*.exe
 *.dll
 *.dylib
 *.so
+
+.kdev_include_paths
+
+examples/app
+examples/color
+examples/image
+examples/nekobi-ui
