@@ -38,7 +38,7 @@ app: app.cpp ../dgl/*
 color: color.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
-images: images.cpp ../dgl/*
+images: images.cpp images_src/* ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
 nekobi-ui: nekobi-ui.cpp nekobi-ui_src/* ../dgl/*

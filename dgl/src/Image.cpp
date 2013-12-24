@@ -16,8 +16,6 @@
 
 #include "../Image.hpp"
 
-#include <cstdio>
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -115,12 +113,12 @@ GLenum Image::getType() const noexcept
     return fType;
 }
 
-void Image::draw() const
+void Image::draw()
 {
     draw(0, 0);
 }
 
-void Image::draw(int x, int y) const
+void Image::draw(int x, int y)
 {
     if (! isValid())
         return;
@@ -128,7 +126,8 @@ void Image::draw(int x, int y) const
         glGenTextures(1, &fTextureId);
     if (fTextureId == 0)
     {
-        printf("texture Id still 0\n");
+        // invalidate image
+        fSize = Size<int>(0, 0);
         return;
     }
 
@@ -147,39 +146,28 @@ void Image::draw(int x, int y) const
     float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
 
-    glPushMatrix();
-
-    const GLint w2 = getWidth()/2;
-    const GLint h2 = getHeight()/2;
-
-    glTranslatef(x+w2, y+h2, 0.0f);
+    const int width  = getWidth();
+    const int height = getHeight();
 
     glBegin(GL_QUADS);
-      glTexCoord2f(0.0f, 1.0f);
-      glVertex2i(-w2, -h2);
-
-      glTexCoord2f(1.0f, 1.0f);
-      glVertex2i(getWidth()-w2, -h2);
+      glTexCoord2f(0.0f, 0.0f);
+      glVertex2i(x, y);
 
       glTexCoord2f(1.0f, 0.0f);
-      glVertex2i(getWidth()-w2, getHeight()-h2);
+      glVertex2i(x+width, y);
 
-      glTexCoord2f(0.0f, 0.0f);
-      glVertex2i(-w2, getHeight()-h2);
+      glTexCoord2f(1.0f, 1.0f);
+      glVertex2i(x+width, y+height);
+
+      glTexCoord2f(0.0f, 1.0f);
+      glVertex2i(x, y+height);
     glEnd();
-
-    glPopMatrix();
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
-
-//     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-//     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-//     glRasterPos2i(x, fSize.getHeight()+y);
-//     glDrawPixels(fSize.getWidth(), fSize.getHeight(), fFormat, fType, fRawData);
 }
 
-void Image::draw(const Point<int>& pos) const
+void Image::draw(const Point<int>& pos)
 {
     draw(pos.getX(), pos.getY());
 }

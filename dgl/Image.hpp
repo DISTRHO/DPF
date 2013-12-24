@@ -45,9 +45,9 @@ public:
     GLenum getFormat() const noexcept;
     GLenum getType() const noexcept;
 
-    void draw() const;
-    void draw(int x, int y) const;
-    void draw(const Point<int>& pos) const;
+    void draw();
+    void draw(int x, int y);
+    void draw(const Point<int>& pos);
 
     Image& operator=(const Image& image) noexcept;
     bool operator==(const Image& image) const noexcept;
@@ -58,7 +58,7 @@ private:
     Size<int> fSize;
     GLenum fFormat;
     GLenum fType;
-    mutable GLuint fTextureId;
+    GLuint fTextureId;
 };
 
 // -----------------------------------------------------------------------

@@ -108,16 +108,16 @@ private:
         glColor3b(r, g, b);
 
         glBegin(GL_QUADS);
-          glTexCoord2i(x, y);
+          glTexCoord2f(0.0f, 0.0f);
           glVertex2i(x, y);
 
-          glTexCoord2i(x+width, y);
+          glTexCoord2f(1.0f, 0.0f);
           glVertex2i(x+width, y);
 
-          glTexCoord2i(x+width, y+height);
+          glTexCoord2f(1.0f, 1.0f);
           glVertex2i(x+width, y+height);
 
-          glTexCoord2i(x, y+height);
+          glTexCoord2f(0.0f, 1.0f);
           glVertex2i(x, y+height);
         glEnd();
 
@@ -131,16 +131,16 @@ private:
         glColor3b(100-r, 100-g, 100-b);
 
         glBegin(GL_QUADS);
-          glTexCoord2i(x, y);
+          glTexCoord2f(0.0f, 0.0f);
           glVertex2i(x, y);
 
-          glTexCoord2i(x+width, y);
+          glTexCoord2f(1.0f, 0.0f);
           glVertex2i(x+width, y);
 
-          glTexCoord2i(x+width, y+height);
+          glTexCoord2f(1.0f, 1.0f);
           glVertex2i(x+width, y+height);
 
-          glTexCoord2i(x, y+height);
+          glTexCoord2f(0.0f, 1.0f);
           glVertex2i(x, y+height);
         glEnd();
     }

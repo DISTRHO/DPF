@@ -31,7 +31,7 @@ def png2rgba(namespace, filenames):
         png      = Image.open(filename)
         pngNumpy = numpy.array(png)
         pngData  = pngNumpy.tolist()
-        pngData.reverse()
+        #pngData.reverse()
 
         height = len(pngData)
         for dataBlock in pngData:
