@@ -127,7 +127,7 @@ private:
         width  = width*2/3;
         height = height*2/3;
 
-        // paint invert color (in 2/3 size)
+        // paint inverted color (in 2/3 size)
         glColor3b(100-r, 100-g, 100-b);
 
         glBegin(GL_QUADS);

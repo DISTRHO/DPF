@@ -14,9 +14,9 @@ LINK_FLAGS      += -L.. -ldgl $(DGL_LIBS)
 # --------------------------------------------------------------
 
 ifeq ($(WIN32),true)
-TARGETS = app.exe image.exe nekobi-ui.exe
+TARGETS = app.exe color images.exe nekobi-ui.exe
 else
-TARGETS = app image nekobi-ui
+TARGETS = app color images nekobi-ui
 endif
 
 # --------------------------------------------------------------
@@ -38,7 +38,7 @@ app: app.cpp ../dgl/*
 color: color.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
-image: image.cpp ../dgl/*
+images: images.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
 nekobi-ui: nekobi-ui.cpp nekobi-ui_src/* ../dgl/*
