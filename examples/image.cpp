@@ -39,12 +39,16 @@ public:
     ExampleImageWidget(Window& win)
         : Widget(win)
     {
+        // TODO: load image
     }
 
-protected:
+private:
     void onDisplay() override
     {
+        fImage.draw();
     }
+
+    Image fImage;
 };
 
 // ------------------------------------------------------

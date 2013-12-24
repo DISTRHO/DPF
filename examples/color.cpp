@@ -43,6 +43,7 @@ public:
     {
     }
 
+private:
     void idleCallback() override
     {
         switch (cur)
@@ -96,27 +97,51 @@ public:
         repaint();
     }
 
-private:
     void onDisplay() override
     {
+        int x = 0;
+        int y = 0;
+        int width  = getWidth();
+        int height = getHeight();
+
+        // paint bg color (in full size)
         glColor3b(r, g, b);
 
-        // full size
-        const int width  = getWidth();
-        const int height = getHeight();
+        glBegin(GL_QUADS);
+          glTexCoord2i(x, y);
+          glVertex2i(x, y);
+
+          glTexCoord2i(x+width, y);
+          glVertex2i(x+width, y);
+
+          glTexCoord2i(x+width, y+height);
+          glVertex2i(x+width, y+height);
+
+          glTexCoord2i(x, y+height);
+          glVertex2i(x, y+height);
+        glEnd();
+
+        // centered 2/3 size
+        x = width/6;
+        y = height/6;
+        width  = width*2/3;
+        height = height*2/3;
+
+        // paint invert color (in 2/3 size)
+        glColor3b(100-r, 100-g, 100-b);
 
         glBegin(GL_QUADS);
-          glTexCoord2i(0, height);
-          glVertex2i(0, height);
+          glTexCoord2i(x, y);
+          glVertex2i(x, y);
 
-          glTexCoord2i(width, height);
-          glVertex2i(width, height);
+          glTexCoord2i(x+width, y);
+          glVertex2i(x+width, y);
 
-          glTexCoord2i(width, 0);
-          glVertex2i(width, 0);
+          glTexCoord2i(x+width, y+height);
+          glVertex2i(x+width, y+height);
 
-          glTexCoord2i(0, 0);
-          glVertex2i(0, 0);
+          glTexCoord2i(x, y+height);
+          glVertex2i(x, y+height);
         glEnd();
     }
 
