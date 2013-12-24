@@ -32,6 +32,7 @@ ImageAboutWindow::ImageAboutWindow(App& app, Window& parent, const Image& image)
       Widget((Window&)*this),
       fImgBackground(image)
 {
+    Window::setResizable(false);
     Window::setSize(image.getWidth(), image.getHeight() PAD_SIZE);
     Window::setTitle("About");
 }
@@ -41,6 +42,7 @@ ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
       Widget((Window&)*this),
       fImgBackground(image)
 {
+    Window::setResizable(false);
     Window::setSize(image.getWidth(), image.getHeight() PAD_SIZE);
     Window::setTitle("About");
 }
