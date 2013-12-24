@@ -19,6 +19,7 @@
 #include "../Window.hpp"
 
 #include <cassert>
+#include <cstdio>
 #include <list>
 
 #include "pugl/pugl.h"
@@ -42,6 +43,16 @@ extern "C" {
 
 #define FOR_EACH_WIDGET_INV(rit) \
   for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
+
+#ifdef DEBUG
+# define DBG(msg)  std::fprintf(stderr, "%s", msg);
+# define DBGp(...) std::fprintf(stderr, __VA_ARGS__);
+# define DBGF      std::fflush(stderr);
+#else
+# define DBG(msg)
+# define DBGp(...)
+# define DBGF
+#endif
 
 START_NAMESPACE_DGL
 
@@ -69,6 +80,7 @@ public:
           _dummy('\0')
 #endif
     {
+        DBG("Creating simple window without parent..."); DBGF;
         init();
     }
 
@@ -89,12 +101,14 @@ public:
           _dummy('\0')
 #endif
     {
+        DBG("Creating window with parent..."); DBGF;
         init();
 
 #if DGL_OS_LINUX
         PuglInternals* const parentImpl = parent.pData->fView->impl;
 
         XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
+        XFlush(xDisplay);
 #endif
     }
 
@@ -114,17 +128,22 @@ public:
           _dummy('\0')
 #endif
     {
+        DBG("Creating window embedded with parent Id..."); DBGF;
         init();
 
-        // starts visible
+        DBG("Embed window always visible\n");
         fApp.oneShown();
         fFirstInit = false;
     }
 
     void init()
     {
-        if (fView == nullptr)
+        if (fSelf == nullptr || fView == nullptr)
+        {
+            DBG("Failed!\n");
+            dgl_lastUiParent = nullptr;
             return;
+        }
 
         dgl_lastUiParent = fSelf;
 
@@ -141,31 +160,43 @@ public:
 #if DGL_OS_WINDOWS
         PuglInternals* impl = fView->impl;
         hwnd = impl->hwnd;
+        assert(hwnd != 0);
 #elif DGL_OS_LINUX
         PuglInternals* impl = fView->impl;
         xDisplay = impl->display;
         xWindow  = impl->win;
+        assert(xWindow != 0);
 #endif
+
+        DBG("Success!\n");
+
+        // process any initial events
+        puglProcessEvents(fView);
 
         fApp.addWindow(fSelf);
     }
 
     ~PrivateData()
     {
+        DBG("Destroying window..."); DBGF;
+
         //fOnModal = false;
         fWidgets.clear();
 
-        if (fView != nullptr)
+        if (fSelf != nullptr && fView != nullptr)
         {
             fApp.removeWindow(fSelf);
             puglDestroy(fView);
         }
+
+        DBG("Success!\n");
     }
 
     // -------------------------------------------------------------------
 
     void close()
     {
+        DBG("Window close\n");
         setVisible(false);
 
         if (! fFirstInit)
@@ -177,6 +208,7 @@ public:
 
     void exec(const bool lockWait)
     {
+        DBG("Window exec\n");
         exec_init();
 
         if (lockWait)
@@ -204,6 +236,7 @@ public:
 
     void focus()
     {
+        DBG("Window focus\n");
 #if DGL_OS_WINDOWS
         SetForegroundWindow(hwnd);
         SetActiveWindow(hwnd);
@@ -213,6 +246,7 @@ public:
 #elif DGL_OS_LINUX
         XRaiseWindow(xDisplay, xWindow);
         XSetInputFocus(xDisplay, xWindow, RevertToPointerRoot, CurrentTime);
+        XFlush(xDisplay);
 #endif
     }
 
@@ -226,17 +260,8 @@ public:
 
     void repaint()
     {
+        DBG("Window repaint\n");
         puglPostRedisplay(fView);
-    }
-
-    void flush()
-    {
-#if DGL_OS_WINDOWS
-        UpdateWindow(hwnd);
-#elif DGL_OS_MAC
-#elif DGL_OS_LINUX
-        XFlush(xDisplay);
-#endif
     }
 
     // -------------------------------------------------------------------
@@ -249,7 +274,12 @@ public:
     void setVisible(const bool yesNo)
     {
         if (fVisible == yesNo)
+        {
+            DBG("Window setVisible ignored!\n");
             return;
+        }
+
+        DBG("Window setVisible called\n");
 
         fVisible = yesNo;
 
@@ -261,15 +291,17 @@ public:
 #if DGL_OS_WINDOWS
         if (yesNo)
         {
-            ShowWindow(hwnd, WS_VISIBLE);
-
-            if (! fFirstInit)
+            if (fFirstInit)
+                ShowWindow(hwnd, SW_SHOWNORMAL);
+            else
                 ShowWindow(hwnd, SW_RESTORE);
         }
         else
         {
             ShowWindow(hwnd, SW_HIDE);
         }
+
+        UpdateWindow(hwnd);
 #elif DGL_OS_MAC
         puglImplSetVisible(fView, yesNo);
 #elif DGL_OS_LINUX
@@ -277,6 +309,8 @@ public:
             XMapRaised(xDisplay, xWindow);
         else
             XUnmapWindow(xDisplay, xWindow);
+
+        XFlush(xDisplay);
 #endif
 
         if (yesNo)
@@ -301,7 +335,12 @@ public:
     void setResizable(const bool yesNo)
     {
         if (fResizable == yesNo)
+        {
+            DBG("Window setResizable ignored!\n");
             return;
+        }
+
+        DBG("Window setResizable called\n");
 
         fResizable = yesNo;
 
@@ -338,11 +377,16 @@ public:
 
 #ifndef DGL_OS_MAC
         if (fView->width == (int)width && fView->height == (int)height && ! forced)
-           return;
+        {
+            DBG("Window setSize ignored!\n");
+            return;
+        }
 
         fView->width  = width;
         fView->height = height;
 #endif
+
+        DBG("Window setSize called\n");
 
 #if DGL_OS_WINDOWS
         int winFlags = WS_POPUPWINDOW | WS_CAPTION;
@@ -354,6 +398,7 @@ public:
         AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
 
         SetWindowPos(hwnd, 0, 0, 0, wr.right-wr.left, wr.bottom-wr.top, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+        UpdateWindow(hwnd);
 #elif DGL_OS_MAC
         puglImplSetSize(fView, width, height);
 #elif DGL_OS_LINUX
@@ -372,6 +417,8 @@ public:
 
             XSetNormalHints(xDisplay, xWindow, &sizeHints);
         }
+
+        XFlush(xDisplay);
 #endif
 
         repaint();
@@ -381,12 +428,14 @@ public:
 
     void setTitle(const char* const title)
     {
+        DBG("Window setTitle\n");
 #if DGL_OS_WINDOWS
         SetWindowTextA(hwnd, title);
 #elif DGL_OS_MAC
         puglImplSetTitle(fView, title);
 #elif DGL_OS_LINUX
         XStoreName(xDisplay, xWindow, title);
+        XFlush(xDisplay);
 #endif
     }
 
@@ -426,6 +475,7 @@ public:
 
     void exec_init()
     {
+        DBG("Window modal loop starting..."); DBGF;
         fModal.enabled = true;
         assert(fModal.parent != nullptr);
 
@@ -452,14 +502,19 @@ public:
 
         fModal.parent->setVisible(true);
         setVisible(true);
+
+        DBG("Ok\n");
     }
 
     void exec_fini()
     {
+        DBG("Window modal loop stopping..."); DBGF;
         fModal.enabled = false;
 
         if (fModal.parent != nullptr)
             fModal.parent->fModal.childFocus = nullptr;
+
+        DBG("Ok\n");
     }
 
     // -------------------------------------------------------------------
@@ -467,6 +522,8 @@ public:
 protected:
     void onDisplay()
     {
+        DBG("PUGL: onDisplay\n");
+
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         FOR_EACH_WIDGET(it)
@@ -480,6 +537,8 @@ protected:
 
     void onKeyboard(const bool press, const uint32_t key)
     {
+        DBGp("PUGL: onKeyboard : %i %i\n", press, key);
+
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
 
@@ -494,6 +553,8 @@ protected:
 
     void onMouse(const int button, const bool press, const int x, const int y)
     {
+        DBGp("PUGL: onMouse : %i %i %i %i\n", button, press, x, y);
+
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
 
@@ -508,6 +569,8 @@ protected:
 
     void onMotion(const int x, const int y)
     {
+        DBGp("PUGL: onMotion : %i %i\n", x, y);
+
         if (fModal.childFocus != nullptr)
             return;
 
@@ -522,6 +585,8 @@ protected:
 
     void onScroll(const float dx, const float dy)
     {
+        DBGp("PUGL: onScroll : %f %f\n", dx, dy);
+
         if (fModal.childFocus != nullptr)
             return;
 
@@ -536,6 +601,8 @@ protected:
 
     void onSpecial(const bool press, const Key key)
     {
+        DBGp("PUGL: onSpecial : %i %i\n", press, key);
+
         if (fModal.childFocus != nullptr)
             return;
 
@@ -550,7 +617,8 @@ protected:
 
     void onReshape(const int width, const int height)
     {
-        printf("resized: %i:%i\n", width, height);
+        DBGp("PUGL: onReshape : %i %i\n", width, height);
+
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
@@ -560,6 +628,8 @@ protected:
 
     void onClose()
     {
+        DBG("PUGL: onClose\n");
+
         fModal.enabled = false;
 
         if (fModal.childFocus != nullptr)
@@ -803,3 +873,6 @@ void Window::removeWidget(Widget* const widget)
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#undef DBG
+#undef DBGF
