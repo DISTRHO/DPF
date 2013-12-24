@@ -1,0 +1,9 @@
+[Project]
+Manager=KDevGenericManager
+Name=DPT
+
+[Filters]
+Excludes=*/.*,*/*~,*/*.a
+
+[Project]
+VersionControlSupport=kdevgit
