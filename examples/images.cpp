@@ -69,7 +69,7 @@ private:
         if (fImg1rev)
         {
             fImg1x -= 2;
-            if (fImg1x <= 0)
+            if (fImg1x <= -50)
             {
                 fImg1rev = false;
                 setNewTopImg(1);
@@ -78,7 +78,7 @@ private:
         else
         {
             fImg1x += 2;
-            if (fImg1x >= kImg1max)
+            if (fImg1x >= kImg1max+50)
             {
                 fImg1rev = true;
                 setNewTopImg(1);
@@ -88,7 +88,7 @@ private:
         if (fImg2rev)
         {
             fImg2x -= 1;
-            if (fImg2x <= 0)
+            if (fImg2x <= -50)
             {
                 fImg2rev = false;
                 setNewTopImg(2);
@@ -97,7 +97,7 @@ private:
         else
         {
             fImg2x += 4;
-            if (fImg2x >= kImg2max)
+            if (fImg2x >= kImg2max+50)
             {
                 fImg2rev = true;
                 setNewTopImg(2);
@@ -107,7 +107,7 @@ private:
         if (fImg3rev)
         {
             fImg3y -= 3;
-            if (fImg3y <= 0)
+            if (fImg3y <= -50)
             {
                 fImg3rev = false;
                 setNewTopImg(3);
@@ -116,7 +116,7 @@ private:
         else
         {
             fImg3y += 3;
-            if (fImg3y >= kImg3max)
+            if (fImg3y >= kImg3max+50)
             {
                 fImg3rev = true;
                 setNewTopImg(3);
