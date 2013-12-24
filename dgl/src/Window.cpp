@@ -480,7 +480,10 @@ public:
         assert(fModal.parent != nullptr);
 
         if (fModal.parent == nullptr)
+        {
+            DBG("Failed, there's no modal parent!\n");
             return setVisible(true);
+        }
 
         fModal.parent->fModal.childFocus = this;
 
@@ -500,10 +503,10 @@ public:
         UpdateWindow(hwnd);
 #endif
 
+        DBG("Ok\n");
+
         fModal.parent->setVisible(true);
         setVisible(true);
-
-        DBG("Ok\n");
     }
 
     void exec_fini()
