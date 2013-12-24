@@ -43,6 +43,7 @@ all: $(TARGET)
 	$(AR) crs $@ $^
 
 ../libdgl.dll: $(OBJS)
+	# -Wl,--output-def,$@.def,--out-implib,$@.a
 	$(CXX) $^ -shared $(LINK_FLAGS) -o $@
 
 ../libdgl.dylib: $(OBJS)
@@ -55,6 +56,9 @@ all: $(TARGET)
 
 %.cpp.o: %.cpp
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
+
+%.m.o: %.m
+	$(CC) $< $(BUILD_C_FLAGS) -objc -c -o $@
 
 # --------------------------------------------------------------
 
