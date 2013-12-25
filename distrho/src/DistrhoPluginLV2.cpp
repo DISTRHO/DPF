@@ -38,7 +38,7 @@
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-# warning LV2 State still TODO
+# warning LV2 State still TODO (needs final testing)
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
 # warning LV2 TimePos still TODO
@@ -563,6 +563,8 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     }
 #endif
 
+    d_lastBufferSize = 0;
+
     for (int i=0; options[i].key != 0; ++i)
     {
         if (options[i].key == uridMap->map(uridMap->handle, LV2_BUF_SIZE__maxBlockLength))
@@ -577,7 +579,10 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     }
 
     if (d_lastBufferSize == 0)
+    {
+        d_stderr("Host does not provide maxBlockLength option");
         d_lastBufferSize = 2048;
+    }
 
     d_lastSampleRate = sampleRate;
 
