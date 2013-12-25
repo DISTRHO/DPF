@@ -14,9 +14,9 @@ LINK_FLAGS      += -L.. -ldgl $(DGL_LIBS)
 # --------------------------------------------------------------
 
 ifeq ($(WIN32),true)
-TARGETS = app.exe color images.exe nekobi-ui.exe
+TARGETS = app.exe cairo.exe color images.exe nekobi-ui.exe
 else
-TARGETS = app color images nekobi-ui
+TARGETS = app cairo color images nekobi-ui
 endif
 
 # --------------------------------------------------------------
@@ -34,6 +34,9 @@ all: ../libdgl.a $(TARGETS)
 
 app: app.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
+
+cairo: cairo.cpp ../dgl/*
+	$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags --libs cairo) $(LINK_FLAGS) -o $@
 
 color: color.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@

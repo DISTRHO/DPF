@@ -35,7 +35,7 @@ using namespace DGL;
 // our widget
 
 class ExampleImagesWidget : public App::IdleCallback,
-                                  Widget
+                                   Widget
 {
 public:
     static const int kImg1y = 0;

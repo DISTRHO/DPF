@@ -153,11 +153,6 @@ void Widget::setHeight(int height)
     fParent.repaint();
 }
 
-void Widget::setSize(int width, int height)
-{
-    setSize(Size<int>(width, height));
-}
-
 void Widget::setSize(const Size<int>& size)
 {
     if (fArea.getSize() == size)

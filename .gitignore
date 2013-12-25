@@ -9,6 +9,7 @@
 .kdev_include_paths
 
 examples/app
+examples/cairo
 examples/color
 examples/images
 examples/nekobi-ui

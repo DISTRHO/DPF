@@ -21,6 +21,8 @@
 
 #include <cairo.h>
 
+#include <cstdio>
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -36,24 +38,122 @@ public:
     {
     }
 
+    virtual void setWidth(int width) override
+    {
+        if (fArea.getWidth() == width)
+            return;
+
+        Widget::setWidth(width);
+        _recreateSurface();
+    }
+
+    virtual void setHeight(int height) override
+    {
+        if (fArea.getHeight() == height)
+            return;
+
+        Widget::setHeight(height);
+        _recreateSurface();
+    }
+
+    virtual void setSize(const Size<int>& size) override
+    {
+        if (fArea.getSize() == size)
+            return;
+
+        Widget::setSize(size);
+        _recreateSurface();
+    }
+
+    void setSize(int width, int height)
+    {
+        setSize(Size<int>(width, height));
+    }
+
 protected:
     virtual void cairoDisplay(cairo_t* const context) = 0;
 
 private:
-    void onReshape(int width, int height) override
+    void onDisplay() override
     {
-        // handle resize
-        setSize(width, height);
-        Widget::onReshape(width, height);
+        // wait for sizing
+        if (fSurface == nullptr || fContext == nullptr)
+        {
+            printf("invalid surface\n");
+            return;
+        }
 
-        // free previous if needed
-        onClose();
+        if (fTextureId == 0)
+            glGenTextures(1, &fTextureId);
+        if (fTextureId == 0)
+        {
+            // TODO: invalidate widget
+            printf("invalid texture\n");
+            return;
+        }
 
-        // create new
-        fSurface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
-        fContext = cairo_create(fSurface);
+#if 1
+        const int x = getX();
+        const int y = getY();
+        const int width  = getWidth();
+        const int height = getHeight();
 
-        glGenTextures(1, &fTextureId);
+        // draw cairo stuff
+        cairoDisplay(fContext);
+
+        // get cairo surface data (RGB24)
+        unsigned char* const surfaceData = cairo_image_surface_get_data(fSurface);
+
+        // enable GL texture
+        glEnable(GL_TEXTURE_RECTANGLE_ARB);
+
+        // set texture params
+        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+        glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        // bind texture to surface data
+        glBindTexture(GL_TEXTURE_RECTANGLE_ARB, fTextureId);
+        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, surfaceData);
+
+        // draw the texture
+
+//         glBegin(GL_QUADS);
+//           glTexCoord2f(0.0f, 0.0f);
+//           glVertex2i(x, y);
+//
+//           glTexCoord2f(1.0f, 0.0f);
+//           glVertex2i(x+width, y);
+//
+//           glTexCoord2f(1.0f, 1.0f);
+//           glVertex2i(x+width, y+height);
+//
+//           glTexCoord2f(0.0f, 1.0f);
+//           glVertex2i(x, y+height);
+//         glEnd();
+
+        glBegin(GL_QUADS);
+          //glTexCoord2i(x, y);
+          glTexCoord2i(0, 0);
+          glVertex2i(x, y);
+
+          //glTexCoord2i(x+width, y);
+          glTexCoord2i(width, 0);
+          glVertex2i(x+width, y);
+
+          //glTexCoord2i(x+width, y+height);
+          glTexCoord2i(width, height);
+          glVertex2i(x+width, y+height);
+
+          //glTexCoord2i(x, y+height);
+          glTexCoord2i(0, height);
+          glVertex2i(x, y+height);
+        glEnd();
+
+        // cleanup
+        glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+        glDisable(GL_TEXTURE_RECTANGLE_ARB);
+#endif
     }
 
     void onClose() override
@@ -77,56 +177,20 @@ private:
         }
     }
 
-    void onDisplay() override
+    void _recreateSurface()
     {
-        // wait for first resize
-        if (fSurface == nullptr || fContext == nullptr)
-        {
-            glClear(GL_COLOR_BUFFER_BIT);
-            return;
-        }
+        if (fContext != nullptr)
+            cairo_destroy(fContext);
 
-        const int width  = getWidth();
-        const int height = getHeight();
+        if (fSurface != nullptr)
+            cairo_surface_destroy(fSurface);
 
-        // draw cairo stuff
-        cairoDisplay(fContext);
+        fSurface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, fArea.getWidth(), fArea.getHeight());
 
-        // get cairo surface data (RGB24)
-        unsigned char* const surfaceData = cairo_image_surface_get_data(fSurface);
-
-        // enable GL texture
-        glEnable(GL_TEXTURE_RECTANGLE_ARB);
-
-        // set texture params
-        glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_RECTANGLE_ARB, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-        // bind texture to surface data
-        glBindTexture(GL_TEXTURE_RECTANGLE_ARB, fTextureId);
-        glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_BYTE, surfaceData);
-
-        // draw the texture
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glBegin(GL_QUADS);
-          glTexCoord2i(0, height);
-          glVertex2i(0, height);
-
-          glTexCoord2i(width, height);
-          glVertex2i(width, height);
-
-          glTexCoord2i(width, 0);
-          glVertex2i(width, 0);
-
-          glTexCoord2i(0, 0);
-          glVertex2i(0, 0);
-        glEnd();
-
-        // cleanup
-        glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
-        glDisable(GL_TEXTURE_RECTANGLE_ARB);
+        if (fSurface != nullptr)
+            fContext = cairo_create(fSurface);
+        else
+           fContext = nullptr;
     }
 
 private:

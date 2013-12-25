@@ -60,10 +60,15 @@ public:
     int getHeight() const noexcept;
     const Size<int>& getSize() const noexcept;
 
-    void setWidth(int width);
-    void setHeight(int height);
-    void setSize(int width, int height);
-    void setSize(const Size<int>& size);
+    // virtual needed by cairo
+    virtual void setWidth(int width);
+    virtual void setHeight(int height);
+    virtual void setSize(const Size<int>& size);
+
+    void setSize(int width, int height)
+    {
+        setSize(Size<int>(width, height));
+    }
 
     const Rectangle<int>& getArea() const noexcept;
 
@@ -90,6 +95,7 @@ private:
     bool    fVisible;
     Rectangle<int> fArea;
 
+    friend class CairoWidget;
     friend class Window;
 };
 
