@@ -29,7 +29,10 @@
 #elif DGL_OS_MAC
 extern "C" {
 # include "pugl/pugl_osx_extended.h"
-}
+struct PuglViewImpl {
+    int width;
+    int height;
+};}
 #elif DGL_OS_LINUX
 extern "C" {
 # include "pugl/pugl_x11.c"
@@ -275,10 +278,8 @@ public:
 
         fVisible = yesNo;
 
-#ifndef DGL_OS_MAC
         if (yesNo && fFirstInit)
             setSize(fView->width, fView->height, true);
-#endif
 
 #if DGL_OS_WINDOWS
         if (yesNo)
@@ -336,14 +337,11 @@ public:
 
         fResizable = yesNo;
 
-#ifndef DGL_OS_MAC
         setSize(fView->width, fView->height, true);
-#endif
     }
 
     // -------------------------------------------------------------------
 
-#ifndef DGL_OS_MAC
     int getWidth() const noexcept
     {
         return fView->width;
@@ -358,7 +356,6 @@ public:
     {
         return Size<int>(fView->width, fView->height);
     }
-#endif
 
     void setSize(unsigned int width, unsigned int height, const bool forced = false)
     {
@@ -367,7 +364,6 @@ public:
         if (height == 0)
             height = 1;
 
-#ifndef DGL_OS_MAC
         if (fView->width == (int)width && fView->height == (int)height && ! forced)
         {
             DBG("Window setSize ignored!\n");
@@ -376,7 +372,6 @@ public:
 
         fView->width  = width;
         fView->height = height;
-#endif
 
         DBG("Window setSize called\n");
 
@@ -811,7 +806,6 @@ void Window::setResizable(bool yesNo)
     pData->setResizable(yesNo);
 }
 
-#ifndef DGL_OS_MAC
 int Window::getWidth() const noexcept
 {
     return pData->getWidth();
@@ -826,7 +820,6 @@ Size<int> Window::getSize() const noexcept
 {
     return pData->getSize();
 }
-#endif
 
 void Window::setSize(unsigned int width, unsigned int height)
 {

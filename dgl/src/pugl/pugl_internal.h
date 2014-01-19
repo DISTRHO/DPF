@@ -27,6 +27,9 @@
 typedef struct PuglInternalsImpl PuglInternals;
 
 struct PuglViewImpl {
+	int width;
+	int height;
+
 	PuglHandle       handle;
 	PuglCloseFunc    closeFunc;
 	PuglDisplayFunc  displayFunc;
@@ -39,8 +42,6 @@ struct PuglViewImpl {
 
 	PuglInternals* impl;
 
-	int      width;
-	int      height;
 	int      mods;
 	bool     mouse_in_view;
 	bool     ignoreKeyRepeat;
