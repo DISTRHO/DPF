@@ -36,7 +36,8 @@
                      defer:(BOOL)flag;
 - (void) setPuglview:(PuglView*)view;
 - (BOOL) windowShouldClose:(id)sender;
-- (BOOL) canBecomeKeyWindow;
+- (void) becomeKeyWindow:(id)sender;
+- (BOOL) canBecomeKeyWindow:(id)sender;
 @end
 
 @implementation PuglWindow
@@ -50,7 +51,8 @@
 	                                    styleMask:(NSClosableWindowMask |
 	                                               NSTitledWindowMask |
 	                                               NSResizableWindowMask)
-	                                      backing:NSBackingStoreBuffered defer:NO];
+	                                      backing:NSBackingStoreBuffered
+	                                        defer:NO];
 
 	[result setAcceptsMouseMovedEvents:YES];
 	[result setLevel: CGShieldingWindowLevel() + 1];
@@ -71,20 +73,18 @@
 	return YES;
 }
 
-- (BOOL)canBecomeKeyWindow
+- (void)becomeKeyWindow:(id)sender
 {
-    return YES;
+	printf("becomeKeyWindow\n");
+}
+
+// this allows spacebar (for example) to start/stop the transport
+- (BOOL) canBecomeKeyWindow
+{
+	return NO;
 }
 
 @end
-
-void
-puglDisplay(PuglView* view)
-{
-	if (view->displayFunc) {
-		view->displayFunc(view);
-	}
-}
 
 @interface PuglOpenGLView : NSOpenGLView
 {
@@ -105,6 +105,7 @@ puglDisplay(PuglView* view)
 - (void) mouseDragged:(NSEvent*)event;
 - (void) mouseDown:(NSEvent*)event;
 - (void) mouseUp:(NSEvent*)event;
+- (void) rightMouseDragged:(NSEvent*)event;
 - (void) rightMouseDown:(NSEvent*)event;
 - (void) rightMouseUp:(NSEvent*)event;
 - (void) keyDown:(NSEvent*)event;
@@ -187,6 +188,10 @@ getModifiers(PuglView* view, NSEvent* ev)
 
 	view->event_timestamp_ms = fmod([ev timestamp] * 1000.0, UINT32_MAX);
 
+	double ts = [ev timestamp] * 1000.0;
+	ts = (uint32)ts % 500000;  //ridiculously large vals won't fit
+	view->event_timestamp_ms = ts;
+
 	unsigned mods = 0;
 	mods |= (modifierFlags & NSShiftKeyMask)     ? PUGL_MOD_SHIFT : 0;
 	mods |= (modifierFlags & NSControlKeyMask)   ? PUGL_MOD_CTRL  : 0;
@@ -231,6 +236,15 @@ getModifiers(PuglView* view, NSEvent* ev)
 }
 
 - (void) mouseDragged:(NSEvent*)event
+{
+	if (puglview->motionFunc) {
+		NSPoint loc = [event locationInWindow];
+		puglview->mods = getModifiers(puglview, event);
+		puglview->motionFunc(puglview, loc.x, puglview->height - loc.y);
+	}
+}
+
+- (void) rightMouseDragged:(NSEvent*)event
 {
 	if (puglview->motionFunc) {
 		NSPoint loc = [event locationInWindow];
@@ -383,6 +397,14 @@ puglDestroy(PuglView* view)
 	[view->impl->window release];
 	free(view->impl);
 	free(view);
+}
+
+void
+puglDisplay(PuglView* view)
+{
+	if (view->displayFunc) {
+		view->displayFunc(view);
+	}
 }
 
 PuglStatus
