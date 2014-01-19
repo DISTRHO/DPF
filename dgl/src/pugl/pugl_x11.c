@@ -163,6 +163,21 @@ puglCreate(PuglNativeWindow parent,
 		XSetWMProtocols(impl->display, impl->win, &wmDelete, 1);
 	}
 
+#if 0
+	if (true) { // stay on top
+		Atom type = XInternAtom(impl->display, "_NET_WM_STATE_ABOVE", False);
+		XChangeProperty(impl->display,
+				impl->win,
+				XInternAtom(impl->display, "_NET_WM_STATE", False),
+				XInternAtom(impl->display, "ATOM", False),
+				32,
+				PropModeReplace,
+				(unsigned char *)&type,
+				1
+				);
+	}
+#endif
+
 	if (visible) {
 		XMapRaised(impl->display, impl->win);
 	}
@@ -170,6 +185,7 @@ puglCreate(PuglNativeWindow parent,
 	if (glXIsDirect(impl->display, impl->ctx)) {
 #ifdef VERBOSE_PUGL
 		printf("puGL: DRI enabled\n");
+		printf("If you have drawing issues, try setting LIBGL_ALWAYS_INDIRECT=1 in your environment.\n" );
 #endif
 	} else {
 #ifdef VERBOSE_PUGL
@@ -196,7 +212,7 @@ puglDestroy(PuglView* view)
 	free(view);
 }
 
-static void
+void
 puglReshape(PuglView* view, int width, int height)
 {
 	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
@@ -211,7 +227,7 @@ puglReshape(PuglView* view, int width, int height)
 	view->height = height;
 }
 
-static void
+void
 puglDisplay(PuglView* view)
 {
 	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
