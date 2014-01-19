@@ -25,7 +25,11 @@
 
 void puglImplFocus(PuglView* view)
 {
+    id window = view->impl->window;
+
     // TODO
+    [NSApp activateIgnoringOtherApps:YES];
+    [window makeKeyAndOrderFront:window];
 }
 
 void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
@@ -36,7 +40,7 @@ void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
     frame.origin.y   -= frame.size.height;
     frame.origin.y   += height;
     frame.size.width  = width;
-    frame.size.height = height;
+    frame.size.height = height+20;
 
     [window setFrame:frame display:YES animate:NO];
 }

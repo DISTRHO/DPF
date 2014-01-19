@@ -36,6 +36,7 @@
                      defer:(BOOL)flag;
 - (void) setPuglview:(PuglView*)view;
 - (BOOL) windowShouldClose:(id)sender;
+- (BOOL) canBecomeKeyWindow;
 @end
 
 @implementation PuglWindow
@@ -68,6 +69,11 @@
 	if (puglview->closeFunc)
 		puglview->closeFunc(puglview);
 	return YES;
+}
+
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
 }
 
 @end
