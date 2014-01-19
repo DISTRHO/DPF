@@ -30,15 +30,15 @@ void puglImplFocus(PuglView* view)
 
 void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
 {
-    //id window = view->impl->window;
+    id window = view->impl->window;
 
-    // TODO
-    //NSRect frame = [window frame];
-    //frame.size.width  = width;
-    //frame.size.height = height;
+    NSRect frame      = [window frame];
+    frame.origin.y   -= frame.size.height;
+    frame.origin.y   += height;
+    frame.size.width  = width;
+    frame.size.height = height;
 
-    // display:NO ?
-    //[window setFrame:frame display:YES animate:NO];
+    [window setFrame:frame display:YES animate:NO];
 }
 
 void puglImplSetTitle(PuglView* view, const char* title)
