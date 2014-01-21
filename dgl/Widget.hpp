@@ -85,7 +85,7 @@ protected:
     virtual bool onKeyboard(bool press, uint32_t key);
     virtual bool onMouse(int button, bool press, int x, int y);
     virtual bool onMotion(int x, int y);
-    virtual bool onScroll(float dx, float dy);
+    virtual bool onScroll(int x, int y, float dx, float dy);
     virtual bool onSpecial(bool press, Key key);
     virtual void onReshape(int width, int height);
     virtual void onClose();

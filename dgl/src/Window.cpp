@@ -581,9 +581,9 @@ protected:
         }
     }
 
-    void onScroll(const float dx, const float dy)
+    void onScroll(const int x, const int y, const float dx, const float dy)
     {
-        DBGp("PUGL: onScroll : %f %f\n", dx, dy);
+        DBGp("PUGL: onScroll : %i %i %f %f\n", x, y, dx, dy);
 
         if (fModal.childFocus != nullptr)
             return;
@@ -592,7 +592,7 @@ protected:
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onScroll(dx, dy))
+            if (widget->isVisible() && widget->onScroll(x, y, dx, dy))
                 break;
         }
     }
@@ -710,9 +710,9 @@ private:
         handlePtr->onMotion(x, y);
     }
 
-    static void onScrollCallback(PuglView* view, float dx, float dy)
+    static void onScrollCallback(PuglView* view, int x, int y, float dx, float dy)
     {
-        handlePtr->onScroll(dx, dy);
+        handlePtr->onScroll(x, y, dx, dy);
     }
 
     static void onSpecialCallback(PuglView* view, bool press, PuglKey key)

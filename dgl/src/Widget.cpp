@@ -207,7 +207,7 @@ bool Widget::onMotion(int, int)
     return false;
 }
 
-bool Widget::onScroll(float, float)
+bool Widget::onScroll(int, int, float, float)
 {
     return false;
 }
