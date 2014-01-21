@@ -95,7 +95,7 @@ typedef enum {
 	PUGL_CHAR_ESCAPE    = 0x1B,
 	PUGL_CHAR_DELETE    = 0x7F
 } PuglChar;
-	
+
 /**
    Special (non-Unicode) keyboard keys.
 */
@@ -131,12 +131,12 @@ typedef enum {
    Keyboard modifier flags.
 */
 typedef enum {
-	PUGL_MOD_SHIFT = 1,       /**< Shift key */ 
+	PUGL_MOD_SHIFT = 1,       /**< Shift key */
 	PUGL_MOD_CTRL  = 1 << 1,  /**< Control key */
 	PUGL_MOD_ALT   = 1 << 2,  /**< Alt/Option key */
 	PUGL_MOD_SUPER = 1 << 3   /**< Mod4/Command/Windows key */
 } PuglMod;
-	
+
 /**
    Handle for opaque user data.
 */
@@ -199,13 +199,17 @@ typedef void (*PuglReshapeFunc)(PuglView* view, int width, int height);
    @param dx The scroll x distance.
    @param dx The scroll y distance.
 */
-typedef void (*PuglScrollFunc)(PuglView* view, float dx, float dy);
+typedef void (*PuglScrollFunc)(PuglView* view,
+                               int       x,
+                               int       y,
+                               float     dx,
+                               float     dy);
 
 /**
    A function called when a special key is pressed or released.
 
-   This callback allows the use of keys that do not have unicode points.  Note
-   that some non-printable keys 
+   This callback allows the use of keys that do not have unicode points.
+
    @param view The view the event occured in.
    @param press True if the key was pressed, false if released.
    @param key The key pressed.
