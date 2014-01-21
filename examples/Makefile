@@ -54,6 +54,7 @@ nekobi-ui: nekobi-ui.cpp nekobi-ui_src/* ../dgl/*
 # --------------------------------------------------------------
 
 clean:
+	$(MAKE) -C ../dgl clean
 	$(RM) $(TARGETS)
 
 debug:
