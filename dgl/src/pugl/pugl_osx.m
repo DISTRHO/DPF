@@ -79,7 +79,7 @@
 }
 
 // this allows spacebar (for example) to start/stop the transport
-- (BOOL) canBecomeKeyWindow
+- (BOOL) canBecomeKeyWindow:(id)sender
 {
 	return YES;
 }
