@@ -24,6 +24,14 @@
 
 #include "pugl_internal.h"
 
+void
+puglDisplay(PuglView* view)
+{
+	if (view->displayFunc) {
+		view->displayFunc(view);
+	}
+}
+
 @interface PuglWindow : NSWindow
 {
 @public
@@ -401,14 +409,6 @@ puglDestroy(PuglView* view)
 	[view->impl->window release];
 	free(view->impl);
 	free(view);
-}
-
-void
-puglDisplay(PuglView* view)
-{
-	if (view->displayFunc) {
-		view->displayFunc(view);
-	}
 }
 
 PuglStatus
