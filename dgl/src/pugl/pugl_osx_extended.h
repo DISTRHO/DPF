@@ -23,7 +23,15 @@
 
 #include "pugl.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void puglImplFocus(PuglView* view);
 void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height);
 void puglImplSetTitle(PuglView* view, const char* title);
 void puglImplSetVisible(PuglView* view, bool yesNo);
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif

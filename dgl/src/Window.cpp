@@ -27,8 +27,8 @@
 #if DGL_OS_WINDOWS
 # include "pugl/pugl_win.cpp"
 #elif DGL_OS_MAC
-extern "C" {
 # include "pugl/pugl_osx_extended.h"
+extern "C" {
 struct PuglViewImpl {
     int width;
     int height;
