@@ -45,6 +45,7 @@
 #define effCanBeAutomated 26
 #define effGetProgramNameIndexed 29
 #define effGetPlugCategory 35
+#define effIdle 53
 #define kPlugCategEffect 1
 #define kPlugCategSynth 2
 #define kVstVersion 2400
@@ -478,6 +479,7 @@ public:
             break;
 
         case effEditIdle:
+        case effIdle:
             if (fVstUi != nullptr)
                 fVstUi->idle();
             break;
