@@ -32,7 +32,7 @@ void puglImplFocus(PuglView* view)
     [window makeKeyAndOrderFront:window];
 }
 
-void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
+void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height, bool forced)
 {
     id window = view->impl->window;
 
@@ -41,7 +41,11 @@ void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
     frame.size.width  = width;
     frame.size.height = height+20;
 
-    [window setFrame:frame];
+    if (forced) {
+        [window setFrame:frame];
+    } else {
+        [window setFrame:frame display:YES animate:NO];
+    }
 }
 
 void puglImplSetTitle(PuglView* view, const char* title)

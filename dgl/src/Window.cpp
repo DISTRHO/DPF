@@ -74,6 +74,7 @@ public:
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
+          fUsingEmbed(false),
 #if DGL_OS_WINDOWS
           hwnd(0)
 #elif DGL_OS_LINUX
@@ -83,7 +84,7 @@ public:
           _dummy('\0')
 #endif
     {
-        DBG("Creating simple window without parent..."); DBGF;
+        DBG("Creating window without parent..."); DBGF;
         init();
     }
 
@@ -94,6 +95,7 @@ public:
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
+          fUsingEmbed(false),
           fModal(parent.pData),
 #if DGL_OS_WINDOWS
           hwnd(0)
@@ -108,10 +110,9 @@ public:
         init();
 
 #if DGL_OS_LINUX
-        PuglInternals* const parentImpl = parent.pData->fView->impl;
+        const PuglInternals* const parentImpl(parent.pData->fView->impl);
 
         XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
-        XFlush(xDisplay);
 #endif
     }
 
@@ -122,6 +123,7 @@ public:
           fFirstInit(true),
           fVisible(true),
           fResizable(false),
+          fUsingEmbed(true),
 #if DGL_OS_WINDOWS
           hwnd(0)
 #elif DGL_OS_LINUX
@@ -131,10 +133,10 @@ public:
           _dummy('\0')
 #endif
     {
-        DBG("Creating window embedded with parent Id..."); DBGF;
+        DBG("Creating embedded window..."); DBGF;
         init();
 
-        DBG("Embed window always visible\n");
+        DBG("NOTE: Embed window is always visible and non-resizable\n");
         fApp._oneShown();
         fFirstInit = false;
     }
@@ -186,11 +188,24 @@ public:
         //fOnModal = false;
         fWidgets.clear();
 
-        if (fSelf != nullptr && fView != nullptr)
+        if (fSelf != nullptr)
         {
             fApp._removeWindow(fSelf);
-            puglDestroy(fView);
+            fSelf = nullptr;
         }
+
+        if (fView != nullptr)
+        {
+            puglDestroy(fView);
+            fView = nullptr;
+        }
+
+#if DGL_OS_WINDOWS
+          hwnd = 0;
+#elif DGL_OS_LINUX
+          xDisplay = nullptr;
+          xWindow  = 0;
+#endif
 
         DBG("Success!\n");
     }
@@ -216,7 +231,7 @@ public:
 
         if (lockWait)
         {
-            while (fVisible && fModal.enabled)
+            for (; fVisible && fModal.enabled;)
             {
                 // idle()
                 puglProcessEvents(fView);
@@ -270,7 +285,12 @@ public:
     {
         if (fVisible == yesNo)
         {
-            DBG("Window setVisible ignored!\n");
+            DBG("Window setVisible matches current state, ignoring request\n");
+            return;
+        }
+        if (fUsingEmbed)
+        {
+            DBG("Window setVisible cannot be called when embedded\n");
             return;
         }
 
@@ -283,16 +303,9 @@ public:
 
 #if DGL_OS_WINDOWS
         if (yesNo)
-        {
-            if (fFirstInit)
-                ShowWindow(hwnd, SW_SHOWNORMAL);
-            else
-                ShowWindow(hwnd, SW_RESTORE);
-        }
+            ShowWindow(hwnd, fFirstInit ? SW_SHOWNORMAL : SW_RESTORE);
         else
-        {
             ShowWindow(hwnd, SW_HIDE);
-        }
 
         UpdateWindow(hwnd);
 #elif DGL_OS_MAC
@@ -329,7 +342,12 @@ public:
     {
         if (fResizable == yesNo)
         {
-            DBG("Window setResizable ignored!\n");
+            DBG("Window setResizable matches current state, ignoring request\n");
+            return;
+        }
+        if (fUsingEmbed)
+        {
+            DBG("Window setResizable cannot be called when embedded\n");
             return;
         }
 
@@ -359,21 +377,22 @@ public:
 
     void setSize(unsigned int width, unsigned int height, const bool forced = false)
     {
-        if (width == 0)
-            width = 1;
-        if (height == 0)
-            height = 1;
-
-        if (fView->width == (int)width && fView->height == (int)height && ! forced)
+        if (width == 0 || height == 0)
         {
-            DBG("Window setSize ignored!\n");
+            DBGp("Window setSize called with invalid value(s) %i %i, ignoring request\n", width, height);
+            return;
+        }
+
+        if (fView->width == static_cast<int>(width) && fView->height == static_cast<int>(height) && ! forced)
+        {
+            DBG("Window setSize matches current size, ignoring request\n");
             return;
         }
 
         fView->width  = width;
         fView->height = height;
 
-        DBG("Window setSize called\n");
+        DBGp("Window setSize called %s\n", forced ? "(forced)" : "(not forced)");
 
 #if DGL_OS_WINDOWS
         int winFlags = WS_POPUPWINDOW | WS_CAPTION;
@@ -381,13 +400,15 @@ public:
         if (fResizable)
             winFlags |= WS_SIZEBOX;
 
-        RECT wr = { 0, 0, (long)width, (long)height };
+        RECT wr = { 0, 0, static_cast<long>(width), static_cast<long>(height) };
         AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
 
         SetWindowPos(hwnd, 0, 0, 0, wr.right-wr.left, wr.bottom-wr.top, SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
-        UpdateWindow(hwnd);
+
+        if (! forced)
+            UpdateWindow(hwnd);
 #elif DGL_OS_MAC
-        puglImplSetSize(fView, width, height);
+        puglImplSetSize(fView, width, height, forced);
 #elif DGL_OS_LINUX
         XResizeWindow(xDisplay, xWindow, width, height);
 
@@ -405,7 +426,8 @@ public:
             XSetNormalHints(xDisplay, xWindow, &sizeHints);
         }
 
-        XFlush(xDisplay);
+        if (! forced)
+            XFlush(xDisplay);
 #endif
 
         repaint();
@@ -415,14 +437,14 @@ public:
 
     void setTitle(const char* const title)
     {
-        DBG("Window setTitle\n");
+        DBGp("Window setTitle \"%s\"\n", title);
+
 #if DGL_OS_WINDOWS
         SetWindowTextA(hwnd, title);
 #elif DGL_OS_MAC
         puglImplSetTitle(fView, title);
 #elif DGL_OS_LINUX
         XStoreName(xDisplay, xWindow, title);
-        XFlush(xDisplay);
 #endif
     }
 
@@ -645,13 +667,14 @@ protected:
     // -------------------------------------------------------------------
 
 private:
-    App&            fApp;
-    Window*   const fSelf;
-    PuglView* const fView;
+    App&      fApp;
+    Window*   fSelf;
+    PuglView* fView;
 
     bool fFirstInit;
     bool fVisible;
     bool fResizable;
+    bool fUsingEmbed;
     std::list<Widget*> fWidgets;
 
     struct Modal {
