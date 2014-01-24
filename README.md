@@ -1,3 +1,3 @@
-DPT - DISTRHO Plugin Toolkit
+DPF - DISTRHO Plugin Framework
 
 Work in progress, come back later...
