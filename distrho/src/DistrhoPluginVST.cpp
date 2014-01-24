@@ -438,6 +438,11 @@ public:
         case effEditOpen:
             if (fVstUi == nullptr)
             {
+# if defined(DISTRHO_OS_MAC) && ! defined(__LP64__)
+                if ((fEffect->dispatcher(fEffect, effCanDo, 0, 0, (void*)"hasCockosViewAsConfig", 0.0f) & 0xffff0000) != 0xbeef0000)
+                    return 0;
+# endif
+
                 d_lastUiSampleRate = fAudioMaster(fEffect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
 
                 fVstUi = new UIVst(fAudioMaster, fEffect, &fPlugin, this, (intptr_t)ptr);
