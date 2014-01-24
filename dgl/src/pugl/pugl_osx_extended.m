@@ -37,12 +37,11 @@ void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height)
     id window = view->impl->window;
 
     NSRect frame      = [window frame];
-    frame.origin.y   -= frame.size.height;
-    frame.origin.y   += height;
+    frame.origin.y   -= height - frame.size.height;
     frame.size.width  = width;
     frame.size.height = height+20;
 
-    [window setFrame:frame display:YES animate:NO];
+    [window setFrame:frame];
 }
 
 void puglImplSetTitle(PuglView* view, const char* title)
