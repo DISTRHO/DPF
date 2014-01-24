@@ -1,3 +1,3 @@
-DPF - DISTRHO Plugin Framework
+-- DPF - DISTRHO Plugin Framework
 
 Work in progress, come back later...
