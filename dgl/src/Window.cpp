@@ -319,16 +319,11 @@ public:
         XFlush(xDisplay);
 #endif
 
-        if (yesNo)
+        if (yesNo && fFirstInit)
         {
-            if (fFirstInit)
-            {
-                fApp._oneShown();
-                fFirstInit = false;
-            }
+            fApp._oneShown();
+            fFirstInit = false;
         }
-        else if (fModal.enabled)
-            exec_fini();
     }
 
     // -------------------------------------------------------------------
@@ -484,7 +479,7 @@ public:
     {
         puglProcessEvents(fView);
 
-        if (fVisible && fModal.enabled && fModal.parent != nullptr)
+        if (fModal.enabled && fModal.parent != nullptr)
             fModal.parent->idle();
     }
 
@@ -493,7 +488,6 @@ public:
     void exec_init()
     {
         DBG("Window modal loop starting..."); DBGF;
-        fModal.enabled = true;
         assert(fModal.parent != nullptr);
 
         if (fModal.parent == nullptr)
@@ -502,6 +496,7 @@ public:
             return setVisible(true);
         }
 
+        fModal.enabled = true;
         fModal.parent->fModal.childFocus = this;
 
 #if DGL_OS_WINDOWS
@@ -520,10 +515,10 @@ public:
         UpdateWindow(hwnd);
 #endif
 
-        DBG("Ok\n");
-
         fModal.parent->setVisible(true);
         setVisible(true);
+
+        DBG("Ok\n");
     }
 
     void exec_fini()
@@ -650,7 +645,8 @@ protected:
     {
         DBG("PUGL: onClose\n");
 
-        fModal.enabled = false;
+        if (fModal.enabled && fModal.parent != nullptr)
+            exec_fini();
 
         if (fModal.childFocus != nullptr)
             fModal.childFocus->onClose();
