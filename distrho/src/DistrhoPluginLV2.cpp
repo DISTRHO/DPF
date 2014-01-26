@@ -60,6 +60,9 @@ public:
         : fPortControls(nullptr),
           fLastControlValues(nullptr),
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
+# if DISTRHO_PLUGIN_WANT_TIMEPOS
+          fLastTimeSpeed(0.0f),
+# endif
           fURIDs(uridMap),
 #endif
           fUridMap(uridMap),
@@ -229,6 +232,9 @@ public:
 # if DISTRHO_PLUGIN_IS_SYNTH
         uint32_t midiEventCount = 0;
 # endif
+# if DISTRHO_PLUGIN_WANT_TIMEPOS
+        bool needsFrameIncrement = true;
+# endif
         LV2_ATOM_SEQUENCE_FOREACH(fPortEventsIn, event)
         {
             if (event == nullptr)
@@ -355,13 +361,21 @@ public:
                 }
 
                 if (frame != nullptr && frame->type == fURIDs.atomLong)
+                {
                     fTimePos.frame = ((LV2_Atom_Long*)frame)->body;
+                    needsFrameIncrement = false;
+                }
 
                 if (speed != nullptr && speed->type == fURIDs.atomFloat)
-                    fTimePos.playing = ((LV2_Atom_Float*)speed)->body == 1.0f;
+                {
+                    fLastTimeSpeed = ((LV2_Atom_Float*)speed)->body;
+                    fTimePos.playing = (fLastTimeSpeed == 1.0f);
+                }
 
                 if ((! fTimePos.bbt.valid) && beatsPerMinute != nullptr && beatsPerBar != nullptr && beatUnit != nullptr)
                     fTimePos.bbt.valid = true;
+
+                continue;
             }
 # endif
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
@@ -369,12 +383,16 @@ public:
             {
                 const void* const data((const void*)(event + 1));
                 fWorker->schedule_work(fWorker->handle, event->body.size, data);
+
+                continue;
             }
 # endif
         }
 #endif
 
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
+        if (needsFrameIncrement && fLastTimeSpeed != 0.0f)
+            fTimePos.frame += fLastTimeSpeed*sampleCount;
         fPlugin.setTimePos(fTimePos);
 # endif
 
@@ -570,6 +588,7 @@ private:
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePos fTimePos;
+    float   fLastTimeSpeed;
 #endif
 
     // LV2 URIDs
