@@ -420,7 +420,8 @@ puglProcessEvents(PuglView* view)
 		                                     NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
 		                                     NSLeftMouseDownMask | NSLeftMouseUpMask |
 		                                     NSRightMouseDownMask | NSRightMouseUpMask |
-		                                     NSScrollWheelMask | NSKeyDownMask | NSKeyUpMask);
+		                                     NSScrollWheelMask | NSKeyDownMask | NSKeyUpMask |
+		                                     NSFlagsChangedMask);
 
 		for (;;) {
 			event = [view->impl->window
