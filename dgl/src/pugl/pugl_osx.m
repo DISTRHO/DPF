@@ -24,14 +24,6 @@
 
 #include "pugl_internal.h"
 
-void
-puglDisplay(PuglView* view)
-{
-	if (view->displayFunc) {
-		view->displayFunc(view);
-	}
-}
-
 @interface PuglWindow : NSWindow
 {
 @public
@@ -44,7 +36,6 @@ puglDisplay(PuglView* view)
                      defer:(BOOL)flag;
 - (void) setPuglview:(PuglView*)view;
 - (BOOL) windowShouldClose:(id)sender;
-- (void) becomeKeyWindow:(id)sender;
 - (BOOL) canBecomeKeyWindow:(id)sender;
 @end
 
@@ -59,8 +50,7 @@ puglDisplay(PuglView* view)
 	                                    styleMask:(NSClosableWindowMask |
 	                                               NSTitledWindowMask |
 	                                               NSResizableWindowMask)
-	                                      backing:NSBackingStoreBuffered
-	                                        defer:NO];
+	                                      backing:NSBackingStoreBuffered defer:NO];
 
 	[result setAcceptsMouseMovedEvents:YES];
 	[result setLevel: CGShieldingWindowLevel() + 1];
@@ -81,18 +71,20 @@ puglDisplay(PuglView* view)
 	return YES;
 }
 
-- (void)becomeKeyWindow:(id)sender
-{
-	printf("becomeKeyWindow\n");
-}
-
-// this allows spacebar (for example) to start/stop the transport
 - (BOOL) canBecomeKeyWindow:(id)sender
 {
-	return YES;
+	return NO;
 }
 
 @end
+
+void
+puglDisplay(PuglView* view)
+{
+	if (view->displayFunc) {
+		view->displayFunc(view);
+	}
+}
 
 @interface PuglOpenGLView : NSOpenGLView
 {

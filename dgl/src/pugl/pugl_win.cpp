@@ -71,7 +71,7 @@ puglCreate(PuglNativeWindow parent,
 	// Should class be a parameter?  Does this make sense on other platforms?
 	static int wc_count = 0;
 	char classNameBuf[256];
-	sprintf(classNameBuf, "%s_%d\n", title, wc_count++);
+	_snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d\n", title, wc_count++);
 
 	impl->wc.style         = CS_OWNDC;
 	impl->wc.lpfnWndProc   = wndProc;
@@ -91,7 +91,6 @@ puglCreate(PuglNativeWindow parent,
 	}
 
 	// Adjust the overall window size to accomodate our requested client size
-	// If there's any doubt that Windows is laughably outdated, here's the proof
 	RECT wr = { 0, 0, width, height };
 	AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
 
@@ -271,43 +270,45 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_LBUTTONDOWN:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 1, true, lParam);
 		break;
 	case WM_MBUTTONDOWN:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 2, true, lParam);
 		break;
 	case WM_RBUTTONDOWN:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 3, true, lParam);
 		break;
 	case WM_LBUTTONUP:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 1, false, lParam);
 		break;
 	case WM_MBUTTONUP:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 2, false, lParam);
 		break;
 	case WM_RBUTTONUP:
-		view->event_timestamp_ms = (GetMessageTime());
 		processMouseEvent(view, 3, false, lParam);
 		break;
 	case WM_MOUSEWHEEL:
-	case WM_MOUSEHWHEEL:
 		if (view->scrollFunc) {
+			view->event_timestamp_ms = GetMessageTime();
 			view->scrollFunc(
 				view, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam),
-				(int16_t)HIWORD(wParam) / (float)WHEEL_DELTA, 0);
+				0.0f, (int16_t)HIWORD(wParam) / (float)WHEEL_DELTA);
+		}
+		break;
+	case WM_MOUSEHWHEEL:
+		if (view->scrollFunc) {
+			view->event_timestamp_ms = GetMessageTime();
+			view->scrollFunc(
+				view, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam),
+				(int16_t)HIWORD(wParam) / float(WHEEL_DELTA), 0.0f);
 		}
 		break;
 	case WM_KEYDOWN:
-		view->event_timestamp_ms = (GetMessageTime());
 		if (view->ignoreKeyRepeat && (lParam & (1 << 30))) {
 			break;
 		} // else nobreak
 	case WM_KEYUP:
+		view->event_timestamp_ms = GetMessageTime();
 		if ((key = keySymToSpecial(wParam))) {
 			if (view->specialFunc) {
 				view->specialFunc(view, message == WM_KEYDOWN, key);
@@ -337,6 +338,7 @@ puglProcessEvents(PuglView* view)
 	while (PeekMessage(&msg, view->impl->hwnd, 0, 0, PM_REMOVE)) {
 		handleMessage(view, msg.message, msg.wParam, msg.lParam);
 	}
+
 
 	if (view->redisplay) {
 		InvalidateRect(view->impl->hwnd, NULL, FALSE);

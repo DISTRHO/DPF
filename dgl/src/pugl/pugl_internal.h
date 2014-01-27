@@ -20,9 +20,26 @@
    Note this file contains function definitions, so it must be compiled into
    the final binary exactly once.  Each platform specific implementation file
    including it once should achieve this.
+
+   If you are copying the pugl code into your source tree, the following
+   symbols can be defined to tweak pugl behaviour:
+
+   PUGL_GRAB_FOCUS: Work around reparent keyboard issues by grabbing focus.
+   PUGL_VERBOSE:    Print GL information to console.
 */
 
 #include "pugl.h"
+
+#ifdef PUGL_VERBOSE
+#    include <stdio.h>
+#    define PUGL_LOG(str)       fprintf(stderr, "pugl: " str)
+#    define PUGL_LOGF(fmt, ...) fprintf(stderr, "pugl: " fmt, __VA_ARGS__)
+#else
+#    define PUGL_LOG(str)
+#    define PUGL_LOGF(fmt, ...)
+#endif
+
+void puglDefaultReshape(PuglView* view, int width, int height);
 
 typedef struct PuglInternalsImpl PuglInternals;
 

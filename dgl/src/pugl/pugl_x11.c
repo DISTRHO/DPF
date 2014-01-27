@@ -1,7 +1,6 @@
 /*
   Copyright 2012-2014 David Robillard <http://drobilla.net>
   Copyright 2011-2012 Ben Loftis, Harrison Consoles
-  Copyright 2013 Robin Gareus <robin@gareus.org>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -31,16 +30,6 @@
 #include <X11/keysym.h>
 
 #include "pugl_internal.h"
-
-/* work around buggy re-parent & focus issues on some systems
- * where no keyboard events are passed through even if the
- * app has mouse-focus and all other events are working.
- */
-//#define XKEYFOCUSGRAB
-
-/* show messages during initalization
- */
-//#define VERBOSE_PUGL
 
 struct PuglInternalsImpl {
 	Display*   display;
@@ -101,21 +90,15 @@ puglCreate(PuglNativeWindow parent,
 	if (!vi) {
 		vi = glXChooseVisual(impl->display, impl->screen, attrListSgl);
 		impl->doubleBuffered = False;
-#ifdef VERBOSE_PUGL
-		printf("puGL: singlebuffered rendering will be used, no doublebuffering available\n");
-#endif
+		PUGL_LOG("No double buffering available\n");
 	} else {
 		impl->doubleBuffered = True;
-#ifdef VERBOSE_PUGL
-		printf("puGL: doublebuffered rendering available\n");
-#endif
+		PUGL_LOG("Double buffered rendering enabled\n");
 	}
 
 	int glxMajor, glxMinor;
 	glXQueryVersion(impl->display, &glxMajor, &glxMinor);
-#ifdef VERBOSE_PUGL
-	printf("puGL: GLX-Version %d.%d\n", glxMajor, glxMinor);
-#endif
+	PUGL_LOGF("GLX Version %d.%d\n", glxMajor, glxMinor);
 
 	impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
 
@@ -163,34 +146,14 @@ puglCreate(PuglNativeWindow parent,
 		XSetWMProtocols(impl->display, impl->win, &wmDelete, 1);
 	}
 
-#if 0
-	if (true) { // stay on top
-		Atom type = XInternAtom(impl->display, "_NET_WM_STATE_ABOVE", False);
-		XChangeProperty(impl->display,
-				impl->win,
-				XInternAtom(impl->display, "_NET_WM_STATE", False),
-				XInternAtom(impl->display, "ATOM", False),
-				32,
-				PropModeReplace,
-				(unsigned char *)&type,
-				1
-				);
-	}
-#endif
-
 	if (visible) {
 		XMapRaised(impl->display, impl->win);
 	}
 
 	if (glXIsDirect(impl->display, impl->ctx)) {
-#ifdef VERBOSE_PUGL
-		printf("puGL: DRI enabled\n");
-		printf("If you have drawing issues, try setting LIBGL_ALWAYS_INDIRECT=1 in your environment.\n" );
-#endif
+		PUGL_LOG("DRI enabled (to disable, set LIBGL_ALWAYS_INDIRECT=1\n");
 	} else {
-#ifdef VERBOSE_PUGL
-		printf("puGL: No DRI available\n");
-#endif
+		PUGL_LOG("No DRI available\n");
 	}
 
 	XFree(vi);
@@ -376,7 +339,7 @@ puglProcessEvents(PuglView* view)
 		case KeyPress:
 			setModifiers(view, event.xkey.state, event.xkey.time);
 			dispatchKey(view, &event, true);
-		break;
+			break;
 		case KeyRelease:
 			setModifiers(view, event.xkey.state, event.xkey.time);
 			if (view->ignoreKeyRepeat &&
@@ -391,7 +354,7 @@ puglProcessEvents(PuglView* view)
 				}
 			}
 			dispatchKey(view, &event, false);
-		break;
+			break;
 		case ClientMessage:
 			if (!strcmp(XGetAtomName(view->impl->display,
 			                         event.xclient.message_type),
@@ -401,9 +364,12 @@ puglProcessEvents(PuglView* view)
 				}
 			}
 			break;
-#ifdef XKEYFOCUSGRAB
+#ifdef PUGL_GRAB_FOCUS
 		case EnterNotify:
-			XSetInputFocus(view->impl->display, view->impl->win, RevertToPointerRoot, CurrentTime);
+			XSetInputFocus(view->impl->display,
+			               view->impl->win,
+			               RevertToPointerRoot,
+			               CurrentTime);
 			break;
 #endif
 		default:
