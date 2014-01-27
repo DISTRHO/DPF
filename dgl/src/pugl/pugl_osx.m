@@ -101,13 +101,16 @@ puglDisplay(PuglView* view)
            depthBits:(int)numDepthBits;
 - (void) reshape;
 - (void) drawRect:(NSRect)rect;
+- (void) mouseEntered:(NSEvent*)event;
+- (void) mouseExited:(NSEvent*)event;
 - (void) mouseMoved:(NSEvent*)event;
 - (void) mouseDragged:(NSEvent*)event;
+- (void) rightMouseDragged:(NSEvent*)event;
 - (void) mouseDown:(NSEvent*)event;
 - (void) mouseUp:(NSEvent*)event;
-- (void) rightMouseDragged:(NSEvent*)event;
 - (void) rightMouseDown:(NSEvent*)event;
 - (void) rightMouseUp:(NSEvent*)event;
+- (void) scrollWheel:(NSEvent*)event;
 - (void) keyDown:(NSEvent*)event;
 - (void) keyUp:(NSEvent*)event;
 - (void) flagsChanged:(NSEvent*)event;
@@ -342,6 +345,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 struct PuglInternalsImpl {
 	PuglOpenGLView* glview;
 	id              window;
+	bool            isEmbed;
 };
 
 PuglView*
@@ -375,8 +379,9 @@ puglCreate(PuglNativeWindow parent,
 	[window setPuglview:view];
 	[window setTitle:titleString];
 
-	impl->glview       = [PuglOpenGLView new];
-	impl->window     = window;
+	impl->glview  = [PuglOpenGLView new];
+	impl->window  = window;
+	impl->isEmbed = (parent != 0);
 	impl->glview->puglview = view;
 
 	[window setContentView:impl->glview];
@@ -406,25 +411,34 @@ puglDestroy(PuglView* view)
 PuglStatus
 puglProcessEvents(PuglView* view)
 {
-	[view->impl->glview setNeedsDisplay: YES];
+	if (! view->impl->isEmbed)
+	{
+		NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+		NSEvent* event;
 
-	NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-	NSEvent* event;
+		static const NSUInteger eventMask = (NSMouseEnteredMask | NSMouseExitedMask | NSMouseMovedMask |
+		                                     NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
+		                                     NSLeftMouseDownMask | NSLeftMouseUpMask |
+		                                     NSRightMouseDownMask | NSRightMouseUpMask |
+		                                     NSScrollWheelMask | NSKeyDownMask | NSKeyUpMask);
 
-	for (;;) {
-		event = [view->impl->window
-			   nextEventMatchingMask:NSAnyEventMask
-			               untilDate:[NSDate distantPast]
-			                  inMode:NSDefaultRunLoopMode
-			                 dequeue:YES];
+		for (;;) {
+			event = [view->impl->window
+				  nextEventMatchingMask:eventMask
+					      untilDate:[NSDate distantPast]
+						 inMode:NSEventTrackingRunLoopMode
+						dequeue:YES];
 
-		if (event == nil)
-			break;
+			if (event == nil)
+				break;
 
-		[view->impl->window sendEvent: event];
+			[view->impl->window sendEvent: event];
+		}
+
+		[pool release];
 	}
-	
-	[pool release];
+
+	[view->impl->glview setNeedsDisplay: YES];
 
 	return PUGL_SUCCESS;
 }
