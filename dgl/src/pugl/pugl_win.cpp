@@ -107,8 +107,12 @@ puglCreate(PuglNativeWindow parent,
 		free(view);
 		return NULL;
 	}
-		
+
+#ifdef _WIN64
+	SetWindowLongPtr(impl->hwnd, GWLP_USERDATA, (LONG_PTR)view);
+#else
 	SetWindowLongPtr(impl->hwnd, GWL_USERDATA, (LONG)view);
+#endif
 
 	impl->hdc = GetDC(impl->hwnd);
 
@@ -344,7 +348,12 @@ puglProcessEvents(PuglView* view)
 LRESULT CALLBACK
 wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+#ifdef _WIN64
+	PuglView* view = (PuglView*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
+#else
 	PuglView* view = (PuglView*)GetWindowLongPtr(hwnd, GWL_USERDATA);
+#endif
+
 	switch (message) {
 	case WM_CREATE:
 		PostMessage(hwnd, WM_SHOWWINDOW, TRUE, 0);

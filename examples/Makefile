@@ -29,7 +29,7 @@ all: ../libdgl.a $(TARGETS)
 
 clean:
 	$(MAKE) -C ../dgl clean
-	$(RM) $(TARGETS)
+	$(RM) *.exe app cairo color images nekobi-ui
 
 debug:
 	$(MAKE) DEBUG=true
