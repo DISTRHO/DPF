@@ -416,12 +416,14 @@ puglProcessEvents(PuglView* view)
 		NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 		NSEvent* event;
 
-		static const NSUInteger eventMask = (NSMouseEnteredMask | NSMouseExitedMask | NSMouseMovedMask |
-		                                     NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
-		                                     NSLeftMouseDownMask | NSLeftMouseUpMask |
+		static const NSUInteger eventMask = (NSLeftMouseDownMask | NSLeftMouseUpMask |
 		                                     NSRightMouseDownMask | NSRightMouseUpMask |
-		                                     NSScrollWheelMask | NSKeyDownMask | NSKeyUpMask |
-		                                     NSFlagsChangedMask);
+		                                     NSMouseMovedMask |
+		                                     NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
+		                                     NSMouseEnteredMask | NSMouseExitedMask |
+		                                     NSKeyDownMask | NSKeyUpMask |
+		                                     NSFlagsChangedMask |
+		                                     NSCursorUpdateMask | NSScrollWheelMask);
 
 		for (;;) {
 			event = [view->impl->window
