@@ -319,11 +319,16 @@ public:
         XFlush(xDisplay);
 #endif
 
-        if (yesNo && fFirstInit)
+        if (yesNo)
         {
-            fApp._oneShown();
-            fFirstInit = false;
+            if (fFirstInit)
+            {
+                fApp._oneShown();
+                fFirstInit = false;
+            }
         }
+        else if (fModal.enabled)
+            exec_fini();
     }
 
     // -------------------------------------------------------------------
