@@ -41,11 +41,11 @@ void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height, bo
     frame.size.width  = width;
     frame.size.height = height+20;
 
-    if (forced) {
-        [window setFrame:frame];
-    } else {
+//    if (forced) {
+//        [window setFrame:frame];
+//    } else {
         [window setFrame:frame display:YES animate:NO];
-    }
+//    }
 }
 
 void puglImplSetTitle(PuglView* view, const char* title)
