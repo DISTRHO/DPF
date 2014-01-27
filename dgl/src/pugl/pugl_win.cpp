@@ -291,17 +291,11 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		processMouseEvent(view, 3, false, lParam);
 		break;
 	case WM_MOUSEWHEEL:
-		if (view->scrollFunc) {
-			view->scrollFunc(
-				view, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam),
-				(int16_t)HIWORD(wParam) / (float)WHEEL_DELTA);
-		}
-		break;
 	case WM_MOUSEHWHEEL:
 		if (view->scrollFunc) {
 			view->scrollFunc(
 				view, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam),
-				(int16_t)HIWORD(wParam) / float(WHEEL_DELTA), 0);
+				(int16_t)HIWORD(wParam) / (float)WHEEL_DELTA, 0);
 		}
 		break;
 	case WM_KEYDOWN:

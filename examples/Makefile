@@ -14,7 +14,7 @@ LINK_FLAGS      += -L.. -ldgl $(DGL_LIBS)
 # --------------------------------------------------------------
 
 ifeq ($(WIN32),true)
-TARGETS = app.exe cairo.exe color images.exe nekobi-ui.exe
+TARGETS = app.exe color.exe images.exe nekobi-ui.exe
 else
 ifeq ($(MACOS),true)
 TARGETS = app color images nekobi-ui
@@ -26,10 +26,20 @@ endif
 # --------------------------------------------------------------
 
 all: ../libdgl.a $(TARGETS)
+
+clean:
+	$(MAKE) -C ../dgl clean
+	$(RM) $(TARGETS)
+
+debug:
+	$(MAKE) DEBUG=true
+
 # --------------------------------------------------------------
 
 %.exe: %
+	rm -f $*.exe
 	mv $* $*.exe
+	ln -sf $*.exe $*
 
 ../libdgl.a: .FORCE
 	$(MAKE) -C ../dgl
@@ -53,14 +63,7 @@ nekobi-ui: nekobi-ui.cpp nekobi-ui_src/* ../dgl/*
 
 # --------------------------------------------------------------
 
-clean:
-	$(MAKE) -C ../dgl clean
-	$(RM) $(TARGETS)
-
-debug:
-	$(MAKE) DEBUG=true
-
-# --------------------------------------------------------------
-
 .FORCE:
 .PHONY: .FORCE
+
+# --------------------------------------------------------------
