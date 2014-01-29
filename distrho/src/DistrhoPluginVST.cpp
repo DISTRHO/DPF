@@ -60,7 +60,7 @@ struct ERect {
 # warning VST State still TODO (working but needs final testing)
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-# warning VST TimePos still TODO
+# warning VST TimePos still TODO (only basic BBT working)
 #endif
 
 typedef std::map<d_string,d_string> StringMap;
@@ -670,13 +670,24 @@ public:
     void vst_processReplacing(float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        if (const VstTimeInfo* const timeInfo = (const VstTimeInfo*)fEffect->dispatcher(fEffect, audioMasterGetTime, 0, kVstTempoValid, nullptr, 0.0f))
-        {
-            fTimePos.playing = (timeInfo->flags & kVstTransportPlaying);
-            fTimePos.frame   = timeInfo->samplePos;
+        static const int kWantedVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
 
-            // TODO: BBT
-            // timeInfo->tempo etc
+        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fEffect->dispatcher(fEffect, audioMasterGetTime, 0, kWantedVstTimeFlags, nullptr, 0.0f))
+        {
+            fTimePos.playing = (vstTimeInfo->flags & kVstTransportPlaying);
+            fTimePos.frame   = vstTimeInfo->samplePos;
+
+            if (vstTimeInfo->flags & kVstTempoValid)
+            {
+                fTimePos.bbt.valid = true;
+                fTimePos.bbt.beatsPerMinute = vstTimeInfo->tempo;
+            }
+            if (vstTimeInfo->flags & kVstTimeSigValid)
+            {
+                fTimePos.bbt.valid = true;
+                fTimePos.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
+                fTimePos.bbt.beatType    = vstTimeInfo->timeSigDenominator;
+            }
 
             fPlugin.setTimePos(fTimePos);
         }
