@@ -672,7 +672,7 @@ public:
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         static const int kWantedVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
 
-        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fEffect->dispatcher(fEffect, audioMasterGetTime, 0, kWantedVstTimeFlags, nullptr, 0.0f))
+        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantedVstTimeFlags, nullptr, 0.0f))
         {
             fTimePos.playing = (vstTimeInfo->flags & kVstTransportPlaying);
             fTimePos.frame   = vstTimeInfo->samplePos;
