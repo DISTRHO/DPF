@@ -699,6 +699,17 @@ public:
 #else
         fPlugin.run(inputs, outputs, sampleFrames);
 #endif
+
+#if DISTRHO_PLUGIN_HAS_UI
+        if (fVstUi == nullptr)
+            return;
+
+        for (uint32_t i=0, count = fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (fPlugin.isParameterOutput(i))
+                fVstUi->setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
+        }
+#endif
     }
 
     // -------------------------------------------------------------------
