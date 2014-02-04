@@ -41,7 +41,7 @@ DistrhoUINekobi::DistrhoUINekobi(DGL::Window& parent)
     fSliderWaveform->setEndPos(133, 60);
     fSliderWaveform->setRange(0.0f, 1.0f);
     fSliderWaveform->setValue(0.0f);
-    fSliderWaveform->setIsSwitch(true);
+    fSliderWaveform->setStep(1.0f);
 
     // knobs
     Image knobImage(DistrhoArtworkNekobi::knobData, DistrhoArtworkNekobi::knobWidth, DistrhoArtworkNekobi::knobHeight);

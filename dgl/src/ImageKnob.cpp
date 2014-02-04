@@ -303,7 +303,7 @@ bool ImageKnob::onMotion(int x, int y)
         if (int movX = x - fLastX)
         {
             d     = (getModifiers() & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
-            value = fValue + (float(fMaximum - fMinimum) / d * float(movX));
+            value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movX));
             doVal = true;
         }
     }
