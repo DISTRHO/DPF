@@ -75,66 +75,52 @@ void strncpy(char* const dst, const char* const src, const size_t size)
     dst[size] = '\0';
 }
 
+#if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_STATE
-class StateHelper
+class UiHelper
 {
 public:
-    virtual ~StateHelper() {}
-    virtual void setSharedState(const char* const newKey, const char* const newValue) = 0;
-};
-#else
-typedef void StateHelper;
+    UiHelper()
+        : parameterChecks(nullptr),
+          parameterValues(nullptr),
+          nextProgram(-1) {}
+
+    virtual ~UiHelper()
+    {
+        if (parameterChecks != nullptr)
+        {
+            delete[] parameterChecks;
+            parameterChecks = nullptr;
+        }
+        if (parameterValues != nullptr)
+        {
+            delete[] parameterValues;
+            parameterValues = nullptr;
+        }
+    }
+
+    bool*   parameterChecks;
+    float*  parameterValues;
+    int32_t nextProgram;
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    virtual void setStateFromUi(const char* const newKey, const char* const newValue) = 0;
 #endif
+};
 
 // -----------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_HAS_UI
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, PluginExporter* const plugin, StateHelper* const stateHelper, const intptr_t winId)
+    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, UiHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId)
         : fAudioMaster(audioMaster),
           fEffect(effect),
+          fUiHelper(uiHelper),
           fPlugin(plugin),
-          fStateHelper(stateHelper),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, uiResizeCallback),
-          fParameterChecks(nullptr),
-          fParameterValues(nullptr)
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, uiResizeCallback)
     {
-        const uint32_t paramCount(plugin->getParameterCount());
-
-        if (paramCount > 0)
-        {
-            fParameterChecks = new bool[paramCount];
-            fParameterValues = new float[paramCount];
-
-            for (uint32_t i=0; i < paramCount; ++i)
-            {
-                fParameterChecks[i] = false;
-                fParameterValues[i] = 0.0f;
-            }
-        }
-
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        fNextProgram = -1;
-#endif
-    }
-
-    ~UIVst()
-    {
-        if (fParameterChecks != nullptr)
-        {
-            delete[] fParameterChecks;
-            fParameterChecks = nullptr;
-        }
-
-        if (fParameterValues != nullptr)
-        {
-            delete[] fParameterValues;
-            fParameterValues = nullptr;
-        }
     }
 
     // -------------------------------------------------------------------
@@ -142,19 +128,19 @@ public:
     void idle()
     {
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (fNextProgram != -1)
+        if (fUiHelper->nextProgram != -1)
         {
-            fUI.programChanged(fNextProgram);
-            fNextProgram = -1;
+            fUI.programChanged(fUiHelper->nextProgram);
+            fUiHelper->nextProgram = -1;
         }
 #endif
 
         for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
         {
-            if (fParameterChecks[i])
+            if (fUiHelper->parameterChecks[i])
             {
-                fParameterChecks[i] = false;
-                fUI.parameterChanged(i, fParameterValues[i]);
+                fUiHelper->parameterChecks[i] = false;
+                fUI.parameterChanged(i, fUiHelper->parameterValues[i]);
             }
         }
 
@@ -172,27 +158,7 @@ public:
     }
 
     // -------------------------------------------------------------------
-    // functions called from the plugin side, RT no block
-
-    void setParameterValueFromPlugin(const uint32_t index, const float perValue)
-    {
-        fParameterChecks[index] = true;
-        fParameterValues[index] = perValue;
-    }
-
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-    void setProgramFromPlugin(const uint32_t index)
-    {
-        fNextProgram = index;
-
-        // set previous parameters invalid
-        for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
-            fParameterChecks[i] = false;
-    }
-#endif
-
-    // -------------------------------------------------------------------
-    // functions called from the plugin side, block
+    // functions called from the plugin side, may block
 
 #if DISTRHO_PLUGIN_WANT_STATE
     void setStateFromPlugin(const char* const key, const char* const value)
@@ -229,7 +195,7 @@ protected:
     void setState(const char* const key, const char* const value)
     {
 #if DISTRHO_PLUGIN_WANT_STATE
-        fStateHelper->setSharedState(key, value);
+        fUiHelper->setStateFromUi(key, value);
 #else
         return; // unused
         (void)key;
@@ -259,18 +225,11 @@ private:
     // Vst stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
+    UiHelper* const fUiHelper;
     PluginExporter* const fPlugin;
-    StateHelper* const fStateHelper;
 
     // Plugin UI
     UIExporter fUI;
-
-    // Temporary data
-    bool*  fParameterChecks;
-    float* fParameterValues;
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-    int32_t fNextProgram;
-#endif
 
     // -------------------------------------------------------------------
     // Callbacks
@@ -308,8 +267,8 @@ private:
 
 // -----------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_STATE
-class PluginVst : public StateHelper
+#if DISTRHO_PLUGIN_HAS_UI
+class PluginVst : public UiHelper
 #else
 class PluginVst
 #endif
@@ -333,6 +292,18 @@ public:
         fVstRect.left   = 0;
         fVstRect.bottom = 0;
         fVstRect.right  = 0;
+
+        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        {
+            parameterChecks = new bool[paramCount];
+            parameterValues = new float[paramCount];
+
+            for (uint32_t i=0; i < paramCount; ++i)
+            {
+                parameterChecks[i] = false;
+                parameterValues[i] = 0.0f;
+            }
+        }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -368,7 +339,7 @@ public:
 
 #if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUi != nullptr)
-                    fVstUi->setProgramFromPlugin(fCurProgram);
+                    setProgramFromPlugin(fCurProgram);
 #endif
 
                 ret = 1;
@@ -452,14 +423,14 @@ public:
 
                 d_lastUiSampleRate = fAudioMaster(fEffect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
 
-                fVstUi = new UIVst(fAudioMaster, fEffect, &fPlugin, this, (intptr_t)ptr);
+                fVstUi = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
                 if (fCurProgram >= 0)
-                    fVstUi->setProgramFromPlugin(fCurProgram);
+                    setProgramFromPlugin(fCurProgram);
 # endif
                 for (uint32_t i=0, count = fPlugin.getParameterCount(); i < count; ++i)
-                    fVstUi->setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
+                    setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
 
                 fVstUi->idle();
 
@@ -663,7 +634,7 @@ public:
 
 #if DISTRHO_PLUGIN_HAS_UI
         if (fVstUi != nullptr)
-            fVstUi->setParameterValueFromPlugin(index, realValue);
+            setParameterValueFromPlugin(index, realValue);
 #endif
     }
 
@@ -707,7 +678,7 @@ public:
         for (uint32_t i=0, count = fPlugin.getParameterCount(); i < count; ++i)
         {
             if (fPlugin.isParameterOutput(i))
-                fVstUi->setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
+                setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
         }
 #endif
     }
@@ -747,8 +718,33 @@ private:
 #if DISTRHO_PLUGIN_WANT_STATE
     char*     fStateChunk;
     StringMap fStateMap;
+#endif
 
-    void setSharedState(const char* const newKey, const char* const newValue) override
+    // -------------------------------------------------------------------
+    // functions called from the plugin side, RT no block
+
+    void setParameterValueFromPlugin(const uint32_t index, const float realValue)
+    {
+        parameterValues[index] = realValue;
+        parameterChecks[index] = true;
+    }
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    void setProgramFromPlugin(const uint32_t index)
+    {
+        // set previous parameters invalid
+        for (uint32_t i=0, count = fPlugin.getParameterCount(); i < count; ++i)
+            parameterChecks[i] = false;
+
+        nextProgram = index;
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    // -------------------------------------------------------------------
+    // functions called from the UI side, may block
+
+    void setStateFromUi(const char* const newKey, const char* const newValue) override
     {
         fPlugin.setState(newKey, newValue);
 
