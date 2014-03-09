@@ -81,7 +81,7 @@ public:
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DGL_OS_MAC)
-          fNeedsIdle(true),
+          fNeedsIdle(true)
 #else
           _dummy('\0')
 #endif
@@ -105,7 +105,7 @@ public:
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DGL_OS_MAC)
-          fNeedsIdle(true), // FIXME - set false?
+          fNeedsIdle(true) // FIXME - set false?
 #else
           _dummy('\0')
 #endif
@@ -134,7 +134,7 @@ public:
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DGL_OS_MAC)
-          fNeedsIdle(parentId == 0),
+          fNeedsIdle(parentId == 0)
 #else
           _dummy('\0')
 #endif
