@@ -36,7 +36,6 @@
                      defer:(BOOL)flag;
 - (void) setPuglview:(PuglView*)view;
 - (BOOL) windowShouldClose:(id)sender;
-- (BOOL) canBecomeKeyWindow:(id)sender;
 @end
 
 @implementation PuglWindow
@@ -71,14 +70,9 @@
 	return YES;
 }
 
-- (BOOL) canBecomeKeyWindow:(id)sender
-{
-	return NO;
-}
-
 @end
 
-void
+static void
 puglDisplay(PuglView* view)
 {
 	if (view->displayFunc) {
@@ -190,10 +184,6 @@ getModifiers(PuglView* view, NSEvent* ev)
 	const unsigned modifierFlags = [ev modifierFlags];
 
 	view->event_timestamp_ms = fmod([ev timestamp] * 1000.0, UINT32_MAX);
-
-	double ts = [ev timestamp] * 1000.0;
-	ts = (uint32)ts % 500000;  //ridiculously large vals won't fit
-	view->event_timestamp_ms = ts;
 
 	unsigned mods = 0;
 	mods |= (modifierFlags & NSShiftKeyMask)     ? PUGL_MOD_SHIFT : 0;
@@ -345,7 +335,6 @@ getModifiers(PuglView* view, NSEvent* ev)
 struct PuglInternalsImpl {
 	PuglOpenGLView* glview;
 	id              window;
-	bool            isEmbed;
 };
 
 PuglView*
@@ -379,9 +368,8 @@ puglCreate(PuglNativeWindow parent,
 	[window setPuglview:view];
 	[window setTitle:titleString];
 
-	impl->glview  = [PuglOpenGLView new];
-	impl->window  = window;
-	impl->isEmbed = (parent != 0);
+	impl->glview   = [PuglOpenGLView new];
+	impl->window   = window;
 	impl->glview->puglview = view;
 
 	[window setContentView:impl->glview];
@@ -411,36 +399,6 @@ puglDestroy(PuglView* view)
 PuglStatus
 puglProcessEvents(PuglView* view)
 {
-	if (! view->impl->isEmbed)
-	{
-		NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-		NSEvent* event;
-
-		static const NSUInteger eventMask = (NSLeftMouseDownMask | NSLeftMouseUpMask |
-		                                     NSRightMouseDownMask | NSRightMouseUpMask |
-		                                     NSMouseMovedMask |
-		                                     NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
-		                                     NSMouseEnteredMask | NSMouseExitedMask |
-		                                     NSKeyDownMask | NSKeyUpMask |
-		                                     NSFlagsChangedMask |
-		                                     NSCursorUpdateMask | NSScrollWheelMask);
-
-		for (;;) {
-			event = [view->impl->window
-				  nextEventMatchingMask:eventMask
-					      untilDate:[NSDate distantPast]
-						 inMode:NSEventTrackingRunLoopMode
-						dequeue:YES];
-
-			if (event == nil)
-				break;
-
-			[view->impl->window sendEvent: event];
-		}
-
-		[pool release];
-	}
-
 	[view->impl->glview setNeedsDisplay: YES];
 
 	return PUGL_SUCCESS;

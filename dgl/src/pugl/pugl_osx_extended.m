@@ -23,6 +23,36 @@
 
 #include "pugl_osx_extended.h"
 
+void puglImplIdle(PuglView* view)
+{
+    NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+    NSEvent* event;
+
+    static const NSUInteger eventMask = (NSLeftMouseDownMask | NSLeftMouseUpMask |
+                                         NSRightMouseDownMask | NSRightMouseUpMask |
+                                         NSMouseMovedMask |
+                                         NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
+                                         NSMouseEnteredMask | NSMouseExitedMask |
+                                         NSKeyDownMask | NSKeyUpMask |
+                                         NSFlagsChangedMask |
+                                         NSCursorUpdateMask | NSScrollWheelMask);
+
+    for (;;) {
+        event = [view->impl->window
+                 nextEventMatchingMask:eventMask
+                             untilDate:[NSDate distantPast]
+                                inMode:NSEventTrackingRunLoopMode
+                               dequeue:YES];
+
+        if (event == nil)
+            break;
+
+        [view->impl->window sendEvent: event];
+    }
+
+    [pool release];
+}
+
 void puglImplFocus(PuglView* view)
 {
     id window = view->impl->window;
