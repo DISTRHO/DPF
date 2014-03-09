@@ -372,25 +372,6 @@ puglCreate(PuglNativeWindow parent,
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
-	// TESTING!
-#if 1
-	NSApplication* app = [NSApplication sharedApplication];
-
-	if ([app respondsToSelector: @selector(setActivationPolicy:)]) {
-
-	    NSMethodSignature* method = [[app class] instanceMethodSignatureForSelector: @selector(setActivationPolicy:)];
-	    NSInvocation* invocation = [NSInvocation invocationWithMethodSignature: method];
-	    [invocation setTarget: app];
-	    [invocation setSelector: @selector(setActivationPolicy:)];
-	    NSInteger myNSApplicationActivationPolicyAccessory = 0;
-	    [invocation setArgument: &myNSApplicationActivationPolicyAccessory atIndex: 2];
-	    [invocation invoke];
-	}
-#else
-	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-#endif
-	[NSApp finishLaunching];
-
 	NSString* titleString = [[NSString alloc]
 		                        initWithBytes:title
 		                               length:strlen(title)
