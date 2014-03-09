@@ -134,7 +134,7 @@ public:
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DGL_OS_MAC)
-          fNeedsIdle(parentId == 0)
+          fNeedsIdle(false)
 #else
           _dummy('\0')
 #endif
