@@ -58,7 +58,7 @@ all: $(TARGET)
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
 %.m.o: %.m
-	$(CC) $< $(BUILD_C_FLAGS) -objc -c -o $@
+	$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
 
 # --------------------------------------------------------------
 
