@@ -55,12 +55,15 @@
 	[result setLevel: CGShieldingWindowLevel() + 1];
 
 	return result;
+
+	// unused
+	(void)aStyle; (void)bufferingType; (void)flag;
 }
 
 - (void)setPuglview:(PuglView*)view
 {
 	puglview = view;
-	[self setContentSize:NSMakeSize(view->width, view->height) ];
+	[self setContentSize:NSMakeSize(view->width, view->height)];
 }
 
 - (BOOL)windowShouldClose:(id)sender
@@ -68,6 +71,9 @@
 	if (puglview->closeFunc)
 		puglview->closeFunc(puglview);
 	return YES;
+
+	// unused
+	(void)sender;
 }
 
 @end
@@ -176,6 +182,9 @@ puglDisplay(PuglView* view)
 	puglDisplay(puglview);
 	glFlush();
 	glSwapAPPLE();
+
+	// unused
+	return; (void)rect;
 }
 
 static unsigned
@@ -213,10 +222,15 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void)mouseEntered:(NSEvent*)theEvent
 {
 	[self updateTrackingAreas];
+
+	// unused
+	return; (void)theEvent;
 }
 
 - (void)mouseExited:(NSEvent*)theEvent
 {
+	// unused
+	return; (void)theEvent;
 }
 
 - (void) mouseMoved:(NSEvent*)event
@@ -358,7 +372,23 @@ puglCreate(PuglNativeWindow parent,
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
+	// TESTING!
+#if 1
+	NSApplication* app = [NSApplication sharedApplication];
+
+	if ([app respondsToSelector: @selector(setActivationPolicy:)]) {
+
+	    NSMethodSignature* method = [[app class] instanceMethodSignatureForSelector: @selector(setActivationPolicy:)];
+	    NSInvocation* invocation = [NSInvocation invocationWithMethodSignature: method];
+	    [invocation setTarget: app];
+	    [invocation setSelector: @selector(setActivationPolicy:)];
+	    NSInteger myNSApplicationActivationPolicyAccessory = 0;
+	    [invocation setArgument: &myNSApplicationActivationPolicyAccessory atIndex: 2];
+	    [invocation invoke];
+	}
+#else
 	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+#endif
 	[NSApp finishLaunching];
 
 	NSString* titleString = [[NSString alloc]
@@ -386,6 +416,9 @@ puglCreate(PuglNativeWindow parent,
 	}
 
 	return view;
+
+	// unused
+	(void)parent; (void)resizable;
 }
 
 void

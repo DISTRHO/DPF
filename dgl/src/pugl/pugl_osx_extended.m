@@ -76,6 +76,9 @@ void puglImplSetSize(PuglView* view, unsigned int width, unsigned int height, bo
 //    } else {
         [window setFrame:frame display:YES animate:NO];
 //    }
+
+    // unused
+    return; (void)forced;
 }
 
 void puglImplSetTitle(PuglView* view, const char* title)
