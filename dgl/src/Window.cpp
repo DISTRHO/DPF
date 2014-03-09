@@ -105,7 +105,7 @@ public:
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DGL_OS_MAC)
-          fNeedsIdle(true) // FIXME - set false?
+          fNeedsIdle(false)
 #else
           _dummy('\0')
 #endif

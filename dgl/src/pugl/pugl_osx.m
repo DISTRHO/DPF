@@ -358,6 +358,9 @@ puglCreate(PuglNativeWindow parent,
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
+	[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+	[NSApp finishLaunching];
+
 	NSString* titleString = [[NSString alloc]
 		                        initWithBytes:title
 		                               length:strlen(title)
