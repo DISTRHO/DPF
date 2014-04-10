@@ -55,6 +55,15 @@
 # error DISTRHO_PLUGIN_WANT_TIMEPOS undefined!
 #endif
 
+/* Compatibility with non-clang compilers */
+#ifndef __has_feature
+# define __has_feature(x) 0
+#endif
+#ifndef __has_extension
+# define __has_extension __has_feature
+#endif
+
+/* Check OS */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 # define DISTRHO_PLUGIN_EXPORT extern "C" __declspec (dllexport)
 # define DISTRHO_OS_WINDOWS    1
@@ -77,25 +86,25 @@
 # define DISTRHO_DLL_EXTENSION "so"
 #endif
 
+/* Check for C++11 support */
 #if defined(HAVE_CPP11_SUPPORT)
 # define PROPER_CPP11_SUPPORT
-#elif defined(__GNUC__) && (__cplusplus >= 201103L || defined(__GXX_EXPERIMENTAL_CXX0X__))
-# if  (__GNUC__ * 100 + __GNUC_MINOR__) >= 405
-#  define PROPER_CPP11_SUPPORT
-#  if  (__GNUC__ * 100 + __GNUC_MINOR__) < 407
-#   define override // gcc4.7+ only
-#  endif
+#elif __cplusplus >= 201103L || (defined(__GNUC__) && defined(__GXX_EXPERIMENTAL_CXX0X__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 405) || __has_extension(cxx_noexcept)
+# define PROPER_CPP11_SUPPORT
+# if (defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) < 407) || ! __has_extension(cxx_override_control)
+#  define override // gcc4.7+ only
+#  define final    // gcc4.7+ only
 # endif
 #endif
 
 #ifndef PROPER_CPP11_SUPPORT
-# ifndef __clang__
-#  define noexcept throw()
-# endif
+# define noexcept throw()
 # define override
+# define final
 # define nullptr (0)
 #endif
 
+/* Define namespace */
 #ifndef DISTRHO_NO_NAMESPACE
 # ifndef DISTRHO_NAMESPACE
 #  define DISTRHO_NAMESPACE DISTRHO
