@@ -34,6 +34,8 @@ struct PuglViewImpl {
     int height;
 };}
 #elif defined(DGL_OS_LINUX)
+# include <sys/types.h>
+# include <unistd.h>
 extern "C" {
 # include "pugl/pugl_x11.c"
 }
@@ -185,6 +187,10 @@ public:
         xDisplay = impl->display;
         xWindow  = impl->win;
         assert(xWindow != 0);
+
+        pid_t pid = getpid();
+        Atom _nwp = XInternAtom(xDisplay, "_NET_WM_PID", True);
+        XChangeProperty(xDisplay, xWindow, _nwp, XA_CARDINAL, 32, PropModeReplace, (const unsigned char*)&pid, 1);
 #endif
 
         DBG("Success!\n");
@@ -426,7 +432,9 @@ public:
             XSizeHints sizeHints;
             memset(&sizeHints, 0, sizeof(sizeHints));
 
-            sizeHints.flags      = PMinSize|PMaxSize;
+            sizeHints.flags      = PSize|PMinSize|PMaxSize;
+            sizeHints.width      = static_cast<int>(width);
+            sizeHints.height     = static_cast<int>(height);
             sizeHints.min_width  = static_cast<int>(width);
             sizeHints.min_height = static_cast<int>(height);
             sizeHints.max_width  = static_cast<int>(width);
@@ -456,6 +464,19 @@ public:
         XStoreName(xDisplay, xWindow, title);
 #endif
     }
+
+    void setTransientWinId(const intptr_t winId)
+    {
+#if defined(DGL_OS_LINUX)
+        XSetTransientForHint(xDisplay, xWindow, static_cast<::Window>(winId));
+#else
+        return;
+        // unused
+        (void)winId;
+#endif
+    }
+
+    // -------------------------------------------------------------------
 
     App& getApp() const noexcept
     {
@@ -869,6 +890,11 @@ void Window::setSize(unsigned int width, unsigned int height)
 void Window::setTitle(const char* title)
 {
     pData->setTitle(title);
+}
+
+void Window::setTransientWinId(intptr_t winId)
+{
+    pData->setTransientWinId(winId);
 }
 
 App& Window::getApp() const noexcept
