@@ -68,7 +68,7 @@ public:
     }
 
 protected:
-    App fApp;
+    App    fApp;
     Window fWindow;
 };
 

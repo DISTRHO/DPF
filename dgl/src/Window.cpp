@@ -476,7 +476,7 @@ public:
     void setTransientWinId(const intptr_t winId)
     {
 #if defined(DGL_OS_LINUX)
-        XSetTransientForHint(xDisplay, xWindow, static_cast<::Window>(winId));
+        XSetTransientForHint(xDisplay, xWindow, static_cast< ::Window>(winId));
 #else
         return;
         // unused
