@@ -198,7 +198,7 @@ private:
     cairo_surface_t* fSurface;
     GLuint           fTextureId;
 
-    DISTRHO_LEAK_DETECTOR(CairoWidget)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoWidget)
 };
 
 // -----------------------------------------------------------------------

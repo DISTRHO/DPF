@@ -45,7 +45,7 @@ int main()
     {
         gui.idle();
         app.idle();
-        msleep(10);
+        d_msleep(10);
     }
 
     return 0;

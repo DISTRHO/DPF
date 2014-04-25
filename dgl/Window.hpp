@@ -78,7 +78,7 @@ private:
     void _removeWidget(Widget* const widget);
     void _idle();
 
-    DISTRHO_LEAK_DETECTOR(Window)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
 };
 
 // -----------------------------------------------------------------------

@@ -67,10 +67,10 @@
 #endif
 
 /* Define DISTRHO_SAFE_ASSERT* */
-#define DISTRHO_SAFE_ASSERT(cond)               if (cond) pass(); else   d_safe_assert(#cond, __FILE__, __LINE__);
-#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (cond) pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); break; }
-#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (cond) pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
-#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (cond) pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
+#define DISTRHO_SAFE_ASSERT(cond)               if (cond) d_pass(); else   d_safe_assert(#cond, __FILE__, __LINE__);
+#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); break; }
+#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
+#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
 
 /* Define DISTRHO_SAFE_EXCEPTION */
 #define DISTRHO_SAFE_EXCEPTION(msg)             catch(...) { d_safe_exception(msg, __FILE__, __LINE__); }

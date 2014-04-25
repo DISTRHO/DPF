@@ -98,7 +98,7 @@ private:
     friend class CairoWidget;
     friend class Window;
 
-    DISTRHO_LEAK_DETECTOR(Widget)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Widget)
 };
 
 // -----------------------------------------------------------------------

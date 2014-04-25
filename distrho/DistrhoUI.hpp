@@ -17,7 +17,7 @@
 #ifndef DISTRHO_UI_HPP_INCLUDED
 #define DISTRHO_UI_HPP_INCLUDED
 
-#include "DistrhoUtils.hpp"
+#include "extra/d_leakdetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
 #include "../dgl/Widget.hpp"
@@ -89,7 +89,7 @@ private:
     PrivateData* const pData;
     friend class UIExporter;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Plugin)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };
 
 // -----------------------------------------------------------------------

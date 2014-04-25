@@ -16,7 +16,6 @@ LINK_FLAGS      += $(DGL_LIBS)
 
 OBJS = \
 	src/App.cpp.o \
-	src/Base.cpp.o \
 	src/Image.cpp.o \
 	src/ImageAboutWindow.cpp.o \
 	src/ImageButton.cpp.o \

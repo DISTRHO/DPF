@@ -63,6 +63,9 @@ long d_cconst(const int a, const int b, const int c, const int d) noexcept
     return (a << 24) | (b << 16) | (c << 8) | (d << 0);
 }
 
+static inline
+void d_pass() noexcept {}
+
 // -----------------------------------------------------------------------
 // string print functions
 
@@ -162,11 +165,6 @@ void d_msleep(const uint msecs)
 #endif
     } DISTRHO_SAFE_EXCEPTION("carla_msleep");
 }
-
-// -----------------------------------------------------------------------
-// we always need this class
-
-#include "extra/d_string.hpp"
 
 // -----------------------------------------------------------------------
 
