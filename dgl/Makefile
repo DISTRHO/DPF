@@ -16,14 +16,20 @@ LINK_FLAGS      += $(DGL_LIBS)
 
 OBJS = \
 	src/App.cpp.o \
+	src/Geometry.cpp.o \
 	src/Image.cpp.o \
 	src/ImageAboutWindow.cpp.o \
 	src/ImageButton.cpp.o \
 	src/ImageKnob.cpp.o \
 	src/ImageSlider.cpp.o \
-	src/Geometry.cpp.o \
 	src/Widget.cpp.o \
 	src/Window.cpp.o
+
+# freetype-gl
+OBJS += \
+	src/freetype-gl/texture-atlas.c.o \
+	src/freetype-gl/texture-font.c.o \
+	src/freetype-gl/vector.c.o
 
 ifeq ($(MACOS),true)
 OBJS += src/pugl/pugl_osx_extended.m.o
@@ -52,6 +58,9 @@ all: $(TARGET)
 	$(CXX) $^ -shared $(LINK_FLAGS) -o $@
 
 # --------------------------------------------------------------
+
+%.c.o: %.c
+	$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
 %.cpp.o: %.cpp
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
