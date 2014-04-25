@@ -70,6 +70,8 @@ public:
 protected:
     App    fApp;
     Window fWindow;
+
+    DISTRHO_LEAK_DETECTOR(StandaloneWindow)
 };
 
 // -----------------------------------------------------------------------

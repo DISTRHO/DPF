@@ -47,6 +47,8 @@ protected:
 
 private:
     Image fImgBackground;
+
+    DISTRHO_LEAK_DETECTOR(ImageAboutWindow)
 };
 
 // -----------------------------------------------------------------------

@@ -77,6 +77,8 @@ private:
     Rectangle<int> fSliderArea;
 
     void _recheckArea();
+
+    DISTRHO_LEAK_DETECTOR(ImageSlider)
 };
 
 // -----------------------------------------------------------------------

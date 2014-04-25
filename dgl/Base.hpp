@@ -17,7 +17,7 @@
 #ifndef DGL_BASE_HPP_INCLUDED
 #define DGL_BASE_HPP_INCLUDED
 
-#include "../distrho/src/DistrhoDefines.h"
+#include "../distrho/extra/d_leakdetector.hpp"
 
 // -----------------------------------------------------------------------
 

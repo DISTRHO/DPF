@@ -77,6 +77,8 @@ private:
     void _addWidget(Widget* const widget);
     void _removeWidget(Widget* const widget);
     void _idle();
+
+    DISTRHO_LEAK_DETECTOR(Window)
 };
 
 // -----------------------------------------------------------------------
