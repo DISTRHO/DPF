@@ -18,6 +18,7 @@
 #define DISTRHO_PLUGIN_HPP_INCLUDED
 
 #include "DistrhoUtils.hpp"
+#include "src/DistrhoPluginChecks.h"
 
 #include <cmath>
 

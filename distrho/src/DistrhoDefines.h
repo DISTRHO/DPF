@@ -17,48 +17,6 @@
 #ifndef DISTRHO_DEFINES_H_INCLUDED
 #define DISTRHO_DEFINES_H_INCLUDED
 
-#include "DistrhoPluginInfo.h"
-
-#ifndef DISTRHO_PLUGIN_NAME
-# error DISTRHO_PLUGIN_NAME undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_HAS_UI
-# error DISTRHO_PLUGIN_HAS_UI undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_IS_SYNTH
-# error DISTRHO_PLUGIN_IS_SYNTH undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_NUM_INPUTS
-# error DISTRHO_PLUGIN_NUM_INPUTS undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_NUM_OUTPUTS
-# error DISTRHO_PLUGIN_NUM_OUTPUTS undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_WANT_LATENCY
-# error DISTRHO_PLUGIN_WANT_LATENCY undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_WANT_PROGRAMS
-# error DISTRHO_PLUGIN_WANT_PROGRAMS undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_WANT_STATE
-# error DISTRHO_PLUGIN_WANT_STATE undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_WANT_TIMEPOS
-# error DISTRHO_PLUGIN_WANT_TIMEPOS undefined!
-#endif
-
-#ifndef DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-# define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0
-#endif
-
 /* Compatibility with non-clang compilers */
 #ifndef __has_feature
 # define __has_feature(x) 0
@@ -123,26 +81,26 @@
 /* Define DISTRHO_DECLARE_NON_COPY_CLASS */
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) \
-private:                                         \
-    ClassName(ClassName&) = delete;              \
-    ClassName(const ClassName&) = delete;        \
-    ClassName& operator=(ClassName&) = delete;   \
+private:                                           \
+    ClassName(ClassName&) = delete;                \
+    ClassName(const ClassName&) = delete;          \
+    ClassName& operator=(ClassName&) = delete  ;   \
     ClassName& operator=(const ClassName&) = delete;
 #else
 # define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) \
-private:                                         \
-    ClassName(ClassName&);                       \
-    ClassName(const ClassName&);                 \
-    ClassName& operator=(ClassName&);            \
+private:                                           \
+    ClassName(ClassName&);                         \
+    ClassName(const ClassName&);                   \
+    ClassName& operator=(ClassName&);              \
     ClassName& operator=(const ClassName&);
 #endif
 
 /* Define DISTRHO_DECLARE_NON_COPY_STRUCT */
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) \
-    StructName(StructName&) = delete;              \
-    StructName(const StructName&) = delete;        \
-    StructName& operator=(StructName&) = delete;   \
+    StructName(StructName&) = delete;                \
+    StructName(const StructName&) = delete;          \
+    StructName& operator=(StructName&) = delete;     \
     StructName& operator=(const StructName&) = delete;
 #else
 # define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName)
@@ -150,14 +108,14 @@ private:                                         \
 
 /* Define DISTRHO_PREVENT_HEAP_ALLOCATION */
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# define DISTRHO_PREVENT_HEAP_ALLOCATION \
-private:                               \
+# define DISTRHO_PREVENT_HEAP_ALLOCATION        \
+private:                                        \
     static void* operator new(size_t) = delete; \
     static void operator delete(void*) = delete;
 #else
 # define DISTRHO_PREVENT_HEAP_ALLOCATION \
-private:                               \
-    static void* operator new(size_t); \
+private:                                 \
+    static void* operator new(size_t);   \
     static void operator delete(void*);
 #endif
 
@@ -174,8 +132,6 @@ private:                               \
 # define END_NAMESPACE_DISTRHO
 # define USE_NAMESPACE_DISTRHO
 #endif
-
-#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
 
 /* Useful typedefs */
 typedef unsigned char uchar;

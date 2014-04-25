@@ -18,6 +18,7 @@
 #define DISTRHO_UI_HPP_INCLUDED
 
 #include "DistrhoUtils.hpp"
+#include "src/DistrhoPluginChecks.h"
 
 #include "../dgl/Widget.hpp"
 
