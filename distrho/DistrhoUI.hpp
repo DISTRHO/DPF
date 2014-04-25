@@ -79,7 +79,7 @@ protected:
     // -------------------------------------------------------------------
     // Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
 
-    void* d_getPluginInstancePointer();
+    void* d_getPluginInstancePointer() const noexcept;
 #endif
 
     // -------------------------------------------------------------------

@@ -407,7 +407,7 @@ public:
 
 private:
     // -------------------------------------------------------------------
-    // private members accessed by DistrhoPlugin class
+    // private members accessed by DistrhoPlugin classes
 
     Plugin* const fPlugin;
     Plugin::PrivateData* const fData;
@@ -417,6 +417,9 @@ private:
 
     static const d_string        sFallbackString;
     static const ParameterRanges sFallbackRanges;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
+    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------

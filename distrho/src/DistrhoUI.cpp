@@ -23,7 +23,7 @@ END_NAMESPACE_DGL
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
-// Static data
+// Static data, see DistrhoUIInternal.hpp
 
 double d_lastUiSampleRate = 0.0;
 
@@ -34,7 +34,7 @@ UI::UI()
     : DGL::Widget(*DGL::dgl_lastUiParent),
       pData(new PrivateData())
 {
-    assert(DGL::dgl_lastUiParent != nullptr);
+    DISTRHO_SAFE_ASSERT(DGL::dgl_lastUiParent != nullptr);
 
     DGL::dgl_lastUiParent = nullptr;
 }
@@ -88,7 +88,7 @@ void UI::d_uiResize(unsigned int width, unsigned int height)
 // -----------------------------------------------------------------------
 // Direct DSP access
 
-void* UI::d_getPluginInstancePointer()
+void* UI::d_getPluginInstancePointer() const noexcept
 {
     return pData->dspPtr;
 }
