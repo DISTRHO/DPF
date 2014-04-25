@@ -303,7 +303,7 @@ public:
 
     void setState(const char* const key, const char* const value)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount,);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0',);
         DISTRHO_SAFE_ASSERT_RETURN(value != nullptr,);
 
