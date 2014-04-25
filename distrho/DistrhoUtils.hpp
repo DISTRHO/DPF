@@ -49,6 +49,9 @@ inline float
 inline float
   rint(float __x)
   { return __builtin_rintf(__x); }
+inline float
+  round(float __x)
+  { return __builtin_roundf(__x); }
 }
 #endif
 
@@ -70,44 +73,50 @@ long d_cconst(int a, int b, int c, int d) noexcept
 static inline
 void d_debug(const char* const fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
+    ::va_list args;
+    ::va_start(args, fmt);
     std::fprintf(stdout, "\x1b[30;1m");
     std::vfprintf(stdout, fmt, args);
     std::fprintf(stdout, "\x1b[0m\n");
-    va_end(args);
+    ::va_end(args);
 }
 #endif
 
 static inline
 void d_stdout(const char* const fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
+    ::va_list args;
+    ::va_start(args, fmt);
     std::vfprintf(stdout, fmt, args);
     std::fprintf(stdout, "\n");
-    va_end(args);
+    ::va_end(args);
 }
 
 static inline
 void d_stderr(const char* const fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
+    ::va_list args;
+    ::va_start(args, fmt);
     std::vfprintf(stderr, fmt, args);
     std::fprintf(stderr, "\n");
-    va_end(args);
+    ::va_end(args);
 }
 
 static inline
 void d_stderr2(const char* const fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
+    ::va_list args;
+    ::va_start(args, fmt);
     std::fprintf(stderr, "\x1b[31m");
     std::vfprintf(stderr, fmt, args);
     std::fprintf(stderr, "\x1b[0m\n");
-    va_end(args);
+    ::va_end(args);
+}
+
+static inline
+void d_safe_assert(const char* const assertion, const char* const file, const int line)
+{
+    d_stderr2("assertion failure: \"%s\" in file %s, line %i", assertion, file, line);
 }
 
 // -----------------------------------------------------------------------
@@ -117,9 +126,9 @@ static inline
 void d_sleep(unsigned int secs)
 {
 #ifdef DISTRHO_OS_WINDOWS
-    Sleep(secs * 1000);
+    ::Sleep(secs * 1000);
 #else
-    sleep(secs);
+    ::sleep(secs);
 #endif
 }
 
@@ -127,9 +136,9 @@ static inline
 void d_msleep(unsigned int msecs)
 {
 #ifdef DISTRHO_OS_WINDOWS
-    Sleep(msecs);
+    ::Sleep(msecs);
 #else
-    usleep(msecs * 1000);
+    ::usleep(msecs * 1000);
 #endif
 }
 
