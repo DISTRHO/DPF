@@ -60,7 +60,6 @@ private:
     GLenum fType;
     GLuint fTextureId;
 
-    DISTRHO_LEAK_DETECTOR(Image)
     DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
