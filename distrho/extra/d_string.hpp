@@ -17,7 +17,7 @@
 #ifndef DISTRHO_STRING_HPP_INCLUDED
 #define DISTRHO_STRING_HPP_INCLUDED
 
-#include "../DistrhoUtils.hpp"
+#include "d_leakdetector.hpp"
 
 // -----------------------------------------------------------------------
 // d_string class
@@ -709,7 +709,7 @@ private:
         }
     }
 
-    //DISTRHO_LEAK_DETECTOR(d_string)
+    DISTRHO_LEAK_DETECTOR(d_string)
     DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 

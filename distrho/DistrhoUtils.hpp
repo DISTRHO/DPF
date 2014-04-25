@@ -164,5 +164,10 @@ void d_msleep(const uint msecs)
 }
 
 // -----------------------------------------------------------------------
+// we always need this class
+
+#include "extra/d_string.hpp"
+
+// -----------------------------------------------------------------------
 
 #endif // DISTRHO_UTILS_HPP_INCLUDED

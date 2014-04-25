@@ -87,6 +87,8 @@ private:
     struct PrivateData;
     PrivateData* const pData;
     friend class UIExporter;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Plugin)
 };
 
 // -----------------------------------------------------------------------
