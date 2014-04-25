@@ -49,15 +49,15 @@ public:
     // -------------------------------------------------------------------
     // Host UI State
 
-    void d_uiResize(unsigned int width, unsigned int height);
+    void d_uiResize(uint width, uint height);
 
 protected:
     // -------------------------------------------------------------------
     // Basic Information
 
-    virtual const char*  d_getName()   const noexcept { return DISTRHO_PLUGIN_NAME; }
-    virtual unsigned int d_getWidth()  const noexcept = 0;
-    virtual unsigned int d_getHeight() const noexcept = 0;
+    virtual const char* d_getName()   const noexcept { return DISTRHO_PLUGIN_NAME; }
+    virtual uint        d_getWidth()  const noexcept = 0;
+    virtual uint        d_getHeight() const noexcept = 0;
 
     // -------------------------------------------------------------------
     // DSP Callbacks

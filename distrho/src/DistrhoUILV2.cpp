@@ -152,7 +152,7 @@ protected:
     {
     }
 
-    void uiResize(const unsigned int width, const unsigned int height)
+    void uiResize(const uint width, const uint height)
     {
         fUI.setSize(width, height);
         fUiResize->ui_resize(fUiResize->handle, width, height);
@@ -199,7 +199,7 @@ private:
         uiPtr->sendNote(channel, note, velocity);
     }
 
-    static void uiResizeCallback(void* ptr, unsigned int width, unsigned int height)
+    static void uiResizeCallback(void* ptr, uint width, uint height)
     {
         uiPtr->uiResize(width, height);
     }

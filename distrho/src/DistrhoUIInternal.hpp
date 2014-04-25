@@ -36,7 +36,7 @@ typedef void (*editParamFunc) (void* ptr, uint32_t rindex, bool started);
 typedef void (*setParamFunc)  (void* ptr, uint32_t rindex, float value);
 typedef void (*setStateFunc)  (void* ptr, const char* key, const char* value);
 typedef void (*sendNoteFunc)  (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
-typedef void (*uiResizeFunc)  (void* ptr, unsigned int width, unsigned int height);
+typedef void (*uiResizeFunc)  (void* ptr, uint width, uint height);
 
 // -----------------------------------------------------------------------
 // UI private data
@@ -113,7 +113,7 @@ struct UI::PrivateData {
             sendNoteCallbackFunc(ptr, channel, note, velocity);
     }
 
-    void uiResizeCallback(const unsigned int width, const unsigned int height)
+    void uiResizeCallback(const uint width, const uint height)
     {
         if (uiResizeCallbackFunc != nullptr)
             uiResizeCallbackFunc(ptr, width, height);
@@ -169,14 +169,14 @@ public:
         return fUi->d_getName();
     }
 
-    unsigned int getWidth() const noexcept
+    uint getWidth() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr, 0);
 
         return fUi->d_getWidth();
     }
 
-    unsigned int getHeight() const noexcept
+    uint getHeight() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr, 0);
 
@@ -239,7 +239,7 @@ public:
         glApp.quit();
     }
 
-    void setSize(const unsigned int width, const unsigned int height)
+    void setSize(const uint width, const uint height)
     {
         glWindow.setSize(width, height);
     }
