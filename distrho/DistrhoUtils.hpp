@@ -144,7 +144,7 @@ void d_sleep(const uint secs)
     DISTRHO_SAFE_ASSERT_RETURN(secs > 0,);
 
     try {
-#ifdef DISTRHO_OS_WIN
+#ifdef DISTRHO_OS_WINDOWS
         ::Sleep(secs * 1000);
 #else
         ::sleep(secs);
@@ -158,7 +158,7 @@ void d_msleep(const uint msecs)
     DISTRHO_SAFE_ASSERT_RETURN(msecs > 0,);
 
     try {
-#ifdef DISTRHO_OS_WIN
+#ifdef DISTRHO_OS_WINDOWS
         ::Sleep(msecs);
 #else
         ::usleep(msecs * 1000);

@@ -84,7 +84,7 @@ public:
         wchar_t* text = L"A Quick Brown Fox Jumps Over The Lazy Dog 0123456789";
 
 #if 1
-        atlas = texture_atlas_new(600, 300, 2);
+        atlas = texture_atlas_new(600, 300, 1);
         DISTRHO_SAFE_ASSERT_RETURN(atlas != nullptr,);
 
         //fontmgr = font_manager_new(600, 200, 2);
@@ -175,8 +175,8 @@ private:
         //mat4_set_identity(&view);
 
         glViewport(0, 0, width, height);
-        mat4_set_orthographic(&projection, 0, width, 0, height, width, height);
-        //mat4_set_orthographic(&projection, 0, width, 0, height, -1, 1);
+        //mat4_set_orthographic(&projection, 0, width, 0, height, width, height);
+        mat4_set_orthographic(&projection, 0, width, 0, height, -1, 1);
     }
 
     texture_atlas_t* atlas;
