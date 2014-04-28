@@ -1,7 +1,8 @@
 -- DPF - DISTRHO Plugin Framework
 
-DPF is a plugin framework designed to make development of new plugins an easy and enjoyable task.
-You write your plugin code against the simple DPF API and let it handle all the different plugin formats.
+DPF is designed to make development of new plugins an easy and enjoyable task.
+It allows developers to create plugins with custom UIs using a simple C++ API.
+The framework facilitates exporting various different plugin formats (e.g. LV2 and VST) from the same code-base.
 
 DPF can build for LADSPA, DSSI, LV2 and VST formats.
 LADSPA and DSSI implementations are complete, LV2 and VST at ~75% completion.
