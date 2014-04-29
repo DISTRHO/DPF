@@ -14,12 +14,12 @@ LINK_FLAGS      += -L.. -ldgl $(DGL_LIBS)
 # --------------------------------------------------------------
 
 ifeq ($(WIN32),true)
-TARGETS = app.exe color.exe images.exe nekobi-ui.exe text.exe
+TARGETS = app.exe color.exe images.exe nekobi-ui.exe
 else
 ifeq ($(MACOS),true)
-TARGETS = app color images nekobi-ui text
+TARGETS = app color images nekobi-ui
 else
-TARGETS = app cairo color images nekobi-ui text
+TARGETS = app cairo color images nekobi-ui
 endif
 endif
 

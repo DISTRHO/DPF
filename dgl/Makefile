@@ -26,16 +26,16 @@ OBJS = \
 	src/Window.cpp.o
 
 # freetype-gl
-OBJS += \
-	src/freetype-gl/font-manager.c.o \
-	src/freetype-gl/mat4.c.o \
-	src/freetype-gl/shader.c.o \
-	src/freetype-gl/text-buffer.c.o \
-	src/freetype-gl/texture-atlas.c.o \
-	src/freetype-gl/texture-font.c.o \
-	src/freetype-gl/vector.c.o \
-	src/freetype-gl/vertex-attribute.c.o \
-	src/freetype-gl/vertex-buffer.c.o
+# OBJS += \
+# 	src/freetype-gl/font-manager.c.o \
+# 	src/freetype-gl/mat4.c.o \
+# 	src/freetype-gl/shader.c.o \
+# 	src/freetype-gl/text-buffer.c.o \
+# 	src/freetype-gl/texture-atlas.c.o \
+# 	src/freetype-gl/texture-font.c.o \
+# 	src/freetype-gl/vector.c.o \
+# 	src/freetype-gl/vertex-attribute.c.o \
+# 	src/freetype-gl/vertex-buffer.c.o
 
 ifeq ($(MACOS),true)
 OBJS += src/pugl/pugl_osx_extended.m.o
