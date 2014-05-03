@@ -69,7 +69,7 @@ void App::idle()
 
 void App::exec()
 {
-    while (pData->doLoop)
+    for (; pData->doLoop;)
     {
         idle();
         d_msleep(10);
@@ -96,28 +96,32 @@ bool App::isQuiting() const
 
 void App::addIdleCallback(IdleCallback* const callback)
 {
-    if (callback != nullptr)
-        pData->idleCallbacks.push_back(callback);
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
+
+    pData->idleCallbacks.push_back(callback);
 }
 
 void App::removeIdleCallback(IdleCallback* const callback)
 {
-    if (callback != nullptr)
-        pData->idleCallbacks.remove(callback);
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
+
+    pData->idleCallbacks.remove(callback);
 }
 
 // -----------------------------------------------------------------------
 
 void App::_addWindow(Window* const window)
 {
-    if (window != nullptr)
-        pData->windows.push_back(window);
+    DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,)
+
+    pData->windows.push_back(window);
 }
 
 void App::_removeWindow(Window* const window)
 {
-    if (window != nullptr)
-        pData->windows.remove(window);
+    DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,)
+
+    pData->windows.remove(window);
 }
 
 void App::_oneShown()
