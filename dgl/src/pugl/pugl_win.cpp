@@ -39,6 +39,8 @@
 
 const int LOCAL_CLOSE_MSG = WM_USER + 50;
 
+HINSTANCE hInstance = NULL;
+
 struct PuglInternalsImpl {
 	HWND     hwnd;
 	HDC      hdc;
@@ -48,6 +50,15 @@ struct PuglInternalsImpl {
 
 LRESULT CALLBACK
 wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
+
+extern "C" {
+BOOL WINAPI
+DllMain(HINSTANCE hInst, DWORD, LPVOID)
+{
+    hInstance = hInst;
+    return 1;
+}
+} // extern "C"
 
 PuglView*
 puglCreate(PuglNativeWindow parent,
@@ -77,9 +88,9 @@ puglCreate(PuglNativeWindow parent,
 	impl->wc.lpfnWndProc   = wndProc;
 	impl->wc.cbClsExtra    = 0;
 	impl->wc.cbWndExtra    = 0;
-	impl->wc.hInstance     = 0;
-	impl->wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-	impl->wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+	impl->wc.hInstance     = hInstance;
+	impl->wc.hIcon         = LoadIcon(hInstance, IDI_APPLICATION);
+	impl->wc.hCursor       = LoadCursor(hInstance, IDC_ARROW);
 	impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	impl->wc.lpszMenuName  = NULL;
 	impl->wc.lpszClassName = classNameBuf;
@@ -98,8 +109,8 @@ puglCreate(PuglNativeWindow parent,
 		WS_EX_TOPMOST,
 		classNameBuf, title,
 		(visible ? WS_VISIBLE : 0) | (parent ? WS_CHILD : winFlags),
-		0, 0, wr.right-wr.left, wr.bottom-wr.top,
-		(HWND)parent, NULL, NULL, NULL);
+		CW_USEDEFAULT, CW_USEDEFAULT, wr.right-wr.left, wr.bottom-wr.top,
+		(HWND)parent, NULL, hInstance, NULL);
 
 	if (!impl->hwnd) {
 		free(impl);
@@ -221,7 +232,7 @@ processMouseEvent(PuglView* view, int button, bool press, LPARAM lParam)
 	} else {
 		ReleaseCapture();
 	}
-	
+
 	if (view->mouseFunc) {
 		view->mouseFunc(view, button, press,
 		                GET_X_LPARAM(lParam),
@@ -251,7 +262,7 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 	case WM_SHOWWINDOW:
 	case WM_SIZE:
-		RECT rect; 
+		RECT rect;
 		GetClientRect(view->impl->hwnd, &rect);
 		puglReshape(view, rect.right, rect.bottom);
 		view->width = rect.right;
