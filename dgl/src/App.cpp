@@ -32,6 +32,12 @@ struct App::PrivateData {
     PrivateData()
         : doLoop(false),
           visibleWindows(0) {}
+
+    ~PrivateData()
+    {
+        windows.clear();
+        idleCallbacks.clear();
+    }
 };
 
 // -----------------------------------------------------------------------
@@ -43,8 +49,6 @@ App::App()
 
 App::~App()
 {
-    pData->windows.clear();
-    pData->idleCallbacks.clear();
     delete pData;
 }
 
