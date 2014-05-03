@@ -24,8 +24,8 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 
 struct App::PrivateData {
-    bool     doLoop;
-    unsigned visibleWindows;
+    bool doLoop;
+    uint visibleWindows;
     std::list<Window*> windows;
     std::list<IdleCallback*> idleCallbacks;
 
