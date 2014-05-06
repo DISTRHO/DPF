@@ -185,7 +185,7 @@ void ImageKnob::setRotationAngle(int angle)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-        float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
 
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -207,8 +207,8 @@ void ImageKnob::onDisplay()
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, fTextureId);
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWidth(), getHeight(), 0, fImage.getFormat(), fImage.getType(), fImage.getRawData());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -216,7 +216,7 @@ void ImageKnob::onDisplay()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-        float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
 
         glPushMatrix();
@@ -227,19 +227,7 @@ void ImageKnob::onDisplay()
         glTranslatef(static_cast<float>(getX()+w2), static_cast<float>(getY()+h2), 0.0f);
         glRotatef(normValue*static_cast<float>(fRotationAngle), 0.0f, 0.0f, 1.0f);
 
-        glBegin(GL_QUADS);
-          glTexCoord2f(0.0f, 0.0f);
-          glVertex2i(-w2, -h2);
-
-          glTexCoord2f(1.0f, 0.0f);
-          glVertex2i(getWidth()-w2, -h2);
-
-          glTexCoord2f(1.0f, 1.0f);
-          glVertex2i(getWidth()-w2, getHeight()-h2);
-
-          glTexCoord2f(0.0f, 1.0f);
-          glVertex2i(-w2, getHeight()-h2);
-        glEnd();
+        Rectangle<int>(-w2, -h2, getWidth(), getHeight()).draw();
 
         glPopMatrix();
 
@@ -248,12 +236,14 @@ void ImageKnob::onDisplay()
     }
     else
     {
+        // FIXME - DO NOT USE glDrawPixels!
+
         const int layerDataSize   = fImgLayerSize * fImgLayerSize * ((fImage.getFormat() == GL_BGRA || fImage.getFormat() == GL_RGBA) ? 4 : 3);
         const int imageDataSize   = layerDataSize * fImgLayerCount;
         const int imageDataOffset = imageDataSize - layerDataSize - (layerDataSize * int(normValue * float(fImgLayerCount-1)));
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glRasterPos2i(getX(), getY()+getHeight());
         glDrawPixels(fImgLayerSize, fImgLayerSize, fImage.getFormat(), fImage.getType(), fImage.getRawData() + imageDataOffset);
     }
