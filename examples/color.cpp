@@ -99,50 +99,13 @@ private:
 
     void onDisplay() override
     {
-        int x = 0;
-        int y = 0;
-        int width  = getWidth();
-        int height = getHeight();
-
         // paint bg color (in full size)
         glColor3b(r, g, b);
-
-        glBegin(GL_QUADS);
-          glTexCoord2f(0.0f, 0.0f);
-          glVertex2i(x, y);
-
-          glTexCoord2f(1.0f, 0.0f);
-          glVertex2i(x+width, y);
-
-          glTexCoord2f(1.0f, 1.0f);
-          glVertex2i(x+width, y+height);
-
-          glTexCoord2f(0.0f, 1.0f);
-          glVertex2i(x, y+height);
-        glEnd();
-
-        // centered 2/3 size
-        x = width/6;
-        y = height/6;
-        width  = width*2/3;
-        height = height*2/3;
+        bgFull.draw();
 
         // paint inverted color (in 2/3 size)
         glColor3b(100-r, 100-g, 100-b);
-
-        glBegin(GL_QUADS);
-          glTexCoord2f(0.0f, 0.0f);
-          glVertex2i(x, y);
-
-          glTexCoord2f(1.0f, 0.0f);
-          glVertex2i(x+width, y);
-
-          glTexCoord2f(1.0f, 1.0f);
-          glVertex2i(x+width, y+height);
-
-          glTexCoord2f(0.0f, 1.0f);
-          glVertex2i(x, y+height);
-        glEnd();
+        bgSmall.draw();
     }
 
     void onReshape(int width, int height) override
@@ -150,11 +113,19 @@ private:
         // make widget same size as window
         setSize(width, height);
         Widget::onReshape(width, height);
+
+        // full bg
+        bgFull = Rectangle<int>(0, 0, width, height);
+
+        // small bg, centered 2/3 size
+        bgSmall = Rectangle<int>(width/6, height/6, width*2/3, height*2/3);
     }
 
     char cur;
     bool reverse;
     int r, g, b;
+
+    Rectangle<int> bgFull, bgSmall;
 };
 
 // ------------------------------------------------------

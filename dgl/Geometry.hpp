@@ -128,6 +128,8 @@ public:
     void setSize(const T& width, const T& height) noexcept;
     void setSize(const Size<T>& size) noexcept;
 
+    void draw();
+
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
 
 private:
