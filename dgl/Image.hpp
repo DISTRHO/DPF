@@ -46,8 +46,8 @@ public:
     GLenum getType() const noexcept;
 
     void draw();
-    void draw(int x, int y);
-    void draw(const Point<int>& pos);
+    void drawAt(int x, int y);
+    void drawAt(const Point<int>& pos);
 
     Image& operator=(const Image& image) noexcept;
     bool operator==(const Image& image) const noexcept;
@@ -59,8 +59,6 @@ private:
     GLenum fFormat;
     GLenum fType;
     GLuint fTextureId;
-
-    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------

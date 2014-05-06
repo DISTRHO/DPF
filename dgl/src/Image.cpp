@@ -80,7 +80,7 @@ void Image::loadFromMemory(const char* rawData, const Size<int>& size, GLenum fo
 
 bool Image::isValid() const noexcept
 {
-    return (fRawData != nullptr && getWidth() > 0 && getHeight() > 0);
+    return (fRawData != nullptr && fSize.getWidth() > 0 && fSize.getHeight() > 0);
 }
 
 int Image::getWidth() const noexcept
@@ -115,61 +115,49 @@ GLenum Image::getType() const noexcept
 
 void Image::draw()
 {
-    draw(0, 0);
+    drawAt(0, 0);
 }
 
-void Image::draw(int x, int y)
+void Image::drawAt(int x, int y)
+{
+    drawAt(Point<int>(x, y));
+}
+
+void Image::drawAt(const Point<int>& pos)
 {
     if (! isValid())
         return;
+
     if (fTextureId == 0)
         glGenTextures(1, &fTextureId);
+
     if (fTextureId == 0)
     {
         // invalidate image
         fSize = Size<int>(0, 0);
+        // TODO print GL error
         return;
     }
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, fTextureId);
 
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWidth(), getHeight(), 0, fFormat, fType, fRawData);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fSize.getWidth(), fSize.getHeight(), 0, fFormat, fType, fRawData);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
-    float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
 
-    const int width  = getWidth();
-    const int height = getHeight();
-
-    glBegin(GL_QUADS);
-      glTexCoord2f(0.0f, 0.0f);
-      glVertex2i(x, y);
-
-      glTexCoord2f(1.0f, 0.0f);
-      glVertex2i(x+width, y);
-
-      glTexCoord2f(1.0f, 1.0f);
-      glVertex2i(x+width, y+height);
-
-      glTexCoord2f(0.0f, 1.0f);
-      glVertex2i(x, y+height);
-    glEnd();
+    Rectangle<int>(pos, fSize).draw();
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
-}
-
-void Image::draw(const Point<int>& pos)
-{
-    draw(pos.getX(), pos.getY());
 }
 
 // -----------------------------------------------------------------------
@@ -185,12 +173,12 @@ Image& Image::operator=(const Image& image) noexcept
 
 bool Image::operator==(const Image& image) const noexcept
 {
-    return (fRawData == image.fRawData);
+    return (fRawData == image.fRawData && fSize == image.fSize);
 }
 
 bool Image::operator!=(const Image& image) const noexcept
 {
-    return (fRawData != image.fRawData);
+    return !operator==(image);
 }
 
 // -----------------------------------------------------------------------

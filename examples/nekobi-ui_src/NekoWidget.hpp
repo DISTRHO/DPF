@@ -75,7 +75,7 @@ public:
             y += 12;
         }
 
-        fCurImage->draw(x, y);
+        fCurImage->drawAt(x, y);
     }
 
     // returns true if needs repaint

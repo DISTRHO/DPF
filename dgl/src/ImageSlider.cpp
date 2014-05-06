@@ -194,7 +194,7 @@ void ImageSlider::onDisplay()
             y = fStartPos.getY() + static_cast<int>(normValue*static_cast<float>(fEndPos.getY()-fStartPos.getY()));
     }
 
-    fImage.draw(x, y);
+    fImage.drawAt(x, y);
 }
 
 bool ImageSlider::onMouse(int button, bool press, int x, int y)

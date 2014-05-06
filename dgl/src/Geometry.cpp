@@ -443,22 +443,41 @@ bool Rectangle<T>::containsY(const T& y) const noexcept
 template<typename T>
 void Rectangle<T>::draw()
 {
-    // TODO - use glVexter2 d/f/i/s according to T type
+    typedef void (*glVextex2Func)(T x, T y);
+
+    static bool needsSetup = true;
+    static glVextex2Func glVextex2fn = (glVextex2Func)glVertex2i;
+
+    if (needsSetup)
+    {
+#if 0
+        // TODO
+
+        if (0)
+            glVextex2fn = (glVextex2Func)glVertex2d;
+        else if (0)
+            glVextex2fn = (glVextex2Func)glVertex2f;
+        else if (0)
+            glVextex2fn = (glVextex2Func)glVertex2s;
+#endif
+
+        needsSetup = false;
+    }
 
     glBegin(GL_QUADS);
 
     {
         glTexCoord2f(0.0f, 0.0f);
-        glVertex2i(fPos.fX, fPos.fY);
+        glVextex2fn(fPos.fX, fPos.fY);
 
         glTexCoord2f(1.0f, 0.0f);
-        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY);
+        glVextex2fn(fPos.fX+fSize.fWidth, fPos.fY);
 
         glTexCoord2f(1.0f, 1.0f);
-        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
+        glVextex2fn(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
 
         glTexCoord2f(0.0f, 1.0f);
-        glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
+        glVextex2fn(fPos.fX, fPos.fY+fSize.fHeight);
     }
 
     glEnd();
@@ -503,23 +522,20 @@ bool Rectangle<T>::operator!=(const Rectangle<T>& rect) const noexcept
 // -----------------------------------------------------------------------
 // Possible template data types
 
-template class Point<short>;
-template class Point<int>;
-template class Point<long>;
-template class Point<float>;
 template class Point<double>;
+template class Point<float>;
+template class Point<int>;
+template class Point<short>;
 
-template class Size<short>;
-template class Size<int>;
-template class Size<long>;
-template class Size<float>;
 template class Size<double>;
+template class Size<float>;
+template class Size<int>;
+template class Size<short>;
 
-template class Rectangle<short>;
-template class Rectangle<int>;
-template class Rectangle<long>;
-template class Rectangle<float>;
 template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<short>;
 
 // -----------------------------------------------------------------------
 

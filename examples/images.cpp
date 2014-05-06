@@ -59,9 +59,7 @@ public:
           fImg3rev(true),
           fImg1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
           fImg2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          fImg3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
-    {
-    }
+          fImg3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR) {}
 
 private:
     void idleCallback() override
@@ -131,39 +129,39 @@ private:
         switch (fImgTop3rd)
         {
         case 1:
-            fImg1.draw(fImg1x, kImg1y);
+            fImg1.drawAt(fImg1x, kImg1y);
             break;
         case 2:
-            fImg2.draw(fImg2x, kImg2y);
+            fImg2.drawAt(fImg2x, kImg2y);
             break;
         case 3:
-            fImg3.draw(kImg3x, fImg3y);
+            fImg3.drawAt(kImg3x, fImg3y);
             break;
         };
 
         switch (fImgTop2nd)
         {
         case 1:
-            fImg1.draw(fImg1x, kImg1y);
+            fImg1.drawAt(fImg1x, kImg1y);
             break;
         case 2:
-            fImg2.draw(fImg2x, kImg2y);
+            fImg2.drawAt(fImg2x, kImg2y);
             break;
         case 3:
-            fImg3.draw(kImg3x, fImg3y);
+            fImg3.drawAt(kImg3x, fImg3y);
             break;
         };
 
         switch (fImgTop1st)
         {
         case 1:
-            fImg1.draw(fImg1x, kImg1y);
+            fImg1.drawAt(fImg1x, kImg1y);
             break;
         case 2:
-            fImg2.draw(fImg2x, kImg2y);
+            fImg2.drawAt(fImg2x, kImg2y);
             break;
         case 3:
-            fImg3.draw(kImg3x, fImg3y);
+            fImg3.drawAt(kImg3x, fImg3y);
             break;
         };
     }

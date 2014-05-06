@@ -93,7 +93,7 @@ void ImageButton::setCallback(Callback* callback)
 
 void ImageButton::onDisplay()
 {
-    fCurImage->draw(getPos());
+    fCurImage->drawAt(getPos());
 }
 
 bool ImageButton::onMouse(int button, bool press, int x, int y)
