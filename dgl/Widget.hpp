@@ -53,9 +53,6 @@ public:
     void setPos(int x, int y);
     void setPos(const Point<int>& pos);
 
-    void moveBy(int x, int y);
-    void moveBy(const Point<int>& pos);
-
     int getWidth() const noexcept;
     int getHeight() const noexcept;
     const Size<int>& getSize() const noexcept;

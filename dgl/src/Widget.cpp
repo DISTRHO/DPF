@@ -108,23 +108,6 @@ void Widget::setPos(const Point<int>& pos)
     fParent.repaint();
 }
 
-void Widget::moveBy(int x, int y)
-{
-    fArea.moveBy(x, y);
-    fParent.repaint();
-}
-
-void Widget::moveBy(const Point<int>& pos)
-{
-    Point<int> movedPos = fArea.getPos() + pos;
-
-    if (fArea.getPos() == movedPos)
-        return;
-
-    fArea.moveBy(pos);
-    fParent.repaint();
-}
-
 int Widget::getWidth() const noexcept
 {
     return fArea.getWidth();

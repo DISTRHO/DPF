@@ -71,7 +71,7 @@ class DistrhoLeakedObjectDetector
 {
 public:
     //==============================================================================
-    DistrhoLeakedObjectDetector() noexcept                            { ++(getCounter().numObjects); }
+    DistrhoLeakedObjectDetector() noexcept                                   { ++(getCounter().numObjects); }
     DistrhoLeakedObjectDetector(const DistrhoLeakedObjectDetector&) noexcept { ++(getCounter().numObjects); }
 
     ~DistrhoLeakedObjectDetector() noexcept
