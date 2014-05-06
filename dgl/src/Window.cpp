@@ -195,7 +195,7 @@ public:
         {
             pid_t pid = getpid();
             Atom _nwp = XInternAtom(xDisplay, "_NET_WM_PID", True);
-            XChangeProperty(xDisplay, xWindow, _nwp, XA_CARDINAL, 32, PropModeReplace, (const unsigned char*)&pid, 1);
+            XChangeProperty(xDisplay, xWindow, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
         }
 #endif
 
@@ -322,7 +322,7 @@ public:
         fVisible = yesNo;
 
         if (yesNo && fFirstInit)
-            setSize(static_cast<unsigned int>(fView->width), static_cast<unsigned int>(fView->height), true);
+            setSize(static_cast<uint>(fView->width), static_cast<uint>(fView->height), true);
 
 #if defined(DISTRHO_OS_WINDOWS)
         if (yesNo)
@@ -378,7 +378,7 @@ public:
 
         fResizable = yesNo;
 
-        setSize(static_cast<unsigned int>(fView->width), static_cast<unsigned int>(fView->height), true);
+        setSize(static_cast<uint>(fView->width), static_cast<uint>(fView->height), true);
     }
 
     // -------------------------------------------------------------------
@@ -398,7 +398,7 @@ public:
         return Size<int>(fView->width, fView->height);
     }
 
-    void setSize(unsigned int width, unsigned int height, const bool forced = false)
+    void setSize(uint width, uint height, const bool forced = false)
     {
         if (width == 0 || height == 0)
         {
@@ -496,7 +496,7 @@ public:
         return puglGetModifiers(fView);
     }
 
-    uint32_t getEventTimestamp() const
+    uint getEventTimestamp() const
     {
         return puglGetEventTimestamp(fView);
     }
@@ -599,7 +599,7 @@ protected:
         }
     }
 
-    void onKeyboard(const bool press, const uint32_t key)
+    void onKeyboard(const bool press, const uint key)
     {
         DBGp("PUGL: onKeyboard : %i %i\n", press, key);
 
@@ -891,7 +891,7 @@ Size<int> Window::getSize() const noexcept
     return pData->getSize();
 }
 
-void Window::setSize(unsigned int width, unsigned int height)
+void Window::setSize(uint width, uint height)
 {
     pData->setSize(width, height);
 }
@@ -916,7 +916,7 @@ int Window::getModifiers() const
     return pData->getModifiers();
 }
 
-uint32_t Window::getEventTimestamp() const
+uint Window::getEventTimestamp() const
 {
     return pData->getEventTimestamp();
 }

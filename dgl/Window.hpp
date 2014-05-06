@@ -35,9 +35,9 @@ class Widget;
 class Window
 {
 public:
-    Window(App& app);
-    Window(App& app, Window& parent);
-    Window(App& app, intptr_t parentId);
+    explicit Window(App& app);
+    explicit Window(App& app, Window& parent);
+    explicit Window(App& app, intptr_t parentId);
     virtual ~Window();
 
     void show();
@@ -57,15 +57,15 @@ public:
     int getWidth() const noexcept;
     int getHeight() const noexcept;
     Size<int> getSize() const noexcept;
-    void setSize(unsigned int width, unsigned int height);
+    void setSize(uint width, uint height);
 
     void setTitle(const char* title);
 
     void setTransientWinId(intptr_t winId);
 
-    App&     getApp() const noexcept;
-    uint32_t getEventTimestamp() const;
-    int      getModifiers() const;
+    App& getApp() const noexcept;
+    uint getEventTimestamp() const;
+    int  getModifiers() const;
     intptr_t getWindowId() const;
 
 private:

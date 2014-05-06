@@ -160,7 +160,7 @@ const Rectangle<int>& Widget::getArea() const noexcept
     return fArea;
 }
 
-uint32_t Widget::getEventTimestamp()
+uint Widget::getEventTimestamp()
 {
     return fParent.getEventTimestamp();
 }
@@ -185,7 +185,7 @@ void Widget::repaint()
     fParent.repaint();
 }
 
-bool Widget::onKeyboard(bool, uint32_t)
+bool Widget::onKeyboard(bool, uint)
 {
     return false;
 }

@@ -57,7 +57,7 @@ public:
         fWindow.setResizable(yesNo);
     }
 
-    void setSize(unsigned int width, unsigned int height)
+    void setSize(uint width, uint height)
     {
         fWindow.setSize(width, height);
     }

@@ -35,15 +35,15 @@ class ImageAboutWindow : public Window,
                          public Widget
 {
 public:
-    ImageAboutWindow(App& app, Window& parent, const Image& image = Image());
-    ImageAboutWindow(Widget* widget, const Image& image = Image());
+    explicit ImageAboutWindow(Window& parent, const Image& image = Image());
+    explicit ImageAboutWindow(Widget* widget, const Image& image = Image());
 
     void setImage(const Image& image);
 
 protected:
     void onDisplay() override;
     bool onMouse(int button, bool press, int x, int y) override;
-    bool onKeyboard(bool press, uint32_t key) override;
+    bool onKeyboard(bool press, uint key) override;
 
 private:
     Image fImgBackground;

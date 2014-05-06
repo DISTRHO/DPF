@@ -33,17 +33,6 @@ ImageButton::ImageButton(Window& parent, const Image& image)
 {
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& image)
-    : Widget(widget->getParentWindow()),
-      fImageNormal(image),
-      fImageHover(image),
-      fImageDown(image),
-      fCurImage(&fImageNormal),
-      fCurButton(-1),
-      fCallback(nullptr)
-{
-}
-
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
     : Widget(parent),
       fImageNormal(imageNormal),
@@ -56,6 +45,17 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
     assert(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
     setSize(fCurImage->getSize());
+}
+
+ImageButton::ImageButton(Widget* widget, const Image& image)
+    : Widget(widget->getParentWindow()),
+      fImageNormal(image),
+      fImageHover(image),
+      fImageDown(image),
+      fCurImage(&fImageNormal),
+      fCurButton(-1),
+      fCallback(nullptr)
+{
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)

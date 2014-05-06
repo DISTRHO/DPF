@@ -19,12 +19,6 @@
 
 #include "Geometry.hpp"
 
-#ifdef PROPER_CPP11_SUPPORT
-# include <cstdint>
-#else
-# include <stdint.h>
-#endif
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -35,7 +29,7 @@ class Window;
 class Widget
 {
 public:
-    Widget(Window& parent);
+    explicit Widget(Window& parent);
     virtual ~Widget();
 
     bool isVisible() const noexcept;
@@ -65,17 +59,17 @@ public:
 
     const Rectangle<int>& getArea() const noexcept;
 
-    uint32_t getEventTimestamp();
-    int getModifiers();
+    uint getEventTimestamp();
+    int  getModifiers();
 
-    App& getParentApp() const noexcept;
+    App&    getParentApp() const noexcept;
     Window& getParentWindow() const noexcept;
 
     void repaint();
 
 protected:
     virtual void onDisplay() = 0;
-    virtual bool onKeyboard(bool press, uint32_t key);
+    virtual bool onKeyboard(bool press, uint key);
     virtual bool onMouse(int button, bool press, int x, int y);
     virtual bool onMotion(int x, int y);
     virtual bool onScroll(int x, int y, float dx, float dy);

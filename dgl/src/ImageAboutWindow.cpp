@@ -20,13 +20,13 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-ImageAboutWindow::ImageAboutWindow(App& app, Window& parent, const Image& image)
-    : Window(app, parent),
+ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
+    : Window(parent.getApp(), parent),
       Widget((Window&)*this),
       fImgBackground(image)
 {
     Window::setResizable(false);
-    Window::setSize(static_cast<unsigned int>(image.getWidth()), static_cast<unsigned int>(image.getHeight()));
+    Window::setSize(static_cast<uint>(image.getWidth()), static_cast<uint>(image.getHeight()));
     Window::setTitle("About");
 }
 
@@ -36,14 +36,17 @@ ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
       fImgBackground(image)
 {
     Window::setResizable(false);
-    Window::setSize(static_cast<unsigned int>(image.getWidth()), static_cast<unsigned int>(image.getHeight()));
+    Window::setSize(static_cast<uint>(image.getWidth()), static_cast<uint>(image.getHeight()));
     Window::setTitle("About");
 }
 
 void ImageAboutWindow::setImage(const Image& image)
 {
+    if (fImgBackground == image)
+        return;
+
     fImgBackground = image;
-    Window::setSize(static_cast<unsigned int>(image.getWidth()), static_cast<unsigned int>(image.getHeight()));
+    Window::setSize(static_cast<uint>(image.getWidth()), static_cast<uint>(image.getHeight()));
 }
 
 void ImageAboutWindow::onDisplay()
@@ -62,7 +65,7 @@ bool ImageAboutWindow::onMouse(int, bool press, int, int)
     return false;
 }
 
-bool ImageAboutWindow::onKeyboard(bool press, uint32_t key)
+bool ImageAboutWindow::onKeyboard(bool press, uint key)
 {
     if (press && key == CHAR_ESCAPE)
     {
