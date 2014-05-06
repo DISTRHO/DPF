@@ -126,23 +126,6 @@ private:
         repaint();
     }
 
-    void setNewTopImg(const int imgId)
-    {
-        if (fImgTop1st == imgId)
-            return;
-
-        if (fImgTop2nd == imgId)
-        {
-            fImgTop2nd = fImgTop1st;
-            fImgTop1st =  imgId;
-            return;
-        }
-
-        fImgTop3rd = fImgTop2nd;
-        fImgTop2nd = fImgTop1st;
-        fImgTop1st =  imgId;
-    }
-
     void onDisplay() override
     {
         switch (fImgTop3rd)
@@ -183,6 +166,23 @@ private:
             fImg3.draw(kImg3x, fImg3y);
             break;
         };
+    }
+
+    void setNewTopImg(const int imgId)
+    {
+        if (fImgTop1st == imgId)
+            return;
+
+        if (fImgTop2nd == imgId)
+        {
+            fImgTop2nd = fImgTop1st;
+            fImgTop1st =  imgId;
+            return;
+        }
+
+        fImgTop3rd = fImgTop2nd;
+        fImgTop2nd = fImgTop1st;
+        fImgTop1st =  imgId;
     }
 
     int fImgTop1st, fImgTop2nd, fImgTop3rd;

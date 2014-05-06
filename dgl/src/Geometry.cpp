@@ -179,6 +179,20 @@ void Size<T>::setHeight(const T& height) noexcept
 }
 
 template<typename T>
+void Size<T>::setSize(const T& width, const T& height) noexcept
+{
+    fWidth  = width;
+    fHeight = height;
+}
+
+template<typename T>
+void Size<T>::setSize(const Size<T>& size) noexcept
+{
+    fWidth  = size.fWidth;
+    fHeight = size.fHeight;
+}
+
+template<typename T>
 void Size<T>::growBy(const T& multiplier) noexcept
 {
     fWidth  *= multiplier;
@@ -326,30 +340,6 @@ const Size<T>& Rectangle<T>::getSize() const noexcept
 }
 
 template<typename T>
-bool Rectangle<T>::contains(const T& x, const T& y) const noexcept
-{
-    return (x >= fPos.fX && y >= fPos.fY && x <= fPos.fX+fSize.fWidth && y <= fPos.fY+fSize.fHeight);
-}
-
-template<typename T>
-bool Rectangle<T>::contains(const Point<T>& pos) const noexcept
-{
-    return contains(pos.fX, pos.fY);
-}
-
-template<typename T>
-bool Rectangle<T>::containsX(const T& x) const noexcept
-{
-    return (x >= fPos.fX && x <= fPos.fX + fSize.fWidth);
-}
-
-template<typename T>
-bool Rectangle<T>::containsY(const T& y) const noexcept
-{
-    return (y >= fPos.fY && y <= fPos.fY + fSize.fHeight);
-}
-
-template<typename T>
 void Rectangle<T>::setX(const T& x) noexcept
 {
     fPos.fX = x;
@@ -375,14 +365,14 @@ void Rectangle<T>::setPos(const Point<T>& pos) noexcept
 }
 
 template<typename T>
-void Rectangle<T>::move(const T& x, const T& y) noexcept
+void Rectangle<T>::moveBy(const T& x, const T& y) noexcept
 {
     fPos.fX += x;
     fPos.fY += y;
 }
 
 template<typename T>
-void Rectangle<T>::move(const Point<T>& pos) noexcept
+void Rectangle<T>::moveBy(const Point<T>& pos) noexcept
 {
     fPos += pos;
 }
@@ -410,6 +400,44 @@ template<typename T>
 void Rectangle<T>::setSize(const Size<T>& size) noexcept
 {
     fSize = size;
+}
+
+template<typename T>
+void Rectangle<T>::growBy(const T& multiplier) noexcept
+{
+    fSize.fWidth  *= multiplier;
+    fSize.fHeight *= multiplier;
+}
+
+template<typename T>
+void Rectangle<T>::shrinkBy(const T& divider) noexcept
+{
+    fSize.fWidth  /= divider;
+    fSize.fHeight /= divider;
+}
+
+template<typename T>
+bool Rectangle<T>::contains(const T& x, const T& y) const noexcept
+{
+    return (x >= fPos.fX && y >= fPos.fY && x <= fPos.fX+fSize.fWidth && y <= fPos.fY+fSize.fHeight);
+}
+
+template<typename T>
+bool Rectangle<T>::contains(const Point<T>& pos) const noexcept
+{
+    return contains(pos.fX, pos.fY);
+}
+
+template<typename T>
+bool Rectangle<T>::containsX(const T& x) const noexcept
+{
+    return (x >= fPos.fX && x <= fPos.fX + fSize.fWidth);
+}
+
+template<typename T>
+bool Rectangle<T>::containsY(const T& y) const noexcept
+{
+    return (y >= fPos.fY && y <= fPos.fY + fSize.fHeight);
 }
 
 template<typename T>
@@ -442,6 +470,34 @@ Rectangle<T>& Rectangle<T>::operator=(const Rectangle<T>& rect) noexcept
     fPos  = rect.fPos;
     fSize = rect.fSize;
     return *this;
+}
+
+template<typename T>
+Rectangle<T>& Rectangle<T>::operator*=(const T& m) noexcept
+{
+    fSize.fWidth  *= m;
+    fSize.fHeight *= m;
+    return *this;
+}
+
+template<typename T>
+Rectangle<T>& Rectangle<T>::operator/=(const T& d) noexcept
+{
+    fSize.fWidth  /= d;
+    fSize.fHeight /= d;
+    return *this;
+}
+
+template<typename T>
+bool Rectangle<T>::operator==(const Rectangle<T>& rect) const noexcept
+{
+    return (fPos == rect.fPos && fSize == rect.fSize);
+}
+
+template<typename T>
+bool Rectangle<T>::operator!=(const Rectangle<T>& rect) const noexcept
+{
+    return !operator==(rect);
 }
 
 // -----------------------------------------------------------------------

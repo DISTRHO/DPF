@@ -110,15 +110,17 @@ private:
 
     void onReshape(int width, int height) override
     {
-        // make widget same size as window
-        setSize(width, height);
-        Widget::onReshape(width, height);
-
         // full bg
         bgFull = Rectangle<int>(0, 0, width, height);
 
         // small bg, centered 2/3 size
         bgSmall = Rectangle<int>(width/6, height/6, width*2/3, height*2/3);
+
+        // make widget same size as window
+        setSize(width, height);
+
+        // default reshape implementation
+        Widget::onReshape(width, height);
     }
 
     char cur;

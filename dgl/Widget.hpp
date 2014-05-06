@@ -53,8 +53,8 @@ public:
     void setPos(int x, int y);
     void setPos(const Point<int>& pos);
 
-    void move(int x, int y);
-    void move(const Point<int>& pos);
+    void moveBy(int x, int y);
+    void moveBy(const Point<int>& pos);
 
     int getWidth() const noexcept;
     int getHeight() const noexcept;
@@ -63,12 +63,8 @@ public:
     // virtual needed by cairo
     virtual void setWidth(int width);
     virtual void setHeight(int height);
+    virtual void setSize(int width, int height);
     virtual void setSize(const Size<int>& size);
-
-    void setSize(int width, int height)
-    {
-        setSize(Size<int>(width, height));
-    }
 
     const Rectangle<int>& getArea() const noexcept;
 

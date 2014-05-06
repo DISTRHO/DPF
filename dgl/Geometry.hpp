@@ -70,6 +70,8 @@ public:
 
     void setWidth(const T& width) noexcept;
     void setHeight(const T& height) noexcept;
+    void setSize(const T& width, const T& height) noexcept;
+    void setSize(const Size<T>& size) noexcept;
 
     void growBy(const T& multiplier) noexcept;
     void shrinkBy(const T& divider) noexcept;
@@ -110,27 +112,34 @@ public:
     const Point<T>& getPos() const noexcept;
     const Size<T>&  getSize() const noexcept;
 
-    bool contains(const T& x, const T& y) const noexcept;
-    bool contains(const Point<T>& pos) const noexcept;
-    bool containsX(const T& x) const noexcept;
-    bool containsY(const T& y) const noexcept;
-
     void setX(const T& x) noexcept;
     void setY(const T& y) noexcept;
     void setPos(const T& x, const T& y) noexcept;
     void setPos(const Point<T>& pos) noexcept;
 
-    void move(const T& x, const T& y) noexcept;
-    void move(const Point<T>& pos) noexcept;
+    void moveBy(const T& x, const T& y) noexcept;
+    void moveBy(const Point<T>& pos) noexcept;
 
     void setWidth(const T& width) noexcept;
     void setHeight(const T& height) noexcept;
     void setSize(const T& width, const T& height) noexcept;
     void setSize(const Size<T>& size) noexcept;
 
+    void growBy(const T& multiplier) noexcept;
+    void shrinkBy(const T& divider) noexcept;
+
+    bool contains(const T& x, const T& y) const noexcept;
+    bool contains(const Point<T>& pos) const noexcept;
+    bool containsX(const T& x) const noexcept;
+    bool containsY(const T& y) const noexcept;
+
     void draw();
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
+    Rectangle<T>& operator*=(const T& m) noexcept;
+    Rectangle<T>& operator/=(const T& d) noexcept;
+    bool operator==(const Rectangle<T>& size) const noexcept;
+    bool operator!=(const Rectangle<T>& size) const noexcept;
 
 private:
     Point<T> fPos;

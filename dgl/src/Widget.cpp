@@ -108,15 +108,20 @@ void Widget::setPos(const Point<int>& pos)
     fParent.repaint();
 }
 
-void Widget::move(int x, int y)
+void Widget::moveBy(int x, int y)
 {
-    fArea.move(x, y);
+    fArea.moveBy(x, y);
     fParent.repaint();
 }
 
-void Widget::move(const Point<int>& pos)
+void Widget::moveBy(const Point<int>& pos)
 {
-    fArea.move(pos);
+    Point<int> movedPos = fArea.getPos() + pos;
+
+    if (fArea.getPos() == movedPos)
+        return;
+
+    fArea.moveBy(pos);
     fParent.repaint();
 }
 
@@ -151,6 +156,11 @@ void Widget::setHeight(int height)
 
     fArea.setHeight(height);
     fParent.repaint();
+}
+
+void Widget::setSize(int width, int height)
+{
+    setSize(Size<int>(width, height));
 }
 
 void Widget::setSize(const Size<int>& size)
