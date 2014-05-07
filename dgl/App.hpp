@@ -41,7 +41,7 @@ public:
     void idle();
     void exec();
     void quit();
-    bool isQuiting() const;
+    bool isQuiting() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);

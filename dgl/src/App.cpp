@@ -87,7 +87,7 @@ void App::quit()
     }
 }
 
-bool App::isQuiting() const
+bool App::isQuiting() const noexcept
 {
     return !pData->doLoop;
 }
