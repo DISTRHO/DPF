@@ -199,14 +199,9 @@ public:
         }
 #endif
 
-        DBG("Success!\n");
-
-#if 0
-        // process any initial events
-        puglProcessEvents(fView);
-#endif
-
         fApp._addWindow(fSelf);
+
+        DBG("Success!\n");
     }
 
     ~PrivateData()

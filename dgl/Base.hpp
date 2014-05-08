@@ -32,9 +32,9 @@
 
 /* GL includes */
 #ifdef DISTRHO_OS_MAC
-# include <OpenGL/gl.h>
+# include "OpenGL/gl.h"
 #else
-# include <GL/gl.h>
+# include "GL/gl.h"
 #endif
 
 /* missing GL defines */
