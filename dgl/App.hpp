@@ -28,13 +28,6 @@ class Window;
 class App
 {
 public:
-    class IdleCallback
-    {
-    public:
-        virtual ~IdleCallback() {}
-        virtual void idleCallback() = 0;
-    };
-
     App();
     ~App();
 
@@ -43,18 +36,10 @@ public:
     void quit();
     bool isQuiting() const noexcept;
 
-    void addIdleCallback(IdleCallback* const callback);
-    void removeIdleCallback(IdleCallback* const callback);
-
 private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Window;
-
-    void _addWindow(Window* const window);
-    void _removeWindow(Window* const window);
-    void _oneShown();
-    void _oneHidden();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(App)
 };

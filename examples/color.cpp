@@ -21,8 +21,6 @@
 #include "Window.hpp"
 #include "Widget.hpp"
 
-#include <cstdio>
-
 // ------------------------------------------------------
 // use namespace
 
@@ -31,8 +29,8 @@ using namespace DGL;
 // ------------------------------------------------------
 // Single color widget
 
-class ColorWidget : public App::IdleCallback,
-                           Widget
+class ColorWidget : public Widget,
+                    public IdleCallback
 {
 public:
     ColorWidget(Window& parent)
@@ -41,6 +39,7 @@ public:
           reverse(false),
           r(0), g(0), b(0)
     {
+        parent.addIdleCallback(this);
     }
 
 private:
@@ -138,8 +137,6 @@ int main()
     App app;
     Window win(app);
     ColorWidget color(win);
-
-    app.addIdleCallback(&color);
 
     win.setSize(300, 300);
     win.setTitle("Color");

@@ -76,8 +76,8 @@ private:
 // ------------------------------------------------------
 // Custom Cairo Widget
 
-class CustomCairoWidget : public App::IdleCallback,
-                                 CairoWidget
+class CustomCairoWidget : public CairoWidget,
+                          public IdleCallback
 {
 public:
     CustomCairoWidget(Window& parent)
@@ -186,7 +186,7 @@ public:
           bg(*this),
           cairo(*this)
     {
-        app.addIdleCallback(&cairo);
+        addIdleCallback(&cairo);
     }
 
 private:

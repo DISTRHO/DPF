@@ -34,8 +34,8 @@ using namespace DGL;
 // ------------------------------------------------------
 // our widget
 
-class ExampleImagesWidget : public App::IdleCallback,
-                                   Widget
+class ExampleImagesWidget : public Widget,
+                            public IdleCallback
 {
 public:
     static const int kImg1y = 0;
@@ -59,7 +59,10 @@ public:
           fImg3rev(true),
           fImg1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
           fImg2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          fImg3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR) {}
+          fImg3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+    {
+        win.addIdleCallback(this);
+    }
 
 private:
     void idleCallback() override
@@ -197,8 +200,6 @@ int main()
     App app;
     Window win(app);
     ExampleImagesWidget images(win);
-
-    app.addIdleCallback(&images);
 
     win.setResizable(false);
     win.setSize(500, 400);

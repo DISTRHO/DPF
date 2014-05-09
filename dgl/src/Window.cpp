@@ -17,7 +17,7 @@
 // we need this for now
 #define XKEYFOCUSGRAB 1
 
-#include "../App.hpp"
+#include "AppPrivateData.hpp"
 #include "../Widget.hpp"
 #include "../Window.hpp"
 
@@ -69,9 +69,8 @@ Window* dgl_lastUiParent = nullptr;
 // -----------------------------------------------------------------------
 // Window Private
 
-class Window::PrivateData
+struct Window::PrivateData
 {
-public:
     PrivateData(App& app, Window* const self)
         : fApp(app),
           fSelf(self),
@@ -155,7 +154,7 @@ public:
         if (parentId != 0)
         {
             DBG("NOTE: Embed window is always visible and non-resizable\n");
-            fApp._oneShown();
+            fApp.pData->oneShown();
             fFirstInit = false;
         }
     }
@@ -199,7 +198,7 @@ public:
         }
 #endif
 
-        fApp._addWindow(fSelf);
+        fApp.pData->windows.push_back(fSelf);
 
         DBG("Success!\n");
     }
@@ -213,7 +212,7 @@ public:
 
         if (fSelf != nullptr)
         {
-            fApp._removeWindow(fSelf);
+            fApp.pData->windows.remove(fSelf);
             fSelf = nullptr;
         }
 
@@ -242,7 +241,7 @@ public:
 
         if (! fFirstInit)
         {
-            fApp._oneHidden();
+            fApp.pData->oneHidden();
             fFirstInit = true;
         }
     }
@@ -341,7 +340,7 @@ public:
         {
             if (fFirstInit)
             {
-                fApp._oneShown();
+                fApp.pData->oneShown();
                 fFirstInit = false;
             }
         }
@@ -577,7 +576,6 @@ public:
 
     // -------------------------------------------------------------------
 
-protected:
     void onDisplay()
     {
         //DBG("PUGL: onDisplay\n");
@@ -706,7 +704,6 @@ protected:
 
     // -------------------------------------------------------------------
 
-private:
     App&      fApp;
     Window*   fSelf;
     PuglView* fView;
@@ -934,6 +931,22 @@ void Window::_removeWidget(Widget* const widget)
 void Window::_idle()
 {
     pData->idle();
+}
+
+// -----------------------------------------------------------------------
+
+void Window::addIdleCallback(IdleCallback* const callback)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
+
+    pData->fApp.pData->idleCallbacks.push_back(callback);
+}
+
+void Window::removeIdleCallback(IdleCallback* const callback)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
+
+    pData->fApp.pData->idleCallbacks.remove(callback);
 }
 
 // -----------------------------------------------------------------------

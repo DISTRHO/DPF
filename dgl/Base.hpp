@@ -106,6 +106,15 @@ enum Modifier {
 
 // -----------------------------------------------------------------------
 
+class IdleCallback
+{
+public:
+    virtual ~IdleCallback() {}
+    virtual void idleCallback() = 0;
+};
+
+// -----------------------------------------------------------------------
+
 END_NAMESPACE_DGL
 
 #endif // DGL_BASE_HPP_INCLUDED

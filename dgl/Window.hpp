@@ -68,8 +68,11 @@ public:
     int  getModifiers() const;
     intptr_t getWindowId() const;
 
+    void addIdleCallback(IdleCallback* const callback);
+    void removeIdleCallback(IdleCallback* const callback);
+
 private:
-    class PrivateData;
+    struct PrivateData;
     PrivateData* const pData;
     friend class App;
     friend class Widget;

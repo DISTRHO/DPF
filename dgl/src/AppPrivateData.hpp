@@ -14,8 +14,10 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "AppPrivateData.hpp"
-#include "../Window.hpp"
+#ifndef DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+#define DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+
+#include "../App.hpp"
 
 #include <list>
 
@@ -23,56 +25,39 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-App::App()
-    : pData(new PrivateData())
-{
-}
+struct App::PrivateData {
+    bool doLoop;
+    uint visibleWindows;
+    std::list<Window*> windows;
+    std::list<IdleCallback*> idleCallbacks;
 
-App::~App()
-{
-    delete pData;
-}
+    PrivateData()
+        : doLoop(false),
+          visibleWindows(0) {}
 
-void App::idle()
-{
-    for (std::list<Window*>::iterator it = pData->windows.begin(); it != pData->windows.end(); ++it)
+    ~PrivateData()
     {
-        Window* const window(*it);
-        window->_idle();
+        windows.clear();
+        idleCallbacks.clear();
     }
 
-    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(); it != pData->idleCallbacks.end(); ++it)
+    void oneShown() noexcept
     {
-        IdleCallback* const idleCallback(*it);
-        idleCallback->idleCallback();
+        if (++visibleWindows == 1)
+            doLoop = true;
     }
-}
 
-void App::exec()
-{
-    for (; pData->doLoop;)
+    void oneHidden() noexcept
     {
-        idle();
-        d_msleep(10);
+        DISTRHO_SAFE_ASSERT_RETURN(visibleWindows > 0,);
+
+        if (--visibleWindows == 0)
+            doLoop = false;
     }
-}
-
-void App::quit()
-{
-    pData->doLoop = false;
-
-    for (std::list<Window*>::reverse_iterator rit = pData->windows.rbegin(); rit != pData->windows.rend(); ++rit)
-    {
-        Window* const window(*rit);
-        window->close();
-    }
-}
-
-bool App::isQuiting() const noexcept
-{
-    return !pData->doLoop;
-}
+};
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#endif // DGL_APP_PRIVATE_DATA_HPP_INCLUDED
