@@ -35,13 +35,13 @@ App::~App()
 
 void App::idle()
 {
-    for (std::list<Window*>::iterator it = pData->windows.begin(); it != pData->windows.end(); ++it)
+    for (std::list<Window*>::iterator it = pData->windows.begin(), ite = pData->windows.end(); it != ite; ++it)
     {
         Window* const window(*it);
         window->_idle();
     }
 
-    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(); it != pData->idleCallbacks.end(); ++it)
+    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(), ite = pData->idleCallbacks.end(); it != ite; ++it)
     {
         IdleCallback* const idleCallback(*it);
         idleCallback->idleCallback();
@@ -61,7 +61,7 @@ void App::quit()
 {
     pData->doLoop = false;
 
-    for (std::list<Window*>::reverse_iterator rit = pData->windows.rbegin(); rit != pData->windows.rend(); ++rit)
+    for (std::list<Window*>::reverse_iterator rit = pData->windows.rbegin(), rite = pData->windows.rend(); rit != rite; ++rit)
     {
         Window* const window(*rit);
         window->close();
