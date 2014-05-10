@@ -14,13 +14,9 @@ LINK_FLAGS      += -L.. -ldgl $(DGL_LIBS)
 # --------------------------------------------------------------
 
 ifeq ($(WIN32),true)
-TARGETS = app.exe color.exe images.exe nekobi-ui.exe
+TARGETS = dgl-app.exe dgl-color.exe dgl-images.exe
 else
-ifeq ($(MACOS),true)
-TARGETS = app color images nekobi-ui
-else
-TARGETS = app cairo color images nekobi-ui
-endif
+TARGETS = dgl-app     dgl-color     dgl-images
 endif
 
 # --------------------------------------------------------------
@@ -29,7 +25,7 @@ all: ../libdgl.a $(TARGETS)
 
 clean:
 	$(MAKE) -C ../dgl clean
-	$(RM) *.exe app cairo color images nekobi-ui
+	$(RM) $(TARGETS)
 
 debug:
 	$(MAKE) DEBUG=true
@@ -46,22 +42,21 @@ debug:
 
 # --------------------------------------------------------------
 
-app: app.cpp ../dgl/*
+dgl-app: dgl-app.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
-cairo: cairo.cpp ../dgl/*
+dgl-color: dgl-color.cpp ../dgl/*
+	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
+
+dgl-images: dgl-images.cpp dgl-images_src/* ../dgl/*
+	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
+
+# --------------------------------------------------------------
+
+dgl-cairo: dgl-cairo.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags --libs cairo) $(LINK_FLAGS) -o $@
 
-color: color.cpp ../dgl/*
-	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
-
-images: images.cpp images_src/* ../dgl/*
-	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
-
-nekobi-ui: nekobi-ui.cpp nekobi-ui_src/* ../dgl/*
-	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
-
-text: text.cpp ../dgl/*
+dgl-text: dgl-text.cpp ../dgl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $@
 
 # --------------------------------------------------------------

@@ -20,8 +20,8 @@
 #include "../distrho/extra/d_leakdetector.hpp"
 
 // -----------------------------------------------------------------------
+// Define namespace
 
-/* Define namespace */
 #ifndef DGL_NAMESPACE
 # define DGL_NAMESPACE DGL
 #endif
@@ -30,14 +30,18 @@
 #define END_NAMESPACE_DGL }
 #define USE_NAMESPACE_DGL using namespace DGL_NAMESPACE;
 
-/* GL includes */
+// -----------------------------------------------------------------------
+// OpenGL includes
+
 #ifdef DISTRHO_OS_MAC
 # include "OpenGL/gl.h"
 #else
 # include "GL/gl.h"
 #endif
 
-/* missing GL defines */
+// -----------------------------------------------------------------------
+// Missing OpenGL defines
+
 #if defined(GL_BGR_EXT) && ! defined(GL_BGR)
 # define GL_BGR GL_BGR_EXT
 #endif
@@ -53,9 +57,10 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// Base DGL enums
 
-/*
- * Convenience symbols for ASCII control characters.
+/**
+   Convenience symbols for ASCII control characters.
  */
 enum Char {
     CHAR_BACKSPACE = 0x08,
@@ -63,8 +68,8 @@ enum Char {
     CHAR_DELETE    = 0x7F
 };
 
-/*
- * Special (non-Unicode) keyboard keys.
+/**
+   Special (non-Unicode) keyboard keys.
  */
 enum Key {
     KEY_F1 = 1,
@@ -94,8 +99,8 @@ enum Key {
     KEY_SUPER
 };
 
-/*
- * Keyboard modifier flags.
+/**
+   Keyboard modifier flags.
  */
 enum Modifier {
     MODIFIER_SHIFT = 1 << 0, /**< Shift key */
@@ -105,7 +110,11 @@ enum Modifier {
 };
 
 // -----------------------------------------------------------------------
+// Base DGL classes
 
+/**
+   Idle callback.
+ */
 class IdleCallback
 {
 public:

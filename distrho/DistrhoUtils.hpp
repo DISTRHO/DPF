@@ -139,7 +139,7 @@ void d_safe_exception(const char* const exception, const char* const file, const
 // d_*sleep
 
 static inline
-void d_sleep(const uint secs)
+void d_sleep(const uint secs) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(secs > 0,);
 
@@ -149,11 +149,11 @@ void d_sleep(const uint secs)
 #else
         ::sleep(secs);
 #endif
-    } DISTRHO_SAFE_EXCEPTION("carla_sleep");
+    } DISTRHO_SAFE_EXCEPTION("d_sleep");
 }
 
 static inline
-void d_msleep(const uint msecs)
+void d_msleep(const uint msecs) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(msecs > 0,);
 
@@ -163,7 +163,7 @@ void d_msleep(const uint msecs)
 #else
         ::usleep(msecs * 1000);
 #endif
-    } DISTRHO_SAFE_EXCEPTION("carla_msleep");
+    } DISTRHO_SAFE_EXCEPTION("d_msleep");
 }
 
 // -----------------------------------------------------------------------

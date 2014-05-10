@@ -22,29 +22,71 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// Forward class names
 
 template<typename> class Line;
 template<typename> class Rectangle;
 
 // -----------------------------------------------------------------------
+// Point
 
 template<typename T>
 class Point
 {
 public:
+   /**
+      Constructor for (0, 0) point.
+    */
     Point() noexcept;
+
+   /**
+      Constructor using custom x and y values.
+    */
     Point(const T& x, const T& y) noexcept;
+
+   /**
+      Constructor using another Point class values.
+    */
     Point(const Point<T>& pos) noexcept;
 
+   /**
+      Get X value.
+    */
     const T& getX() const noexcept;
+
+   /**
+      Get Y value.
+    */
     const T& getY() const noexcept;
 
+   /**
+      Set X value as @a x.
+    */
     void setX(const T& x) noexcept;
+
+   /**
+      Set Y value as @a y.
+    */
     void setY(const T& y) noexcept;
+
+   /**
+      Set X and Y values as @a x and @a y respectively.
+    */
     void setPos(const T& x, const T& y) noexcept;
+
+   /**
+      Set X and Y values according to @a pos.
+    */
     void setPos(const Point<T>& pos) noexcept;
 
+   /**
+      Move this point by @a x and @a y values.
+    */
     void moveBy(const T& x, const T& y) noexcept;
+
+   /**
+      Move this point by @a pos.
+    */
     void moveBy(const Point<T>& pos) noexcept;
 
     Point<T>& operator=(const Point<T>& pos) noexcept;
@@ -60,24 +102,65 @@ private:
 };
 
 // -----------------------------------------------------------------------
+// Size
 
 template<typename T>
 class Size
 {
 public:
+   /**
+      Constructor for null size (0x0).
+    */
     Size() noexcept;
+
+   /**
+      Constructor using custom width and height values.
+    */
     Size(const T& width, const T& height) noexcept;
+
+   /**
+      Constructor using another Size class values.
+    */
     Size(const Size<T>& size) noexcept;
 
+   /**
+      Get width.
+    */
     const T& getWidth() const noexcept;
+
+   /**
+      Get height.
+    */
     const T& getHeight() const noexcept;
 
+   /**
+      Set width.
+    */
     void setWidth(const T& width) noexcept;
+
+   /**
+      Set height.
+    */
     void setHeight(const T& height) noexcept;
+
+   /**
+      Set size using @a width and @a height.
+    */
     void setSize(const T& width, const T& height) noexcept;
+
+   /**
+      Set size.
+    */
     void setSize(const Size<T>& size) noexcept;
 
+   /**
+      Grow size by @a multiplier.
+    */
     void growBy(const T& multiplier) noexcept;
+
+   /**
+      Shrink size by @a divider.
+    */
     void shrinkBy(const T& divider) noexcept;
 
     Size<T>& operator=(const Size<T>& size) noexcept;
@@ -94,39 +177,125 @@ private:
 };
 
 // -----------------------------------------------------------------------
+// Line
 
 template<typename T>
 class Line
 {
 public:
+   /**
+      Constructor for null line ([0, 0] to [0, 0]).
+    */
     Line() noexcept;
+
+   /**
+      Constructor using custom start X, start Y, end X and end Y values.
+    */
     Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept;
+
+   /**
+      Constructor using custom start X, start Y, end pos values.
+    */
     Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept;
+
+   /**
+      Constructor using custom start pos, end X and end Y values.
+    */
     Line(const Point<T>& startPos, const T& endX, const T& endY) noexcept;
+
+   /**
+      Constructor using custom start and end pos values.
+    */
     Line(const Point<T>& startPos, const Point<T>& endPos) noexcept;
+
+   /**
+      Constructor using another Line class values.
+    */
     Line(const Line<T>& line) noexcept;
 
+   /**
+      Get start X value.
+    */
     const T& getStartX() const noexcept;
+
+   /**
+      Get start Y value.
+    */
     const T& getStartY() const noexcept;
+
+   /**
+      Get end X value.
+    */
     const T& getEndX() const noexcept;
+
+   /**
+      Get end Y value.
+    */
     const T& getEndY() const noexcept;
 
+   /**
+      Get start position.
+    */
     const Point<T>& getStartPos() const noexcept;
+
+   /**
+      Get end position.
+    */
     const Point<T>& getEndPos() const noexcept;
 
+   /**
+      Set start X value as @a x.
+    */
     void setStartX(const T& x) noexcept;
+
+   /**
+      Set start Y value as @a y.
+    */
     void setStartY(const T& y) noexcept;
+
+   /**
+      Set start X and Y values as @a x and @a y respectively.
+    */
     void setStartPos(const T& x, const T& y) noexcept;
+
+   /**
+      Set start X and Y values according to @a pos.
+    */
     void setStartPos(const Point<T>& pos) noexcept;
 
+   /**
+      Set end X value as @a x.
+    */
     void setEndX(const T& x) noexcept;
+
+   /**
+      Set end Y value as @a y.
+    */
     void setEndY(const T& y) noexcept;
+
+   /**
+      Set end X and Y values as @a x and @a y respectively.
+    */
     void setEndPos(const T& x, const T& y) noexcept;
+
+   /**
+      Set end X and Y values according to @a pos.
+    */
     void setEndPos(const Point<T>& pos) noexcept;
 
+   /**
+      Move this line by @a x and @a y values.
+    */
     void moveBy(const T& x, const T& y) noexcept;
+
+   /**
+      Move this line by @a pos.
+    */
     void moveBy(const Point<T>& pos) noexcept;
 
+   /**
+      Draw this line using the current OpenGL state.
+    */
     void draw();
 
     Line<T>& operator=(const Line<T>& line) noexcept;
@@ -138,47 +307,155 @@ private:
 };
 
 // -----------------------------------------------------------------------
+// Rectangle
 
 template<typename T>
 class Rectangle
 {
 public:
+   /**
+      Constructor for null rectangle.
+    */
     Rectangle() noexcept;
+
+   /**
+      Constructor using custom X, Y, width and height values.
+    */
     Rectangle(const T& x, const T& y, const T& width, const T& height) noexcept;
+
+   /**
+      Constructor using custom X, Y and size values.
+    */
     Rectangle(const T& x, const T& y, const Size<T>& size) noexcept;
+
+   /**
+      Constructor using custom pos, width and height values.
+    */
     Rectangle(const Point<T>& pos, const T& width, const T& height) noexcept;
+
+   /**
+      Constructor using custom position and size.
+    */
     Rectangle(const Point<T>& pos, const Size<T>& size) noexcept;
+
+   /**
+      Constructor using another Rectangle class values.
+    */
     Rectangle(const Rectangle<T>& rect) noexcept;
 
+   /**
+      Get X value.
+    */
     const T& getX() const noexcept;
+
+   /**
+      Get Y value.
+    */
     const T& getY() const noexcept;
+
+   /**
+      Get width.
+    */
     const T& getWidth() const noexcept;
+
+   /**
+      Get height.
+    */
     const T& getHeight() const noexcept;
 
+   /**
+      Get position.
+    */
     const Point<T>& getPos() const noexcept;
-    const Size<T>&  getSize() const noexcept;
 
+   /**
+      Get size.
+    */
+    const Size<T>& getSize() const noexcept;
+
+   /**
+      Set X value as @a x.
+    */
     void setX(const T& x) noexcept;
+
+   /**
+      Set Y value as @a y.
+    */
     void setY(const T& y) noexcept;
+
+   /**
+      Set X and Y values as @a x and @a y respectively.
+    */
     void setPos(const T& x, const T& y) noexcept;
+
+   /**
+      Set X and Y values according to @a pos.
+    */
     void setPos(const Point<T>& pos) noexcept;
 
+   /**
+      Move this rectangle by @a x and @a y values.
+    */
     void moveBy(const T& x, const T& y) noexcept;
+
+   /**
+      Move this rectangle by @a pos.
+    */
     void moveBy(const Point<T>& pos) noexcept;
 
+   /**
+      Set width.
+    */
     void setWidth(const T& width) noexcept;
+
+   /**
+      Set height.
+    */
     void setHeight(const T& height) noexcept;
+
+   /**
+      Set size using @a width and @a height.
+    */
     void setSize(const T& width, const T& height) noexcept;
+
+   /**
+      Set size.
+    */
     void setSize(const Size<T>& size) noexcept;
 
+   /**
+      Grow size by @a multiplier.
+    */
     void growBy(const T& multiplier) noexcept;
+
+   /**
+      Shrink size by @a divider.
+    */
     void shrinkBy(const T& divider) noexcept;
 
+   /**
+      Check if this rectangle contains the point defined by @a X and @a Y.
+    */
     bool contains(const T& x, const T& y) const noexcept;
+
+   /**
+      Check if this rectangle contains the point @a pos.
+    */
     bool contains(const Point<T>& pos) const noexcept;
+
+   /**
+      Check if this rectangle contains X.
+    */
     bool containsX(const T& x) const noexcept;
+
+   /**
+      Check if this rectangle contains Y.
+    */
     bool containsY(const T& y) const noexcept;
 
+   /**
+      Draw this rectangle using the current OpenGL state.
+    */
     void draw();
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;

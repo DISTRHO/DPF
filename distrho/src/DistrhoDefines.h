@@ -37,10 +37,8 @@
 #  define DISTRHO_DLL_EXTENSION "dylib"
 # elif defined(__HAIKU__)
 #  define DISTRHO_OS_HAIKU      1
-#  define DISTRHO_DLL_EXTENSION "so"
 # elif defined(__linux__)
 #  define DISTRHO_OS_LINUX      1
-#  define DISTRHO_DLL_EXTENSION "so"
 # endif
 #endif
 
@@ -67,10 +65,10 @@
 #endif
 
 /* Define DISTRHO_SAFE_ASSERT* */
-#define DISTRHO_SAFE_ASSERT(cond)               if (cond) d_pass(); else   d_safe_assert(#cond, __FILE__, __LINE__);
-#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); break; }
-#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
-#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (cond) d_pass(); else { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
+#define DISTRHO_SAFE_ASSERT(cond)               if (! (cond))   d_safe_assert(#cond, __FILE__, __LINE__);
+#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
+#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
+#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
 
 /* Define DISTRHO_SAFE_EXCEPTION */
 #define DISTRHO_SAFE_EXCEPTION(msg)             catch(...) { d_safe_exception(msg, __FILE__, __LINE__); }

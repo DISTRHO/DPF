@@ -37,6 +37,9 @@ struct App::PrivateData {
 
     ~PrivateData()
     {
+        DISTRHO_SAFE_ASSERT(! doLoop);
+        DISTRHO_SAFE_ASSERT(visibleWindows == 0);
+
         windows.clear();
         idleCallbacks.clear();
     }
