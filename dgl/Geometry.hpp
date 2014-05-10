@@ -23,6 +23,7 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+template<typename> class Line;
 template<typename> class Rectangle;
 
 // -----------------------------------------------------------------------
@@ -54,6 +55,7 @@ public:
 
 private:
     T fX, fY;
+    template<typename> friend class Line;
     template<typename> friend class Rectangle;
 };
 
@@ -89,6 +91,50 @@ public:
 private:
     T fWidth, fHeight;
     template<typename> friend class Rectangle;
+};
+
+// -----------------------------------------------------------------------
+
+template<typename T>
+class Line
+{
+public:
+    Line() noexcept;
+    Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept;
+    Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept;
+    Line(const Point<T>& startPos, const T& endX, const T& endY) noexcept;
+    Line(const Point<T>& startPos, const Point<T>& endPos) noexcept;
+    Line(const Line<T>& line) noexcept;
+
+    const T& getStartX() const noexcept;
+    const T& getStartY() const noexcept;
+    const T& getEndX() const noexcept;
+    const T& getEndY() const noexcept;
+
+    const Point<T>& getStartPos() const noexcept;
+    const Point<T>& getEndPos() const noexcept;
+
+    void setStartX(const T& x) noexcept;
+    void setStartY(const T& y) noexcept;
+    void setStartPos(const T& x, const T& y) noexcept;
+    void setStartPos(const Point<T>& pos) noexcept;
+
+    void setEndX(const T& x) noexcept;
+    void setEndY(const T& y) noexcept;
+    void setEndPos(const T& x, const T& y) noexcept;
+    void setEndPos(const Point<T>& pos) noexcept;
+
+    void moveBy(const T& x, const T& y) noexcept;
+    void moveBy(const Point<T>& pos) noexcept;
+
+    void draw();
+
+    Line<T>& operator=(const Line<T>& line) noexcept;
+    bool operator==(const Line<T>& line) const noexcept;
+    bool operator!=(const Line<T>& line) const noexcept;
+
+private:
+    Point<T> fPosStart, fPosEnd;
 };
 
 // -----------------------------------------------------------------------

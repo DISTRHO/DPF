@@ -259,6 +259,177 @@ bool Size<T>::operator!=(const Size<T>& size) const noexcept
 }
 
 // -----------------------------------------------------------------------
+// Line
+
+template<typename T>
+Line<T>::Line() noexcept
+    : fPosStart(0, 0),
+      fPosEnd(0, 0)
+{
+}
+
+template<typename T>
+Line<T>::Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept
+    : fPosStart(startX, startY),
+      fPosEnd(endX, endY)
+{
+}
+
+template<typename T>
+Line<T>::Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept
+    : fPosStart(startX, startY),
+      fPosEnd(endPos)
+{
+}
+
+template<typename T>
+Line<T>::Line(const Point<T>& startPos, const T& endX, const T& endY) noexcept
+    : fPosStart(startPos),
+      fPosEnd(endX, endY)
+{
+}
+
+template<typename T>
+Line<T>::Line(const Point<T>& startPos, const Point<T>& endPos) noexcept
+    : fPosStart(startPos),
+      fPosEnd(endPos)
+{
+}
+
+template<typename T>
+Line<T>::Line(const Line<T>& line) noexcept
+    : fPosStart(line.fPosStart),
+      fPosEnd(line.fPosEnd)
+{
+}
+
+template<typename T>
+const T& Line<T>::getStartX() const noexcept
+{
+    return fPosStart.fX;
+}
+
+template<typename T>
+const T& Line<T>::getStartY() const noexcept
+{
+    return fPosStart.fY;
+}
+
+template<typename T>
+const T& Line<T>::getEndX() const noexcept
+{
+    return fPosEnd.fX;
+}
+
+template<typename T>
+const T& Line<T>::getEndY() const noexcept
+{
+    return fPosEnd.fY;
+}
+
+template<typename T>
+const Point<T>& Line<T>::getStartPos() const noexcept
+{
+    return fPosStart;
+}
+
+template<typename T>
+const Point<T>& Line<T>::getEndPos() const noexcept
+{
+    return fPosEnd;
+}
+
+template<typename T>
+void Line<T>::setStartX(const T& x) noexcept
+{
+    fPosStart.fX = x;
+}
+
+template<typename T>
+void Line<T>::setStartY(const T& y) noexcept
+{
+    fPosStart.fY = y;
+}
+
+template<typename T>
+void Line<T>::setStartPos(const T& x, const T& y) noexcept
+{
+    fPosStart = Point<T>(x, y);
+}
+
+template<typename T>
+void Line<T>::setStartPos(const Point<T>& pos) noexcept
+{
+    fPosStart = pos;
+}
+
+template<typename T>
+void Line<T>::setEndX(const T& x) noexcept
+{
+    fPosEnd.fX = x;
+}
+
+template<typename T>
+void Line<T>::setEndY(const T& y) noexcept
+{
+    fPosEnd.fY = y;
+}
+
+template<typename T>
+void Line<T>::setEndPos(const T& x, const T& y) noexcept
+{
+    fPosEnd = Point<T>(x, y);
+}
+
+template<typename T>
+void Line<T>::setEndPos(const Point<T>& pos) noexcept
+{
+    fPosEnd = pos;
+}
+
+template<typename T>
+void Line<T>::moveBy(const T& x, const T& y) noexcept
+{
+    fPosStart.fX += x;
+    fPosStart.fY += y;
+    fPosEnd.fX   += x;
+    fPosEnd.fY   += y;
+}
+
+template<typename T>
+void Line<T>::moveBy(const Point<T>& pos) noexcept
+{
+    fPosStart += pos;
+    fPosEnd   += pos;
+}
+
+template<typename T>
+void Line<T>::draw()
+{
+    // TODO
+}
+
+template<typename T>
+Line<T>& Line<T>::operator=(const Line<T>& line) noexcept
+{
+    fPosStart = line.fPosStart;
+    fPosEnd   = line.fPosEnd;
+    return *this;
+}
+
+template<typename T>
+bool Line<T>::operator==(const Line<T>& line) const noexcept
+{
+    return (fPosStart == line.fPosStart && fPosEnd == line.fPosEnd);
+}
+
+template<typename T>
+bool Line<T>::operator!=(const Line<T>& line) const noexcept
+{
+    return !operator==(line);
+}
+
+// -----------------------------------------------------------------------
 // Rectangle
 
 template<typename T>
@@ -531,6 +702,11 @@ template class Size<double>;
 template class Size<float>;
 template class Size<int>;
 template class Size<short>;
+
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<short>;
 
 template class Rectangle<double>;
 template class Rectangle<float>;
