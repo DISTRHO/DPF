@@ -59,6 +59,8 @@ private:
     DISTRHO_LEAK_DETECTOR(ImageButton)
 };
 
+typedef ScopedPointer<ImageButton> ImageButtonPtr;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

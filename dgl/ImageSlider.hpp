@@ -83,6 +83,8 @@ private:
     DISTRHO_LEAK_DETECTOR(ImageSlider)
 };
 
+typedef ScopedPointer<ImageSlider> ImageSliderPtr;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

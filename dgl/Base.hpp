@@ -18,6 +18,7 @@
 #define DGL_BASE_HPP_INCLUDED
 
 #include "../distrho/extra/d_leakdetector.hpp"
+#include "../distrho/extra/d_scopedpointer.hpp"
 
 // -----------------------------------------------------------------------
 // Define namespace

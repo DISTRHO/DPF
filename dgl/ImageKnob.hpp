@@ -87,6 +87,8 @@ private:
     DISTRHO_LEAK_DETECTOR(ImageKnob)
 };
 
+typedef ScopedPointer<ImageKnob> ImageKnobPtr;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
