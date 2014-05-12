@@ -13,3 +13,9 @@ You send messages from the UI to the DSP side, which is automatically saved in t
 
 Getting time information from the host is possible.<br/>
 It uses the same format as the JACK Transport API, making porting some code easier.<br/>
+
+
+List of plugins made with DPF:<br/>
+ - [DISTRHO Mini-Series](https://github.com/DISTRHO/mini-series)
+ - [DISTRHO Nekobi](https://github.com/DISTRHO/nekobi)
+ - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins-DPF)
