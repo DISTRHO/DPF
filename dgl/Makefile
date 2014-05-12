@@ -50,8 +50,8 @@ all: $(TARGET)
 # --------------------------------------------------------------
 
 ../libdgl.a: $(OBJS)
-	$(RM) $@
-	$(AR) crs $@ $^
+	rm -f $@
+	ar crs $@ $^
 
 ../libdgl.dll: $(OBJS)
 	# -Wl,--output-def,$@.def,--out-implib,$@.a
@@ -77,7 +77,7 @@ all: $(TARGET)
 # --------------------------------------------------------------
 
 clean:
-	$(RM) src/*.o src/pugl/*.o src/freetype-gl/*.o ../libdgl.*
+	rm -f src/*.o src/pugl/*.o src/freetype-gl/*.o ../libdgl.*
 
 debug:
 	$(MAKE) DEBUG=true
