@@ -334,9 +334,9 @@ private:
 
     // LADSPA ports
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-    LADSPA_Data*  fPortAudioIns[DISTRHO_PLUGIN_NUM_INPUTS];
+    const LADSPA_Data*  fPortAudioIns[DISTRHO_PLUGIN_NUM_INPUTS];
 #else
-    LADSPA_Data** fPortAudioIns;
+    const LADSPA_Data** fPortAudioIns;
 #endif
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     LADSPA_Data*  fPortAudioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];

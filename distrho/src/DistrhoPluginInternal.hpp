@@ -351,14 +351,14 @@ public:
     }
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-    void run(float** const inputs, float** const outputs, const uint32_t frames, const MidiEvent* const midiEvents, const uint32_t midiEventCount)
+    void run(const float** const inputs, float** const outputs, const uint32_t frames, const MidiEvent* const midiEvents, const uint32_t midiEventCount)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
 
         fPlugin->d_run(inputs, outputs, frames, midiEvents, midiEventCount);
     }
 #else
-    void run(float** const inputs, float** const outputs, const uint32_t frames)
+    void run(const float** const inputs, float** const outputs, const uint32_t frames)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
 

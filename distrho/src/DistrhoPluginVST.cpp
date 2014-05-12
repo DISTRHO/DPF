@@ -638,7 +638,7 @@ public:
 #endif
     }
 
-    void vst_processReplacing(float** const inputs, float** const outputs, const int32_t sampleFrames)
+    void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         static const int kWantedVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
@@ -939,13 +939,13 @@ static void vst_setParameterCallback(AEffect* effect, int32_t index, float value
 static void vst_processCallback(AEffect* effect, float** inputs, float** outputs, int32_t sampleFrames)
 {
     if (validEffect)
-        handlePtr->vst_processReplacing(inputs, outputs, sampleFrames);
+        handlePtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
 static void vst_processReplacingCallback(AEffect* effect, float** inputs, float** outputs, int32_t sampleFrames)
 {
     if (validEffect)
-        handlePtr->vst_processReplacing(inputs, outputs, sampleFrames);
+        handlePtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
 #undef handlePtr
