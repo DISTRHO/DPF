@@ -18,4 +18,5 @@ It uses the same format as the JACK Transport API, making porting some code easi
 List of plugins made with DPF:<br/>
  - [DISTRHO Mini-Series](https://github.com/DISTRHO/mini-series)
  - [DISTRHO Nekobi](https://github.com/DISTRHO/nekobi)
+ - [DISTRHO ProM](https://github.com/DISTRHO/prom)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins-DPF)
