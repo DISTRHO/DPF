@@ -1,4 +1,4 @@
--- DPF - DISTRHO Plugin Framework
+=== DPF - DISTRHO Plugin Framework ===
 
 DPF is designed to make development of new plugins an easy and enjoyable task.<br/>
 It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
