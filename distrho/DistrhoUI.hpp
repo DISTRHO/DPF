@@ -51,6 +51,13 @@ public:
 
     void d_uiResize(uint width, uint height);
 
+#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+    // -------------------------------------------------------------------
+    // Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
+
+    void* d_getPluginInstancePointer() const noexcept;
+#endif
+
 protected:
     // -------------------------------------------------------------------
     // Basic Information
@@ -74,13 +81,6 @@ protected:
     // UI Callbacks (optional)
 
     virtual void d_uiIdle() {}
-
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-    // -------------------------------------------------------------------
-    // Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
-
-    void* d_getPluginInstancePointer() const noexcept;
-#endif
 
     // -------------------------------------------------------------------
 
