@@ -11,11 +11,11 @@ fi
 
 PWD=`dirname $0`
 
-if [ -f $PWD/lv2-ttl-generator/lv2_ttl_generator.exe ]; then
-  GEN=$PWD/lv2-ttl-generator/lv2_ttl_generator.exe
+if [ -f $PWD/lv2_ttl_generator.exe ]; then
+  GEN=$PWD/lv2_ttl_generator.exe
   EXT=dll
 else
-  GEN=$PWD/lv2-ttl-generator/lv2_ttl_generator
+  GEN=$PWD/lv2_ttl_generator
   if [ -d /Developer ]; then
     EXT=dylib
   else
