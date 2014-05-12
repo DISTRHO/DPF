@@ -19,6 +19,8 @@
 
 #include "../DistrhoUtils.hpp"
 
+#include <algorithm>
+
 // -----------------------------------------------------------------------
 // The following code was based from juce-core ScopedPointer class
 // Copyright (C) 2013 Raw Material Software Ltd.
@@ -207,7 +209,13 @@ private:
        It's probably best to use the latter form when writing your object declarations anyway, as
        this is a better representation of the code that you actually want the compiler to produce.
     */
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedPointer);
+# ifdef DISTRHO_PROPER_CPP11_SUPPORT
+    ScopedPointer(const ScopedPointer&) = delete;
+    ScopedPointer& operator=(const ScopedPointer&) = delete;
+# else
+    ScopedPointer(const ScopedPointer&);
+    ScopedPointer& operator=(const ScopedPointer&);
+# endif
 #endif
 };
 
