@@ -60,23 +60,20 @@ DllMain(HINSTANCE hInst, DWORD, LPVOID)
 }
 } // extern "C"
 
-PuglView*
-puglCreateInternals(PuglNativeWindow parent,
-                    const char*      title,
-                    int              width,
-                    int              height,
-                    bool             resizable,
-                    bool             visible)
+PuglInternals*
+puglInitInternals()
 {
-	PuglView*      view = (PuglView*)calloc(1, sizeof(PuglView));
-	PuglInternals* impl = (PuglInternals*)calloc(1, sizeof(PuglInternals));
-	if (!view || !impl) {
-		return NULL;
-	}
+	return (PuglInternals*)calloc(1, sizeof(PuglInternals));
+}
 
-	view->impl   = impl;
-	view->width  = width;
-	view->height = height;
+int
+puglCreateWindow(PuglView* view, const char* title)
+{
+	PuglInternals* impl = view->impl;
+
+	if (!title) {
+		title = "Window";
+	}
 
 	// FIXME: This is nasty, and pugl should not have static anything.
 	// Should class be a parameter?  Does this make sense on other platforms?
@@ -97,25 +94,25 @@ puglCreateInternals(PuglNativeWindow parent,
 	RegisterClass(&impl->wc);
 
 	int winFlags = WS_POPUPWINDOW | WS_CAPTION;
-	if (resizable) {
+	if (view->resizable) {
 		winFlags |= WS_SIZEBOX;
 	}
 
 	// Adjust the overall window size to accomodate our requested client size
-	RECT wr = { 0, 0, width, height };
+	RECT wr = { 0, 0, view->width, view->height };
 	AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
 
 	impl->hwnd = CreateWindowEx(
 		WS_EX_TOPMOST,
 		classNameBuf, title,
-		(visible ? WS_VISIBLE : 0) | (parent ? WS_CHILD : winFlags),
+		view->parent ? WS_CHILD : winFlags,
 		CW_USEDEFAULT, CW_USEDEFAULT, wr.right-wr.left, wr.bottom-wr.top,
-		(HWND)parent, NULL, hInstance, NULL);
+		(HWND)view->parent, NULL, hInstance, NULL);
 
 	if (!impl->hwnd) {
 		free(impl);
 		free(view);
-		return NULL;
+		return 1;
 	}
 
 #ifdef _WIN64
@@ -142,10 +139,23 @@ puglCreateInternals(PuglNativeWindow parent,
 	impl->hglrc = wglCreateContext(impl->hdc);
 	wglMakeCurrent(impl->hdc, impl->hglrc);
 
-	view->width  = width;
-	view->height = height;
+	return 0;
+}
 
-	return view;
+void
+puglShowWindow(PuglView* view)
+{
+	PuglInternals* impl = view->impl;
+
+	ShowWindow(impl->hwnd, SW_SHOWNORMAL);
+}
+
+void
+puglHideWindow(PuglView* view)
+{
+	PuglInternals* impl = view->impl;
+
+	ShowWindow(impl->hwnd, SW_HIDE);
 }
 
 void
