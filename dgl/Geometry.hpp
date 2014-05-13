@@ -25,6 +25,7 @@ START_NAMESPACE_DGL
 // Forward class names
 
 template<typename> class Line;
+template<typename> class Triangle;
 template<typename> class Rectangle;
 
 // -----------------------------------------------------------------------
@@ -98,6 +99,7 @@ public:
 private:
     T fX, fY;
     template<typename> friend class Line;
+    template<typename> friend class Triangle;
     template<typename> friend class Rectangle;
 };
 
@@ -304,6 +306,53 @@ public:
 
 private:
     Point<T> fPosStart, fPosEnd;
+};
+
+// -----------------------------------------------------------------------
+// Triangle
+
+template<typename T>
+class Triangle
+{
+public:
+   /**
+      Constructor for null triangle.
+    */
+    Triangle() noexcept;
+
+   /**
+      Constructor using custom X and Y values.
+    */
+    Triangle(const T& x1, const T& y1, const T& x2, const T& y2, const T& x3, const T& y3) noexcept;
+
+   /**
+      Constructor using custom position values.
+    */
+    Triangle(const Point<T>& pos1, const Point<T>& pos2, const Point<T>& pos3) noexcept;
+
+   /**
+      Constructor using another Triangle class values.
+    */
+    Triangle(const Triangle<T>& tri) noexcept;
+
+   /**
+      Draw this triangle using the current OpenGL state.
+    */
+    void draw();
+
+   /**
+      Draw lines (outline of this triangle) using the current OpenGL state.
+    */
+    void drawOutline();
+
+    Triangle<T>& operator=(const Triangle<T>& tri) noexcept;
+    bool operator==(const Triangle<T>& tri) const noexcept;
+    bool operator!=(const Triangle<T>& tri) const noexcept;
+
+private:
+    Point<T> fPos1, fPos2, fPos3;
+
+    void _draw(const bool isOutline);
 };
 
 // -----------------------------------------------------------------------

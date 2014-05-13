@@ -24,23 +24,17 @@ START_NAMESPACE_DGL
 template<typename T>
 Point<T>::Point() noexcept
     : fX(0),
-      fY(0)
-{
-}
+      fY(0) {}
 
 template<typename T>
 Point<T>::Point(const T& x, const T& y) noexcept
     : fX(x),
-      fY(y)
-{
-}
+      fY(y) {}
 
 template<typename T>
 Point<T>::Point(const Point<T>& pos) noexcept
     : fX(pos.fX),
-      fY(pos.fY)
-{
-}
+      fY(pos.fY) {}
 
 template<typename T>
 const T& Point<T>::getX() const noexcept
@@ -136,23 +130,17 @@ bool Point<T>::operator!=(const Point<T>& pos) const noexcept
 template<typename T>
 Size<T>::Size() noexcept
     : fWidth(0),
-      fHeight(0)
-{
-}
+      fHeight(0) {}
 
 template<typename T>
 Size<T>::Size(const T& width, const T& height) noexcept
     : fWidth(width),
-      fHeight(height)
-{
-}
+      fHeight(height) {}
 
 template<typename T>
 Size<T>::Size(const Size<T>& size) noexcept
     : fWidth(size.fWidth),
-      fHeight(size.fHeight)
-{
-}
+      fHeight(size.fHeight) {}
 
 template<typename T>
 const T& Size<T>::getWidth() const noexcept
@@ -264,44 +252,32 @@ bool Size<T>::operator!=(const Size<T>& size) const noexcept
 template<typename T>
 Line<T>::Line() noexcept
     : fPosStart(0, 0),
-      fPosEnd(0, 0)
-{
-}
+      fPosEnd(0, 0) {}
 
 template<typename T>
 Line<T>::Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept
     : fPosStart(startX, startY),
-      fPosEnd(endX, endY)
-{
-}
+      fPosEnd(endX, endY) {}
 
 template<typename T>
 Line<T>::Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept
     : fPosStart(startX, startY),
-      fPosEnd(endPos)
-{
-}
+      fPosEnd(endPos) {}
 
 template<typename T>
 Line<T>::Line(const Point<T>& startPos, const T& endX, const T& endY) noexcept
     : fPosStart(startPos),
-      fPosEnd(endX, endY)
-{
-}
+      fPosEnd(endX, endY) {}
 
 template<typename T>
 Line<T>::Line(const Point<T>& startPos, const Point<T>& endPos) noexcept
     : fPosStart(startPos),
-      fPosEnd(endPos)
-{
-}
+      fPosEnd(endPos) {}
 
 template<typename T>
 Line<T>::Line(const Line<T>& line) noexcept
     : fPosStart(line.fPosStart),
-      fPosEnd(line.fPosEnd)
-{
-}
+      fPosEnd(line.fPosEnd) {}
 
 template<typename T>
 const T& Line<T>::getStartX() const noexcept
@@ -437,49 +413,111 @@ bool Line<T>::operator!=(const Line<T>& line) const noexcept
 }
 
 // -----------------------------------------------------------------------
+// Triangle
+
+template<typename T>
+Triangle<T>::Triangle() noexcept
+    : fPos1(0, 0),
+      fPos2(0, 0),
+      fPos3(0, 0) {}
+
+template<typename T>
+Triangle<T>::Triangle(const T& x1, const T& y1, const T& x2, const T& y2, const T& x3, const T& y3) noexcept
+    : fPos1(x1, y1),
+      fPos2(x2, y2),
+      fPos3(x3, y3) {}
+
+template<typename T>
+Triangle<T>::Triangle(const Point<T>& pos1, const Point<T>& pos2, const Point<T>& pos3) noexcept
+    : fPos1(pos1),
+      fPos2(pos2),
+      fPos3(pos3) {}
+
+template<typename T>
+Triangle<T>::Triangle(const Triangle<T>& tri) noexcept
+    : fPos1(tri.fPos1),
+      fPos2(tri.fPos2),
+      fPos3(tri.fPos3) {}
+
+template<typename T>
+void Triangle<T>::draw()
+{
+    _draw(false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline()
+{
+    _draw(true);
+}
+
+template<typename T>
+Triangle<T>& Triangle<T>::operator=(const Triangle<T>& tri) noexcept
+{
+    fPos1 = tri.fPos1;
+    fPos2 = tri.fPos2;
+    fPos3 = tri.fPos3;
+    return *this;
+}
+
+template<typename T>
+bool Triangle<T>::operator==(const Triangle<T>& tri) const noexcept
+{
+    return (fPos1 == tri.fPos1 && fPos2 == tri.fPos2 && fPos3 == tri.fPos3);
+}
+
+template<typename T>
+bool Triangle<T>::operator!=(const Triangle<T>& tri) const noexcept
+{
+    return !operator==(tri);
+}
+
+template<typename T>
+void Triangle<T>::_draw(const bool isOutline)
+{
+    glBegin(isOutline ? GL_LINE_LOOP : GL_TRIANGLES);
+
+    {
+        glVertex2i(fPos1.fX, fPos1.fY);
+        glVertex2i(fPos2.fX, fPos2.fY);
+        glVertex2i(fPos3.fX, fPos3.fY);
+    }
+
+    glEnd();
+}
+
+// -----------------------------------------------------------------------
 // Rectangle
 
 template<typename T>
 Rectangle<T>::Rectangle() noexcept
     : fPos(0, 0),
-      fSize(0, 0)
-{
-}
+      fSize(0, 0) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const T& x, const T& y, const T& width, const T& height) noexcept
     : fPos(x, y),
-      fSize(width, height)
-{
-}
+      fSize(width, height) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const T& x, const T& y, const Size<T>& size) noexcept
     : fPos(x, y),
-      fSize(size)
-{
-}
+      fSize(size) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const Point<T>& pos, const T& width, const T& height) noexcept
     : fPos(pos),
-      fSize(width, height)
-{
-}
+      fSize(width, height) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const Point<T>& pos, const Size<T>& size) noexcept
     : fPos(pos),
-      fSize(size)
-{
-}
+      fSize(size) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const Rectangle<T>& rect) noexcept
     : fPos(rect.fPos),
-      fSize(rect.fSize)
-{
-}
+      fSize(rect.fSize) {}
 
 template<typename T>
 const T& Rectangle<T>::getX() const noexcept
@@ -705,6 +743,11 @@ template class Line<double>;
 template class Line<float>;
 template class Line<int>;
 template class Line<short>;
+
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<short>;
 
 template class Rectangle<double>;
 template class Rectangle<float>;
