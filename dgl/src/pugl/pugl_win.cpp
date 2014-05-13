@@ -61,12 +61,28 @@ DllMain(HINSTANCE hInst, DWORD, LPVOID)
 } // extern "C"
 
 PuglView*
-puglCreate(PuglNativeWindow parent,
-           const char*      title,
-           int              width,
-           int              height,
-           bool             resizable,
-           bool             visible)
+puglInit()
+{
+	PuglView*      view = (PuglView*)calloc(1, sizeof(PuglView));
+	PuglInternals* impl = (PuglInternals*)calloc(1, sizeof(PuglInternals));
+	if (!view || !impl) {
+		return NULL;
+	}
+
+	view->impl   = impl;
+	view->width  = 640;
+	view->height = 480;
+
+	return view;
+}
+
+PuglView*
+puglCreateInternals(PuglNativeWindow parent,
+                    const char*      title,
+                    int              width,
+                    int              height,
+                    bool             resizable,
+                    bool             visible)
 {
 	PuglView*      view = (PuglView*)calloc(1, sizeof(PuglView));
 	PuglInternals* impl = (PuglInternals*)calloc(1, sizeof(PuglInternals));
@@ -160,7 +176,7 @@ puglDestroy(PuglView* view)
 	free(view);
 }
 
-void
+static void
 puglReshape(PuglView* view, int width, int height)
 {
 	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
@@ -175,7 +191,7 @@ puglReshape(PuglView* view, int width, int height)
 	view->height = height;
 }
 
-void
+static void
 puglDisplay(PuglView* view)
 {
 	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
