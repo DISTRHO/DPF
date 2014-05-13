@@ -1,6 +1,6 @@
 [Project]
 Manager=KDevGenericManager
-Name=DPT
+Name=DPF
 
 [Filters]
 Excludes=*/.*,*/*~,*/*.a
