@@ -406,7 +406,14 @@ void Line<T>::moveBy(const Point<T>& pos) noexcept
 template<typename T>
 void Line<T>::draw()
 {
-    // TODO
+    glBegin(GL_LINES);
+
+    {
+        glVertex2i(fPosStart.fX, fPosStart.fY);
+        glVertex2i(fPosEnd.fX, fPosEnd.fY);
+    }
+
+    glEnd();
 }
 
 template<typename T>
