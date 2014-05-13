@@ -458,6 +458,11 @@ public:
     */
     void draw();
 
+   /**
+      Draw lines (outline of this rectangle) using the current OpenGL state.
+    */
+    void drawOutline();
+
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
     Rectangle<T>& operator*=(const T& m) noexcept;
     Rectangle<T>& operator/=(const T& d) noexcept;
@@ -467,6 +472,8 @@ public:
 private:
     Point<T> fPos;
     Size<T>  fSize;
+
+    void _draw(const bool isOutline);
 };
 
 // -----------------------------------------------------------------------

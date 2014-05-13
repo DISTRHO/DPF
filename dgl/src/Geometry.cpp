@@ -621,46 +621,13 @@ bool Rectangle<T>::containsY(const T& y) const noexcept
 template<typename T>
 void Rectangle<T>::draw()
 {
-#if 0
-    typedef void (*glVextex2Func)(T x, T y);
+    _draw(false);
+}
 
-    static bool needsSetup = true;
-    static glVextex2Func glVextex2fn = (glVextex2Func)glVertex2i;
-
-    if (needsSetup)
-    {
-#if 0
-        // TODO
-
-        if (0)
-            glVextex2fn = (glVextex2Func)glVertex2d;
-        else if (0)
-            glVextex2fn = (glVextex2Func)glVertex2f;
-        else if (0)
-            glVextex2fn = (glVextex2Func)glVertex2s;
-#endif
-
-        needsSetup = false;
-    }
-#endif
-
-    glBegin(GL_QUADS);
-
-    {
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2i(fPos.fX, fPos.fY);
-
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY);
-
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
-
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
-    }
-
-    glEnd();
+template<typename T>
+void Rectangle<T>::drawOutline()
+{
+    _draw(true);
 }
 
 template<typename T>
@@ -697,6 +664,28 @@ template<typename T>
 bool Rectangle<T>::operator!=(const Rectangle<T>& rect) const noexcept
 {
     return !operator==(rect);
+}
+
+template<typename T>
+void Rectangle<T>::_draw(const bool isOutline)
+{
+    glBegin(isOutline ? GL_LINE_LOOP : GL_QUADS);
+
+    {
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2i(fPos.fX, fPos.fY);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
+    }
+
+    glEnd();
 }
 
 // -----------------------------------------------------------------------
