@@ -614,6 +614,7 @@ bool Rectangle<T>::containsY(const T& y) const noexcept
 template<typename T>
 void Rectangle<T>::draw()
 {
+#if 0
     typedef void (*glVextex2Func)(T x, T y);
 
     static bool needsSetup = true;
@@ -634,21 +635,22 @@ void Rectangle<T>::draw()
 
         needsSetup = false;
     }
+#endif
 
     glBegin(GL_QUADS);
 
     {
         glTexCoord2f(0.0f, 0.0f);
-        glVextex2fn(fPos.fX, fPos.fY);
+        glVertex2i(fPos.fX, fPos.fY);
 
         glTexCoord2f(1.0f, 0.0f);
-        glVextex2fn(fPos.fX+fSize.fWidth, fPos.fY);
+        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY);
 
         glTexCoord2f(1.0f, 1.0f);
-        glVextex2fn(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
+        glVertex2i(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
 
         glTexCoord2f(0.0f, 1.0f);
-        glVextex2fn(fPos.fX, fPos.fY+fSize.fHeight);
+        glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
     }
 
     glEnd();
