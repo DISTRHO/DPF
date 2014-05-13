@@ -15,13 +15,12 @@
  */
 
 // we need this for now
-#define XKEYFOCUSGRAB 1
+#define PUGL_GRAB_FOCUS 1
 
 #include "AppPrivateData.hpp"
 #include "../Widget.hpp"
 #include "../Window.hpp"
 
-#include <cassert>
 #include <cstdio>
 #include <list>
 
@@ -30,12 +29,9 @@
 #if defined(DISTRHO_OS_WINDOWS)
 # include "pugl/pugl_win.cpp"
 #elif defined(DISTRHO_OS_MAC)
-# include "pugl/pugl_osx_extended.h"
 extern "C" {
-struct PuglViewImpl {
-    int width;
-    int height;
-};}
+# include "pugl/pugl_osx.m"
+}
 #elif defined(DISTRHO_OS_LINUX)
 # include <sys/types.h>
 # include <unistd.h>
@@ -69,12 +65,11 @@ Window* dgl_lastUiParent = nullptr;
 // -----------------------------------------------------------------------
 // Window Private
 
-struct Window::PrivateData
-{
+struct Window::PrivateData {
     PrivateData(App& app, Window* const self)
         : fApp(app),
           fSelf(self),
-          fView(puglCreate(0, "Window", 100, 100, true, false)),
+          fView(puglInit(nullptr, nullptr)),
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
@@ -97,7 +92,7 @@ struct Window::PrivateData
     PrivateData(App& app, Window* const self, Window& parent)
         : fApp(app),
           fSelf(self),
-          fView(puglCreate(0, "Window", 100, 100, true, false)),
+          fView(puglInit(nullptr, nullptr)),
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
@@ -127,7 +122,7 @@ struct Window::PrivateData
     PrivateData(App& app, Window* const self, const intptr_t parentId)
         : fApp(app),
           fSelf(self),
-          fView(puglCreate(parentId, "Window", 100, 100, (parentId == 0), (parentId != 0))),
+          fView(puglInit(nullptr, nullptr)),
           fFirstInit(true),
           fVisible(parentId != 0),
           fResizable(parentId == 0),
@@ -143,9 +138,13 @@ struct Window::PrivateData
           _dummy('\0')
 #endif
     {
-        if (parentId != 0) {
+        if (parentId != 0)
+        {
             DBG("Creating embedded window..."); DBGF;
-        } else {
+            puglInitWindowParent(fView, parentId);
+        }
+        else
+        {
             DBG("Creating window without parent..."); DBGF;
         }
 
@@ -154,6 +153,7 @@ struct Window::PrivateData
         if (parentId != 0)
         {
             DBG("NOTE: Embed window is always visible and non-resizable\n");
+            puglShowWindow(fView);
             fApp.pData->oneShown();
             fFirstInit = false;
         }
@@ -170,6 +170,8 @@ struct Window::PrivateData
 
         dgl_lastUiParent = fSelf;
 
+        puglInitResizable(fView, fResizable);
+
         puglSetHandle(fView, this);
         puglSetDisplayFunc(fView, onDisplayCallback);
         puglSetKeyboardFunc(fView, onKeyboardCallback);
@@ -180,15 +182,17 @@ struct Window::PrivateData
         puglSetReshapeFunc(fView, onReshapeCallback);
         puglSetCloseFunc(fView, onCloseCallback);
 
+        puglCreateWindow(fView, nullptr);
+
 #if defined(DISTRHO_OS_WINDOWS)
         PuglInternals* impl = fView->impl;
         hwnd = impl->hwnd;
-        assert(hwnd != 0);
+        DISTRHO_SAFE_ASSERT(hwnd != 0);
 #elif defined(DISTRHO_OS_LINUX)
         PuglInternals* impl = fView->impl;
         xDisplay = impl->display;
         xWindow  = impl->win;
-        assert(xWindow != 0);
+        DISTRHO_SAFE_ASSERT(xWindow != 0);
 
         if (! fUsingEmbed)
         {
@@ -530,13 +534,7 @@ struct Window::PrivateData
     void exec_init()
     {
         DBG("Window modal loop starting..."); DBGF;
-        assert(fModal.parent != nullptr);
-
-        if (fModal.parent == nullptr)
-        {
-            DBG("Failed, there's no modal parent!\n");
-            return setVisible(true);
-        }
+        DISTRHO_SAFE_ASSERT_RETURN(fModal.parent != nullptr, setVisible(true));
 
         fModal.enabled = true;
         fModal.parent->fModal.childFocus = this;
@@ -731,8 +729,8 @@ struct Window::PrivateData
 
         ~Modal()
         {
-            assert(! enabled);
-            assert(childFocus == nullptr);
+            DISTRHO_SAFE_ASSERT(! enabled);
+            DISTRHO_SAFE_ASSERT(childFocus == nullptr);
         }
     } fModal;
 

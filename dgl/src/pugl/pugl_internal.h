@@ -42,9 +42,6 @@
 typedef struct PuglInternalsImpl PuglInternals;
 
 struct PuglViewImpl {
-	int width;
-	int height;
-
 	PuglHandle       handle;
 	PuglCloseFunc    closeFunc;
 	PuglDisplayFunc  displayFunc;
@@ -59,6 +56,8 @@ struct PuglViewImpl {
 
 	PuglNativeWindow parent;
 
+	int      width;
+	int      height;
 	int      mods;
 	bool     mouse_in_view;
 	bool     ignoreKeyRepeat;
@@ -89,6 +88,9 @@ puglInit(int* pargc, char** argv)
 	view->height = 480;
 
 	return view;
+
+	// unused
+	(void)pargc; (void)argv;
 }
 
 void
@@ -107,7 +109,7 @@ puglInitWindowParent(PuglView* view, PuglNativeWindow parent)
 void
 puglInitResizable(PuglView* view, bool resizable)
 {
-	view->resizable = true;
+	view->resizable = resizable;
 }
 
 void

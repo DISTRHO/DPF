@@ -37,7 +37,7 @@
 #    define WHEEL_DELTA 120
 #endif
 
-const int LOCAL_CLOSE_MSG = WM_USER + 50;
+#define PUGL_LOCAL_CLOSE_MSG (WM_USER + 50)
 
 HINSTANCE hInstance = NULL;
 
@@ -59,22 +59,6 @@ DllMain(HINSTANCE hInst, DWORD, LPVOID)
     return 1;
 }
 } // extern "C"
-
-PuglView*
-puglInit()
-{
-	PuglView*      view = (PuglView*)calloc(1, sizeof(PuglView));
-	PuglInternals* impl = (PuglInternals*)calloc(1, sizeof(PuglInternals));
-	if (!view || !impl) {
-		return NULL;
-	}
-
-	view->impl   = impl;
-	view->width  = 640;
-	view->height = 480;
-
-	return view;
-}
 
 PuglView*
 puglCreateInternals(PuglNativeWindow parent,
@@ -343,7 +327,7 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
 	case WM_QUIT:
-	case LOCAL_CLOSE_MSG:
+	case PUGL_LOCAL_CLOSE_MSG:
 		if (view->closeFunc) {
 			view->closeFunc(view);
 		}
@@ -386,7 +370,7 @@ wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PostMessage(hwnd, WM_SHOWWINDOW, TRUE, 0);
 		return 0;
 	case WM_CLOSE:
-		PostMessage(hwnd, LOCAL_CLOSE_MSG, wParam, lParam);
+		PostMessage(hwnd, PUGL_LOCAL_CLOSE_MSG, wParam, lParam);
 		return 0;
 	case WM_DESTROY:
 		return 0;
