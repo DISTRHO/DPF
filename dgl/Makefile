@@ -22,8 +22,13 @@ OBJS = \
 	src/ImageButton.cpp.o \
 	src/ImageKnob.cpp.o \
 	src/ImageSlider.cpp.o \
-	src/Widget.cpp.o \
-	src/Window.cpp.o
+	src/Widget.cpp.o
+
+ifeq ($(MACOS),true)
+OBJS += src/Window.mm.o
+else
+OBJS += src/Window.cpp.o
+endif
 
 # freetype-gl
 # OBJS += \
@@ -36,10 +41,6 @@ OBJS = \
 # 	src/freetype-gl/vector.c.o \
 # 	src/freetype-gl/vertex-attribute.c.o \
 # 	src/freetype-gl/vertex-buffer.c.o
-
-ifeq ($(MACOS),true)
-OBJS += src/pugl/pugl_osx_extended.m.o
-endif
 
 TARGET = ../libdgl.a
 
@@ -73,6 +74,9 @@ all: $(TARGET)
 
 %.m.o: %.m
 	$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
+
+%.mm.o: %.mm
+	$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 
 # --------------------------------------------------------------
 

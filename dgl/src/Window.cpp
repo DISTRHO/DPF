@@ -80,7 +80,8 @@ struct Window::PrivateData {
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
-          fNeedsIdle(true)
+          fNeedsIdle(true),
+          xWindow(nullptr)
 #else
           _dummy('\0')
 #endif
@@ -104,7 +105,8 @@ struct Window::PrivateData {
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
-          fNeedsIdle(false)
+          fNeedsIdle(false),
+          xWindow(nullptr)
 #else
           _dummy('\0')
 #endif
@@ -133,7 +135,8 @@ struct Window::PrivateData {
           xDisplay(nullptr),
           xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
-          fNeedsIdle(false)
+          fNeedsIdle(false),
+          xWindow(nullptr)
 #else
           _dummy('\0')
 #endif
@@ -184,12 +187,14 @@ struct Window::PrivateData {
 
         puglCreateWindow(fView, nullptr);
 
-#if defined(DISTRHO_OS_WINDOWS)
         PuglInternals* impl = fView->impl;
+#if defined(DISTRHO_OS_WINDOWS)
         hwnd = impl->hwnd;
         DISTRHO_SAFE_ASSERT(hwnd != 0);
+#elif defined(DISTRHO_OS_MAC)
+        xWindow = impl->window;
+        DISTRHO_SAFE_ASSERT(xWindow != nullptr);
 #elif defined(DISTRHO_OS_LINUX)
-        PuglInternals* impl = fView->impl;
         xDisplay = impl->display;
         xWindow  = impl->win;
         DISTRHO_SAFE_ASSERT(xWindow != 0);
@@ -227,10 +232,12 @@ struct Window::PrivateData {
         }
 
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd = 0;
+        hwnd = 0;
+#elif defined(DISTRHO_OS_MAC)
+        xWindow = nullptr;
 #elif defined(DISTRHO_OS_LINUX)
-          xDisplay = nullptr;
-          xWindow  = 0;
+        xDisplay = nullptr;
+        xWindow  = 0;
 #endif
 
         DBG("Success!\n");
@@ -281,7 +288,9 @@ struct Window::PrivateData {
         SetActiveWindow(hwnd);
         SetFocus(hwnd);
 #elif defined(DISTRHO_OS_MAC)
-        puglImplFocus(fView);
+        // TODO
+        //[NSApp activateIgnoringOtherApps:YES];
+        //[xWindow makeKeyAndOrderFront:xWindow];
 #elif defined(DISTRHO_OS_LINUX)
         XRaiseWindow(xDisplay, xWindow);
         XSetInputFocus(xDisplay, xWindow, RevertToPointerRoot, CurrentTime);
@@ -330,7 +339,10 @@ struct Window::PrivateData {
 
         UpdateWindow(hwnd);
 #elif defined(DISTRHO_OS_MAC)
-        puglImplSetVisible(fView, yesNo);
+        if (yesNo)
+            [xWindow setIsVisible:YES];
+        else
+            [xWindow setIsVisible:NO];
 #elif defined(DISTRHO_OS_LINUX)
         if (yesNo)
             XMapRaised(xDisplay, xWindow);
@@ -429,7 +441,18 @@ struct Window::PrivateData {
         if (! forced)
             UpdateWindow(hwnd);
 #elif defined(DISTRHO_OS_MAC)
-        puglImplSetSize(fView, width, height, forced);
+        [xWindow setContentSize:NSMakeSize(width, height)];
+# if 0
+        NSRect frame      = [xWindow frame];
+        frame.origin.y   -= height - frame.size.height;
+        frame.size.width  = width;
+        frame.size.height = height+20;
+
+        //if (forced)
+        //    [xWindow setFrame:frame];
+        //else
+        [xWindow setFrame:frame display:YES animate:NO];
+# endif
 #elif defined(DISTRHO_OS_LINUX)
         XResizeWindow(xDisplay, xWindow, width, height);
 
@@ -465,7 +488,12 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_WINDOWS)
         SetWindowTextA(hwnd, title);
 #elif defined(DISTRHO_OS_MAC)
-        puglImplSetTitle(fView, title);
+        NSString* titleString = [[NSString alloc]
+                                  initWithBytes:title
+                                        length:strlen(title)
+                                      encoding:NSUTF8StringEncoding];
+
+        [xWindow setTitle:titleString];
 #elif defined(DISTRHO_OS_LINUX)
         XStoreName(xDisplay, xWindow, title);
 #endif
@@ -522,7 +550,34 @@ struct Window::PrivateData {
 
 #ifdef DISTRHO_OS_MAC
         if (fNeedsIdle)
-            puglImplIdle(fView);
+        {
+            NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+            NSEvent* event;
+
+            static const NSUInteger eventMask = (NSLeftMouseDownMask | NSLeftMouseUpMask |
+                                                 NSRightMouseDownMask | NSRightMouseUpMask |
+                                                 NSMouseMovedMask |
+                                                 NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
+                                                 NSMouseEnteredMask | NSMouseExitedMask |
+                                                 NSKeyDownMask | NSKeyUpMask |
+                                                 NSFlagsChangedMask |
+                                                 NSCursorUpdateMask | NSScrollWheelMask);
+
+            for (;;) {
+                event = [xWindow
+                         nextEventMatchingMask:eventMask
+                                     untilDate:[NSDate distantPast]
+                                        inMode:NSEventTrackingRunLoopMode
+                                       dequeue:YES];
+
+                if (event == nil)
+                    break;
+
+                [xWindow sendEvent: event];
+            }
+
+            [pool release];
+        }
 #endif
 
         if (fModal.enabled && fModal.parent != nullptr)
@@ -741,6 +796,7 @@ struct Window::PrivateData {
     ::Window xWindow;
 #elif defined(DISTRHO_OS_MAC)
     bool     fNeedsIdle;
+    id       xWindow;
 #else
     char      _dummy;
 #endif

@@ -351,55 +351,64 @@ struct PuglInternalsImpl {
 	id              window;
 };
 
-PuglView*
-puglCreate(PuglNativeWindow parent,
-           const char*      title,
-           int              width,
-           int              height,
-           bool             resizable,
-           bool             visible)
+PuglInternals*
+puglInitInternals()
 {
-	PuglView*      view = (PuglView*)calloc(1, sizeof(PuglView));
-	PuglInternals* impl = (PuglInternals*)calloc(1, sizeof(PuglInternals));
-	if (!view || !impl) {
-		return NULL;
-	}
+	return (PuglInternals*)calloc(1, sizeof(PuglInternals));
+}
 
-	view->impl   = impl;
-	view->width  = width;
-	view->height = height;
+int
+puglCreateWindow(PuglView* view, const char* title)
+{
+	PuglInternals* impl = view->impl;
 
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
-	NSString* titleString = [[NSString alloc]
-		                        initWithBytes:title
-		                               length:strlen(title)
-		                             encoding:NSUTF8StringEncoding];
-
 	id window = [[PuglWindow new]retain];
 
 	[window setPuglview:view];
-	[window setTitle:titleString];
+
+	if (title) {
+		NSString* titleString = [[NSString alloc]
+						initWithBytes:title
+						      length:strlen(title)
+						    encoding:NSUTF8StringEncoding];
+
+		[window setTitle:titleString];
+	}
 
 	impl->glview   = [PuglOpenGLView new];
 	impl->window   = window;
 	impl->glview->puglview = view;
 
-	[window setContentView:impl->glview];
 	[NSApp activateIgnoringOtherApps:YES];
+	[window setContentView:impl->glview];
 	[window makeFirstResponder:impl->glview];
-
 	[window makeKeyAndOrderFront:window];
 
-	if (! visible) {
-		[window setIsVisible:NO];
-	}
+	// wait for first puglShowWindow
+	[window setIsVisible:NO];
 
-	return view;
+	// TODO - handle view->parent and view->resizable
 
-	// unused
-	(void)parent; (void)resizable;
+	return 0;
+}
+
+void
+puglShowWindow(PuglView* view)
+{
+	id window = view->impl->window;
+
+	[window setIsVisible:YES];
+}
+
+void
+puglHideWindow(PuglView* view)
+{
+	id window = view->impl->window;
+
+	[window setIsVisible:NO];
 }
 
 void
