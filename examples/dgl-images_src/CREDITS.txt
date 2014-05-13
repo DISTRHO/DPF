@@ -1,3 +1,0 @@
-cat1.png: http://www.flickr.com/photos/tomitapio/4305303148/
-cat2.png: http://www.flickr.com/photos/aigle_dore/6672148713/
-cat3.png: http://www.flickr.com/photos/aigle_dore/5889008066/

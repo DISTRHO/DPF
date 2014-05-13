@@ -10,7 +10,3 @@
 .kdev4/
 
 utils/lv2_ttl_generator
-
-examples/dgl-app
-examples/dgl-color
-examples/dgl-images
