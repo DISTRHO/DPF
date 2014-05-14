@@ -20,6 +20,8 @@
 # error DSSI UIs do not support direct access!
 #endif
 
+#include "../extra/d_sleep.hpp"
+
 #include <lo/lo.h>
 
 START_NAMESPACE_DISTRHO
@@ -113,7 +115,7 @@ public:
             if (! fUI.idle())
                 break;
 
-            d_msleep(50);
+            d_msleep(30);
         }
     }
 
