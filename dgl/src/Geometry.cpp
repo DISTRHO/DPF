@@ -16,6 +16,8 @@
 
 #include "../Geometry.hpp"
 
+#include <cmath>
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------

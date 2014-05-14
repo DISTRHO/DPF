@@ -365,24 +365,31 @@ puglCreateWindow(PuglView* view, const char* title)
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
-	id window = [[PuglWindow new]retain];
+	impl->glview = [PuglOpenGLView new];
+	impl->glview->puglview = view;
 
-	[window setPuglview:view];
+	if (view->resizable) {
+		[impl->glview setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+	}
+
+	if (view->parent) {
+		NSView* pview = (NSView*)view->parent;
+		[pview addSubview:impl->glview];
+		return 0;
+	}
+
+	id window = [[PuglWindow new]retain];
 
 	if (title) {
 		NSString* titleString = [[NSString alloc]
-						initWithBytes:title
-						      length:strlen(title)
-						    encoding:NSUTF8StringEncoding];
+					  initWithBytes:title
+					         length:strlen(title)
+					       encoding:NSUTF8StringEncoding];
 
 		[window setTitle:titleString];
 	}
 
-	impl->glview   = [PuglOpenGLView new];
-	impl->window   = window;
-	impl->glview->puglview = view;
-
-	[NSApp activateIgnoringOtherApps:YES];
+	[window setPuglview:view];
 	[window setContentView:impl->glview];
 	[window makeFirstResponder:impl->glview];
 	[window makeKeyAndOrderFront:window];
@@ -390,7 +397,10 @@ puglCreateWindow(PuglView* view, const char* title)
 	// wait for first puglShowWindow
 	[window setIsVisible:NO];
 
-	// TODO - handle view->parent and view->resizable
+	[NSApp activateIgnoringOtherApps:YES];
+	[window center];
+
+	impl->window = window;
 
 	return 0;
 }
@@ -398,26 +408,40 @@ puglCreateWindow(PuglView* view, const char* title)
 void
 puglShowWindow(PuglView* view)
 {
-	id window = view->impl->window;
+	PuglInternals* impl = view->impl;
 
-	[window setIsVisible:YES];
+	if (impl->window) {
+		[impl->window setIsVisible:YES];
+	} else {
+		[view->impl->glview setHidden:NO];
+	}
 }
 
 void
 puglHideWindow(PuglView* view)
 {
-	id window = view->impl->window;
+	PuglInternals* impl = view->impl;
 
-	[window setIsVisible:NO];
+	if (impl->window) {
+		[impl->window setIsVisible:NO];
+	} else {
+		[impl->glview setHidden:YES];
+	}
 }
 
 void
 puglDestroy(PuglView* view)
 {
 	view->impl->glview->puglview = NULL;
-	[view->impl->window close];
-	[view->impl->glview release];
-	[view->impl->window release];
+
+	if (view->impl->window) {
+		[view->impl->window close];
+		[view->impl->glview release];
+		[view->impl->window release];
+	} else {
+		[view->impl->glview release];
+	}
+
 	free(view->impl);
 	free(view);
 }
