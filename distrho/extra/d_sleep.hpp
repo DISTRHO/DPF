@@ -14,54 +14,49 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_APP_PRIVATE_DATA_HPP_INCLUDED
-#define DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+#ifndef DISTRHO_SLEEP_HPP_INCLUDED
+#define DISTRHO_SLEEP_HPP_INCLUDED
 
-#include "../App.hpp"
-#include "../../distrho/extra/d_sleep.hpp"
+#include "../DistrhoUtils.hpp"
 
-#include <list>
+#ifdef DISTRHO_OS_WINDOWS
+# include <winsock2.h>
+# include <windows.h>
+#else
+# include <unistd.h>
+#endif
 
-START_NAMESPACE_DGL
+// -----------------------------------------------------------------------
+// d_*sleep
+
+static inline
+void d_sleep(const uint secs) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(secs > 0,);
+
+    try {
+#ifdef DISTRHO_OS_WINDOWS
+        ::Sleep(secs * 1000);
+#else
+        ::sleep(secs);
+#endif
+    } DISTRHO_SAFE_EXCEPTION("d_sleep");
+}
+
+static inline
+void d_msleep(const uint msecs) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(msecs > 0,);
+
+    try {
+#ifdef DISTRHO_OS_WINDOWS
+        ::Sleep(msecs);
+#else
+        ::usleep(msecs * 1000);
+#endif
+    } DISTRHO_SAFE_EXCEPTION("d_msleep");
+}
 
 // -----------------------------------------------------------------------
 
-struct App::PrivateData {
-    bool doLoop;
-    uint visibleWindows;
-    std::list<Window*> windows;
-    std::list<IdleCallback*> idleCallbacks;
-
-    PrivateData()
-        : doLoop(false),
-          visibleWindows(0) {}
-
-    ~PrivateData()
-    {
-        DISTRHO_SAFE_ASSERT(! doLoop);
-        DISTRHO_SAFE_ASSERT(visibleWindows == 0);
-
-        windows.clear();
-        idleCallbacks.clear();
-    }
-
-    void oneShown() noexcept
-    {
-        if (++visibleWindows == 1)
-            doLoop = true;
-    }
-
-    void oneHidden() noexcept
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(visibleWindows > 0,);
-
-        if (--visibleWindows == 0)
-            doLoop = false;
-    }
-};
-
-// -----------------------------------------------------------------------
-
-END_NAMESPACE_DGL
-
-#endif // DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+#endif // DISTRHO_SLEEP_HPP_INCLUDED

@@ -19,6 +19,11 @@
 
 #include "../DistrhoUtils.hpp"
 
+#ifdef DISTRHO_OS_WINDOWS
+# include <winsock2.h>
+# include <windows.h>
+#endif
+
 #include <pthread.h>
 
 // -----------------------------------------------------------------------

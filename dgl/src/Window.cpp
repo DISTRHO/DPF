@@ -21,9 +21,6 @@
 #include "../Widget.hpp"
 #include "../Window.hpp"
 
-#include <cstdio>
-#include <list>
-
 #include "pugl/pugl.h"
 
 #if defined(DISTRHO_OS_WINDOWS)

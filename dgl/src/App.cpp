@@ -17,8 +17,6 @@
 #include "AppPrivateData.hpp"
 #include "../Window.hpp"
 
-#include <list>
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------

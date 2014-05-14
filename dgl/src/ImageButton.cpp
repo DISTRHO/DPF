@@ -16,8 +16,6 @@
 
 #include "../ImageButton.hpp"
 
-#include <cassert>
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -42,7 +40,7 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
       fCurButton(-1),
       fCallback(nullptr)
 {
-    assert(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
     setSize(fCurImage->getSize());
 }
@@ -67,7 +65,7 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
       fCurButton(-1),
       fCallback(nullptr)
 {
-    assert(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
     setSize(fCurImage->getSize());
 }
@@ -81,7 +79,7 @@ ImageButton::ImageButton(const ImageButton& imageButton)
       fCurButton(-1),
       fCallback(imageButton.fCallback)
 {
-    assert(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
     setSize(fCurImage->getSize());
 }

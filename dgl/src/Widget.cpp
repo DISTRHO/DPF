@@ -14,11 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../App.hpp"
 #include "../Widget.hpp"
 #include "../Window.hpp"
-
-#include <cassert>
 
 START_NAMESPACE_DGL
 

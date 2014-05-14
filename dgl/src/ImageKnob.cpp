@@ -17,7 +17,6 @@
 #include "../ImageKnob.hpp"
 
 #include <cmath>
-#include <cstdio>
 
 START_NAMESPACE_DGL
 

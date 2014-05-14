@@ -19,12 +19,6 @@
 
 #include "Geometry.hpp"
 
-#ifdef PROPER_CPP11_SUPPORT
-# include <cstdint>
-#else
-# include <stdint.h>
-#endif
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
