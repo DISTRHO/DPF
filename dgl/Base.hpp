@@ -32,6 +32,46 @@
 #define USE_NAMESPACE_DGL using namespace DGL_NAMESPACE;
 
 // -----------------------------------------------------------------------
+// Fix OpenGL includes for Windows, based on glfw code
+
+#ifdef DISTRHO_OS_WINDOWS
+
+#ifndef APIENTRY
+# define APIENTRY __stdcall
+#endif // APIENTRY
+
+/* We need WINGDIAPI defined */
+#ifndef WINGDIAPI
+# if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__POCC__)
+#  define WINGDIAPI __declspec(dllimport)
+# elif defined(__LCC__)
+#  define WINGDIAPI __stdcall
+# else
+#  define WINGDIAPI extern
+# endif
+# define DGL_WINGDIAPI_DEFINED
+#endif // WINGDIAPI
+
+/* Some <GL/glu.h> files also need CALLBACK defined */
+#ifndef CALLBACK
+# if defined(_MSC_VER)
+#  if (defined(_M_MRX000) || defined(_M_IX86) || defined(_M_ALPHA) || defined(_M_PPC)) && !defined(MIDL_PASS)
+#   define CALLBACK __stdcall
+#  else
+#   define CALLBACK
+#  endif
+# else
+#  define CALLBACK __stdcall
+# endif
+# define DGL_CALLBACK_DEFINED
+#endif // CALLBACK
+
+/* Most GL/glu.h variants on Windows need wchar_t */
+#include <cstddef>
+
+#endif // DISTRHO_OS_WINDOWS
+
+// -----------------------------------------------------------------------
 // OpenGL includes
 
 #ifdef DISTRHO_OS_MAC
@@ -54,6 +94,22 @@
 #ifndef GL_CLAMP_TO_BORDER
 # define GL_CLAMP_TO_BORDER 0x812D
 #endif
+
+#ifdef DISTRHO_OS_WINDOWS
+// -----------------------------------------------------------------------
+// Fix OpenGL includes for Windows, based on glfw code
+
+#ifdef DGL_WINGDIAPI_DEFINED
+# undef WINGDIAPI
+# undef DGL_WINGDIAPI_DEFINED
+#endif
+
+#ifdef DGL_CALLBACK_DEFINED
+# undef CALLBACK
+# undef DGL_CALLBACK_DEFINED
+#endif
+
+#endif // DISTRHO_OS_WINDOWS
 
 START_NAMESPACE_DGL
 
