@@ -22,9 +22,10 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-ImageSlider::ImageSlider(Window& parent, const Image& image)
+ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
     : Widget(parent),
       fImage(image),
+      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -39,9 +40,10 @@ ImageSlider::ImageSlider(Window& parent, const Image& image)
     setSize(fImage.getSize());
 }
 
-ImageSlider::ImageSlider(Widget* widget, const Image& image)
+ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
     : Widget(widget->getParentWindow()),
       fImage(image),
+      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -56,9 +58,10 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image)
     setSize(fImage.getSize());
 }
 
-ImageSlider::ImageSlider(const ImageSlider& imageSlider)
+ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
     : Widget(imageSlider.getParentWindow()),
       fImage(imageSlider.fImage),
+      fId(imageSlider.fId),
       fMinimum(imageSlider.fMinimum),
       fMaximum(imageSlider.fMaximum),
       fStep(imageSlider.fStep),
@@ -76,34 +79,44 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider)
     setSize(fImage.getSize());
 }
 
-float ImageSlider::getValue() const
+int ImageSlider::getId() const noexcept
+{
+    return fId;
+}
+
+void ImageSlider::setId(int id) noexcept
+{
+    fId = id;;
+}
+
+float ImageSlider::getValue() const noexcept
 {
     return fValue;
 }
 
-void ImageSlider::setStartPos(const Point<int>& startPos)
+void ImageSlider::setStartPos(const Point<int>& startPos) noexcept
 {
     fStartPos = startPos;
     _recheckArea();
 }
 
-void ImageSlider::setStartPos(int x, int y)
+void ImageSlider::setStartPos(int x, int y) noexcept
 {
     setStartPos(Point<int>(x, y));
 }
 
-void ImageSlider::setEndPos(const Point<int>& endPos)
+void ImageSlider::setEndPos(const Point<int>& endPos) noexcept
 {
     fEndPos = endPos;
     _recheckArea();
 }
 
-void ImageSlider::setEndPos(int x, int y)
+void ImageSlider::setEndPos(int x, int y) noexcept
 {
     setEndPos(Point<int>(x, y));
 }
 
-void ImageSlider::setInverted(bool inverted)
+void ImageSlider::setInverted(bool inverted) noexcept
 {
     if (fInverted == inverted)
         return;
@@ -112,7 +125,7 @@ void ImageSlider::setInverted(bool inverted)
     repaint();
 }
 
-void ImageSlider::setRange(float min, float max)
+void ImageSlider::setRange(float min, float max) noexcept
 {
     if (fValue < min)
     {
@@ -120,7 +133,11 @@ void ImageSlider::setRange(float min, float max)
         repaint();
 
         if (fCallback != nullptr)
-            fCallback->imageSliderValueChanged(this, fValue);
+        {
+            try {
+                fCallback->imageSliderValueChanged(this, fValue);
+            } DISTRHO_SAFE_EXCEPTION("ImageSlider::setRange < min");
+        }
     }
     else if (fValue > max)
     {
@@ -128,19 +145,23 @@ void ImageSlider::setRange(float min, float max)
         repaint();
 
         if (fCallback != nullptr)
-            fCallback->imageSliderValueChanged(this, fValue);
+        {
+            try {
+                fCallback->imageSliderValueChanged(this, fValue);
+            } DISTRHO_SAFE_EXCEPTION("ImageSlider::setRange > max");
+        }
     }
 
     fMinimum = min;
     fMaximum = max;
 }
 
-void ImageSlider::setStep(float step)
+void ImageSlider::setStep(float step) noexcept
 {
     fStep = step;
 }
 
-void ImageSlider::setValue(float value, bool sendCallback)
+void ImageSlider::setValue(float value, bool sendCallback) noexcept
 {
     if (fValue == value)
         return;
@@ -153,10 +174,14 @@ void ImageSlider::setValue(float value, bool sendCallback)
     repaint();
 
     if (sendCallback && fCallback != nullptr)
-        fCallback->imageSliderValueChanged(this, fValue);
+    {
+        try {
+            fCallback->imageSliderValueChanged(this, fValue);
+        } DISTRHO_SAFE_EXCEPTION("ImageSlider::setValue");
+    }
 }
 
-void ImageSlider::setCallback(Callback* callback)
+void ImageSlider::setCallback(Callback* callback) noexcept
 {
     fCallback = callback;
 }
@@ -333,7 +358,7 @@ bool ImageSlider::onMotion(int x, int y)
     return true;
 }
 
-void ImageSlider::_recheckArea()
+void ImageSlider::_recheckArea() noexcept
 {
     if (fStartPos.getY() == fEndPos.getY())
     {

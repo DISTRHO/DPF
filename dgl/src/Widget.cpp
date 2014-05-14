@@ -73,7 +73,7 @@ const Point<int>& Widget::getPos() const noexcept
     return fArea.getPos();
 }
 
-void Widget::setX(int x)
+void Widget::setX(int x) noexcept
 {
     if (fArea.getX() == x)
         return;
@@ -82,7 +82,7 @@ void Widget::setX(int x)
     fParent.repaint();
 }
 
-void Widget::setY(int y)
+void Widget::setY(int y) noexcept
 {
     if (fArea.getY() == y)
         return;
@@ -91,12 +91,12 @@ void Widget::setY(int y)
     fParent.repaint();
 }
 
-void Widget::setPos(int x, int y)
+void Widget::setPos(int x, int y) noexcept
 {
     setPos(Point<int>(x, y));
 }
 
-void Widget::setPos(const Point<int>& pos)
+void Widget::setPos(const Point<int>& pos) noexcept
 {
     if (fArea.getPos() == pos)
         return;
@@ -120,7 +120,7 @@ const Size<int>& Widget::getSize() const noexcept
     return fArea.getSize();
 }
 
-void Widget::setWidth(int width)
+void Widget::setWidth(int width) noexcept
 {
     if (fArea.getWidth() == width)
         return;
@@ -129,7 +129,7 @@ void Widget::setWidth(int width)
     fParent.repaint();
 }
 
-void Widget::setHeight(int height)
+void Widget::setHeight(int height) noexcept
 {
     if (fArea.getHeight() == height)
         return;
@@ -138,12 +138,12 @@ void Widget::setHeight(int height)
     fParent.repaint();
 }
 
-void Widget::setSize(int width, int height)
+void Widget::setSize(int width, int height) noexcept
 {
     setSize(Size<int>(width, height));
 }
 
-void Widget::setSize(const Size<int>& size)
+void Widget::setSize(const Size<int>& size) noexcept
 {
     if (fArea.getSize() == size)
         return;
@@ -157,12 +157,12 @@ const Rectangle<int>& Widget::getArea() const noexcept
     return fArea;
 }
 
-uint Widget::getEventTimestamp()
+uint Widget::getEventTimestamp() const noexcept
 {
     return fParent.getEventTimestamp();
 }
 
-int Widget::getModifiers()
+int Widget::getModifiers() const noexcept
 {
     return fParent.getModifiers();
 }
@@ -177,7 +177,7 @@ Window& Widget::getParentWindow() const noexcept
     return fParent;
 }
 
-void Widget::repaint()
+void Widget::repaint() noexcept
 {
     fParent.repaint();
 }

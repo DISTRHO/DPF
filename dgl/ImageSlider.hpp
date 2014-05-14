@@ -36,23 +36,26 @@ public:
         virtual void imageSliderValueChanged(ImageSlider* imageSlider, float value) = 0;
     };
 
-    ImageSlider(Window& parent, const Image& image);
-    ImageSlider(Widget* widget, const Image& image);
-    ImageSlider(const ImageSlider& imageSlider);
+    ImageSlider(Window& parent, const Image& image, int id = 0) noexcept;
+    ImageSlider(Widget* widget, const Image& image, int id = 0) noexcept;
+    ImageSlider(const ImageSlider& imageSlider) noexcept;
 
-    float getValue() const;
+    int getId() const noexcept;
+    void setId(int id) noexcept;
 
-    void setStartPos(const Point<int>& startPos);
-    void setStartPos(int x, int y);
-    void setEndPos(const Point<int>& endPos);
-    void setEndPos(int x, int y);
+    float getValue() const noexcept;
 
-    void setInverted(bool inverted);
-    void setRange(float min, float max);
-    void setStep(float step);
-    void setValue(float value, bool sendCallback = false);
+    void setStartPos(const Point<int>& startPos) noexcept;
+    void setStartPos(int x, int y) noexcept;
+    void setEndPos(const Point<int>& endPos) noexcept;
+    void setEndPos(int x, int y) noexcept;
 
-    void setCallback(Callback* callback);
+    void setInverted(bool inverted) noexcept;
+    void setRange(float min, float max) noexcept;
+    void setStep(float step) noexcept;
+    void setValue(float value, bool sendCallback = false) noexcept;
+
+    void setCallback(Callback* callback) noexcept;
 
 protected:
      void onDisplay() override;
@@ -61,6 +64,7 @@ protected:
 
 private:
     Image fImage;
+    int   fId;
     float fMinimum;
     float fMaximum;
     float fStep;
@@ -78,12 +82,10 @@ private:
     Point<int> fEndPos;
     Rectangle<int> fSliderArea;
 
-    void _recheckArea();
+    void _recheckArea() noexcept;
 
     DISTRHO_LEAK_DETECTOR(ImageSlider)
 };
-
-typedef ScopedPointer<ImageSlider> ImageSliderPtr;
 
 // -----------------------------------------------------------------------
 

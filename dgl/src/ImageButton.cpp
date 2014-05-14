@@ -20,7 +20,7 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-ImageButton::ImageButton(Window& parent, const Image& image)
+ImageButton::ImageButton(Window& parent, const Image& image) noexcept
     : Widget(parent),
       fImageNormal(image),
       fImageHover(image),
@@ -31,7 +31,7 @@ ImageButton::ImageButton(Window& parent, const Image& image)
 {
 }
 
-ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
+ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
     : Widget(parent),
       fImageNormal(imageNormal),
       fImageHover(imageHover),
@@ -45,7 +45,7 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
     setSize(fCurImage->getSize());
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& image)
+ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
     : Widget(widget->getParentWindow()),
       fImageNormal(image),
       fImageHover(image),
@@ -56,7 +56,7 @@ ImageButton::ImageButton(Widget* widget, const Image& image)
 {
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
+ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
     : Widget(widget->getParentWindow()),
       fImageNormal(imageNormal),
       fImageHover(imageHover),
@@ -70,7 +70,7 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
     setSize(fCurImage->getSize());
 }
 
-ImageButton::ImageButton(const ImageButton& imageButton)
+ImageButton::ImageButton(const ImageButton& imageButton) noexcept
     : Widget(imageButton.getParentWindow()),
       fImageNormal(imageButton.fImageNormal),
       fImageHover(imageButton.fImageHover),
@@ -84,7 +84,7 @@ ImageButton::ImageButton(const ImageButton& imageButton)
     setSize(fCurImage->getSize());
 }
 
-void ImageButton::setCallback(Callback* callback)
+void ImageButton::setCallback(Callback* callback) noexcept
 {
     fCallback = callback;
 }

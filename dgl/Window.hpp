@@ -40,7 +40,7 @@ public:
     void exec(bool lockWait = false);
 
     void focus();
-    void repaint();
+    void repaint() noexcept;
 
     bool isVisible() const noexcept;
     void setVisible(bool yesNo);
@@ -58,9 +58,9 @@ public:
     void setTransientWinId(intptr_t winId);
 
     App& getApp() const noexcept;
-    uint getEventTimestamp() const;
-    int  getModifiers() const;
-    intptr_t getWindowId() const;
+    uint getEventTimestamp() const noexcept;
+    int  getModifiers() const noexcept;
+    intptr_t getWindowId() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);

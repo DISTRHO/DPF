@@ -31,10 +31,9 @@
 #define END_NAMESPACE_DGL }
 #define USE_NAMESPACE_DGL using namespace DGL_NAMESPACE;
 
+#ifdef DISTRHO_OS_WINDOWS
 // -----------------------------------------------------------------------
 // Fix OpenGL includes for Windows, based on glfw code
-
-#ifdef DISTRHO_OS_WINDOWS
 
 #ifndef APIENTRY
 # define APIENTRY __stdcall

@@ -41,19 +41,22 @@ public:
         virtual void imageKnobValueChanged(ImageKnob* imageKnob, float value) = 0;
     };
 
-    ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical);
-    ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical);
+    ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
+    ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
     ImageKnob(const ImageKnob& imageKnob);
 
-    float getValue() const;
+    int getId() const noexcept;
+    void setId(int id) noexcept;
 
-    void setOrientation(Orientation orientation);
-    void setRange(float min, float max);
-    void setStep(float step);
-    void setValue(float value, bool sendCallback = false);
+    float getValue() const noexcept;
+
+    void setOrientation(Orientation orientation) noexcept;
+    void setRange(float min, float max) noexcept;
+    void setStep(float step) noexcept;
+    void setValue(float value, bool sendCallback = false) noexcept;
     void setRotationAngle(int angle);
 
-    void setCallback(Callback* callback);
+    void setCallback(Callback* callback) noexcept;
 
 protected:
      void onDisplay() override;
@@ -64,6 +67,7 @@ protected:
 
 private:
     Image fImage;
+    int   fId;
     float fMinimum;
     float fMaximum;
     float fStep;
@@ -86,8 +90,6 @@ private:
 
     DISTRHO_LEAK_DETECTOR(ImageKnob)
 };
-
-typedef ScopedPointer<ImageKnob> ImageKnobPtr;
 
 // -----------------------------------------------------------------------
 

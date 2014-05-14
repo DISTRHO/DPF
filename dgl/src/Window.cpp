@@ -295,7 +295,7 @@ struct Window::PrivateData {
 #endif
     }
 
-    void repaint()
+    void repaint() noexcept
     {
         //DBG("Window repaint\n");
         puglPostRedisplay(fView);
@@ -514,17 +514,17 @@ struct Window::PrivateData {
         return fApp;
     }
 
-    int getModifiers() const
+    int getModifiers() const noexcept
     {
         return puglGetModifiers(fView);
     }
 
-    uint getEventTimestamp() const
+    uint getEventTimestamp() const noexcept
     {
         return puglGetEventTimestamp(fView);
     }
 
-    intptr_t getWindowId() const
+    intptr_t getWindowId() const noexcept
     {
         return puglGetNativeWindow(fView);
     }
@@ -894,7 +894,7 @@ void Window::focus()
     pData->focus();
 }
 
-void Window::repaint()
+void Window::repaint() noexcept
 {
     pData->repaint();
 }
@@ -954,17 +954,17 @@ App& Window::getApp() const noexcept
     return pData->getApp();
 }
 
-int Window::getModifiers() const
+int Window::getModifiers() const noexcept
 {
     return pData->getModifiers();
 }
 
-uint Window::getEventTimestamp() const
+uint Window::getEventTimestamp() const noexcept
 {
     return pData->getEventTimestamp();
 }
 
-intptr_t Window::getWindowId() const
+intptr_t Window::getWindowId() const noexcept
 {
     return pData->getWindowId();
 }

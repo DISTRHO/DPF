@@ -34,13 +34,13 @@ public:
         virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
     };
 
-    ImageButton(Window& parent, const Image& image);
-    ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
-    ImageButton(Widget* widget, const Image& image);
-    ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
-    ImageButton(const ImageButton& imageButton);
+    ImageButton(Window& parent, const Image& image) noexcept;
+    ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    ImageButton(Widget* widget, const Image& image) noexcept;
+    ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    ImageButton(const ImageButton& imageButton) noexcept;
 
-    void setCallback(Callback* callback);
+    void setCallback(Callback* callback) noexcept;
 
 protected:
      void onDisplay() override;
@@ -58,8 +58,6 @@ private:
 
     DISTRHO_LEAK_DETECTOR(ImageButton)
 };
-
-typedef ScopedPointer<ImageButton> ImageButtonPtr;
 
 // -----------------------------------------------------------------------
 

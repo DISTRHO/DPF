@@ -42,30 +42,30 @@ public:
     int getY() const noexcept;
     const Point<int>& getPos() const noexcept;
 
-    void setX(int x);
-    void setY(int y);
-    void setPos(int x, int y);
-    void setPos(const Point<int>& pos);
+    void setX(int x) noexcept;
+    void setY(int y) noexcept;
+    void setPos(int x, int y) noexcept;
+    void setPos(const Point<int>& pos) noexcept;
 
     int getWidth() const noexcept;
     int getHeight() const noexcept;
     const Size<int>& getSize() const noexcept;
 
     // virtual needed by cairo
-    virtual void setWidth(int width);
-    virtual void setHeight(int height);
-    virtual void setSize(int width, int height);
-    virtual void setSize(const Size<int>& size);
+    virtual void setWidth(int width) noexcept;
+    virtual void setHeight(int height) noexcept;
+    virtual void setSize(int width, int height) noexcept;
+    virtual void setSize(const Size<int>& size) noexcept;
 
     const Rectangle<int>& getArea() const noexcept;
 
-    uint getEventTimestamp();
-    int  getModifiers();
+    uint getEventTimestamp() const noexcept;
+    int  getModifiers() const noexcept;
 
     App&    getParentApp() const noexcept;
     Window& getParentWindow() const noexcept;
 
-    void repaint();
+    void repaint() noexcept;
 
 protected:
     virtual void onDisplay() = 0;

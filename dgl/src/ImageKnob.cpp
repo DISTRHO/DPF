@@ -22,9 +22,10 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation)
+ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation, int id) noexcept
     : Widget(parent),
       fImage(image),
+      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -45,9 +46,10 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
     setSize(fImgLayerSize, fImgLayerSize);
 }
 
-ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation)
+ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation, int id) noexcept
     : Widget(widget->getParentWindow()),
       fImage(image),
+      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -71,6 +73,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
 ImageKnob::ImageKnob(const ImageKnob& imageKnob)
     : Widget(imageKnob.getParentWindow()),
       fImage(imageKnob.fImage),
+      fId(imageKnob.fId),
       fMinimum(imageKnob.fMinimum),
       fMaximum(imageKnob.fMaximum),
       fStep(imageKnob.fStep),
@@ -98,12 +101,22 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
     }
 }
 
-float ImageKnob::getValue() const
+int ImageKnob::getId() const noexcept
+{
+    return fId;
+}
+
+void ImageKnob::setId(int id) noexcept
+{
+    fId = id;;
+}
+
+float ImageKnob::getValue() const noexcept
 {
     return fValue;
 }
 
-void ImageKnob::setOrientation(Orientation orientation)
+void ImageKnob::setOrientation(Orientation orientation) noexcept
 {
     if (fOrientation == orientation)
         return;
@@ -111,7 +124,7 @@ void ImageKnob::setOrientation(Orientation orientation)
     fOrientation = orientation;
 }
 
-void ImageKnob::setRange(float min, float max)
+void ImageKnob::setRange(float min, float max) noexcept
 {
     if (fValue < min)
     {
@@ -119,7 +132,11 @@ void ImageKnob::setRange(float min, float max)
         repaint();
 
         if (fCallback != nullptr)
-            fCallback->imageKnobValueChanged(this, fValue);
+        {
+            try {
+                fCallback->imageKnobValueChanged(this, fValue);
+            } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange < min");
+        }
     }
     else if (fValue > max)
     {
@@ -127,19 +144,23 @@ void ImageKnob::setRange(float min, float max)
         repaint();
 
         if (fCallback != nullptr)
-            fCallback->imageKnobValueChanged(this, fValue);
+        {
+            try {
+                fCallback->imageKnobValueChanged(this, fValue);
+            } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange > max");
+        }
     }
 
     fMinimum = min;
     fMaximum = max;
 }
 
-void ImageKnob::setStep(float step)
+void ImageKnob::setStep(float step) noexcept
 {
     fStep = step;
 }
 
-void ImageKnob::setValue(float value, bool sendCallback)
+void ImageKnob::setValue(float value, bool sendCallback) noexcept
 {
     if (fValue == value)
         return;
@@ -152,7 +173,11 @@ void ImageKnob::setValue(float value, bool sendCallback)
     repaint();
 
     if (sendCallback && fCallback != nullptr)
-        fCallback->imageKnobValueChanged(this, fValue);
+    {
+        try {
+            fCallback->imageKnobValueChanged(this, fValue);
+        } DISTRHO_SAFE_EXCEPTION("ImageKnob::setValue");
+    }
 }
 
 void ImageKnob::setRotationAngle(int angle)
@@ -192,7 +217,7 @@ void ImageKnob::setRotationAngle(int angle)
     }
 }
 
-void ImageKnob::setCallback(Callback* callback)
+void ImageKnob::setCallback(Callback* callback) noexcept
 {
     fCallback = callback;
 }
