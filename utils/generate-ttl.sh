@@ -16,7 +16,7 @@ if [ -f $PWD/lv2_ttl_generator.exe ]; then
   EXT=dll
 else
   GEN=$PWD/lv2_ttl_generator
-  if [ -d /Developer ]; then
+  if [ -d /Library/Audio ]; then
     EXT=dylib
   else
     EXT=so
