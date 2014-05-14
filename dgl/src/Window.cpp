@@ -277,6 +277,49 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    void exec_init()
+    {
+        DBG("Window modal loop starting..."); DBGF;
+        DISTRHO_SAFE_ASSERT_RETURN(fModal.parent != nullptr, setVisible(true));
+
+        fModal.enabled = true;
+        fModal.parent->fModal.childFocus = this;
+
+#ifdef DISTRHO_OS_WINDOWS
+        // Center this window
+        PuglInternals* const parentImpl = fModal.parent->fView->impl;
+
+        RECT curRect;
+        RECT parentRect;
+        GetWindowRect(hwnd, &curRect);
+        GetWindowRect(parentImpl->hwnd, &parentRect);
+
+        int x = parentRect.left+(parentRect.right-curRect.right)/2;
+        int y = parentRect.top +(parentRect.bottom-curRect.bottom)/2;
+
+        SetWindowPos(hwnd, 0, x, y, 0, 0, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOSIZE|SWP_NOZORDER);
+        UpdateWindow(hwnd);
+#endif
+
+        fModal.parent->setVisible(true);
+        setVisible(true);
+
+        DBG("Ok\n");
+    }
+
+    void exec_fini()
+    {
+        DBG("Window modal loop stopping..."); DBGF;
+        fModal.enabled = false;
+
+        if (fModal.parent != nullptr)
+            fModal.parent->fModal.childFocus = nullptr;
+
+        DBG("Ok\n");
+    }
+
+    // -------------------------------------------------------------------
+
     void focus()
     {
         DBG("Window focus\n");
@@ -295,18 +338,7 @@ struct Window::PrivateData {
 #endif
     }
 
-    void repaint() noexcept
-    {
-        //DBG("Window repaint\n");
-        puglPostRedisplay(fView);
-    }
-
     // -------------------------------------------------------------------
-
-    bool isVisible() const noexcept
-    {
-        return fVisible;
-    }
 
     void setVisible(const bool yesNo)
     {
@@ -363,11 +395,6 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
-    bool isResizable() const noexcept
-    {
-        return fResizable;
-    }
-
     void setResizable(const bool yesNo)
     {
         if (fResizable == yesNo)
@@ -389,21 +416,6 @@ struct Window::PrivateData {
     }
 
     // -------------------------------------------------------------------
-
-    int getWidth() const noexcept
-    {
-        return fView->width;
-    }
-
-    int getHeight() const noexcept
-    {
-        return fView->height;
-    }
-
-    Size<int> getSize() const noexcept
-    {
-        return Size<int>(fView->width, fView->height);
-    }
 
     void setSize(uint width, uint height, const bool forced = false)
     {
@@ -473,7 +485,7 @@ struct Window::PrivateData {
             XFlush(xDisplay);
 #endif
 
-        repaint();
+        puglPostRedisplay(fView);
     }
 
     // -------------------------------------------------------------------
@@ -505,28 +517,6 @@ struct Window::PrivateData {
         // unused
         (void)winId;
 #endif
-    }
-
-    // -------------------------------------------------------------------
-
-    App& getApp() const noexcept
-    {
-        return fApp;
-    }
-
-    int getModifiers() const noexcept
-    {
-        return puglGetModifiers(fView);
-    }
-
-    uint getEventTimestamp() const noexcept
-    {
-        return puglGetEventTimestamp(fView);
-    }
-
-    intptr_t getWindowId() const noexcept
-    {
-        return puglGetNativeWindow(fView);
     }
 
     // -------------------------------------------------------------------
@@ -579,49 +569,6 @@ struct Window::PrivateData {
 
         if (fModal.enabled && fModal.parent != nullptr)
             fModal.parent->idle();
-    }
-
-    // -------------------------------------------------------------------
-
-    void exec_init()
-    {
-        DBG("Window modal loop starting..."); DBGF;
-        DISTRHO_SAFE_ASSERT_RETURN(fModal.parent != nullptr, setVisible(true));
-
-        fModal.enabled = true;
-        fModal.parent->fModal.childFocus = this;
-
-#ifdef DISTRHO_OS_WINDOWS
-        // Center this window
-        PuglInternals* const parentImpl = fModal.parent->fView->impl;
-
-        RECT curRect;
-        RECT parentRect;
-        GetWindowRect(hwnd, &curRect);
-        GetWindowRect(parentImpl->hwnd, &parentRect);
-
-        int x = parentRect.left+(parentRect.right-curRect.right)/2;
-        int y = parentRect.top +(parentRect.bottom-curRect.bottom)/2;
-
-        SetWindowPos(hwnd, 0, x, y, 0, 0, SWP_NOACTIVATE|SWP_NOOWNERZORDER|SWP_NOSIZE|SWP_NOZORDER);
-        UpdateWindow(hwnd);
-#endif
-
-        fModal.parent->setVisible(true);
-        setVisible(true);
-
-        DBG("Ok\n");
-    }
-
-    void exec_fini()
-    {
-        DBG("Window modal loop stopping..."); DBGF;
-        fModal.enabled = false;
-
-        if (fModal.parent != nullptr)
-            fModal.parent->fModal.childFocus = nullptr;
-
-        DBG("Ok\n");
     }
 
     // -------------------------------------------------------------------
@@ -850,19 +797,13 @@ struct Window::PrivateData {
 // Window
 
 Window::Window(App& app)
-    : pData(new PrivateData(app, this))
-{
-}
+    : pData(new PrivateData(app, this)) {}
 
 Window::Window(App& app, Window& parent)
-    : pData(new PrivateData(app, this, parent))
-{
-}
+    : pData(new PrivateData(app, this, parent)) {}
 
 Window::Window(App& app, intptr_t parentId)
-    : pData(new PrivateData(app, this, parentId))
-{
-}
+    : pData(new PrivateData(app, this, parentId)) {}
 
 Window::~Window()
 {
@@ -896,12 +837,12 @@ void Window::focus()
 
 void Window::repaint() noexcept
 {
-    pData->repaint();
+    puglPostRedisplay(pData->fView);
 }
 
 bool Window::isVisible() const noexcept
 {
-    return pData->isVisible();
+    return pData->fVisible;
 }
 
 void Window::setVisible(bool yesNo)
@@ -911,7 +852,7 @@ void Window::setVisible(bool yesNo)
 
 bool Window::isResizable() const noexcept
 {
-    return pData->isResizable();
+    return pData->fResizable;
 }
 
 void Window::setResizable(bool yesNo)
@@ -921,17 +862,17 @@ void Window::setResizable(bool yesNo)
 
 int Window::getWidth() const noexcept
 {
-    return pData->getWidth();
+    return pData->fView->width;
 }
 
 int Window::getHeight() const noexcept
 {
-    return pData->getHeight();
+    return pData->fView->height;
 }
 
 Size<int> Window::getSize() const noexcept
 {
-    return pData->getSize();
+    return Size<int>(pData->fView->width, pData->fView->height);
 }
 
 void Window::setSize(uint width, uint height)
@@ -951,22 +892,22 @@ void Window::setTransientWinId(intptr_t winId)
 
 App& Window::getApp() const noexcept
 {
-    return pData->getApp();
+    return pData->fApp;
 }
 
 int Window::getModifiers() const noexcept
 {
-    return pData->getModifiers();
+    return puglGetModifiers(pData->fView);
 }
 
 uint Window::getEventTimestamp() const noexcept
 {
-    return pData->getEventTimestamp();
+    return puglGetEventTimestamp(pData->fView);
 }
 
 intptr_t Window::getWindowId() const noexcept
 {
-    return pData->getWindowId();
+    return puglGetNativeWindow(pData->fView);
 }
 
 void Window::_addWidget(Widget* const widget)
