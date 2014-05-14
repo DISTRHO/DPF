@@ -25,6 +25,7 @@ START_NAMESPACE_DGL
 // Forward class names
 
 template<typename> class Line;
+template<typename> class Circle;
 template<typename> class Triangle;
 template<typename> class Rectangle;
 
@@ -99,6 +100,7 @@ public:
 private:
     T fX, fY;
     template<typename> friend class Line;
+    template<typename> friend class Circle;
     template<typename> friend class Triangle;
     template<typename> friend class Rectangle;
 };
@@ -186,7 +188,7 @@ class Line
 {
 public:
    /**
-      Constructor for null line ([0, 0] to [0, 0]).
+      Constructor for a null line ([0, 0] to [0, 0]).
     */
     Line() noexcept;
 
@@ -309,6 +311,115 @@ private:
 };
 
 // -----------------------------------------------------------------------
+// Circle
+
+template<typename T>
+class Circle
+{
+public:
+   /**
+      Constructor for a null circle.
+    */
+    Circle() noexcept;
+
+   /**
+      Constructor using custom X, Y and size values.
+    */
+    Circle(const T& x, const T& y, float size, int numSegments = 300);
+
+   /**
+      Constructor using custom position and size values.
+    */
+    Circle(const Point<T>& pos, float size, int numSegments = 300);
+
+   /**
+      Constructor using another Circle class values.
+    */
+    Circle(const Circle<T>& cir) noexcept;
+
+   /**
+      Get X value.
+    */
+    const T& getX() const noexcept;
+
+   /**
+      Get Y value.
+    */
+    const T& getY() const noexcept;
+
+   /**
+      Get position.
+    */
+    const Point<T>& getPos() const noexcept;
+
+   /**
+      Set X value as @a x.
+    */
+    void setX(const T& x) noexcept;
+
+   /**
+      Set Y value as @a y.
+    */
+    void setY(const T& y) noexcept;
+
+   /**
+      Set X and Y values as @a x and @a y respectively.
+    */
+    void setPos(const T& x, const T& y) noexcept;
+
+   /**
+      Set X and Y values according to @a pos.
+    */
+    void setPos(const Point<T>& pos) noexcept;
+
+   /**
+      Get size.
+    */
+    float getSize() const noexcept;
+
+   /**
+      Set size.
+      @note Must always be > 0.0f
+    */
+    void setSize(float size) noexcept;
+
+   /**
+      Get the current number of line segments that make this circle.
+    */
+    int getNumSegments() const noexcept;
+
+   /**
+      Set the number of line segments that will make this circle.
+      @note Must always be >= 3
+    */
+    void setNumSegments(int num);
+
+   /**
+      Draw this circle using the current OpenGL state.
+    */
+    void draw();
+
+   /**
+      Draw lines (outline of this circle) using the current OpenGL state.
+    */
+    void drawOutline();
+
+    Circle<T>& operator=(const Circle<T>& cir) noexcept;
+    bool operator==(const Circle<T>& cir) const noexcept;
+    bool operator!=(const Circle<T>& cir) const noexcept;
+
+private:
+    Point<T> fPos;
+    float    fSize;
+    int      fNumSegments;
+
+    // cached values
+    float fTheta, fCos, fSin;
+
+    void _draw(const bool isOutline);
+};
+
+// -----------------------------------------------------------------------
 // Triangle
 
 template<typename T>
@@ -316,7 +427,7 @@ class Triangle
 {
 public:
    /**
-      Constructor for null triangle.
+      Constructor for a null triangle.
     */
     Triangle() noexcept;
 
@@ -363,7 +474,7 @@ class Rectangle
 {
 public:
    /**
-      Constructor for null rectangle.
+      Constructor for a null rectangle.
     */
     Rectangle() noexcept;
 

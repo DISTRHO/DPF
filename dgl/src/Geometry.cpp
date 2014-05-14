@@ -413,6 +413,188 @@ bool Line<T>::operator!=(const Line<T>& line) const noexcept
 }
 
 // -----------------------------------------------------------------------
+// Circle
+
+template<typename T>
+Circle<T>::Circle() noexcept
+    : fPos(0, 0),
+      fSize(0.0f),
+      fNumSegments(0),
+      fTheta(0.0f),
+      fCos(0.0f),
+      fSin(0.0f)
+{
+}
+
+template<typename T>
+Circle<T>::Circle(const T& x, const T& y, float size, int numSegments)
+    : fPos(x, y),
+      fSize(size),
+      fNumSegments(numSegments >= 3 ? numSegments : 3),
+      fTheta(2.0f * M_PI / float(fNumSegments)),
+      fCos(std::cos(fTheta)),
+      fSin(std::sin(fTheta))
+{
+    DISTRHO_SAFE_ASSERT(fSize > 0.0f);
+}
+
+template<typename T>
+Circle<T>::Circle(const Point<T>& pos, float size, int numSegments)
+    : fPos(pos),
+      fSize(size),
+      fNumSegments(numSegments >= 3 ? numSegments : 3),
+      fTheta(2.0f * M_PI / float(fNumSegments)),
+      fCos(std::cos(fTheta)),
+      fSin(std::sin(fTheta))
+{
+    DISTRHO_SAFE_ASSERT(fSize > 0.0f);
+}
+
+template<typename T>
+Circle<T>::Circle(const Circle<T>& cir) noexcept
+    : fPos(cir.fPos),
+      fSize(cir.fSize),
+      fNumSegments(cir.fNumSegments),
+      fTheta(cir.fTheta),
+      fCos(cir.fCos),
+      fSin(cir.fSin)
+{
+    DISTRHO_SAFE_ASSERT(fSize > 0.0f);
+}
+
+template<typename T>
+const T& Circle<T>::getX() const noexcept
+{
+    return fPos.fX;
+}
+
+template<typename T>
+const T& Circle<T>::getY() const noexcept
+{
+    return fPos.fX;
+}
+
+template<typename T>
+const Point<T>& Circle<T>::getPos() const noexcept
+{
+    return fPos;
+}
+
+template<typename T>
+void Circle<T>::setX(const T& x) noexcept
+{
+    fPos.fX = x;
+}
+
+template<typename T>
+void Circle<T>::setY(const T& y) noexcept
+{
+    fPos.fY = y;
+}
+
+template<typename T>
+void Circle<T>::setPos(const T& x, const T& y) noexcept
+{
+    fPos.fX = x;
+    fPos.fY = y;
+}
+
+template<typename T>
+void Circle<T>::setPos(const Point<T>& pos) noexcept
+{
+    fPos = pos;
+}
+
+template<typename T>
+float Circle<T>::getSize() const noexcept
+{
+    return fSize;
+}
+
+template<typename T>
+void Circle<T>::setSize(float size) noexcept
+{
+    fSize = size;
+}
+
+template<typename T>
+int Circle<T>::getNumSegments() const noexcept
+{
+    return fNumSegments;
+}
+
+template<typename T>
+void Circle<T>::setNumSegments(int num)
+{
+    if (fNumSegments == num)
+        return;
+
+    fNumSegments = num;
+
+    fTheta = 2.0f * M_PI / float(fNumSegments);
+    fCos = std::cos(fTheta);
+    fSin = std::sin(fTheta);
+}
+
+template<typename T>
+void Circle<T>::draw()
+{
+    _draw(false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline()
+{
+    _draw(true);
+}
+
+template<typename T>
+Circle<T>& Circle<T>::operator=(const Circle<T>& cir) noexcept
+{
+    fPos   = cir.fPos;
+    fSize  = cir.fSize;
+    fTheta = cir.fTheta;
+    fCos   = cir.fCos;
+    fSin   = cir.fSin;
+    fNumSegments = cir.fNumSegments;
+    return *this;
+}
+
+template<typename T>
+bool Circle<T>::operator==(const Circle<T>& cir) const noexcept
+{
+    return (fPos == cir.fPos && fSize == cir.fSize && fNumSegments == cir.fNumSegments);
+}
+
+template<typename T>
+bool Circle<T>::operator!=(const Circle<T>& cir) const noexcept
+{
+    return !operator==(cir);
+}
+
+template<typename T>
+void Circle<T>::_draw(const bool isOutline)
+{
+    if (fNumSegments == 0 && fSize > 0.0f)
+        return;
+
+    float t, x = fSize, y = 0;
+
+    glBegin(isOutline ? GL_LINE_LOOP : GL_POLYGON);
+
+    for (int i=0; i<fNumSegments; ++i)
+    {
+        glVertex2f(x + fPos.fX, y + fPos.fY);
+
+        t = x;
+        x = fCos * x - fSin * y;
+        y = fSin * t + fCos * y;
+    }
+
+    glEnd();
+}
+
+// -----------------------------------------------------------------------
 // Triangle
 
 template<typename T>
@@ -743,6 +925,11 @@ template class Line<double>;
 template class Line<float>;
 template class Line<int>;
 template class Line<short>;
+
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<short>;
 
 template class Triangle<double>;
 template class Triangle<float>;
