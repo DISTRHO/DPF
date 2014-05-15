@@ -65,6 +65,12 @@ public:
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);
 
+protected:
+    virtual void onDisplayBefore();
+    virtual void onDisplayAfter();
+    virtual void onClose();
+    virtual void onReshape(int width, int height);
+
 private:
     struct PrivateData;
     PrivateData* const pData;

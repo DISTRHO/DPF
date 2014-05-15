@@ -75,7 +75,6 @@ protected:
     virtual bool onScroll(int x, int y, float dx, float dy);
     virtual bool onSpecial(bool press, Key key);
     virtual void onReshape(int width, int height);
-    virtual void onClose();
 
 private:
     Window& fParent;

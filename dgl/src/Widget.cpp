@@ -207,19 +207,7 @@ bool Widget::onSpecial(bool, Key)
     return false;
 }
 
-void Widget::onReshape(int width, int height)
-{
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0, width, height, 0, 0.0f, 1.0f);
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-}
-
-void Widget::onClose()
+void Widget::onReshape(int, int)
 {
 }
 

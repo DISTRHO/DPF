@@ -575,10 +575,7 @@ struct Window::PrivateData {
 
     void onDisplay()
     {
-        //DBG("PUGL: onDisplay\n");
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();
+        fSelf->onDisplayBefore();
 
         FOR_EACH_WIDGET(it)
         {
@@ -587,6 +584,8 @@ struct Window::PrivateData {
             if (widget->isVisible())
                 widget->onDisplay();
         }
+
+        fSelf->onDisplayAfter();
     }
 
     void onKeyboard(const bool press, const uint key)
@@ -658,7 +657,7 @@ struct Window::PrivateData {
         DBGp("PUGL: onSpecial : %i %i\n", press, key);
 
         if (fModal.childFocus != nullptr)
-            return;
+            return fModal.childFocus->focus();
 
         FOR_EACH_WIDGET_INV(rit)
         {
@@ -672,6 +671,8 @@ struct Window::PrivateData {
     void onReshape(const int width, const int height)
     {
         DBGp("PUGL: onReshape : %i %i\n", width, height);
+
+        fSelf->onReshape(width, height);
 
         FOR_EACH_WIDGET(it)
         {
@@ -687,14 +688,10 @@ struct Window::PrivateData {
         if (fModal.enabled && fModal.parent != nullptr)
             exec_fini();
 
+        fSelf->onClose();
+
         if (fModal.childFocus != nullptr)
             fModal.childFocus->onClose();
-
-        FOR_EACH_WIDGET(it)
-        {
-            Widget* const widget(*it);
-            widget->onClose();
-        }
 
         close();
     }
@@ -939,6 +936,34 @@ void Window::removeIdleCallback(IdleCallback* const callback)
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
 
     pData->fApp.pData->idleCallbacks.remove(callback);
+}
+
+// -----------------------------------------------------------------------
+
+void Window::onDisplayBefore()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+}
+
+void Window::onDisplayAfter()
+{
+}
+
+void Window::onClose()
+{
+}
+
+void Window::onReshape(int width, int height)
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, 0.0f, 1.0f);
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 }
 
 // -----------------------------------------------------------------------
