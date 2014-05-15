@@ -18,58 +18,55 @@
 #define DGL_STANDALONE_WINDOW_HPP_INCLUDED
 
 #include "App.hpp"
+#include "Widget.hpp"
 #include "Window.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class StandaloneWindow
+class StandaloneWindow : public App,
+                         public Window
 {
 public:
     StandaloneWindow()
-        : fApp(),
-          fWindow(fApp)
-    {
-    }
-
-    App& getApp() noexcept
-    {
-        return fApp;
-    }
-
-    Window& getWindow() noexcept
-    {
-        return fWindow;
-    }
+        : App(),
+          Window((App&)*this),
+          fWidget(nullptr) {}
 
     void exec()
     {
-        fWindow.show();
-        fApp.exec();
-    }
-
-    // -------------------------------------------------------------------
-    // helpers
-
-    void setResizable(bool yesNo)
-    {
-        fWindow.setResizable(yesNo);
-    }
-
-    void setSize(uint width, uint height)
-    {
-        fWindow.setSize(width, height);
-    }
-
-    void setTitle(const char* title)
-    {
-        fWindow.setTitle(title);
+        Window::show();
+        App::exec();
     }
 
 protected:
-    App    fApp;
-    Window fWindow;
+    void onReshape(int width, int height) override
+    {
+        if (fWidget != nullptr)
+        {
+            fWidget->setSize(width, height);
+            fWidget->onReshape(width, height);
+        }
+        Window::onReshape(width, height);
+    }
+
+private:
+    Widget* fWidget;
+
+    void _addWidget(Widget* const widget) override
+    {
+        if (fWidget == nullptr)
+            fWidget = widget;
+        Window::_addWidget(widget);
+    }
+
+    void _removeWidget(Widget* const widget) override
+    {
+        if (fWidget == widget)
+            fWidget = nullptr;
+        Window::_removeWidget(widget);
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

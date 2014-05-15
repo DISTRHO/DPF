@@ -76,9 +76,10 @@ private:
     PrivateData* const pData;
     friend class App;
     friend class Widget;
+    friend class StandaloneWindow;
 
-    void _addWidget(Widget* const widget);
-    void _removeWidget(Widget* const widget);
+    virtual void _addWidget(Widget* const widget);
+    virtual void _removeWidget(Widget* const widget);
     void _idle();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
