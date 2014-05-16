@@ -332,12 +332,12 @@ protected:
             carla_copy<uint8_t>(realMidiEvent.buf, midiEvent.data, midiEvent.size);
         }
 
-        fPlugin.run(inBuffer, outBuffer, frames, realMidiEvents, midiEventCount);
+        fPlugin.run(const_cast<const float**>(inBuffer), outBuffer, frames, realMidiEvents, midiEventCount);
     }
 #else
     void process(float** const inBuffer, float** const outBuffer, const uint32_t frames, const NativeMidiEvent* const, const uint32_t) override
     {
-        fPlugin.run(inBuffer, outBuffer, frames);
+        fPlugin.run(const_cast<const float**>(inBuffer), outBuffer, frames);
     }
 #endif
 

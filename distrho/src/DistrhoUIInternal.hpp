@@ -123,7 +123,7 @@ struct UI::PrivateData {
 // -----------------------------------------------------------------------
 // UI exporter class
 
-class UIExporter
+class UIExporter : public DGL::IdleCallback
 {
 public:
     UIExporter(void* const ptr, const intptr_t winId,
@@ -223,6 +223,15 @@ public:
 
     // -------------------------------------------------------------------
 
+    void exec()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
+
+        glWindow.addIdleCallback(this);
+        glWindow.setVisible(true);
+        glApp.exec();
+    }
+
     bool idle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr, false);
@@ -266,6 +275,12 @@ public:
         return ! glApp.isQuiting();
     }
 
+protected:
+    void idleCallback() override
+    {
+        fUi->d_uiIdle();
+    }
+
 private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this plugin
@@ -280,7 +295,6 @@ private:
     UI::PrivateData* const fData;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UIExporter)
-    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------

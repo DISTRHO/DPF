@@ -18,6 +18,8 @@
 
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
 # include "src/DistrhoPluginCarla.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_JACK)
+# include "src/DistrhoPluginJack.cpp"
 #elif (defined(DISTRHO_PLUGIN_TARGET_LADSPA) || defined(DISTRHO_PLUGIN_TARGET_DSSI))
 # include "src/DistrhoPluginLADSPA+DSSI.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_LV2)
