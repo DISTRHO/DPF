@@ -144,6 +144,7 @@ public:
         fData->sendNoteCallbackFunc  = sendNoteCall;
         fData->uiResizeCallbackFunc  = uiResizeCall;
 
+        fUi->setSize(fUi->d_getWidth(), fUi->d_getHeight());
         glWindow.setSize(fUi->d_getWidth(), fUi->d_getHeight());
         glWindow.setResizable(false);
 
