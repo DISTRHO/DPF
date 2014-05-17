@@ -127,6 +127,7 @@ void Widget::setWidth(int width) noexcept
 
     fArea.setWidth(width);
     fParent.repaint();
+    onReshape(width, fArea.getHeight());
 }
 
 void Widget::setHeight(int height) noexcept
@@ -136,6 +137,7 @@ void Widget::setHeight(int height) noexcept
 
     fArea.setHeight(height);
     fParent.repaint();
+    onReshape(fArea.getWidth(), height);
 }
 
 void Widget::setSize(int width, int height) noexcept
@@ -150,11 +152,7 @@ void Widget::setSize(const Size<int>& size) noexcept
 
     fArea.setSize(size);
     fParent.repaint();
-}
-
-const Rectangle<int>& Widget::getArea() const noexcept
-{
-    return fArea;
+    onReshape(fArea.getWidth(), fArea.getHeight());
 }
 
 uint Widget::getEventTimestamp() const noexcept
@@ -175,6 +173,16 @@ App& Widget::getParentApp() const noexcept
 Window& Widget::getParentWindow() const noexcept
 {
     return fParent;
+}
+
+bool Widget::contains(int x, int y) const noexcept
+{
+    return (x >= 0 && y >= 0 && x < fArea.getWidth() && y < fArea.getHeight());
+}
+
+bool Widget::contains(const Point<int>& pos) const noexcept
+{
+    return contains(pos.getX(), pos.getY());
 }
 
 void Widget::repaint() noexcept

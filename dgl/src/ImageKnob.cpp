@@ -248,7 +248,7 @@ void ImageKnob::onDisplay()
         const GLint w2 = getWidth()/2;
         const GLint h2 = getHeight()/2;
 
-        glTranslatef(static_cast<float>(getX()+w2), static_cast<float>(getY()+h2), 0.0f);
+        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
         glRotatef(normValue*static_cast<float>(fRotationAngle), 0.0f, 0.0f, 1.0f);
 
         Rectangle<int>(-w2, -h2, getWidth(), getHeight()).draw();
@@ -268,7 +268,8 @@ void ImageKnob::onDisplay()
 
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        glRasterPos2i(getX(), getY()+getHeight());
+        glRasterPos2i(0, getHeight());
+        //glRasterPos2i(getX(), getY()+getHeight());
         glDrawPixels(fImgLayerSize, fImgLayerSize, fImage.getFormat(), fImage.getType(), fImage.getRawData() + imageDataOffset);
     }
 }
@@ -280,7 +281,7 @@ bool ImageKnob::onMouse(int button, bool press, int x, int y)
 
     if (press)
     {
-        if (! getArea().contains(x, y))
+        if (! contains(x, y))
             return false;
 
         fDragging = true;

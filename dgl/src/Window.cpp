@@ -582,7 +582,10 @@ struct Window::PrivateData {
             Widget* const widget(*it);
 
             if (widget->isVisible())
+            {
+                glViewport(widget->getX(), -widget->getY(), fView->width, fView->height);
                 widget->onDisplay();
+            }
         }
 
         fSelf->onDisplayAfter();
@@ -615,7 +618,7 @@ struct Window::PrivateData {
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onMouse(button, press, x, y))
+            if (widget->isVisible() && widget->onMouse(button, press, x-widget->getX(), y-widget->getY()))
                 break;
         }
     }
@@ -631,7 +634,7 @@ struct Window::PrivateData {
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onMotion(x, y))
+            if (widget->isVisible() && widget->onMotion(x-widget->getX(), y-widget->getY()))
                 break;
         }
     }
@@ -647,7 +650,7 @@ struct Window::PrivateData {
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onScroll(x, y, dx, dy))
+            if (widget->isVisible() && widget->onScroll(x-widget->getX(), y-widget->getY(), dx, dy))
                 break;
         }
     }
@@ -673,12 +676,6 @@ struct Window::PrivateData {
         DBGp("PUGL: onReshape : %i %i\n", width, height);
 
         fSelf->onReshape(width, height);
-
-        FOR_EACH_WIDGET(it)
-        {
-            Widget* const widget(*it);
-            widget->onReshape(width, height);
-        }
     }
 
     void onClose()

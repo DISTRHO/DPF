@@ -104,7 +104,7 @@ bool ImageButton::onMouse(int button, bool press, int x, int y)
             repaint();
         }
 
-        if (! getArea().contains(x, y))
+        if (! contains(x, y))
         {
             fCurButton = -1;
             return false;
@@ -113,7 +113,7 @@ bool ImageButton::onMouse(int button, bool press, int x, int y)
         if (fCallback != nullptr)
             fCallback->imageButtonClicked(this, fCurButton);
 
-        //if (getArea().contains(x, y))
+        //if (contains(x, y))
         //{
         //    fCurImage = &fImageHover;
         //    repaint();
@@ -124,7 +124,7 @@ bool ImageButton::onMouse(int button, bool press, int x, int y)
         return true;
     }
 
-    if (press && getArea().contains(x, y))
+    if (press && contains(x, y))
     {
         if (fCurImage != &fImageDown)
         {
@@ -144,7 +144,7 @@ bool ImageButton::onMotion(int x, int y)
     if (fCurButton != -1)
         return true;
 
-    if (getArea().contains(x, y))
+    if (contains(x, y))
     {
         if (fCurImage != &fImageHover)
         {

@@ -57,13 +57,21 @@ public:
     virtual void setSize(int width, int height) noexcept;
     virtual void setSize(const Size<int>& size) noexcept;
 
-    const Rectangle<int>& getArea() const noexcept;
-
     uint getEventTimestamp() const noexcept;
     int  getModifiers() const noexcept;
 
     App&    getParentApp() const noexcept;
     Window& getParentWindow() const noexcept;
+
+   /**
+      Check if this widget contains the point defined by @a X and @a Y.
+    */
+    bool contains(int x, int y) const noexcept;
+
+   /**
+      Check if this widget contains the point @a pos.
+    */
+    bool contains(const Point<int>& pos) const noexcept;
 
     void repaint() noexcept;
 
