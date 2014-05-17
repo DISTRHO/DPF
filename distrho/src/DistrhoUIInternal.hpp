@@ -255,6 +255,9 @@ public:
 
     void setSize(const uint width, const uint height)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
+
+        fUi->setSize(width, height);
         glWindow.setSize(width, height);
     }
 
@@ -283,13 +286,13 @@ protected:
 
 private:
     // -------------------------------------------------------------------
-    // DGL Application and Window for this plugin
+    // DGL Application and Window for this widget
 
     DGL::App    glApp;
     DGL::Window glWindow;
 
     // -------------------------------------------------------------------
-    // private members accessed by DistrhoUI classes
+    // Widget and DistrhoUI data
 
     UI* const fUi;
     UI::PrivateData* const fData;

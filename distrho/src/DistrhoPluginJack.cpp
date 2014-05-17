@@ -35,7 +35,7 @@ START_NAMESPACE_DISTRHO
 class PluginJack
 {
 public:
-    PluginJack(jack_client_t* client)
+    PluginJack(jack_client_t* const client)
         : fPlugin(),
           fUI(this, 0, nullptr, nullptr, nullptr, nullptr, uiResizeCallback, fPlugin.getInstancePointer()),
           fClient(client)
@@ -134,7 +134,7 @@ protected:
 #endif
 
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        float*  audioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];
+        float* audioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];
 
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             audioOuts[i] = (float*)jack_port_get_buffer(fPortAudioOuts[i], nframes);

@@ -407,7 +407,7 @@ public:
 
 private:
     // -------------------------------------------------------------------
-    // private members accessed by DistrhoPlugin classes
+    // Plugin and DistrhoPlugin data
 
     Plugin* const fPlugin;
     Plugin::PrivateData* const fData;
