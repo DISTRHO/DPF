@@ -44,10 +44,7 @@ protected:
     void onReshape(int width, int height) override
     {
         if (fWidget != nullptr)
-        {
             fWidget->setSize(width, height);
-            fWidget->onReshape(width, height);
-        }
         Window::onReshape(width, height);
     }
 
