@@ -49,7 +49,7 @@ public:
     // -------------------------------------------------------------------
     // Host UI State
 
-    void d_uiResize(uint width, uint height);
+    void d_setSize(uint width, uint height);
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     // -------------------------------------------------------------------
@@ -89,6 +89,7 @@ private:
     struct PrivateData;
     PrivateData* const pData;
     friend class UIExporter;
+    friend class UIExporterWindow;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

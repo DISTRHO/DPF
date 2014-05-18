@@ -79,9 +79,9 @@ void UI::d_sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 // -----------------------------------------------------------------------
 // Host UI State
 
-void UI::d_uiResize(uint width, uint height)
+void UI::d_setSize(uint width, uint height)
 {
-    pData->uiResizeCallback(width, height);
+    pData->setSizeCallback(width, height);
 }
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS

@@ -40,7 +40,7 @@ typedef void (*editParamFunc) (void* ptr, uint32_t rindex, bool started);
 typedef void (*setParamFunc)  (void* ptr, uint32_t rindex, float value);
 typedef void (*setStateFunc)  (void* ptr, const char* key, const char* value);
 typedef void (*sendNoteFunc)  (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
-typedef void (*uiResizeFunc)  (void* ptr, uint width, uint height);
+typedef void (*setSizeFunc)   (void* ptr, uint width, uint height);
 
 // -----------------------------------------------------------------------
 // UI private data
@@ -58,7 +58,7 @@ struct UI::PrivateData {
     setParamFunc  setParamCallbackFunc;
     setStateFunc  setStateCallbackFunc;
     sendNoteFunc  sendNoteCallbackFunc;
-    uiResizeFunc  uiResizeCallbackFunc;
+    setSizeFunc   setSizeCallbackFunc;
     void*         ptr;
 
     PrivateData() noexcept
@@ -71,7 +71,7 @@ struct UI::PrivateData {
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
           sendNoteCallbackFunc(nullptr),
-          uiResizeCallbackFunc(nullptr),
+          setSizeCallbackFunc(nullptr),
           ptr(nullptr)
     {
         DISTRHO_SAFE_ASSERT(sampleRate != 0.0);
@@ -117,26 +117,31 @@ struct UI::PrivateData {
             sendNoteCallbackFunc(ptr, channel, note, velocity);
     }
 
-    void uiResizeCallback(const uint width, const uint height)
+    void setSizeCallback(const uint width, const uint height)
     {
-        if (uiResizeCallbackFunc != nullptr)
-            uiResizeCallbackFunc(ptr, width, height);
+        if (setSizeCallbackFunc != nullptr)
+            setSizeCallbackFunc(ptr, width, height);
     }
 };
 
 // -----------------------------------------------------------------------
 // Plugin Window, needed to take care of resize properly
 
-class PluginWindow : public Window
+class UIExporterWindow : public Window
 {
 public:
-    PluginWindow(App& app, const intptr_t winId)
+    UIExporterWindow(App& app, const intptr_t winId)
         : Window(app, winId),
-          fUi(createUI())
+          fUi(createUI()),
+          fIsReady(false)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
+
+        setResizable(false);
+        setSize(fUi->d_getWidth(), fUi->d_getHeight());
     }
 
-    ~PluginWindow()
+    ~UIExporterWindow()
     {
         delete fUi;
     }
@@ -146,17 +151,25 @@ public:
         return fUi;
     }
 
+    bool isReady() const noexcept
+    {
+        return fIsReady;
+    }
+
 protected:
-    void onReshape(const int width, const int height) override
+    void onReshape(int width, int height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
 
+        fIsReady = true;
+
         fUi->setSize(width, height);
-        fUi->d_uiResize(width, height);
+        fUi->d_uiReshape(width, height);
     }
 
 private:
     UI* const fUi;
+    bool fIsReady;
 };
 
 // -----------------------------------------------------------------------
@@ -166,7 +179,7 @@ class UIExporter : public IdleCallback
 {
 public:
     UIExporter(void* const ptr, const intptr_t winId,
-               const editParamFunc editParamCall, const setParamFunc setParamCall, const setStateFunc setStateCall, const sendNoteFunc sendNoteCall, const uiResizeFunc uiResizeCall,
+               const editParamFunc editParamCall, const setParamFunc setParamCall, const setStateFunc setStateCall, const sendNoteFunc sendNoteCall, const setSizeFunc setSizeCall,
                void* const dspPtr = nullptr)
         : glApp(),
           glWindow(glApp, winId),
@@ -181,10 +194,7 @@ public:
         fData->setParamCallbackFunc  = setParamCall;
         fData->setStateCallbackFunc  = setStateCall;
         fData->sendNoteCallbackFunc  = sendNoteCall;
-        fData->uiResizeCallbackFunc  = uiResizeCall;
-
-        glWindow.setResizable(false);
-        glWindow.setSize(fUi->d_getWidth(), fUi->d_getHeight());
+        fData->setSizeCallbackFunc   = setSizeCall;
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         fData->dspPtr = dspPtr;
@@ -270,7 +280,9 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr, false);
 
-        fUi->d_uiIdle();
+        if (glWindow.isReady())
+            fUi->d_uiIdle();
+
         glApp.idle();
 
         return ! glApp.isQuiting();
@@ -312,15 +324,16 @@ public:
 protected:
     void idleCallback() override
     {
-        fUi->d_uiIdle();
+        if (glWindow.isReady())
+            fUi->d_uiIdle();
     }
 
 private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
-    App          glApp;
-    PluginWindow glWindow;
+    App glApp;
+    UIExporterWindow glWindow;
 
     // -------------------------------------------------------------------
     // Widget and DistrhoUI data

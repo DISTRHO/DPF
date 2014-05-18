@@ -37,7 +37,7 @@ class PluginJack
 public:
     PluginJack(jack_client_t* const client)
         : fPlugin(),
-          fUI(this, 0, nullptr, nullptr, nullptr, nullptr, uiResizeCallback, fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, nullptr, nullptr, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
           fClient(client)
     {
         char strBuf[0xff+1];
@@ -217,7 +217,7 @@ protected:
         fUI.quit();
     }
 
-    void uiResize(const uint width, const uint height)
+    void setSize(const uint width, const uint height)
     {
         fUI.setSize(width, height);
     }
@@ -271,9 +271,9 @@ private:
         uiPtr->jackShutdown();
     }
 
-    static void uiResizeCallback(void* ptr, uint width, uint height)
+    static void setSizeCallback(void* ptr, uint width, uint height)
     {
-        uiPtr->uiResize(width, height);
+        uiPtr->setSize(width, height);
     }
 
     #undef uiPtr

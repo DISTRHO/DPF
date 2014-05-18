@@ -119,7 +119,7 @@ public:
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, uiResizeCallback, plugin->getInstancePointer())
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer())
     {
     }
 
@@ -215,7 +215,7 @@ protected:
 #endif
     }
 
-    void uiResize(const uint width, const uint height)
+    void setSize(const uint width, const uint height)
     {
         fUI.setSize(width, height);
         hostCallback(audioMasterSizeWindow, width, height, nullptr, 0.0f);
@@ -256,9 +256,9 @@ private:
         handlePtr->sendNote(channel, note, velocity);
     }
 
-    static void uiResizeCallback(void* ptr, uint width, uint height)
+    static void setSizeCallback(void* ptr, uint width, uint height)
     {
-        handlePtr->uiResize(width, height);
+        handlePtr->setSize(width, height);
     }
 
     #undef handlePtr
