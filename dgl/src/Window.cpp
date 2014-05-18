@@ -876,6 +876,11 @@ void Window::setSize(uint width, uint height)
     pData->setSize(width, height);
 }
 
+void Window::setSize(Size<uint> size)
+{
+    pData->setSize(size.getWidth(), size.getHeight());
+}
+
 void Window::setTitle(const char* title)
 {
     pData->setTitle(title);
