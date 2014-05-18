@@ -95,5 +95,20 @@ void* UI::d_getPluginInstancePointer() const noexcept
 #endif
 
 // -----------------------------------------------------------------------
+// UI Callbacks (optional)
+
+void UI::d_uiReshape(int width, int height)
+{
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, width, height, 0, 0.0f, 1.0f);
+    glViewport(0, 0, width, height);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+}
+
+// -----------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO

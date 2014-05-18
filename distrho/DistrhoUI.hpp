@@ -81,6 +81,7 @@ protected:
     // UI Callbacks (optional)
 
     virtual void d_uiIdle() {}
+    virtual void d_uiReshape(int width, int height);
 
     // -------------------------------------------------------------------
 

@@ -22,6 +22,10 @@
 #include "../../dgl/App.hpp"
 #include "../../dgl/Window.hpp"
 
+using DGL::App;
+using DGL::IdleCallback;
+using DGL::Window;
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -121,9 +125,44 @@ struct UI::PrivateData {
 };
 
 // -----------------------------------------------------------------------
+// Plugin Window, needed to take care of resize properly
+
+class PluginWindow : public Window
+{
+public:
+    PluginWindow(App& app, const intptr_t winId)
+        : Window(app, winId),
+          fUi(createUI())
+    {
+    }
+
+    ~PluginWindow()
+    {
+        delete fUi;
+    }
+
+    UI* getUI() const noexcept
+    {
+        return fUi;
+    }
+
+protected:
+    void onReshape(const int width, const int height) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
+
+        fUi->setSize(width, height);
+        fUi->d_uiResize(width, height);
+    }
+
+private:
+    UI* const fUi;
+};
+
+// -----------------------------------------------------------------------
 // UI exporter class
 
-class UIExporter : public DGL::IdleCallback
+class UIExporter : public IdleCallback
 {
 public:
     UIExporter(void* const ptr, const intptr_t winId,
@@ -131,7 +170,7 @@ public:
                void* const dspPtr = nullptr)
         : glApp(),
           glWindow(glApp, winId),
-          fUi(createUI()),
+          fUi(glWindow.getUI()),
           fData((fUi != nullptr) ? fUi->pData : nullptr)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
@@ -144,9 +183,8 @@ public:
         fData->sendNoteCallbackFunc  = sendNoteCall;
         fData->uiResizeCallbackFunc  = uiResizeCall;
 
-        fUi->setSize(fUi->d_getWidth(), fUi->d_getHeight());
-        glWindow.setSize(fUi->d_getWidth(), fUi->d_getHeight());
         glWindow.setResizable(false);
+        glWindow.setSize(fUi->d_getWidth(), fUi->d_getHeight());
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         fData->dspPtr = dspPtr;
@@ -154,11 +192,6 @@ public:
         return; // unused
         (void)dspPtr;
 #endif
-    }
-
-    ~UIExporter()
-    {
-        delete fUi;
     }
 
     // -------------------------------------------------------------------
@@ -256,9 +289,6 @@ public:
 
     void setSize(const uint width, const uint height)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
-
-        fUi->setSize(width, height);
         glWindow.setSize(width, height);
     }
 
@@ -289,8 +319,8 @@ private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
-    DGL::App    glApp;
-    DGL::Window glWindow;
+    App          glApp;
+    PluginWindow glWindow;
 
     // -------------------------------------------------------------------
     // Widget and DistrhoUI data
