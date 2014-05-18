@@ -864,9 +864,11 @@ int Window::getHeight() const noexcept
     return pData->fView->height;
 }
 
-Size<int> Window::getSize() const noexcept
+Size<uint> Window::getSize() const noexcept
 {
-    return Size<int>(pData->fView->width, pData->fView->height);
+    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->width >= 0 && pData->fView->height >= 0, Size<uint>(0, 0));
+
+    return Size<uint>(pData->fView->width, pData->fView->height);
 }
 
 void Window::setSize(uint width, uint height)

@@ -50,7 +50,7 @@ public:
 
     int getWidth() const noexcept;
     int getHeight() const noexcept;
-    Size<int> getSize() const noexcept;
+    Size<uint> getSize() const noexcept;
     void setSize(uint width, uint height);
 
     void setTitle(const char* title);
