@@ -541,26 +541,18 @@ struct Window::PrivateData {
             NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
             NSEvent* event;
 
-            static const NSUInteger eventMask = (NSLeftMouseDownMask | NSLeftMouseUpMask |
-                                                 NSRightMouseDownMask | NSRightMouseUpMask |
-                                                 NSMouseMovedMask |
-                                                 NSLeftMouseDraggedMask | NSRightMouseDraggedMask |
-                                                 NSMouseEnteredMask | NSMouseExitedMask |
-                                                 NSKeyDownMask | NSKeyUpMask |
-                                                 NSFlagsChangedMask |
-                                                 NSCursorUpdateMask | NSScrollWheelMask);
-
-            for (;;) {
-                event = [xWindow
-                         nextEventMatchingMask:eventMask
+            for (;;)
+            {
+                event = [NSApp
+                         nextEventMatchingMask:NSAnyEventMask
                                      untilDate:[NSDate distantPast]
-                                        inMode:NSEventTrackingRunLoopMode
+                                        inMode:NSDefaultRunLoopMode
                                        dequeue:YES];
 
                 if (event == nil)
                     break;
 
-                [xWindow sendEvent: event];
+                [NSApp sendEvent: event];
             }
 
             [pool release];
