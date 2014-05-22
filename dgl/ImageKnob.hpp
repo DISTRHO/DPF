@@ -63,7 +63,6 @@ protected:
      void onDisplay() override;
      bool onMouse(const MouseEvent&) override;
      bool onMotion(const MotionEvent&) override;
-     void onResize(const ResizeEvent&) override;
 
 private:
     Image fImage;
