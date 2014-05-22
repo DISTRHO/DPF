@@ -222,17 +222,19 @@ void ImageSlider::onDisplay()
     fImage.drawAt(x, y);
 }
 
-bool ImageSlider::onMouse(int button, bool press, int x, int y)
+bool ImageSlider::onMouse(const MouseEvent& ev)
 {
-    if (button != 1)
+    if (ev.button != 1)
         return false;
 
-    if (press)
+    if (ev.press)
     {
-        if (! fSliderArea.contains(x, y))
+        if (! fSliderArea.contains(ev.pos))
             return false;
 
         float vper;
+        const int x = ev.pos.getX();
+        const int y = ev.pos.getY();
 
         if (fStartPos.getY() == fEndPos.getY())
         {
@@ -292,12 +294,14 @@ bool ImageSlider::onMouse(int button, bool press, int x, int y)
     return false;
 }
 
-bool ImageSlider::onMotion(int x, int y)
+bool ImageSlider::onMotion(const MotionEvent& ev)
 {
     if (! fDragging)
         return false;
 
     const bool horizontal = fStartPos.getY() == fEndPos.getY();
+    const int x = ev.pos.getX();
+    const int y = ev.pos.getY();
 
     if ((horizontal && fSliderArea.containsX(x)) || (fSliderArea.containsY(y) && ! horizontal))
     {

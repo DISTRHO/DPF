@@ -575,7 +575,7 @@ struct Window::PrivateData {
 
             if (widget->isVisible())
             {
-                glViewport(widget->getX(), -widget->getY(), fView->width, fView->height);
+                glViewport(widget->getAbsoluteX(), -widget->getAbsoluteY(), fView->width, fView->height);
                 widget->onDisplay();
             }
         }
@@ -590,59 +590,17 @@ struct Window::PrivateData {
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
 
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onKeyboard(press, key))
-                break;
-        }
-    }
-
-    void onMouse(const int button, const bool press, const int x, const int y)
-    {
-        DBGp("PUGL: onMouse : %i %i %i %i\n", button, press, x, y);
-
-        if (fModal.childFocus != nullptr)
-            return fModal.childFocus->focus();
+        Widget::KeyboardEvent ev;
+        ev.press = press;
+        ev.key  = key;
+        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time = puglGetEventTimestamp(fView);
 
         FOR_EACH_WIDGET_INV(rit)
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onMouse(button, press, x-widget->getX(), y-widget->getY()))
-                break;
-        }
-    }
-
-    void onMotion(const int x, const int y)
-    {
-        DBGp("PUGL: onMotion : %i %i\n", x, y);
-
-        if (fModal.childFocus != nullptr)
-            return;
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onMotion(x-widget->getX(), y-widget->getY()))
-                break;
-        }
-    }
-
-    void onScroll(const int x, const int y, const float dx, const float dy)
-    {
-        DBGp("PUGL: onScroll : %i %i %f %f\n", x, y, dx, dy);
-
-        if (fModal.childFocus != nullptr)
-            return;
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onScroll(x-widget->getX(), y-widget->getY(), dx, dy))
+            if (widget->isVisible() && widget->onKeyboard(ev))
                 break;
         }
     }
@@ -654,11 +612,86 @@ struct Window::PrivateData {
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
 
+        Widget::SpecialEvent ev;
+        ev.press = press;
+        ev.key  = key;
+        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time = puglGetEventTimestamp(fView);
+
         FOR_EACH_WIDGET_INV(rit)
         {
             Widget* const widget(*rit);
 
-            if (widget->isVisible() && widget->onSpecial(press, key))
+            if (widget->isVisible() && widget->onSpecial(ev))
+                break;
+        }
+    }
+
+    void onMouse(const int button, const bool press, const int x, const int y)
+    {
+        DBGp("PUGL: onMouse : %i %i %i %i\n", button, press, x, y);
+
+        if (fModal.childFocus != nullptr)
+            return fModal.childFocus->focus();
+
+        Widget::MouseEvent ev;
+        ev.button = button;
+        ev.press = press;
+        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time = puglGetEventTimestamp(fView);
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
+
+            if (widget->isVisible() && widget->onMouse(ev))
+                break;
+        }
+    }
+
+    void onMotion(const int x, const int y)
+    {
+        DBGp("PUGL: onMotion : %i %i\n", x, y);
+
+        if (fModal.childFocus != nullptr)
+            return;
+
+        Widget::MotionEvent ev;
+        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time = puglGetEventTimestamp(fView);
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
+
+            if (widget->isVisible() && widget->onMotion(ev))
+                break;
+        }
+    }
+
+    void onScroll(const int x, const int y, const float dx, const float dy)
+    {
+        DBGp("PUGL: onScroll : %i %i %f %f\n", x, y, dx, dy);
+
+        if (fModal.childFocus != nullptr)
+            return;
+
+        Widget::ScrollEvent ev;
+        ev._    = Point<float>(dx, dy);
+        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time = puglGetEventTimestamp(fView);
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
+
+            if (widget->isVisible() && widget->onScroll(ev))
                 break;
         }
     }
@@ -728,7 +761,7 @@ struct Window::PrivateData {
     bool     fNeedsIdle;
     id       xWindow;
 #else
-    char      _dummy;
+    char     _dummy;
 #endif
 
     // -------------------------------------------------------------------
@@ -746,6 +779,11 @@ struct Window::PrivateData {
         handlePtr->onKeyboard(press, key);
     }
 
+    static void onSpecialCallback(PuglView* view, bool press, PuglKey key)
+    {
+        handlePtr->onSpecial(press, static_cast<Key>(key));
+    }
+
     static void onMouseCallback(PuglView* view, int button, bool press, int x, int y)
     {
         handlePtr->onMouse(button, press, x, y);
@@ -759,11 +797,6 @@ struct Window::PrivateData {
     static void onScrollCallback(PuglView* view, int x, int y, float dx, float dy)
     {
         handlePtr->onScroll(x, y, dx, dy);
-    }
-
-    static void onSpecialCallback(PuglView* view, bool press, PuglKey key)
-    {
-        handlePtr->onSpecial(press, static_cast<Key>(key));
     }
 
     static void onReshapeCallback(PuglView* view, int width, int height)
@@ -888,16 +921,6 @@ App& Window::getApp() const noexcept
     return pData->fApp;
 }
 
-int Window::getModifiers() const noexcept
-{
-    return puglGetModifiers(pData->fView);
-}
-
-uint Window::getEventTimestamp() const noexcept
-{
-    return puglGetEventTimestamp(pData->fView);
-}
-
 intptr_t Window::getWindowId() const noexcept
 {
     return puglGetNativeWindow(pData->fView);
@@ -946,10 +969,6 @@ void Window::onDisplayAfter()
 {
 }
 
-void Window::onClose()
-{
-}
-
 void Window::onReshape(int width, int height)
 {
     glEnable(GL_BLEND);
@@ -960,6 +979,10 @@ void Window::onReshape(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+}
+
+void Window::onClose()
+{
 }
 
 // -----------------------------------------------------------------------

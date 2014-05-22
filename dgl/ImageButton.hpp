@@ -44,8 +44,8 @@ public:
 
 protected:
      void onDisplay() override;
-     bool onMouse(int button, bool press, int x, int y) override;
-     bool onMotion(int x, int y) override;
+     bool onMouse(const MouseEvent&) override;
+     bool onMotion(const MotionEvent&) override;
 
 private:
     Image  fImageNormal;

@@ -101,6 +101,12 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
     }
 }
 
+ImageKnob::~ImageKnob()
+{
+    // delete old texture
+    setRotationAngle(0);
+}
+
 int ImageKnob::getId() const noexcept
 {
     return fId;
@@ -274,19 +280,19 @@ void ImageKnob::onDisplay()
     }
 }
 
-bool ImageKnob::onMouse(int button, bool press, int x, int y)
+bool ImageKnob::onMouse(const MouseEvent& ev)
 {
-    if (button != 1)
+    if (ev.button != 1)
         return false;
 
-    if (press)
+    if (ev.press)
     {
-        if (! contains(x, y))
+        if (! contains(ev.pos))
             return false;
 
         fDragging = true;
-        fLastX = x;
-        fLastY = y;
+        fLastX = ev.pos.getX();
+        fLastY = ev.pos.getY();
 
         if (fCallback != nullptr)
             fCallback->imageKnobDragStarted(this);
@@ -305,7 +311,7 @@ bool ImageKnob::onMouse(int button, bool press, int x, int y)
     return false;
 }
 
-bool ImageKnob::onMotion(int x, int y)
+bool ImageKnob::onMotion(const MotionEvent& ev)
 {
     if (! fDragging)
         return false;
@@ -315,18 +321,18 @@ bool ImageKnob::onMotion(int x, int y)
 
     if (fOrientation == ImageKnob::Horizontal)
     {
-        if (int movX = x - fLastX)
+        if (int movX = ev.pos.getX() - fLastX)
         {
-            d     = (getModifiers() & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
+            d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movX));
             doVal = true;
         }
     }
     else if (fOrientation == ImageKnob::Vertical)
     {
-        if (int movY = fLastY - y)
+        if (int movY = fLastY - ev.pos.getY())
         {
-            d     = (getModifiers() & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
+            d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movY));
             doVal = true;
         }
@@ -354,24 +360,10 @@ bool ImageKnob::onMotion(int x, int y)
 
     setValue(value, true);
 
-    fLastX = x;
-    fLastY = y;
+    fLastX = ev.pos.getX();
+    fLastY = ev.pos.getY();
 
     return true;
-}
-
-void ImageKnob::onReshape(int width, int height)
-{
-//     if (fRotationAngle != 0)
-//         glEnable(GL_TEXTURE_2D);
-
-    Widget::onReshape(width, height);
-}
-
-void ImageKnob::onClose()
-{
-    // delete old texture
-    setRotationAngle(0);
 }
 
 // -----------------------------------------------------------------------

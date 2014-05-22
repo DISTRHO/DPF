@@ -44,6 +44,7 @@ public:
     ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
     ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
     ImageKnob(const ImageKnob& imageKnob);
+    ~ImageKnob() override;
 
     int getId() const noexcept;
     void setId(int id) noexcept;
@@ -60,10 +61,9 @@ public:
 
 protected:
      void onDisplay() override;
-     bool onMouse(int button, bool press, int x, int y) override;
-     bool onMotion(int x, int y) override;
-     void onReshape(int width, int height) override;
-     void onClose() override;
+     bool onMouse(const MouseEvent&) override;
+     bool onMotion(const MotionEvent&) override;
+     void onResize(const ResizeEvent&) override;
 
 private:
     Image fImage;

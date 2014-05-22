@@ -22,45 +22,222 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// Forward class names
 
 class App;
 class Window;
 
+// -----------------------------------------------------------------------
+
+/**
+   Base DGL Widget class.
+
+   This is the base Widget class, from which all widgets are built.
+
+   All widgets have a parent Window where they'll be drawn.
+   This parent is never changed during the widget lifetime.
+
+   Widgets receive events in relative coordinates.
+   (0, 0) means its top-left position.
+
+   Windows paint widgets in the order they are constructed.
+   Early widgets are drawn first, at the bottom, then newer ones on top.
+   Events are sent in the inverse order so that the top-most widget gets
+   a chance to catch the event and stop its propagation.
+
+   All widget event callbacks do nothing by default.
+ */
 class Widget
 {
 public:
+   /**
+      Base event data.
+      @param mod  The currently active modifiers.
+      @param time The timestamp (if any) of the currently-processing event.
+    */
+    struct BaseEvent {
+        Modifier mod;
+        uint32_t time;
+    };
+
+   /**
+      Keyboard event.
+      @param press True if the key was pressed, false if released.
+      @param key   Unicode point of the key pressed.
+      @see onKeyboard
+    */
+    struct KeyboardEvent : BaseEvent {
+        bool press;
+        uint key;
+    };
+
+   /**
+      Special keyboard event.
+      @param press True if the key was pressed, false if released.
+      @param key   The key pressed.
+      @see onSpecial
+    */
+    struct SpecialEvent : BaseEvent {
+        bool press;
+        Key key;
+    };
+
+   /**
+      Mouse event.
+      @param button The button number (1 = left, 2 = middle, 3 = right).
+      @param press  True if the key was pressed, false if released.
+      @param pos    The widget-relative coordinates of the pointer.
+      @see onMouse
+    */
+    struct MouseEvent : BaseEvent {
+        int button;
+        bool press;
+        Point<int> pos;
+    };
+
+   /**
+      Mouse motion event.
+      @param x The widget-relative coordinates of the pointer.
+      @see onMotion
+    */
+    struct MotionEvent : BaseEvent {
+        Point<int> pos;
+    };
+
+   /**
+      Mouse scroll event.
+      @param pos The scroll distance.
+      @param _   TODO
+      @see onScroll
+    */
+    struct ScrollEvent : BaseEvent {
+        Point<int> pos;
+        Point<float> _;
+    };
+
+   /**
+      Resize event.
+      @param size    The new widget size
+      @param oldSize The previous size, may be null
+      @see onResize
+    */
+    struct ResizeEvent {
+        Size<int> size;
+        Size<int> oldSize;
+    };
+
+   /**
+      Constructor.
+    */
     explicit Widget(Window& parent);
+
+   /**
+      Destructor.
+    */
     virtual ~Widget();
 
+   /**
+      Check if this widget is visible within its parent window.
+      Invisible widgets do not receive events except resize.
+    */
     bool isVisible() const noexcept;
+
+   /**
+      Set widget visible (or not) according to @a yesNo.
+    */
     void setVisible(bool yesNo);
 
+   /**
+      Show widget.
+      This is the same as calling setVisible(true).
+    */
     void show();
+
+   /**
+      Hide widget.
+      This is the same as calling setVisible(false).
+    */
     void hide();
 
-    int getX() const noexcept;
-    int getY() const noexcept;
-    const Point<int>& getPos() const noexcept;
-
-    void setX(int x) noexcept;
-    void setY(int y) noexcept;
-    void setPos(int x, int y) noexcept;
-    void setPos(const Point<int>& pos) noexcept;
-
+   /**
+      Get width.
+    */
     int getWidth() const noexcept;
+
+   /**
+      Get height.
+    */
     int getHeight() const noexcept;
+
+   /**
+      Get size.
+    */
     const Size<int>& getSize() const noexcept;
 
-    // virtual needed by cairo
+   /**
+      Set width.
+    */
     virtual void setWidth(int width) noexcept;
+
+   /**
+      Set height.
+    */
     virtual void setHeight(int height) noexcept;
+
+   /**
+      Set size using @a width and @a height values.
+    */
     virtual void setSize(int width, int height) noexcept;
+
+   /**
+      Set size.
+    */
     virtual void setSize(const Size<int>& size) noexcept;
 
-    uint getEventTimestamp() const noexcept;
-    int  getModifiers() const noexcept;
+   /**
+      Get absolute X.
+    */
+    int getAbsoluteX() const noexcept;
 
-    App&    getParentApp() const noexcept;
+   /**
+      Get absolute Y.
+    */
+    int getAbsoluteY() const noexcept;
+
+   /**
+      Get absolute position.
+    */
+    const Point<int>& getAbsolutePos() const noexcept;
+
+   /**
+      Set absolute X.
+    */
+    void setAbsoluteX(int x) noexcept;
+
+   /**
+      Set absolute Y.
+    */
+    void setAbsoluteY(int y) noexcept;
+
+   /**
+      Set absolute position using @a x and @a y values.
+    */
+    void setAbsolutePos(int x, int y) noexcept;
+
+   /**
+      Set absolute position.
+    */
+    void setAbsolutePos(const Point<int>& pos) noexcept;
+
+   /**
+      Get this widget's window application.
+      Same as calling getParentWindow().getApp().
+    */
+    App& getParentApp() const noexcept;
+
+   /**
+      Get parent window, as passed in the constructor.
+    */
     Window& getParentWindow() const noexcept;
 
    /**
@@ -73,16 +250,51 @@ public:
     */
     bool contains(const Point<int>& pos) const noexcept;
 
+   /**
+      Tell this widget's window to repaint itself.
+    */
     void repaint() noexcept;
 
 protected:
+   /**
+      A function called to draw the view contents with OpenGL.
+    */
     virtual void onDisplay() = 0;
-    virtual bool onKeyboard(bool press, uint key);
-    virtual bool onMouse(int button, bool press, int x, int y);
-    virtual bool onMotion(int x, int y);
-    virtual bool onScroll(int x, int y, float dx, float dy);
-    virtual bool onSpecial(bool press, Key key);
-    virtual void onReshape(int width, int height);
+
+   /**
+      A function called when a key is pressed or released.
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onKeyboard(const KeyboardEvent&);
+
+   /**
+      A function called when a special key is pressed or released.
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onSpecial(const SpecialEvent&);
+
+   /**
+      A function called when a mouse button is pressed or released.
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onMouse(const MouseEvent&);
+
+   /**
+      A function called when the pointer moves.
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onMotion(const MotionEvent&);
+
+   /**
+      A function called on scrolling (e.g. mouse wheel or track pad).
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onScroll(const ScrollEvent&);
+
+   /**
+      A function called when the widget is resized.
+    */
+    virtual void onResize(const ResizeEvent&);
 
 private:
     Window& fParent;

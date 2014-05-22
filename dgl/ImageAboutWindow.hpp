@@ -36,8 +36,8 @@ public:
 
 protected:
     void onDisplay() override;
-    bool onMouse(int button, bool press, int x, int y) override;
-    bool onKeyboard(bool press, uint key) override;
+    bool onKeyboard(const KeyboardEvent&) override;
+    bool onMouse(const MouseEvent&) override;
 
 private:
     Image fImgBackground;

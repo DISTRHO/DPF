@@ -59,8 +59,6 @@ public:
     void setTransientWinId(intptr_t winId);
 
     App& getApp() const noexcept;
-    uint getEventTimestamp() const noexcept;
-    int  getModifiers() const noexcept;
     intptr_t getWindowId() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
@@ -69,8 +67,8 @@ public:
 protected:
     virtual void onDisplayBefore();
     virtual void onDisplayAfter();
-    virtual void onClose();
     virtual void onReshape(int width, int height);
+    virtual void onClose();
 
 private:
     struct PrivateData;

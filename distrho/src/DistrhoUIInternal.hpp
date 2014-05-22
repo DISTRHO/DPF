@@ -280,10 +280,10 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr, false);
 
+        glApp.idle();
+
         if (glWindow.isReady())
             fUi->d_uiIdle();
-
-        glApp.idle();
 
         return ! glApp.isQuiting();
     }

@@ -54,9 +54,9 @@ void ImageAboutWindow::onDisplay()
     fImgBackground.draw();
 }
 
-bool ImageAboutWindow::onMouse(int, bool press, int, int)
+bool ImageAboutWindow::onKeyboard(const KeyboardEvent& ev)
 {
-    if (press)
+    if (ev.press && ev.key == CHAR_ESCAPE)
     {
         Window::close();
         return true;
@@ -65,9 +65,9 @@ bool ImageAboutWindow::onMouse(int, bool press, int, int)
     return false;
 }
 
-bool ImageAboutWindow::onKeyboard(bool press, uint key)
+bool ImageAboutWindow::onMouse(const MouseEvent& ev)
 {
-    if (press && key == CHAR_ESCAPE)
+    if (ev.press)
     {
         Window::close();
         return true;
