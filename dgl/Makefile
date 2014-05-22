@@ -22,6 +22,7 @@ OBJS = \
 	src/ImageButton.cpp.o \
 	src/ImageKnob.cpp.o \
 	src/ImageSlider.cpp.o \
+	src/ImageSwitch.cpp.o \
 	src/Widget.cpp.o
 
 ifeq ($(MACOS),true)
