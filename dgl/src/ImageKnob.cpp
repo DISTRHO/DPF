@@ -135,6 +135,8 @@ void ImageKnob::setDefault(float value) noexcept
 
 void ImageKnob::setRange(float min, float max) noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(max > min,);
+
     if (fValue < min)
     {
         fValue = min;
@@ -159,6 +161,11 @@ void ImageKnob::setRange(float min, float max) noexcept
             } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange > max");
         }
     }
+
+    if (fValueDef < min)
+        fValueDef = min;
+    else if (fValueDef > max)
+        fValueDef = max;
 
     fMinimum = min;
     fMaximum = max;

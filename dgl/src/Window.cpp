@@ -681,9 +681,9 @@ struct Window::PrivateData {
             return;
 
         Widget::ScrollEvent ev;
-        ev._    = Point<float>(dx, dy);
-        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time = puglGetEventTimestamp(fView);
+        ev.delta = Point<float>(dx, dy);
+        ev.mod   = static_cast<Modifier>(puglGetModifiers(fView));
+        ev.time  = puglGetEventTimestamp(fView);
 
         FOR_EACH_WIDGET_INV(rit)
         {

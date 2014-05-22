@@ -97,7 +97,7 @@ public:
 
    /**
       Mouse motion event.
-      @param x The widget-relative coordinates of the pointer.
+      @param pos The widget-relative coordinates of the pointer.
       @see onMotion
     */
     struct MotionEvent : BaseEvent {
@@ -106,8 +106,8 @@ public:
 
    /**
       Mouse scroll event.
-      @param pos The scroll distance.
-      @param dir The scroll direction.
+      @param pos   The widget-relative coordinates of the pointer.
+      @param delta The scroll distance.
       @see onScroll
     */
     struct ScrollEvent : BaseEvent {
@@ -117,8 +117,8 @@ public:
 
    /**
       Resize event.
-      @param size    The new widget size
-      @param oldSize The previous size, may be null
+      @param size    The new widget size.
+      @param oldSize The previous size, may be null.
       @see onResize
     */
     struct ResizeEvent {
