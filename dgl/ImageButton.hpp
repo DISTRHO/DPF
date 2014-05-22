@@ -34,11 +34,11 @@ public:
         virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
     };
 
-    ImageButton(Window& parent, const Image& image) noexcept;
-    ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
-    ImageButton(Widget* widget, const Image& image) noexcept;
-    ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
-    ImageButton(const ImageButton& imageButton) noexcept;
+    explicit ImageButton(Window& parent, const Image& image) noexcept;
+    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    explicit ImageButton(Widget* widget, const Image& image) noexcept;
+    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    explicit ImageButton(const ImageButton& imageButton) noexcept;
 
     void setCallback(Callback* callback) noexcept;
 

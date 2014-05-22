@@ -36,9 +36,9 @@ public:
         virtual void imageSliderValueChanged(ImageSlider* imageSlider, float value) = 0;
     };
 
-    ImageSlider(Window& parent, const Image& image, int id = 0) noexcept;
-    ImageSlider(Widget* widget, const Image& image, int id = 0) noexcept;
-    ImageSlider(const ImageSlider& imageSlider) noexcept;
+    explicit ImageSlider(Window& parent, const Image& image, int id = 0) noexcept;
+    explicit ImageSlider(Widget* widget, const Image& image, int id = 0) noexcept;
+    explicit ImageSlider(const ImageSlider& imageSlider) noexcept;
 
     int getId() const noexcept;
     void setId(int id) noexcept;

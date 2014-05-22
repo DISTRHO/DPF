@@ -41,9 +41,9 @@ public:
         virtual void imageKnobValueChanged(ImageKnob* imageKnob, float value) = 0;
     };
 
-    ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
-    ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
-    ImageKnob(const ImageKnob& imageKnob);
+    explicit ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
+    explicit ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
+    explicit ImageKnob(const ImageKnob& imageKnob);
     ~ImageKnob() override;
 
     int getId() const noexcept;
