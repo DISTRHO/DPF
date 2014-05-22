@@ -30,7 +30,9 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fMaximum(1.0f),
       fStep(0.0f),
       fValue(0.5f),
+      fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingLog(false),
       fOrientation(orientation),
       fRotationAngle(0),
       fDragging(false),
@@ -54,7 +56,9 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fMaximum(1.0f),
       fStep(0.0f),
       fValue(0.5f),
+      fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingLog(false),
       fOrientation(orientation),
       fRotationAngle(0),
       fDragging(false),
@@ -78,7 +82,9 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fMaximum(imageKnob.fMaximum),
       fStep(imageKnob.fStep),
       fValue(imageKnob.fValue),
+      fValueDef(imageKnob.fValueDef),
       fValueTmp(fValue),
+      fUsingLog(imageKnob.fUsingLog),
       fOrientation(imageKnob.fOrientation),
       fRotationAngle(imageKnob.fRotationAngle),
       fDragging(false),
@@ -122,12 +128,9 @@ float ImageKnob::getValue() const noexcept
     return fValue;
 }
 
-void ImageKnob::setOrientation(Orientation orientation) noexcept
+void ImageKnob::setDefault(float value) noexcept
 {
-    if (fOrientation == orientation)
-        return;
-
-    fOrientation = orientation;
+    fValueDef = value;
 }
 
 void ImageKnob::setRange(float min, float max) noexcept
@@ -171,7 +174,7 @@ void ImageKnob::setValue(float value, bool sendCallback) noexcept
     if (fValue == value)
         return;
 
-    fValue = value;
+    fValue = fUsingLog ? _logscale(value) : value;
 
     if (fStep == 0.0f)
         fValueTmp = value;
@@ -184,6 +187,24 @@ void ImageKnob::setValue(float value, bool sendCallback) noexcept
             fCallback->imageKnobValueChanged(this, fValue);
         } DISTRHO_SAFE_EXCEPTION("ImageKnob::setValue");
     }
+}
+
+void ImageKnob::setUsingLogScale(bool yesNo) noexcept
+{
+    fUsingLog = yesNo;
+}
+
+void ImageKnob::setCallback(Callback* callback) noexcept
+{
+    fCallback = callback;
+}
+
+void ImageKnob::setOrientation(Orientation orientation) noexcept
+{
+    if (fOrientation == orientation)
+        return;
+
+    fOrientation = orientation;
 }
 
 void ImageKnob::setRotationAngle(int angle)
@@ -206,8 +227,8 @@ void ImageKnob::setRotationAngle(int angle)
         glGenTextures(1, &fTextureId);
         glBindTexture(GL_TEXTURE_2D, fTextureId);
 
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, getWidth(), getHeight(), 0, fImage.getFormat(), fImage.getType(), fImage.getRawData());
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -223,14 +244,9 @@ void ImageKnob::setRotationAngle(int angle)
     }
 }
 
-void ImageKnob::setCallback(Callback* callback) noexcept
-{
-    fCallback = callback;
-}
-
 void ImageKnob::onDisplay()
 {
-    const float normValue = (fValue - fMinimum) / (fMaximum - fMinimum);
+    const float normValue = (fUsingLog ? _invlogscale(fValue) : fValue - fMinimum) / (fMaximum - fMinimum);
 
     if (fRotationAngle != 0)
     {
@@ -290,6 +306,13 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
         if (! contains(ev.pos))
             return false;
 
+        if (ev.mod & MODIFIER_SHIFT)
+        {
+            setValue(fValueDef);
+            fValueTmp = fValue;
+            return true;
+        }
+
         fDragging = true;
         fLastX = ev.pos.getX();
         fLastY = ev.pos.getY();
@@ -321,7 +344,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
 
     if (fOrientation == ImageKnob::Horizontal)
     {
-        if (int movX = ev.pos.getX() - fLastX)
+        if (const int movX = ev.pos.getX() - fLastX)
         {
             d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movX));
@@ -330,7 +353,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     }
     else if (fOrientation == ImageKnob::Vertical)
     {
-        if (int movY = fLastY - ev.pos.getY())
+        if (const int movY = fLastY - ev.pos.getY())
         {
             d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movY));
@@ -364,6 +387,51 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     fLastY = ev.pos.getY();
 
     return true;
+}
+
+bool ImageKnob::onScroll(const ScrollEvent& ev)
+{
+    if (! contains(ev.pos))
+        return false;
+
+    const float d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
+    float       value = (fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
+
+    if (value < fMinimum)
+    {
+        value = fMinimum;
+        fValueTmp = value;
+    }
+    else if (value > fMaximum)
+    {
+        value = fMaximum;
+        fValueTmp = value;
+    }
+    else if (fStep != 0.0f)
+    {
+        fValueTmp = value;
+        const float rest = std::fmod(value, fStep);
+        value = value - rest + (rest > fStep/2.0f ? fStep : 0.0f);
+    }
+
+    setValue(value, true);
+    return true;
+}
+
+// -----------------------------------------------------------------------
+
+float ImageKnob::_logscale(float value) const
+{
+    const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
+    const float a = fMaximum/std::exp(fMaximum*b);
+    return a * std::exp(b*value);
+}
+
+float ImageKnob::_invlogscale(float value) const
+{
+    const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
+    const float a = fMaximum/std::exp(fMaximum*b);
+    return std::log(value/a)/b;
 }
 
 // -----------------------------------------------------------------------

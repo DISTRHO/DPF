@@ -51,18 +51,21 @@ public:
 
     float getValue() const noexcept;
 
-    void setOrientation(Orientation orientation) noexcept;
+    void setDefault(float def) noexcept;
     void setRange(float min, float max) noexcept;
     void setStep(float step) noexcept;
     void setValue(float value, bool sendCallback = false) noexcept;
-    void setRotationAngle(int angle);
+    void setUsingLogScale(bool yesNo) noexcept;
 
     void setCallback(Callback* callback) noexcept;
+    void setOrientation(Orientation orientation) noexcept;
+    void setRotationAngle(int angle);
 
 protected:
      void onDisplay() override;
      bool onMouse(const MouseEvent&) override;
      bool onMotion(const MotionEvent&) override;
+     bool onScroll(const ScrollEvent&) override;
 
 private:
     Image fImage;
@@ -71,7 +74,9 @@ private:
     float fMaximum;
     float fStep;
     float fValue;
+    float fValueDef;
     float fValueTmp;
+    bool  fUsingLog;
     Orientation fOrientation;
 
     int  fRotationAngle;
@@ -86,6 +91,9 @@ private:
     int  fImgLayerCount;
     Rectangle<int> fKnobArea;
     GLuint fTextureId;
+
+    float _logscale(float value) const;
+    float _invlogscale(float value) const;
 
     DISTRHO_LEAK_DETECTOR(ImageKnob)
 };

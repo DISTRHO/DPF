@@ -107,12 +107,12 @@ public:
    /**
       Mouse scroll event.
       @param pos The scroll distance.
-      @param _   TODO
+      @param dir The scroll direction.
       @see onScroll
     */
     struct ScrollEvent : BaseEvent {
         Point<int> pos;
-        Point<float> _;
+        Point<float> delta;
     };
 
    /**
