@@ -147,6 +147,8 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	XFree(vi);
 
+	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
+
 	return 0;
 }
 
