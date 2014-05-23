@@ -69,13 +69,13 @@ public:
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE);
+    void loadFromMemory(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE);
+    void loadFromMemory(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Check if this image is valid.
@@ -127,7 +127,7 @@ public:
     */
     void drawAt(const Point<int>& pos);
 
-    Image& operator=(const Image& image);
+    Image& operator=(const Image& image) noexcept;
     bool operator==(const Image& image) const noexcept;
     bool operator!=(const Image& image) const noexcept;
 
@@ -137,8 +137,7 @@ private:
     GLenum fFormat;
     GLenum fType;
     GLuint fTextureId;
-
-    void _setup();
+    bool fIsReady;
 };
 
 // -----------------------------------------------------------------------
