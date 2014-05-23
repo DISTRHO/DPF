@@ -20,40 +20,44 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-Image::Image() noexcept
+Image::Image()
     : fRawData(nullptr),
       fSize(0, 0),
       fFormat(0),
       fType(0),
       fTextureId(0)
 {
+    _setup();
 }
 
-Image::Image(const char* rawData, int width, int height, GLenum format, GLenum type) noexcept
+Image::Image(const char* rawData, int width, int height, GLenum format, GLenum type)
     : fRawData(rawData),
       fSize(width, height),
       fFormat(format),
       fType(type),
       fTextureId(0)
 {
+    _setup();
 }
 
-Image::Image(const char* rawData, const Size<int>& size, GLenum format, GLenum type) noexcept
+Image::Image(const char* rawData, const Size<int>& size, GLenum format, GLenum type)
     : fRawData(rawData),
       fSize(size),
       fFormat(format),
       fType(type),
       fTextureId(0)
 {
+    _setup();
 }
 
-Image::Image(const Image& image) noexcept
+Image::Image(const Image& image)
     : fRawData(image.fRawData),
       fSize(image.fSize),
       fFormat(image.fFormat),
       fType(image.fType),
       fTextureId(0)
 {
+    _setup();
 }
 
 Image::~Image()
@@ -65,17 +69,27 @@ Image::~Image()
     }
 }
 
-void Image::loadFromMemory(const char* rawData, int width, int height, GLenum format, GLenum type) noexcept
+void Image::loadFromMemory(const char* rawData, int width, int height, GLenum format, GLenum type)
 {
     loadFromMemory(rawData, Size<int>(width, height), format, type);
 }
 
-void Image::loadFromMemory(const char* rawData, const Size<int>& size, GLenum format, GLenum type) noexcept
+void Image::loadFromMemory(const char* rawData, const Size<int>& size, GLenum format, GLenum type)
 {
     fRawData = rawData;
     fSize    = size;
     fFormat  = format;
     fType    = type;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, fTextureId);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.getWidth(), size.getHeight(), 0, format, type, rawData);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
 }
 
 bool Image::isValid() const noexcept
@@ -125,34 +139,11 @@ void Image::drawAt(int x, int y)
 
 void Image::drawAt(const Point<int>& pos)
 {
-    if (! isValid())
+    if (fTextureId == 0 || ! isValid())
         return;
-
-    if (fTextureId == 0)
-        glGenTextures(1, &fTextureId);
-
-    if (fTextureId == 0)
-    {
-        // invalidate image
-        fSize = Size<int>(0, 0);
-        // TODO print GL error
-        return;
-    }
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, fTextureId);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fSize.getWidth(), fSize.getHeight(), 0, fFormat, fType, fRawData);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
 
     Rectangle<int>(pos, fSize).draw();
 
@@ -162,12 +153,9 @@ void Image::drawAt(const Point<int>& pos)
 
 // -----------------------------------------------------------------------
 
-Image& Image::operator=(const Image& image) noexcept
+Image& Image::operator=(const Image& image)
 {
-    fRawData = image.fRawData;
-    fSize    = image.fSize;
-    fFormat  = image.fFormat;
-    fType    = image.fType;
+    loadFromMemory(image.fRawData, image.fSize, image.fFormat, image.fType);
     return *this;
 }
 
@@ -179,6 +167,36 @@ bool Image::operator==(const Image& image) const noexcept
 bool Image::operator!=(const Image& image) const noexcept
 {
     return !operator==(image);
+}
+
+// -----------------------------------------------------------------------
+
+void Image::_setup()
+{
+    glGenTextures(1, &fTextureId);
+
+    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0,);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, fTextureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+    if (fRawData != nullptr)
+    {
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, fSize.getWidth(), fSize.getHeight(), 0, fFormat, fType, fRawData);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
 }
 
 // -----------------------------------------------------------------------
