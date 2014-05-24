@@ -26,12 +26,13 @@ struct NVGpaint;
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// NanoImage
 
 /**
    NanoVG Image class.
 
    This implements NanoVG images as a C++ class where deletion is handled automatically.
-   Images need to be created within a NanoWidget class.
+   Images need to be created within a NanoVG or NanoWidget class.
  */
 class NanoImage
 {
@@ -54,7 +55,7 @@ public:
 protected:
    /**
       Constructors are protected.
-      NanoImages must be created within a NanoWidget class.
+      NanoImages must be created within a NanoVG or NanoWidget class.
     */
     NanoImage(const char* filename);
     NanoImage(uchar* data, int ndata);
@@ -63,17 +64,19 @@ protected:
 private:
     NVGcontext* const fContext;
     const int fImageId;
-    friend class NanoWidget;
+    friend class NanoVG;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoImage)
+    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------
+// NanoVG
 
 /**
-   NanoVG Widget class.
+   NanoVG class.
 
-   This class implements the NanoVG drawing API inside a DGL Widget.
+   This class exposes the NanoVG drawing API.
    All calls should be wrapped in beginFrame() & endFrame().
 
    @section Color utils
@@ -165,7 +168,7 @@ private:
 
    Note: currently only solid color fill is supported for text.
  */
-class NanoWidget : public Widget
+class NanoVG
 {
 public:
     enum Align {
@@ -254,12 +257,12 @@ public:
    /**
       Constructor.
     */
-    NanoWidget(Window& parent);
+    NanoVG();
 
    /**
       Destructor.
     */
-    ~NanoWidget() override;
+    ~NanoVG();
 
    /**
       Get the NanoVG context.
@@ -275,7 +278,7 @@ protected:
       Begin drawing a new frame.
       @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
     */
-    void beginFrame(Alpha alpha = PREMULTIPLIED_ALPHA);
+    void beginFrame(int width, int height, float scaleFactor = 1.0f, Alpha alpha = PREMULTIPLIED_ALPHA);
 
    /**
       Ends drawing flushing remaining render state.
@@ -743,6 +746,48 @@ protected:
 
 private:
     NVGcontext* fContext;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
+};
+
+// -----------------------------------------------------------------------
+// NanoWidget
+
+/**
+   NanoVG Widget class.
+
+   This class implements the NanoVG drawing API inside a DGL Widget.
+   onDisplay is implemented internally.
+ */
+class NanoWidget : public Widget,
+                   public NanoVG
+{
+public:
+   /**
+      Constructor.
+    */
+    NanoWidget(Window& parent)
+        : Widget(parent),
+          NanoVG() {}
+
+protected:
+   /**
+      New virtual onDisplay function.
+      @see onDisplay
+    */
+    virtual void onNanoDisplay() = 0;
+
+private:
+   /**
+      Widget display function.
+      Implemented internally to wrap begine/endFrame() automaticaly.
+    */
+    void onDisplay() override
+    {
+        beginFrame(getWidth(), getHeight());
+        onNanoDisplay();
+        endFrame();
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
 };

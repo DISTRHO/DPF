@@ -837,6 +837,7 @@ int fonsAddFont(struct FONScontext* stash, const char* name, const char* path)
 	FILE* fp = 0;
 	int dataSize = 0;
 	unsigned char* data = NULL;
+	size_t r;
 
 	// Read in the font data.
 	fp = fopen(path, "rb");
@@ -846,11 +847,13 @@ int fonsAddFont(struct FONScontext* stash, const char* name, const char* path)
 	fseek(fp,0,SEEK_SET);
 	data = (unsigned char*)malloc(dataSize);
 	if (data == NULL) goto error;
-	fread(data, 1, dataSize, fp);
+	r = fread(data, 1, dataSize, fp);
 	fclose(fp);
 	fp = 0;
 
 	return fonsAddFontMem(stash, name, data, dataSize, 1);
+
+	NVG_NOTUSED(r);
 
 error:
 	if (data) free(data);

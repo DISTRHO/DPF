@@ -23,7 +23,7 @@ OBJS = \
 	src/ImageKnob.cpp.o \
 	src/ImageSlider.cpp.o \
 	src/ImageSwitch.cpp.o \
-	src/NanoWidget.cpp.o \
+	src/NanoVG.cpp.o \
 	src/Widget.cpp.o
 
 ifeq ($(MACOS),true)
