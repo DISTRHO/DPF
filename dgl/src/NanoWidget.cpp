@@ -103,16 +103,6 @@ NanoImage::~NanoImage()
         nvgDeleteImage(fContext, fImageId);
 }
 
-int NanoImage::getWidth() const
-{
-    return getSize().getWidth();
-}
-
-int NanoImage::getHeight() const
-{
-    return getSize().getHeight();
-}
-
 Size<int> NanoImage::getSize() const
 {
     int w=0, h=0;

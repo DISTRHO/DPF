@@ -42,16 +42,6 @@ public:
     ~NanoImage();
 
    /**
-      Get width.
-    */
-    int getWidth() const;
-
-   /**
-      Get height.
-    */
-    int getHeight() const;
-
-   /**
       Get size.
     */
     Size<int> getSize() const;
