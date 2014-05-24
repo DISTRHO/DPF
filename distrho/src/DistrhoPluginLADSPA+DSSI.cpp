@@ -446,7 +446,11 @@ static void dssi_run_synth(LADSPA_Handle instance, ulong sampleCount, snd_seq_ev
 static LADSPA_Descriptor sLadspaDescriptor = {
     /* UniqueID   */ 0,
     /* Label      */ nullptr,
+#if DISTRHO_PLUGIN_IS_RT_SAFE
     /* Properties */ LADSPA_PROPERTY_HARD_RT_CAPABLE,
+#else
+    /* Properties */ 0x0,
+#endif
     /* Name       */ nullptr,
     /* Maker      */ nullptr,
     /* Copyright  */ nullptr,
