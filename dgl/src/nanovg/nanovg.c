@@ -1359,7 +1359,7 @@ static struct NVGvertex* nvg__bevelJoin(struct NVGvertex* dst, struct NVGpoint* 
 			nvg__vset(dst, p1->x, p1->y, 0.5f,1); dst++;
 		}
 
-		nvg__vset(dst, p1->x + dlx1*rw, p1->y + dly1*rw, lu,1); dst++;
+		nvg__vset(dst, p1->x + dlx1*lw, p1->y + dly1*lw, lu,1); dst++;
 		nvg__vset(dst, rx1, ry1, ru,1); dst++;
 	}
 
@@ -1565,11 +1565,11 @@ static int nvg__expandStrokeAndFill(struct NVGcontext* ctx, int feats, float w, 
 				dly = -dx;
 				if (lineCap == NVG_BUTT || lineCap == NVG_SQUARE) {
 					if (lineCap == NVG_BUTT) {
-						px = p0->x;
-						py = p0->y;
+						px = p0->x + dx*ctx->fringeWidth*0.5f;
+						py = p0->y + dy*ctx->fringeWidth*0.5f;
 					} else /*if (lineCap == NVG_SQUARE)*/ {
-						px = p0->x - dx*w;
-						py = p0->y - dy*w;
+						px = p0->x - dx*(w - ctx->fringeWidth);
+						py = p0->y - dy*(w - ctx->fringeWidth);
 					}
 					nvg__vset(dst, px + dlx*lw - dx*aa, py + dly*lw - dy*aa, lu,0); dst++;
 					nvg__vset(dst, px - dlx*rw - dx*aa, py - dly*rw - dy*aa, ru,0); dst++;
@@ -1617,11 +1617,11 @@ static int nvg__expandStrokeAndFill(struct NVGcontext* ctx, int feats, float w, 
 				dly = -dx;
 				if (lineCap == NVG_BUTT || lineCap == NVG_SQUARE) {
 					if (lineCap == NVG_BUTT) {
-						px = p1->x;
-						py = p1->y;
+						px = p1->x - dx*ctx->fringeWidth*0.5f;
+						py = p1->y - dy*ctx->fringeWidth*0.5f;
 					} else /*if (lineCap == NVG_SQUARE)*/ {
-						px = p1->x + dx*w;
-						py = p1->y + dy*w;
+						px = p1->x + dx*(w - ctx->fringeWidth);
+						py = p1->y + dy*(w - ctx->fringeWidth);
 					}
 					nvg__vset(dst, px + dlx*lw, py + dly * lw, lu,1); dst++;
 					nvg__vset(dst, px - dlx*rw, py - dly * rw, ru,1); dst++;
