@@ -128,8 +128,8 @@ NanoVG::NanoVG()
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }
 
-NanoVG::NanoVG(int atlasWidth, int atlasHeight)
-    : fContext(nvgCreateGL(atlasWidth, atlasHeight, NVG_ANTIALIAS))
+NanoVG::NanoVG(int textAtlasWidth, int textAtlasHeight)
+    : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS))
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }

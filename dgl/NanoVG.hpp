@@ -261,9 +261,9 @@ public:
     NanoVG();
 
    /**
-      Constructor using custom atlas size.
+      Constructor using custom text atlas size.
     */
-    NanoVG(int atlasWidth, int atlasHeight);
+    NanoVG(int textAtlasWidth, int textAtlasHeight);
 
    /**
       Destructor.
