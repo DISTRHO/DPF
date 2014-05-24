@@ -279,7 +279,6 @@ public:
         return fContext;
     }
 
-protected:
    /**
       Begin drawing a new frame.
       @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
@@ -694,6 +693,13 @@ protected:
       Sets the text align of current text style.
     */
     void textAlign(Align align);
+
+   /**
+      Sets the text align of current text style.
+      Overloaded function for convenience.
+      @see Align
+    */
+    void textAlign(int align);
 
    /**
       Sets the font face based on specified id of current text style.

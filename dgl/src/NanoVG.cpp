@@ -529,6 +529,11 @@ void NanoVG::textAlign(NanoVG::Align align)
     nvgTextAlign(fContext, align);
 }
 
+void NanoVG::textAlign(int align)
+{
+    nvgTextAlign(fContext, align);
+}
+
 void NanoVG::fontFaceId(FontId font)
 {
     nvgFontFaceId(fContext, font);

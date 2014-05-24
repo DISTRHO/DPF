@@ -296,6 +296,12 @@ protected:
     */
     virtual void onResize(const ResizeEvent&);
 
+   /**
+      Wherever the Y position is inverted.
+      (starts at the bottom)
+    */
+    bool fInvertedY;
+
 private:
     Window& fParent;
     bool    fVisible;

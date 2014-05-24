@@ -575,8 +575,23 @@ struct Window::PrivateData {
 
             if (widget->isVisible())
             {
-                glViewport(widget->getAbsoluteX(), -widget->getAbsoluteY(), fView->width, fView->height);
+                const int ypos = widget->fInvertedY ? fView->height - widget->getHeight() - widget->getAbsoluteY() : widget->getAbsoluteY();
+
+                // reset color
+                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
+                // limit viewport to widget bounds
+                glViewport(widget->getAbsoluteX(), ypos, widget->getWidth(), widget->getHeight());
+
+                // need scale contents to match viewport
+                glPushMatrix();
+                glScalef(float(fView->width)/float(widget->getWidth()), float(fView->height)/float(widget->getHeight()), 1.0f);
+
+                // display widget
                 widget->onDisplay();
+
+                // pop
+                glPopMatrix();
             }
         }
 

@@ -23,7 +23,8 @@ START_NAMESPACE_DGL
 // Widget
 
 Widget::Widget(Window& parent)
-    : fParent(parent),
+    : fInvertedY(false),
+      fParent(parent),
       fVisible(true)
 {
     fParent._addWidget(this);
