@@ -256,8 +256,14 @@ public:
 
    /**
       Constructor.
+      Uses 512x512 as default atlas size.
     */
     NanoVG();
+
+   /**
+      Constructor using custom atlas size.
+    */
+    NanoVG(int atlasWidth, int atlasHeight);
 
    /**
       Destructor.
@@ -780,7 +786,7 @@ protected:
 private:
    /**
       Widget display function.
-      Implemented internally to wrap begine/endFrame() automaticaly.
+      Implemented internally to wrap begin/endFrame() automaticaly.
     */
     void onDisplay() override
     {
