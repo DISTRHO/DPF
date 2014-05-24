@@ -38,9 +38,19 @@ class NanoImage
 {
 public:
    /**
+      Constructor for null image.
+    */
+    NanoImage() noexcept;
+
+   /**
       Destructor.
     */
     ~NanoImage();
+
+   /**
+      Check if this is a valid image.
+    */
+    bool isValid() const noexcept;
 
    /**
       Get size.
@@ -52,6 +62,12 @@ public:
     */
     void updateImage(const uchar* data);
 
+   /**
+      Operator =.
+      Takes the image data from @a img, invalidating it.
+    */
+    NanoImage operator=(NanoImage img) noexcept;
+
 protected:
    /**
       Constructors are protected.
@@ -62,12 +78,9 @@ protected:
     NanoImage(int w, int h, const uchar* data);
 
 private:
-    NVGcontext* const fContext;
-    const int fImageId;
+    NVGcontext* fContext;
+    int fImageId;
     friend class NanoVG;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoImage)
-    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------

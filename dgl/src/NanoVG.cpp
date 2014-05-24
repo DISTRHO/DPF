@@ -85,6 +85,20 @@ NanoVG::Paint::operator NVGpaint() const noexcept
 
 static NVGcontext* sLastContext = nullptr;
 
+NanoImage::NanoImage() noexcept
+    : fContext(nullptr),
+      fImageId(0) {}
+
+#if 0
+NanoImage::NanoImage(NanoImage& img) noexcept
+    : fContext(img.fContext),
+      fImageId(img.fImageId)
+{
+    img.fContext = nullptr;
+    img.fImageId = 0;
+}
+#endif
+
 NanoImage::NanoImage(const char* filename)
     : fContext(sLastContext),
       fImageId((fContext != nullptr) ? nvgCreateImage(fContext, filename) : 0) {}
@@ -103,6 +117,11 @@ NanoImage::~NanoImage()
         nvgDeleteImage(fContext, fImageId);
 }
 
+bool NanoImage::isValid() const noexcept
+{
+    return (fContext != nullptr && fImageId != 0);
+}
+
 Size<int> NanoImage::getSize() const
 {
     int w=0, h=0;
@@ -117,6 +136,20 @@ void NanoImage::updateImage(const uchar* data)
 {
     if (fContext != nullptr && fImageId != 0)
         nvgUpdateImage(fContext, fImageId, data);
+}
+
+NanoImage NanoImage::operator=(NanoImage img) noexcept
+{
+    if (fContext != nullptr && fImageId != 0)
+        nvgDeleteImage(fContext, fImageId);
+
+    fContext = img.fContext;
+    fImageId = img.fImageId;
+
+    img.fContext = nullptr;
+    img.fImageId = 0;
+
+    return *this;
 }
 
 // -----------------------------------------------------------------------
