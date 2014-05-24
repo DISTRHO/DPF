@@ -544,9 +544,12 @@ void NanoWidget::textBox(float x, float y, float breakRowWidth, const char* stri
     nvgTextBox(fContext, x, y, breakRowWidth, string, end);
 }
 
-float NanoWidget::textBounds(float x, float y, const char* string, const char* end, float* bounds)
+float NanoWidget::textBounds(float x, float y, const char* string, const char* end, Rectangle<float>& bounds)
 {
-    return nvgTextBounds(fContext, x, y, string, end, bounds);
+    float b[4];
+    const float ret = nvgTextBounds(fContext, x, y, string, end, b);
+    bounds = Rectangle<float>(b[0], b[1], b[2], b[3]);
+    return ret;
 }
 
 void NanoWidget::textBoxBounds(float x, float y, float breakRowWidth, const char* string, const char* end, float* bounds)
