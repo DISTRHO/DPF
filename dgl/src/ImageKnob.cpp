@@ -353,7 +353,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     {
         if (const int movX = ev.pos.getX() - fLastX)
         {
-            d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
+            d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movX));
             doVal = true;
         }
@@ -362,7 +362,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     {
         if (const int movY = fLastY - ev.pos.getY())
         {
-            d     = (ev.mod & MODIFIER_SHIFT) ? 2000.0f : 200.0f;
+            d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
             value = fValueTmp + (float(fMaximum - fMinimum) / d * float(movY));
             doVal = true;
         }
@@ -373,13 +373,11 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
 
     if (value < fMinimum)
     {
-        value = fMinimum;
-        fValueTmp = value;
+        fValueTmp = value = fMinimum;
     }
     else if (value > fMaximum)
     {
-        value = fMaximum;
-        fValueTmp = value;
+        fValueTmp = value = fMaximum;
     }
     else if (fStep != 0.0f)
     {
@@ -406,13 +404,11 @@ bool ImageKnob::onScroll(const ScrollEvent& ev)
 
     if (value < fMinimum)
     {
-        value = fMinimum;
-        fValueTmp = value;
+        fValueTmp = value = fMinimum;
     }
     else if (value > fMaximum)
     {
-        value = fMaximum;
-        fValueTmp = value;
+        fValueTmp = value = fMaximum;
     }
     else if (fStep != 0.0f)
     {

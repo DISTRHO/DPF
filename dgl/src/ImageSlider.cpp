@@ -256,13 +256,11 @@ bool ImageSlider::onMouse(const MouseEvent& ev)
 
         if (value < fMinimum)
         {
-            value = fMinimum;
-            fValueTmp = value;
+            fValueTmp = value = fMinimum;
         }
         else if (value > fMaximum)
         {
-            value = fMaximum;
-            fValueTmp = value;
+            fValueTmp = value = fMaximum;
         }
         else if (fStep != 0.0f)
         {
@@ -327,13 +325,11 @@ bool ImageSlider::onMotion(const MotionEvent& ev)
 
         if (value < fMinimum)
         {
-            value = fMinimum;
-            fValueTmp = value;
+            fValueTmp = value = fMinimum;
         }
         else if (value > fMaximum)
         {
-            value = fMaximum;
-            fValueTmp = value;
+            fValueTmp = value = fMaximum;
         }
         else if (fStep != 0.0f)
         {
