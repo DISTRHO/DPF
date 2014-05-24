@@ -780,7 +780,10 @@ public:
     */
     NanoWidget(Window& parent)
         : Widget(parent),
-          NanoVG() {}
+          NanoVG()
+    {
+        fInvertedY = true;
+    }
 
 protected:
    /**
@@ -796,9 +799,12 @@ private:
     */
     void onDisplay() override
     {
+        //glPushAttrib(GL_PIXEL_MODE_BIT|GL_STENCIL_BUFFER_BIT|GL_ENABLE_BIT);
         beginFrame(getWidth(), getHeight());
         onNanoDisplay();
         endFrame();
+        //glPopAttrib();
+        glDisable(GL_CULL_FACE);
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
