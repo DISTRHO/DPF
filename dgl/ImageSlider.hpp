@@ -84,6 +84,12 @@ private:
 
     void _recheckArea() noexcept;
 
+    // these should not be used
+    void setAbsoluteX(int) const noexcept {}
+    void setAbsoluteY(int) const noexcept {}
+    void setAbsolutePos(int, int) const noexcept {}
+    void setAbsolutePos(const Point<int>&) const noexcept {}
+
     DISTRHO_LEAK_DETECTOR(ImageSlider)
 };
 

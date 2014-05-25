@@ -23,8 +23,8 @@ START_NAMESPACE_DGL
 // Widget
 
 Widget::Widget(Window& parent)
-    : fInvertedY(false),
-      fParent(parent),
+    : fParent(parent),
+      fNeedsFullViewport(false),
       fVisible(true)
 {
     fParent._addWidget(this);
@@ -57,6 +57,11 @@ void Widget::show()
 void Widget::hide()
 {
     setVisible(false);
+}
+
+void Widget::setNeedsFullViewport(bool yesNo) noexcept
+{
+    fNeedsFullViewport = yesNo;
 }
 
 int Widget::getWidth() const noexcept

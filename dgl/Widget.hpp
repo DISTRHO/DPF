@@ -160,6 +160,12 @@ public:
     void hide();
 
    /**
+      Tell the parent window this widget this the full viewport.
+      When enabled, the local widget coordinates are ignored.
+    */
+    void setNeedsFullViewport(bool yesNo) noexcept;
+
+   /**
       Get width.
     */
     int getWidth() const noexcept;
@@ -296,14 +302,9 @@ protected:
     */
     virtual void onResize(const ResizeEvent&);
 
-   /**
-      Wherever the Y position is inverted.
-      (starts at the bottom)
-    */
-    bool fInvertedY;
-
 private:
     Window& fParent;
+    bool    fNeedsFullViewport;
     bool    fVisible;
     Rectangle<int> fArea;
 

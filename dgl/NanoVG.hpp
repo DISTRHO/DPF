@@ -793,10 +793,7 @@ public:
     */
     NanoWidget(Window& parent)
         : Widget(parent),
-          NanoVG()
-    {
-        fInvertedY = true;
-    }
+          NanoVG() {}
 
 protected:
    /**

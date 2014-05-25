@@ -37,7 +37,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
       fStartedY(0),
       fCallback(nullptr)
 {
-    setSize(fImage.getSize());
+    setNeedsFullViewport(true);
 }
 
 ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
@@ -55,7 +55,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
       fStartedY(0),
       fCallback(nullptr)
 {
-    setSize(fImage.getSize());
+    setNeedsFullViewport(true);
 }
 
 ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
@@ -76,7 +76,7 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
       fEndPos(imageSlider.fEndPos),
       fSliderArea(imageSlider.fSliderArea)
 {
-    setSize(fImage.getSize());
+    setNeedsFullViewport(true);
 }
 
 int ImageSlider::getId() const noexcept
@@ -86,7 +86,7 @@ int ImageSlider::getId() const noexcept
 
 void ImageSlider::setId(int id) noexcept
 {
-    fId = id;;
+    fId = id;
 }
 
 float ImageSlider::getValue() const noexcept

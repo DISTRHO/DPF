@@ -578,7 +578,7 @@ struct Window::PrivateData {
                 // reset color
                 glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-                if (widget->fArea == Rectangle<int>(0, 0, fView->width, fView->height))
+                if (widget->fNeedsFullViewport || widget->fArea == Rectangle<int>(0, 0, fView->width, fView->height))
                 {
                     // full viewport size
                     glViewport(0, 0, fView->width, fView->height);
@@ -725,6 +725,14 @@ struct Window::PrivateData {
         DBGp("PUGL: onReshape : %i %i\n", width, height);
 
         fSelf->onReshape(width, height);
+
+        FOR_EACH_WIDGET(it)
+        {
+            Widget* const widget(*it);
+
+            if (widget->fNeedsFullViewport)
+                widget->setSize(width, height);
+        }
     }
 
     void onClose()
