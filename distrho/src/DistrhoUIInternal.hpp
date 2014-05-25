@@ -175,7 +175,7 @@ private:
 // -----------------------------------------------------------------------
 // UI exporter class
 
-class UIExporter : public IdleCallback
+class UIExporter
 {
 public:
     UIExporter(void* const ptr, const intptr_t winId,
@@ -267,13 +267,20 @@ public:
 
     // -------------------------------------------------------------------
 
-    void exec()
+    void exec(IdleCallback* const cb)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
 
-        glWindow.addIdleCallback(this);
+        glWindow.addIdleCallback(cb);
         glWindow.setVisible(true);
         glApp.exec();
+    }
+
+    void exec_idle()
+    {
+        if (glWindow.isReady())
+            fUi->d_uiIdle();
     }
 
     bool idle()
@@ -319,13 +326,6 @@ public:
         glWindow.setVisible(yesNo);
 
         return ! glApp.isQuiting();
-    }
-
-protected:
-    void idleCallback() override
-    {
-        if (glWindow.isReady())
-            fUi->d_uiIdle();
     }
 
 private:

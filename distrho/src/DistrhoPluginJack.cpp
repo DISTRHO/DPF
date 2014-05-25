@@ -36,7 +36,7 @@ static const setStateFunc setStateCallback = nullptr;
 
 // -----------------------------------------------------------------------
 
-class PluginJack
+class PluginJack : public IdleCallback
 {
 public:
     PluginJack(jack_client_t* const client)
@@ -67,6 +67,23 @@ public:
         fPortMidiIn = jack_port_register(fClient, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 #endif
 
+        if (const uint32_t count = fPlugin.getParameterCount())
+        {
+            fLastOutputValues = new float[count];
+
+            for (uint32_t i=0; i < count; ++i)
+            {
+                if (fPlugin.isParameterOutput(i))
+                    fLastOutputValues[i] = fPlugin.getParameterValue(i);
+                else
+                    fLastOutputValues[i] = 0.0f;
+            }
+        }
+        else
+        {
+            fLastOutputValues = nullptr;
+        }
+
         jack_set_buffer_size_callback(fClient, jackBufferSizeCallback, this);
         jack_set_sample_rate_callback(fClient, jackSampleRateCallback, this);
         jack_set_process_callback(fClient, jackProcessCallback, this);
@@ -79,7 +96,7 @@ public:
         else
             fUI.setTitle(DISTRHO_PLUGIN_NAME);
 
-        fUI.exec();
+        fUI.exec(this);
     }
 
     ~PluginJack()
@@ -116,6 +133,27 @@ public:
     // -------------------------------------------------------------------
 
 protected:
+    void idleCallback() override
+    {
+        float value;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (! fPlugin.isParameterOutput(i))
+                continue;
+
+            value = fPlugin.getParameterValue(i);
+
+            if (fLastOutputValues[i] == value)
+                continue;
+
+            fLastOutputValues[i] = value;
+            fUI.parameterChanged(i, value);
+        }
+
+        fUI.exec_idle();
+    }
+
     void jackBufferSize(const jack_nframes_t nframes)
     {
         fPlugin.setBufferSize(nframes, true);
@@ -265,6 +303,9 @@ private:
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePos fTimePos;
 #endif
+
+    // Temporary data
+    float* fLastOutputValues;
 
     // -------------------------------------------------------------------
     // Callbacks
