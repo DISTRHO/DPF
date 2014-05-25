@@ -30,6 +30,10 @@
 
 START_NAMESPACE_DISTRHO
 
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static const setStateFunc setStateCallback = nullptr;
+#endif
+
 // -----------------------------------------------------------------------
 
 class PluginJack
@@ -37,7 +41,7 @@ class PluginJack
 public:
     PluginJack(jack_client_t* const client)
         : fPlugin(),
-          fUI(this, 0, nullptr, nullptr, nullptr, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
           fClient(client)
     {
         char strBuf[0xff+1];
@@ -171,6 +175,11 @@ protected:
             else
                 fTimePos.bbt.valid = false;
         }
+        else
+        {
+            fTimePos.bbt.valid = false;
+            fTimePos.frame = 0;
+        }
 
         fPlugin.setTimePos(fTimePos);
 #endif
@@ -216,6 +225,20 @@ protected:
         fClient = nullptr;
         fUI.quit();
     }
+
+    // -------------------------------------------------------------------
+
+    void setParameterValue(const uint32_t index, const float value)
+    {
+        fPlugin.setParameterValue(index, value);
+    }
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        fPlugin.setState(key, value);
+    }
+#endif
 
     void setSize(const uint width, const uint height)
     {
@@ -270,6 +293,18 @@ private:
     {
         uiPtr->jackShutdown();
     }
+
+    static void setParameterValueCallback(void* ptr, uint32_t index, float value)
+    {
+        uiPtr->setParameterValue(index, value);
+    }
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        uiPtr->setState(key, value);
+    }
+#endif
 
     static void setSizeCallback(void* ptr, uint width, uint height)
     {

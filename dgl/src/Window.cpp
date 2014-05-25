@@ -576,6 +576,7 @@ struct Window::PrivateData {
             if (widget->isVisible())
             {
                 const int ypos = widget->fInvertedY ? fView->height - widget->getHeight() - widget->getAbsoluteY() : widget->getAbsoluteY();
+                //const int ypos = fView->height - widget->getHeight() - widget->getAbsoluteY();
 
                 // reset color
                 glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
