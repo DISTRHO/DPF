@@ -955,6 +955,13 @@ static void vst_processReplacingCallback(AEffect* effect, float** inputs, float*
 END_NAMESPACE_DISTRHO
 
 DISTRHO_PLUGIN_EXPORT
+#if DISTRHO_OS_WINDOWS
+const AEffect* VSTPluginMain(audioMasterCallback audioMaster);
+#else
+const AEffect* VSTPluginMain(audioMasterCallback audioMaster) asm ("main");
+#endif
+
+DISTRHO_PLUGIN_EXPORT
 const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
 {
     USE_NAMESPACE_DISTRHO
@@ -1016,3 +1023,5 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
 
     return effect;
 }
+
+// -----------------------------------------------------------------------
