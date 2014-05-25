@@ -32,6 +32,7 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fValue(0.5f),
       fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingDefault(false),
       fUsingLog(false),
       fOrientation(orientation),
       fRotationAngle(0),
@@ -58,6 +59,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fValue(0.5f),
       fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingDefault(false),
       fUsingLog(false),
       fOrientation(orientation),
       fRotationAngle(0),
@@ -84,6 +86,7 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fValue(imageKnob.fValue),
       fValueDef(imageKnob.fValueDef),
       fValueTmp(fValue),
+      fUsingDefault(imageKnob.fUsingDefault),
       fUsingLog(imageKnob.fUsingLog),
       fOrientation(imageKnob.fOrientation),
       fRotationAngle(imageKnob.fRotationAngle),
@@ -131,6 +134,7 @@ float ImageKnob::getValue() const noexcept
 void ImageKnob::setDefault(float value) noexcept
 {
     fValueDef = value;
+    fUsingDefault = true;
 }
 
 void ImageKnob::setRange(float min, float max) noexcept
@@ -161,11 +165,6 @@ void ImageKnob::setRange(float min, float max) noexcept
             } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange > max");
         }
     }
-
-    if (fValueDef < min)
-        fValueDef = min;
-    else if (fValueDef > max)
-        fValueDef = max;
 
     fMinimum = min;
     fMaximum = max;
@@ -313,7 +312,7 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
         if (! contains(ev.pos))
             return false;
 
-        if (ev.mod & MODIFIER_SHIFT)
+        if ((ev.mod & MODIFIER_SHIFT) != 0 && fUsingDefault)
         {
             setValue(fValueDef);
             fValueTmp = fValue;

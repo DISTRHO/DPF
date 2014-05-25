@@ -76,6 +76,7 @@ private:
     float fValue;
     float fValueDef;
     float fValueTmp;
+    bool  fUsingDefault;
     bool  fUsingLog;
     Orientation fOrientation;
 
