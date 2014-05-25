@@ -31,12 +31,14 @@ double d_lastUiSampleRate = 0.0;
 // UI
 
 UI::UI()
-    : DGL::Widget(*DGL::dgl_lastUiParent),
+    : UIWidget(*DGL::dgl_lastUiParent),
       pData(new PrivateData())
 {
     DISTRHO_SAFE_ASSERT(DGL::dgl_lastUiParent != nullptr);
 
     DGL::dgl_lastUiParent = nullptr;
+
+    Widget::setNeedsFullViewport(true);
 }
 
 UI::~UI()

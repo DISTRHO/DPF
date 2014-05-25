@@ -770,7 +770,7 @@ public:
     int textBreakLines(const char* string, const char* end, float breakRowWidth, TextRow* rows, int maxRows);
 
 private:
-    NVGcontext* fContext;
+    NVGcontext* const fContext;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
 };
@@ -782,7 +782,8 @@ private:
    NanoVG Widget class.
 
    This class implements the NanoVG drawing API inside a DGL Widget.
-   onDisplay is implemented internally.
+   The drawing function onDisplay() is implemented internally but a
+   new onNanoDisplay() needs to be overridden instead.
  */
 class NanoWidget : public Widget,
                    public NanoVG

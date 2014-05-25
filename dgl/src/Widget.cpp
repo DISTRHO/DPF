@@ -59,11 +59,6 @@ void Widget::hide()
     setVisible(false);
 }
 
-void Widget::setNeedsFullViewport(bool yesNo) noexcept
-{
-    fNeedsFullViewport = yesNo;
-}
-
 int Widget::getWidth() const noexcept
 {
     return fArea.getWidth();
@@ -228,6 +223,11 @@ bool Widget::onScroll(const ScrollEvent&)
 
 void Widget::onResize(const ResizeEvent&)
 {
+}
+
+void Widget::setNeedsFullViewport(bool yesNo) noexcept
+{
+    fNeedsFullViewport = yesNo;
 }
 
 // -----------------------------------------------------------------------

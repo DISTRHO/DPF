@@ -37,7 +37,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
       fStartedY(0),
       fCallback(nullptr)
 {
-    setNeedsFullViewport(true);
+    Widget::setNeedsFullViewport(true);
 }
 
 ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
@@ -55,7 +55,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
       fStartedY(0),
       fCallback(nullptr)
 {
-    setNeedsFullViewport(true);
+    Widget::setNeedsFullViewport(true);
 }
 
 ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
@@ -76,7 +76,7 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
       fEndPos(imageSlider.fEndPos),
       fSliderArea(imageSlider.fSliderArea)
 {
-    setNeedsFullViewport(true);
+    Widget::setNeedsFullViewport(true);
 }
 
 int ImageSlider::getId() const noexcept

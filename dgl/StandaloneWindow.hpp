@@ -51,17 +51,23 @@ protected:
 private:
     Widget* fWidget;
 
-    void _addWidget(Widget* const widget) override
+    void _addWidget(Widget* widget) override
     {
         if (fWidget == nullptr)
+        {
             fWidget = widget;
+            fWidget->setNeedsFullViewport(true);
+        }
         Window::_addWidget(widget);
     }
 
-    void _removeWidget(Widget* const widget) override
+    void _removeWidget(Widget* widget) override
     {
         if (fWidget == widget)
+        {
+            fWidget->setNeedsFullViewport(false);
             fWidget = nullptr;
+        }
         Window::_removeWidget(widget);
     }
 

@@ -160,12 +160,6 @@ public:
     void hide();
 
    /**
-      Tell the parent window this widget this the full viewport.
-      When enabled, the local widget coordinates are ignored.
-    */
-    void setNeedsFullViewport(bool yesNo) noexcept;
-
-   /**
       Get width.
     */
     int getWidth() const noexcept;
@@ -301,6 +295,14 @@ protected:
       A function called when the widget is resized.
     */
     virtual void onResize(const ResizeEvent&);
+
+   /**
+      Tell the parent window this widget this the full viewport.
+      When enabled, the local widget coordinates are ignored.
+      @note: This is an internal function;
+             You do not need it under normal circumstances.
+    */
+    void setNeedsFullViewport(bool yesNo) noexcept;
 
 private:
     Window& fParent;

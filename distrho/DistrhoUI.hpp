@@ -22,12 +22,19 @@
 
 #include "../dgl/Widget.hpp"
 
+#if DISTRHO_UI_USE_NANOVG
+# include "../dgl/NanoVG.hpp"
+typedef DGL::NanoWidget UIWidget;
+#else
+typedef DGL::Widget UIWidget;
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 // UI
 
-class UI : public DGL::Widget
+class UI : public UIWidget
 {
 public:
     UI();
@@ -90,6 +97,13 @@ private:
     PrivateData* const pData;
     friend class UIExporter;
     friend class UIExporterWindow;
+
+    // these should not be used
+    void setAbsoluteX(int) const noexcept {}
+    void setAbsoluteY(int) const noexcept {}
+    void setAbsolutePos(int, int) const noexcept {}
+    void setAbsolutePos(const DGL::Point<int>&) const noexcept {}
+    void setNeedsFullViewport(bool) const noexcept {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };
