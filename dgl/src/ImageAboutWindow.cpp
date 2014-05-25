@@ -76,6 +76,12 @@ bool ImageAboutWindow::onMouse(const MouseEvent& ev)
     return false;
 }
 
+void ImageAboutWindow::onReshape(int width, int height)
+{
+    Widget::setSize(width, height);
+    Window::onReshape(width, height);
+}
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
