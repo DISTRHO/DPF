@@ -314,7 +314,7 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
 
         if ((ev.mod & MODIFIER_SHIFT) != 0 && fUsingDefault)
         {
-            setValue(fValueDef);
+            setValue(fValueDef, true);
             fValueTmp = fValue;
             return true;
         }
