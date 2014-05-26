@@ -641,21 +641,20 @@ public:
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        static const int kWantedVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
+        static const int kWantVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
 
-        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantedVstTimeFlags, nullptr, 0.0f))
+        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantVstTimeFlags, nullptr, 0.0f))
         {
             fTimePos.playing = (vstTimeInfo->flags & kVstTransportPlaying);
             fTimePos.frame   = vstTimeInfo->samplePos;
+            fTimePos.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
 
             if (vstTimeInfo->flags & kVstTempoValid)
             {
-                fTimePos.bbt.valid = true;
                 fTimePos.bbt.beatsPerMinute = vstTimeInfo->tempo;
             }
             if (vstTimeInfo->flags & kVstTimeSigValid)
             {
-                fTimePos.bbt.valid = true;
                 fTimePos.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
                 fTimePos.bbt.beatType    = vstTimeInfo->timeSigDenominator;
             }
@@ -736,8 +735,7 @@ private:
     {
 # if DISTRHO_PLUGIN_HAS_UI
         // set previous parameters invalid
-        for (uint32_t i=0, count = fPlugin.getParameterCount(); i < count; ++i)
-            parameterChecks[i] = false;
+        std::memset(parameterChecks, 0, sizeof(bool)*fPlugin.getParameterCount());
 # endif
 
         nextProgram = index;
@@ -984,7 +982,7 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     int32_t* const version = (int32_t*)&effect->unknown1;
     *version = plugin->getVersion();
 #else
-    effect->version  = plugin->getVersion();
+    effect->version = plugin->getVersion();
 #endif
 
     // plugin fields
