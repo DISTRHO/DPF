@@ -22,7 +22,10 @@ endif
 # Common build and link flags
 
 BASE_FLAGS = -Wall -Wextra -pipe
-BASE_OPTS  = -O2 -ffast-math -mtune=generic -msse -msse2 -mfpmath=sse -fdata-sections -ffunction-sections
+BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
+ifneq ($(NOOPT),true)
+BASE_OPTS  += -mtune=generic -msse -msse2 -mfpmath=sse
+endif
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1 -Wl,--as-needed -Wl,--gc-sections -Wl,--strip-all
 
 ifeq ($(MACOS),true)
@@ -31,8 +34,11 @@ LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip -Wl,-dead_strip
 endif
 
 ifeq ($(RASPPI),true)
-# Raspberry-Pi optimization flags
-BASE_OPTS  = -O2 -ffast-math -march=armv6 -mfpu=vfp -mfloat-abi=hard
+# Raspberry-Pi flags
+BASE_OPTS  = -O2 -ffast-math
+ifneq ($(NOOPT),true)
+BASE_OPTS += -march=armv6 -mfpu=vfp -mfloat-abi=hard
+endif
 LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
 endif
 
