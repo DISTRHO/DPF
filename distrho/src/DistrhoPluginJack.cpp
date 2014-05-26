@@ -67,6 +67,11 @@ public:
         fPortMidiIn = jack_port_register(fClient, "midi-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (fPlugin.getProgramCount() > 0)
+            fPlugin.setProgram(0);
+#endif
+
         if (const uint32_t count = fPlugin.getParameterCount())
         {
             fLastOutputValues = new float[count];
