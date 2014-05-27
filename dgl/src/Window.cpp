@@ -587,7 +587,7 @@ struct Window::PrivateData {
                 else if (! widget->fNeedsScaling)
                 {
                     // only set viewport pos
-                    glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), fView->width, fView->height);
+                    glViewport(widget->getAbsoluteX(), /*fView->height - widget->getHeight()*/ - widget->getAbsoluteY(), fView->width, fView->height);
 
                     // display widget
                     widget->onDisplay();
