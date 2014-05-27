@@ -59,7 +59,7 @@ def png2rgba(namespace, filenames):
         if tempIndex != len(filenames):
             fdH.write("\n")
 
-        fdC.write("static const unsigned char temp%i[] = {\n" % tempIndex)
+        fdC.write("static const unsigned char temp_%s_%i[] = {\n" % (shortFilename, tempIndex))
 
         curColumn = 1
         fdC.write(" ")
@@ -101,7 +101,7 @@ def png2rgba(namespace, filenames):
                     curColumn += 1
 
         fdC.write("};\n")
-        fdC.write("const char* %s::%sData = (const char*)temp%i;\n" % (namespace, shortFilename, tempIndex))
+        fdC.write("const char* %s::%sData = (const char*)temp_%s_%i;\n" % (namespace, shortFilename, shortFilename, tempIndex))
 
         if tempIndex != len(filenames):
             fdC.write("\n")
