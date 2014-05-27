@@ -794,7 +794,10 @@ public:
     */
     NanoWidget(Window& parent)
         : Widget(parent),
-          NanoVG() {}
+          NanoVG()
+    {
+        setNeedsScaling(true);
+    }
 
 protected:
    /**

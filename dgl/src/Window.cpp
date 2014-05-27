@@ -584,21 +584,28 @@ struct Window::PrivateData {
                     // display widget
                     widget->onDisplay();
                 }
+                else if (! widget->fNeedsScaling)
+                {
+                    // only set viewport pos
+                    glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), fView->width, fView->height);
+
+                    // display widget
+                    widget->onDisplay();
+                }
                 else
                 {
                     // limit viewport to widget bounds
-                    //glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), widget->getWidth(), widget->getHeight());
-                    glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), fView->width, fView->height);
+                    glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), widget->getWidth(), widget->getHeight());
 
                     // scale contents to match viewport size
-                    //glPushMatrix();
-                    //glScalef(float(fView->width)/float(widget->getWidth()), float(fView->height)/float(widget->getHeight()), 1.0f);
+                    glPushMatrix();
+                    glScalef(float(fView->width)/float(widget->getWidth()), float(fView->height)/float(widget->getHeight()), 1.0f);
 
                     // display widget
                     widget->onDisplay();
 
                     // done
-                    //glPopMatrix();
+                    glPopMatrix();
                 }
             }
         }
