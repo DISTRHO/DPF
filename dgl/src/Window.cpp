@@ -55,8 +55,6 @@ extern "C" {
 
 START_NAMESPACE_DGL
 
-Window* dgl_lastUiParent = nullptr;
-
 // -----------------------------------------------------------------------
 // Window Private
 
@@ -162,11 +160,8 @@ struct Window::PrivateData {
         if (fSelf == nullptr || fView == nullptr)
         {
             DBG("Failed!\n");
-            dgl_lastUiParent = nullptr;
             return;
         }
-
-        dgl_lastUiParent = fSelf;
 
         puglInitResizable(fView, fResizable);
 
