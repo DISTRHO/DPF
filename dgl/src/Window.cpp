@@ -562,6 +562,8 @@ struct Window::PrivateData {
     {
         fSelf->onDisplayBefore();
 
+        bool needsDisableScissor = false;
+
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
@@ -575,32 +577,30 @@ struct Window::PrivateData {
                 {
                     // full viewport size
                     glViewport(0, 0, fView->width, fView->height);
-
-                    // display widget
-                    widget->onDisplay();
                 }
                 else if (! widget->fNeedsScaling)
                 {
                     // only set viewport pos
                     glViewport(widget->getAbsoluteX(), /*fView->height - widget->getHeight()*/ - widget->getAbsoluteY(), fView->width, fView->height);
 
-                    // display widget
-                    widget->onDisplay();
+                    // then cut the outer bounds
+                    glScissor(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), widget->getWidth(), widget->getHeight());
+                    glEnable(GL_SCISSOR_TEST);
+                    needsDisableScissor = true;
                 }
                 else
                 {
                     // limit viewport to widget bounds
                     glViewport(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), widget->getWidth(), widget->getHeight());
+                }
 
-                    // scale contents to match viewport size
-                    glPushMatrix();
-                    glScalef(float(fView->width)/float(widget->getWidth()), float(fView->height)/float(widget->getHeight()), 1.0f);
+                // display widget
+                widget->onDisplay();
 
-                    // display widget
-                    widget->onDisplay();
-
-                    // done
-                    glPopMatrix();
+                if (needsDisableScissor)
+                {
+                    glDisable(GL_SCISSOR_TEST);
+                    needsDisableScissor = false;
                 }
             }
         }
