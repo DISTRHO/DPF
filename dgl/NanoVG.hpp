@@ -43,11 +43,6 @@ public:
     ~NanoImage();
 
    /**
-      Check if this is a valid image.
-    */
-    bool isValid() const noexcept;
-
-   /**
       Get size.
     */
     Size<int> getSize() const;

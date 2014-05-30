@@ -94,11 +94,6 @@ NanoImage::~NanoImage()
         nvgDeleteImage(fContext, fImageId);
 }
 
-bool NanoImage::isValid() const noexcept
-{
-    return (fContext != nullptr && fImageId != 0);
-}
-
 Size<int> NanoImage::getSize() const
 {
     int w=0, h=0;
