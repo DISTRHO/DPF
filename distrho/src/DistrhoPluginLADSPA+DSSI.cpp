@@ -557,7 +557,7 @@ public:
         // Set latency port
         portNames[port]       = strdup("_latency");
         portDescriptors[port] = LADSPA_PORT_CONTROL | LADSPA_PORT_OUTPUT;
-        portRangeHints[port].HintDescriptor = LADSPA_HINT_SAMPLE_RATE;
+        portRangeHints[port].HintDescriptor = LADSPA_HINT_SAMPLE_RATE|LADSPA_HINT_INTEGER;
         portRangeHints[port].LowerBound     = 0.0f;
         portRangeHints[port].UpperBound     = 1.0f;
         ++port;
