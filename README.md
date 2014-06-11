@@ -6,7 +6,7 @@ The framework facilitates exporting various different plugin formats from the sa
 
 DPF can build for LADSPA, DSSI, LV2 and VST formats.<br/>
 LADSPA and DSSI implementations are complete, LV2 and VST at ~75% completion.<br/>
-
+A JACK/Standalone mode is also available, allowing you to quickly test plugins.<br/>
 
 Plugin DSP and UI communication is done via key-value string pairs.<br/>
 You send messages from the UI to the DSP side, which is automatically saved in the host when required.<br/>
@@ -19,6 +19,7 @@ List of plugins made with DPF:<br/>
  - [DISTRHO Mini-Series](https://github.com/DISTRHO/mini-series)
  - [DISTRHO Nekobi](https://github.com/DISTRHO/nekobi)
  - [DISTRHO ProM](https://github.com/DISTRHO/prom)
+ - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins) (work in progress)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins-DPF)
 
 
