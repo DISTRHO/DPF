@@ -42,6 +42,15 @@ endif
 LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
 endif
 
+ifeq ($(PANDORA),true)
+# OpenPandora flags
+BASE_OPTS  = -O2 -ffast-math
+ifneq ($(NOOPT),true)
+BASE_OPTS += -march=armv7-a -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+endif
+LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
+endif
+
 ifneq ($(WIN32),true)
 # not needed for Windows
 BASE_FLAGS += -fPIC -DPIC
