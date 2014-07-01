@@ -59,8 +59,8 @@ void lv2_generate_ttl(const char* const basename)
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 
-    d_string pluginLabel(basename);
-    d_string pluginTTL(pluginLabel + ".ttl");
+    d_string pluginDLL(basename);
+    d_string pluginTTL(pluginDLL + ".ttl");
 
     // ---------------------------------------------
 
@@ -78,7 +78,7 @@ void lv2_generate_ttl(const char* const basename)
 
         manifestString += "<" DISTRHO_PLUGIN_URI ">\n";
         manifestString += "    a lv2:Plugin ;\n";
-        manifestString += "    lv2:binary <" + pluginLabel + "." DISTRHO_DLL_EXTENSION "> ;\n";
+        manifestString += "    lv2:binary <" + pluginDLL + "." DISTRHO_DLL_EXTENSION "> ;\n";
         manifestString += "    rdfs:seeAlso <" + pluginTTL + "> .\n";
         manifestString += "\n";
 
@@ -94,9 +94,13 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    a ui:X11UI ;\n";
 # endif
 # if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-        manifestString += "    ui:binary <" + pluginLabel + "_ui." DISTRHO_DLL_EXTENSION "> ;\n";
+        d_string pluginUI(pluginDLL);
+        pluginUI.truncate(pluginDLL.rfind("_dsp"));
+        pluginUI += "_ui";
+
+        manifestString += "    ui:binary <" + pluginUI + "." DISTRHO_DLL_EXTENSION "> ;\n";
 # else
-        manifestString += "    ui:binary <" + pluginLabel + "." DISTRHO_DLL_EXTENSION "> ;\n";
+        manifestString += "    ui:binary <" + pluginDLL + "." DISTRHO_DLL_EXTENSION "> ;\n";
 #endif
         manifestString += "    lv2:extensionData ui:idleInterface ,\n";
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
