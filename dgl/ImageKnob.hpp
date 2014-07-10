@@ -92,6 +92,7 @@ private:
     int  fImgLayerCount;
     Rectangle<int> fKnobArea;
     GLuint fTextureId;
+    bool fIsReady;
 
     float _logscale(float value) const;
     float _invlogscale(float value) const;
