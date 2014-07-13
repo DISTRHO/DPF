@@ -150,8 +150,13 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
 
+        const int width  = fUi->d_getWidth();
+        const int height = fUi->d_getHeight();
+
+        fUi->setSize(width, height);
+
         setResizable(false);
-        setSize(fUi->d_getWidth(), fUi->d_getHeight());
+        setSize(width, height);
     }
 
     ~UIExporterWindow()
@@ -174,10 +179,10 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUi != nullptr,);
 
-        fIsReady = true;
-
         fUi->setSize(width, height);
         fUi->d_uiReshape(width, height);
+
+        fIsReady = true;
     }
 
 private:
