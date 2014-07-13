@@ -69,7 +69,10 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (fPlugin.getProgramCount() > 0)
+        {
             fPlugin.setProgram(0);
+            fUI.programChanged(0);
+        }
 #endif
 
         if (const uint32_t count = fPlugin.getParameterCount())
@@ -79,9 +82,14 @@ public:
             for (uint32_t i=0; i < count; ++i)
             {
                 if (fPlugin.isParameterOutput(i))
+                {
                     fLastOutputValues[i] = fPlugin.getParameterValue(i);
+                }
                 else
+                {
                     fLastOutputValues[i] = 0.0f;
+                    fUI.parameterChanged(i, fPlugin.getParameterValue(i));
+                }
             }
         }
         else
