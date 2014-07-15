@@ -61,8 +61,15 @@ int main(int argc, char* argv[])
             strcpy(basename, base2+1);
             basename[strrchr(base2, '.')-base2-1] = '\0';
         }
+        else if (argv[1][0] == '.' && argv[1][1] == '/')
+        {
+            strcpy(basename, argv[1]+2);
+            basename[strrchr(basename, '.')-basename] = '\0';
+        }
         else
+        {
             strcpy(basename, argv[1]);
+        }
 
         printf("Generate ttl data for '%s', basename: '%s'\n", argv[1], basename);
 
