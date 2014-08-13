@@ -118,7 +118,8 @@ class PluginExporter
 public:
     PluginExporter()
         : fPlugin(createPlugin()),
-          fData((fPlugin != nullptr) ? fPlugin->pData : nullptr)
+          fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
+          fIsActive(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
@@ -343,6 +344,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
 
+        fIsActive = true;
         fPlugin->d_activate();
     }
 
@@ -350,6 +352,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
 
+        fIsActive = false;
         fPlugin->d_deactivate();
     }
 
@@ -402,9 +405,9 @@ public:
 
         if (doCallback)
         {
-            fPlugin->d_deactivate();
+            if (fIsActive) fPlugin->d_deactivate();
             fPlugin->d_bufferSizeChanged(bufferSize);
-            fPlugin->d_activate();
+            if (fIsActive) fPlugin->d_activate();
         }
     }
 
@@ -421,9 +424,9 @@ public:
 
         if (doCallback)
         {
-            fPlugin->d_deactivate();
+            if (fIsActive) fPlugin->d_deactivate();
             fPlugin->d_sampleRateChanged(sampleRate);
-            fPlugin->d_activate();
+            if (fIsActive) fPlugin->d_activate();
         }
     }
 
@@ -433,6 +436,7 @@ private:
 
     Plugin* const fPlugin;
     Plugin::PrivateData* const fData;
+    bool fIsActive;
 
     // -------------------------------------------------------------------
     // Static fallback data, see DistrhoPlugin.cpp
