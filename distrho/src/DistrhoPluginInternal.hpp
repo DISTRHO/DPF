@@ -377,6 +377,18 @@ public:
 
     // -------------------------------------------------------------------
 
+    uint32_t getBufferSize() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+        return fData->bufferSize;
+    }
+
+    double getSampleRate() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0.0);
+        return fData->sampleRate;
+    }
+
     void setBufferSize(const uint32_t bufferSize, bool doCallback = false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);

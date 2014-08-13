@@ -404,7 +404,8 @@ public:
             }
             else
             {
-                d_lastUiSampleRate = fAudioMaster(fEffect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+                d_lastUiSampleRate = fPlugin.getSampleRate();
+
                 UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
@@ -421,7 +422,7 @@ public:
                     return 0;
 # endif
 
-                d_lastUiSampleRate = fAudioMaster(fEffect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+                d_lastUiSampleRate = fPlugin.getSampleRate();
 
                 fVstUi = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
@@ -823,6 +824,13 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 #endif
             d_lastBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
             d_lastSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+
+            // some hosts are not ready at this point or return 0 buffersize/samplerate
+            if (d_lastBufferSize == 0)
+                d_lastBufferSize = 2048;
+            if (d_lastSampleRate <= 0.0)
+                d_lastSampleRate = 44100.0;
+
             PluginVst* const plugin(new PluginVst(audioMaster, effect));
 #ifdef VESTIGE_HEADER
             effect->ptr2 = plugin;
