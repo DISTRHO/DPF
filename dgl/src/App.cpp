@@ -22,9 +22,8 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 
 App::App()
-    : pData(new PrivateData())
-{
-}
+    : pData(new PrivateData()),
+      leakDetector_App() {}
 
 App::~App()
 {

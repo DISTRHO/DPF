@@ -68,16 +68,15 @@ struct Window::PrivateData {
           fResizable(true),
           fUsingEmbed(false),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0)
+          hwnd(0),
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0)
+          xWindow(0),
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(true),
-          xWindow(nullptr)
-#else
-          _dummy('\0')
+          xWindow(nullptr),
 #endif
+          leakDetector_PrivateData()
     {
         DBG("Creating window without parent..."); DBGF;
         init();
@@ -93,16 +92,15 @@ struct Window::PrivateData {
           fUsingEmbed(false),
           fModal(parent.pData),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0)
+          hwnd(0),
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0)
+          xWindow(0),
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
-          xWindow(nullptr)
-#else
-          _dummy('\0')
+          xWindow(nullptr),
 #endif
+          leakDetector_PrivateData()
     {
         DBG("Creating window with parent..."); DBGF;
         init();
@@ -123,16 +121,15 @@ struct Window::PrivateData {
           fResizable(parentId == 0),
           fUsingEmbed(parentId != 0),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0)
+          hwnd(0),
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0)
+          xWindow(0),
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
-          xWindow(nullptr)
-#else
-          _dummy('\0')
+          xWindow(nullptr),
 #endif
+          leakDetector_PrivateData()
     {
         if (parentId != 0)
         {
@@ -793,8 +790,6 @@ struct Window::PrivateData {
 #elif defined(DISTRHO_OS_MAC)
     bool     fNeedsIdle;
     id       xWindow;
-#else
-    char     _dummy;
 #endif
 
     // -------------------------------------------------------------------
@@ -843,6 +838,8 @@ struct Window::PrivateData {
     }
 
     #undef handlePtr
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 
 // -----------------------------------------------------------------------

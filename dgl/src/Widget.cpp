@@ -26,7 +26,9 @@ Widget::Widget(Window& parent)
     : fParent(parent),
       fNeedsFullViewport(false),
       fNeedsScaling(false),
-      fVisible(true)
+      fVisible(true),
+      fArea(),
+      leakDetector_Widget()
 {
     fParent._addWidget(this);
 }

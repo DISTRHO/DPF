@@ -16,9 +16,9 @@
 
 #include "../Geometry.hpp"
 
-#include <cmath>
-
 START_NAMESPACE_DGL
+
+static const float M_2PIf = 3.14159265358979323846f*2.0f;
 
 // -----------------------------------------------------------------------
 // Point
@@ -79,15 +79,28 @@ void Point<T>::setPos(const Point<T>& pos) noexcept
 template<typename T>
 void Point<T>::moveBy(const T& x, const T& y) noexcept
 {
-    fX += x;
-    fY += y;
+    fX = static_cast<T>(fX+x);
+    fY = static_cast<T>(fY+y);
 }
 
 template<typename T>
 void Point<T>::moveBy(const Point<T>& pos) noexcept
 {
-    fX += pos.fX;
-    fY += pos.fY;
+    fX = static_cast<T>(fX+pos.fX);
+    fY = static_cast<T>(fY+pos.fY);
+}
+
+
+template<typename T>
+Point<T> Point<T>::operator+(const Point<T>& pos) noexcept
+{
+    return Point<T>(fX+pos.fX, fY+pos.fY);
+}
+
+template<typename T>
+Point<T> Point<T>::operator-(const Point<T>& pos) noexcept
+{
+    return Point<T>(fX-pos.fX, fY-pos.fY);
 }
 
 template<typename T>
@@ -101,29 +114,29 @@ Point<T>& Point<T>::operator=(const Point<T>& pos) noexcept
 template<typename T>
 Point<T>& Point<T>::operator+=(const Point<T>& pos) noexcept
 {
-    fX += pos.fX;
-    fY += pos.fY;
+    fX = static_cast<T>(fX+pos.fX);
+    fY = static_cast<T>(fY+pos.fY);
     return *this;
 }
 
 template<typename T>
 Point<T>& Point<T>::operator-=(const Point<T>& pos) noexcept
 {
-    fX -= pos.fX;
-    fY -= pos.fY;
+    fX = static_cast<T>(fX-pos.fX);
+    fY = static_cast<T>(fY-pos.fY);
     return *this;
 }
 
 template<typename T>
 bool Point<T>::operator==(const Point<T>& pos) const noexcept
 {
-    return (fX == pos.fX && fY== pos.fY);
+    return (fX == pos.fX && fY == pos.fY);
 }
 
 template<typename T>
 bool Point<T>::operator!=(const Point<T>& pos) const noexcept
 {
-    return !operator==(pos);
+    return (fX != pos.fX || fY != pos.fY);
 }
 
 // -----------------------------------------------------------------------
@@ -185,15 +198,27 @@ void Size<T>::setSize(const Size<T>& size) noexcept
 template<typename T>
 void Size<T>::growBy(const T& multiplier) noexcept
 {
-    fWidth  *= multiplier;
-    fHeight *= multiplier;
+    fWidth  = static_cast<T>(fWidth*multiplier);
+    fHeight = static_cast<T>(fHeight*multiplier);
 }
 
 template<typename T>
 void Size<T>::shrinkBy(const T& divider) noexcept
 {
-    fWidth  /= divider;
-    fHeight /= divider;
+    fWidth  = static_cast<T>(fWidth/divider);
+    fHeight = static_cast<T>(fHeight/divider);
+}
+
+template<typename T>
+Size<T> Size<T>::operator+(const Size<T>& size) noexcept
+{
+    return Size<T>(fWidth+size.fWidth, fHeight+size.fHeight);
+}
+
+template<typename T>
+Size<T> Size<T>::operator-(const Size<T>& size) noexcept
+{
+    return Size<T>(fWidth-size.fWidth, fHeight-size.fHeight);
 }
 
 template<typename T>
@@ -207,32 +232,32 @@ Size<T>& Size<T>::operator=(const Size<T>& size) noexcept
 template<typename T>
 Size<T>& Size<T>::operator+=(const Size<T>& size) noexcept
 {
-    fWidth  += size.fWidth;
-    fHeight += size.fHeight;
+    fWidth  = static_cast<T>(fWidth+size.fWidth);
+    fHeight = static_cast<T>(fHeight+size.fHeight);
     return *this;
 }
 
 template<typename T>
 Size<T>& Size<T>::operator-=(const Size<T>& size) noexcept
 {
-    fWidth  -= size.fWidth;
-    fHeight -= size.fHeight;
+    fWidth  = static_cast<T>(fWidth-size.fWidth);
+    fHeight = static_cast<T>(fHeight-size.fHeight);
     return *this;
 }
 
 template<typename T>
 Size<T>& Size<T>::operator*=(const T& m) noexcept
 {
-    fWidth  *= m;
-    fHeight *= m;
+    fWidth  = static_cast<T>(fWidth*m);
+    fHeight = static_cast<T>(fHeight*m);
     return *this;
 }
 
 template<typename T>
 Size<T>& Size<T>::operator/=(const T& d) noexcept
 {
-    fWidth  /= d;
-    fHeight /= d;
+    fWidth  = static_cast<T>(fWidth/d);
+    fHeight = static_cast<T>(fHeight/d);
     return *this;
 }
 
@@ -245,7 +270,7 @@ bool Size<T>::operator==(const Size<T>& size) const noexcept
 template<typename T>
 bool Size<T>::operator!=(const Size<T>& size) const noexcept
 {
-    return !operator==(size);
+    return (fWidth != size.fWidth || fHeight != size.fHeight);
 }
 
 // -----------------------------------------------------------------------
@@ -368,17 +393,15 @@ void Line<T>::setEndPos(const Point<T>& pos) noexcept
 template<typename T>
 void Line<T>::moveBy(const T& x, const T& y) noexcept
 {
-    fPosStart.fX += x;
-    fPosStart.fY += y;
-    fPosEnd.fX   += x;
-    fPosEnd.fY   += y;
+    fPosStart.moveBy(x, y);
+    fPosEnd.moveBy(x, y);
 }
 
 template<typename T>
 void Line<T>::moveBy(const Point<T>& pos) noexcept
 {
-    fPosStart += pos;
-    fPosEnd   += pos;
+    fPosStart.moveBy(pos);
+    fPosEnd.moveBy(pos);
 }
 
 template<typename T>
@@ -386,10 +409,12 @@ void Line<T>::draw()
 {
     glBegin(GL_LINES);
 
+#if 0
     {
         glVertex2i(fPosStart.fX, fPosStart.fY);
         glVertex2i(fPosEnd.fX, fPosEnd.fY);
     }
+#endif
 
     glEnd();
 }
@@ -411,7 +436,7 @@ bool Line<T>::operator==(const Line<T>& line) const noexcept
 template<typename T>
 bool Line<T>::operator!=(const Line<T>& line) const noexcept
 {
-    return !operator==(line);
+    return (fPosStart != line.fPosStart || fPosEnd != line.fPosEnd);
 }
 
 // -----------------------------------------------------------------------
@@ -424,16 +449,14 @@ Circle<T>::Circle() noexcept
       fNumSegments(0),
       fTheta(0.0f),
       fCos(0.0f),
-      fSin(0.0f)
-{
-}
+      fSin(0.0f) {}
 
 template<typename T>
-Circle<T>::Circle(const T& x, const T& y, float size, int numSegments)
+Circle<T>::Circle(const T& x, const T& y, const float size, const uint numSegments)
     : fPos(x, y),
       fSize(size),
       fNumSegments(numSegments >= 3 ? numSegments : 3),
-      fTheta(2.0f * M_PI / float(fNumSegments)),
+      fTheta(M_2PIf / static_cast<float>(fNumSegments)),
       fCos(std::cos(fTheta)),
       fSin(std::sin(fTheta))
 {
@@ -441,11 +464,11 @@ Circle<T>::Circle(const T& x, const T& y, float size, int numSegments)
 }
 
 template<typename T>
-Circle<T>::Circle(const Point<T>& pos, float size, int numSegments)
+Circle<T>::Circle(const Point<T>& pos, const float size, const uint numSegments)
     : fPos(pos),
       fSize(size),
       fNumSegments(numSegments >= 3 ? numSegments : 3),
-      fTheta(2.0f * M_PI / float(fNumSegments)),
+      fTheta(M_2PIf / static_cast<float>(fNumSegments)),
       fCos(std::cos(fTheta)),
       fSin(std::sin(fTheta))
 {
@@ -514,26 +537,30 @@ float Circle<T>::getSize() const noexcept
 }
 
 template<typename T>
-void Circle<T>::setSize(float size) noexcept
+void Circle<T>::setSize(const float size) noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0.0f,);
+
     fSize = size;
 }
 
 template<typename T>
-int Circle<T>::getNumSegments() const noexcept
+uint Circle<T>::getNumSegments() const noexcept
 {
     return fNumSegments;
 }
 
 template<typename T>
-void Circle<T>::setNumSegments(int num)
+void Circle<T>::setNumSegments(const uint num)
 {
+    DISTRHO_SAFE_ASSERT_RETURN(num >= 3,);
+
     if (fNumSegments == num)
         return;
 
     fNumSegments = num;
 
-    fTheta = 2.0f * M_PI / float(fNumSegments);
+    fTheta = M_2PIf / static_cast<float>(fNumSegments);
     fCos = std::cos(fTheta);
     fSin = std::sin(fTheta);
 }
@@ -571,15 +598,17 @@ bool Circle<T>::operator==(const Circle<T>& cir) const noexcept
 template<typename T>
 bool Circle<T>::operator!=(const Circle<T>& cir) const noexcept
 {
-    return !operator==(cir);
+    return (fPos != cir.fPos || fSize != cir.fSize || fNumSegments != cir.fNumSegments);
 }
 
 template<typename T>
 void Circle<T>::_draw(const bool isOutline)
 {
-    if (fNumSegments == 0 && fSize > 0.0f)
+    if (fNumSegments < 3 || fSize <= 0.0f)
         return;
 
+    (void)isOutline;
+#if 0
     float t, x = fSize, y = 0;
 
     glBegin(isOutline ? GL_LINE_LOOP : GL_POLYGON);
@@ -594,6 +623,7 @@ void Circle<T>::_draw(const bool isOutline)
     }
 
     glEnd();
+#endif
 }
 
 // -----------------------------------------------------------------------
@@ -653,7 +683,7 @@ bool Triangle<T>::operator==(const Triangle<T>& tri) const noexcept
 template<typename T>
 bool Triangle<T>::operator!=(const Triangle<T>& tri) const noexcept
 {
-    return !operator==(tri);
+    return (fPos1 != tri.fPos1 || fPos2 != tri.fPos2 || fPos3 != tri.fPos3);
 }
 
 template<typename T>
@@ -661,11 +691,13 @@ void Triangle<T>::_draw(const bool isOutline)
 {
     glBegin(isOutline ? GL_LINE_LOOP : GL_TRIANGLES);
 
+#if 0
     {
         glVertex2i(fPos1.fX, fPos1.fY);
         glVertex2i(fPos2.fX, fPos2.fY);
         glVertex2i(fPos3.fX, fPos3.fY);
     }
+#endif
 
     glEnd();
 }
@@ -767,14 +799,13 @@ void Rectangle<T>::setPos(const Point<T>& pos) noexcept
 template<typename T>
 void Rectangle<T>::moveBy(const T& x, const T& y) noexcept
 {
-    fPos.fX += x;
-    fPos.fY += y;
+    fPos.moveBy(x, y);
 }
 
 template<typename T>
 void Rectangle<T>::moveBy(const Point<T>& pos) noexcept
 {
-    fPos += pos;
+    fPos.moveBy(pos);
 }
 
 template<typename T>
@@ -805,15 +836,27 @@ void Rectangle<T>::setSize(const Size<T>& size) noexcept
 template<typename T>
 void Rectangle<T>::growBy(const T& multiplier) noexcept
 {
-    fSize.fWidth  *= multiplier;
-    fSize.fHeight *= multiplier;
+    fSize.growBy(multiplier);
 }
 
 template<typename T>
 void Rectangle<T>::shrinkBy(const T& divider) noexcept
 {
-    fSize.fWidth  /= divider;
-    fSize.fHeight /= divider;
+    fSize.shrinkBy(divider);
+}
+
+template<typename T>
+void Rectangle<T>::setRectangle(const Point<T>& pos, const Size<T>& size) noexcept
+{
+    fPos  = pos;
+    fSize = size;
+}
+
+template<typename T>
+void Rectangle<T>::setRectangle(const Rectangle<T>& rect) noexcept
+{
+    fPos  = rect.fPos;
+    fSize = rect.fSize;
 }
 
 template<typename T>
@@ -863,16 +906,14 @@ Rectangle<T>& Rectangle<T>::operator=(const Rectangle<T>& rect) noexcept
 template<typename T>
 Rectangle<T>& Rectangle<T>::operator*=(const T& m) noexcept
 {
-    fSize.fWidth  *= m;
-    fSize.fHeight *= m;
+    fSize *= m;
     return *this;
 }
 
 template<typename T>
 Rectangle<T>& Rectangle<T>::operator/=(const T& d) noexcept
 {
-    fSize.fWidth  /= d;
-    fSize.fHeight /= d;
+    fSize /= d;
     return *this;
 }
 
@@ -885,7 +926,7 @@ bool Rectangle<T>::operator==(const Rectangle<T>& rect) const noexcept
 template<typename T>
 bool Rectangle<T>::operator!=(const Rectangle<T>& rect) const noexcept
 {
-    return !operator==(rect);
+    return (fPos != rect.fPos || fSize != rect.fSize);
 }
 
 template<typename T>
@@ -893,6 +934,7 @@ void Rectangle<T>::_draw(const bool isOutline)
 {
     glBegin(isOutline ? GL_LINE_LOOP : GL_QUADS);
 
+#if 0
     {
         glTexCoord2f(0.0f, 0.0f);
         glVertex2i(fPos.fX, fPos.fY);
@@ -906,6 +948,7 @@ void Rectangle<T>::_draw(const bool isOutline)
         glTexCoord2f(0.0f, 1.0f);
         glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
     }
+#endif
 
     glEnd();
 }
@@ -958,4 +1001,3 @@ template class Rectangle<ushort>;
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-

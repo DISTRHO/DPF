@@ -48,7 +48,7 @@
 #define DISTRHO_LEAK_DETECTOR(ClassName)                                            \
     friend class ::DistrhoLeakedObjectDetector<ClassName>;                               \
     static const char* getLeakedObjectClassName() noexcept { return #ClassName; } \
-    ::DistrhoLeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector, __LINE__);
+    ::DistrhoLeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector_, ClassName);
 
 #define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
     DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)                      \
@@ -99,9 +99,7 @@ private:
     {
     public:
         LeakCounter() noexcept
-        {
-            numObjects = 0;
-        }
+            : numObjects(0) {}
 
         ~LeakCounter() noexcept
         {

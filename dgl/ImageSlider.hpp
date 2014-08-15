@@ -39,6 +39,7 @@ public:
     explicit ImageSlider(Window& parent, const Image& image, int id = 0) noexcept;
     explicit ImageSlider(Widget* widget, const Image& image, int id = 0) noexcept;
     explicit ImageSlider(const ImageSlider& imageSlider) noexcept;
+    ImageSlider& operator=(const ImageSlider& imageSlider) noexcept;
 
     int getId() const noexcept;
     void setId(int id) noexcept;

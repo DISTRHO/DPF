@@ -75,6 +75,29 @@ LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
 endif
 
 # --------------------------------------------------------------
+# Strict test build
+
+ifeq ($(TESTBUILD),true)
+BASE_FLAGS += -Werror -Wcast-qual -Wconversion -Wformat -Wformat-security -Wredundant-decls -Wshadow -Wstrict-overflow -fstrict-overflow -Wundef -Wwrite-strings
+BASE_FLAGS += -Wpointer-arith -Wabi -Winit-self -Wuninitialized -Wstrict-overflow=5
+# BASE_FLAGS += -Wfloat-equal
+ifeq ($(CC),clang)
+# BASE_FLAGS += -Wdocumentation -Wdocumentation-unknown-command
+# BASE_FLAGS += -Weverything
+else
+BASE_FLAGS += -Wcast-align -Wunsafe-loop-optimizations
+endif
+ifneq ($(MACOS),true)
+BASE_FLAGS += -Wmissing-declarations -Wsign-conversion
+ifneq ($(CC),clang)
+BASE_FLAGS += -Wlogical-op
+endif
+endif
+CFLAGS     += -Wold-style-definition -Wmissing-declarations -Wmissing-prototypes -Wstrict-prototypes
+CXXFLAGS   += -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual
+endif
+
+# --------------------------------------------------------------
 # Check for required libs
 
 ifeq ($(LINUX),true)

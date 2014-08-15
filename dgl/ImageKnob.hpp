@@ -44,6 +44,7 @@ public:
     explicit ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
     explicit ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
     explicit ImageKnob(const ImageKnob& imageKnob);
+    ImageKnob& operator=(const ImageKnob& imageKnob);
     ~ImageKnob() override;
 
     int getId() const noexcept;

@@ -26,7 +26,8 @@ ImageSwitch::ImageSwitch(Window& parent, const Image& imageNormal, const Image& 
       fImageDown(imageDown),
       fIsDown(false),
       fId(id),
-      fCallback(nullptr)
+      fCallback(nullptr),
+      leakDetector_ImageSwitch()
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 
@@ -39,7 +40,8 @@ ImageSwitch::ImageSwitch(Widget* widget, const Image& imageNormal, const Image& 
       fImageDown(imageDown),
       fIsDown(false),
       fId(id),
-      fCallback(nullptr)
+      fCallback(nullptr),
+      leakDetector_ImageSwitch()
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 
@@ -52,11 +54,27 @@ ImageSwitch::ImageSwitch(const ImageSwitch& imageSwitch) noexcept
       fImageDown(imageSwitch.fImageDown),
       fIsDown(imageSwitch.fIsDown),
       fId(imageSwitch.fId),
-      fCallback(imageSwitch.fCallback)
+      fCallback(imageSwitch.fCallback),
+      leakDetector_ImageSwitch()
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 
     setSize(fImageNormal.getSize());
+}
+
+ImageSwitch& ImageSwitch::operator=(const ImageSwitch& imageSwitch) noexcept
+{
+    fImageNormal = imageSwitch.fImageNormal;
+    fImageDown   = imageSwitch.fImageDown;
+    fIsDown      = imageSwitch.fIsDown;
+    fId          = imageSwitch.fId;
+    fCallback    = imageSwitch.fCallback;
+
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
+
+    setSize(fImageNormal.getSize());
+
+    return *this;
 }
 
 int ImageSwitch::getId() const noexcept

@@ -33,8 +33,10 @@ struct App::PrivateData {
     std::list<IdleCallback*> idleCallbacks;
 
     PrivateData()
-        : doLoop(false),
-          visibleWindows(0) {}
+        : doLoop(true),
+          visibleWindows(0),
+          windows(),
+          idleCallbacks() {}
 
     ~PrivateData()
     {

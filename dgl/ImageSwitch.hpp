@@ -37,6 +37,7 @@ public:
     explicit ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown, int id = 0) noexcept;
     explicit ImageSwitch(Widget* widget, const Image& imageNormal, const Image& imageDown, int id = 0) noexcept;
     explicit ImageSwitch(const ImageSwitch& imageSwitch) noexcept;
+    ImageSwitch& operator=(const ImageSwitch& imageSwitch) noexcept;
 
     int getId() const noexcept;
     void setId(int id) noexcept;

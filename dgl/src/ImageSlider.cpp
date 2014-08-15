@@ -35,7 +35,11 @@ ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
       fInverted(false),
       fStartedX(0),
       fStartedY(0),
-      fCallback(nullptr)
+      fCallback(nullptr),
+      fStartPos(),
+      fEndPos(),
+      fSliderArea(),
+      leakDetector_ImageSlider()
 {
     Widget::setNeedsFullViewport(true);
 }
@@ -53,7 +57,11 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
       fInverted(false),
       fStartedX(0),
       fStartedY(0),
-      fCallback(nullptr)
+      fCallback(nullptr),
+      fStartPos(),
+      fEndPos(),
+      fSliderArea(),
+      leakDetector_ImageSlider()
 {
     Widget::setNeedsFullViewport(true);
 }
@@ -74,9 +82,31 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
       fCallback(imageSlider.fCallback),
       fStartPos(imageSlider.fStartPos),
       fEndPos(imageSlider.fEndPos),
-      fSliderArea(imageSlider.fSliderArea)
+      fSliderArea(imageSlider.fSliderArea),
+      leakDetector_ImageSlider()
 {
     Widget::setNeedsFullViewport(true);
+}
+
+ImageSlider& ImageSlider::operator=(const ImageSlider& imageSlider) noexcept
+{
+    fImage    = imageSlider.fImage;
+    fId       = imageSlider.fId;
+    fMinimum  = imageSlider.fMinimum;
+    fMaximum  = imageSlider.fMaximum;
+    fStep     = imageSlider.fStep;
+    fValue    = imageSlider.fValue;
+    fValueTmp = fValue;
+    fDragging = false;
+    fInverted = imageSlider.fInverted;
+    fStartedX = 0;
+    fStartedY = 0;
+    fCallback = imageSlider.fCallback;
+    fStartPos = imageSlider.fStartPos;
+    fEndPos   = imageSlider.fEndPos;
+    fSliderArea = imageSlider.fSliderArea;
+
+    return *this;
 }
 
 int ImageSlider::getId() const noexcept

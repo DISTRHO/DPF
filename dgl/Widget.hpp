@@ -241,7 +241,7 @@ public:
     Window& getParentWindow() const noexcept;
 
    /**
-      Check if this widget contains the point defined by @a X and @a Y.
+      Check if this widget contains the point defined by @a x and @a y.
     */
     bool contains(int x, int y) const noexcept;
 
@@ -306,7 +306,7 @@ protected:
 
    /**
       Tell the parent window this widget needs scaling.
-      When enabled, the widget viewport is scaled to match width&height.
+      When enabled, the widget viewport is scaled to match width and height.
       @note: This is an internal function;
              You do not need it under normal circumstances.
     */

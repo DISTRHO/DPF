@@ -45,7 +45,8 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerSize : image.getWidth()/fImgLayerSize),
       fKnobArea(0, 0, fImgLayerSize, fImgLayerSize),
       fTextureId(0),
-      fIsReady(false)
+      fIsReady(false),
+      leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerSize, fImgLayerSize);
@@ -74,7 +75,8 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerSize : image.getWidth()/fImgLayerSize),
       fKnobArea(0, 0, fImgLayerSize, fImgLayerSize),
       fTextureId(0),
-      fIsReady(false)
+      fIsReady(false),
+      leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerSize, fImgLayerSize);
@@ -103,10 +105,47 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fImgLayerCount(imageKnob.fImgLayerCount),
       fKnobArea(imageKnob.fKnobArea),
       fTextureId(0),
-      fIsReady(false)
+      fIsReady(false),
+      leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerSize, fImgLayerSize);
+}
+
+ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
+{
+    fImage    = imageKnob.fImage;
+    fId       = imageKnob.fId;
+    fMinimum  = imageKnob.fMinimum;
+    fMaximum  = imageKnob.fMaximum;
+    fStep     = imageKnob.fStep;
+    fValue    = imageKnob.fValue;
+    fValueDef = imageKnob.fValueDef;
+    fValueTmp = fValue;
+    fUsingDefault  = imageKnob.fUsingDefault;
+    fUsingLog      = imageKnob.fUsingLog;
+    fOrientation   = imageKnob.fOrientation;
+    fRotationAngle = imageKnob.fRotationAngle;
+    fDragging = false;
+    fLastX    = 0;
+    fLastY    = 0;
+    fCallback = imageKnob.fCallback;
+    fIsImgVertical = imageKnob.fIsImgVertical;
+    fImgLayerSize  = imageKnob.fImgLayerSize;
+    fImgLayerCount = imageKnob.fImgLayerCount;
+    fKnobArea = imageKnob.fKnobArea;
+    fIsReady  = false;
+
+    if (fTextureId != 0)
+    {
+        glDeleteTextures(1, &fTextureId);
+        fTextureId = 0;
+    }
+
+    glGenTextures(1, &fTextureId);
+    setSize(fImgLayerSize, fImgLayerSize);
+
+    return *this;
 }
 
 ImageKnob::~ImageKnob()

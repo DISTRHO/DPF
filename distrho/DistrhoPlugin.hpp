@@ -92,7 +92,7 @@ struct ParameterRanges {
     /*!
      * Get a fixed value within range.
      */
-    float getFixedValue(const float& value) const noexcept
+    const float& getFixedValue(const float& value) const noexcept
     {
         if (value <= min)
             return min;
@@ -140,6 +140,11 @@ struct ParameterRanges {
      */
     float getUnnormalizedValue(const float& value) const noexcept
     {
+        if (value <= 0.0f)
+            return min;
+        if (value >= 1.0f)
+            return max;
+
         return value * (max - min) + min;
     }
 };
