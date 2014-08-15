@@ -373,6 +373,9 @@ int main(int argc, char* argv[])
         globalUI->dssiui_show();
         globalUI->exec();
 
+        delete globalUI;
+        globalUI = nullptr;
+
         return 0;
     }
 
