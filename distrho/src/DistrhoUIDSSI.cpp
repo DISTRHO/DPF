@@ -95,7 +95,6 @@ public:
     UIDssi(const OscData& oscData, const char* const uiTitle)
         : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback),
           fHostClosed(false),
-          fShowCalled(false),
           fOscData(oscData)
     {
         fUI.setTitle(uiTitle);
@@ -113,13 +112,7 @@ public:
         {
             fOscData.idle();
 
-            if (! fUI.idle())
-            {
-                // host might not have called show yet
-                if (fShowCalled)
-                    break;
-            }
-            else if (fHostClosed)
+            if (fHostClosed || ! fUI.idle())
                 break;
 
             d_msleep(30);
@@ -149,7 +142,6 @@ public:
 
     void dssiui_show()
     {
-        fShowCalled = true;
         fUI.setVisible(true);
     }
 
@@ -204,7 +196,6 @@ protected:
 private:
     UIExporter fUI;
     bool fHostClosed;
-    bool fShowCalled;
 
     const OscData& fOscData;
 
