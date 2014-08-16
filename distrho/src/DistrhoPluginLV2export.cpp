@@ -313,7 +313,7 @@ void lv2_generate_ttl(const char* const basename)
                 {
                     const ParameterRanges& ranges(plugin.getParameterRanges(i));
 
-                    if (plugin.getParameterHints(i) & PARAMETER_IS_INTEGER)
+                    if (plugin.getParameterHints(i) & kParameterIsInteger)
                     {
                         pluginString += "        lv2:default " + d_string(int(plugin.getParameterValue(i))) + " ;\n";
                         pluginString += "        lv2:minimum " + d_string(int(ranges.min)) + " ;\n";
@@ -369,13 +369,13 @@ void lv2_generate_ttl(const char* const basename)
                 {
                     const uint32_t hints(plugin.getParameterHints(i));
 
-                    if (hints & PARAMETER_IS_BOOLEAN)
+                    if (hints & kParameterIsBoolean)
                         pluginString += "        lv2:portProperty lv2:toggled ;\n";
-                    if (hints & PARAMETER_IS_INTEGER)
+                    if (hints & kParameterIsInteger)
                         pluginString += "        lv2:portProperty lv2:integer ;\n";
-                    if (hints & PARAMETER_IS_LOGARITHMIC)
+                    if (hints & kParameterIsLogarithmic)
                         pluginString += "        lv2:portProperty <http://lv2plug.in/ns/ext/port-props#logarithmic> ;\n";
-                    if ((hints & PARAMETER_IS_AUTOMABLE) == 0 && ! plugin.isParameterOutput(i))
+                    if ((hints & kParameterIsAutomable) == 0 && ! plugin.isParameterOutput(i))
                         pluginString += "        lv2:portProperty <http://lv2plug.in/ns/ext/port-props#expensive> ;\n";
                 }
 

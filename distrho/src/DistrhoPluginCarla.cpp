@@ -214,15 +214,15 @@ protected:
             int      nativeParamHints = ::PARAMETER_IS_ENABLED;
             const uint32_t paramHints = fPlugin.getParameterHints(index);
 
-            if (paramHints & PARAMETER_IS_AUTOMABLE)
+            if (paramHints & kParameterIsAutomable)
                 nativeParamHints |= ::PARAMETER_IS_AUTOMABLE;
-            if (paramHints & PARAMETER_IS_BOOLEAN)
+            if (paramHints & kParameterIsBoolean)
                 nativeParamHints |= ::PARAMETER_IS_BOOLEAN;
-            if (paramHints & PARAMETER_IS_INTEGER)
+            if (paramHints & kParameterIsInteger)
                 nativeParamHints |= ::PARAMETER_IS_INTEGER;
-            if (paramHints & PARAMETER_IS_LOGARITHMIC)
+            if (paramHints & kParameterIsLogarithmic)
                 nativeParamHints |= ::PARAMETER_IS_LOGARITHMIC;
-            if (paramHints & PARAMETER_IS_OUTPUT)
+            if (paramHints & kParameterIsOutput)
                 nativeParamHints |= ::PARAMETER_IS_OUTPUT;
 
             param.hints = static_cast<NativeParameterHints>(nativeParamHints);

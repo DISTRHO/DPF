@@ -611,11 +611,11 @@ public:
             {
                 const uint32_t hints(plugin.getParameterHints(i));
 
-                if (hints & PARAMETER_IS_BOOLEAN)
+                if (hints & kParameterIsBoolean)
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_TOGGLED;
-                if (hints & PARAMETER_IS_INTEGER)
+                if (hints & kParameterIsInteger)
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_INTEGER;
-                if (hints & PARAMETER_IS_LOGARITHMIC)
+                if (hints & kParameterIsLogarithmic)
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_LOGARITHMIC;
             }
         }

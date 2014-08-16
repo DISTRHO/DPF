@@ -219,7 +219,7 @@ public:
 
     bool isParameterOutput(const uint32_t index) const noexcept
     {
-        return (getParameterHints(index) & PARAMETER_IS_OUTPUT);
+        return (getParameterHints(index) & kParameterIsOutput);
     }
 
     const d_string& getParameterName(const uint32_t index) const noexcept
@@ -357,7 +357,8 @@ public:
     }
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-    void run(const float** const inputs, float** const outputs, const uint32_t frames, const MidiEvent* const midiEvents, const uint32_t midiEventCount)
+    void run(const float** const inputs, float** const outputs, const uint32_t frames,
+             const MidiEvent* const midiEvents, const uint32_t midiEventCount)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);

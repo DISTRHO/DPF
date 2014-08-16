@@ -91,6 +91,13 @@ void* UI::d_getPluginInstancePointer() const noexcept
 #endif
 
 // -----------------------------------------------------------------------
+// DSP Callbacks (optional)
+
+void UI::d_sampleRateChanged(double)
+{
+}
+
+// -----------------------------------------------------------------------
 // UI Callbacks (optional)
 
 void UI::d_uiReshape(int width, int height)

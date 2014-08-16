@@ -409,12 +409,10 @@ void Line<T>::draw()
 {
     glBegin(GL_LINES);
 
-#if 0
     {
         glVertex2i(fPosStart.fX, fPosStart.fY);
         glVertex2i(fPosEnd.fX, fPosEnd.fY);
     }
-#endif
 
     glEnd();
 }
@@ -607,8 +605,6 @@ void Circle<T>::_draw(const bool isOutline)
     if (fNumSegments < 3 || fSize <= 0.0f)
         return;
 
-    (void)isOutline;
-#if 0
     float t, x = fSize, y = 0;
 
     glBegin(isOutline ? GL_LINE_LOOP : GL_POLYGON);
@@ -623,7 +619,6 @@ void Circle<T>::_draw(const bool isOutline)
     }
 
     glEnd();
-#endif
 }
 
 // -----------------------------------------------------------------------
@@ -691,13 +686,11 @@ void Triangle<T>::_draw(const bool isOutline)
 {
     glBegin(isOutline ? GL_LINE_LOOP : GL_TRIANGLES);
 
-#if 0
     {
         glVertex2i(fPos1.fX, fPos1.fY);
         glVertex2i(fPos2.fX, fPos2.fY);
         glVertex2i(fPos3.fX, fPos3.fY);
     }
-#endif
 
     glEnd();
 }
@@ -934,7 +927,6 @@ void Rectangle<T>::_draw(const bool isOutline)
 {
     glBegin(isOutline ? GL_LINE_LOOP : GL_QUADS);
 
-#if 0
     {
         glTexCoord2f(0.0f, 0.0f);
         glVertex2i(fPos.fX, fPos.fY);
@@ -948,7 +940,6 @@ void Rectangle<T>::_draw(const bool isOutline)
         glTexCoord2f(0.0f, 1.0f);
         glVertex2i(fPos.fX, fPos.fY+fSize.fHeight);
     }
-#endif
 
     glEnd();
 }
