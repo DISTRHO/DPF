@@ -32,7 +32,7 @@ START_NAMESPACE_DGL
 */
 struct Color {
    /**
-      Direct access to the color value.
+      Direct access to the color values.
     */
     union {
         float rgba[4];
@@ -74,7 +74,7 @@ struct Color {
     static Color HSL(const float hue, const float saturation, const float lightness, const uchar alpha = 255);
 
    /**
-      Linearly interpolate this color against @a other.
+      Linearly interpolate this color against another.
     */
     void interpolate(const Color& other, const float u) noexcept;
 

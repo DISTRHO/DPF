@@ -221,7 +221,7 @@ public:
 
         Paint() noexcept;
 
-      /**
+       /**
           @internal
         */
         Paint(const NVGpaint&) noexcept;
@@ -410,7 +410,7 @@ public:
     static void transformIdentity(float dst[6]);
 
    /**
-      Sets the transform to translation matrix matrix.
+      Sets the transform to translation matrix
     */
     static void transformTranslate(float dst[6], float tx, float ty);
 
@@ -751,7 +751,7 @@ protected:
 private:
    /**
       Widget display function.
-      Implemented internally to wrap begin/endFrame() automaticaly.
+      Implemented internally to wrap begin/endFrame() automatically.
     */
     void onDisplay() override
     {
