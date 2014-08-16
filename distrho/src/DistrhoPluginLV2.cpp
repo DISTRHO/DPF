@@ -50,9 +50,9 @@
 #define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_IS_SYNTH || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 #define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
 
-typedef std::map<d_string,d_string> StringMap;
-
 START_NAMESPACE_DISTRHO
+
+typedef std::map<d_string,d_string> StringMap;
 
 // -----------------------------------------------------------------------
 

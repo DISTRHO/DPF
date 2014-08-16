@@ -63,9 +63,9 @@ struct ERect {
 # warning VST TimePos still TODO (only basic BBT working)
 #endif
 
-typedef std::map<d_string,d_string> StringMap;
-
 START_NAMESPACE_DISTRHO
+
+typedef std::map<d_string,d_string> StringMap;
 
 // -----------------------------------------------------------------------
 

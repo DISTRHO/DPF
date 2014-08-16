@@ -26,6 +26,8 @@
 
 #include <pthread.h>
 
+START_NAMESPACE_DISTRHO
+
 // -----------------------------------------------------------------------
 // Mutex class
 
@@ -222,5 +224,7 @@ typedef ScopedUnlocker<Mutex>          MutexUnlocker;
 typedef ScopedUnlocker<RecursiveMutex> RecursiveMutexUnlocker;
 
 // -----------------------------------------------------------------------
+
+END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_MUTEX_HPP_INCLUDED

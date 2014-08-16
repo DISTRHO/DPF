@@ -374,6 +374,8 @@ END_NAMESPACE_DISTRHO
 
 int main()
 {
+    USE_NAMESPACE_DISTRHO;
+
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jack_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
 

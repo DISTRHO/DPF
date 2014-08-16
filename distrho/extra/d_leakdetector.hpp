@@ -19,6 +19,8 @@
 
 #include "../DistrhoUtils.hpp"
 
+START_NAMESPACE_DISTRHO
+
 // -----------------------------------------------------------------------
 // The following code was based from juce-core LeakDetector class
 // Copyright (C) 2013 Raw Material Software Ltd.
@@ -45,10 +47,10 @@
     };
     \endcode
 */
-#define DISTRHO_LEAK_DETECTOR(ClassName)                                            \
-    friend class ::DistrhoLeakedObjectDetector<ClassName>;                               \
+#define DISTRHO_LEAK_DETECTOR(ClassName)                                          \
+    friend class DISTRHO_NAMESPACE::LeakedObjectDetector<ClassName>;              \
     static const char* getLeakedObjectClassName() noexcept { return #ClassName; } \
-    ::DistrhoLeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector_, ClassName);
+    DISTRHO_NAMESPACE::LeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector_, ClassName);
 
 #define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
     DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)                      \
@@ -67,14 +69,14 @@
     class declaration.
 */
 template<class OwnerClass>
-class DistrhoLeakedObjectDetector
+class LeakedObjectDetector
 {
 public:
     //==============================================================================
-    DistrhoLeakedObjectDetector() noexcept                                   { ++(getCounter().numObjects); }
-    DistrhoLeakedObjectDetector(const DistrhoLeakedObjectDetector&) noexcept { ++(getCounter().numObjects); }
+    LeakedObjectDetector() noexcept                            { ++(getCounter().numObjects); }
+    LeakedObjectDetector(const LeakedObjectDetector&) noexcept { ++(getCounter().numObjects); }
 
-    ~DistrhoLeakedObjectDetector() noexcept
+    ~LeakedObjectDetector() noexcept
     {
         if (--(getCounter().numObjects) < 0)
         {
@@ -133,5 +135,7 @@ private:
 };
 
 // -----------------------------------------------------------------------
+
+END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_LEAK_DETECTOR_HPP_INCLUDED

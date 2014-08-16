@@ -19,6 +19,8 @@
 
 #include "d_leakdetector.hpp"
 
+START_NAMESPACE_DISTRHO
+
 // -----------------------------------------------------------------------
 // d_string class
 
@@ -742,5 +744,7 @@ d_string operator+(const char* const strBufBefore, const d_string& strAfter) noe
 }
 
 // -----------------------------------------------------------------------
+
+END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_STRING_HPP_INCLUDED
