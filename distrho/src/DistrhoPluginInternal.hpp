@@ -393,7 +393,7 @@ public:
         return fData->sampleRate;
     }
 
-    void setBufferSize(const uint32_t bufferSize, bool doCallback = false)
+    void setBufferSize(const uint32_t bufferSize, const bool doCallback = false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
@@ -412,7 +412,7 @@ public:
         }
     }
 
-    void setSampleRate(const double sampleRate, bool doCallback = false)
+    void setSampleRate(const double sampleRate, const bool doCallback = false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);

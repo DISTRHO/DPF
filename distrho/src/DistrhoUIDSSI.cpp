@@ -140,6 +140,11 @@ public:
     }
 #endif
 
+    void dssiui_samplerate(const double sampleRate)
+    {
+        fUI.setSampleRate(sampleRate, true);
+    }
+
     void dssiui_show()
     {
         fUI.setVisible(true);
@@ -321,6 +326,9 @@ int osc_sample_rate_handler(const char*, const char*, lo_arg** argv, int, lo_mes
     d_debug("osc_sample_rate_handler(%i)", sampleRate);
 
     d_lastUiSampleRate = sampleRate;
+
+    if (globalUI != nullptr)
+        globalUI->dssiui_samplerate(sampleRate);
 
     return 0;
 }

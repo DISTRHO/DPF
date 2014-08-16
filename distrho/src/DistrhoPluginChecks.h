@@ -93,6 +93,10 @@
 # define DISTRHO_UI_USE_NANOVG 0
 #endif
 
+#ifndef DISTRHO_UI_USE_NTK
+# define DISTRHO_UI_USE_NTK 0
+#endif
+
 // -----------------------------------------------------------------------
 // Define DISTRHO_UI_URI if needed
 

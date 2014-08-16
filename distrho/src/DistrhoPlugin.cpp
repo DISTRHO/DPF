@@ -33,7 +33,7 @@ const ParameterRanges PluginExporter::sFallbackRanges;
 // -----------------------------------------------------------------------
 // Plugin
 
-Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
+Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount)
     : pData(new PrivateData())
 {
     if (parameterCount > 0)
@@ -42,21 +42,25 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
         pData->parameters     = new Parameter[parameterCount];
     }
 
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
     if (programCount > 0)
     {
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
         pData->programCount = programCount;
         pData->programNames = new d_string[programCount];
-#endif
     }
+#else
+    DISTRHO_SAFE_ASSERT(programCount == 0);
+#endif
 
+#if DISTRHO_PLUGIN_WANT_STATE
     if (stateCount > 0)
     {
-#if DISTRHO_PLUGIN_WANT_STATE
         pData->stateCount = stateCount;
         pData->stateKeys  = new d_string[stateCount];
-#endif
     }
+#else
+    DISTRHO_SAFE_ASSERT(stateCount == 0);
+#endif
 }
 
 Plugin::~Plugin()
@@ -88,22 +92,25 @@ const TimePos& Plugin::d_getTimePos() const noexcept
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
-void Plugin::d_setLatency(uint32_t frames) noexcept
+void Plugin::d_setLatency(const uint32_t frames) noexcept
 {
     pData->latency = frames;
+}
+#endif
+
+#if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
+{
+    // TODO
+    return false;
 }
 #endif
 
 // -----------------------------------------------------------------------
 // Callbacks (optional)
 
-void Plugin::d_bufferSizeChanged(uint32_t)
-{
-}
-
-void Plugin::d_sampleRateChanged(double)
-{
-}
+void Plugin::d_bufferSizeChanged(uint32_t) {}
+void Plugin::d_sampleRateChanged(double)   {}
 
 // -----------------------------------------------------------------------
 

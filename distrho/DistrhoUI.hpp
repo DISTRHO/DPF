@@ -25,6 +25,9 @@
 #if DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL::NanoWidget UIWidget;
+#elif DISTRHO_UI_USE_NTK
+# include "FL/Fl_Double_Window.H"
+typedef Fl_Double_Window UIWidget;
 #else
 typedef DGL::Widget UIWidget;
 #endif
@@ -44,19 +47,19 @@ public:
     // Host DSP State
 
     double d_getSampleRate() const noexcept;
-    void   d_editParameter(uint32_t index, bool started);
-    void   d_setParameterValue(uint32_t index, float value);
+    void   d_editParameter(const uint32_t index, const bool started);
+    void   d_setParameterValue(const uint32_t index, const float value);
 #if DISTRHO_PLUGIN_WANT_STATE
-    void   d_setState(const char* key, const char* value);
+    void   d_setState(const char* const key, const char* const value);
 #endif
 #if DISTRHO_PLUGIN_IS_SYNTH
-    void   d_sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
+    void   d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity);
 #endif
 
     // -------------------------------------------------------------------
     // Host UI State
 
-    void d_setSize(uint width, uint height);
+    void d_setSize(const uint width, const uint height);
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     // -------------------------------------------------------------------
