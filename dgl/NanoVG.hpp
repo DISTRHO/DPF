@@ -17,9 +17,9 @@
 #ifndef DGL_NANO_WIDGET_HPP_INCLUDED
 #define DGL_NANO_WIDGET_HPP_INCLUDED
 
+#include "Color.hpp"
 #include "Widget.hpp"
 
-struct NVGcolor;
 struct NVGcontext;
 struct NVGpaint;
 
@@ -45,24 +45,27 @@ public:
    /**
       Get size.
     */
-    Size<int> getSize() const;
+    Size<int> getSize() const noexcept;
 
    /**
       Update image data.
     */
-    void updateImage(const uchar* data);
+    void updateImage(const uchar* const data);
 
 protected:
    /**
       Constructors are protected.
       NanoImages must be created within a NanoVG or NanoWidget class.
     */
-    NanoImage(NVGcontext* context, int imageId) noexcept;
+    NanoImage(NVGcontext* const context, const int imageId) noexcept;
 
 private:
     NVGcontext* fContext;
     int fImageId;
+    Size<int> fSize;
     friend class NanoVG;
+
+    void _updateSize();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoImage)
 };
@@ -74,10 +77,7 @@ private:
    NanoVG class.
 
    This class exposes the NanoVG drawing API.
-   All calls should be wrapped in beginFrame() & endFrame().
-
-   @section Color utils
-   Colors in NanoVG are stored as uints in ABGR format.
+   All calls should be wrapped in beginFrame() and endFrame().
 
    @section State Handling
    NanoVG contains state which represents how paths will be rendered.
@@ -153,13 +153,13 @@ private:
    since aforementioned pixel snapping.
 
    While this may sound a little odd, the setup allows you to always render the
-   same way regardless of scaling. I.e. following works regardless of scaling:
+   same way regardless of scaling. i.e. following works regardless of scaling:
 
    @code
        const char* txt = "Text me up.";
        textBounds(vg, x,y, txt, NULL, bounds);
        beginPath(vg);
-       roundedRect(vg, bounds[0],bounds[1], bounds[2]-bounds[0], bounds[3]-bounds[1]);
+       roundedRect(vg, bounds[0], bounds[1], bounds[2]-bounds[0], bounds[3]-bounds[1]);
        fill(vg);
    @endcode
 
@@ -182,7 +182,7 @@ public:
 
     enum Alpha {
         STRAIGHT_ALPHA,
-        PREMULTIPLIED_ALPHA,
+        PREMULTIPLIED_ALPHA
     };
 
     enum LineCap {
@@ -209,17 +209,6 @@ public:
         CW  = 2  // Winding for holes
     };
 
-    struct Color {
-        union {
-            float rgba[4];
-            struct { float r,g,b,a; };
-        };
-
-        Color() noexcept;
-        Color(const NVGcolor&) noexcept;
-        operator NVGcolor() const noexcept;
-    };
-
     struct Paint {
         float xform[6];
         float extent[2];
@@ -231,6 +220,10 @@ public:
         PatternRepeat repeat;
 
         Paint() noexcept;
+
+      /**
+          @internal
+        */
         Paint(const NVGpaint&) noexcept;
         operator NVGpaint() const noexcept;
     };
@@ -260,7 +253,7 @@ public:
    /**
       Constructor using custom text atlas size.
     */
-    NanoVG(int textAtlasWidth, int textAtlasHeight);
+    NanoVG(const int textAtlasWidth, const int textAtlasHeight);
 
    /**
       Destructor.
@@ -280,57 +273,17 @@ public:
       Begin drawing a new frame.
       @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
     */
-    void beginFrame(int width, int height, float scaleFactor = 1.0f, Alpha alpha = PREMULTIPLIED_ALPHA);
+    void beginFrame(const int width, const int height, const float scaleFactor = 1.0f, const Alpha alpha = PREMULTIPLIED_ALPHA);
 
    /**
       Begin drawing a new frame inside a widget.
     */
-    void beginFrame(Widget* widget);
+    void beginFrame(Widget* const widget);
 
    /**
       Ends drawing flushing remaining render state.
     */
     void endFrame();
-
-   /* --------------------------------------------------------------------
-    * Color utils */
-
-   /**
-      Returns a color value from red, green, blue values. Alpha will be set to 255 (1.0f).
-    */
-    static Color RGB(uchar r, uchar g, uchar b);
-
-   /**
-      Returns a color value from red, green, blue values. Alpha will be set to 1.0f.
-    */
-    static Color RGBf(float r, float g, float b);
-
-   /**
-      Returns a color value from red, green, blue and alpha values.
-    */
-    static Color RGBA(uchar r, uchar g, uchar b, uchar a);
-
-   /**
-      Returns a color value from red, green, blue and alpha values.
-    */
-    static Color RGBAf(float r, float g, float b, float a);
-
-   /**
-      Linearly interpolates from color c0 to c1, and returns resulting color value.
-    */
-    static Color lerpRGBA(const Color& c0, const Color& c1, float u);
-
-   /**
-      Returns color value specified by hue, saturation and lightness.
-      HSL values are all in range [0..1], alpha will be set to 255.
-    */
-    static Color HSL(float h, float s, float l);
-
-   /**
-      Returns color value specified by hue, saturation and lightness and alpha.
-      HSL values are all in range [0..1], alpha in range [0..255]
-    */
-    static Color HSLA(float h, float s, float l, uchar a);
 
    /* --------------------------------------------------------------------
     * State Handling */

@@ -368,7 +368,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
         return false;
 
     bool doVal = false;
-    float d, value;
+    float d, value = 0.0f;
 
     if (fOrientation == ImageKnob::Horizontal)
     {

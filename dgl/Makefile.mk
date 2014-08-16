@@ -82,8 +82,8 @@ BASE_FLAGS += -Werror -Wcast-qual -Wconversion -Wformat -Wformat-security -Wredu
 BASE_FLAGS += -Wpointer-arith -Wabi -Winit-self -Wuninitialized -Wstrict-overflow=5
 # BASE_FLAGS += -Wfloat-equal
 ifeq ($(CC),clang)
-# BASE_FLAGS += -Wdocumentation -Wdocumentation-unknown-command
-# BASE_FLAGS += -Weverything
+BASE_FLAGS += -Wdocumentation -Wdocumentation-unknown-command
+BASE_FLAGS += -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Wno-exit-time-destructors -Wno-float-equal
 else
 BASE_FLAGS += -Wcast-align -Wunsafe-loop-optimizations
 endif

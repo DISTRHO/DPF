@@ -45,15 +45,15 @@ public:
 
    /**
       Constructor using raw image data.
-      @note @a rawData must remain valid for the lifetime of this Image.
+      @note: @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE);
+    Image(const char* const rawData, const int width, const int height, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using raw image data.
-      @note @a rawData must remain valid for the lifetime of this Image.
+      @note: @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE);
+    Image(const char* const rawData, const Size<int>& size, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using another image data.
@@ -67,15 +67,15 @@ public:
 
    /**
       Load image data from memory.
-      @note @a rawData must remain valid for the lifetime of this Image.
+      @note: @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* rawData, int width, int height, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
+    void loadFromMemory(const char* const rawData, const int width, const int height, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Load image data from memory.
-      @note @a rawData must remain valid for the lifetime of this Image.
+      @note: @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* rawData, const Size<int>& size, GLenum format = GL_BGRA, GLenum type = GL_UNSIGNED_BYTE) noexcept;
+    void loadFromMemory(const char* const rawData, const Size<int>& size, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Check if this image is valid.
@@ -120,7 +120,7 @@ public:
    /**
       Draw this image at (x, y) point.
     */
-    void drawAt(int x, int y);
+    void drawAt(const int x, const int y);
 
    /**
       Draw this image at position @a pos.

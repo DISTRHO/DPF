@@ -42,7 +42,7 @@ public:
     Point() noexcept;
 
    /**
-      Constructor using custom x and y values.
+      Constructor using custom X and Y values.
     */
     Point(const T& x, const T& y) noexcept;
 

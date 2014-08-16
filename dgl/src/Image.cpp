@@ -31,7 +31,7 @@ Image::Image()
     glGenTextures(1, &fTextureId);
 }
 
-Image::Image(const char* rawData, int width, int height, GLenum format, GLenum type)
+Image::Image(const char* const rawData, const int width, const int height, const GLenum format, const GLenum type)
     : fRawData(rawData),
       fSize(width, height),
       fFormat(format),
@@ -42,7 +42,7 @@ Image::Image(const char* rawData, int width, int height, GLenum format, GLenum t
     glGenTextures(1, &fTextureId);
 }
 
-Image::Image(const char* rawData, const Size<int>& size, GLenum format, GLenum type)
+Image::Image(const char* const rawData, const Size<int>& size, const GLenum format, const GLenum type)
     : fRawData(rawData),
       fSize(size),
       fFormat(format),
@@ -73,12 +73,12 @@ Image::~Image()
     }
 }
 
-void Image::loadFromMemory(const char* rawData, int width, int height, GLenum format, GLenum type) noexcept
+void Image::loadFromMemory(const char* const rawData, const int width, const int height, const GLenum format, const GLenum type) noexcept
 {
     loadFromMemory(rawData, Size<int>(width, height), format, type);
 }
 
-void Image::loadFromMemory(const char* rawData, const Size<int>& size, GLenum format, GLenum type) noexcept
+void Image::loadFromMemory(const char* const rawData, const Size<int>& size, const GLenum format, const GLenum type) noexcept
 {
     fRawData = rawData;
     fSize    = size;
@@ -127,7 +127,7 @@ void Image::draw()
     drawAt(0, 0);
 }
 
-void Image::drawAt(int x, int y)
+void Image::drawAt(const int x, const int y)
 {
     drawAt(Point<int>(x, y));
 }

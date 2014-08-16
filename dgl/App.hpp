@@ -56,7 +56,7 @@ public:
 
    /**
       Run the application event-loop until all Windows are closed.
-      @idle() is called at regular intervals.
+      idle() is called at regular intervals.
     */
     void exec();
 

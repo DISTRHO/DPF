@@ -39,19 +39,7 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
-// Conversions
-
-NanoVG::Color::Color() noexcept
-    : r(1.0f), g(1.0f), b(1.0f), a(1.0f) {}
-
-NanoVG::Color::Color(const NVGcolor& c) noexcept
-    : r(c.r), g(c.g), b(c.b), a(c.a) {}
-
-NanoVG::Color::operator NVGcolor() const noexcept
-{
-    NVGcolor nc = {{{ r, g, b, a }}};
-    return nc;
-}
+// Paint
 
 NanoVG::Paint::Paint() noexcept
     : radius(0.0f), feather(0.0f), innerColor(), outerColor(), imageId(0), repeat(REPEAT_NONE)
@@ -84,9 +72,13 @@ NanoVG::Paint::operator NVGpaint() const noexcept
 // -----------------------------------------------------------------------
 // NanoImage
 
-NanoImage::NanoImage(NVGcontext* context, int imageId) noexcept
+NanoImage::NanoImage(NVGcontext* const context, const int imageId) noexcept
     : fContext(context),
-      fImageId(imageId) {}
+      fImageId(imageId),
+      fSize()
+{
+    _updateSize();
+}
 
 NanoImage::~NanoImage()
 {
@@ -94,22 +86,30 @@ NanoImage::~NanoImage()
         nvgDeleteImage(fContext, fImageId);
 }
 
-Size<int> NanoImage::getSize() const
+Size<int> NanoImage::getSize() const noexcept
+{
+    return fSize;
+}
+
+void NanoImage::updateImage(const uchar* const data)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+
+    if (fContext != nullptr && fImageId != 0)
+    {
+        nvgUpdateImage(fContext, fImageId, data);
+        _updateSize();
+    }
+}
+
+void NanoImage::_updateSize()
 {
     int w=0, h=0;
 
     if (fContext != nullptr && fImageId != 0)
         nvgImageSize(fContext, fImageId, &w, &h);
 
-    return Size<int>(w, h);
-}
-
-void NanoImage::updateImage(const uchar* data)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
-
-    if (fContext != nullptr && fImageId != 0)
-        nvgUpdateImage(fContext, fImageId, data);
+    fSize.setSize(w, h);
 }
 
 // -----------------------------------------------------------------------
@@ -121,7 +121,7 @@ NanoVG::NanoVG()
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }
 
-NanoVG::NanoVG(int textAtlasWidth, int textAtlasHeight)
+NanoVG::NanoVG(const int textAtlasWidth, const int textAtlasHeight)
     : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS))
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
@@ -135,7 +135,7 @@ NanoVG::~NanoVG()
 
 // -----------------------------------------------------------------------
 
-void NanoVG::beginFrame(int width, int height, float scaleFactor, Alpha alpha)
+void NanoVG::beginFrame(const int width, const int height, const float scaleFactor, const Alpha alpha)
 {
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(width > 0,);
@@ -145,7 +145,7 @@ void NanoVG::beginFrame(int width, int height, float scaleFactor, Alpha alpha)
     nvgBeginFrame(fContext, width, height, scaleFactor, static_cast<NVGalpha>(alpha));
 }
 
-void NanoVG::beginFrame(Widget* widget)
+void NanoVG::beginFrame(Widget* const widget)
 {
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(widget != nullptr,);
@@ -158,44 +158,6 @@ void NanoVG::endFrame()
 {
     if (fContext != nullptr)
         nvgEndFrame(fContext);
-}
-
-// -----------------------------------------------------------------------
-// Color utils
-
-NanoVG::Color NanoVG::RGB(uchar r, uchar g, uchar b)
-{
-    return nvgRGB(r, g, b);
-}
-
-NanoVG::Color NanoVG::RGBf(float r, float g, float b)
-{
-    return nvgRGBf(r, g, b);
-}
-
-NanoVG::Color NanoVG::RGBA(uchar r, uchar g, uchar b, uchar a)
-{
-    return nvgRGBA(r, g, b, a);
-}
-
-NanoVG::Color NanoVG::RGBAf(float r, float g, float b, float a)
-{
-    return nvgRGBAf(r, g, b, a);
-}
-
-NanoVG::Color NanoVG::lerpRGBA(const Color& c0, const Color& c1, float u)
-{
-    return nvgLerpRGBA(c0, c1, u);
-}
-
-NanoVG::Color NanoVG::HSL(float h, float s, float l)
-{
-    return nvgHSL(h, s, l);
-}
-
-NanoVG::Color NanoVG::HSLA(float h, float s, float l, uchar a)
-{
-    return nvgHSLA(h, s, l, a);
 }
 
 // -----------------------------------------------------------------------
@@ -436,19 +398,19 @@ NanoImage* NanoVG::createImageRGBA(int w, int h, const uchar* data)
 // -----------------------------------------------------------------------
 // Paints
 
-NanoVG::Paint NanoVG::linearGradient(float sx, float sy, float ex, float ey, const NanoVG::Color& icol, const NanoVG::Color& ocol)
+NanoVG::Paint NanoVG::linearGradient(float sx, float sy, float ex, float ey, const Color& icol, const Color& ocol)
 {
     if (fContext == nullptr) return Paint();
     return nvgLinearGradient(fContext, sx, sy, ex, ey, icol, ocol);
 }
 
-NanoVG::Paint NanoVG::boxGradient(float x, float y, float w, float h, float r, float f, const NanoVG::Color& icol, const NanoVG::Color& ocol)
+NanoVG::Paint NanoVG::boxGradient(float x, float y, float w, float h, float r, float f, const Color& icol, const Color& ocol)
 {
     if (fContext == nullptr) return Paint();
     return nvgBoxGradient(fContext, x, y, w, h, r, f, icol, ocol);
 }
 
-NanoVG::Paint NanoVG::radialGradient(float cx, float cy, float inr, float outr, const NanoVG::Color& icol, const NanoVG::Color& ocol)
+NanoVG::Paint NanoVG::radialGradient(float cx, float cy, float inr, float outr, const Color& icol, const Color& ocol)
 {
     if (fContext == nullptr) return Paint();
     return nvgRadialGradient(fContext, cx, cy, inr, outr, icol, ocol);

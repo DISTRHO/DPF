@@ -60,6 +60,8 @@ struct App::PrivateData {
         if (--visibleWindows == 0)
             doLoop = false;
     }
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
 };
 
 // -----------------------------------------------------------------------

@@ -22,7 +22,7 @@
 
 #include <cmath>
 
-#ifdef PROPER_CPP11_SUPPORT
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <cstdint>
 #else
 # include <stdint.h>

@@ -52,8 +52,8 @@ class Widget
 public:
    /**
       Base event data.
-      @param mod  The currently active modifiers.
-      @param time The timestamp (if any) of the currently-processing event.
+      @a mod  The currently active modifiers.
+      @a time The timestamp (if any) of the currently-processing event.
     */
     struct BaseEvent {
         Modifier mod;
@@ -62,8 +62,8 @@ public:
 
    /**
       Keyboard event.
-      @param press True if the key was pressed, false if released.
-      @param key   Unicode point of the key pressed.
+      @a press True if the key was pressed, false if released.
+      @a key   Unicode point of the key pressed.
       @see onKeyboard
     */
     struct KeyboardEvent : BaseEvent {
@@ -73,8 +73,8 @@ public:
 
    /**
       Special keyboard event.
-      @param press True if the key was pressed, false if released.
-      @param key   The key pressed.
+      @a press True if the key was pressed, false if released.
+      @a key   The key pressed.
       @see onSpecial
     */
     struct SpecialEvent : BaseEvent {
@@ -84,9 +84,9 @@ public:
 
    /**
       Mouse event.
-      @param button The button number (1 = left, 2 = middle, 3 = right).
-      @param press  True if the key was pressed, false if released.
-      @param pos    The widget-relative coordinates of the pointer.
+      @a button The button number (1 = left, 2 = middle, 3 = right).
+      @a press  True if the key was pressed, false if released.
+      @a pos    The widget-relative coordinates of the pointer.
       @see onMouse
     */
     struct MouseEvent : BaseEvent {
@@ -97,7 +97,7 @@ public:
 
    /**
       Mouse motion event.
-      @param pos The widget-relative coordinates of the pointer.
+      @a pos The widget-relative coordinates of the pointer.
       @see onMotion
     */
     struct MotionEvent : BaseEvent {
@@ -106,8 +106,8 @@ public:
 
    /**
       Mouse scroll event.
-      @param pos   The widget-relative coordinates of the pointer.
-      @param delta The scroll distance.
+      @a pos   The widget-relative coordinates of the pointer.
+      @a delta The scroll distance.
       @see onScroll
     */
     struct ScrollEvent : BaseEvent {
@@ -117,8 +117,8 @@ public:
 
    /**
       Resize event.
-      @param size    The new widget size.
-      @param oldSize The previous size, may be null.
+      @a size    The new widget size.
+      @a oldSize The previous size, may be null.
       @see onResize
     */
     struct ResizeEvent {
