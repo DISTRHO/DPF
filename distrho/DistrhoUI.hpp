@@ -85,6 +85,11 @@ protected:
 #endif
 
     // -------------------------------------------------------------------
+    // DSP Callbacks (optional)
+
+    virtual void d_sampleRateChanged(double newSampleRate);
+
+    // -------------------------------------------------------------------
     // UI Callbacks (optional)
 
     virtual void d_uiIdle() {}

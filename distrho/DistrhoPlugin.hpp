@@ -34,63 +34,114 @@
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
-// Parameter Hints
+/* ------------------------------------------------------------------------------------------------------------
+ * Parameter Hints */
 
-const uint32_t PARAMETER_IS_AUTOMABLE   = 1 << 0;
-const uint32_t PARAMETER_IS_BOOLEAN     = 1 << 1;
-const uint32_t PARAMETER_IS_INTEGER     = 1 << 2;
-const uint32_t PARAMETER_IS_LOGARITHMIC = 1 << 3;
-const uint32_t PARAMETER_IS_OUTPUT      = 1 << 4;
+/**
+   @defgroup ParameterHints Parameter Hints
 
-// -----------------------------------------------------------------------
-// Parameter Ranges
+   Various parameter hints.
+   @see Parameter::hints
+   @{
+ */
 
+/**
+   Parameter is automable (real-time safe).
+   @see Plugin::d_setParameterValue()
+ */
+static const uint32_t kParameterIsAutomable = 0x01;
+
+/**
+   Parameter value is boolean.
+   It's always at either minimum or maximum value.
+ */
+static const uint32_t kParameterIsBoolean = 0x02;
+
+/**
+   Parameter value is integer.
+ */
+static const uint32_t kParameterIsInteger = 0x04;
+
+/**
+   Parameter value is logarithmic.
+ */
+static const uint32_t kParameterIsLogarithmic = 0x08;
+
+/**
+   Parameter is of output type.
+   When unset, parameter is assumed to be of input type.
+
+   Parameter inputs are changed by the host and must not be changed by the plugin.
+   The only exception being when changing programs, see Plugin::d_setProgram().
+   Outputs are changed by the plugin and never modified by the host.
+ */
+static const uint32_t kParameterIsOutput = 0x10;
+
+/** @} */
+
+/* ------------------------------------------------------------------------------------------------------------
+ * DPF Base structs */
+
+/**
+   Parameter ranges.
+   This is used to set the default, minimum and maximum values of a parameter.
+
+   By default a parameter has 0.0 as minimum, 1.0 as maximum and 0.0 as default.
+   When changing this struct values you must ensure maximum > minimum and default is within range.
+ */
 struct ParameterRanges {
+    /**
+       Default value.
+     */
     float def;
+
+    /**
+       Minimum value.
+     */
     float min;
+
+    /**
+       Maximum value.
+     */
     float max;
 
+    /**
+       Default constructor.
+     */
     ParameterRanges() noexcept
         : def(0.0f),
           min(0.0f),
           max(1.0f) {}
 
-    ParameterRanges(float def, float min, float max) noexcept
-    {
-        this->def = def;
-        this->min = min;
-        this->max = max;
-    }
+    /**
+       Constructor using custom values.
+     */
+    ParameterRanges(const float df, const float mn, const float mx) noexcept
+        : def(df),
+          min(mn),
+          max(mx) {}
 
-    void clear() noexcept
-    {
-        def = 0.0f;
-        min = 0.0f;
-        max = 1.0f;
-    }
-
-    /*!
-     * Fix default value within range.
+    /**
+       Fix the default value within range.
      */
     void fixDefault() noexcept
     {
         fixValue(def);
     }
 
-    /*!
-     * Fix a value within range.
+    /**
+       Fix a value within range.
      */
     void fixValue(float& value) const noexcept
     {
-        if (value <= min)
+        if (value < min)
             value = min;
         else if (value > max)
             value = max;
     }
 
-    /*!
-     * Get a fixed value within range.
+    /**
+       Get a fixed value within range.
      */
     const float& getFixedValue(const float& value) const noexcept
     {
@@ -101,8 +152,8 @@ struct ParameterRanges {
         return value;
     }
 
-    /*!
-     * Get a value normalized to 0.0<->1.0.
+    /**
+       Get a value normalized to 0.0<->1.0.
      */
     float getNormalizedValue(const float& value) const noexcept
     {
@@ -115,8 +166,8 @@ struct ParameterRanges {
         return normValue;
     }
 
-    /*!
-     * Get a value normalized to 0.0<->1.0, fixed within range.
+    /**
+       Get a value normalized to 0.0<->1.0, fixed within range.
      */
     float getFixedAndNormalizedValue(const float& value) const noexcept
     {
@@ -135,8 +186,8 @@ struct ParameterRanges {
         return normValue;
     }
 
-    /*!
-     * Get a proper value previously normalized to 0.0<->1.0.
+    /**
+       Get a proper value previously normalized to 0.0<->1.0.
      */
     float getUnnormalizedValue(const float& value) const noexcept
     {
@@ -149,70 +200,160 @@ struct ParameterRanges {
     }
 };
 
-// -----------------------------------------------------------------------
-// Parameter
-
+/**
+   Parameter.
+ */
 struct Parameter {
+    /**
+       Hints describing this parameter.
+       @see ParameterHints
+     */
     uint32_t hints;
+
+    /**
+       The name of this parameter.
+       A parameter name can contain any characters, but hosts might have a hard time with non-ascii ones.
+       The name doesn't have to be unique within a plugin instance, but it's recommended.
+     */
     d_string name;
+
+    /**
+       The symbol of this parameter.
+       A parameter symbol is a short restricted name used as a machine and human readable identifier.
+       The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
+       @note: Parameter symbols MUST be unique within a plugin instance.
+     */
     d_string symbol;
+
+    /**
+       The unit of this parameter.
+       This means something like "dB", "kHz" and "ms".
+       Can be left blank if units do not apply to this parameter.
+     */
     d_string unit;
+
+    /**
+       Ranges of this parameter.
+       The ranges describe the default, minimum and maximum values.
+     */
     ParameterRanges ranges;
 
+    /**
+       Default constructor for a null parameter.
+     */
     Parameter() noexcept
-        : hints(0x0) {}
-
-    void clear() noexcept
-    {
-        hints  = 0x0;
-        name   = "";
-        symbol = "";
-        unit   = "";
-        ranges.clear();
-    }
+        : hints(0x0),
+          name(),
+          symbol(),
+          unit(),
+          ranges() {}
 };
 
-// -----------------------------------------------------------------------
-// MidiEvent
-
+/**
+   MIDI event.
+ */
 struct MidiEvent {
-    uint32_t frame;
-    uint8_t  size;
-    uint8_t  buf[4];
+    /**
+       Size of internal data.
+     */
+    static const uint32_t kDataSize = 4;
 
-    void clear() noexcept
-    {
-        frame  = 0;
-        size   = 0;
-        buf[0] = 0;
-        buf[1] = 0;
-        buf[2] = 0;
-        buf[3] = 0;
-    }
+    /**
+       Time offset in frames.
+     */
+    uint32_t frame;
+
+    /**
+       Number of bytes used.
+     */
+    uint32_t size;
+
+    /**
+       MIDI data.
+       If size > kDataSize, dataExt is used (otherwise null).
+     */
+    uint8_t        data[kDataSize];
+    const uint8_t* dataExt;
 };
 
-// -----------------------------------------------------------------------
-// TimePos
-
-struct TimePos {
+/**
+   Time position.
+   This struct is inspired by the JACK API.
+   The @a playing and @a frame values are always valid.
+   BBT values are only valid when @a bbt.valid is true.
+ */
+struct TimePosition {
+   /**
+      Wherever the host transport is playing/rolling.
+    */
     bool playing;
+
+   /**
+      Current host transport position in frames.
+    */
     uint64_t frame;
 
-    struct BeatBarTick {
+   /**
+      Bar-Beat-Tick time position.
+    */
+    struct BarBeatTick {
+       /**
+          Wherever the host transport is using BBT.
+          If false you must not read from this struct.
+        */
         bool valid;
 
-        int32_t bar;  /*!< current bar */
-        int32_t beat; /*!< current beat-within-bar */
-        int32_t tick; /*!< current tick-within-beat */
+       /**
+          Current bar.
+          Should always be > 0.
+          The first bar is bar '1'.
+        */
+        int32_t bar;
+
+       /**
+          Current beat within bar.
+          Should always be > 0 and <= @a beatsPerBar.
+          The first beat is beat '1'.
+        */
+        int32_t beat;
+
+       /**
+          Current tick within beat.
+          Should always be > 0 and <= @a ticksPerBeat.
+          The first tick is tick '0'.
+        */
+        int32_t tick;
+
+       /**
+          Number of ticks that have elapsed between frame 0 and the first beat of the current measure.
+        */
         double barStartTick;
 
-        float beatsPerBar; /*!< time signature "numerator" */
-        float beatType;    /*!< time signature "denominator" */
+       /**
+          Time signature "numerator".
+        */
+        float beatsPerBar;
 
+       /**
+          Time signature "denominator".
+        */
+        float beatType;
+
+       /**
+          Number of ticks within a bar.
+          Usually a moderately large integer with many denominators, such as 1920.0.
+        */
         double ticksPerBeat;
+
+       /**
+          Number of beats per minute.
+        */
         double beatsPerMinute;
 
-        BeatBarTick() noexcept
+       /**
+          Default constructor for a null BBT time position.
+        */
+        BarBeatTick() noexcept
             : valid(false),
               bar(0),
               beat(0),
@@ -224,29 +365,61 @@ struct TimePos {
               beatsPerMinute(0.0) {}
     } bbt;
 
-    TimePos() noexcept
+    /**
+       Default constructor for a time position.
+     */
+    TimePosition() noexcept
         : playing(false),
-          frame(0) {}
+          frame(0),
+          bbt() {}
 };
 
-// -----------------------------------------------------------------------
-// Plugin
+/* ------------------------------------------------------------------------------------------------------------
+ * DPF Plugin */
 
+/**
+   TODO.
+ */
 class Plugin
 {
 public:
-    Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount);
+    /**
+       TODO.
+     */
+    Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount);
+
+    /**
+       Destructor.
+     */
     virtual ~Plugin();
 
     // -------------------------------------------------------------------
     // Host state
 
+    /**
+       TODO.
+     */
     uint32_t       d_getBufferSize() const noexcept;
+
+    /**
+       TODO.
+     */
     double         d_getSampleRate() const noexcept;
+
+    /**
+       TODO.
+     */
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
+    /**
+       TODO.
+     */
     const TimePos& d_getTimePos()    const noexcept;
 #endif
+
 #if DISTRHO_PLUGIN_WANT_LATENCY
+    /**
+       TODO.
+     */
     void           d_setLatency(uint32_t frames) noexcept;
 #endif
 
@@ -254,51 +427,121 @@ protected:
     // -------------------------------------------------------------------
     // Information
 
+    /**
+       TODO.
+     */
     virtual const char* d_getName()     const noexcept { return DISTRHO_PLUGIN_NAME; }
+
+    /**
+       TODO.
+     */
     virtual const char* d_getLabel()    const noexcept = 0;
+
+    /**
+       TODO.
+     */
     virtual const char* d_getMaker()    const noexcept = 0;
+
+    /**
+       TODO.
+     */
     virtual const char* d_getLicense()  const noexcept = 0;
+
+    /**
+       TODO.
+     */
     virtual uint32_t    d_getVersion()  const noexcept = 0;
+
+    /**
+       TODO.
+     */
     virtual long        d_getUniqueId() const noexcept = 0;
 
     // -------------------------------------------------------------------
     // Init
 
+    /**
+       TODO.
+     */
     virtual void d_initParameter(uint32_t index, Parameter& parameter) = 0;
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    /**
+       TODO.
+     */
     virtual void d_initProgramName(uint32_t index, d_string& programName) = 0;
 #endif
+
 #if DISTRHO_PLUGIN_WANT_STATE
+    /**
+       TODO.
+     */
     virtual void d_initStateKey(uint32_t index, d_string& stateKey) = 0;
 #endif
 
     // -------------------------------------------------------------------
     // Internal data
 
+    /**
+       TODO.
+     */
     virtual float d_getParameterValue(uint32_t index) const = 0;
+
+    /**
+       TODO.
+     */
     virtual void  d_setParameterValue(uint32_t index, float value) = 0;
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    /**
+       TODO.
+     */
     virtual void  d_setProgram(uint32_t index) = 0;
 #endif
+
 #if DISTRHO_PLUGIN_WANT_STATE
+    /**
+       TODO.
+     */
     virtual void  d_setState(const char* key, const char* value) = 0;
 #endif
 
     // -------------------------------------------------------------------
     // Process
 
+    /**
+       TODO.
+     */
     virtual void d_activate() {}
+
+    /**
+       TODO.
+     */
     virtual void d_deactivate() {}
+
 #if DISTRHO_PLUGIN_IS_SYNTH
+    /**
+       TODO.
+     */
     virtual void d_run(const float** inputs, float** outputs, uint32_t frames, const MidiEvent* midiEvents, uint32_t midiEventCount) = 0;
 #else
+    /**
+       TODO.
+     */
     virtual void d_run(const float** inputs, float** outputs, uint32_t frames) = 0;
 #endif
 
     // -------------------------------------------------------------------
     // Callbacks (optional)
 
+    /**
+       TODO.
+     */
     virtual void d_bufferSizeChanged(uint32_t newBufferSize);
+
+    /**
+       TODO.
+     */
     virtual void d_sampleRateChanged(double newSampleRate);
 
     // -------------------------------------------------------------------
@@ -311,12 +554,15 @@ private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Plugin)
 };
 
-// -----------------------------------------------------------------------
-// Create plugin, entry point
+/* ------------------------------------------------------------------------------------------------------------
+ * Create plugin, entry point */
 
+/**
+   TODO.
+ */
 extern Plugin* createPlugin();
 
-// -----------------------------------------------------------------------
+/* ------------------------------------------------------------------------------------------------------------ */
 
 END_NAMESPACE_DISTRHO
 

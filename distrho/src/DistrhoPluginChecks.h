@@ -60,7 +60,7 @@
 #endif
 
 #ifndef DISTRHO_PLUGIN_IS_RT_SAFE
-# define DISTRHO_PLUGIN_IS_RT_SAFE 1
+# define DISTRHO_PLUGIN_IS_RT_SAFE 0
 #endif
 
 #ifndef DISTRHO_UI_USE_NANOVG
