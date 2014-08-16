@@ -387,9 +387,11 @@ struct TimePosition {
 
    Shortly after a plugin instance is created, the various d_init* functions will be called by the host.
    Host will call d_activate() before d_run(), and d_deactivate() before the plugin instance is destroyed.
-   There is no limit on how many times d_run() is called only that activate/deactivate will be called in between.
+   The host may call deactivate right after activate and vice-versa, but never activate/deactivate consecutively.
+   There is no limit on how many times d_run() is called, only that activate/deactivate will be called in between.
 
    The buffer size and sample rate values will remain constant between activate and deactivate.
+   Buffer size is only a hint though, the host might call d_run() with a higher or lower number of frames.
 
    Some of this class functions are only available according to some macros.
 
@@ -419,7 +421,7 @@ public:
      * Host state */
 
     /**
-       Get the current buffer size that will (probably) be used during processing.
+       Get the current buffer size that will probably be used during processing, in frames.
        This value will remain constant between activate and deactivate.
        @note: This value is only a hint!
               Hosts might call d_run() with a higher or lower number of frames.
@@ -454,8 +456,8 @@ public:
 #if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
     /**
        Write a MIDI output event.
-       This function must only be called in during d_run().
-       Returns false when the host buffer is full, in which case do not call again until the next d_run().
+       This function must only be called during d_run().
+       Returns false when the host buffer is full, in which case do not call this again until the next d_run().
      */
     bool d_writeMidiEvent(const MidiEvent& midiEvent) noexcept;
 #endif
@@ -472,7 +474,7 @@ protected:
 
     /**
        Get the plugin label.
-       A plugin label follows the same rules as Parameter::symbol, except that it can start numbers.
+       A plugin label follows the same rules as Parameter::symbol, with the exception that it can start with numbers.
      */
     virtual const char* d_getLabel() const = 0;
 
@@ -511,7 +513,7 @@ protected:
     /**
        Set the name of the program @a index.
        This function will be called once, shortly after the plugin is created.
-       Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_PROGRAMS is set to 1.
+       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
      */
     virtual void d_initProgramName(uint32_t index, d_string& programName) = 0;
 #endif
@@ -520,7 +522,7 @@ protected:
     /**
        Set the key name of the state @a index.
        This function will be called once, shortly after the plugin is created.
-       Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_STATE is set to 1.
+       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
      */
     virtual void d_initStateKey(uint32_t index, d_string& stateKey) = 0;
 #endif
@@ -530,18 +532,23 @@ protected:
 
     /**
        Get a parameter value.
+       The host may call this function from any context, including realtime processing.
      */
     virtual float d_getParameterValue(uint32_t index) const = 0;
 
     /**
        Set a parameter value.
+       The host may call this function from any context, including realtime processing.
+       When a parameter is marked as automable, you must ensure no non-realtime operations are called.
+       @note This function will only be called for parameter inputs.
      */
     virtual void d_setParameterValue(uint32_t index, float value) = 0;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     /**
        Change the currently used program to @a index.
-       Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_PROGRAMS is set to 1.
+       The host may call this function from any context, including realtime processing.
+       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
      */
     virtual void d_setProgram(uint32_t index) = 0;
 #endif
@@ -549,7 +556,7 @@ protected:
 #if DISTRHO_PLUGIN_WANT_STATE
     /**
        Change an internal state @a key to @a value.
-       Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_STATE is set to 1.
+       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
      */
     virtual void d_setState(const char* key, const char* value) = 0;
 #endif
