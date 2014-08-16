@@ -385,7 +385,7 @@ struct TimePosition {
    They can be called from a plugin instance at anytime unless stated otherwise.
    All other methods are to be implemented by the plugin and will be called by the host.
 
-   Shortly after a plugin instance is created the various d_init* functions will be called so the host can get plugin information.
+   Shortly after a plugin instance is created, the various d_init* functions will be called by the host.
    Host will call d_activate() before d_run(), and d_deactivate() before the plugin instance is destroyed.
    There is no limit on how many times d_run() is called only that activate/deactivate will be called in between.
 
@@ -466,6 +466,7 @@ protected:
 
     /**
        Get the plugin name.
+       Returns DISTRHO_PLUGIN_NAME by default.
      */
     virtual const char* d_getName() const { return DISTRHO_PLUGIN_NAME; }
 
@@ -495,7 +496,7 @@ protected:
        Get the plugin unique Id.
        This value is used by LADSPA, DSSI and VST plugin formats.
      */
-    virtual long d_getUniqueId() const = 0;
+    virtual int64_t d_getUniqueId() const = 0;
 
     /* --------------------------------------------------------------------------------------------------------
      * Init */
