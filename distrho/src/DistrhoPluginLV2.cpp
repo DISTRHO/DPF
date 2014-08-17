@@ -266,7 +266,7 @@ public:
 # if DISTRHO_PLUGIN_IS_SYNTH
             if (event->body.type == fURIDs.midiEvent)
             {
-                if (event->body.size > 4 || midiEventCount >= kMaxMidiEvents)
+                if (midiEventCount >= kMaxMidiEvents)
                     continue;
 
                 const uint8_t* const data((const uint8_t*)(event + 1));
@@ -276,11 +276,10 @@ public:
                 midiEvent.frame = event->time.frames;
                 midiEvent.size  = event->body.size;
 
-                uint8_t i;
-                for (i=0; i < midiEvent.size; ++i)
-                    midiEvent.buf[i] = data[i];
-                for (; i < 4; ++i)
-                  midiEvent.buf[i] = 0;
+                if (midiEvent.size > MidiEvent::kDataSize)
+                    midiEvent.dataExt = data;
+                else
+                    std::memcpy(midiEvent.data, data, midiEvent.size);
 
                 ++midiEventCount;
                 continue;

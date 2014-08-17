@@ -577,7 +577,7 @@ public:
                     MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
                     midiEvent.frame  = vstMidiEvent->deltaFrames;
                     midiEvent.size   = 3;
-                    std::memcpy(midiEvent.buf, vstMidiEvent->midiData, 3*sizeof(uint8_t));
+                    std::memcpy(midiEvent.data, vstMidiEvent->midiData, sizeof(uint8_t)*3);
                 }
             }
             break;

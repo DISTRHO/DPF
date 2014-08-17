@@ -249,14 +249,16 @@ protected:
             {
                 if (jack_midi_event_get(&jevent, midiBuf, i) != 0)
                     break;
-                if (jevent.size > 4)
-                    continue;
 
                 MidiEvent& midiEvent(midiEvents[midiEventCount++]);
 
                 midiEvent.frame = jevent.time;
                 midiEvent.size  = jevent.size;
-                std::memcpy(midiEvent.buf, jevent.buffer, jevent.size);
+
+                if (midiEvent.size > MidiEvent::kDataSize)
+                    midiEvent.dataExt = jevent.buffer;
+                else
+                    std::memcpy(midiEvent.data, jevent.buffer, midiEvent.size);
             }
 
             fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);

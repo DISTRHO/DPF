@@ -203,58 +203,58 @@ public:
             {
             case SND_SEQ_EVENT_NOTEOFF:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 3;
-                midiEvents[j].buf[0] = 0x80 + seqEvent.data.note.channel;
-                midiEvents[j].buf[1] = seqEvent.data.note.note;
-                midiEvents[j].buf[2] = 0;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 3;
+                midiEvents[j].data[0] = 0x80 + seqEvent.data.note.channel;
+                midiEvents[j].data[1] = seqEvent.data.note.note;
+                midiEvents[j].data[2] = 0;
+                midiEvents[j].data[3] = 0;
                 break;
             case SND_SEQ_EVENT_NOTEON:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 3;
-                midiEvents[j].buf[0] = 0x90 + seqEvent.data.note.channel;
-                midiEvents[j].buf[1] = seqEvent.data.note.note;
-                midiEvents[j].buf[2] = seqEvent.data.note.velocity;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 3;
+                midiEvents[j].data[0] = 0x90 + seqEvent.data.note.channel;
+                midiEvents[j].data[1] = seqEvent.data.note.note;
+                midiEvents[j].data[2] = seqEvent.data.note.velocity;
+                midiEvents[j].data[3] = 0;
                 break;
             case SND_SEQ_EVENT_KEYPRESS:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 3;
-                midiEvents[j].buf[0] = 0xA0 + seqEvent.data.note.channel;
-                midiEvents[j].buf[1] = seqEvent.data.note.note;
-                midiEvents[j].buf[2] = seqEvent.data.note.velocity;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 3;
+                midiEvents[j].data[0] = 0xA0 + seqEvent.data.note.channel;
+                midiEvents[j].data[1] = seqEvent.data.note.note;
+                midiEvents[j].data[2] = seqEvent.data.note.velocity;
+                midiEvents[j].data[3] = 0;
                 break;
             case SND_SEQ_EVENT_CONTROLLER:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 3;
-                midiEvents[j].buf[0] = 0xB0 + seqEvent.data.control.channel;
-                midiEvents[j].buf[1] = seqEvent.data.control.param;
-                midiEvents[j].buf[2] = seqEvent.data.control.value;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 3;
+                midiEvents[j].data[0] = 0xB0 + seqEvent.data.control.channel;
+                midiEvents[j].data[1] = seqEvent.data.control.param;
+                midiEvents[j].data[2] = seqEvent.data.control.value;
+                midiEvents[j].data[3] = 0;
                 break;
             case SND_SEQ_EVENT_CHANPRESS:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 2;
-                midiEvents[j].buf[0] = 0xD0 + seqEvent.data.control.channel;
-                midiEvents[j].buf[1] = seqEvent.data.control.value;
-                midiEvents[j].buf[2] = 0;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 2;
+                midiEvents[j].data[0] = 0xD0 + seqEvent.data.control.channel;
+                midiEvents[j].data[1] = seqEvent.data.control.value;
+                midiEvents[j].data[2] = 0;
+                midiEvents[j].data[3] = 0;
                 break;
 #if 0 // TODO
             case SND_SEQ_EVENT_PITCHBEND:
                 j = midiEventCount++;
-                midiEvents[j].frame  = seqEvent.time.tick;
-                midiEvents[j].size   = 3;
-                midiEvents[j].buf[0] = 0xE0 + seqEvent.data.control.channel;
-                midiEvents[j].buf[1] = 0;
-                midiEvents[j].buf[2] = 0;
-                midiEvents[j].buf[3] = 0;
+                midiEvents[j].frame   = seqEvent.time.tick;
+                midiEvents[j].size    = 3;
+                midiEvents[j].data[0] = 0xE0 + seqEvent.data.control.channel;
+                midiEvents[j].data[1] = 0;
+                midiEvents[j].data[2] = 0;
+                midiEvents[j].data[3] = 0;
                 break;
 #endif
             }
