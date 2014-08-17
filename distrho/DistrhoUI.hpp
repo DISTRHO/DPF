@@ -95,7 +95,11 @@ protected:
     // UI Callbacks (optional)
 
     virtual void d_uiIdle() {}
+
+#if ! DISTRHO_UI_USE_NTK
+    // updates window openGL state
     virtual void d_uiReshape(int width, int height);
+#endif
 
     // -------------------------------------------------------------------
 
@@ -106,6 +110,7 @@ private:
     friend class UIExporterWindow;
 
     // these should not be used
+    void position(int, int) noexcept {}
     void setAbsoluteX(int) const noexcept {}
     void setAbsoluteY(int) const noexcept {}
     void setAbsolutePos(int, int) const noexcept {}

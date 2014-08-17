@@ -42,7 +42,7 @@ public:
       Constructor.
     */
     NtkApp()
-        : fIsRunning(false),
+        : fIsRunning(true),
           fWindows()
     {
         static bool initialized = false;
@@ -51,7 +51,9 @@ public:
         {
             initialized = true;
             fl_register_images();
+#ifdef DISTRHO_OS_LINUX
             fl_open_display();
+#endif
         }
     }
 
@@ -67,7 +69,7 @@ public:
 
    /**
       Idle function.
-      This calls the NTK event-loop once.
+      This calls the NTK event-loop once (and all idle callbacks).
     */
     void idle()
     {
@@ -114,6 +116,28 @@ private:
     std::list<Fl_Double_Window*> fWindows;
 
     friend class NtkWindow;
+
+   /** @internal used by NtkWindow. */
+    void addWindow(Fl_Double_Window* const window)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
+
+        if (fWindows.size() == 0)
+            fIsRunning = true;
+
+        fWindows.push_back(window);
+    }
+
+   /** @internal used by NtkWindow. */
+    void removeWindow(Fl_Double_Window* const window)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
+
+        fWindows.remove(window);
+
+        if (fWindows.size() == 0)
+            fIsRunning = false;
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NtkApp)
 };

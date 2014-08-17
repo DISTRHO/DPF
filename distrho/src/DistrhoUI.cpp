@@ -98,9 +98,9 @@ void UI::d_sampleRateChanged(double) {}
 // -----------------------------------------------------------------------
 // UI Callbacks (optional)
 
+#if ! DISTRHO_UI_USE_NTK
 void UI::d_uiReshape(int width, int height)
 {
-#if ! DISTRHO_UI_USE_NTK
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);
@@ -109,10 +109,8 @@ void UI::d_uiReshape(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-#else
-    (void)width; (void)height;
-#endif
 }
+#endif
 
 // -----------------------------------------------------------------------
 

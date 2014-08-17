@@ -157,17 +157,15 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-#if ! DISTRHO_UI_USE_NTK
         const int width  = fUI->d_getWidth();
         const int height = fUI->d_getHeight();
 
         // set widget size
         fUI->setSize(width, height);
 
-        // set this window size
+        // set window size
         setResizable(false);
         setSize(width, height);
-#endif
     }
 
     ~UIExporterWindow()
@@ -185,8 +183,14 @@ public:
         return fIsReady;
     }
 
-#if ! DISTRHO_UI_USE_NTK
 protected:
+#if DISTRHO_UI_USE_NTK
+    void resize(int x, int y, int width, int height) override
+    {
+        UIWindow::resize(x, y, width, height);
+        fIsReady = true;
+    }
+#else
     void onReshape(int width, int height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
@@ -292,7 +296,6 @@ public:
     }
 #endif
 
-#if ! DISTRHO_UI_USE_NTK
     // -------------------------------------------------------------------
 
     void exec(IdleCallback* const cb)
@@ -355,7 +358,6 @@ public:
 
         return ! glApp.isQuiting();
     }
-#endif
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {

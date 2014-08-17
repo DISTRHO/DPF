@@ -19,6 +19,8 @@
 
 #include "NtkApp.hpp"
 
+#include "../Geometry.hpp"
+
 START_NAMESPACE_DGL
 
 class NtkWidget;
@@ -31,57 +33,145 @@ public:
     explicit NtkWindow(NtkApp& app)
         : Fl_Double_Window(100, 100),
           fApp(app),
+          fIsVisible(false),
           fUsingEmbed(false),
-          fParent(nullptr),
-          fWidgets() {}
+          fParent(nullptr) {}
 
     explicit NtkWindow(NtkApp& app, NtkWindow& parent)
         : Fl_Double_Window(100, 100),
           fApp(app),
+          fIsVisible(false),
           fUsingEmbed(false),
-          fParent(&parent),
-          fWidgets() {}
+          fParent(&parent) {}
 
     explicit NtkWindow(NtkApp& app, intptr_t parentId)
         : Fl_Double_Window(100, 100),
           fApp(app),
+          fIsVisible(parentId != 0),
           fUsingEmbed(parentId != 0),
-          fParent(nullptr),
-          fWidgets()
+          fParent(nullptr)
     {
         if (fUsingEmbed)
         {
             fl_embed(this, (Window)parentId);
             Fl_Double_Window::show();
+            fApp.addWindow(this);
         }
     }
 
     ~NtkWindow() override
     {
-        fWidgets.clear();
-
         if (fUsingEmbed)
+        {
+            fApp.removeWindow(this);
             Fl_Double_Window::hide();
+        }
     }
 
-    void show()
+    void show() override
     {
-        Fl_Double_Window::show();
-
-#ifdef DISTRHO_OS_LINUX
-        if (fParent == nullptr)
+        if (fUsingEmbed || fIsVisible)
             return;
 
+        Fl_Double_Window::show();
+        fApp.addWindow(this);
+        fIsVisible = true;
+
+        if (fParent != nullptr)
+            setTransientWinId((intptr_t)fl_xid(fParent));
+    }
+
+    void hide() override
+    {
+        if (fUsingEmbed || ! fIsVisible)
+            return;
+
+        fIsVisible = false;
+        fApp.removeWindow(this);
+        Fl_Double_Window::hide();
+    }
+
+    void close()
+    {
+        hide();
+    }
+
+    bool isVisible() const
+    {
+        return visible();
+    }
+
+    void setVisible(bool yesNo)
+    {
+        if (yesNo)
+            show();
+        else
+            hide();
+    }
+
+    bool isResizable() const
+    {
+        // TODO
+        return false;
+    }
+
+    void setResizable(bool /*yesNo*/)
+    {
+        // TODO
+    }
+
+    int getWidth() const noexcept
+    {
+        return w();
+    }
+
+    int getHeight() const noexcept
+    {
+        return h();
+    }
+
+    Size<uint> getSize() const noexcept
+    {
+        return Size<uint>(w(), h());
+    }
+
+    void setSize(uint width, uint height)
+    {
+        resize(x(), y(), width, height);
+    }
+
+    void setSize(Size<uint> size)
+    {
+        resize(x(), y(), size.getWidth(), size.getHeight());
+    }
+
+    void setTitle(const char* title)
+    {
+        label(title);
+    }
+
+    void setTransientWinId(intptr_t winId)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(winId != 0,);
+
+#ifdef DISTRHO_OS_LINUX
         DISTRHO_SAFE_ASSERT_RETURN(fl_display != nullptr,);
 
-        const ::Window ourWindow(fl_xid_(this));
+        const ::Window ourWindow(fl_xid(this));
         DISTRHO_SAFE_ASSERT_RETURN(ourWindow != 0,);
 
-        const ::Window parentWindow(fl_xid_(fParent));
-        DISTRHO_SAFE_ASSERT_RETURN(parentWindow != 0,);
-
-        XSetTransientForHint(fl_display, ourWindow, parentWindow);
+        XSetTransientForHint(fl_display, ourWindow, winId);
 #endif
+    }
+
+    NtkApp& getApp() const noexcept
+    {
+        return fApp;
+    }
+
+    intptr_t getWindowId() const
+    {
+        return (intptr_t)fl_xid(this);
     }
 
     void addIdleCallback(IdleCallback* const callback)
@@ -106,12 +196,12 @@ public:
 
 private:
     NtkApp& fApp;
+    bool    fIsVisible;
     bool    fUsingEmbed;
 
     // transient parent, may be null
     NtkWindow* const fParent;
 
-    std::list<Fl_Group*> fWidgets;
     std::list<IdleCallback*> fIdleCallbacks;
 
     friend class NtkWidget;

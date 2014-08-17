@@ -19,8 +19,6 @@
 
 #include "NtkWindow.hpp"
 
-#include "../Geometry.hpp"
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -29,16 +27,18 @@ START_NAMESPACE_DGL
    DGL compatible Widget class that uses NTK instead of OpenGL.
    @see Widget
  */
-class NtkWidget : public Fl_Group
+class NtkWidget : public Fl_Double_Window
 {
 public:
    /**
       Constructor.
     */
     explicit NtkWidget(NtkWindow& parent)
-        : Fl_Group(0, 0, 0, 0),
+        : Fl_Double_Window(100, 100),
           fParent(parent)
     {
+        fParent.add(this);
+        show();
     }
 
    /**
@@ -46,6 +46,181 @@ public:
     */
     ~NtkWidget() override
     {
+        hide();
+        fParent.remove(this);
+    }
+
+   /**
+      Check if this widget is visible within its parent window.
+      Invisible widgets do not receive events except resize.
+    */
+    bool isVisible() const
+    {
+        return visible();
+    }
+
+   /**
+      Set widget visible (or not) according to @a yesNo.
+    */
+    void setVisible(bool yesNo)
+    {
+        if (yesNo)
+            show();
+        else
+            hide();
+    }
+
+   /**
+      Get width.
+    */
+    int getWidth() const
+    {
+        return w();
+    }
+
+   /**
+      Get height.
+    */
+    int getHeight() const
+    {
+        return h();
+    }
+
+   /**
+      Get size.
+    */
+    Size<int> getSize() const
+    {
+        return Size<int>(w(), h());
+    }
+
+   /**
+      Set width.
+    */
+    void setWidth(int width)
+    {
+        resize(x(), y(), width, h());
+    }
+
+   /**
+      Set height.
+    */
+    void setHeight(int height)
+    {
+        resize(x(), y(), w(), height);
+    }
+
+   /**
+      Set size using @a width and @a height values.
+    */
+    void setSize(int width, int height)
+    {
+        resize(x(), y(), width, height);
+    }
+
+   /**
+      Set size.
+    */
+    void setSize(const Size<int>& size)
+    {
+        resize(x(), y(), size.getWidth(), size.getHeight());
+    }
+
+   /**
+      Get absolute X.
+    */
+    int getAbsoluteX() const
+    {
+        return x();
+    }
+
+   /**
+      Get absolute Y.
+    */
+    int getAbsoluteY() const
+    {
+        return y();
+    }
+
+   /**
+      Get absolute position.
+    */
+    Point<int> getAbsolutePos() const
+    {
+        return Point<int>(x(), y());
+    }
+
+   /**
+      Set absolute X.
+    */
+    void setAbsoluteX(int x)
+    {
+        resize(x, y(), w(), h());
+    }
+
+   /**
+      Set absolute Y.
+    */
+    void setAbsoluteY(int y)
+    {
+        resize(x(), y, w(), h());
+    }
+
+   /**
+      Set absolute position using @a x and @a y values.
+    */
+    void setAbsolutePos(int x, int y)
+    {
+        resize(x, y, w(), h());
+    }
+
+   /**
+      Set absolute position.
+    */
+    void setAbsolutePos(const Point<int>& pos)
+    {
+        resize(pos.getX(), pos.getY(), w(), h());
+    }
+
+   /**
+      Get this widget's window application.
+      Same as calling getParentWindow().getApp().
+    */
+    NtkApp& getParentApp() const noexcept
+    {
+        return fParent.getApp();
+    }
+
+   /**
+      Get parent window, as passed in the constructor.
+    */
+    NtkWindow& getParentWindow() const noexcept
+    {
+        return fParent;
+    }
+
+   /**
+      Check if this widget contains the point defined by @a x and @a y.
+    */
+    bool contains(int x, int y) const
+    {
+        return (x >= 0 && y >= 0 && x < w() && y < h());
+    }
+
+   /**
+      Check if this widget contains the point @a pos.
+    */
+    bool contains(const Point<int>& pos) const
+    {
+        return contains(pos.getX(), pos.getY());
+    }
+
+   /**
+      Tell this widget's window to repaint itself.
+    */
+    void repaint()
+    {
+        redraw();
     }
 
 protected:
