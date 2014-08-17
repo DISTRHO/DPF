@@ -131,7 +131,7 @@ struct Window::PrivateData {
 #endif
           leakDetector_PrivateData()
     {
-        if (parentId != 0)
+        if (fUsingEmbed)
         {
             DBG("Creating embedded window..."); DBGF;
             puglInitWindowParent(fView, parentId);
@@ -143,7 +143,7 @@ struct Window::PrivateData {
 
         init();
 
-        if (parentId != 0)
+        if (fUsingEmbed)
         {
             DBG("NOTE: Embed window is always visible and non-resizable\n");
             puglShowWindow(fView);
@@ -206,6 +206,12 @@ struct Window::PrivateData {
         //fOnModal = false;
         fWidgets.clear();
 
+        if (fUsingEmbed)
+        {
+            puglHideWindow(fView);
+            fApp.pData->oneHidden();
+        }
+
         if (fSelf != nullptr)
         {
             fApp.pData->windows.remove(fSelf);
@@ -235,6 +241,10 @@ struct Window::PrivateData {
     void close()
     {
         DBG("Window close\n");
+
+        if (fUsingEmbed)
+            return;
+
         setVisible(false);
 
         if (! fFirstInit)
