@@ -57,6 +57,7 @@ public:
    /**
       Run the application event-loop until all Windows are closed.
       idle() is called at regular intervals.
+      @note: This function is meant for standalones only, *never* call this from plugins.
     */
     void exec();
 

@@ -20,24 +20,27 @@
 #include "../DistrhoUI.hpp"
 
 #if DISTRHO_UI_USE_NTK
-# include "FL/Fl_Double_Window.H"
-typedef Fl_Double_Window Window;
+# include "../../dgl/ntk/NtkApp.hpp"
+# include "../../dgl/ntk/NtkWindow.hpp"
+typedef DGL::NtkApp    App;
+typedef DGL::NtkWindow UIWindow;
 #else
 # include "../../dgl/App.hpp"
 # include "../../dgl/Window.hpp"
-using DGL::App;
-using DGL::IdleCallback;
-using DGL::Window;
+typedef DGL::App    App;
+typedef DGL::Window UIWindow;
 #endif
+
+using DGL::IdleCallback;
 
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 // Static data, see DistrhoUI.cpp
 
-extern double  d_lastUiSampleRate;
-extern void*   d_lastUiDspPtr;
-extern Window* d_lastUiWindow;
+extern double    d_lastUiSampleRate;
+extern void*     d_lastUiDspPtr;
+extern UIWindow* d_lastUiWindow;
 
 // -----------------------------------------------------------------------
 // UI callbacks
@@ -134,7 +137,7 @@ struct UI::PrivateData {
 // Plugin Window, needed to take care of resize properly
 
 static inline
-UI* createUiWrapper(void* const dspPtr, Window* const window)
+UI* createUiWrapper(void* const dspPtr, UIWindow* const window)
 {
     d_lastUiDspPtr = dspPtr;
     d_lastUiWindow = window;
@@ -144,23 +147,27 @@ UI* createUiWrapper(void* const dspPtr, Window* const window)
     return ret;
 }
 
-class UIExporterWindow : public Window
+class UIExporterWindow : public UIWindow
 {
 public:
     UIExporterWindow(App& app, const intptr_t winId, void* const dspPtr)
-        : Window(app, winId),
+        : UIWindow(app, winId),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
+#if ! DISTRHO_UI_USE_NTK
         const int width  = fUI->d_getWidth();
         const int height = fUI->d_getHeight();
 
+        // set widget size
         fUI->setSize(width, height);
 
+        // set this window size
         setResizable(false);
         setSize(width, height);
+#endif
     }
 
     ~UIExporterWindow()
@@ -178,16 +185,21 @@ public:
         return fIsReady;
     }
 
+#if ! DISTRHO_UI_USE_NTK
 protected:
     void onReshape(int width, int height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
+        // report size change to plugin UI
         fUI->setSize(width, height);
+
+        // update openGL state
         fUI->d_uiReshape(width, height);
 
         fIsReady = true;
     }
+#endif
 
 private:
     UI* const fUI;
@@ -280,6 +292,7 @@ public:
     }
 #endif
 
+#if ! DISTRHO_UI_USE_NTK
     // -------------------------------------------------------------------
 
     void exec(IdleCallback* const cb)
@@ -342,6 +355,7 @@ public:
 
         return ! glApp.isQuiting();
     }
+#endif
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {

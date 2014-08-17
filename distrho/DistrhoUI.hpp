@@ -20,15 +20,14 @@
 #include "extra/d_leakdetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#include "../dgl/Widget.hpp"
-
-#if DISTRHO_UI_USE_NANOVG
+#if DISTRHO_UI_USE_NTK
+# include "../dgl/ntk/NtkWidget.hpp"
+typedef DGL::NtkWidget UIWidget;
+#elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL::NanoWidget UIWidget;
-#elif DISTRHO_UI_USE_NTK
-# include "FL/Fl_Double_Window.H"
-typedef Fl_Double_Window UIWidget;
-#else
+# else
+# include "../dgl/Widget.hpp"
 typedef DGL::Widget UIWidget;
 #endif
 

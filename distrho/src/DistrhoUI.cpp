@@ -21,9 +21,9 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // Static data, see DistrhoUIInternal.hpp
 
-double  d_lastUiSampleRate = 0.0;
-void*   d_lastUiDspPtr = nullptr;
-Window* d_lastUiWindow = nullptr;
+double    d_lastUiSampleRate = 0.0;
+void*     d_lastUiDspPtr = nullptr;
+UIWindow* d_lastUiWindow = nullptr;
 
 // -----------------------------------------------------------------------
 // UI
@@ -32,7 +32,7 @@ UI::UI()
     : UIWidget(*d_lastUiWindow),
       pData(new PrivateData())
 {
-    Widget::setNeedsFullViewport(true);
+    UIWidget::setNeedsFullViewport(true);
 }
 
 UI::~UI()
@@ -100,6 +100,7 @@ void UI::d_sampleRateChanged(double) {}
 
 void UI::d_uiReshape(int width, int height)
 {
+#if ! DISTRHO_UI_USE_NTK
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);
@@ -108,6 +109,9 @@ void UI::d_uiReshape(int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#else
+    (void)width; (void)height;
+#endif
 }
 
 // -----------------------------------------------------------------------
