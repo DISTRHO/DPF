@@ -25,7 +25,7 @@ START_NAMESPACE_DGL
 Color::Color() noexcept
     : red(1.0f), green(1.0f), blue(1.0f), alpha(1.0f) {}
 
-Color::Color(const uchar r, const uchar g, const uchar b, const uchar a) noexcept
+Color::Color(const int r, const int g, const int b, const int a) noexcept
     : red(static_cast<float>(r)/255.0f), green(static_cast<float>(g)/255.0f), blue(static_cast<float>(b)/255.0f), alpha(static_cast<float>(a)/255.0f) {}
 
 Color::Color(const float r, const float g, const float b, const float a) noexcept
@@ -51,7 +51,7 @@ void Color::interpolate(const Color& other, const float u) noexcept
     alpha = alpha * oneMinusU + other.alpha * u2;
 }
 
-Color Color::HSL(const float hue, const float saturation, const float lightness, const uchar alpha)
+Color Color::HSL(const float hue, const float saturation, const float lightness, const int alpha)
 {
     return nvgHSLA(hue, saturation, lightness, alpha);
 }

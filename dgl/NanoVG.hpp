@@ -313,6 +313,18 @@ public:
     void strokeColor(const Color& color);
 
    /**
+      Sets current stroke style to a solid color, made from red, green, blue and alpha numeric values.
+      Values must be in [0..255] range.
+    */
+    void strokeColor(const int red, const int green, const int blue, const int alpha = 255);
+
+   /**
+      Sets current stroke style to a solid color, made from red, green, blue and alpha numeric values.
+      Values must in [0..1] range.
+    */
+    void strokeColor(const float red, const float green, const float blue, const float alpha = 1.0f);
+
+   /**
       Sets current stroke style to a paint, which can be a one of the gradients or a pattern.
     */
     void strokePaint(const Paint& paint);
@@ -321,6 +333,18 @@ public:
       Sets current fill style to a solid color.
     */
     void fillColor(const Color& color);
+
+   /**
+      Sets current fill style to a solid color, made from red, green, blue and alpha numeric values.
+      Values must be in [0..255] range.
+    */
+    void fillColor(const int red, const int green, const int blue, const int alpha = 255);
+
+   /**
+      Sets current fill style to a solid color, made from red, green, blue and alpha numeric values.
+      Values must in [0..1] range.
+    */
+    void fillColor(const float red, const float green, const float blue, const float alpha = 1.0f);
 
    /**
       Sets current fill style to a paint, which can be a one of the gradients or a pattern.
@@ -713,6 +737,7 @@ public:
 
 private:
     NVGcontext* const fContext;
+    bool fInFrame;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
 };

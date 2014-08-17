@@ -48,7 +48,7 @@ struct Color {
       Create a color from red, green, blue and alpha numeric values.
       Values must be in [0..255] range.
     */
-    Color(const uchar red, const uchar green, const uchar blue, const uchar alpha = 255) noexcept;
+    Color(const int red, const int green, const int blue, const int alpha = 255) noexcept;
 
    /**
       Create a color from red, green, blue and alpha floating-point values.
@@ -71,7 +71,7 @@ struct Color {
       Create a color specified by hue, saturation, lightness and alpha.
       HSL values are all in [0..1] range, alpha in [0..255] range.
     */
-    static Color HSL(const float hue, const float saturation, const float lightness, const uchar alpha = 255);
+    static Color HSL(const float hue, const float saturation, const float lightness, const int alpha = 255);
 
    /**
       Linearly interpolate this color against another.

@@ -116,19 +116,23 @@ void NanoImage::_updateSize()
 // NanoVG
 
 NanoVG::NanoVG()
-    : fContext(nvgCreateGL(512, 512, NVG_ANTIALIAS))
+    : fContext(nvgCreateGL(512, 512, NVG_ANTIALIAS)),
+      fInFrame(false)
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }
 
 NanoVG::NanoVG(const int textAtlasWidth, const int textAtlasHeight)
-    : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS))
+    : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS)),
+      fInFrame(false)
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }
 
 NanoVG::~NanoVG()
 {
+    DISTRHO_SAFE_ASSERT(! fInFrame);
+
     if (fContext != nullptr)
         nvgDeleteGL(fContext);
 }
@@ -141,7 +145,9 @@ void NanoVG::beginFrame(const int width, const int height, const float scaleFact
     DISTRHO_SAFE_ASSERT_RETURN(width > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(height > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
+    DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
 
+    fInFrame = true;
     nvgBeginFrame(fContext, width, height, scaleFactor, static_cast<NVGalpha>(alpha));
 }
 
@@ -149,15 +155,22 @@ void NanoVG::beginFrame(Widget* const widget)
 {
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(widget != nullptr,);
+    DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
 
     Window& window(widget->getParentWindow());
+
+    fInFrame = true;
     nvgBeginFrame(fContext, window.getWidth(), window.getHeight(), 1.0f, NVG_PREMULTIPLIED_ALPHA);
 }
 
 void NanoVG::endFrame()
 {
+    DISTRHO_SAFE_ASSERT_RETURN(fInFrame,);
+
     if (fContext != nullptr)
         nvgEndFrame(fContext);
+
+    fInFrame = false;
 }
 
 // -----------------------------------------------------------------------
@@ -190,6 +203,18 @@ void NanoVG::strokeColor(const Color& color)
         nvgStrokeColor(fContext, color);
 }
 
+void NanoVG::strokeColor(const int red, const int green, const int blue, const int alpha)
+{
+    if (fContext != nullptr)
+        nvgStrokeColor(fContext, nvgRGBA(red, green, blue, alpha));
+}
+
+void NanoVG::strokeColor(const float red, const float green, const float blue, const float alpha)
+{
+    if (fContext != nullptr)
+        nvgStrokeColor(fContext, nvgRGBAf(red, green, blue, alpha));
+}
+
 void NanoVG::strokePaint(const Paint& paint)
 {
     if (fContext != nullptr)
@@ -200,6 +225,18 @@ void NanoVG::fillColor(const Color& color)
 {
     if (fContext != nullptr)
         nvgFillColor(fContext, color);
+}
+
+void NanoVG::fillColor(const int red, const int green, const int blue, const int alpha)
+{
+    if (fContext != nullptr)
+        nvgFillColor(fContext, nvgRGBA(red, green, blue, alpha));
+}
+
+void NanoVG::fillColor(const float red, const float green, const float blue, const float alpha)
+{
+    if (fContext != nullptr)
+        nvgFillColor(fContext, nvgRGBAf(red, green, blue, alpha));
 }
 
 void NanoVG::fillPaint(const Paint& paint)
