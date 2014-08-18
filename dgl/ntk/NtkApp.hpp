@@ -74,6 +74,7 @@ public:
     void idle()
     {
         Fl::check();
+        Fl::flush();
     }
 
    /**
