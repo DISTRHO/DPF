@@ -19,11 +19,21 @@
 
 #include "../Base.hpp"
 
+#ifdef override
+# define override_defined
+# undef override
+#endif
+
 #include <list>
 #include <FL/Fl.H>
 #include <FL/Fl_Double_Window.H>
 #include <FL/Fl_Shared_Image.H>
 #include <FL/x.H>
+
+#ifdef override_defined
+# define override
+# undef override_defined
+#endif
 
 START_NAMESPACE_DGL
 
