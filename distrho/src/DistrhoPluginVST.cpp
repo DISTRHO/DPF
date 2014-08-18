@@ -71,8 +71,14 @@ typedef std::map<d_string,d_string> StringMap;
 
 void strncpy(char* const dst, const char* const src, const size_t size)
 {
-    std::strncpy(dst, src, size);
-    dst[size] = '\0';
+    std::strncpy(dst, src, size-1);
+    dst[size-1] = '\0';
+}
+
+void snprintf_param(char* const dst, const float value, const size_t size)
+{
+    std::snprintf(dst, size-1, "%f", value);
+    dst[size-1] = '\0';
 }
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -358,7 +364,7 @@ public:
             if (ptr != nullptr && fCurProgram >= 0 && fCurProgram < static_cast<int32_t>(fPlugin.getProgramCount()))
             {
                 DISTRHO::strncpy((char*)ptr, fPlugin.getProgramName(fCurProgram), 24);
-                ret = 1;
+                return 1;
             }
             break;
 #endif
@@ -366,10 +372,8 @@ public:
         case effGetParamDisplay:
             if (ptr != nullptr && index < static_cast<int32_t>(fPlugin.getParameterCount()))
             {
-                char* buf = (char*)ptr;
-                std::snprintf((char*)ptr, 8, "%f", fPlugin.getParameterValue(index));
-                buf[8] = '\0';
-                ret = 1;
+                DISTRHO::snprintf_param((char*)ptr, fPlugin.getParameterValue(index), 24);
+                return 1;
             }
             break;
 
@@ -870,7 +874,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParamName:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            DISTRHO::strncpy((char*)ptr, plugin.getParameterName(index), 8);
+            DISTRHO::strncpy((char*)ptr, plugin.getParameterName(index), 16);
             return 1;
         }
         return 0;
@@ -911,7 +915,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetProductString:
         if (ptr != nullptr)
         {
-            DISTRHO::strncpy((char*)ptr, plugin.getLabel(), 32);
+            DISTRHO::strncpy((char*)ptr, plugin.getLabel(), 64);
             return 1;
         }
         return 0;
