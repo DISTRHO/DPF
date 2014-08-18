@@ -406,9 +406,10 @@ public:
             {
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
-                UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr);
+                UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, fPlugin.getInstancePointer());
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
+                tmpUI.quit();
             }
             *(ERect**)ptr = &fVstRect;
             ret = 1;
