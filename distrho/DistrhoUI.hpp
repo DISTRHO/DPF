@@ -41,9 +41,7 @@ START_NAMESPACE_DISTRHO
 
    TODO.
 
-   you should not have to call setSize during construction,
-   that is handled by d_initSize
-   if you want to change size later on you should use setSize and then d_setSize to report to host
+   must call setSize during construction,
  */
 class UI : public UIWidget
 {
@@ -59,7 +57,7 @@ public:
     virtual ~UI();
 
    /* --------------------------------------------------------------------------------------------------------
-    * Host DSP state */
+    * Host state */
 
    /**
       Get the current sample rate used in plugin processing.
@@ -91,15 +89,6 @@ public:
     void d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity);
 #endif
 
-   /* --------------------------------------------------------------------------------------------------------
-    * Host UI state */
-
-   /**
-      TODO: Document this.
-      never call this from the constructor
-    */
-    void d_setSize(const uint width, const uint height);
-
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
    /* --------------------------------------------------------------------------------------------------------
     * Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!! */
@@ -111,16 +100,6 @@ public:
 #endif
 
 protected:
-   /* --------------------------------------------------------------------------------------------------------
-    * Init */
-
-   /**
-      Set the initial UI size.
-      This function will be called once, shortly after the UI is created.
-      @see d_setSize(uint,uint)
-    */
-    virtual void d_initSize(uint& width, uint& height) = 0;
-
    /* --------------------------------------------------------------------------------------------------------
     * DSP/Plugin Callbacks */
 
@@ -165,11 +144,29 @@ protected:
 
 #if ! DISTRHO_UI_USE_NTK
    /**
-      OpenGL reshape function, called when the host window is resized.
+      OpenGL window reshape function, called when parent window is resized.
       You can reimplement this function for a custom OpenGL state.
       @see Window::onReshape(uint,uint)
     */
     virtual void d_uiReshape(uint width, uint height);
+#endif
+
+   /* --------------------------------------------------------------------------------------------------------
+    * UI Resize Handling, internal */
+
+#if DISTRHO_UI_USE_NTK
+   /**
+      NTK widget resize function, called when the widget is resized.
+      This is overriden here so the host knows when the UI is resized by you.
+    */
+    void resize(int x, int y, int w, int h) override;
+#else
+   /**
+      OpenGL widget resize function, called when the widget is resized.
+      This is overriden here so the host knows when the UI is resized by you.
+      @see Widget::onResize(const ResizeEvent&)
+    */
+    void onResize(const ResizeEvent& ev) override;
 #endif
 
     // -------------------------------------------------------------------------------------------------------

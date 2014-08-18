@@ -90,48 +90,48 @@ static const uint32_t kParameterIsOutput = 0x10;
    When changing this struct values you must ensure maximum > minimum and default is within range.
  */
 struct ParameterRanges {
-    /**
-       Default value.
-     */
+   /**
+      Default value.
+    */
     float def;
 
-    /**
-       Minimum value.
-     */
+   /**
+      Minimum value.
+    */
     float min;
 
-    /**
-       Maximum value.
-     */
+   /**
+      Maximum value.
+    */
     float max;
 
-    /**
-       Default constructor.
-     */
+   /**
+      Default constructor.
+    */
     ParameterRanges() noexcept
         : def(0.0f),
           min(0.0f),
           max(1.0f) {}
 
-    /**
-       Constructor using custom values.
-     */
+   /**
+      Constructor using custom values.
+    */
     ParameterRanges(const float df, const float mn, const float mx) noexcept
         : def(df),
           min(mn),
           max(mx) {}
 
-    /**
-       Fix the default value within range.
-     */
+   /**
+      Fix the default value within range.
+    */
     void fixDefault() noexcept
     {
         fixValue(def);
     }
 
-    /**
-       Fix a value within range.
-     */
+   /**
+      Fix a value within range.
+    */
     void fixValue(float& value) const noexcept
     {
         if (value < min)
@@ -140,9 +140,9 @@ struct ParameterRanges {
             value = max;
     }
 
-    /**
-       Get a fixed value within range.
-     */
+   /**
+      Get a fixed value within range.
+    */
     const float& getFixedValue(const float& value) const noexcept
     {
         if (value <= min)
@@ -152,9 +152,9 @@ struct ParameterRanges {
         return value;
     }
 
-    /**
-       Get a value normalized to 0.0<->1.0.
-     */
+   /**
+      Get a value normalized to 0.0<->1.0.
+    */
     float getNormalizedValue(const float& value) const noexcept
     {
         const float normValue((value - min) / (max - min));
@@ -166,9 +166,9 @@ struct ParameterRanges {
         return normValue;
     }
 
-    /**
-       Get a value normalized to 0.0<->1.0, fixed within range.
-     */
+   /**
+      Get a value normalized to 0.0<->1.0, fixed within range.
+    */
     float getFixedAndNormalizedValue(const float& value) const noexcept
     {
         if (value <= min)
@@ -186,9 +186,9 @@ struct ParameterRanges {
         return normValue;
     }
 
-    /**
-       Get a proper value previously normalized to 0.0<->1.0.
-     */
+   /**
+      Get a proper value previously normalized to 0.0<->1.0.
+    */
     float getUnnormalizedValue(const float& value) const noexcept
     {
         if (value <= 0.0f)
@@ -204,43 +204,43 @@ struct ParameterRanges {
    Parameter.
  */
 struct Parameter {
-    /**
-       Hints describing this parameter.
-       @see ParameterHints
-     */
+   /**
+      Hints describing this parameter.
+      @see ParameterHints
+    */
     uint32_t hints;
 
-    /**
-       The name of this parameter.
-       A parameter name can contain any character, but hosts might have a hard time with non-ascii ones.
-       The name doesn't have to be unique within a plugin instance, but it's recommended.
-     */
+   /**
+      The name of this parameter.
+      A parameter name can contain any character, but hosts might have a hard time with non-ascii ones.
+      The name doesn't have to be unique within a plugin instance, but it's recommended.
+    */
     d_string name;
 
-    /**
-       The symbol of this parameter.
-       A parameter symbol is a short restricted name used as a machine and human readable identifier.
-       The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
-       @note: Parameter symbols MUST be unique within a plugin instance.
-     */
+   /**
+      The symbol of this parameter.
+      A parameter symbol is a short restricted name used as a machine and human readable identifier.
+      The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
+      @note: Parameter symbols MUST be unique within a plugin instance.
+    */
     d_string symbol;
 
-    /**
-       The unit of this parameter.
-       This means something like "dB", "kHz" and "ms".
-       Can be left blank if units do not apply to this parameter.
-     */
+   /**
+      The unit of this parameter.
+      This means something like "dB", "kHz" and "ms".
+      Can be left blank if units do not apply to this parameter.
+    */
     d_string unit;
 
-    /**
-       Ranges of this parameter.
-       The ranges describe the default, minimum and maximum values.
-     */
+   /**
+      Ranges of this parameter.
+      The ranges describe the default, minimum and maximum values.
+    */
     ParameterRanges ranges;
 
-    /**
-       Default constructor for a null parameter.
-     */
+   /**
+      Default constructor for a null parameter.
+    */
     Parameter() noexcept
         : hints(0x0),
           name(),
@@ -253,25 +253,25 @@ struct Parameter {
    MIDI event.
  */
 struct MidiEvent {
-    /**
-       Size of internal data.
-     */
+   /**
+      Size of internal data.
+    */
     static const uint32_t kDataSize = 4;
 
-    /**
-       Time offset in frames.
-     */
+   /**
+      Time offset in frames.
+    */
     uint32_t frame;
 
-    /**
-       Number of bytes used.
-     */
+   /**
+      Number of bytes used.
+    */
     uint32_t size;
 
-    /**
-       MIDI data.
-       If size > kDataSize, dataExt is used (otherwise null).
-     */
+   /**
+      MIDI data.
+      If size > kDataSize, dataExt is used (otherwise null).
+    */
     uint8_t        data[kDataSize];
     const uint8_t* dataExt;
 };
@@ -366,9 +366,9 @@ struct TimePosition {
               beatsPerMinute(0.0) {}
     } bbt;
 
-    /**
-       Default constructor for a time position.
-     */
+   /**
+      Default constructor for a time position.
+    */
     TimePosition() noexcept
         : playing(false),
           frame(0),
@@ -627,7 +627,7 @@ private:
  */
 extern Plugin* createPlugin();
 
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 

@@ -105,9 +105,9 @@ public:
         jack_activate(fClient);
 
         if (const char* const name = jack_get_client_name(fClient))
-            fUI.setTitle(name);
+            fUI.setWindowTitle(name);
         else
-            fUI.setTitle(fPlugin.getName());
+            fUI.setWindowTitle(fPlugin.getName());
 
         fUI.exec(this);
     }
@@ -295,7 +295,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setSize(width, height);
+        fUI.setWindowSize(width, height);
     }
 
     // -------------------------------------------------------------------

@@ -70,7 +70,7 @@ public:
                 if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Long))
                 {
                     if (const int64_t frontendWinId = *(const int64_t*)options[i].value)
-                        fUI.setTransientWinId(static_cast<intptr_t>(frontendWinId));
+                        fUI.setWindowTransientWinId(static_cast<intptr_t>(frontendWinId));
                 }
                 else
                     d_stderr("Host provides frontendWinId but has wrong value type");
@@ -82,7 +82,7 @@ public:
                     if (const char* const windowTitle = (const char*)options[i].value)
                     {
                         hasTitle = true;
-                        fUI.setTitle(windowTitle);
+                        fUI.setWindowTitle(windowTitle);
                     }
                 }
                 else
@@ -91,7 +91,7 @@ public:
         }
 
         if (! hasTitle)
-            fUI.setTitle(DISTRHO_PLUGIN_NAME);
+            fUI.setWindowTitle(DISTRHO_PLUGIN_NAME);
     }
 
     // -------------------------------------------------------------------
@@ -138,12 +138,12 @@ public:
 
     int lv2ui_show()
     {
-        return fUI.setVisible(true) ? 0 : 1;
+        return fUI.setWindowVisible(true) ? 0 : 1;
     }
 
     int lv2ui_hide()
     {
-        return fUI.setVisible(false) ? 0 : 1;
+        return fUI.setWindowVisible(false) ? 0 : 1;
     }
 
     // -------------------------------------------------------------------
@@ -211,7 +211,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setSize(width, height);
+        fUI.setWindowSize(width, height);
 
         if (fUiResize != nullptr && ! fWinIdWasNull)
             fUiResize->ui_resize(fUiResize->handle, width, height);

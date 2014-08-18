@@ -18,15 +18,15 @@
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
-// Static data, see DistrhoUIInternal.hpp
+/* ------------------------------------------------------------------------------------------------------------
+ * Static data, see DistrhoUIInternal.hpp */
 
 double    d_lastUiSampleRate = 0.0;
 void*     d_lastUiDspPtr = nullptr;
 UIWindow* d_lastUiWindow = nullptr;
 
-// -----------------------------------------------------------------------
-// UI
+/* ------------------------------------------------------------------------------------------------------------
+ * UI */
 
 UI::UI()
     : UIWidget(*d_lastUiWindow),
@@ -40,8 +40,8 @@ UI::~UI()
     delete pData;
 }
 
-// -----------------------------------------------------------------------
-// Host DSP State
+/* ------------------------------------------------------------------------------------------------------------
+ * Host state */
 
 double UI::d_getSampleRate() const noexcept
 {
@@ -72,17 +72,9 @@ void UI::d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t vel
 }
 #endif
 
-// -----------------------------------------------------------------------
-// Host UI State
-
-void UI::d_setSize(const uint width, const uint height)
-{
-    pData->setSizeCallback(width, height);
-}
-
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-// -----------------------------------------------------------------------
-// Direct DSP access
+/* ------------------------------------------------------------------------------------------------------------
+ * Direct DSP access */
 
 void* UI::d_getPluginInstancePointer() const noexcept
 {
@@ -90,13 +82,13 @@ void* UI::d_getPluginInstancePointer() const noexcept
 }
 #endif
 
-// -----------------------------------------------------------------------
-// DSP Callbacks (optional)
+/* ------------------------------------------------------------------------------------------------------------
+ * DSP/Plugin Callbacks (optional) */
 
 void UI::d_sampleRateChanged(double) {}
 
-// -----------------------------------------------------------------------
-// UI Callbacks (optional)
+/* ------------------------------------------------------------------------------------------------------------
+ * UI Callbacks (optional) */
 
 #if ! DISTRHO_UI_USE_NTK
 void UI::d_uiReshape(uint width, uint height)
@@ -112,6 +104,22 @@ void UI::d_uiReshape(uint width, uint height)
 }
 #endif
 
-// -----------------------------------------------------------------------
+/* ------------------------------------------------------------------------------------------------------------
+ * UI Resize Handling, internal */
+
+#if DISTRHO_UI_USE_NTK
+void UI::resize(int x, int y, int w, int h)
+{
+    UIWidget::resize(x, y w, h);
+    pData->setSizeCallback(w, h);
+}
+#else
+void UI::onResize(const ResizeEvent& ev)
+{
+    pData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
+}
+#endif
+
+// -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO

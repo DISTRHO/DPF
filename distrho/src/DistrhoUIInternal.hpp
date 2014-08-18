@@ -62,10 +62,6 @@ struct UI::PrivateData {
     void*    dspPtr;
 #endif
 
-    // UI
-    uint initialWidth;
-    uint initialHeight;
-
     // Callbacks
     editParamFunc editParamCallbackFunc;
     setParamFunc  setParamCallbackFunc;
@@ -80,8 +76,6 @@ struct UI::PrivateData {
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
           dspPtr(d_lastUiDspPtr),
 #endif
-          initialWidth(0),
-          initialHeight(0),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
@@ -134,9 +128,6 @@ struct UI::PrivateData {
 
     void setSizeCallback(const uint width, const uint height)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(initialWidth  != 0,);
-        DISTRHO_SAFE_ASSERT_RETURN(initialHeight != 0,);
-
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(ptr, width, height);
     }
@@ -166,15 +157,9 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        uint width = 0, height = 0;
-        fUI->d_initSize(width, height);
-
-        // set widget size
-        fUI->setSize(width, height);
-
         // set window size
         setResizable(false);
-        setSize(width, height);
+        setSize(fUI->getWidth(), fUI->getHeight());
     }
 
     ~UIExporterWindow()
@@ -205,9 +190,10 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
         // report size change to plugin UI
-        fUI->setSize(width, height);
+        // TESTING is this needed?
+        //fUI->setSize(width, height);
 
-        // update openGL state
+        // custom window reshape
         fUI->d_uiReshape(width, height);
 
         fIsReady = true;
@@ -254,6 +240,11 @@ public:
     uint getHeight() const noexcept
     {
         return glWindow.getHeight();
+    }
+
+    bool isVisible() const noexcept
+    {
+        return glWindow.isVisible();
     }
 
     // -------------------------------------------------------------------
@@ -324,38 +315,37 @@ public:
         return ! glApp.isQuiting();
     }
 
-    bool isVisible() const noexcept
-    {
-        return glWindow.isVisible();
-    }
-
     void quit()
     {
         glWindow.close();
         glApp.quit();
     }
 
-    void setSize(const uint width, const uint height)
+    // -------------------------------------------------------------------
+
+    void setWindowSize(const uint width, const uint height)
     {
         glWindow.setSize(width, height);
     }
 
-    void setTitle(const char* const uiTitle)
+    void setWindowTitle(const char* const uiTitle)
     {
         glWindow.setTitle(uiTitle);
     }
 
-    void setTransientWinId(const intptr_t winId)
+    void setWindowTransientWinId(const intptr_t winId)
     {
         glWindow.setTransientWinId(winId);
     }
 
-    bool setVisible(const bool yesNo)
+    bool setWindowVisible(const bool yesNo)
     {
         glWindow.setVisible(yesNo);
 
         return ! glApp.isQuiting();
     }
+
+    // -------------------------------------------------------------------
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {

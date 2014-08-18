@@ -18,20 +18,20 @@
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
-// Static data, see DistrhoPluginInternal.hpp
+/* ------------------------------------------------------------------------------------------------------------
+ * Static data, see DistrhoPluginInternal.hpp */
 
 uint32_t d_lastBufferSize = 0;
 double   d_lastSampleRate = 0.0;
 
-// -----------------------------------------------------------------------
-// Static fallback data, see DistrhoPluginInternal.hpp
+/* ------------------------------------------------------------------------------------------------------------
+ * Static fallback data, see DistrhoPluginInternal.hpp */
 
 const d_string        PluginExporter::sFallbackString;
 const ParameterRanges PluginExporter::sFallbackRanges;
 
-// -----------------------------------------------------------------------
-// Plugin
+/* ------------------------------------------------------------------------------------------------------------
+ * Plugin */
 
 Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount)
     : pData(new PrivateData())
@@ -68,8 +68,8 @@ Plugin::~Plugin()
     delete pData;
 }
 
-// -----------------------------------------------------------------------
-// Host state
+/* ------------------------------------------------------------------------------------------------------------
+ * Host state */
 
 uint32_t Plugin::d_getBufferSize() const noexcept
 {
@@ -84,9 +84,6 @@ double Plugin::d_getSampleRate() const noexcept
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
 const TimePos& Plugin::d_getTimePos() const noexcept
 {
-    // timePos outside run() may not be valid
-    DISTRHO_SAFE_ASSERT(pData->isProcessing);
-
     return pData->timePos;
 }
 #endif
@@ -106,12 +103,12 @@ bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
 }
 #endif
 
-// -----------------------------------------------------------------------
-// Callbacks (optional)
+/* ------------------------------------------------------------------------------------------------------------
+ * Callbacks (optional) */
 
 void Plugin::d_bufferSizeChanged(uint32_t) {}
 void Plugin::d_sampleRateChanged(double)   {}
 
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO

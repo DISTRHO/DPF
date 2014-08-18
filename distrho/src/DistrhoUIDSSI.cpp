@@ -97,7 +97,7 @@ public:
           fHostClosed(false),
           fOscData(oscData)
     {
-        fUI.setTitle(uiTitle);
+        fUI.setWindowTitle(uiTitle);
     }
 
     ~UIDssi()
@@ -147,12 +147,12 @@ public:
 
     void dssiui_show()
     {
-        fUI.setVisible(true);
+        fUI.setWindowVisible(true);
     }
 
     void dssiui_hide()
     {
-        fUI.setVisible(false);
+        fUI.setWindowVisible(false);
     }
 
     void dssiui_quit()
@@ -195,7 +195,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setSize(width, height);
+        fUI.setWindowSize(width, height);
     }
 
 private:
