@@ -90,6 +90,11 @@ void Point<T>::moveBy(const Point<T>& pos) noexcept
     fY = static_cast<T>(fY+pos.fY);
 }
 
+template<typename T>
+bool Point<T>::isZero() const noexcept
+{
+    return fX == 0 && fY == 0;
+}
 
 template<typename T>
 Point<T> Point<T>::operator+(const Point<T>& pos) noexcept
@@ -208,6 +213,19 @@ void Size<T>::shrinkBy(const T& divider) noexcept
     fWidth  = static_cast<T>(fWidth/divider);
     fHeight = static_cast<T>(fHeight/divider);
 }
+
+template<typename T>
+bool Size<T>::isNull() const noexcept
+{
+    return fWidth == 0 && fHeight == 0;
+}
+
+template<typename T>
+bool Size<T>::isNotNull() const noexcept
+{
+    return fWidth != 0 || fHeight != 0;
+}
+
 
 template<typename T>
 Size<T> Size<T>::operator+(const Size<T>& size) noexcept

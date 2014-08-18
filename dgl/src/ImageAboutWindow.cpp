@@ -78,7 +78,7 @@ bool ImageAboutWindow::onMouse(const MouseEvent& ev)
     return false;
 }
 
-void ImageAboutWindow::onReshape(int width, int height)
+void ImageAboutWindow::onReshape(uint width, uint height)
 {
     Widget::setSize(width, height);
     Window::onReshape(width, height);

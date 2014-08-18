@@ -86,7 +86,7 @@ NanoImage::~NanoImage()
         nvgDeleteImage(fContext, fImageId);
 }
 
-Size<int> NanoImage::getSize() const noexcept
+Size<uint> NanoImage::getSize() const noexcept
 {
     return fSize;
 }
@@ -107,7 +107,12 @@ void NanoImage::_updateSize()
     int w=0, h=0;
 
     if (fContext != nullptr && fImageId != 0)
+    {
         nvgImageSize(fContext, fImageId, &w, &h);
+
+        if (w < 0) w = 0;
+        if (h < 0) h = 0;
+    }
 
     fSize.setSize(w, h);
 }
@@ -139,11 +144,9 @@ NanoVG::~NanoVG()
 
 // -----------------------------------------------------------------------
 
-void NanoVG::beginFrame(const int width, const int height, const float scaleFactor, const Alpha alpha)
+void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor, const Alpha alpha)
 {
     if (fContext == nullptr) return;
-    DISTRHO_SAFE_ASSERT_RETURN(width > 0,);
-    DISTRHO_SAFE_ASSERT_RETURN(height > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
 
@@ -419,11 +422,9 @@ NanoImage* NanoVG::createImageMem(uchar* data, int ndata)
     return nullptr;
 }
 
-NanoImage* NanoVG::createImageRGBA(int w, int h, const uchar* data)
+NanoImage* NanoVG::createImageRGBA(uint w, uint h, const uchar* data)
 {
     if (fContext == nullptr) return nullptr;
-    DISTRHO_SAFE_ASSERT_RETURN(w > 0, nullptr);
-    DISTRHO_SAFE_ASSERT_RETURN(h > 0, nullptr);
     DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, nullptr);
 
     if (const int imageId = nvgCreateImageRGBA(fContext, w, h, data))

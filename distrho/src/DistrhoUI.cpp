@@ -99,7 +99,7 @@ void UI::d_sampleRateChanged(double) {}
 // UI Callbacks (optional)
 
 #if ! DISTRHO_UI_USE_NTK
-void UI::d_uiReshape(int width, int height)
+void UI::d_uiReshape(uint width, uint height)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

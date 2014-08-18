@@ -62,6 +62,10 @@ struct UI::PrivateData {
     void*    dspPtr;
 #endif
 
+    // UI
+    uint initialWidth;
+    uint initialHeight;
+
     // Callbacks
     editParamFunc editParamCallbackFunc;
     setParamFunc  setParamCallbackFunc;
@@ -76,6 +80,8 @@ struct UI::PrivateData {
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
           dspPtr(d_lastUiDspPtr),
 #endif
+          initialWidth(0),
+          initialHeight(0),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
@@ -128,6 +134,9 @@ struct UI::PrivateData {
 
     void setSizeCallback(const uint width, const uint height)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(initialWidth  != 0,);
+        DISTRHO_SAFE_ASSERT_RETURN(initialHeight != 0,);
+
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(ptr, width, height);
     }
@@ -157,8 +166,8 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        const int width  = fUI->d_getWidth();
-        const int height = fUI->d_getHeight();
+        uint width = 0, height = 0;
+        fUI->d_initSize(width, height);
 
         // set widget size
         fUI->setSize(width, height);
@@ -191,7 +200,7 @@ protected:
         fIsReady = true;
     }
 #else
-    void onReshape(int width, int height) override
+    void onReshape(uint width, uint height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
@@ -237,25 +246,14 @@ public:
 
     // -------------------------------------------------------------------
 
-    const char* getName() const noexcept
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, "");
-
-        return fUI->d_getName();
-    }
-
     uint getWidth() const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, 0);
-
-        return fUI->d_getWidth();
+        return glWindow.getWidth();
     }
 
     uint getHeight() const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, 0);
-
-        return fUI->d_getHeight();
+        return glWindow.getHeight();
     }
 
     // -------------------------------------------------------------------

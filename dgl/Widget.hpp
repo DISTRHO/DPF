@@ -122,8 +122,8 @@ public:
       @see onResize
     */
     struct ResizeEvent {
-        Size<int> size;
-        Size<int> oldSize;
+        Size<uint> size;
+        Size<uint> oldSize;
     };
 
    /**
@@ -162,37 +162,37 @@ public:
    /**
       Get width.
     */
-    int getWidth() const noexcept;
+    uint getWidth() const noexcept;
 
    /**
       Get height.
     */
-    int getHeight() const noexcept;
+    uint getHeight() const noexcept;
 
    /**
       Get size.
     */
-    const Size<int>& getSize() const noexcept;
+    const Size<uint>& getSize() const noexcept;
 
    /**
       Set width.
     */
-    virtual void setWidth(int width) noexcept;
+    virtual void setWidth(uint width) noexcept;
 
    /**
       Set height.
     */
-    virtual void setHeight(int height) noexcept;
+    virtual void setHeight(uint height) noexcept;
 
    /**
       Set size using @a width and @a height values.
     */
-    virtual void setSize(int width, int height) noexcept;
+    virtual void setSize(uint width, uint height) noexcept;
 
    /**
       Set size.
     */
-    virtual void setSize(const Size<int>& size) noexcept;
+    virtual void setSize(const Size<uint>& size) noexcept;
 
    /**
       Get absolute X.
@@ -317,7 +317,8 @@ private:
     bool    fNeedsFullViewport;
     bool    fNeedsScaling;
     bool    fVisible;
-    Rectangle<int> fArea;
+    Point<int> fAbsolutePos;
+    Size<uint> fSize;
 
     friend class CairoWidget;
     friend class Window;

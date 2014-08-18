@@ -91,6 +91,11 @@ public:
     */
     void moveBy(const Point<T>& pos) noexcept;
 
+   /**
+      Return true if point is (0, 0).
+    */
+    bool isZero() const noexcept;
+
     Point<T> operator+(const Point<T>& pos) noexcept;
     Point<T> operator-(const Point<T>& pos) noexcept;
     Point<T>& operator=(const Point<T>& pos) noexcept;
@@ -168,6 +173,16 @@ public:
       Shrink size by @a divider.
     */
     void shrinkBy(const T& divider) noexcept;
+
+   /**
+      Return true if size is null (0x0).
+    */
+    bool isNull() const noexcept;
+
+   /**
+      Return true if size is not null (0x0).
+    */
+    bool isNotNull() const noexcept;
 
     Size<T> operator+(const Size<T>& size) noexcept;
     Size<T> operator-(const Size<T>& size) noexcept;

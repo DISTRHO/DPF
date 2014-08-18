@@ -580,7 +580,7 @@ struct Window::PrivateData {
                 // reset color
                 glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-                if (widget->fNeedsFullViewport || widget->fArea == Rectangle<int>(0, 0, fView->width, fView->height))
+                if (widget->fNeedsFullViewport || (widget->fAbsolutePos.isZero() && widget->fSize == Size<uint>(fView->width, fView->height)))
                 {
                     // full viewport size
                     glViewport(0, 0, fView->width, fView->height);
@@ -919,13 +919,17 @@ void Window::setResizable(bool yesNo)
     pData->setResizable(yesNo);
 }
 
-int Window::getWidth() const noexcept
+uint Window::getWidth() const noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->width >= 0, 0);
+
     return pData->fView->width;
 }
 
-int Window::getHeight() const noexcept
+uint Window::getHeight() const noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->height >= 0, 0);
+
     return pData->fView->height;
 }
 
@@ -1009,7 +1013,7 @@ void Window::onDisplayAfter()
 {
 }
 
-void Window::onReshape(int width, int height)
+void Window::onReshape(uint width, uint height)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

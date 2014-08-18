@@ -107,7 +107,7 @@ public:
         if (const char* const name = jack_get_client_name(fClient))
             fUI.setTitle(name);
         else
-            fUI.setTitle(DISTRHO_PLUGIN_NAME);
+            fUI.setTitle(fPlugin.getName());
 
         fUI.exec(this);
     }

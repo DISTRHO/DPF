@@ -407,207 +407,209 @@ struct TimePosition {
 class Plugin
 {
 public:
-    /**
-       Plugin class constructor.
-     */
+   /**
+      Plugin class constructor.
+    */
     Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount);
 
-    /**
-       Destructor.
-     */
+   /**
+      Destructor.
+    */
     virtual ~Plugin();
 
-    /* --------------------------------------------------------------------------------------------------------
-     * Host state */
+   /* --------------------------------------------------------------------------------------------------------
+    * Host state */
 
-    /**
-       Get the current buffer size that will probably be used during processing, in frames.
-       This value will remain constant between activate and deactivate.
-       @note: This value is only a hint!
-              Hosts might call d_run() with a higher or lower number of frames.
-       @see d_bufferSizeChanged()
-     */
+   /**
+      Get the current buffer size that will probably be used during processing, in frames.
+      This value will remain constant between activate and deactivate.
+      @note: This value is only a hint!
+             Hosts might call d_run() with a higher or lower number of frames.
+      @see d_bufferSizeChanged(uint32_t)
+    */
     uint32_t d_getBufferSize() const noexcept;
 
-    /**
-       Get the current sample rate that will be used during processing.
-       This value will remain constant between activate and deactivate.
-       @see d_sampleRateChanged()
-     */
+   /**
+      Get the current sample rate that will be used during processing.
+      This value will remain constant between activate and deactivate.
+      @see d_sampleRateChanged(double)
+    */
     double d_getSampleRate() const noexcept;
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    /**
-       Get the current host transport time position.
-       This function should only be called during d_run().
-       You can call this during other times, but the returned position is not guaranteed to be in sync.
-     */
+   /**
+      Get the current host transport time position.
+      This function should only be called during d_run().
+      You can call this during other times, but the returned position is not guaranteed to be in sync.
+      @note: TimePos is not supported in LADSPA and DSSI plugin formats.
+    */
     const TimePos& d_getTimePos() const noexcept;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
-    /**
-       Change the plugin audio output latency to @a frames.
-       This function should only be called in the constructor, d_activate() and d_run().
-     */
+   /**
+      Change the plugin audio output latency to @a frames.
+      This function should only be called in the constructor, d_activate() and d_run().
+    */
     void d_setLatency(const uint32_t frames) noexcept;
 #endif
 
 #if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
-    /**
-       Write a MIDI output event.
-       This function must only be called during d_run().
-       Returns false when the host buffer is full, in which case do not call this again until the next d_run().
-     */
+   /**
+      Write a MIDI output event.
+      This function must only be called during d_run().
+      Returns false when the host buffer is full, in which case do not call this again until the next d_run().
+    */
     bool d_writeMidiEvent(const MidiEvent& midiEvent) noexcept;
 #endif
 
 protected:
-    /* --------------------------------------------------------------------------------------------------------
-     * Information */
+   /* --------------------------------------------------------------------------------------------------------
+    * Information */
 
-    /**
-       Get the plugin name.
-       Returns DISTRHO_PLUGIN_NAME by default.
-     */
+   /**
+      Get the plugin name.
+      Returns DISTRHO_PLUGIN_NAME by default.
+    */
     virtual const char* d_getName() const { return DISTRHO_PLUGIN_NAME; }
 
-    /**
-       Get the plugin label.
-       A plugin label follows the same rules as Parameter::symbol, with the exception that it can start with numbers.
-     */
+   /**
+      Get the plugin label.
+      A plugin label follows the same rules as Parameter::symbol, with the exception that it can start with numbers.
+    */
     virtual const char* d_getLabel() const = 0;
 
-    /**
-       Get the plugin author/maker.
-     */
+   /**
+      Get the plugin author/maker.
+    */
     virtual const char* d_getMaker() const = 0;
 
-    /**
-       Get the plugin license name (a single line of text).
-     */
+   /**
+      Get the plugin license name (a single line of text).
+    */
     virtual const char* d_getLicense() const = 0;
 
-    /**
-       Get the plugin version, in hexadecimal.
-       TODO format to be defined
-     */
+   /**
+      Get the plugin version, in hexadecimal.
+      TODO format to be defined
+    */
     virtual uint32_t d_getVersion() const = 0;
 
-    /**
-       Get the plugin unique Id.
-       This value is used by LADSPA, DSSI and VST plugin formats.
-     */
+   /**
+      Get the plugin unique Id.
+      This value is used by LADSPA, DSSI and VST plugin formats.
+    */
     virtual int64_t d_getUniqueId() const = 0;
 
-    /* --------------------------------------------------------------------------------------------------------
-     * Init */
+   /* --------------------------------------------------------------------------------------------------------
+    * Init */
 
-    /**
-       Initialize the parameter @a index.
-       This function will be called once, shortly after the plugin is created.
-     */
+   /**
+      Initialize the parameter @a index.
+      This function will be called once, shortly after the plugin is created.
+    */
     virtual void d_initParameter(uint32_t index, Parameter& parameter) = 0;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-    /**
-       Set the name of the program @a index.
-       This function will be called once, shortly after the plugin is created.
-       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
-     */
+   /**
+      Set the name of the program @a index.
+      This function will be called once, shortly after the plugin is created.
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
+    */
     virtual void d_initProgramName(uint32_t index, d_string& programName) = 0;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-    /**
-       Set the key name of the state @a index.
-       This function will be called once, shortly after the plugin is created.
-       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
-     */
+   /**
+      Set the key name of the state @a index.
+      This function will be called once, shortly after the plugin is created.
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
+    */
     virtual void d_initStateKey(uint32_t index, d_string& stateKey) = 0;
 #endif
 
-    /* --------------------------------------------------------------------------------------------------------
-     * Internal data */
+   /* --------------------------------------------------------------------------------------------------------
+    * Internal data */
 
-    /**
-       Get a parameter value.
-       The host may call this function from any context, including realtime processing.
-     */
+   /**
+      Get the current value of a parameter.
+      The host may call this function from any context, including realtime processing.
+    */
     virtual float d_getParameterValue(uint32_t index) const = 0;
 
-    /**
-       Set a parameter value.
-       The host may call this function from any context, including realtime processing.
-       When a parameter is marked as automable, you must ensure no non-realtime operations are called.
-       @note This function will only be called for parameter inputs.
-     */
+   /**
+      Change a parameter value.
+      The host may call this function from any context, including realtime processing.
+      When a parameter is marked as automable, you must ensure no non-realtime operations are called.
+      @note This function will only be called for parameter inputs.
+    */
     virtual void d_setParameterValue(uint32_t index, float value) = 0;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-    /**
-       Change the currently used program to @a index.
-       The host may call this function from any context, including realtime processing.
-       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
-     */
+   /**
+      Change the currently used program to @a index.
+      The host may call this function from any context, including realtime processing.
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
+    */
     virtual void d_setProgram(uint32_t index) = 0;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-    /**
-       Change an internal state @a key to @a value.
-       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
-     */
+   /**
+      Change an internal state @a key to @a value.
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
+    */
     virtual void d_setState(const char* key, const char* value) = 0;
 #endif
 
-    /* --------------------------------------------------------------------------------------------------------
-     * Process */
+   /* --------------------------------------------------------------------------------------------------------
+    * Process */
 
-    /**
-       Activate this plugin.
-     */
+   /**
+      Activate this plugin.
+    */
     virtual void d_activate() {}
 
-    /**
-       Deactivate this plugin.
-     */
+   /**
+      Deactivate this plugin.
+    */
     virtual void d_deactivate() {}
 
 #if DISTRHO_PLUGIN_HAS_MIDI_INPUT
-    /**
-       Run/process function for plugins with MIDI input.
-       @note: Some parameters might be null if there are no audio inputs/outputs or MIDI events.
-     */
-    virtual void d_run(const float** inputs, float** outputs, uint32_t frames, const MidiEvent* midiEvents, uint32_t midiEventCount) = 0;
+   /**
+      Run/process function for plugins with MIDI input.
+      @note: Some parameters might be null if there are no audio inputs/outputs or MIDI events.
+    */
+    virtual void d_run(const float** inputs, float** outputs, uint32_t frames,
+                       const MidiEvent* midiEvents, uint32_t midiEventCount) = 0;
 #else
-    /**
-       Run/process function for plugins without MIDI input.
-       @note: Some parameters might be null if there are no audio inputs or outputs.
-     */
+   /**
+      Run/process function for plugins without MIDI input.
+      @note: Some parameters might be null if there are no audio inputs or outputs.
+    */
     virtual void d_run(const float** inputs, float** outputs, uint32_t frames) = 0;
 #endif
 
-    /* --------------------------------------------------------------------------------------------------------
-     * Callbacks (optional) */
+   /* --------------------------------------------------------------------------------------------------------
+    * Callbacks (optional) */
 
-    /**
-       Optional callback to inform the plugin about a buffer size change.
-       This function will only be called when the plugin is deactivated.
-       @note: This value is only a hint!
-              Hosts might call d_run() with a higher or lower number of frames.
-       @see d_getBufferSize()
-     */
+   /**
+      Optional callback to inform the plugin about a buffer size change.
+      This function will only be called when the plugin is deactivated.
+      @note: This value is only a hint!
+             Hosts might call d_run() with a higher or lower number of frames.
+      @see d_getBufferSize()
+    */
     virtual void d_bufferSizeChanged(uint32_t newBufferSize);
 
-    /**
-       Optional callback to inform the plugin about a sample rate change.
-       This function will only be called when the plugin is deactivated.
-       @see d_getSampleRate()
-     */
+   /**
+      Optional callback to inform the plugin about a sample rate change.
+      This function will only be called when the plugin is deactivated.
+      @see d_getSampleRate()
+    */
     virtual void d_sampleRateChanged(double newSampleRate);
 
-    // -------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------------
 
 private:
     struct PrivateData;

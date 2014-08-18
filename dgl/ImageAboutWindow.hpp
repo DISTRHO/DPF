@@ -38,7 +38,7 @@ protected:
     void onDisplay() override;
     bool onKeyboard(const KeyboardEvent&) override;
     bool onMouse(const MouseEvent&) override;
-    void onReshape(int width, int height) override;
+    void onReshape(uint width, uint height) override;
 
 private:
     Image fImgBackground;

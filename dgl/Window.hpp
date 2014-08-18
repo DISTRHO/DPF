@@ -48,8 +48,8 @@ public:
     bool isResizable() const noexcept;
     void setResizable(bool yesNo);
 
-    int getWidth() const noexcept;
-    int getHeight() const noexcept;
+    uint getWidth() const noexcept;
+    uint getHeight() const noexcept;
     Size<uint> getSize() const noexcept;
     void setSize(uint width, uint height);
     void setSize(Size<uint> size);
@@ -67,7 +67,7 @@ public:
 protected:
     virtual void onDisplayBefore();
     virtual void onDisplayAfter();
-    virtual void onReshape(int width, int height);
+    virtual void onReshape(uint width, uint height);
     virtual void onClose();
 
 private:

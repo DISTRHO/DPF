@@ -27,7 +27,8 @@ Widget::Widget(Window& parent)
       fNeedsFullViewport(false),
       fNeedsScaling(false),
       fVisible(true),
-      fArea(),
+      fAbsolutePos(0, 0),
+      fSize(0, 0),
       leakDetector_Widget()
 {
     fParent._addWidget(this);
@@ -62,66 +63,66 @@ void Widget::hide()
     setVisible(false);
 }
 
-int Widget::getWidth() const noexcept
+uint Widget::getWidth() const noexcept
 {
-    return fArea.getWidth();
+    return fSize.getWidth();
 }
 
-int Widget::getHeight() const noexcept
+uint Widget::getHeight() const noexcept
 {
-    return fArea.getHeight();
+    return fSize.getHeight();
 }
 
-const Size<int>& Widget::getSize() const noexcept
+const Size<uint>& Widget::getSize() const noexcept
 {
-    return fArea.getSize();
+    return fSize;
 }
 
-void Widget::setWidth(int width) noexcept
+void Widget::setWidth(uint width) noexcept
 {
-    if (fArea.getWidth() == width)
+    if (fSize.getWidth() == width)
         return;
 
     ResizeEvent ev;
-    ev.oldSize = fArea.getSize();
-    ev.size = Size<int>(width, fArea.getHeight());
+    ev.oldSize = fSize;
+    ev.size    = Size<uint>(width, fSize.getHeight());
 
-    fArea.setWidth(width);
+    fSize.setWidth(width);
     onResize(ev);
 
     fParent.repaint();
 }
 
-void Widget::setHeight(int height) noexcept
+void Widget::setHeight(uint height) noexcept
 {
-    if (fArea.getHeight() == height)
+    if (fSize.getHeight() == height)
         return;
 
     ResizeEvent ev;
-    ev.oldSize = fArea.getSize();
-    ev.size = Size<int>(fArea.getWidth(), height);
+    ev.oldSize = fSize;
+    ev.size    = Size<uint>(fSize.getWidth(), height);
 
-    fArea.setHeight(height);
+    fSize.setHeight(height);
     onResize(ev);
 
     fParent.repaint();
 }
 
-void Widget::setSize(int width, int height) noexcept
+void Widget::setSize(uint width, uint height) noexcept
 {
-    setSize(Size<int>(width, height));
+    setSize(Size<uint>(width, height));
 }
 
-void Widget::setSize(const Size<int>& size) noexcept
+void Widget::setSize(const Size<uint>& size) noexcept
 {
-    if (fArea.getSize() == size)
+    if (fSize == size)
         return;
 
     ResizeEvent ev;
-    ev.oldSize = fArea.getSize();
-    ev.size = size;
+    ev.oldSize = fSize;
+    ev.size    = size;
 
-    fArea.setSize(size);
+    fSize = size;
     onResize(ev);
 
     fParent.repaint();
@@ -129,34 +130,34 @@ void Widget::setSize(const Size<int>& size) noexcept
 
 int Widget::getAbsoluteX() const noexcept
 {
-    return fArea.getX();
+    return fAbsolutePos.getX();
 }
 
 int Widget::getAbsoluteY() const noexcept
 {
-    return fArea.getY();
+    return fAbsolutePos.getY();
 }
 
 const Point<int>& Widget::getAbsolutePos() const noexcept
 {
-    return fArea.getPos();
+    return fAbsolutePos;
 }
 
 void Widget::setAbsoluteX(int x) noexcept
 {
-    if (fArea.getX() == x)
+    if (fAbsolutePos.getX() == x)
         return;
 
-    fArea.setX(x);
+    fAbsolutePos.setX(x);
     fParent.repaint();
 }
 
 void Widget::setAbsoluteY(int y) noexcept
 {
-    if (fArea.getY() == y)
+    if (fAbsolutePos.getY() == y)
         return;
 
-    fArea.setY(y);
+    fAbsolutePos.setY(y);
     fParent.repaint();
 }
 
@@ -167,10 +168,10 @@ void Widget::setAbsolutePos(int x, int y) noexcept
 
 void Widget::setAbsolutePos(const Point<int>& pos) noexcept
 {
-    if (fArea.getPos() == pos)
+    if (fAbsolutePos == pos)
         return;
 
-    fArea.setPos(pos);
+    fAbsolutePos = pos;
     fParent.repaint();
 }
 
@@ -186,7 +187,7 @@ Window& Widget::getParentWindow() const noexcept
 
 bool Widget::contains(int x, int y) const noexcept
 {
-    return (x >= 0 && y >= 0 && x < fArea.getWidth() && y < fArea.getHeight());
+    return (x >= 0 && y >= 0 && static_cast<uint>(x) < fSize.getWidth() && static_cast<uint>(y) < fSize.getHeight());
 }
 
 bool Widget::contains(const Point<int>& pos) const noexcept

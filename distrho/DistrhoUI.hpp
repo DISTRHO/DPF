@@ -33,75 +33,146 @@ typedef DGL::Widget UIWidget;
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
-// UI
+/* ------------------------------------------------------------------------------------------------------------
+ * DPF UI */
 
+/**
+   DPF UI class from where UI instances are created.
+
+   TODO.
+
+   you should not have to call setSize during construction,
+   that is handled by d_initSize
+   if you want to change size later on you should use setSize and then d_setSize to report to host
+ */
 class UI : public UIWidget
 {
 public:
+   /**
+      UI class constructor.
+    */
     UI();
+
+   /**
+      Destructor.
+    */
     virtual ~UI();
 
-    // -------------------------------------------------------------------
-    // Host DSP State
+   /* --------------------------------------------------------------------------------------------------------
+    * Host DSP state */
 
+   /**
+      Get the current sample rate used in plugin processing.
+      @see d_sampleRateChanged(double)
+    */
     double d_getSampleRate() const noexcept;
-    void   d_editParameter(const uint32_t index, const bool started);
-    void   d_setParameterValue(const uint32_t index, const float value);
+
+   /**
+      TODO: Document this.
+    */
+    void d_editParameter(const uint32_t index, const bool started);
+
+   /**
+      TODO: Document this.
+    */
+    void d_setParameterValue(const uint32_t index, const float value);
+
 #if DISTRHO_PLUGIN_WANT_STATE
-    void   d_setState(const char* const key, const char* const value);
+   /**
+      TODO: Document this.
+    */
+    void d_setState(const char* const key, const char* const value);
 #endif
+
 #if DISTRHO_PLUGIN_IS_SYNTH
-    void   d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity);
+   /**
+      TODO: Document this.
+    */
+    void d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity);
 #endif
 
-    // -------------------------------------------------------------------
-    // Host UI State
+   /* --------------------------------------------------------------------------------------------------------
+    * Host UI state */
 
+   /**
+      TODO: Document this.
+      never call this from the constructor
+    */
     void d_setSize(const uint width, const uint height);
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-    // -------------------------------------------------------------------
-    // Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
+   /* --------------------------------------------------------------------------------------------------------
+    * Direct DSP access - DO NOT USE THIS UNLESS STRICTLY NECESSARY!! */
 
+   /**
+      TODO: Document this.
+    */
     void* d_getPluginInstancePointer() const noexcept;
 #endif
 
 protected:
-    // -------------------------------------------------------------------
-    // Basic Information
+   /* --------------------------------------------------------------------------------------------------------
+    * Init */
 
-    virtual const char* d_getName()   const noexcept { return DISTRHO_PLUGIN_NAME; }
-    virtual uint        d_getWidth()  const noexcept = 0;
-    virtual uint        d_getHeight() const noexcept = 0;
+   /**
+      Set the initial UI size.
+      This function will be called once, shortly after the UI is created.
+      @see d_setSize(uint,uint)
+    */
+    virtual void d_initSize(uint& width, uint& height) = 0;
 
-    // -------------------------------------------------------------------
-    // DSP Callbacks
+   /* --------------------------------------------------------------------------------------------------------
+    * DSP/Plugin Callbacks */
 
+   /**
+      A parameter has changed on the plugin side.
+      This is called by the host to inform the UI about parameter changes.
+    */
     virtual void d_parameterChanged(uint32_t index, float value) = 0;
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
+   /**
+      The current program has changed on the plugin side.
+      This is called by the host to inform the UI about program changes.
+    */
     virtual void d_programChanged(uint32_t index) = 0;
 #endif
+
 #if DISTRHO_PLUGIN_WANT_STATE
+   /**
+      A state has changed on the plugin side.
+      This is called by the host to inform the UI about state changes.
+    */
     virtual void d_stateChanged(const char* key, const char* value) = 0;
 #endif
 
-    // -------------------------------------------------------------------
-    // DSP Callbacks (optional)
+   /* --------------------------------------------------------------------------------------------------------
+    * DSP/Plugin Callbacks (optional) */
 
+   /**
+      Optional callback to inform the UI about a sample rate change on the plugin side.
+      @see d_getSampleRate()
+    */
     virtual void d_sampleRateChanged(double newSampleRate);
 
-    // -------------------------------------------------------------------
-    // UI Callbacks (optional)
+   /* --------------------------------------------------------------------------------------------------------
+    * UI Callbacks (optional) */
 
+   /**
+      TODO: Document this.
+    */
     virtual void d_uiIdle() {}
 
 #if ! DISTRHO_UI_USE_NTK
-    // updates window openGL state
-    virtual void d_uiReshape(int width, int height);
+   /**
+      OpenGL reshape function, called when the host window is resized.
+      You can reimplement this function for a custom OpenGL state.
+      @see Window::onReshape(uint,uint)
+    */
+    virtual void d_uiReshape(uint width, uint height);
 #endif
 
-    // -------------------------------------------------------------------
+    // -------------------------------------------------------------------------------------------------------
 
 private:
     struct PrivateData;
@@ -120,12 +191,15 @@ private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };
 
-// -----------------------------------------------------------------------
-// Create UI, entry point
+/* ------------------------------------------------------------------------------------------------------------
+ * Create UI, entry point */
 
+/**
+   TODO.
+ */
 extern UI* createUI();
 
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 

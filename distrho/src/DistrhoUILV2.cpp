@@ -91,7 +91,7 @@ public:
         }
 
         if (! hasTitle)
-            fUI.setTitle(fUI.getName());
+            fUI.setTitle(DISTRHO_PLUGIN_NAME);
     }
 
     // -------------------------------------------------------------------

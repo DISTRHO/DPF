@@ -45,7 +45,7 @@ public:
    /**
       Get size.
     */
-    Size<int> getSize() const noexcept;
+    Size<uint> getSize() const noexcept;
 
    /**
       Update image data.
@@ -62,7 +62,7 @@ protected:
 private:
     NVGcontext* fContext;
     int fImageId;
-    Size<int> fSize;
+    Size<uint> fSize;
     friend class NanoVG;
 
     void _updateSize();
@@ -273,7 +273,7 @@ public:
       Begin drawing a new frame.
       @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
     */
-    void beginFrame(const int width, const int height, const float scaleFactor = 1.0f, const Alpha alpha = PREMULTIPLIED_ALPHA);
+    void beginFrame(const uint width, const uint height, const float scaleFactor = 1.0f, const Alpha alpha = PREMULTIPLIED_ALPHA);
 
    /**
       Begin drawing a new frame inside a widget.
@@ -505,7 +505,7 @@ public:
    /**
       Creates image from specified image data.
     */
-    NanoImage* createImageRGBA(int w, int h, const uchar* data);
+    NanoImage* createImageRGBA(uint w, uint h, const uchar* data);
 
    /* --------------------------------------------------------------------
     * Paints */
