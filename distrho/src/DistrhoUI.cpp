@@ -110,7 +110,7 @@ void UI::d_uiReshape(uint width, uint height)
 #if DISTRHO_UI_USE_NTK
 void UI::resize(int x, int y, int w, int h)
 {
-    UIWidget::resize(x, y w, h);
+    UIWidget::resize(x, y, w, h);
     pData->setSizeCallback(w, h);
 }
 #else
