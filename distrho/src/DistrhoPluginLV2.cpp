@@ -34,15 +34,11 @@
 #endif
 
 #include <map>
-#include <string>
 
 #ifndef DISTRHO_PLUGIN_URI
 # error DISTRHO_PLUGIN_URI undefined!
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
-# warning LV2 State still TODO (working but needs final testing)
-#endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
 # warning LV2 TimePos still TODO
 #endif
@@ -451,29 +447,20 @@ public:
 
             const d_string& key = fPlugin.getStateKey(i);
 
-            for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+            for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
             {
-                const d_string& curKey = it->first;
+                const d_string& curKey = cit->first;
 
                 if (curKey != key)
                     continue;
 
-                const d_string& value = it->second;
+                const d_string& value = cit->second;
 
-                // TODO - RT safe
-                d_stdout("Got msg (from DSP to UI via host):\n%s\n%s", (const char*)key, (const char*)value);
-
-                // join key and value
-                std::string tmpStr;
-                tmpStr += std::string(key);
-                tmpStr += std::string("\0", 1);
-                tmpStr += std::string(value);
-
-                // get msg size
-                const size_t msgSize(tmpStr.size()+1);
+                // set msg size (key + value + separator + 2x null terminator)
+                const size_t msgSize(key.length()+value.length()+3);
 
                 if (sizeof(LV2_Atom_Event) + msgSize > capacity - offset)
-                    return;
+                    break;
 
                 if (needsInit)
                 {
@@ -484,17 +471,20 @@ public:
                     needsInit = false;
                 }
 
-                // reserve atom space
-                const size_t atomSize(lv2_atom_pad_size(sizeof(LV2_Atom) + msgSize));
-                char         atomBuf[atomSize];
-                std::memset(atomBuf, 0, atomSize);
+                // reserve msg space
+                char msgBuf[msgSize];
+                std::memset(msgBuf, 0, msgSize);
+
+                // write key and value in atom bufer
+                std::memcpy(msgBuf, key.buffer(), key.length());
+                std::memcpy(msgBuf+(key.length()+1), value.buffer(), value.length());
 
                 // put data
-                aev = (LV2_Atom_Event*)((char*)LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fPortEventsOut) + offset);
+                aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fPortEventsOut) + offset);
                 aev->time.frames = 0;
                 aev->body.type   = fURIDs.distrhoState;
                 aev->body.size   = msgSize;
-                std::memcpy(LV2_ATOM_BODY(&aev->body), tmpStr.data(), msgSize-1);
+                std::memcpy(LV2_ATOM_BODY(&aev->body), msgBuf, msgSize-1);
 
                 size    = lv2_atom_pad_size(sizeof(LV2_Atom_Event) + msgSize);
                 offset += size;
@@ -525,12 +515,12 @@ public:
                 {
                     const int bufferSize(*(const int*)options[i].value);
                     fPlugin.setBufferSize(bufferSize);
-                    return LV2_OPTIONS_SUCCESS;
+                    continue;
                 }
                 else
                 {
                     d_stderr("Host changed maxBlockLength but with wrong value type");
-                    return LV2_OPTIONS_ERR_BAD_VALUE;
+                    continue;
                 }
             }
             else if (options[i].key == fUridMap->map(fUridMap->handle, LV2_CORE__sampleRate))
@@ -539,17 +529,17 @@ public:
                 {
                     const double sampleRate(*(const double*)options[i].value);
                     fPlugin.setSampleRate(sampleRate);
-                    return LV2_OPTIONS_SUCCESS;
+                    continue;
                 }
                 else
                 {
                     d_stderr("Host changed sampleRate but with wrong value type");
-                    return LV2_OPTIONS_ERR_BAD_VALUE;
+                    continue;
                 }
             }
         }
 
-        return LV2_OPTIONS_ERR_BAD_KEY;
+        return LV2_OPTIONS_SUCCESS;
     }
 
     // -------------------------------------------------------------------
@@ -595,16 +585,14 @@ public:
     // -------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_WANT_STATE
-    LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle, const uint32_t flags)
+    LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle)
     {
-        //flags = LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE;
-
-        for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+        for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
         {
-            const d_string& key   = it->first;
-            const d_string& value = it->second;
+            const d_string& key   = cit->first;
+            const d_string& value = cit->second;
 
-            store(handle, fUridMap->map(fUridMap->handle, (const char*)key), (const char*)value, value.length()+1, fURIDs.atomString, flags);
+            store(handle, fUridMap->map(fUridMap->handle, key.buffer()), value.buffer(), value.length(), fURIDs.atomString, LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
         }
 
         return LV2_STATE_SUCCESS;
@@ -612,31 +600,27 @@ public:
 
     LV2_State_Status lv2_restore(const LV2_State_Retrieve_Function retrieve, const LV2_State_Handle handle)
     {
-        size_t   size  = 0;
-        uint32_t type  = 0;
-        uint32_t flags = LV2_STATE_IS_POD | LV2_STATE_IS_PORTABLE;
+        size_t   size;
+        uint32_t type, flags;
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
-            const d_string& key = fPlugin.getStateKey(i);
+            const d_string& key(fPlugin.getStateKey(i));
 
-            const void* data = retrieve(handle, fUridMap->map(fUridMap->handle, (const char*)key), &size, &type, &flags);
+            size  = 0;
+            type  = 0;
+            flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
+            const void* data = retrieve(handle, fUridMap->map(fUridMap->handle, key.buffer()), &size, &type, &flags);
 
-            if (size == 0)
+            if (data == nullptr || size == 0)
                 continue;
-            if (data == nullptr)
-                continue;
-            if (type != fURIDs.atomString)
-                continue;
+
+            DISTRHO_SAFE_ASSERT_CONTINUE(type == fURIDs.atomString);
 
             const char* const value((const char*)data);
-
-            if (std::strlen(value) != size)
-                continue;
+            DISTRHO_SAFE_ASSERT_CONTINUE(std::strlen(value) == size);
 
             setState(key, value);
-
-            d_stdout("Got state msg:\n%s\n%s", (const char*)key, value);
 
 #if DISTRHO_LV2_USE_EVENTS_OUT
             // signal msg needed for UI
@@ -651,10 +635,10 @@ public:
 
     LV2_Worker_Status lv2_work(const void* const data)
     {
-        const char* const stateKey((const char*)data);
-        const char* const stateValue(stateKey+std::strlen(stateKey)+1);
+        const char* const key((const char*)data);
+        const char* const value(key+std::strlen(key)+1);
 
-        setState(stateKey, stateValue);
+        setState(key, value);
 
         return LV2_WORKER_SUCCESS;
     }
@@ -767,9 +751,9 @@ private:
             return;
 
         // check if key already exists
-        for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+        for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
         {
-            const d_string& d_key = it->first;
+            const d_string& d_key(it->first);
 
             if (d_key == key)
             {
@@ -924,9 +908,9 @@ static void lv2_select_program(LV2_Handle instance, uint32_t bank, uint32_t prog
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_WANT_STATE
-static LV2_State_Status lv2_save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t flags, const LV2_Feature* const*)
+static LV2_State_Status lv2_save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t, const LV2_Feature* const*)
 {
-    return instancePtr->lv2_save(store, handle, flags);
+    return instancePtr->lv2_save(store, handle);
 }
 
 static LV2_State_Status lv2_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t, const LV2_Feature* const*)

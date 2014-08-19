@@ -16,6 +16,8 @@
 
 #include "DistrhoUIInternal.hpp"
 
+#include "../extra/d_string.hpp"
+
 #include "lv2/atom.h"
 #include "lv2/atom-util.h"
 #include "lv2/data-access.h"
@@ -24,8 +26,6 @@
 #include "lv2/ui.h"
 #include "lv2/urid.h"
 #include "lv2/lv2_programs.h"
-
-#include <string>
 
 START_NAMESPACE_DISTRHO
 
@@ -115,13 +115,12 @@ public:
         {
             const LV2_Atom* const atom((const LV2_Atom*)buffer);
 
-            // TODO - check atom type
+            DISTRHO_SAFE_ASSERT_RETURN(atom->type == fKeyValueURID,);
 
-            const char* const stateKey((const char*)LV2_ATOM_BODY_CONST(atom));
-            const char* const stateValue(stateKey+std::strlen(stateKey)+1);
+            const char* const key   = (const char*)LV2_ATOM_BODY_CONST(atom);
+            const char* const value = key+(std::strlen(key)+1);
 
-            d_stdout("Got MSG in UI from DSP ==> %s | %s", stateKey, stateValue);
-            fUI.stateChanged(stateKey, stateValue);
+            fUI.stateChanged(key, value);
         }
 #endif
     }
@@ -168,25 +167,27 @@ protected:
 
     void setParameterValue(const uint32_t rindex, const float value)
     {
-        if (fWriteFunction != nullptr)
-            fWriteFunction(fController, rindex, sizeof(float), 0, &value);
+        DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
+
+        fWriteFunction(fController, rindex, sizeof(float), 0, &value);
     }
 
     void setState(const char* const key, const char* const value)
     {
-        if (fWriteFunction == nullptr)
-            return;
+        DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
 
         const uint32_t eventInPortIndex(DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS);
 
         // join key and value
-        std::string tmpStr;
-        tmpStr += std::string(key);
-        tmpStr += std::string("\0", 1);
-        tmpStr += std::string(value);
+        d_string tmpStr;
+        tmpStr += key;
+        tmpStr += "\xff";
+        tmpStr += value;
 
-        // get msg size
-        const size_t msgSize(tmpStr.size()+1);
+        tmpStr[std::strlen(key)] = '\0';
+
+        // set msg size (key + separator + value + null terminator)
+        const size_t msgSize(tmpStr.length()+1);
 
         // reserve atom space
         const size_t atomSize(lv2_atom_pad_size(sizeof(LV2_Atom) + msgSize));
@@ -199,7 +200,7 @@ protected:
         atom->type = fKeyValueURID;
 
         // set atom data
-        std::memcpy(atomBuf + sizeof(LV2_Atom), tmpStr.data(), msgSize-1);
+        std::memcpy(atomBuf + sizeof(LV2_Atom), tmpStr.buffer(), msgSize);
 
         // send to DSP side
         fWriteFunction(fController, eventInPortIndex, atomSize, fEventTransferURID, atom);
