@@ -317,13 +317,13 @@ public:
                 if (bar != nullptr)
                 {
                      if (bar->type == fURIDs.atomDouble)
-                        fTimePos.bbt.bar = ((LV2_Atom_Double*)bar)->body + 1.0f;
+                        fTimePosition.bbt.bar = ((LV2_Atom_Double*)bar)->body + 1.0f;
                     else if (bar->type == fURIDs.atomFloat)
-                        fTimePos.bbt.bar = ((LV2_Atom_Float*)bar)->body + 1.0f;
+                        fTimePosition.bbt.bar = ((LV2_Atom_Float*)bar)->body + 1.0f;
                     else if (bar->type == fURIDs.atomInt)
-                        fTimePos.bbt.bar = ((LV2_Atom_Int*)bar)->body + 1;
+                        fTimePosition.bbt.bar = ((LV2_Atom_Int*)bar)->body + 1;
                     else if (bar->type == fURIDs.atomLong)
-                        fTimePos.bbt.bar = ((LV2_Atom_Long*)bar)->body + 1;
+                        fTimePosition.bbt.bar = ((LV2_Atom_Long*)bar)->body + 1;
                 }
 
                 /*if (barBeat != nullptr && barBeat->type == fURIDs.atomFloat)
@@ -333,65 +333,65 @@ public:
                 if (beat != nullptr)
                 {
                      if (beat->type == fURIDs.atomDouble)
-                        fTimePos.bbt.beat = ((LV2_Atom_Double*)beat)->body + 1.0f;
+                        fTimePosition.bbt.beat = ((LV2_Atom_Double*)beat)->body + 1.0f;
                     else if (beat->type == fURIDs.atomFloat)
-                        fTimePos.bbt.beat = ((LV2_Atom_Float*)beat)->body + 1.0f;
+                        fTimePosition.bbt.beat = ((LV2_Atom_Float*)beat)->body + 1.0f;
                     else if (beat->type == fURIDs.atomInt)
-                        fTimePos.bbt.beat = ((LV2_Atom_Int*)beat)->body + 1;
+                        fTimePosition.bbt.beat = ((LV2_Atom_Int*)beat)->body + 1;
                     else if (beat->type == fURIDs.atomLong)
-                        fTimePos.bbt.beat = ((LV2_Atom_Long*)beat)->body + 1;
+                        fTimePosition.bbt.beat = ((LV2_Atom_Long*)beat)->body + 1;
                 }
 
                 if (beatUnit != nullptr)
                 {
                     if (beatUnit->type == fURIDs.atomDouble)
-                        fTimePos.bbt.beatType = ((LV2_Atom_Double*)beatUnit)->body;
+                        fTimePosition.bbt.beatType = ((LV2_Atom_Double*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomFloat)
-                        fTimePos.bbt.beatType = ((LV2_Atom_Float*)beatUnit)->body;
+                        fTimePosition.bbt.beatType = ((LV2_Atom_Float*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomInt)
-                        fTimePos.bbt.beatType = ((LV2_Atom_Int*)beatUnit)->body;
+                        fTimePosition.bbt.beatType = ((LV2_Atom_Int*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomLong)
-                        fTimePos.bbt.beatType = ((LV2_Atom_Long*)beatUnit)->body;
+                        fTimePosition.bbt.beatType = ((LV2_Atom_Long*)beatUnit)->body;
                 }
 
                 if (beatsPerBar != nullptr)
                 {
                     if (beatsPerBar->type == fURIDs.atomDouble)
-                        fTimePos.bbt.beatsPerBar = ((LV2_Atom_Double*)beatsPerBar)->body;
+                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Double*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomFloat)
-                        fTimePos.bbt.beatsPerBar = ((LV2_Atom_Float*)beatsPerBar)->body;
+                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Float*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomInt)
-                        fTimePos.bbt.beatsPerBar = ((LV2_Atom_Int*)beatsPerBar)->body;
+                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Int*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomLong)
-                        fTimePos.bbt.beatsPerBar = ((LV2_Atom_Long*)beatsPerBar)->body;
+                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Long*)beatsPerBar)->body;
                 }
 
                 if (beatsPerMinute != nullptr)
                 {
                     if (beatsPerMinute->type == fURIDs.atomDouble)
-                        fTimePos.bbt.beatsPerMinute = ((LV2_Atom_Double*)beatsPerMinute)->body;
+                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Double*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomFloat)
-                        fTimePos.bbt.beatsPerMinute = ((LV2_Atom_Float*)beatsPerMinute)->body;
+                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Float*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomInt)
-                        fTimePos.bbt.beatsPerMinute = ((LV2_Atom_Int*)beatsPerMinute)->body;
+                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Int*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomLong)
-                        fTimePos.bbt.beatsPerMinute = ((LV2_Atom_Long*)beatsPerMinute)->body;
+                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Long*)beatsPerMinute)->body;
                 }
 
                 if (frame != nullptr && frame->type == fURIDs.atomLong)
                 {
-                    fTimePos.frame = ((LV2_Atom_Long*)frame)->body;
+                    fTimePosition.frame = ((LV2_Atom_Long*)frame)->body;
                     needsFrameIncrement = false;
                 }
 
                 if (speed != nullptr && speed->type == fURIDs.atomFloat)
                 {
                     fLastTimeSpeed = ((LV2_Atom_Float*)speed)->body;
-                    fTimePos.playing = (fLastTimeSpeed == 1.0f);
+                    fTimePosition.playing = (fLastTimeSpeed == 1.0f);
                 }
 
-                if ((! fTimePos.bbt.valid) && beatsPerMinute != nullptr && beatsPerBar != nullptr && beatUnit != nullptr)
-                    fTimePos.bbt.valid = true;
+                if ((! fTimePosition.bbt.valid) && beatsPerMinute != nullptr && beatsPerBar != nullptr && beatUnit != nullptr)
+                    fTimePosition.bbt.valid = true;
 
                 continue;
             }
@@ -421,8 +421,8 @@ public:
 
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
         if (needsFrameIncrement && fLastTimeSpeed != 0.0f)
-            fTimePos.frame += fLastTimeSpeed*sampleCount;
-        fPlugin.setTimePos(fTimePos);
+            fTimePosition.frame += fLastTimeSpeed*sampleCount;
+        fPlugin.setTimePosition(fTimePosition);
 # endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
@@ -686,8 +686,8 @@ private:
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    TimePos fTimePos;
-    float   fLastTimeSpeed;
+    TimePosition fTimePosition;
+    float        fLastTimeSpeed;
 #endif
 
     // LV2 URIDs

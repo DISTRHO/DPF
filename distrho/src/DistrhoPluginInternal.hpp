@@ -56,7 +56,7 @@ struct Plugin::PrivateData {
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    TimePos timePos;
+    TimePosition timePosition;
 #endif
 
     uint32_t bufferSize;
@@ -330,11 +330,11 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    void setTimePos(const TimePos& timePos) noexcept
+    void setTimePosition(const TimePosition& timePosition) noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
 
-        std::memcpy(&fData->timePos, &timePos, sizeof(TimePos));
+        std::memcpy(&fData->timePosition, &timePosition, sizeof(TimePosition));
     }
 #endif
 

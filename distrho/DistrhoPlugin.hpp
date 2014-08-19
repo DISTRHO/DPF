@@ -443,7 +443,7 @@ public:
       You can call this during other times, but the returned position is not guaranteed to be in sync.
       @note: TimePos is not supported in LADSPA and DSSI plugin formats.
     */
-    const TimePos& d_getTimePos() const noexcept;
+    const TimePosition& d_getTimePosition() const noexcept;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY

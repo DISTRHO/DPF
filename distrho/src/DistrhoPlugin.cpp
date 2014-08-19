@@ -82,9 +82,9 @@ double Plugin::d_getSampleRate() const noexcept
 }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-const TimePos& Plugin::d_getTimePos() const noexcept
+const TimePosition& Plugin::d_getTimePosition() const noexcept
 {
-    return pData->timePos;
+    return pData->timePosition;
 }
 #endif
 

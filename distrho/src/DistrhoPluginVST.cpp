@@ -644,21 +644,21 @@ public:
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantVstTimeFlags, nullptr, 0.0f))
         {
-            fTimePos.playing = (vstTimeInfo->flags & kVstTransportPlaying);
-            fTimePos.frame   = vstTimeInfo->samplePos;
-            fTimePos.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
+            fTimePosition.playing = (vstTimeInfo->flags & kVstTransportPlaying);
+            fTimePosition.frame   = vstTimeInfo->samplePos;
+            fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
 
             if (vstTimeInfo->flags & kVstTempoValid)
             {
-                fTimePos.bbt.beatsPerMinute = vstTimeInfo->tempo;
+                fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
             }
             if (vstTimeInfo->flags & kVstTimeSigValid)
             {
-                fTimePos.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
-                fTimePos.bbt.beatType    = vstTimeInfo->timeSigDenominator;
+                fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
+                fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
             }
 
-            fPlugin.setTimePos(fTimePos);
+            fPlugin.setTimePosition(fTimePosition);
         }
 #endif
 
@@ -704,7 +704,7 @@ private:
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    TimePos fTimePos;
+    TimePosition fTimePosition;
 #endif
 
     // UI stuff

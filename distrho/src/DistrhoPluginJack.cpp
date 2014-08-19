@@ -199,40 +199,40 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         jack_position_t pos;
-        fTimePos.playing = (jack_transport_query(fClient, &pos) == JackTransportRolling);
+        fTimePosition.playing = (jack_transport_query(fClient, &pos) == JackTransportRolling);
 
         if (pos.unique_1 == pos.unique_2)
         {
             if (pos.valid & JackTransportPosition)
-                fTimePos.frame = pos.frame;
+                fTimePosition.frame = pos.frame;
             else
-                fTimePos.frame = 0;
+                fTimePosition.frame = 0;
 
             if (pos.valid & JackTransportBBT)
             {
-                fTimePos.bbt.valid = true;
+                fTimePosition.bbt.valid = true;
 
-                fTimePos.bbt.bar  = pos.bar;
-                fTimePos.bbt.beat = pos.beat;
-                fTimePos.bbt.tick = pos.tick;
-                fTimePos.bbt.barStartTick = pos.bar_start_tick;
+                fTimePosition.bbt.bar  = pos.bar;
+                fTimePosition.bbt.beat = pos.beat;
+                fTimePosition.bbt.tick = pos.tick;
+                fTimePosition.bbt.barStartTick = pos.bar_start_tick;
 
-                fTimePos.bbt.beatsPerBar = pos.beats_per_bar;
-                fTimePos.bbt.beatType    = pos.beat_type;
+                fTimePosition.bbt.beatsPerBar = pos.beats_per_bar;
+                fTimePosition.bbt.beatType    = pos.beat_type;
 
-                fTimePos.bbt.ticksPerBeat   = pos.ticks_per_beat;
-                fTimePos.bbt.beatsPerMinute = pos.beats_per_minute;
+                fTimePosition.bbt.ticksPerBeat   = pos.ticks_per_beat;
+                fTimePosition.bbt.beatsPerMinute = pos.beats_per_minute;
             }
             else
-                fTimePos.bbt.valid = false;
+                fTimePosition.bbt.valid = false;
         }
         else
         {
-            fTimePos.bbt.valid = false;
-            fTimePos.frame = 0;
+            fTimePosition.bbt.valid = false;
+            fTimePosition.frame = 0;
         }
 
-        fPlugin.setTimePos(fTimePos);
+        fPlugin.setTimePosition(fTimePosition);
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
@@ -316,7 +316,7 @@ private:
     jack_port_t* fPortMidiIn;
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-    TimePos fTimePos;
+    TimePosition fTimePosition;
 #endif
 
     // Temporary data
