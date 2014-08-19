@@ -183,10 +183,7 @@ protected:
 
     void editParameter(const uint32_t index, const bool started)
     {
-        if (started)
-            hostCallback(audioMasterBeginEdit, index, 0, nullptr, 0.0f);
-        else
-            hostCallback(audioMasterEndEdit, index, 0, nullptr, 0.0f);
+        hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index, 0, nullptr, 0.0f);
     }
 
     void setParameterValue(const uint32_t index, const float realValue)
@@ -443,12 +440,12 @@ public:
 #if DISTRHO_PLUGIN_WANT_STATE
                 if (fStateMap.size() > 0)
                 {
-                    for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+                    for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
                     {
-                        const d_string& key   = it->first;
-                        const d_string& value = it->second;
+                        const d_string& key   = cit->first;
+                        const d_string& value = cit->second;
 
-                        fVstUi->setStateFromPlugin((const char*)key, (const char*)value);
+                        fVstUi->setStateFromPlugin(key, value);
                     }
 
                     fVstUi->idle();
@@ -480,7 +477,10 @@ public:
                 return 0;
 
             if (fStateChunk != nullptr)
+            {
                 delete[] fStateChunk;
+                fStateChunk = nullptr;
+            }
 
             if (fStateMap.size() == 0)
             {
@@ -490,75 +490,68 @@ public:
             }
             else
             {
-                std::string tmpStr;
+                d_string chunkStr;
 
-                for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+                for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
                 {
-                    const d_string& key   = it->first;
-                    const d_string& value = it->second;
+                    const d_string& key   = cit->first;
+                    const d_string& value = cit->second;
 
-                    tmpStr += (const char*)key;
+                    // join key and value
+                    d_string tmpStr;
+                    tmpStr  = key;
                     tmpStr += "\xff";
-                    tmpStr += (const char*)value;
+                    tmpStr += value;
                     tmpStr += "\xff";
+
+                    chunkStr += tmpStr;
                 }
 
-                const size_t size(tmpStr.size());
-                fStateChunk = new char[size];
-                std::memcpy(fStateChunk, tmpStr.c_str(), size*sizeof(char));
+                const std::size_t chunkSize(chunkStr.length()+1);
 
-                for (size_t i=0; i < size; ++i)
+                fStateChunk = new char[chunkSize];
+                std::memset(fStateChunk, 0, chunkSize);
+                std::memcpy(fStateChunk, chunkStr.buffer(), chunkStr.length());
+
+                for (std::size_t i=0; i<chunkSize; ++i)
                 {
                     if (fStateChunk[i] == '\xff')
                         fStateChunk[i] = '\0';
                 }
 
-                ret = size;
+                ret = chunkSize;
             }
 
             *(void**)ptr = fStateChunk;
             break;
 
-        case effSetChunk:
-            if (value <= 0)
+        case effSetChunk:{
+            if (value <= 1 || ptr == nullptr)
                 return 0;
-            if (value == 1)
-                return 1;
 
-            if (const char* const state = (const char*)ptr)
+            const char* key   = (const char*)ptr;
+            const char* value = nullptr;
+
+            for (;;)
             {
-                const size_t stateSize  = value;
-                const char*  stateKey   = state;
-                const char*  stateValue = nullptr;
+                if (key[0] == '\0')
+                    break;
 
-                for (size_t i=0; i < stateSize; ++i)
-                {
-                    // find next null char
-                    if (state[i] != '\0')
-                        continue;
+                value = key+(std::strlen(key)+1);
 
-                    // found, set value
-                    stateValue = &state[i+1];
-                    setStateFromUi(stateKey, stateValue);
+                d_stdout("setting state \"%s\" | \"%s\"", key, value);
 
-                    if (fVstUi != nullptr)
-                        fVstUi->setStateFromPlugin(stateKey, stateValue);
+                setStateFromUi(key, value);
 
-                    // increment text position
-                    i += std::strlen(stateValue) + 2;
+                if (fVstUi != nullptr)
+                    fVstUi->setStateFromPlugin(key, value);
 
-                    // check if end of data
-                    if (i >= stateSize)
-                        break;
-
-                    // get next key
-                    stateKey = &state[i];
-                }
-
-                ret = 1;
+                // get next key
+                key = value+(std::strlen(value)+1);
             }
 
-            break;
+            return 1;
+        }
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
@@ -761,11 +754,11 @@ private:
             return;
 
         // check if key already exists
-        for (auto it = fStateMap.begin(), end = fStateMap.end(); it != end; ++it)
+        for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
         {
-            const d_string& key = it->first;
+            const d_string& d_key(it->first);
 
-            if (key == newKey)
+            if (d_key == newKey)
             {
                 it->second = newValue;
                 return;
