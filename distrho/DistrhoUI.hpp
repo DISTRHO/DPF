@@ -182,8 +182,10 @@ private:
     void setAbsoluteX(int) const noexcept {}
     void setAbsoluteY(int) const noexcept {}
     void setAbsolutePos(int, int) const noexcept {}
-    void setAbsolutePos(const DGL::Point<int>&) const noexcept {}
     void setNeedsFullViewport(bool) const noexcept {}
+#if ! DISTRHO_UI_USE_NTK
+    void setAbsolutePos(const DGL::Point<int>&) const noexcept {}
+#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

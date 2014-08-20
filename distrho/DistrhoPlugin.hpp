@@ -409,6 +409,8 @@ class Plugin
 public:
    /**
       Plugin class constructor.
+      You must set all parameter values to their defaults, matching ParameterRanges::def.
+      If you're using states you must also set them to their defaults by calling d_setState().
     */
     Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount);
 

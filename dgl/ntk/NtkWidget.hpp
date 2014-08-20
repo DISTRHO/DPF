@@ -87,14 +87,6 @@ public:
     }
 
    /**
-      Get size.
-    */
-    Size<int> getSize() const
-    {
-        return Size<int>(w(), h());
-    }
-
-   /**
       Set width.
     */
     void setWidth(int width)
@@ -119,14 +111,6 @@ public:
     }
 
    /**
-      Set size.
-    */
-    void setSize(const Size<int>& size)
-    {
-        resize(x(), y(), size.getWidth(), size.getHeight());
-    }
-
-   /**
       Get absolute X.
     */
     int getAbsoluteX() const
@@ -140,14 +124,6 @@ public:
     int getAbsoluteY() const
     {
         return y();
-    }
-
-   /**
-      Get absolute position.
-    */
-    Point<int> getAbsolutePos() const
-    {
-        return Point<int>(x(), y());
     }
 
    /**
@@ -175,14 +151,6 @@ public:
     }
 
    /**
-      Set absolute position.
-    */
-    void setAbsolutePos(const Point<int>& pos)
-    {
-        resize(pos.getX(), pos.getY(), w(), h());
-    }
-
-   /**
       Get this widget's window application.
       Same as calling getParentWindow().getApp().
     */
@@ -205,14 +173,6 @@ public:
     bool contains(int x, int y) const
     {
         return (x >= 0 && y >= 0 && x < w() && y < h());
-    }
-
-   /**
-      Check if this widget contains the point @a pos.
-    */
-    bool contains(const Point<int>& pos) const
-    {
-        return contains(pos.getX(), pos.getY());
     }
 
    /**

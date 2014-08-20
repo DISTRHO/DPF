@@ -19,8 +19,6 @@
 
 #include "NtkApp.hpp"
 
-#include "../Geometry.hpp"
-
 START_NAMESPACE_DGL
 
 class NtkWidget;
@@ -130,19 +128,9 @@ public:
         return h();
     }
 
-    Size<uint> getSize() const noexcept
-    {
-        return Size<uint>(w(), h());
-    }
-
     void setSize(uint width, uint height)
     {
         resize(x(), y(), width, height);
-    }
-
-    void setSize(Size<uint> size)
-    {
-        resize(x(), y(), size.getWidth(), size.getHeight());
     }
 
     void setTitle(const char* title)
