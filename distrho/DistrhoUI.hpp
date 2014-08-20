@@ -48,6 +48,7 @@ class UI : public UIWidget
 public:
    /**
       UI class constructor.
+      The UI should be initialized to a default state that matches the plugin side.
     */
     UI();
 
