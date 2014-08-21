@@ -441,7 +441,7 @@ public:
                 fVstUi->idle();
 
 #if DISTRHO_PLUGIN_WANT_STATE
-                if (fPlugin.getStateCount() == 0)
+                if (fPlugin.getStateCount() != 0)
                 {
                     for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
                     {
