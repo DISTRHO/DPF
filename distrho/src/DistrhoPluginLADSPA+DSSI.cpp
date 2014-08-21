@@ -16,12 +16,16 @@
 
 #include "DistrhoPluginInternal.hpp"
 
+#if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+# error Cannot use MIDI Output with LADSPA or DSSI
+#endif
+
 #ifdef DISTRHO_PLUGIN_TARGET_DSSI
 # include "dssi/dssi.h"
 #else
 # include "ladspa/ladspa.h"
-# if DISTRHO_PLUGIN_IS_SYNTH
-#  error Cannot build synth plugin with LADSPA
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#  error Cannot use MIDI with LADSPA
 # endif
 # if DISTRHO_PLUGIN_WANT_STATE
 #  warning LADSPA cannot handle states
@@ -186,7 +190,7 @@ public:
             }
         }
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
         // Get MIDI Events
         uint32_t  midiEventCount = 0;
         MidiEvent midiEvents[eventCount];
@@ -267,7 +271,7 @@ public:
 
         updateParameterOutputs();
 
-#if defined(DISTRHO_PLUGIN_TARGET_DSSI) && ! DISTRHO_PLUGIN_IS_SYNTH
+#if defined(DISTRHO_PLUGIN_TARGET_DSSI) && ! DISTRHO_PLUGIN_HAS_MIDI_INPUT
         return; // unused
         (void)events; (void)eventCount;
 #endif
@@ -431,7 +435,7 @@ static void dssi_select_program(LADSPA_Handle instance, ulong bank, ulong progra
 }
 # endif
 
-# if DISTRHO_PLUGIN_IS_SYNTH
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
 static void dssi_run_synth(LADSPA_Handle instance, ulong sampleCount, snd_seq_event_t* events, ulong eventCount)
 {
     instancePtr->dssi_run_synth(sampleCount, events, eventCount);
@@ -486,7 +490,7 @@ static DSSI_Descriptor sDssiDescriptor = {
     /* select_program               */ nullptr,
 # endif
     /* get_midi_controller_for_port */ nullptr,
-# if DISTRHO_PLUGIN_IS_SYNTH
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
     dssi_run_synth,
 # else
     /* run_synth                    */ nullptr,

@@ -43,8 +43,8 @@
 # warning LV2 TimePos still TODO
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_IS_SYNTH || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 START_NAMESPACE_DISTRHO
 
@@ -253,7 +253,7 @@ public:
         }
 
 #if DISTRHO_LV2_USE_EVENTS_IN
-# if DISTRHO_PLUGIN_IS_SYNTH
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
         uint32_t midiEventCount = 0;
 # endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -264,7 +264,7 @@ public:
             if (event == nullptr)
                 break;
 
-# if DISTRHO_PLUGIN_IS_SYNTH
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
             if (event->body.type == fURIDs.midiEvent)
             {
                 if (midiEventCount >= kMaxMidiEvents)
@@ -430,7 +430,7 @@ public:
         fPlugin.setTimePosition(fTimePosition);
 # endif
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
         fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount, fMidiEvents, midiEventCount);
 #else
         fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
@@ -445,6 +445,10 @@ public:
         uint32_t size, offset = 0;
         LV2_Atom_Event* aev;
 
+# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+        // TODO
+# endif
+# if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
             if (! fNeededUiSends[i])
@@ -499,6 +503,7 @@ public:
                 break;
             }
         }
+# endif
 #endif
     }
 
@@ -692,7 +697,7 @@ private:
 
     // Temporary data
     float* fLastControlValues;
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

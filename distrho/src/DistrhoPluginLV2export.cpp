@@ -42,8 +42,8 @@
 # define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE 2048
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_IS_SYNTH || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 // -----------------------------------------------------------------------
 
@@ -248,13 +248,12 @@ void lv2_generate_ttl(const char* const basename)
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
 # endif
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+            pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
+# endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
             pluginString += "        atom:supports <" LV2_TIME__Position "> ;\n";
 # endif
-# if DISTRHO_PLUGIN_IS_SYNTH
-            pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
-# endif
-
             pluginString += "    ] ;\n\n";
             ++portIndex;
 #endif
@@ -267,7 +266,12 @@ void lv2_generate_ttl(const char* const basename)
             pluginString += "        lv2:symbol \"lv2_events_out\" ;\n";
             pluginString += "        rsz:minimumSize " + d_string(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
             pluginString += "        atom:bufferType atom:Sequence ;\n";
+# if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
+# endif
+# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+            pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
+# endif
             pluginString += "    ] ;\n\n";
             ++portIndex;
 #endif
