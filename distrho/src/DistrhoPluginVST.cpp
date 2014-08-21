@@ -56,9 +56,6 @@ struct ERect {
 # include "vst/aeffectx.h"
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
-# warning VST State still TODO (working but needs final testing)
-#endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
 # warning VST TimePos still TODO (only basic BBT working)
 #endif
@@ -444,7 +441,7 @@ public:
                 fVstUi->idle();
 
 #if DISTRHO_PLUGIN_WANT_STATE
-                if (fStateMap.size() > 0)
+                if (fPlugin.getStateCount() == 0)
                 {
                     for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
                     {
@@ -488,7 +485,7 @@ public:
                 fStateChunk = nullptr;
             }
 
-            if (fStateMap.size() == 0)
+            if (fPlugin.getStateCount() == 0)
             {
                 fStateChunk    = new char[1];
                 fStateChunk[0] = '\0';
@@ -516,8 +513,8 @@ public:
                 const std::size_t chunkSize(chunkStr.length()+1);
 
                 fStateChunk = new char[chunkSize];
-                std::memset(fStateChunk, 0, chunkSize);
                 std::memcpy(fStateChunk, chunkStr.buffer(), chunkStr.length());
+                fStateChunk[chunkSize] = '\0';
 
                 for (std::size_t i=0; i<chunkSize; ++i)
                 {
@@ -544,8 +541,6 @@ public:
                     break;
 
                 value = key+(std::strlen(key)+1);
-
-                d_stdout("setting state \"%s\" | \"%s\"", key, value);
 
                 setStateFromUi(key, value);
 
