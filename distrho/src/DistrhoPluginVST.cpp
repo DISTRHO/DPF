@@ -65,7 +65,7 @@ struct ERect {
 
 START_NAMESPACE_DISTRHO
 
-typedef std::map<d_string,d_string> StringMap;
+typedef std::map<const d_string,d_string> StringMap;
 
 // -----------------------------------------------------------------------
 
@@ -311,6 +311,12 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
         fStateChunk = nullptr;
+
+        for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
+        {
+            const d_string& d_key(fPlugin.getStateKey(i));
+            fStateMap[d_key] = fPlugin.getStateDefaultValue(i);
+        }
 #endif
     }
 
@@ -745,12 +751,12 @@ private:
     // -------------------------------------------------------------------
     // functions called from the UI side, may block
 
-    void setStateFromUi(const char* const newKey, const char* const newValue) override
+    void setStateFromUi(const char* const key, const char* const newValue) override
     {
-        fPlugin.setState(newKey, newValue);
+        fPlugin.setState(key, newValue);
 
         // check if we want to save this key
-        if (! fPlugin.wantStateKey(newKey))
+        if (! fPlugin.wantStateKey(key))
             return;
 
         // check if key already exists
@@ -758,16 +764,14 @@ private:
         {
             const d_string& d_key(it->first);
 
-            if (d_key == newKey)
+            if (d_key == key)
             {
                 it->second = newValue;
                 return;
             }
         }
 
-        // nope, add a new one then
-        d_string d_key(newKey);
-        fStateMap[d_key] = newValue;
+        d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
 #endif
 };

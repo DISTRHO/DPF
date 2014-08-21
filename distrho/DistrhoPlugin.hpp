@@ -523,11 +523,11 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
-      Set the key name of the state @a index.
+      Set the state key and default value of @a index.
       This function will be called once, shortly after the plugin is created.
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void d_initStateKey(uint32_t index, d_string& stateKey) = 0;
+    virtual void d_initState(uint32_t index, d_string& stateKey, d_string& defaultStateValue) = 0;
 #endif
 
    /* --------------------------------------------------------------------------------------------------------

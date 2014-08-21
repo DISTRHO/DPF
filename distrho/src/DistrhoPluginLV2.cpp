@@ -48,7 +48,7 @@
 
 START_NAMESPACE_DISTRHO
 
-typedef std::map<d_string,d_string> StringMap;
+typedef std::map<const d_string,d_string> StringMap;
 
 // -----------------------------------------------------------------------
 
@@ -114,7 +114,12 @@ public:
             fNeededUiSends = new bool[count];
 
             for (uint32_t i=0; i < count; ++i)
+            {
                 fNeededUiSends[i] = false;
+
+                const d_string& d_key(fPlugin.getStateKey(i));
+                fStateMap[d_key] = fPlugin.getStateDefaultValue(i);
+            }
         }
         else
         {
@@ -592,7 +597,10 @@ public:
             const d_string& key   = cit->first;
             const d_string& value = cit->second;
 
-            store(handle, fUridMap->map(fUridMap->handle, key.buffer()), value.buffer(), value.length(), fURIDs.atomString, LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
+            const d_string urnKey("urn:distrho:" + key);
+
+            // some hosts need +1 for the null terminator, even though the type is string
+            store(handle, fUridMap->map(fUridMap->handle, urnKey.buffer()), value.buffer(), value.length()+1, fURIDs.atomString, LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
         }
 
         return LV2_STATE_SUCCESS;
@@ -606,11 +614,12 @@ public:
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
             const d_string& key(fPlugin.getStateKey(i));
+            const d_string urnKey("urn:distrho:" + key);
 
             size  = 0;
             type  = 0;
             flags = LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE;
-            const void* data = retrieve(handle, fUridMap->map(fUridMap->handle, key.buffer()), &size, &type, &flags);
+            const void* data = retrieve(handle, fUridMap->map(fUridMap->handle, urnKey.buffer()), &size, &type, &flags);
 
             if (data == nullptr || size == 0)
                 continue;
@@ -618,7 +627,8 @@ public:
             DISTRHO_SAFE_ASSERT_CONTINUE(type == fURIDs.atomString);
 
             const char* const value((const char*)data);
-            DISTRHO_SAFE_ASSERT_CONTINUE(std::strlen(value) == size);
+            const std::size_t length(std::strlen(value));
+            DISTRHO_SAFE_ASSERT_CONTINUE(length == size || length+1 == size);
 
             setState(key, value);
 
@@ -762,9 +772,7 @@ private:
             }
         }
 
-        // nope, add a new one then
-        d_string d_key(key);
-        fStateMap[d_key] = newValue;
+        d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
 #endif
 

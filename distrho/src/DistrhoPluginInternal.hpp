@@ -49,6 +49,7 @@ struct Plugin::PrivateData {
 #if DISTRHO_PLUGIN_WANT_STATE
     uint32_t  stateCount;
     d_string* stateKeys;
+    d_string* stateDefValues;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
@@ -73,6 +74,7 @@ struct Plugin::PrivateData {
 #if DISTRHO_PLUGIN_WANT_STATE
           stateCount(0),
           stateKeys(nullptr),
+          stateDefValues(nullptr),
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
           latency(0),
@@ -106,6 +108,12 @@ struct Plugin::PrivateData {
             delete[] stateKeys;
             stateKeys = nullptr;
         }
+
+        if (stateDefValues != nullptr)
+        {
+            delete[] stateDefValues;
+            stateDefValues = nullptr;
+        }
 #endif
     }
 };
@@ -134,7 +142,7 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fData->stateCount; i < count; ++i)
-            fPlugin->d_initStateKey(i, fData->stateKeys[i]);
+            fPlugin->d_initState(i, fData->stateKeys[i], fData->stateDefValues[i]);
 #endif
     }
 
@@ -303,6 +311,13 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
         return fData->stateKeys[index];
+    }
+
+    const d_string& getStateDefaultValue(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
+
+        return fData->stateDefValues[index];
     }
 
     void setState(const char* const key, const char* const value)

@@ -55,8 +55,9 @@ Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const
 #if DISTRHO_PLUGIN_WANT_STATE
     if (stateCount > 0)
     {
-        pData->stateCount = stateCount;
-        pData->stateKeys  = new d_string[stateCount];
+        pData->stateCount     = stateCount;
+        pData->stateKeys      = new d_string[stateCount];
+        pData->stateDefValues = new d_string[stateCount];
     }
 #else
     DISTRHO_SAFE_ASSERT(stateCount == 0);
