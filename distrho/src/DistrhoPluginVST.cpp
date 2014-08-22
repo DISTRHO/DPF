@@ -57,10 +57,6 @@ struct ERect {
 # include "vst/aeffectx.h"
 #endif
 
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
-# warning VST TimePos still TODO (only basic BBT working)
-#endif
-
 START_NAMESPACE_DISTRHO
 
 typedef std::map<const d_string,d_string> StringMap;
@@ -624,23 +620,51 @@ public:
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        static const int kWantVstTimeFlags(kVstTransportPlaying|kVstTempoValid|kVstTimeSigValid);
+        static const int kWantVstTimeFlags(kVstTransportPlaying|kVstPpqPosValid|kVstTempoValid|kVstBarsValid|kVstTimeSigValid);
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantVstTimeFlags, nullptr, 0.0f))
         {
-            fTimePosition.playing = (vstTimeInfo->flags & kVstTransportPlaying);
-            fTimePosition.frame   = vstTimeInfo->samplePos;
+            fTimePosition.frame     =   vstTimeInfo->samplePos;
+            fTimePosition.playing   =  (vstTimeInfo->flags & kVstTransportPlaying);
             fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
 
-            if (vstTimeInfo->flags & kVstTempoValid)
+            // ticksPerBeat is not possible with VST
+            fTimePosition.bbt.ticksPerBeat = 960.0;
+
+            if (vstTimeInfo->flags & kVstPpqPosValid)
             {
-                fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
+                const int    ppqPerBar = vstTimeInfo->timeSigNumerator * 4 / vstTimeInfo->timeSigDenominator;
+                const double barBeats  = (std::fmod(vstTimeInfo->ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigDenominator;
+                const double rest      =  std::fmod(barBeats, 1.0);
+
+                fTimePosition.bbt.bar  = int(vstTimeInfo->ppqPos)/ppqPerBar + 1;
+                fTimePosition.bbt.beat = barBeats-rest+1;
+                fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
             }
+            else
+            {
+                fTimePosition.bbt.bar  = 1;
+                fTimePosition.bbt.beat = 1;
+                fTimePosition.bbt.tick = 0;
+            }
+
+            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
+
             if (vstTimeInfo->flags & kVstTimeSigValid)
             {
                 fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
                 fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
             }
+            else
+            {
+                fTimePosition.bbt.beatsPerBar = 4.0f;
+                fTimePosition.bbt.beatType    = 4.0f;
+            }
+
+            if (vstTimeInfo->flags & kVstTempoValid)
+                fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
+            else
+                fTimePosition.bbt.beatsPerMinute = 120.0;
 
             fPlugin.setTimePosition(fTimePosition);
         }

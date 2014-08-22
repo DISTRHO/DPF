@@ -312,10 +312,7 @@ public:
                                     fURIDs.timeSpeed, &speed,
                                     nullptr);
 
-                // Not possible with LV2:
-                //  -> barStartTick
-                //  -> ticksPerBeat
-                fTimePosition.bbt.barStartTick = 0.0;
+                // ticksPerBeat is not possible with LV2
                 fTimePosition.bbt.ticksPerBeat = 960.0;
 
                 if (bar != nullptr)
@@ -337,27 +334,19 @@ public:
                     double barBeatValue = 0.0;
 
                     /**/ if (barBeat->type == fURIDs.atomDouble)
-                        barBeatValue = ((LV2_Atom_Double*)barBeat)->body + 1.0;
+                        barBeatValue = ((LV2_Atom_Double*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomFloat)
-                        barBeatValue = ((LV2_Atom_Float*)barBeat)->body + 1.0f;
+                        barBeatValue = ((LV2_Atom_Float*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomInt)
-                        barBeatValue = ((LV2_Atom_Int*)barBeat)->body + 1;
+                        barBeatValue = ((LV2_Atom_Int*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomLong)
-                        barBeatValue = ((LV2_Atom_Long*)barBeat)->body + 1;
+                        barBeatValue = ((LV2_Atom_Long*)barBeat)->body;
                     else
                         d_stderr("Unknown lv2 barBeat value type");
 
-                    if (barBeatValue != 0.0)
-                    {
-                        const double beat = std::floor(barBeatValue);
-                        fTimePosition.bbt.beat = beat;
-                        fTimePosition.bbt.tick = (barBeatValue-beat)*fTimePosition.bbt.ticksPerBeat;
-                    }
-                    else
-                    {
-                        fTimePosition.bbt.beat = 0;
-                        fTimePosition.bbt.tick = 0;
-                    }
+                    const double rest = std::fmod(barBeatValue, 1.0);
+                    fTimePosition.bbt.beat = barBeatValue-rest+1.0;
+                    fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
                 }
                 // barBeat includes beat
                 else if (beat != nullptr)
@@ -415,6 +404,8 @@ public:
                     else
                         d_stderr("Unknown lv2 beatsPerMinute value type");
                 }
+
+                fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
 
                 if (frame != nullptr && frame->type == fURIDs.atomLong)
                     fTimePosition.frame = ((LV2_Atom_Long*)frame)->body;
@@ -494,6 +485,7 @@ public:
                 fTimePosition.bbt.bar  = newBarPos+1.0;
                 fTimePosition.bbt.beat = newBeatPos+1.0;
                 fTimePosition.bbt.tick = newTickPos;
+                fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
             }
         }
 # endif
