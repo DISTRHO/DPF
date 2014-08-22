@@ -203,10 +203,7 @@ protected:
 
         if (pos.unique_1 == pos.unique_2)
         {
-            if (pos.valid & JackTransportPosition)
-                fTimePosition.frame = pos.frame;
-            else
-                fTimePosition.frame = 0;
+            fTimePosition.frame = pos.frame;
 
             if (pos.valid & JackTransportBBT)
             {

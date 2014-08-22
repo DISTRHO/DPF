@@ -16,8 +16,6 @@
 
 #include "DistrhoPluginInternal.hpp"
 
-#define DISTRHO_PLUGIN_HAS_UI 1
-
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 #endif
@@ -153,6 +151,11 @@ public:
         return fUI.getHeight();
     }
 
+    void setSampleRate(const double newSampleRate)
+    {
+        fUI.setSampleRate(newSampleRate, true);
+    }
+
     // -------------------------------------------------------------------
     // functions called from the plugin side, may block
 
@@ -279,7 +282,7 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-        fVstUi          = nullptr;
+        fVstUI          = nullptr;
         fVstRect.top    = 0;
         fVstRect.left   = 0;
         fVstRect.bottom = 0;
@@ -363,6 +366,9 @@ public:
 
         case effSetSampleRate:
             fPlugin.setSampleRate(opt, true);
+
+            if (fVstUI != nullptr)
+                fVstUI->setSampleRate(opt);
             break;
 
         case effSetBlockSize:
@@ -385,10 +391,10 @@ public:
 
 #if DISTRHO_PLUGIN_HAS_UI
         case effEditGetRect:
-            if (fVstUi != nullptr)
+            if (fVstUI != nullptr)
             {
-                fVstRect.right  = fVstUi->getWidth();
-                fVstRect.bottom = fVstUi->getHeight();
+                fVstRect.right  = fVstUI->getWidth();
+                fVstRect.bottom = fVstUI->getHeight();
             }
             else
             {
@@ -403,7 +409,7 @@ public:
             return 1;
 
         case effEditOpen:
-            if (fVstUi == nullptr)
+            if (fVstUI == nullptr)
             {
 # if DISTRHO_OS_MAC && ! defined(__LP64__)
                 if ((fEffect->dispatcher(fEffect, effCanDo, 0, 0, (void*)"hasCockosViewAsConfig", 0.0f) & 0xffff0000) != 0xbeef0000)
@@ -411,7 +417,7 @@ public:
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
-                fVstUi = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
+                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
 # if DISTRHO_PLUGIN_WANT_STATE
                 for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
@@ -419,30 +425,30 @@ public:
                     const d_string& key   = cit->first;
                     const d_string& value = cit->second;
 
-                    fVstUi->setStateFromPlugin(key, value);
+                    fVstUI->setStateFromPlugin(key, value);
                 }
 # endif
                 for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
                     setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
 
-                fVstUi->idle();
+                fVstUI->idle();
                 return 1;
             }
             break;
 
         case effEditClose:
-            if (fVstUi != nullptr)
+            if (fVstUI != nullptr)
             {
-                delete fVstUi;
-                fVstUi = nullptr;
+                delete fVstUI;
+                fVstUI = nullptr;
                 return 1;
             }
             break;
 
         //case effIdle:
         case effEditIdle:
-            if (fVstUi != nullptr)
-                fVstUi->idle();
+            if (fVstUI != nullptr)
+                fVstUI->idle();
             break;
 #endif // DISTRHO_PLUGIN_HAS_UI
 
@@ -517,8 +523,8 @@ public:
 
                 setStateFromUI(key, value);
 
-                if (fVstUi != nullptr)
-                    fVstUi->setStateFromPlugin(key, value);
+                if (fVstUI != nullptr)
+                    fVstUI->setStateFromPlugin(key, value);
 
                 // get next key
                 key = value+(std::strlen(value)+1);
@@ -610,7 +616,7 @@ public:
         fPlugin.setParameterValue(index, realValue);
 
 #if DISTRHO_PLUGIN_HAS_UI
-        if (fVstUi != nullptr)
+        if (fVstUI != nullptr)
             setParameterValueFromPlugin(index, realValue);
 #endif
     }
@@ -648,7 +654,7 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-        if (fVstUi == nullptr)
+        if (fVstUI == nullptr)
             return;
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
@@ -685,7 +691,7 @@ private:
 
     // UI stuff
 #if DISTRHO_PLUGIN_HAS_UI
-    UIVst* fVstUi;
+    UIVst* fVstUI;
     ERect  fVstRect;
 #endif
 

@@ -27,6 +27,8 @@
 #include "lv2/urid.h"
 #include "lv2/lv2_programs.h"
 
+// TODO - UI setSampleRate changes
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -143,6 +145,37 @@ public:
     int lv2ui_hide()
     {
         return fUI.setWindowVisible(false) ? 0 : 1;
+    }
+
+    // -------------------------------------------------------------------
+
+    uint32_t lv2_get_options(LV2_Options_Option* const /*options*/)
+    {
+        // currently unused
+        return LV2_OPTIONS_ERR_UNKNOWN;
+    }
+
+    uint32_t lv2_set_options(const LV2_Options_Option* const options)
+    {
+        for (int i=0; options[i].key != 0; ++i)
+        {
+            if (options[i].key == fUridMap->map(fUridMap->handle, LV2_CORE__sampleRate))
+            {
+                if (options[i].type == fUridMap->map(fUridMap->handle, LV2_ATOM__Double))
+                {
+                    const double sampleRate(*(const double*)options[i].value);
+                    fUI.setSampleRate(sampleRate);
+                    continue;
+                }
+                else
+                {
+                    d_stderr("Host changed sampleRate but with wrong value type");
+                    continue;
+                }
+            }
+        }
+
+        return LV2_OPTIONS_SUCCESS;
     }
 
     // -------------------------------------------------------------------
@@ -403,6 +436,20 @@ static int lv2ui_hide(LV2UI_Handle ui)
     return uiPtr->lv2ui_hide();
 }
 
+// -----------------------------------------------------------------------
+
+static uint32_t lv2_get_options(LV2UI_Handle ui, LV2_Options_Option* options)
+{
+    return uiPtr->lv2_get_options(options);
+}
+
+static uint32_t lv2_set_options(LV2UI_Handle ui, const LV2_Options_Option* options)
+{
+    return uiPtr->lv2_set_options(options);
+}
+
+// -----------------------------------------------------------------------
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
 static void lv2ui_select_program(LV2UI_Handle ui, uint32_t bank, uint32_t program)
 {
@@ -414,9 +461,12 @@ static void lv2ui_select_program(LV2UI_Handle ui, uint32_t bank, uint32_t progra
 
 static const void* lv2ui_extension_data(const char* uri)
 {
-    static const LV2UI_Idle_Interface uiIdle = { lv2ui_idle };
-    static const LV2UI_Show_Interface uiShow = { lv2ui_show, lv2ui_hide };
+    static const LV2_Options_Interface options = { lv2_get_options, lv2_set_options };
+    static const LV2UI_Idle_Interface  uiIdle  = { lv2ui_idle };
+    static const LV2UI_Show_Interface  uiShow  = { lv2ui_show, lv2ui_hide };
 
+    if (std::strcmp(uri, LV2_OPTIONS__interface) == 0)
+        return &options;
     if (std::strcmp(uri, LV2_UI__idleInterface) == 0)
         return &uiIdle;
     if (std::strcmp(uri, LV2_UI__showInterface) == 0)
