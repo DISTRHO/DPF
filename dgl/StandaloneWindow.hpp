@@ -41,7 +41,7 @@ public:
     }
 
 protected:
-    void onReshape(int width, int height) override
+    void onReshape(uint width, uint height) override
     {
         if (fWidget != nullptr)
             fWidget->setSize(width, height);
