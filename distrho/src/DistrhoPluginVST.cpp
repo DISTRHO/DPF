@@ -631,6 +631,22 @@ public:
             // ticksPerBeat is not possible with VST
             fTimePosition.bbt.ticksPerBeat = 960.0;
 
+            if (vstTimeInfo->flags & kVstTempoValid)
+                fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
+            else
+                fTimePosition.bbt.beatsPerMinute = 120.0;
+
+            if (vstTimeInfo->flags & kVstTimeSigValid)
+            {
+                fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
+                fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
+            }
+            else
+            {
+                fTimePosition.bbt.beatsPerBar = 4.0f;
+                fTimePosition.bbt.beatType    = 4.0f;
+            }
+
             if (vstTimeInfo->flags & kVstPpqPosValid)
             {
                 const int    ppqPerBar = vstTimeInfo->timeSigNumerator * 4 / vstTimeInfo->timeSigDenominator;
@@ -649,22 +665,6 @@ public:
             }
 
             fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
-
-            if (vstTimeInfo->flags & kVstTimeSigValid)
-            {
-                fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
-                fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
-            }
-            else
-            {
-                fTimePosition.bbt.beatsPerBar = 4.0f;
-                fTimePosition.bbt.beatType    = 4.0f;
-            }
-
-            if (vstTimeInfo->flags & kVstTempoValid)
-                fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
-            else
-                fTimePosition.bbt.beatsPerMinute = 120.0;
 
             fPlugin.setTimePosition(fTimePosition);
         }
