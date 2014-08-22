@@ -298,6 +298,8 @@ public:
     {
         if (glWindow.isReady())
             fUI->d_uiIdle();
+
+        fChangingSize = false;
     }
 
     bool idle()
@@ -308,6 +310,8 @@ public:
 
         if (glWindow.isReady())
             fUI->d_uiIdle();
+
+        fChangingSize = false;
 
         return ! glApp.isQuiting();
     }
@@ -333,11 +337,6 @@ public:
             fUI->setSize(width, height);
 
         glWindow.setSize(width, height);
-        glWindow.onReshape(width, height); // FIXME
-
-        glApp.idle();
-
-        fChangingSize = false;
     }
 
     void setWindowTitle(const char* const uiTitle)

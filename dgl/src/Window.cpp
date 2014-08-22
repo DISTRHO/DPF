@@ -67,6 +67,9 @@ struct Window::PrivateData {
           fVisible(false),
           fResizable(true),
           fUsingEmbed(false),
+          fWidth(1),
+          fHeight(1),
+          fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0),
 #elif defined(DISTRHO_OS_LINUX)
@@ -90,6 +93,8 @@ struct Window::PrivateData {
           fVisible(false),
           fResizable(true),
           fUsingEmbed(false),
+          fWidth(1),
+          fHeight(1),
           fModal(parent.pData),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0),
@@ -120,6 +125,9 @@ struct Window::PrivateData {
           fVisible(parentId != 0),
           fResizable(parentId == 0),
           fUsingEmbed(parentId != 0),
+          fWidth(1),
+          fHeight(1),
+          fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0),
 #elif defined(DISTRHO_OS_LINUX)
@@ -161,6 +169,7 @@ struct Window::PrivateData {
         }
 
         puglInitResizable(fView, fResizable);
+        puglInitWindowSize(fView, fWidth, fHeight);
 
         puglSetHandle(fView, this);
         puglSetDisplayFunc(fView, onDisplayCallback);
@@ -358,7 +367,7 @@ struct Window::PrivateData {
         fVisible = yesNo;
 
         if (yesNo && fFirstInit)
-            setSize(static_cast<uint>(fView->width), static_cast<uint>(fView->height), true);
+            setSize(fWidth, fHeight, true);
 
 #if defined(DISTRHO_OS_WINDOWS)
         if (yesNo)
@@ -412,7 +421,7 @@ struct Window::PrivateData {
 
         fResizable = yesNo;
 
-        setSize(static_cast<uint>(fView->width), static_cast<uint>(fView->height), true);
+        setSize(fWidth, fHeight, true);
     }
 
     // -------------------------------------------------------------------
@@ -425,14 +434,14 @@ struct Window::PrivateData {
             return;
         }
 
-        if (fView->width == static_cast<int>(width) && fView->height == static_cast<int>(height) && ! forced)
+        if (fWidth == width && fHeight == height && ! forced)
         {
             DBGp("Window setSize matches current size, ignoring request (%i %i)\n", width, height);
             return;
         }
 
-        fView->width  = static_cast<int>(width);
-        fView->height = static_cast<int>(height);
+        fWidth  = width;
+        fHeight = height;
 
         DBGp("Window setSize called %s, size %i %i\n", forced ? "(forced)" : "(not forced)", width, height);
 
@@ -580,15 +589,15 @@ struct Window::PrivateData {
                 // reset color
                 glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-                if (widget->fNeedsFullViewport || (widget->fAbsolutePos.isZero() && widget->fSize == Size<uint>(fView->width, fView->height)))
+                if (widget->fNeedsFullViewport || (widget->fAbsolutePos.isZero() && widget->fSize == Size<uint>(fWidth, fHeight)))
                 {
                     // full viewport size
-                    glViewport(0, 0, fView->width, fView->height);
+                    glViewport(0, 0, fWidth, fHeight);
                 }
                 else if (! widget->fNeedsScaling)
                 {
                     // only set viewport pos
-                    glViewport(widget->getAbsoluteX(), /*fView->height - widget->getHeight()*/ - widget->getAbsoluteY(), fView->width, fView->height);
+                    glViewport(widget->getAbsoluteX(), /*fView->height - widget->getHeight()*/ - widget->getAbsoluteY(), fWidth, fHeight);
 
                     // then cut the outer bounds
                     glScissor(widget->getAbsoluteX(), fView->height - widget->getHeight() - widget->getAbsoluteY(), widget->getWidth(), widget->getHeight());
@@ -732,6 +741,12 @@ struct Window::PrivateData {
     {
         DBGp("PUGL: onReshape : %i %i\n", width, height);
 
+        if (width == 1 && height == 1)
+            return;
+
+        fWidth  = width;
+        fHeight = height;
+
         fSelf->onReshape(width, height);
 
         FOR_EACH_WIDGET(it)
@@ -768,6 +783,8 @@ struct Window::PrivateData {
     bool fVisible;
     bool fResizable;
     bool fUsingEmbed;
+    uint fWidth;
+    uint fHeight;
     std::list<Widget*> fWidgets;
 
     struct Modal {
@@ -921,23 +938,17 @@ void Window::setResizable(bool yesNo)
 
 uint Window::getWidth() const noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->width >= 0, 0);
-
-    return pData->fView->width;
+    return pData->fWidth;
 }
 
 uint Window::getHeight() const noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->height >= 0, 0);
-
-    return pData->fView->height;
+    return pData->fHeight;
 }
 
 Size<uint> Window::getSize() const noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(pData->fView->width >= 0 && pData->fView->height >= 0, Size<uint>(0, 0));
-
-    return Size<uint>(pData->fView->width, pData->fView->height);
+    return Size<uint>(pData->fWidth, pData->fHeight);
 }
 
 void Window::setSize(uint width, uint height)
