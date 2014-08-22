@@ -177,7 +177,7 @@ public:
         return fIsReady;
     }
 
-protected:
+//protected:
 #if DISTRHO_UI_USE_NTK
     void resize(int x, int y, int width, int height) override
     {
@@ -188,10 +188,6 @@ protected:
     void onReshape(uint width, uint height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
-
-        // report size change to plugin UI
-        // TESTING is this needed?
-        //fUI->setSize(width, height);
 
         // custom window reshape
         fUI->d_uiReshape(width, height);
@@ -216,6 +212,7 @@ public:
                void* const dspPtr = nullptr)
         : glApp(),
           glWindow(glApp, winId, dspPtr),
+          fChangingSize(false),
           fUI(glWindow.getUI()),
           fData((fUI != nullptr) ? fUI->pData : nullptr)
     {
@@ -323,9 +320,24 @@ public:
 
     // -------------------------------------------------------------------
 
-    void setWindowSize(const uint width, const uint height)
+    void setWindowSize(const uint width, const uint height, const bool updateUI = false)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+
+        if (fChangingSize)
+            return;
+
+        fChangingSize = true;
+
+        if (updateUI)
+            fUI->setSize(width, height);
+
         glWindow.setSize(width, height);
+        glWindow.onReshape(width, height); // FIXME
+
+        glApp.idle();
+
+        fChangingSize = false;
     }
 
     void setWindowTitle(const char* const uiTitle)
@@ -368,6 +380,9 @@ private:
 
     App glApp;
     UIExporterWindow glWindow;
+
+    // prevent recursion
+    bool fChangingSize;
 
     // -------------------------------------------------------------------
     // Widget and DistrhoUI data

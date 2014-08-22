@@ -27,8 +27,6 @@
 #include "lv2/urid.h"
 #include "lv2/lv2_programs.h"
 
-// TODO - UI setSampleRate changes
-
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -145,6 +143,12 @@ public:
     int lv2ui_hide()
     {
         return fUI.setWindowVisible(false) ? 0 : 1;
+    }
+
+    int lv2ui_resize(uint width, uint height)
+    {
+        fUI.setWindowSize(width, height, true);
+        return 0;
     }
 
     // -------------------------------------------------------------------
@@ -436,6 +440,16 @@ static int lv2ui_hide(LV2UI_Handle ui)
     return uiPtr->lv2ui_hide();
 }
 
+static int lv2ui_resize(LV2UI_Handle ui, int width, int height)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, 1);
+    DISTRHO_SAFE_ASSERT_RETURN(width > 0, 1);
+    DISTRHO_SAFE_ASSERT_RETURN(height > 0, 1);
+
+    return 1; // This needs more testing
+    //return uiPtr->lv2ui_resize(width, height);
+}
+
 // -----------------------------------------------------------------------
 
 static uint32_t lv2_get_options(LV2UI_Handle ui, LV2_Options_Option* options)
@@ -464,6 +478,7 @@ static const void* lv2ui_extension_data(const char* uri)
     static const LV2_Options_Interface options = { lv2_get_options, lv2_set_options };
     static const LV2UI_Idle_Interface  uiIdle  = { lv2ui_idle };
     static const LV2UI_Show_Interface  uiShow  = { lv2ui_show, lv2ui_hide };
+    static const LV2UI_Resize          uiResz  = { nullptr, lv2ui_resize };
 
     if (std::strcmp(uri, LV2_OPTIONS__interface) == 0)
         return &options;
@@ -471,6 +486,8 @@ static const void* lv2ui_extension_data(const char* uri)
         return &uiIdle;
     if (std::strcmp(uri, LV2_UI__showInterface) == 0)
         return &uiShow;
+    if (std::strcmp(uri, LV2_UI__resize) == 0)
+        return &uiResz;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     static const LV2_Programs_UI_Interface uiPrograms = { lv2ui_select_program };
