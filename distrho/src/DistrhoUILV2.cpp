@@ -58,6 +58,9 @@ public:
         if (winId != 0)
             return;
 
+        // if winId != 0 then options must not be null
+        DISTRHO_SAFE_ASSERT_RETURN(options != nullptr,);
+
         const LV2_URID uridWindowTitle(uridMap->map(uridMap->handle, LV2_UI__windowTitle));
         const LV2_URID uridFrontendWinId(uridMap->map(uridMap->handle, "http://kxstudio.sf.net/ns/carla/frontendWinId"));
 
@@ -351,9 +354,9 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
 #endif
     }
 
-    if (options == nullptr)
+    if (options == nullptr && parentId == nullptr)
     {
-        d_stderr("Options feature missing, cannot continue!");
+        d_stderr("Options feature missing (needed for show-interface), cannot continue!");
         return nullptr;
     }
 
@@ -376,10 +379,11 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
     }
 
     if (const LV2_DirectAccess_Interface* const directAccess = (const LV2_DirectAccess_Interface*)extData->data_access(DISTRHO_DIRECT_ACCESS_URI))
-    {
         instance = directAccess->get_instance_pointer(instance);
-    }
     else
+        instance = nullptr;
+
+    if (instance == nullptr)
     {
         d_stderr("Failed to get direct access, cannot continue!");
         return nullptr;
@@ -390,23 +394,29 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
 
     const intptr_t winId((intptr_t)parentId);
 
-    const LV2_URID uridSampleRate(uridMap->map(uridMap->handle, LV2_CORE__sampleRate));
-
-    for (int i=0; options[i].key != 0; ++i)
+    if (options != nullptr)
     {
-        if (options[i].key == uridSampleRate)
-        {
-            if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Double))
-                d_lastUiSampleRate = *(const double*)options[i].value;
-            else
-                d_stderr("Host provides sampleRate but has wrong value type");
+        const LV2_URID uridSampleRate(uridMap->map(uridMap->handle, LV2_CORE__sampleRate));
 
-            break;
+        for (int i=0; options[i].key != 0; ++i)
+        {
+            if (options[i].key == uridSampleRate)
+            {
+                if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Double))
+                    d_lastUiSampleRate = *(const double*)options[i].value;
+                else
+                    d_stderr("Host provides sampleRate but has wrong value type");
+
+                break;
+            }
         }
     }
 
     if (d_lastUiSampleRate == 0.0)
+    {
+        d_stdout("WARNING: this host does not send sample-rate information for LV2 UIs, using 44100 as fallback (this could be wrong)");
         d_lastUiSampleRate = 44100.0;
+    }
 
     return new UiLv2(winId, options, uridMap, uiResize, uiTouch, controller, writeFunction, instance);
 }
