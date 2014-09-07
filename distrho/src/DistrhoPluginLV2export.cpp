@@ -382,8 +382,10 @@ void lv2_generate_ttl(const char* const basename)
                     if (hints & kParameterIsLogarithmic)
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__logarithmic "> ;\n";
                     if ((hints & kParameterIsAutomable) == 0 && ! plugin.isParameterOutput(i))
+                    {
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__expensive "> ,\n";
                         pluginString += "                         <" LV2_KXSTUDIO_PROPERTIES__NonAutomable "> ;\n";
+                    }
                 }
 
                 if (i+1 == count)
