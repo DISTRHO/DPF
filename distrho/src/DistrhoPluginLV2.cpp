@@ -27,6 +27,7 @@
 #include "lv2/time.h"
 #include "lv2/urid.h"
 #include "lv2/worker.h"
+#include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
 
 #ifdef noexcept
@@ -126,6 +127,19 @@ public:
         {
             fNeededUiSends = nullptr;
         }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
+        // hosts may not send all values, resulting on some invalid ones
+        fTimePosition.bbt.valid = false;
+        fTimePosition.bbt.bar   = 1;
+        fTimePosition.bbt.beat  = 1;
+        fTimePosition.bbt.tick  = 0;
+        fTimePosition.bbt.barStartTick = 0;
+        fTimePosition.bbt.beatsPerBar  = 4;
+        fTimePosition.bbt.beatType     = 4;
+        fTimePosition.bbt.ticksPerBeat = 960.0;
+        fTimePosition.bbt.beatsPerMinute = 120.0;
 #endif
     }
 
@@ -298,6 +312,7 @@ public:
                 LV2_Atom* beatUnit = nullptr;
                 LV2_Atom* beatsPerBar = nullptr;
                 LV2_Atom* beatsPerMinute = nullptr;
+                LV2_Atom* ticksPerBeat = nullptr;
                 LV2_Atom* frame = nullptr;
                 LV2_Atom* speed = nullptr;
 
@@ -308,12 +323,10 @@ public:
                                     fURIDs.timeBeatUnit, &beatUnit,
                                     fURIDs.timeBeatsPerBar, &beatsPerBar,
                                     fURIDs.timeBeatsPerMinute, &beatsPerMinute,
+                                    fURIDs.timeTicksPerBeat, &ticksPerBeat,
                                     fURIDs.timeFrame, &frame,
                                     fURIDs.timeSpeed, &speed,
                                     nullptr);
-
-                // ticksPerBeat is not possible with LV2
-                fTimePosition.bbt.ticksPerBeat = 960.0;
 
                 if (bar != nullptr)
                 {
@@ -327,6 +340,20 @@ public:
                         fTimePosition.bbt.bar = ((LV2_Atom_Long*)bar)->body + 1;
                     else
                         d_stderr("Unknown lv2 bar value type");
+                }
+
+                if (ticksPerBeat != nullptr)
+                {
+                    /**/ if (ticksPerBeat->type == fURIDs.atomDouble)
+                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Double*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomFloat)
+                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Float*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomInt)
+                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Int*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomLong)
+                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Long*)ticksPerBeat)->body;
+                    else
+                        d_stderr("Unknown lv2 ticksPerBeat value type");
                 }
 
                 if (barBeat != nullptr)
@@ -781,6 +808,7 @@ private:
         LV2_URID timeBeatUnit;
         LV2_URID timeBeatsPerBar;
         LV2_URID timeBeatsPerMinute;
+        LV2_URID timeTicksPerBeat;
         LV2_URID timeFrame;
         LV2_URID timeSpeed;
 
@@ -802,6 +830,7 @@ private:
               timeBeatUnit(uridMap->map(uridMap->handle, LV2_TIME__beatUnit)),
               timeBeatsPerBar(uridMap->map(uridMap->handle, LV2_TIME__beatsPerBar)),
               timeBeatsPerMinute(uridMap->map(uridMap->handle, LV2_TIME__beatsPerMinute)),
+              timeTicksPerBeat(uridMap->map(uridMap->handle, LV2_KXSTUDIO_PROPERTIES__TimePositionTicksPerBeat)),
               timeFrame(uridMap->map(uridMap->handle, LV2_TIME__frame)),
               timeSpeed(uridMap->map(uridMap->handle, LV2_TIME__speed)) {}
     } fURIDs;

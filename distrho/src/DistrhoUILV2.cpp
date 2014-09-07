@@ -25,6 +25,7 @@
 #include "lv2/options.h"
 #include "lv2/ui.h"
 #include "lv2/urid.h"
+#include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
 
 START_NAMESPACE_DISTRHO
@@ -62,21 +63,21 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(options != nullptr,);
 
         const LV2_URID uridWindowTitle(uridMap->map(uridMap->handle, LV2_UI__windowTitle));
-        const LV2_URID uridFrontendWinId(uridMap->map(uridMap->handle, "http://kxstudio.sf.net/ns/carla/frontendWinId"));
+        const LV2_URID uridTransientWinId(uridMap->map(uridMap->handle, LV2_KXSTUDIO_PROPERTIES__TransientWindowId));
 
         bool hasTitle = false;
 
         for (int i=0; options[i].key != 0; ++i)
         {
-            if (options[i].key == uridFrontendWinId)
+            if (options[i].key == uridTransientWinId)
             {
                 if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Long))
                 {
-                    if (const int64_t frontendWinId = *(const int64_t*)options[i].value)
-                        fUI.setWindowTransientWinId(static_cast<intptr_t>(frontendWinId));
+                    if (const int64_t transientWinId = *(const int64_t*)options[i].value)
+                        fUI.setWindowTransientWinId(static_cast<intptr_t>(transientWinId));
                 }
                 else
-                    d_stderr("Host provides frontendWinId but has wrong value type");
+                    d_stderr("Host provides transientWinId but has wrong value type");
             }
             else if (options[i].key == uridWindowTitle)
             {
