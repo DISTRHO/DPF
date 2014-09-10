@@ -182,7 +182,7 @@ public:
     {
         // Two ScopedPointers should never be able to refer to the same object - if
         // this happens, you must have done something dodgy!
-        DISTRHO_SAFE_ASSERT_RETURN(object != other.object && this != other.getAddress(),);
+        DISTRHO_SAFE_ASSERT_RETURN(object != other.object || this == other.getAddress() || object == nullptr,);
 
         std::swap(object, other.object);
     }
