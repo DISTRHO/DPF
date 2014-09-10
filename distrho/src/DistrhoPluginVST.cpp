@@ -620,7 +620,7 @@ public:
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        static const int kWantVstTimeFlags(kVstTransportPlaying|kVstPpqPosValid|kVstTempoValid|kVstBarsValid|kVstTimeSigValid);
+        static const int kWantVstTimeFlags(kVstTransportPlaying|kVstPpqPosValid|kVstTempoValid|kVstTimeSigValid);
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantVstTimeFlags, nullptr, 0.0f))
         {
@@ -636,32 +636,25 @@ public:
             else
                 fTimePosition.bbt.beatsPerMinute = 120.0;
 
-            if (vstTimeInfo->flags & kVstTimeSigValid)
-            {
-                fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
-                fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
-            }
-            else
-            {
-                fTimePosition.bbt.beatsPerBar = 4.0f;
-                fTimePosition.bbt.beatType    = 4.0f;
-            }
-
-            if (vstTimeInfo->flags & kVstPpqPosValid)
+            if (vstTimeInfo->flags & kVstPpqPosValid|kVstTimeSigValid)
             {
                 const int    ppqPerBar = vstTimeInfo->timeSigNumerator * 4 / vstTimeInfo->timeSigDenominator;
                 const double barBeats  = (std::fmod(vstTimeInfo->ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigDenominator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
-                fTimePosition.bbt.bar  = int(vstTimeInfo->ppqPos)/ppqPerBar + 1;
-                fTimePosition.bbt.beat = barBeats-rest+1;
-                fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
+                fTimePosition.bbt.bar         = int(vstTimeInfo->ppqPos)/ppqPerBar + 1;
+                fTimePosition.bbt.beat        = barBeats-rest+1;
+                fTimePosition.bbt.tick        = rest*fTimePosition.bbt.ticksPerBeat+0.5;
+                fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
+                fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
             }
             else
             {
-                fTimePosition.bbt.bar  = 1;
-                fTimePosition.bbt.beat = 1;
-                fTimePosition.bbt.tick = 0;
+                fTimePosition.bbt.bar         = 1;
+                fTimePosition.bbt.beat        = 1;
+                fTimePosition.bbt.tick        = 0;
+                fTimePosition.bbt.beatsPerBar = 4.0f;
+                fTimePosition.bbt.beatType    = 4.0f;
             }
 
             fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
