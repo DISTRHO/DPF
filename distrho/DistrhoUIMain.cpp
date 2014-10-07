@@ -27,3 +27,28 @@
 #elif defined(DISTRHO_PLUGIN_TARGET_VST)
 // nothing
 #endif
+
+#ifdef DGL_NTK_APP_HPP_INCLUDED
+
+START_NAMESPACE_DGL
+
+void NtkApp::NextUI::run()
+{
+    if (create)
+    {
+        d_stdout("Creating NTK UI in separate thread...");
+        d_UI* const ui2 = (func)();
+        ui = ui2;
+    }
+    else
+    {
+        d_stdout("Destroying NTK UI in separate thread...");
+        d_UI* const ui2 = ui;
+        ui = nullptr;
+        delete ui2;
+    }
+}
+
+END_NAMESPACE_DGL
+
+#endif

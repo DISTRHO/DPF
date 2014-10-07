@@ -18,6 +18,8 @@
 #define DGL_NTK_APP_HPP_INCLUDED
 
 #include "../Base.hpp"
+#include "../../distrho/DistrhoUI.hpp"
+#include "../../distrho/extra/d_thread.hpp"
 
 #ifdef override
 # define override_defined
@@ -35,9 +37,36 @@
 # undef override_defined
 #endif
 
+struct ScopedDisplayLock {
+    ScopedDisplayLock()
+    {
+#ifdef DISTRHO_OS_LINUX
+        XLockDisplay(fl_display);
+#endif
+    }
+
+    ~ScopedDisplayLock()
+    {
+#ifdef DISTRHO_OS_LINUX
+        XUnlockDisplay(fl_display);
+#endif
+    }
+};
+
+// -----------------------------------------------------------------------
+
+namespace DISTRHO_NAMESPACE {
+  class UI;
+}
+
 START_NAMESPACE_DGL
 
 class NtkWindow;
+
+typedef DISTRHO_NAMESPACE::Mutex       d_Mutex;
+typedef DISTRHO_NAMESPACE::MutexLocker d_MutexLocker;
+typedef DISTRHO_NAMESPACE::Thread      d_Thread;
+typedef DISTRHO_NAMESPACE::UI          d_UI;
 
 // -----------------------------------------------------------------------
 
@@ -45,15 +74,172 @@ class NtkWindow;
    DGL compatible App class that uses NTK instead of OpenGL.
    @see App
  */
-class NtkApp
+class NtkApp : d_Thread
 {
 public:
    /**
       Constructor.
     */
     NtkApp()
-        : fIsRunning(true),
-          fWindows()
+        : d_Thread("NtkApp"),
+          fWindows(),
+          fWindowMutex(),
+          fNextUI(),
+          fDoNextUI(false),
+          fInitialized(false)
+    {
+#ifdef DISTRHO_OS_LINUX
+        //XInitThreads();
+#endif
+
+        startThread();
+
+        for (; ! fInitialized;)
+            d_msleep(10);
+    }
+
+   /**
+      Destructor.
+    */
+    ~NtkApp()
+    {
+        stopThread(-1);
+        fWindows.clear();
+    }
+
+   /**
+      Idle function.
+      This calls does nothing.
+    */
+    void idle() {}
+
+   /**
+      Run the application event-loop until all Windows are closed.
+      @note: This function is meant for standalones only, *never* call this from plugins.
+    */
+    void exec()
+    {
+        while (isThreadRunning() && ! shouldThreadExit())
+            d_sleep(1);
+    }
+
+   /**
+      Quit the application.
+      This stops the event-loop and closes all Windows.
+    */
+    void quit()
+    {
+        signalThreadShouldExit();
+    }
+
+   /**
+      Check if the application is about to quit.
+      Returning true means there's no event-loop running at the moment.
+    */
+    bool isQuiting() const noexcept
+    {
+        if (isThreadRunning() && ! shouldThreadExit())
+            return false;
+        return true;
+    }
+
+    // -------------------------------------------------------------------
+
+   /**
+      Create UI on our separate thread.
+      Blocks until the UI is created and returns it.
+    */
+    d_UI* createUI(void* const func)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(isThreadRunning(), nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(! fDoNextUI, nullptr);
+
+        fNextUI.create = true;
+        fNextUI.func   = (NextUI::UiFunc)func;
+        fDoNextUI      = true;
+
+        for (; fDoNextUI;)
+            d_msleep(10);
+
+        return fNextUI.ui;
+    }
+
+   /**
+      Delete UI on our separate thread.
+      Blocks until the UI is deleted.
+    */
+    void deleteUI(d_UI* const ui)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(! fDoNextUI,);
+
+        fNextUI.create = false;
+        fNextUI.ui     = ui;
+        fDoNextUI      = true;
+
+        if (isThreadRunning())
+        {
+            for (; fDoNextUI;)
+                d_msleep(10);
+        }
+        else
+        {
+            fNextUI.run();
+            fDoNextUI = false;
+        }
+    }
+
+    // -------------------------------------------------------------------
+
+private:
+    struct NextUI {
+        typedef d_UI* (*UiFunc)();
+
+        bool create;
+
+        union {
+            UiFunc func;
+            d_UI*  ui;
+        };
+
+        NextUI()
+            : create(false),
+              func(nullptr) {}
+
+        void run();
+    };
+
+    std::list<Fl_Double_Window*> fWindows;
+    d_Mutex       fWindowMutex;
+    NextUI        fNextUI;
+    volatile bool fDoNextUI;
+    volatile bool fInitialized;
+
+   /** @internal used by NtkWindow. */
+    void addWindow(Fl_Double_Window* const window)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
+
+        if (fWindows.size() == 0 && ! isThreadRunning())
+            startThread();
+
+        const d_MutexLocker sl(fWindowMutex);
+        fWindows.push_back(window);
+    }
+
+   /** @internal used by NtkWindow. */
+    void removeWindow(Fl_Double_Window* const window)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
+
+        const d_MutexLocker sl(fWindowMutex);
+        fWindows.remove(window);
+
+        if (fWindows.size() == 0)
+            signalThreadShouldExit();
+    }
+
+   /** @internal */
+    void run() override
     {
         static bool initialized = false;
 
@@ -65,46 +251,27 @@ public:
             fl_open_display();
 #endif
         }
-    }
 
-   /**
-      Destructor.
-    */
-    ~NtkApp()
-    {
-        DISTRHO_SAFE_ASSERT(! fIsRunning);
+        fInitialized = true;
 
-        fWindows.clear();
-    }
+        for (; ! shouldThreadExit();)
+        {
+            if (fDoNextUI)
+            {
+                const ScopedDisplayLock csdl;
+                fNextUI.run();
+                fDoNextUI = false;
+            }
 
-   /**
-      Idle function.
-      This calls the NTK event-loop once (and all idle callbacks).
-    */
-    void idle()
-    {
-        Fl::check();
-        Fl::flush();
-    }
+            const ScopedDisplayLock csdl;
+            Fl::check();
+            Fl::flush();
 
-   /**
-      Run the application event-loop until all Windows are closed.
-      @note: This function is meant for standalones only, *never* call this from plugins.
-    */
-    void exec()
-    {
-        fIsRunning = true;
-        Fl::run();
-        fIsRunning = false;
-    }
+            d_msleep(20);
+        }
 
-   /**
-      Quit the application.
-      This stops the event-loop and closes all Windows.
-    */
-    void quit()
-    {
-        fIsRunning = false;
+        const d_MutexLocker sl(fWindowMutex);
+        const ScopedDisplayLock csdl;
 
         for (std::list<Fl_Double_Window*>::reverse_iterator rit = fWindows.rbegin(), rite = fWindows.rend(); rit != rite; ++rit)
         {
@@ -113,46 +280,10 @@ public:
         }
     }
 
-   /**
-      Check if the application is about to quit.
-      Returning true means there's no event-loop running at the moment.
-    */
-    bool isQuiting() const noexcept
-    {
-        return !fIsRunning;
-    }
-
-private:
-    bool fIsRunning;
-    std::list<Fl_Double_Window*> fWindows;
-
     friend class NtkWindow;
-
-   /** @internal used by NtkWindow. */
-    void addWindow(Fl_Double_Window* const window)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
-
-        if (fWindows.size() == 0)
-            fIsRunning = true;
-
-        fWindows.push_back(window);
-    }
-
-   /** @internal used by NtkWindow. */
-    void removeWindow(Fl_Double_Window* const window)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
-
-        fWindows.remove(window);
-
-        if (fWindows.size() == 0)
-            fIsRunning = false;
-    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NtkApp)
 };
-
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

@@ -141,7 +141,11 @@ UI* createUiWrapper(void* const dspPtr, UIWindow* const window)
 {
     d_lastUiDspPtr = dspPtr;
     d_lastUiWindow = window;
+#if DISTRHO_UI_USE_NTK
+    UI* const ret  = window->getApp().createUI((void*)createUI);
+#else
     UI* const ret  = createUI();
+#endif
     d_lastUiDspPtr = nullptr;
     d_lastUiWindow = nullptr;
     return ret;
@@ -164,7 +168,11 @@ public:
 
     ~UIExporterWindow()
     {
+#if DISTRHO_UI_USE_NTK
+        getApp().deleteUI(fUI);
+#else
         delete fUI;
+#endif
     }
 
     UI* getUI() const noexcept
