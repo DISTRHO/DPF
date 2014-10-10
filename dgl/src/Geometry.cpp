@@ -16,6 +16,8 @@
 
 #include "../Geometry.hpp"
 
+#include <cmath>
+
 START_NAMESPACE_DGL
 
 static const float M_2PIf = 3.14159265358979323846f*2.0f;
