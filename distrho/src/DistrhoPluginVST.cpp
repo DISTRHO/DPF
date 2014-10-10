@@ -416,7 +416,7 @@ public:
                 fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
 # if DISTRHO_PLUGIN_WANT_STATE
-                for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
+                for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const d_string& key   = cit->first;
                     const d_string& value = cit->second;
@@ -469,7 +469,7 @@ public:
             {
                 d_string chunkStr;
 
-                for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
+                for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const d_string& key   = cit->first;
                     const d_string& value = cit->second;

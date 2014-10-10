@@ -537,7 +537,7 @@ public:
 
             const d_string& key = fPlugin.getStateKey(i);
 
-            for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
                 const d_string& curKey = cit->first;
 
@@ -679,7 +679,7 @@ public:
 #if DISTRHO_PLUGIN_WANT_STATE
     LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle)
     {
-        for (StringMap::const_iterator cit=fStateMap.cbegin(), cite=fStateMap.cend(); cit != cite; ++cit)
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const d_string& key   = cit->first;
             const d_string& value = cit->second;
