@@ -30,4 +30,4 @@ for i in $PLUGINS; do
   SetFile -a B $FILE.vst
 done
 
-cd ../../
+cd ..
