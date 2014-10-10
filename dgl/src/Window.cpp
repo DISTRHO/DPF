@@ -117,6 +117,7 @@ struct Window::PrivateData {
 #endif
     }
 
+#ifndef DISTRHO_OS_MAC // TODO not working yet
     PrivateData(App& app, Window* const self, const intptr_t parentId)
         : fApp(app),
           fSelf(self),
@@ -159,6 +160,7 @@ struct Window::PrivateData {
             fFirstInit = false;
         }
     }
+#endif
 
     void init()
     {
@@ -879,7 +881,14 @@ Window::Window(App& app, Window& parent)
     : pData(new PrivateData(app, this, parent)) {}
 
 Window::Window(App& app, intptr_t parentId)
+#ifndef DISTRHO_OS_MAC // TODO not working yet
     : pData(new PrivateData(app, this, parentId)) {}
+#else
+    : pData(new PrivateData(app, this))
+{
+    show();
+}
+#endif
 
 Window::~Window()
 {
