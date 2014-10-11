@@ -761,13 +761,22 @@ private:
 
 // -----------------------------------------------------------------------
 
+struct VstObject {
+    audioMasterCallback audioMaster;
+    PluginVst* plugin;
+};
+
 #ifdef VESTIGE_HEADER
-# define handlePtr   ((PluginVst*)effect->ptr2)
-# define validEffect effect != nullptr && effect->ptr2 != nullptr
+# define validObject  effect != nullptr && effect->ptr3 != nullptr
+# define validPlugin  effect != nullptr && effect->ptr3 != nullptr && ((VstObject*)effect->ptr3)->plugin != nullptr
+# define vstObjectPtr (VstObject*)effect->ptr3
 #else
-# define handlePtr   ((PluginVst*)effect->resvd2)
-# define validEffect effect != nullptr && effect->resvd2 != 0
+# define validObject  effect != nullptr && effect->object != nullptr
+# define validPlugin  effect != nullptr && effect->object != nullptr && ((VstObject*)effect->object)->plugin != nullptr
+# define vstObjectPtr (VstObject*)effect->object
 #endif
+
+#define pluginPtr     (vstObjectPtr)->plugin
 
 static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t index, intptr_t value, void* ptr, float opt)
 {
@@ -798,15 +807,16 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     switch (opcode)
     {
     case effOpen:
-#ifdef VESTIGE_HEADER
-        if (effect != nullptr && effect->ptr3 != nullptr)
+        if (VstObject* const obj = vstObjectPtr)
         {
-            audioMasterCallback audioMaster = (audioMasterCallback)effect->ptr3;
-#else
-        if (effect != nullptr && effect->object != nullptr)
-        {
-            audioMasterCallback audioMaster = (audioMasterCallback)effect->object;
-#endif
+            // this must always be valid
+            DISTRHO_SAFE_ASSERT_RETURN(obj->audioMaster != nullptr, 0);
+
+            // some hosts call effOpen twice
+            DISTRHO_SAFE_ASSERT_RETURN(obj->plugin == nullptr, 1);
+
+            audioMasterCallback audioMaster = (audioMasterCallback)obj->audioMaster;
+
             d_lastBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
             d_lastSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
 
@@ -816,31 +826,35 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             if (d_lastSampleRate <= 0.0)
                 d_lastSampleRate = 44100.0;
 
-            PluginVst* const plugin(new PluginVst(audioMaster, effect));
-#ifdef VESTIGE_HEADER
-            effect->ptr2 = plugin;
-#else
-            effect->resvd2 = (intptr_t)plugin;
-#endif
+            obj->plugin = new PluginVst(audioMaster, effect);
             return 1;
         }
         return 0;
 
     case effClose:
-        if (validEffect)
+        if (VstObject* const obj = vstObjectPtr)
         {
-#ifdef VESTIGE_HEADER
-            delete (PluginVst*)effect->ptr2;
-            effect->ptr2 = nullptr;
+            if (obj->plugin != nullptr)
+            {
+                delete obj->plugin;
+                obj->plugin = nullptr;
+            }
+
+#if 0
+            /* This code invalidates the object created in VSTPluginMain
+             * Probably not safe against all hosts */
+            obj->audioMaster = nullptr;
+# ifdef VESTIGE_HEADER
             effect->ptr3 = nullptr;
-#else
-            delete (PluginVst*)effect->resvd2;
-            effect->resvd2 = 0;
-            effect->object = nullptr;
+# else
+            vstObjectPtr = nullptr;
+# endif
+            delete obj;
 #endif
-            delete effect;
+
             return 1;
         }
+        //delete effect;
         return 0;
 
     case effGetParamLabel:
@@ -898,38 +912,41 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     };
 
     // handle advanced opcodes
-    if (validEffect)
-        return handlePtr->vst_dispatcher(opcode, index, value, ptr, opt);
+    if (validPlugin)
+        return pluginPtr->vst_dispatcher(opcode, index, value, ptr, opt);
 
     return 0;
 }
 
 static float vst_getParameterCallback(AEffect* effect, int32_t index)
 {
-    if (validEffect)
-        return handlePtr->vst_getParameter(index);
+    if (validPlugin)
+        return pluginPtr->vst_getParameter(index);
     return 0.0f;
 }
 
 static void vst_setParameterCallback(AEffect* effect, int32_t index, float value)
 {
-    if (validEffect)
-        handlePtr->vst_setParameter(index, value);
+    if (validPlugin)
+        pluginPtr->vst_setParameter(index, value);
 }
 
 static void vst_processCallback(AEffect* effect, float** inputs, float** outputs, int32_t sampleFrames)
 {
-    if (validEffect)
-        handlePtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
+    if (validPlugin)
+        pluginPtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
 static void vst_processReplacingCallback(AEffect* effect, float** inputs, float** outputs, int32_t sampleFrames)
 {
-    if (validEffect)
-        handlePtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
+    if (validPlugin)
+        pluginPtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
-#undef handlePtr
+#undef pluginPtr
+#undef validObject
+#undef validPlugin
+#undef vstObjectPtr
 
 // -----------------------------------------------------------------------
 
@@ -971,11 +988,17 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
 
     // VST doesn't support parameter outputs, hide them
     int numParams = 0;
+    bool outputsReached = false;
 
     for (uint32_t i=0, count=plugin->getParameterCount(); i < count; ++i)
     {
         if (! plugin->isParameterOutput(i))
+        {
+            // parameter outputs must be all at the end
+            DISTRHO_SAFE_ASSERT_BREAK(! outputsReached);
             ++numParams;
+        }
+        outputsReached = true;
     }
 
     // plugin fields
@@ -1004,10 +1027,13 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     effect->processReplacing = vst_processReplacingCallback;
 
     // pointers
+    VstObject* const obj(new VstObject());
+    obj->audioMaster = audioMaster;
+    obj->plugin      = nullptr;
 #ifdef VESTIGE_HEADER
-    effect->ptr3   = (void*)audioMaster;
+    effect->ptr3   = obj;
 #else
-    effect->object = (void*)audioMaster;
+    effect->object = obj;
 #endif
 
     return effect;
