@@ -194,7 +194,11 @@ struct Window::PrivateData {
         mView   = impl->glview;
         mWindow = impl->window;
         DISTRHO_SAFE_ASSERT(mView != nullptr);
-        DISTRHO_SAFE_ASSERT(fUsingEmbed || mWindow != nullptr);
+        if (fUsingEmbed) {
+            DISTRHO_SAFE_ASSERT(mWindow == nullptr);
+        } else {
+            DISTRHO_SAFE_ASSERT(mWindow != nullptr);
+        }
 #elif defined(DISTRHO_OS_LINUX)
         xDisplay = impl->display;
         xWindow  = impl->win;
