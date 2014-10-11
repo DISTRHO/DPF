@@ -374,12 +374,12 @@ puglCreateWindow(PuglView* view, const char* title)
 		[impl->glview setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 	}
 
-	[impl->glview setBoundsSize:NSMakeSize(impl->glview->puglview->width, impl->glview->puglview->height)];
+	//[impl->glview setBoundsSize:NSMakeSize(impl->glview->puglview->width, impl->glview->puglview->height)];
 
 	if (view->parent) {
 		NSView* pview = (NSView*)view->parent;
 		[pview addSubview:impl->glview];
-		return 0;
+	 	return 0;
 	}
 
 	id window = [[PuglWindow new]retain];

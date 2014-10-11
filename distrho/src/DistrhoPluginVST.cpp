@@ -295,7 +295,15 @@ public:
                 parameterValues[i] = 0.0f;
             }
         }
-#endif
+# if DISTRHO_OS_MAC
+#  ifdef __LP64__
+        fUsingNsView = true;
+#  else
+#  warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
+        fUsingNsView = false;
+#  endif
+# endif // DISTRHO_OS_MAC
+#endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_STATE
         fStateChunk = nullptr;
@@ -407,12 +415,16 @@ public:
         case effEditOpen:
             if (fVstUI == nullptr)
             {
-# if DISTRHO_OS_MAC && ! defined(__LP64__)
-                if ((fEffect->dispatcher(fEffect, effCanDo, 0, 0, (void*)"hasCockosViewAsConfig", 0.0f) & 0xffff0000) != 0xbeef0000)
+# if DISTRHO_OS_MAC
+                if (! fUsingNsView)
+                {
+                    d_stderr("Host doesn't support hasCockosViewAsConfig, cannot use UI");
                     return 0;
+                }
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
+                d_stdout("effEditOpen with ptr = %p", ptr);
                 fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
 # if DISTRHO_PLUGIN_WANT_STATE
@@ -568,10 +580,17 @@ public:
             }
             break;
 
+#if DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_OS_MAC
         case effCanDo:
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS
             if (const char* const canDo = (const char*)ptr)
             {
+# if DISTRHO_OS_MAC
+                if (std::strcmp(canDo, "hasCockosViewAsConfig") == 0)
+                {
+                    fUsingNsView = true;
+                    return 0xbeef0000;
+                }
+# endif
 # if DISTRHO_PLUGIN_HAS_MIDI_INPUT
                 if (std::strcmp(canDo, "receiveVstEvents") == 0)
                     return 1;
@@ -589,8 +608,8 @@ public:
                     return 1;
 # endif
             }
-#endif
             break;
+#endif
 
         //case effStartProcess:
         //case effStopProcess:
@@ -712,6 +731,9 @@ private:
 #if DISTRHO_PLUGIN_HAS_UI
     UIVst* fVstUI;
     ERect  fVstRect;
+# if DISTRHO_OS_MAC
+    bool fUsingNsView;
+# endif
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
