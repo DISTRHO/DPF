@@ -9,10 +9,10 @@ build: ../lv2_ttl_generator
 endif
 
 ../lv2_ttl_generator: lv2_ttl_generator.c
-	$(CXX) lv2_ttl_generator.c -o ../lv2_ttl_generator -ldl
+	$(CC) lv2_ttl_generator.c -o ../lv2_ttl_generator -ldl
 
 ../lv2_ttl_generator.exe: lv2_ttl_generator.c
-	$(CXX) lv2_ttl_generator.c -o ../lv2_ttl_generator.exe -static
+	$(CC) lv2_ttl_generator.c -o ../lv2_ttl_generator.exe -static
 	touch ../lv2_ttl_generator
 
 clean:

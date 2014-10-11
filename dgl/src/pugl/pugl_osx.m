@@ -125,6 +125,8 @@ puglDisplay(PuglView* view)
 {
 	colorBits = numColorBits;
 	depthBits = numDepthBits;
+	puglview  = nil;
+	trackingArea = nil;
 
 	NSOpenGLPixelFormatAttribute pixelAttribs[16] = {
 		NSOpenGLPFADoubleBuffer,
@@ -371,6 +373,8 @@ puglCreateWindow(PuglView* view, const char* title)
 	if (view->resizable) {
 		[impl->glview setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 	}
+
+	[impl->glview setBoundsSize:NSMakeSize(impl->glview->puglview->width, impl->glview->puglview->height)];
 
 	if (view->parent) {
 		NSView* pview = (NSView*)view->parent;

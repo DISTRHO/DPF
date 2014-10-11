@@ -11,12 +11,12 @@ fi
 
 PWD=`pwd`
 
-if [ ! -d /Developer ]; then
+if [ ! -d /System/Library ]; then
   echo "This doesn't seem to be OSX, please stop!"
   exit 0
 fi
 
-rm -r *.vst/
+rm -rf *.vst/
 
 PLUGINS=`ls | grep vst.dylib`
 
