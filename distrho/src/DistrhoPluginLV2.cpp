@@ -127,6 +127,9 @@ public:
         {
             fNeededUiSends = nullptr;
         }
+#else
+        // unused
+        (void)fWorker;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

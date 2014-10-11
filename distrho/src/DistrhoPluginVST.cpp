@@ -569,25 +569,27 @@ public:
             break;
 
         case effCanDo:
+#if DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS
             if (const char* const canDo = (const char*)ptr)
             {
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
                 if (std::strcmp(canDo, "receiveVstEvents") == 0)
                     return 1;
                 if (std::strcmp(canDo, "receiveVstMidiEvent") == 0)
                     return 1;
-#endif
-#if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+# endif
+# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
                 if (std::strcmp(canDo, "sendVstEvents") == 0)
                     return 1;
                 if (std::strcmp(canDo, "sendVstMidiEvent") == 0)
                     return 1;
-#endif
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+# endif
+# if DISTRHO_PLUGIN_WANT_TIMEPOS
                 if (std::strcmp(canDo, "receiveVstTimeInfo") == 0)
                     return 1;
-#endif
+# endif
             }
+#endif
             break;
 
         //case effStartProcess:

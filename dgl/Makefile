@@ -63,10 +63,7 @@ all: $(TARGET)
 %.cpp.o: %.cpp
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-%.m.o: %.m
-	$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
-
-%.mm.o: %.mm
+%.mm.o: %.cpp
 	$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 
 # --------------------------------------------------------------

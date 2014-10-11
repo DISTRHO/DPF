@@ -887,6 +887,8 @@ Window::Window(App& app, intptr_t parentId)
     : pData(new PrivateData(app, this))
 {
     show();
+    // unused
+    return; (void)parentId;
 }
 #endif
 

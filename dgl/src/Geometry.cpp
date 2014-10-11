@@ -629,7 +629,7 @@ void Circle<T>::_draw(const bool isOutline)
 
     glBegin(isOutline ? GL_LINE_LOOP : GL_POLYGON);
 
-    for (int i=0; i<fNumSegments; ++i)
+    for (uint i=0; i<fNumSegments; ++i)
     {
         glVertex2f(x + fPos.fX, y + fPos.fY);
 
