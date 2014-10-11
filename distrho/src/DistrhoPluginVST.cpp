@@ -1019,6 +1019,7 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
             // parameter outputs must be all at the end
             DISTRHO_SAFE_ASSERT_BREAK(! outputsReached);
             ++numParams;
+            continue;
         }
         outputsReached = true;
     }

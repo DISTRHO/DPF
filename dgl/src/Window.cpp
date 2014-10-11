@@ -488,18 +488,11 @@ struct Window::PrivateData {
         if (! forced)
             UpdateWindow(hwnd);
 #elif defined(DISTRHO_OS_MAC)
-        [mView setBoundsSize:NSMakeSize(width, height)];
+        [mView setFrame:NSMakeRect(0, 0, width, height)];
 
         if (mWindow != nullptr)
         {
             [mWindow setContentSize:NSMakeSize(width, height)];
-# if 0
-            NSRect frame      = [mWindow frame];
-            frame.origin.y   -= height - frame.size.height;
-            frame.size.width  = width;
-            frame.size.height = height+20;
-            [mWindow setFrame:frame display:YES animate:NO];
-# endif
         }
 #elif defined(DISTRHO_OS_LINUX)
         XResizeWindow(xDisplay, xWindow, width, height);
@@ -537,7 +530,7 @@ struct Window::PrivateData {
         SetWindowTextA(hwnd, title);
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
-        { 
+        {
             NSString* titleString = [[NSString alloc]
                                       initWithBytes:title
                                              length:strlen(title)

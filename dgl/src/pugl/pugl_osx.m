@@ -374,11 +374,9 @@ puglCreateWindow(PuglView* view, const char* title)
 		[impl->glview setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 	}
 
-	//[impl->glview setBoundsSize:NSMakeSize(impl->glview->puglview->width, impl->glview->puglview->height)];
-
 	if (view->parent) {
-		//NSView* pview = (NSView*)view->parent;
-		//[pview addSubview:impl->glview];
+		NSView* pview = (NSView*)view->parent;
+		[pview addSubview:impl->glview];
 	 	return 0;
 	}
 
@@ -393,7 +391,6 @@ puglCreateWindow(PuglView* view, const char* title)
 		[window setTitle:titleString];
 	}
 
-	//[window setPuglview:nil];
 	[window setPuglview:view];
 	[window setContentView:impl->glview];
 	[window makeFirstResponder:impl->glview];
