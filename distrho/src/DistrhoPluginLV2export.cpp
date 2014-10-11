@@ -88,7 +88,7 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "<" DISTRHO_UI_URI ">\n";
 # if DISTRHO_OS_HAIKU
         manifestString += "    a ui:BeUI ;\n";
-# elif DISTRHO_OS_MACOS
+# elif DISTRHO_OS_MAC
         manifestString += "    a ui:CocoaUI ;\n";
 # elif DISTRHO_OS_WINDOWS
         manifestString += "    a ui:WindowsUI ;\n";
