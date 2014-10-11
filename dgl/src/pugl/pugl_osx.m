@@ -238,7 +238,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) mouseMoved:(NSEvent*)event
 {
 	if (puglview->motionFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->motionFunc(puglview, loc.x, puglview->height - loc.y);
 	}
@@ -247,7 +247,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) mouseDragged:(NSEvent*)event
 {
 	if (puglview->motionFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->motionFunc(puglview, loc.x, puglview->height - loc.y);
 	}
@@ -256,7 +256,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) rightMouseDragged:(NSEvent*)event
 {
 	if (puglview->motionFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->motionFunc(puglview, loc.x, puglview->height - loc.y);
 	}
@@ -265,7 +265,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) mouseDown:(NSEvent*)event
 {
 	if (puglview->mouseFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->mouseFunc(puglview, 1, true, loc.x, puglview->height - loc.y);
 	}
@@ -274,7 +274,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) mouseUp:(NSEvent*)event
 {
 	if (puglview->mouseFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->mouseFunc(puglview, 1, false, loc.x, puglview->height - loc.y);
 	}
@@ -284,7 +284,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) rightMouseDown:(NSEvent*)event
 {
 	if (puglview->mouseFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->mouseFunc(puglview, 3, true, loc.x, puglview->height - loc.y);
 	}
@@ -293,7 +293,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) rightMouseUp:(NSEvent*)event
 {
 	if (puglview->mouseFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->mouseFunc(puglview, 3, false, loc.x, puglview->height - loc.y);
 	}
@@ -302,7 +302,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 - (void) scrollWheel:(NSEvent*)event
 {
 	if (puglview->scrollFunc) {
-		NSPoint loc = [event locationInWindow];
+		NSPoint loc = [self convertPoint:[event locationInWindow] fromView:nil];
 		puglview->mods = getModifiers(puglview, event);
 		puglview->scrollFunc(puglview,
 		                     loc.x, puglview->height - loc.y,
