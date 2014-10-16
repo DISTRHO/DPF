@@ -24,8 +24,6 @@
 
 #include "pugl_internal.h"
 
-#include <assert.h>
-
 @interface PuglWindow : NSWindow
 {
 @public
@@ -97,10 +95,11 @@ puglDisplay(PuglView* view)
 
 - (BOOL) acceptsFirstMouse:(NSEvent*)e;
 - (BOOL) isFlipped;
+- (BOOL) isOpaque;
 - (BOOL) preservesContentInLiveResize;
 - (id)   initWithFrame:(NSRect)frame;
 - (void) reshape;
-- (void) drawRect:(NSRect)r;
+- (void) drawRect:(NSRect)rect;
 - (void) cursorUpdate:(NSEvent*)e;
 - (void) updateTrackingAreas;
 - (void) viewWillMoveToWindow:(NSWindow*)newWindow;
@@ -136,6 +135,11 @@ puglDisplay(PuglView* view)
 	return YES;
 }
 
+- (BOOL) isOpaque
+{
+	return YES;
+}
+
 - (BOOL) preservesContentInLiveResize
 {
 	return NO;
@@ -143,7 +147,7 @@ puglDisplay(PuglView* view)
 
 - (id) initWithFrame:(NSRect)frame
 {
-	puglview  = nil;
+	puglview     = nil;
 	trackingArea = nil;
 
 	NSOpenGLPixelFormatAttribute pixelAttribs[16] = {
@@ -200,14 +204,13 @@ puglDisplay(PuglView* view)
 	puglview->height = height;
 }
 
-- (void) drawRect:(NSRect)r
+- (void) drawRect:(NSRect)rect
 {
 	puglDisplay(puglview);
 	glFlush();
 	glSwapAPPLE();
 
-	// unused
-	return; (void)r;
+	[super drawRect:rect];
 }
 
 - (void) cursorUpdate:(NSEvent*)e
@@ -494,6 +497,7 @@ puglDestroy(PuglView* view)
 PuglStatus
 puglProcessEvents(PuglView* view)
 {
+	[view->impl->glview setNeedsDisplay:YES];
 	view->redisplay = false;
 	return PUGL_SUCCESS;
 }

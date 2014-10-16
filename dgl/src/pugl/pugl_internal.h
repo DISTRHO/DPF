@@ -80,6 +80,7 @@ puglInit(int* pargc, char** argv)
 
 	PuglInternals* impl = puglInitInternals();
 	if (!impl) {
+        free(view);
 		return NULL;
 	}
 
