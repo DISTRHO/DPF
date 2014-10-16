@@ -112,10 +112,14 @@ struct Window::PrivateData {
         DBG("Creating window with parent..."); DBGF;
         init();
 
-#ifdef DISTRHO_OS_LINUX
         const PuglInternals* const parentImpl(parent.pData->fView->impl);
-
+#if defined(DISTRHO_OS_LINUX)
         XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
+//#elif defined(DISTRHO_OS_MAC)
+//        [parentImpl->window orderWindow:NSWindowBelow relativeTo:[[mView window] windowNumber]];
+#else
+        // unused
+        return; (void)parentImpl;
 #endif
     }
 
