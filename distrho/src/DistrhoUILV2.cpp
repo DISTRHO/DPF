@@ -37,7 +37,8 @@ class UiLv2
 public:
     UiLv2(const intptr_t winId,
           const LV2_Options_Option* options, const LV2_URID_Map* const uridMap, const LV2UI_Resize* const uiResz, const LV2UI_Touch* uiTouch,
-          const LV2UI_Controller controller, const LV2UI_Write_Function writeFunc, void* const dspPtr)
+          const LV2UI_Controller controller, const LV2UI_Write_Function writeFunc,
+          LV2UI_Widget* const widget, void* const dspPtr)
         : fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, dspPtr),
           fUridMap(uridMap),
           fUiResize(uiResz),
@@ -50,6 +51,9 @@ public:
     {
         if (fUiResize != nullptr && winId != 0)
             fUiResize->ui_resize(fUiResize->handle, fUI.getWidth(), fUI.getHeight());
+
+        if (widget != nullptr)
+            *widget = (LV2UI_Widget*)fUI.getWindowId();
 
 #if DISTRHO_PLUGIN_WANT_STATE
         // tell the DSP we're ready to receive msgs
@@ -391,8 +395,6 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
     }
 #endif
 
-    *widget = parentId;
-
     const intptr_t winId((intptr_t)parentId);
 
     if (options != nullptr)
@@ -419,7 +421,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
         d_lastUiSampleRate = 44100.0;
     }
 
-    return new UiLv2(winId, options, uridMap, uiResize, uiTouch, controller, writeFunction, instance);
+    return new UiLv2(winId, options, uridMap, uiResize, uiTouch, controller, writeFunction, widget, instance);
 }
 
 #define uiPtr ((UiLv2*)ui)

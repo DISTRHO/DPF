@@ -494,8 +494,7 @@ puglDestroy(PuglView* view)
 PuglStatus
 puglProcessEvents(PuglView* view)
 {
-	[view->impl->glview setNeedsDisplay: YES];
-
+	view->redisplay = false;
 	return PUGL_SUCCESS;
 }
 
@@ -503,6 +502,7 @@ void
 puglPostRedisplay(PuglView* view)
 {
 	view->redisplay = true;
+	[view->impl->glview setNeedsDisplay:YES];
 }
 
 PuglNativeWindow

@@ -254,6 +254,13 @@ public:
 
     // -------------------------------------------------------------------
 
+    intptr_t getWindowId() const noexcept
+    {
+        return glWindow.getWindowId();
+    }
+
+    // -------------------------------------------------------------------
+
     uint32_t getParameterOffset() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
