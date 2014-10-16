@@ -424,7 +424,6 @@ public:
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
-                d_stdout("effEditOpen with ptr = %p", ptr);
                 fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
 
 # if DISTRHO_PLUGIN_WANT_STATE
