@@ -59,7 +59,7 @@ public:
         if (winId != 0)
             return;
 
-        // if winId != 0 then options must not be null
+        // if winId == 0 then options must not be null
         DISTRHO_SAFE_ASSERT_RETURN(options != nullptr,);
 
         const LV2_URID uridWindowTitle(uridMap->map(uridMap->handle, LV2_UI__windowTitle));
