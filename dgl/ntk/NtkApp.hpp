@@ -37,17 +37,19 @@
 # undef override_defined
 #endif
 
+// Is this really needed?
+// fails on renoise
 struct ScopedDisplayLock {
     ScopedDisplayLock()
     {
-#ifdef DISTRHO_OS_LINUX
+#if 0 //def DISTRHO_OS_LINUX
         XLockDisplay(fl_display);
 #endif
     }
 
     ~ScopedDisplayLock()
     {
-#ifdef DISTRHO_OS_LINUX
+#if 0 //def DISTRHO_OS_LINUX
         XUnlockDisplay(fl_display);
 #endif
     }
@@ -86,7 +88,7 @@ public:
           fWindowMutex(),
           fNextUI(),
           fDoNextUI(false),
-          fInitialized(false)
+          fThreadInitialized(false)
     {
 #ifdef DISTRHO_OS_LINUX
         //XInitThreads();
@@ -94,7 +96,7 @@ public:
 
         startThread();
 
-        for (; ! fInitialized;)
+        for (; ! fThreadInitialized;)
             d_msleep(10);
     }
 
@@ -158,8 +160,16 @@ public:
         fNextUI.func   = (NextUI::UiFunc)func;
         fDoNextUI      = true;
 
-        for (; fDoNextUI;)
-            d_msleep(10);
+        if (isThreadRunning() && ! shouldThreadExit())
+        {
+            for (; fDoNextUI;)
+                d_msleep(10);
+        }
+        else
+        {
+            fNextUI.run();
+            fDoNextUI = false;
+        }
 
         return fNextUI.ui;
     }
@@ -176,7 +186,7 @@ public:
         fNextUI.ui     = ui;
         fDoNextUI      = true;
 
-        if (isThreadRunning())
+        if (isThreadRunning() && ! shouldThreadExit())
         {
             for (; fDoNextUI;)
                 d_msleep(10);
@@ -212,7 +222,7 @@ private:
     d_Mutex       fWindowMutex;
     NextUI        fNextUI;
     volatile bool fDoNextUI;
-    volatile bool fInitialized;
+    volatile bool fThreadInitialized;
 
    /** @internal used by NtkWindow. */
     void addWindow(Fl_Double_Window* const window)
@@ -252,7 +262,7 @@ private:
 #endif
         }
 
-        fInitialized = true;
+        fThreadInitialized = true;
 
         for (; ! shouldThreadExit();)
         {
