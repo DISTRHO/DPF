@@ -1,5 +1,5 @@
 /*
- * JUCE LV2 *.ttl generator
+ * DPF LV2 *.ttl generator
  */
 
 #include <stdio.h>
