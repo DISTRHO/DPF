@@ -24,6 +24,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "pugl_internal.h"
 
@@ -79,7 +80,8 @@ puglCreateWindow(PuglView* view, const char* title)
 	// Should class be a parameter?  Does this make sense on other platforms?
 	static int wc_count = 0;
 	char classNameBuf[256];
-	_snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d\n", title, wc_count++);
+	std::srand((std::time(NULL)));
+	_snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d-%d\n", title, std::rand(), ++wc_count);
 
 	impl->wc.style         = CS_OWNDC;
 	impl->wc.lpfnWndProc   = wndProc;
@@ -90,7 +92,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	impl->wc.hCursor       = LoadCursor(hInstance, IDC_ARROW);
 	impl->wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	impl->wc.lpszMenuName  = NULL;
-	impl->wc.lpszClassName = classNameBuf;
+	impl->wc.lpszClassName = strdup(classNameBuf);
 	RegisterClass(&impl->wc);
 
 	int winFlags = WS_POPUPWINDOW | WS_CAPTION;
@@ -110,6 +112,8 @@ puglCreateWindow(PuglView* view, const char* title)
 		(HWND)view->parent, NULL, hInstance, NULL);
 
 	if (!impl->hwnd) {
+		UnregisterClass(impl->wc.lpszClassName, NULL);
+		free((void*)impl->wc.lpszClassName);
 		free(impl);
 		free(view);
 		return 1;
@@ -166,6 +170,7 @@ puglDestroy(PuglView* view)
 	ReleaseDC(view->impl->hwnd, view->impl->hdc);
 	DestroyWindow(view->impl->hwnd);
 	UnregisterClass(view->impl->wc.lpszClassName, NULL);
+	free((void*)impl->wc.lpszClassName);
 	free(view->impl);
 	free(view);
 }
