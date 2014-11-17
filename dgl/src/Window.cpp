@@ -15,6 +15,7 @@
  */
 
 // we need this for now
+#define PUGL_HAVE_GL    1
 #define PUGL_GRAB_FOCUS 1
 
 #include "AppPrivateData.hpp"

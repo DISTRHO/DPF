@@ -1,5 +1,6 @@
 /*
   Copyright 2012-2014 David Robillard <http://drobilla.net>
+  Copyright 2013 Robin Gareus <robin@gareus.org>
   Copyright 2011-2012 Ben Loftis, Harrison Consoles
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -23,20 +24,35 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <GL/gl.h>
-#include <GL/glx.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
 
-#include "pugl_internal.h"
+#ifdef PUGL_HAVE_GL
+#include <GL/gl.h>
+#include <GL/glx.h>
+#endif
+
+#ifdef PUGL_HAVE_CAIRO
+#include <cairo/cairo.h>
+#include <cairo/cairo-xlib.h>
+#endif
+
+#include "pugl/event.h"
+#include "pugl/pugl_internal.h"
 
 struct PuglInternalsImpl {
 	Display*   display;
 	int        screen;
 	Window     win;
+#ifdef PUGL_HAVE_CAIRO
+	cairo_t*   cr;
+#endif
+#ifdef PUGL_HAVE_GL
 	GLXContext ctx;
 	Bool       doubleBuffered;
+#endif
 };
 
 /**

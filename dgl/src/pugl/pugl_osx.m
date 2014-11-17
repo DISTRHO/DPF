@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 David Robillard <http://drobilla.net>
+  Copyright 2012-2014 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -22,7 +22,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "pugl_internal.h"
+#include "pugl/pugl_internal.h"
 
 @interface PuglWindow : NSWindow
 {

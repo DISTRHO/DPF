@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "pugl_internal.h"
+#include "pugl/pugl_internal.h"
 
 #ifndef WM_MOUSEWHEEL
 #    define WM_MOUSEWHEEL 0x020A

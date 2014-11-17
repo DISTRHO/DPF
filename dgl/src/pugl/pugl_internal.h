@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 David Robillard <http://drobilla.net>
+  Copyright 2012-2014 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -24,11 +24,14 @@
    If you are copying the pugl code into your source tree, the following
    symbols can be defined to tweak pugl behaviour:
 
+   PUGL_HAVE_CAIRO: Include Cairo support code.
+   PUGL_HAVE_GL:    Include OpenGL support code.
    PUGL_GRAB_FOCUS: Work around reparent keyboard issues by grabbing focus.
    PUGL_VERBOSE:    Print GL information to console.
 */
 
-#include "pugl.h"
+#include "pugl/pugl.h"
+#include "pugl/event.h"
 
 #ifdef PUGL_VERBOSE
 #    include <stdio.h>
@@ -43,6 +46,7 @@ typedef struct PuglInternalsImpl PuglInternals;
 
 struct PuglViewImpl {
 	PuglHandle       handle;
+	PuglEventFunc    eventFunc;
 	PuglCloseFunc    closeFunc;
 	PuglDisplayFunc  displayFunc;
 	PuglKeyboardFunc keyboardFunc;
@@ -55,6 +59,7 @@ struct PuglViewImpl {
 	PuglInternals* impl;
 
 	PuglNativeWindow parent;
+	PuglContextType  ctx_type;
 
 	int      width;
 	int      height;
@@ -68,8 +73,6 @@ struct PuglViewImpl {
 
 PuglInternals* puglInitInternals();
 
-void puglDefaultReshape(PuglView* view, int width, int height);
-
 PuglView*
 puglInit(int* pargc, char** argv)
 {
@@ -80,7 +83,7 @@ puglInit(int* pargc, char** argv)
 
 	PuglInternals* impl = puglInitInternals();
 	if (!impl) {
-        free(view);
+		free(view);
 		return NULL;
 	}
 
@@ -114,6 +117,12 @@ puglInitResizable(PuglView* view, bool resizable)
 }
 
 void
+puglInitContextType(PuglView* view, PuglContextType type)
+{
+	view->ctx_type = type;
+}
+
+void
 puglSetHandle(PuglView* view, PuglHandle handle)
 {
 	view->handle = handle;
@@ -138,6 +147,12 @@ puglGetModifiers(PuglView* view)
 }
 
 void
+puglIgnoreKeyRepeat(PuglView* view, bool ignore)
+{
+	view->ignoreKeyRepeat = ignore;
+}
+
+static void
 puglDefaultReshape(PuglView* view, int width, int height)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -154,9 +169,9 @@ puglDefaultReshape(PuglView* view, int width, int height)
 }
 
 void
-puglIgnoreKeyRepeat(PuglView* view, bool ignore)
+puglSetEventFunc(PuglView* view, PuglEventFunc eventFunc)
 {
-	view->ignoreKeyRepeat = ignore;
+	view->eventFunc = eventFunc;
 }
 
 void
@@ -205,4 +220,82 @@ void
 puglSetSpecialFunc(PuglView* view, PuglSpecialFunc specialFunc)
 {
 	view->specialFunc = specialFunc;
+}
+
+void
+puglEnterContext(PuglView* view);
+
+void
+puglLeaveContext(PuglView* view, bool flush);
+
+static void
+puglDispatchEvent(PuglView* view, const PuglEvent* event)
+{
+	if (view->eventFunc) {
+		view->eventFunc(view, event);
+	}
+
+	switch (event->type) {
+	case PUGL_CONFIGURE:
+		puglEnterContext(view);
+		view->width  = event->configure.width;
+		view->height = event->configure.height;
+		if (view->reshapeFunc) {
+			view->reshapeFunc(view, view->width, view->height);
+		}
+		puglLeaveContext(view, false);
+		break;
+	case PUGL_EXPOSE:
+		if (event->expose.count == 0) {
+			puglEnterContext(view);
+			if (view->displayFunc) {
+				view->displayFunc(view);
+			}
+			view->redisplay = false;
+			puglLeaveContext(view, true);
+		}
+		break;
+	case PUGL_MOTION_NOTIFY:
+		view->event_timestamp_ms = event->motion.time;
+		view->mods               = event->motion.state;
+		if (view->motionFunc) {
+			view->motionFunc(view, event->motion.x, event->motion.y);
+		}
+		break;
+	case PUGL_SCROLL:
+		if (view->scrollFunc) {
+			view->scrollFunc(view,
+			                 event->scroll.x, event->scroll.y,
+			                 event->scroll.dx, event->scroll.dy);
+		}
+		break;
+	case PUGL_BUTTON_PRESS:
+	case PUGL_BUTTON_RELEASE:
+		view->event_timestamp_ms = event->button.time;
+		view->mods               = event->button.state;
+		if (view->mouseFunc) {
+			view->mouseFunc(view,
+			                event->button.button,
+			                event->type == PUGL_BUTTON_PRESS,
+			                event->button.x,
+			                event->button.y);
+		}
+		break;
+	case PUGL_KEY_PRESS:
+	case PUGL_KEY_RELEASE:
+		view->event_timestamp_ms = event->key.time;
+		view->mods               = event->key.state;
+		if (event->key.special && view->specialFunc) {
+			view->specialFunc(view,
+			                  event->type == PUGL_KEY_PRESS,
+			                  event->key.special);
+		} else if (event->key.character && view->keyboardFunc) {
+			view->keyboardFunc(view,
+			                   event->type == PUGL_KEY_PRESS,
+			                   event->key.character);
+		}
+		break;
+	default:
+		break;
+	}
 }
