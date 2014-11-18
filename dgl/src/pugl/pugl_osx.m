@@ -36,6 +36,8 @@
                      defer:(BOOL)flag;
 - (void) setPuglview:(PuglView*)view;
 - (BOOL) windowShouldClose:(id)sender;
+- (BOOL) canBecomeKeyWindow:(id)sender;
+- (BOOL) canBecomeMainWindow:(id)sender;
 @end
 
 @implementation PuglWindow
@@ -70,6 +72,22 @@
 {
 	if (puglview->closeFunc)
 		puglview->closeFunc(puglview);
+	return YES;
+
+	// unused
+	(void)sender;
+}
+
+- (BOOL) canBecomeKeyWindow:(id)sender
+{
+	return YES;
+
+	// unused
+	(void)sender;
+}
+
+- (BOOL) canBecomeMainWindow:(id)sender
+{
 	return YES;
 
 	// unused
@@ -196,8 +214,6 @@ puglDisplay(PuglView* view)
 
 	if (puglview->reshapeFunc) {
 		puglview->reshapeFunc(puglview, width, height);
-	} else {
-		puglDefaultReshape(puglview, width, height);
 	}
 
 	puglview->width  = width;

@@ -205,8 +205,6 @@ puglReshape(PuglView* view, int width, int height)
 
 	if (view->reshapeFunc) {
 		view->reshapeFunc(view, width, height);
-	} else {
-		puglDefaultReshape(view, width, height);
 	}
 
 	view->width  = width;

@@ -1,5 +1,5 @@
 /*
-  Copyright 2012 David Robillard <http://drobilla.net>
+  Copyright 2012-2014 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -40,14 +40,14 @@
 
 #define PUGL_LOCAL_CLOSE_MSG (WM_USER + 50)
 
-HINSTANCE hInstance = NULL;
-
 struct PuglInternalsImpl {
 	HWND     hwnd;
 	HDC      hdc;
 	HGLRC    hglrc;
 	WNDCLASS wc;
 };
+
+static HINSTANCE hInstance = NULL;
 
 LRESULT CALLBACK
 wndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -67,6 +67,27 @@ puglInitInternals()
 	return (PuglInternals*)calloc(1, sizeof(PuglInternals));
 }
 
+void
+puglEnterContext(PuglView* view)
+{
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL) {
+		wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+	}
+#endif
+}
+
+void
+puglLeaveContext(PuglView* view, bool flush)
+{
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL && flush) {
+		glFlush();
+		SwapBuffers(view->impl->hdc);
+	}
+#endif
+}
+
 int
 puglCreateWindow(PuglView* view, const char* title)
 {
@@ -80,8 +101,8 @@ puglCreateWindow(PuglView* view, const char* title)
 	// Should class be a parameter?  Does this make sense on other platforms?
 	static int wc_count = 0;
 	char classNameBuf[256];
-	std::srand((std::time(NULL)));
-	_snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d-%d\n", title, std::rand(), ++wc_count);
+	srand((time(NULL)));
+	_snprintf(classNameBuf, sizeof(classNameBuf), "%d-%d_%s\n", ++wc_count, rand(), title);
 
 	impl->wc.style         = CS_OWNDC;
 	impl->wc.lpfnWndProc   = wndProc;
@@ -112,7 +133,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		(HWND)view->parent, NULL, hInstance, NULL);
 
 	if (!impl->hwnd) {
-		UnregisterClass(impl->wc.lpszClassName, NULL);
+		UnregisterClass(impl->wc.lpszClassName, hInstance);
 		free((void*)impl->wc.lpszClassName);
 		free(impl);
 		free(view);
@@ -169,8 +190,8 @@ puglDestroy(PuglView* view)
 	wglDeleteContext(view->impl->hglrc);
 	ReleaseDC(view->impl->hwnd, view->impl->hdc);
 	DestroyWindow(view->impl->hwnd);
-	UnregisterClass(view->impl->wc.lpszClassName, NULL);
-	free((void*)impl->wc.lpszClassName);
+	UnregisterClass(view->impl->wc.lpszClassName, hInstance);
+	free((void*)view->impl->wc.lpszClassName);
 	free(view->impl);
 	free(view);
 }
@@ -178,12 +199,10 @@ puglDestroy(PuglView* view)
 static void
 puglReshape(PuglView* view, int width, int height)
 {
-	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+	puglEnterContext(view);
 
 	if (view->reshapeFunc) {
 		view->reshapeFunc(view, width, height);
-	} else {
-		puglDefaultReshape(view, width, height);
 	}
 
 	view->width  = width;
@@ -193,14 +212,13 @@ puglReshape(PuglView* view, int width, int height)
 static void
 puglDisplay(PuglView* view)
 {
-	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+	puglEnterContext(view);
 
 	if (view->displayFunc) {
 		view->displayFunc(view);
 	}
 
-	glFlush();
-	SwapBuffers(view->impl->hdc);
+	puglLeaveContext(view, true);
 	view->redisplay = false;
 }
 
@@ -290,6 +308,7 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	case WM_MOUSEMOVE:
 		if (view->motionFunc) {
+			view->event_timestamp_ms = GetMessageTime();
 			view->motionFunc(view, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 		}
 		break;
@@ -353,6 +372,12 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 
 	return 0;
+}
+
+void
+puglGrabFocus(PuglView* /*view*/)
+{
+	// TODO
 }
 
 PuglStatus

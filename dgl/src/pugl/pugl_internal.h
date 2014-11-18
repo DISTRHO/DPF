@@ -152,22 +152,6 @@ puglIgnoreKeyRepeat(PuglView* view, bool ignore)
 	view->ignoreKeyRepeat = ignore;
 }
 
-static void
-puglDefaultReshape(PuglView* view, int width, int height)
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, 0, 1);
-	glViewport(0, 0, width, height);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	return;
-
-	// unused
-	(void)view;
-}
-
 void
 puglSetEventFunc(PuglView* view, PuglEventFunc eventFunc)
 {

@@ -63,7 +63,10 @@ all: $(TARGET)
 %.cpp.o: %.cpp
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-%.mm.o: %.cpp
+src/Window.cpp.o: src/Window.cpp src/pugl/*
+	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
+
+src/Window.mm.o: src/Window.cpp src/pugl/*
 	$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 
 # --------------------------------------------------------------
