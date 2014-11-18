@@ -190,6 +190,7 @@ struct Window::PrivateData {
         puglSetCloseFunc(fView, onCloseCallback);
 
         puglCreateWindow(fView, nullptr);
+        puglEnterContext(fView);
 
         PuglInternals* impl = fView->impl;
 #if defined(DISTRHO_OS_WINDOWS)
