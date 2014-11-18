@@ -30,8 +30,12 @@ template<typename> class Triangle;
 template<typename> class Rectangle;
 
 // -----------------------------------------------------------------------
-// Point
 
+/**
+   DGL Point class.
+
+   This class describes a single point in space, defined by an X and Y value.
+ */
 template<typename T>
 class Point
 {
@@ -62,17 +66,17 @@ public:
     const T& getY() const noexcept;
 
    /**
-      Set X value as @a x.
+      Set X value to @a x.
     */
     void setX(const T& x) noexcept;
 
    /**
-      Set Y value as @a y.
+      Set Y value to @a y.
     */
     void setY(const T& y) noexcept;
 
    /**
-      Set X and Y values as @a x and @a y respectively.
+      Set X and Y values to @a x and @a y respectively.
     */
     void setPos(const T& x, const T& y) noexcept;
 
@@ -96,6 +100,11 @@ public:
     */
     bool isZero() const noexcept;
 
+   /**
+      Return true if point is not (0, 0).
+    */
+    bool isNotZero() const noexcept;
+
     Point<T> operator+(const Point<T>& pos) noexcept;
     Point<T> operator-(const Point<T>& pos) noexcept;
     Point<T>& operator=(const Point<T>& pos) noexcept;
@@ -113,8 +122,12 @@ private:
 };
 
 // -----------------------------------------------------------------------
-// Size
 
+/**
+   DGL Size class.
+
+   This class describes a size, defined by a width and height value.
+ */
 template<typename T>
 class Size
 {
@@ -155,7 +168,7 @@ public:
     void setHeight(const T& height) noexcept;
 
    /**
-      Set size using @a width and @a height.
+      Set size to @a width and @a height.
     */
     void setSize(const T& width, const T& height) noexcept;
 
@@ -176,13 +189,26 @@ public:
 
    /**
       Return true if size is null (0x0).
+      An null size is also invalid.
     */
     bool isNull() const noexcept;
 
    /**
       Return true if size is not null (0x0).
+      A non-null size is still invalid if its width or height is negative.
     */
     bool isNotNull() const noexcept;
+
+   /**
+      Return true if size is valid (width and height are higher than zero).
+    */
+    bool isValid() const noexcept;
+
+   /**
+      Return true if size is invalid (width or height are lower or equal to zero).
+      An invalid size might not be null under some circumstances.
+    */
+    bool isInvalid() const noexcept;
 
     Size<T> operator+(const Size<T>& size) noexcept;
     Size<T> operator-(const Size<T>& size) noexcept;
@@ -200,14 +226,18 @@ private:
 };
 
 // -----------------------------------------------------------------------
-// Line
 
+/**
+   DGL Line class.
+
+   This class describes a line, defined by two points.
+ */
 template<typename T>
 class Line
 {
 public:
    /**
-      Constructor for a null line ([0, 0] to [0, 0]).
+      Constructor for a null line ([0,0] to [0,0]).
     */
     Line() noexcept;
 
@@ -217,7 +247,7 @@ public:
     Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept;
 
    /**
-      Constructor using custom start X, start Y, end pos values.
+      Constructor using custom start X, start Y and end pos values.
     */
     Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept;
 
@@ -267,17 +297,17 @@ public:
     const Point<T>& getEndPos() const noexcept;
 
    /**
-      Set start X value as @a x.
+      Set start X value to @a x.
     */
     void setStartX(const T& x) noexcept;
 
    /**
-      Set start Y value as @a y.
+      Set start Y value to @a y.
     */
     void setStartY(const T& y) noexcept;
 
    /**
-      Set start X and Y values as @a x and @a y respectively.
+      Set start X and Y values to @a x and @a y respectively.
     */
     void setStartPos(const T& x, const T& y) noexcept;
 
@@ -287,17 +317,17 @@ public:
     void setStartPos(const Point<T>& pos) noexcept;
 
    /**
-      Set end X value as @a x.
+      Set end X value to @a x.
     */
     void setEndX(const T& x) noexcept;
 
    /**
-      Set end Y value as @a y.
+      Set end Y value to @a y.
     */
     void setEndY(const T& y) noexcept;
 
    /**
-      Set end X and Y values as @a x and @a y respectively.
+      Set end X and Y values to @a x and @a y respectively.
     */
     void setEndPos(const T& x, const T& y) noexcept;
 
@@ -321,6 +351,16 @@ public:
     */
     void draw();
 
+   /**
+      Return true if line is null (start and end pos are equal).
+    */
+    bool isNull() const noexcept;
+
+   /**
+      Return true if line is not null (start and end pos are different).
+    */
+    bool isNotNull() const noexcept;
+
     Line<T>& operator=(const Line<T>& line) noexcept;
     bool operator==(const Line<T>& line) const noexcept;
     bool operator!=(const Line<T>& line) const noexcept;
@@ -330,8 +370,15 @@ private:
 };
 
 // -----------------------------------------------------------------------
-// Circle
 
+/**
+   DGL Circle class.
+
+   This class describes a circle, defined by position, size and a minimum of 3 segments.
+
+   TODO: report if circle starts at top-left, bottom-right or center.
+         and size grows from which point?
+ */
 template<typename T>
 class Circle
 {
@@ -372,17 +419,17 @@ public:
     const Point<T>& getPos() const noexcept;
 
    /**
-      Set X value as @a x.
+      Set X value to @a x.
     */
     void setX(const T& x) noexcept;
 
    /**
-      Set Y value as @a y.
+      Set Y value to @a y.
     */
     void setY(const T& y) noexcept;
 
    /**
-      Set X and Y values as @a x and @a y respectively.
+      Set X and Y values to @a x and @a y respectively.
     */
     void setPos(const T& x, const T& y) noexcept;
 
@@ -435,12 +482,16 @@ private:
     // cached values
     float fTheta, fCos, fSin;
 
-    void _draw(const bool isOutline);
+    void _draw(const bool outline);
 };
 
 // -----------------------------------------------------------------------
-// Triangle
 
+/**
+   DGL Triangle class.
+
+   This class describes a triangle, defined by 3 points.
+ */
 template<typename T>
 class Triangle
 {
@@ -475,6 +526,29 @@ public:
     */
     void drawOutline();
 
+   /**
+      Return true if triangle is null (all its points are equal).
+      An null triangle is also invalid.
+    */
+    bool isNull() const noexcept;
+
+   /**
+      Return true if triangle is not null (one its points is different from the others).
+      A non-null triangle is still invalid if two of its points are equal.
+    */
+    bool isNotNull() const noexcept;
+
+   /**
+      Return true if triangle is valid (all its points are different).
+    */
+    bool isValid() const noexcept;
+
+   /**
+      Return true if triangle is invalid (one or two of its points are equal).
+      An invalid triangle might not be null under some circumstances.
+    */
+    bool isInvalid() const noexcept;
+
     Triangle<T>& operator=(const Triangle<T>& tri) noexcept;
     bool operator==(const Triangle<T>& tri) const noexcept;
     bool operator!=(const Triangle<T>& tri) const noexcept;
@@ -482,12 +556,16 @@ public:
 private:
     Point<T> fPos1, fPos2, fPos3;
 
-    void _draw(const bool isOutline);
+    void _draw(const bool outline);
 };
 
 // -----------------------------------------------------------------------
-// Rectangle
 
+/**
+   DGL Rectangle class.
+
+   This class describes a rectangle, defined by a starting point and a size.
+ */
 template<typename T>
 class Rectangle
 {
@@ -662,7 +740,7 @@ private:
     Point<T> fPos;
     Size<T>  fSize;
 
-    void _draw(const bool isOutline);
+    void _draw(const bool outline);
 };
 
 // -----------------------------------------------------------------------
