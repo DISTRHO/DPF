@@ -48,13 +48,13 @@ struct Color {
       Create a color from red, green, blue and alpha numeric values.
       Values must be in [0..255] range.
     */
-    Color(const int red, const int green, const int blue, const int alpha = 255) noexcept;
+    Color(int red, int green, int blue, int alpha = 255) noexcept;
 
    /**
       Create a color from red, green, blue and alpha floating-point values.
       Values must in [0..1] range.
     */
-    Color(const float red, const float green, const float blue, const float alpha = 1.0f) noexcept;
+    Color(float red, float green, float blue, float alpha = 1.0f) noexcept;
 
    /**
       Create a color by copying another color.
@@ -65,24 +65,32 @@ struct Color {
    /**
       Create a color by linearly interpolating two other colors.
     */
-    Color(const Color& color1, const Color& color2, const float u) noexcept;
+    Color(const Color& color1, const Color& color2, float u) noexcept;
 
    /**
-      Create a color specified by hue, saturation, lightness and alpha.
-      HSL values are all in [0..1] range, alpha in [0..255] range.
+      Create a color specified by hue, saturation and lightness.
+      Values must in [0..1] range.
     */
-    static Color HSL(const float hue, const float saturation, const float lightness, const int alpha = 255);
+    static Color fromHSL(float hue, float saturation, float lightness, float alpha = 1.0f);
 
    /**
       Linearly interpolate this color against another.
     */
-    void interpolate(const Color& other, const float u) noexcept;
+    void interpolate(const Color& other, float u) noexcept;
 
    /**
       Check if this color matches another.
+      @note: Comparison is forced within 8-bit color values.
     */
+    bool isEqual(const Color& color, bool withAlpha = true) noexcept;
+    bool isNotEqual(const Color& color, bool withAlpha = true) noexcept;
     bool operator==(const Color& color) noexcept;
     bool operator!=(const Color& color) noexcept;
+
+   /**
+      Fix color bounds if needed.
+    */
+    void fixBounds() noexcept;
 
    /**
       @internal
