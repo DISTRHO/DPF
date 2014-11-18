@@ -28,7 +28,7 @@ START_NAMESPACE_DGL
 // TODO: create color from "#333" and "#112233" like strings
 
 /**
-  A color made from red, green, blue and alpha floating-point values in [0..1] range.
+   A color made from red, green, blue and alpha floating-point values in [0..1] range.
 */
 struct Color {
    /**
@@ -72,6 +72,11 @@ struct Color {
       Values must in [0..1] range.
     */
     static Color fromHSL(float hue, float saturation, float lightness, float alpha = 1.0f);
+
+   /**
+      Create a color from a HTML string like "#333" or "#112233".
+    */
+    static Color fromHTML(const char* rgb, float alpha = 1.0f);
 
    /**
       Linearly interpolate this color against another.

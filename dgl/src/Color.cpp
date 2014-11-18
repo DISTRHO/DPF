@@ -108,6 +108,49 @@ Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
     return nvgHSLA(hue, saturation, lightness, static_cast<uchar>(getFixedRange(alpha)*255.0f));
 }
 
+Color Color::fromHTML(const char* rgb, float alpha)
+{
+    Color fallback;
+    DISTRHO_SAFE_ASSERT_RETURN(rgb != nullptr && rgb[0] != '\0', fallback);
+
+    if (rgb[0] == '#') ++rgb;
+    DISTRHO_SAFE_ASSERT_RETURN(rgb[0] != '\0', fallback);
+
+    std::size_t rgblen(std::strlen(rgb));
+    DISTRHO_SAFE_ASSERT_RETURN(rgblen == 3 || rgblen == 6, fallback);
+
+    char rgbtmp[3] = { '\0', '\0', '\0' };
+    int r, g, b;
+
+    if (rgblen == 3)
+    {
+        rgbtmp[0] = rgb[0];
+        r = std::strtol(rgbtmp, nullptr, 16);
+
+        rgbtmp[0] = rgb[1];
+        g = std::strtol(rgbtmp, nullptr, 16);
+
+        rgbtmp[0] = rgb[2];
+        b = std::strtol(rgbtmp, nullptr, 16);
+    }
+    else
+    {
+        rgbtmp[0] = rgb[0];
+        rgbtmp[1] = rgb[1];
+        r = std::strtol(rgbtmp, nullptr, 16);
+
+        rgbtmp[0] = rgb[2];
+        rgbtmp[1] = rgb[3];
+        g = std::strtol(rgbtmp, nullptr, 16);
+
+        rgbtmp[0] = rgb[4];
+        rgbtmp[1] = rgb[5];
+        b = std::strtol(rgbtmp, nullptr, 16);
+    }
+
+    return Color(r, g, b, static_cast<int>(getFixedRange(alpha)*255.0f));
+}
+
 void Color::interpolate(const Color& other, float u) noexcept
 {
     fixRange(u);
