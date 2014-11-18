@@ -180,12 +180,12 @@ public:
    /**
       Grow size by @a multiplier.
     */
-    void growBy(const T& multiplier) noexcept;
+    void growBy(double multiplier) noexcept;
 
    /**
       Shrink size by @a divider.
     */
-    void shrinkBy(const T& divider) noexcept;
+    void shrinkBy(double divider) noexcept;
 
    /**
       Return true if size is null (0x0).
@@ -215,8 +215,8 @@ public:
     Size<T>& operator=(const Size<T>& size) noexcept;
     Size<T>& operator+=(const Size<T>& size) noexcept;
     Size<T>& operator-=(const Size<T>& size) noexcept;
-    Size<T>& operator*=(const T& m) noexcept;
-    Size<T>& operator/=(const T& d) noexcept;
+    Size<T>& operator*=(double m) noexcept;
+    Size<T>& operator/=(double d) noexcept;
     bool operator==(const Size<T>& size) const noexcept;
     bool operator!=(const Size<T>& size) const noexcept;
 
@@ -683,12 +683,12 @@ public:
    /**
       Grow size by @a multiplier.
     */
-    void growBy(const T& multiplier) noexcept;
+    void growBy(double multiplier) noexcept;
 
    /**
       Shrink size by @a divider.
     */
-    void shrinkBy(const T& divider) noexcept;
+    void shrinkBy(double divider) noexcept;
 
    /**
       Set rectangle using @a pos and @a size.
@@ -731,8 +731,8 @@ public:
     void drawOutline();
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
-    Rectangle<T>& operator*=(const T& m) noexcept;
-    Rectangle<T>& operator/=(const T& d) noexcept;
+    Rectangle<T>& operator*=(double m) noexcept;
+    Rectangle<T>& operator/=(double d) noexcept;
     bool operator==(const Rectangle<T>& size) const noexcept;
     bool operator!=(const Rectangle<T>& size) const noexcept;
 

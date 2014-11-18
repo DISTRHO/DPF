@@ -209,17 +209,17 @@ void Size<T>::setSize(const Size<T>& size) noexcept
 }
 
 template<typename T>
-void Size<T>::growBy(const T& multiplier) noexcept
+void Size<T>::growBy(double multiplier) noexcept
 {
-    fWidth  = static_cast<T>(fWidth*multiplier);
-    fHeight = static_cast<T>(fHeight*multiplier);
+    fWidth  = static_cast<T>(static_cast<double>(fWidth)*multiplier);
+    fHeight = static_cast<T>(static_cast<double>(fHeight)*multiplier);
 }
 
 template<typename T>
-void Size<T>::shrinkBy(const T& divider) noexcept
+void Size<T>::shrinkBy(double divider) noexcept
 {
-    fWidth  = static_cast<T>(fWidth/divider);
-    fHeight = static_cast<T>(fHeight/divider);
+    fWidth  = static_cast<T>(static_cast<double>(fWidth)/divider);
+    fHeight = static_cast<T>(static_cast<double>(fHeight)/divider);
 }
 
 template<typename T>
@@ -283,18 +283,18 @@ Size<T>& Size<T>::operator-=(const Size<T>& size) noexcept
 }
 
 template<typename T>
-Size<T>& Size<T>::operator*=(const T& m) noexcept
+Size<T>& Size<T>::operator*=(double m) noexcept
 {
-    fWidth  = static_cast<T>(fWidth*m);
-    fHeight = static_cast<T>(fHeight*m);
+    fWidth  = static_cast<T>(static_cast<double>(fWidth)*m);
+    fHeight = static_cast<T>(static_cast<double>(fHeight)*m);
     return *this;
 }
 
 template<typename T>
-Size<T>& Size<T>::operator/=(const T& d) noexcept
+Size<T>& Size<T>::operator/=(double d) noexcept
 {
-    fWidth  = static_cast<T>(fWidth/d);
-    fHeight = static_cast<T>(fHeight/d);
+    fWidth  = static_cast<T>(static_cast<double>(fWidth)/d);
+    fHeight = static_cast<T>(static_cast<double>(fHeight)/d);
     return *this;
 }
 
@@ -903,13 +903,13 @@ void Rectangle<T>::setSize(const Size<T>& size) noexcept
 }
 
 template<typename T>
-void Rectangle<T>::growBy(const T& multiplier) noexcept
+void Rectangle<T>::growBy(double multiplier) noexcept
 {
     fSize.growBy(multiplier);
 }
 
 template<typename T>
-void Rectangle<T>::shrinkBy(const T& divider) noexcept
+void Rectangle<T>::shrinkBy(double divider) noexcept
 {
     fSize.shrinkBy(divider);
 }
@@ -973,14 +973,14 @@ Rectangle<T>& Rectangle<T>::operator=(const Rectangle<T>& rect) noexcept
 }
 
 template<typename T>
-Rectangle<T>& Rectangle<T>::operator*=(const T& m) noexcept
+Rectangle<T>& Rectangle<T>::operator*=(double m) noexcept
 {
     fSize *= m;
     return *this;
 }
 
 template<typename T>
-Rectangle<T>& Rectangle<T>::operator/=(const T& d) noexcept
+Rectangle<T>& Rectangle<T>::operator/=(double d) noexcept
 {
     fSize /= d;
     return *this;
