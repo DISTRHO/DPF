@@ -37,29 +37,18 @@
 # undef override_defined
 #endif
 
-// Is this really needed?
-// fails on renoise
-struct ScopedDisplayLock {
-    ScopedDisplayLock()
-    {
-#if 0 //def DISTRHO_OS_LINUX
-        XLockDisplay(fl_display);
-#endif
-    }
-
-    ~ScopedDisplayLock()
-    {
-#if 0 //def DISTRHO_OS_LINUX
-        XUnlockDisplay(fl_display);
-#endif
-    }
-};
-
 // -----------------------------------------------------------------------
 
 namespace DISTRHO_NAMESPACE {
-  class UI;
+    class UI;
 }
+
+struct FlScopedLock {
+    FlScopedLock()  { Fl::lock();   }
+    ~FlScopedLock() { Fl::unlock(); }
+};
+
+// -----------------------------------------------------------------------
 
 START_NAMESPACE_DGL
 
@@ -232,7 +221,7 @@ private:
         if (fWindows.size() == 0 && ! isThreadRunning())
             startThread();
 
-        const d_MutexLocker sl(fWindowMutex);
+        const d_MutexLocker cml(fWindowMutex);
         fWindows.push_back(window);
     }
 
@@ -241,7 +230,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
 
-        const d_MutexLocker sl(fWindowMutex);
+        const d_MutexLocker cml(fWindowMutex);
         fWindows.remove(window);
 
         if (fWindows.size() == 0)
@@ -266,22 +255,24 @@ private:
 
         for (; ! shouldThreadExit();)
         {
-            if (fDoNextUI)
             {
-                const ScopedDisplayLock csdl;
-                fNextUI.run();
-                fDoNextUI = false;
-            }
+                const FlScopedLock csl;
 
-            const ScopedDisplayLock csdl;
-            Fl::check();
-            Fl::flush();
+                if (fDoNextUI)
+                {
+                    fNextUI.run();
+                    fDoNextUI = false;
+                }
+
+                Fl::check();
+                Fl::flush();
+            }
 
             d_msleep(20);
         }
 
-        const d_MutexLocker sl(fWindowMutex);
-        const ScopedDisplayLock csdl;
+        const FlScopedLock csl;
+        const d_MutexLocker cml(fWindowMutex);
 
         for (std::list<Fl_Double_Window*>::reverse_iterator rit = fWindows.rbegin(), rite = fWindows.rend(); rit != rite; ++rit)
         {

@@ -166,20 +166,20 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,);
 
-        if (fIdleCallbacks.size() == 0)
-            Fl::add_idle(_idleHandler, this);
-
         fIdleCallbacks.push_back(callback);
+
+        if (fIdleCallbacks.size() == 1)
+            Fl::add_timeout(0.030, _idleHandler, this);
     }
 
     void removeIdleCallback(IdleCallback* const callback)
     {
         DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,);
 
-        fIdleCallbacks.remove(callback);
+        if (fIdleCallbacks.size() == 1)
+            Fl::remove_timeout(_idleHandler, this);
 
-        if (fIdleCallbacks.size() == 0)
-            Fl::remove_idle(_idleHandler, this);
+        fIdleCallbacks.remove(callback);
     }
 
 private:
@@ -203,6 +203,9 @@ private:
             IdleCallback* const idleCallback(*it);
             idleCallback->idleCallback();
         }
+
+        if (fIdleCallbacks.size() > 0 && ! self->getApp().isQuiting())
+            Fl::repeat_timeout(0.030, _idleHandler, self);
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NtkWindow)
