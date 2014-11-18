@@ -50,7 +50,7 @@ public:
 
    /**
       Idle function.
-      This calls all this app Windows' idle functions and idle callbacks.
+      This runs the application event-loop once.
     */
     void idle();
 
@@ -69,7 +69,7 @@ public:
 
    /**
       Check if the application is about to quit.
-      Returning true means there's no event-loop running at the moment.
+      Returning true means there's no event-loop running at the moment (or it's just about to stop).
     */
     bool isQuiting() const noexcept;
 

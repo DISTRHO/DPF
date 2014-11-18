@@ -118,23 +118,17 @@ private:                                 \
 #endif
 
 /* Define namespace */
-#ifndef DISTRHO_NO_NAMESPACE
-# ifndef DISTRHO_NAMESPACE
-#  define DISTRHO_NAMESPACE DISTRHO
-# endif
-# define START_NAMESPACE_DISTRHO namespace DISTRHO_NAMESPACE {
-# define END_NAMESPACE_DISTRHO }
-# define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;
-#else
-# define START_NAMESPACE_DISTRHO
-# define END_NAMESPACE_DISTRHO
-# define USE_NAMESPACE_DISTRHO
+#ifndef DISTRHO_NAMESPACE
+# define DISTRHO_NAMESPACE DISTRHO
 #endif
+#define START_NAMESPACE_DISTRHO namespace DISTRHO_NAMESPACE {
+#define END_NAMESPACE_DISTRHO }
+#define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;
 
 /* Useful typedefs */
 typedef unsigned char uchar;
-typedef unsigned long int ulong;
 typedef unsigned short int ushort;
 typedef unsigned int uint;
+typedef unsigned long int ulong;
 
 #endif // DISTRHO_DEFINES_H_INCLUDED

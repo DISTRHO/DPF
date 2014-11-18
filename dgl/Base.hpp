@@ -127,6 +127,16 @@ enum Char {
 };
 
 /**
+   Keyboard modifier flags.
+ */
+enum Modifier {
+    MODIFIER_SHIFT = 1 << 0, /**< Shift key */
+    MODIFIER_CTRL  = 1 << 1, /**< Control key */
+    MODIFIER_ALT   = 1 << 2, /**< Alt/Option key */
+    MODIFIER_SUPER = 1 << 3  /**< Mod4/Command/Windows key */
+};
+
+/**
    Special (non-Unicode) keyboard keys.
  */
 enum Key {
@@ -155,16 +165,6 @@ enum Key {
     KEY_CTRL,
     KEY_ALT,
     KEY_SUPER
-};
-
-/**
-   Keyboard modifier flags.
- */
-enum Modifier {
-    MODIFIER_SHIFT = 1 << 0, /**< Shift key */
-    MODIFIER_CTRL  = 1 << 1, /**< Control key */
-    MODIFIER_ALT   = 1 << 2, /**< Alt/Option key */
-    MODIFIER_SUPER = 1 << 3  /**< Mod4/Command/Windows key */
 };
 
 // -----------------------------------------------------------------------
