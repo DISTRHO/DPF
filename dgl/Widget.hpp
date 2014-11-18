@@ -26,6 +26,7 @@ START_NAMESPACE_DGL
 
 class App;
 class Window;
+class StandaloneWindow;
 
 // -----------------------------------------------------------------------
 
@@ -177,22 +178,22 @@ public:
    /**
       Set width.
     */
-    virtual void setWidth(uint width) noexcept;
+    void setWidth(uint width) noexcept;
 
    /**
       Set height.
     */
-    virtual void setHeight(uint height) noexcept;
+    void setHeight(uint height) noexcept;
 
    /**
       Set size using @a width and @a height values.
     */
-    virtual void setSize(uint width, uint height) noexcept;
+    void setSize(uint width, uint height) noexcept;
 
    /**
       Set size.
     */
-    virtual void setSize(const Size<uint>& size) noexcept;
+    void setSize(const Size<uint>& size) noexcept;
 
    /**
       Get absolute X.
@@ -320,7 +321,6 @@ private:
     Point<int> fAbsolutePos;
     Size<uint> fSize;
 
-    friend class CairoWidget;
     friend class Window;
     friend class StandaloneWindow;
 
