@@ -289,8 +289,6 @@ public:
     {
         if (glWindow.isReady())
             fUI->d_uiIdle();
-
-        fChangingSize = false;
     }
 
     bool idle()
@@ -301,8 +299,6 @@ public:
 
         if (glWindow.isReady())
             fUI->d_uiIdle();
-
-        fChangingSize = false;
 
         return ! glApp.isQuiting();
     }
@@ -318,9 +314,7 @@ public:
     void setWindowSize(const uint width, const uint height, const bool updateUI = false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
-
-        if (fChangingSize)
-            return;
+        DISTRHO_SAFE_ASSERT_RETURN(! fChangingSize,);
 
         fChangingSize = true;
 
@@ -328,6 +322,8 @@ public:
             fUI->setSize(width, height);
 
         glWindow.setSize(width, height);
+
+        fChangingSize = false;
     }
 
     void setWindowTitle(const char* const uiTitle)
