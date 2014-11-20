@@ -20,13 +20,10 @@
 #include "extra/d_leakdetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#if DISTRHO_UI_USE_NTK
-# include "../dgl/ntk/NtkWidget.hpp"
-typedef DGL::NtkWidget UIWidget;
-#elif DISTRHO_UI_USE_NANOVG
+#if DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL::NanoWidget UIWidget;
-# else
+#else
 # include "../dgl/Widget.hpp"
 typedef DGL::Widget UIWidget;
 #endif
@@ -143,32 +140,22 @@ protected:
     */
     virtual void d_uiIdle() {}
 
-#if ! DISTRHO_UI_USE_NTK
    /**
       OpenGL window reshape function, called when parent window is resized.
       You can reimplement this function for a custom OpenGL state.
       @see Window::onReshape(uint,uint)
     */
     virtual void d_uiReshape(uint width, uint height);
-#endif
 
    /* --------------------------------------------------------------------------------------------------------
     * UI Resize Handling, internal */
 
-#if DISTRHO_UI_USE_NTK
-   /**
-      NTK widget resize function, called when the widget is resized.
-      This is overriden here so the host knows when the UI is resized by you.
-    */
-    void resize(int x, int y, int w, int h) override;
-#else
    /**
       OpenGL widget resize function, called when the widget is resized.
       This is overriden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
     void onResize(const ResizeEvent& ev) override;
-#endif
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -179,14 +166,11 @@ private:
     friend class UIExporterWindow;
 
     // these should not be used
-    void position(int, int) noexcept {}
     void setAbsoluteX(int) const noexcept {}
     void setAbsoluteY(int) const noexcept {}
     void setAbsolutePos(int, int) const noexcept {}
-    void setNeedsFullViewport(bool) const noexcept {}
-#if ! DISTRHO_UI_USE_NTK
     void setAbsolutePos(const DGL::Point<int>&) const noexcept {}
-#endif
+    void setNeedsFullViewport(bool) const noexcept {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

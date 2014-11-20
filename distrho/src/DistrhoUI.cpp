@@ -21,9 +21,9 @@ START_NAMESPACE_DISTRHO
 /* ------------------------------------------------------------------------------------------------------------
  * Static data, see DistrhoUIInternal.hpp */
 
-double    d_lastUiSampleRate = 0.0;
-void*     d_lastUiDspPtr = nullptr;
-UIWindow* d_lastUiWindow = nullptr;
+double  d_lastUiSampleRate = 0.0;
+void*   d_lastUiDspPtr = nullptr;
+Window* d_lastUiWindow = nullptr;
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
@@ -90,7 +90,6 @@ void UI::d_sampleRateChanged(double) {}
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
-#if ! DISTRHO_UI_USE_NTK
 void UI::d_uiReshape(uint width, uint height)
 {
     glEnable(GL_BLEND);
@@ -102,23 +101,14 @@ void UI::d_uiReshape(uint width, uint height)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
-#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
-#if DISTRHO_UI_USE_NTK
-void UI::resize(int x, int y, int w, int h)
-{
-    UIWidget::resize(x, y, w, h);
-    pData->setSizeCallback(w, h);
-}
-#else
 void UI::onResize(const ResizeEvent& ev)
 {
     pData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
 }
-#endif
 
 // -----------------------------------------------------------------------------------------------------------
 
