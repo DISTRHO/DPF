@@ -34,6 +34,8 @@ START_NAMESPACE_DGL
 
 void NtkApp::NextUI::run()
 {
+    const FlScopedLock csl;
+
     if (create)
     {
         d_stdout("Creating NTK UI in separate thread...");

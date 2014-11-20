@@ -80,7 +80,7 @@ public:
           fThreadInitialized(false)
     {
 #ifdef DISTRHO_OS_LINUX
-        //XInitThreads();
+        XInitThreads();
 #endif
 
         startThread();

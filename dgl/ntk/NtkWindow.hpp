@@ -194,18 +194,21 @@ private:
 
     friend class NtkWidget;
 
-    static void _idleHandler(void* data)
+    void idleHandler()
     {
-        NtkWindow* const self((NtkWindow*)data);
-
-        for (std::list<IdleCallback*>::iterator it=self->fIdleCallbacks.begin(), ite=self->fIdleCallbacks.end(); it != ite; ++it)
+        for (std::list<IdleCallback*>::iterator it=fIdleCallbacks.begin(), ite=fIdleCallbacks.end(); it != ite; ++it)
         {
             IdleCallback* const idleCallback(*it);
             idleCallback->idleCallback();
         }
 
-        if (fIdleCallbacks.size() > 0 && ! self->getApp().isQuiting())
-            Fl::repeat_timeout(0.030, _idleHandler, self);
+        if (fIdleCallbacks.size() > 0 && ! getApp().isQuiting())
+            Fl::repeat_timeout(0.030, _idleHandler, this);
+    }
+
+    static void _idleHandler(void* data)
+    {
+        ((NtkWindow*)data)->idleHandler();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NtkWindow)
