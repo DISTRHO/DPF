@@ -53,8 +53,8 @@ class Widget
 public:
    /**
       Base event data.
-      @a mod  The currently active modifiers.
-      @a time The timestamp (if any) of the currently-processing event.
+      @a mod  The currently active keyboard modifiers.
+      @a time The timestamp (if any).
     */
     struct BaseEvent {
         Modifier mod;
