@@ -41,14 +41,11 @@ public:
         virtual void imageKnobValueChanged(ImageKnob* imageKnob, float value) = 0;
     };
 
-    explicit ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
-    explicit ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical, int id = 0) noexcept;
+    explicit ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical) noexcept;
+    explicit ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical) noexcept;
     explicit ImageKnob(const ImageKnob& imageKnob);
     ImageKnob& operator=(const ImageKnob& imageKnob);
     ~ImageKnob() override;
-
-    int getId() const noexcept;
-    void setId(int id) noexcept;
 
     float getValue() const noexcept;
 
@@ -70,7 +67,6 @@ protected:
 
 private:
     Image fImage;
-    int   fId;
     float fMinimum;
     float fMaximum;
     float fStep;
@@ -89,11 +85,10 @@ private:
     Callback* fCallback;
 
     bool fIsImgVertical;
-    int  fImgLayerSize;
-    int  fImgLayerCount;
-    Rectangle<int> fKnobArea;
-    GLuint fTextureId;
+    uint fImgLayerSize;
+    uint fImgLayerCount;
     bool fIsReady;
+    GLuint fTextureId;
 
     float _logscale(float value) const;
     float _invlogscale(float value) const;

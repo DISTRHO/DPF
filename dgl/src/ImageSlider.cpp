@@ -22,10 +22,9 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
+ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
     : Widget(parent),
       fImage(image),
-      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -44,10 +43,9 @@ ImageSlider::ImageSlider(Window& parent, const Image& image, int id) noexcept
     Widget::setNeedsFullViewport(true);
 }
 
-ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
+ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
     : Widget(widget->getParentWindow()),
       fImage(image),
-      fId(id),
       fMinimum(0.0f),
       fMaximum(1.0f),
       fStep(0.0f),
@@ -69,7 +67,6 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image, int id) noexcept
 ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
     : Widget(imageSlider.getParentWindow()),
       fImage(imageSlider.fImage),
-      fId(imageSlider.fId),
       fMinimum(imageSlider.fMinimum),
       fMaximum(imageSlider.fMaximum),
       fStep(imageSlider.fStep),
@@ -91,7 +88,6 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
 ImageSlider& ImageSlider::operator=(const ImageSlider& imageSlider) noexcept
 {
     fImage    = imageSlider.fImage;
-    fId       = imageSlider.fId;
     fMinimum  = imageSlider.fMinimum;
     fMaximum  = imageSlider.fMaximum;
     fStep     = imageSlider.fStep;
@@ -107,16 +103,6 @@ ImageSlider& ImageSlider::operator=(const ImageSlider& imageSlider) noexcept
     fSliderArea = imageSlider.fSliderArea;
 
     return *this;
-}
-
-int ImageSlider::getId() const noexcept
-{
-    return fId;
-}
-
-void ImageSlider::setId(int id) noexcept
-{
-    fId = id;
 }
 
 float ImageSlider::getValue() const noexcept
@@ -193,12 +179,12 @@ void ImageSlider::setStep(float step) noexcept
 
 void ImageSlider::setValue(float value, bool sendCallback) noexcept
 {
-    if (fValue == value)
+    if (d_isEqual(fValue, value))
         return;
 
     fValue = value;
 
-    if (fStep == 0.0f)
+    if (d_isZero(fStep))
         fValueTmp = value;
 
     repaint();
@@ -224,7 +210,7 @@ void ImageSlider::onDisplay()
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 #endif
 
-    float normValue = (fValue - fMinimum) / (fMaximum - fMinimum);
+    const float normValue = (fValue - fMinimum) / (fMaximum - fMinimum);
 
     int x, y;
 
@@ -292,7 +278,7 @@ bool ImageSlider::onMouse(const MouseEvent& ev)
         {
             fValueTmp = value = fMaximum;
         }
-        else if (fStep != 0.0f)
+        else if (d_isNotZero(fStep))
         {
             fValueTmp = value;
             const float rest = std::fmod(value, fStep);
@@ -361,7 +347,7 @@ bool ImageSlider::onMotion(const MotionEvent& ev)
         {
             fValueTmp = value = fMaximum;
         }
-        else if (fStep != 0.0f)
+        else if (d_isNotZero(fStep))
         {
             fValueTmp = value;
             const float rest = std::fmod(value, fStep);
@@ -395,16 +381,16 @@ void ImageSlider::_recheckArea() noexcept
         // horizontal
         fSliderArea = Rectangle<int>(fStartPos.getX(),
                                      fStartPos.getY(),
-                                     fEndPos.getX() + fImage.getWidth() - fStartPos.getX(),
-                                     fImage.getHeight());
+                                     fEndPos.getX() + static_cast<int>(fImage.getWidth()) - fStartPos.getX(),
+                                     static_cast<int>(fImage.getHeight()));
     }
     else
     {
         // vertical
         fSliderArea = Rectangle<int>(fStartPos.getX(),
                                      fStartPos.getY(),
-                                     fImage.getWidth(),
-                                     fEndPos.getY() + fImage.getHeight() - fStartPos.getY());
+                                     static_cast<int>(fImage.getWidth()),
+                                     fEndPos.getY() + static_cast<int>(fImage.getHeight()) - fStartPos.getY());
     }
 }
 

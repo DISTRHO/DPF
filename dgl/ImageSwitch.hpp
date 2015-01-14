@@ -34,13 +34,10 @@ public:
         virtual void imageSwitchClicked(ImageSwitch* imageButton, bool down) = 0;
     };
 
-    explicit ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown, int id = 0) noexcept;
-    explicit ImageSwitch(Widget* widget, const Image& imageNormal, const Image& imageDown, int id = 0) noexcept;
+    explicit ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept;
+    explicit ImageSwitch(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept;
     explicit ImageSwitch(const ImageSwitch& imageSwitch) noexcept;
     ImageSwitch& operator=(const ImageSwitch& imageSwitch) noexcept;
-
-    int getId() const noexcept;
-    void setId(int id) noexcept;
 
     bool isDown() const noexcept;
     void setDown(bool down) noexcept;
@@ -55,7 +52,6 @@ private:
     Image fImageNormal;
     Image fImageDown;
     bool  fIsDown;
-    int   fId;
 
     Callback* fCallback;
 
