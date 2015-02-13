@@ -107,7 +107,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	// Adjust the overall window size to accomodate our requested client size
 	const int winFlags = WS_POPUPWINDOW | WS_CAPTION | (view->resizable ? WS_SIZEBOX : 0x0);
 	RECT wr = { 0, 0, view->width, view->height };
-	AdjustWindowRectEx(&wr, winFlags, FALSE, WS_EX_TOPMOST);
+	AdjustWindowRectEx(&wr, view->parent ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
 
 	impl->hwnd = CreateWindowEx(
 		WS_EX_TOPMOST,
