@@ -143,7 +143,7 @@ struct Window::PrivateData {
           xDisplay(nullptr),
           xWindow(0),
 #elif defined(DISTRHO_OS_MAC)
-          fNeedsIdle(false),
+          fNeedsIdle(parentId == 0),
           mView(nullptr),
           mWindow(nullptr),
 #endif
