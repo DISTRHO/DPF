@@ -16,6 +16,11 @@
 
 #include "DistrhoPluginInternal.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL)
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 #endif
@@ -371,8 +376,10 @@ public:
         case effSetSampleRate:
             fPlugin.setSampleRate(opt, true);
 
+#if DISTRHO_PLUGIN_HAS_UI
             if (fVstUI != nullptr)
                 fVstUI->setSampleRate(opt);
+#endif
             break;
 
         case effSetBlockSize:
