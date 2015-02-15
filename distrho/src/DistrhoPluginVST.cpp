@@ -590,7 +590,7 @@ public:
         case effCanDo:
             if (const char* const canDo = (const char*)ptr)
             {
-# if DISTRHO_OS_MAC
+# if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
                 if (std::strcmp(canDo, "hasCockosViewAsConfig") == 0)
                 {
                     fUsingNsView = true;
