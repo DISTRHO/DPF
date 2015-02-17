@@ -1008,6 +1008,7 @@ void Window::repaint() noexcept
 
 bool Window::openFileBrowser(const FileBrowserOptions& options)
 {
+#ifdef SOFD_HAVE_X11
     using DISTRHO_NAMESPACE::d_string;
 
     // --------------------------------------------------------------------------
@@ -1065,6 +1066,10 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     // show
 
     return (x_fib_show(pData->xDisplay, pData->xWindow, /*options.width*/0, /*options.height*/0) == 0);
+#else
+    // not implemented
+    return false;
+#endif
 }
 
 bool Window::isVisible() const noexcept
