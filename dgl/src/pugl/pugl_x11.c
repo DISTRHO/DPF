@@ -203,6 +203,8 @@ puglDestroy(PuglView* view)
 		return;
 	}
 
+	x_fib_close(view->impl->display);
+
 	glXDestroyContext(view->impl->display, view->impl->ctx);
 	XDestroyWindow(view->impl->display, view->impl->win);
 	XCloseDisplay(view->impl->display);
@@ -344,6 +346,10 @@ puglProcessEvents(PuglView* view)
 				}
 			}
 			break;
+		}
+
+		if (event.xany.window != view->impl->win) {
+			continue;
 		}
 
 		switch (event.type) {
