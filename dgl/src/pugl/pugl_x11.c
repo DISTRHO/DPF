@@ -348,7 +348,7 @@ puglDestroy(PuglView* view)
 static void
 puglReshape(PuglView* view, int width, int height)
 {
-	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
+	puglEnterContext(view);
 
 	if (view->reshapeFunc) {
 		view->reshapeFunc(view, width, height);
@@ -363,7 +363,7 @@ puglReshape(PuglView* view, int width, int height)
 static void
 puglDisplay(PuglView* view)
 {
-	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
+	puglEnterContext(view);
 
 	view->redisplay = false;
 
@@ -371,11 +371,7 @@ puglDisplay(PuglView* view)
 		view->displayFunc(view);
 	}
 
-	glFlush();
-
-	if (view->impl->doubleBuffered) {
-		glXSwapBuffers(view->impl->display, view->impl->win);
-	}
+	puglLeaveContext(view);
 }
 
 static PuglKey
