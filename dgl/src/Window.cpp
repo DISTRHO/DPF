@@ -22,6 +22,10 @@
 #include "../Window.hpp"
 #include "../../distrho/extra/d_string.hpp"
 
+#undef PUGL_HAVE_CAIRO
+#undef PUGL_HAVE_GL
+#define PUGL_HAVE_GL 1
+
 #include "pugl/pugl.h"
 
 #if defined(DISTRHO_OS_WINDOWS)
@@ -182,7 +186,8 @@ struct Window::PrivateData {
             return;
         }
 
-        puglInitResizable(fView, fResizable);
+        puglInitContextType(fView, PUGL_GL);
+        puglInitUserResizable(fView, fResizable);
         puglInitWindowSize(fView, static_cast<int>(fWidth), static_cast<int>(fHeight));
 
         puglSetHandle(fView, this);
@@ -223,6 +228,7 @@ struct Window::PrivateData {
             XChangeProperty(xDisplay, xWindow, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
         }
 #endif
+        puglEnterContext(fView);
 
         fApp.pData->windows.push_back(fSelf);
 
