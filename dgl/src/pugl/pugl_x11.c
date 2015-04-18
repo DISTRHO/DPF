@@ -356,6 +356,8 @@ puglReshape(PuglView* view, int width, int height)
 		puglDefaultReshape(view, width, height);
 	}
 
+	puglLeaveContext(view, false);
+
 	view->width  = width;
 	view->height = height;
 }
@@ -371,7 +373,7 @@ puglDisplay(PuglView* view)
 		view->displayFunc(view);
 	}
 
-	puglLeaveContext(view);
+	puglLeaveContext(view, true);
 }
 
 static PuglKey
