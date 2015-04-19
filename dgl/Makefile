@@ -72,7 +72,7 @@ src/Window.mm.o: src/Window.cpp src/pugl/*
 # --------------------------------------------------------------
 
 clean:
-	rm -f src/*.o src/pugl/*.o src/freetype-gl/*.o ../libdgl.*
+	rm -f src/*.d src/*.o ../libdgl.*
 
 debug:
 	$(MAKE) DEBUG=true
