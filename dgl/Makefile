@@ -43,7 +43,7 @@ all: $(TARGET)
 
 ../libdgl.a: $(OBJS)
 	rm -f $@
-	ar crs $@ $^
+	$(AR) crs $@ $^
 
 ../libdgl.dll: $(OBJS)
 	# -Wl,--output-def,$@.def,--out-implib,$@.a
@@ -76,5 +76,9 @@ clean:
 
 debug:
 	$(MAKE) DEBUG=true
+
+# --------------------------------------------------------------
+
+-include $(OBJS:%.o=%.d)
 
 # --------------------------------------------------------------
