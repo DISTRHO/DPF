@@ -35,20 +35,20 @@
 START_NAMESPACE_DISTRHO
 
 /**
-   @defgroup dpf DISTRHO Plugin Framework
+   @mainpage DISTRHO %Plugin Framework
 
-   A plugin framework designed to make development of new plugins an easy and enjoyable task.@n
+   DISTRHO %Plugin Framework (or @b DPF for short)
+   is a plugin framework designed to make development of new plugins an easy and enjoyable task.@n
    It allows developers to create plugins with custom UIs using a simple C++ API.
 
    @section Macros
-   You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see PluginMacros.
+   You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see @ref PluginMacros.
 
    @section Plugin
    TODO
 
    @section Parameters
    describe input and output, automable and rt safe, boolean etc, cv
-   @{
 */
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_URI "urn:distrho:name"
 
 /**
-   Wherever the plugin has a custom UI.
+   Wherever the plugin has a custom %UI.
    @see DISTRHO_UI_USE_NANOVG
    @see UI
  */
@@ -118,18 +118,18 @@ START_NAMESPACE_DISTRHO
 
 /**
    Wherever the plugin is a synth.@n
-   @ref DISTRHO_PLUGIN_WANTS_MIDI_INPUT is automatically enabled when this is too.
-   @see DISTRHO_PLUGIN_WANTS_MIDI_INPUT
+   @ref DISTRHO_PLUGIN_WANT_MIDI_INPUT is automatically enabled when this is too.
+   @see DISTRHO_PLUGIN_WANT_MIDI_INPUT
  */
 #define DISTRHO_PLUGIN_IS_SYNTH 1
 
 /**
-   Enable direct access between the UI and plugin code.
+   Enable direct access between the %UI and plugin code.
    @see UI::d_getPluginInstancePointer()
    @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
          Try to avoid it at all costs!
  */
-#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 1
+#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0
 
 /**
    Wherever the plugin introduces latency during audio or midi processing.
@@ -141,13 +141,13 @@ START_NAMESPACE_DISTRHO
    Wherever the plugin wants MIDI input.@n
    This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.
  */
-#define DISTRHO_PLUGIN_WANTS_MIDI_INPUT 1
+#define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1
 
 /**
    Wherever the plugin wants MIDI output.
    @see Plugin::d_writeMidiEvent(const MidiEvent&)
  */
-#define DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT 1
+#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1
 
 /**
    Wherever the plugin provides its own internal programs.
@@ -170,14 +170,14 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
 
 /**
-   Wherever the UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
-   When enabled your UI instance will subclass @ref NanoWidget instead of @ref Widget.
+   Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
+   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.
  */
 #define DISTRHO_UI_USE_NANOVG 1
 
 /**
-   The UI URI when exporting in LV2 format.@n
-   By default this is set as @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
+   The %UI URI when exporting in LV2 format.@n
+   By default this is set to @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
  */
 #define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
 
@@ -564,7 +564,7 @@ struct TimePosition {
    DISTRHO_PLUGIN_WANT_STATE activates internal state features.
    When enabled you need to implement d_initStateKey() and d_setState().
 
-   The process function d_run() changes wherever DISTRHO_PLUGIN_WANTS_MIDI_INPUT is enabled or not.
+   The process function d_run() changes wherever DISTRHO_PLUGIN_WANT_MIDI_INPUT is enabled or not.
    When enabled it provides midi input events.
  */
 class Plugin
@@ -620,7 +620,7 @@ public:
     void d_setLatency(uint32_t frames) noexcept;
 #endif
 
-#if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
    /**
       Write a MIDI output event.
       This function must only be called during d_run().
@@ -741,7 +741,7 @@ protected:
     */
     virtual void d_deactivate() {}
 
-#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
    /**
       Run/process function for plugins with MIDI input.
       @note: Some parameters might be null if there are no audio inputs/outputs or MIDI events.
@@ -792,8 +792,6 @@ private:
    TODO.
  */
 extern Plugin* createPlugin();
-
-/** @} */
 
 // -----------------------------------------------------------------------------------------------------------
 

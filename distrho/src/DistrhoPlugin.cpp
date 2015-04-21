@@ -96,7 +96,7 @@ void Plugin::d_setLatency(const uint32_t frames) noexcept
 }
 #endif
 
-#if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
 {
     // TODO

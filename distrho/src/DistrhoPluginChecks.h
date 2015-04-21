@@ -61,8 +61,8 @@
 # define DISTRHO_PLUGIN_WANT_LATENCY 0
 #endif
 
-#ifndef DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
-# define DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT 0
+#ifndef DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+# define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 0
 #endif
 
 #ifndef DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -98,9 +98,9 @@
 // -----------------------------------------------------------------------
 // Enable MIDI input if synth, test if midi-input disabled when synth
 
-#ifndef DISTRHO_PLUGIN_WANTS_MIDI_INPUT
-# define DISTRHO_PLUGIN_WANTS_MIDI_INPUT DISTRHO_PLUGIN_IS_SYNTH
-#elif DISTRHO_PLUGIN_IS_SYNTH && ! DISTRHO_PLUGIN_WANTS_MIDI_INPUT
+#ifndef DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# define DISTRHO_PLUGIN_WANT_MIDI_INPUT DISTRHO_PLUGIN_IS_SYNTH
+#elif DISTRHO_PLUGIN_IS_SYNTH && ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
 # error Synths need MIDI input to work!
 #endif
 

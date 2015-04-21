@@ -49,8 +49,8 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANTS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 // -----------------------------------------------------------------------
 
@@ -255,7 +255,7 @@ void lv2_generate_ttl(const char* const basename)
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
 # endif
-# if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -276,7 +276,7 @@ void lv2_generate_ttl(const char* const basename)
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
 # endif
-# if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
+# if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
 # endif
             pluginString += "    ] ;\n\n";
