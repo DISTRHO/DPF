@@ -1,9 +1,0 @@
-[Project]
-Manager=KDevGenericManager
-Name=DPF
-
-[Filters]
-Excludes=*/.*,*/*~,*/*.a
-
-[Project]
-VersionControlSupport=kdevgit
