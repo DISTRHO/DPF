@@ -267,7 +267,7 @@ struct ParameterRanges {
     float max;
 
    /**
-      Default constructor.
+      Default constructor, using 0.0 as minimum, 1.0 as maximum and 0.0 as default.
     */
     ParameterRanges() noexcept
         : def(0.0f),
@@ -389,7 +389,7 @@ struct Parameter {
    /**
       The unit of this parameter.
       This means something like "dB", "kHz" and "ms".
-      Can be left blank if units do not apply to this parameter.
+      Can be left blank if a unit does not apply to this parameter.
     */
     d_string unit;
 
@@ -573,7 +573,6 @@ public:
    /**
       Plugin class constructor.
       You must set all parameter values to their defaults, matching ParameterRanges::def.
-      If you're using states you must also set them to their defaults by calling d_setState().
     */
     Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount);
 
@@ -606,7 +605,7 @@ public:
       Get the current host transport time position.
       This function should only be called during d_run().
       You can call this during other times, but the returned position is not guaranteed to be in sync.
-      @note: TimePos is not supported in LADSPA and DSSI plugin formats.
+      @note: TimePosition is not supported in LADSPA and DSSI plugin formats.
     */
     const TimePosition& d_getTimePosition() const noexcept;
 #endif
@@ -651,7 +650,8 @@ protected:
     virtual const char* d_getMaker() const = 0;
 
    /**
-      Get the plugin license name (a single line of text).
+      Get the plugin license name (a single line of text).@n
+      For commercial plugins this should return some copyright information.
     */
     virtual const char* d_getLicense() const = 0;
 
@@ -706,7 +706,7 @@ protected:
    /**
       Change a parameter value.
       The host may call this function from any context, including realtime processing.
-      When a parameter is marked as automable, you must ensure no non-realtime operations are called.
+      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
     virtual void d_setParameterValue(uint32_t index, float value) = 0;
