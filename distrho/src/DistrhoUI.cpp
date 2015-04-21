@@ -28,11 +28,14 @@ Window* d_lastUiWindow = nullptr;
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
 
-UI::UI()
+UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
       pData(new PrivateData())
 {
     UIWidget::setNeedsFullViewport(true);
+
+    if (width > 0 && height > 0)
+        setSize(width, height);
 }
 
 UI::~UI()

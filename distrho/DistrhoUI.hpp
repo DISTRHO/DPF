@@ -47,7 +47,7 @@ public:
       UI class constructor.
       The UI should be initialized to a default state that matches the plugin side.
     */
-    UI();
+    UI(uint width = 0, uint height = 0);
 
    /**
       Destructor.
