@@ -26,3 +26,6 @@ List of plugins made with DPF:<br/>
 
 Plugin examples are available [here](https://github.com/DISTRHO/plugin-examples).<br/>
 OpenGL UI examples are available [here](https://github.com/DISTRHO/gl-examples).
+
+
+Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
