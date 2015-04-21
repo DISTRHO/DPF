@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -44,8 +44,8 @@
 # warning LV2 TimePos still TODO
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANTS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 START_NAMESPACE_DISTRHO
 
@@ -271,7 +271,7 @@ public:
         }
 
 #if DISTRHO_LV2_USE_EVENTS_IN
-# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         uint32_t midiEventCount = 0;
 # endif
         LV2_ATOM_SEQUENCE_FOREACH(fPortEventsIn, event)
@@ -279,7 +279,7 @@ public:
             if (event == nullptr)
                 break;
 
-# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
             if (event->body.type == fURIDs.midiEvent)
             {
                 if (midiEventCount >= kMaxMidiEvents)
@@ -477,7 +477,7 @@ public:
         fPlugin.setTimePosition(fTimePosition);
 # endif
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount, fMidiEvents, midiEventCount);
 #else
         fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
@@ -529,7 +529,7 @@ public:
         uint32_t size, offset = 0;
         LV2_Atom_Event* aev;
 
-# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
         // TODO
 # endif
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
@@ -783,7 +783,7 @@ private:
     // Temporary data
     float* fLastControlValues;
     double fSampleRate;
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

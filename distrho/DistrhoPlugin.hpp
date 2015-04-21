@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -33,6 +33,157 @@
 #endif
 
 START_NAMESPACE_DISTRHO
+
+/**
+   @defgroup dpf DISTRHO Plugin Framework
+
+   A plugin framework designed to make development of new plugins an easy and enjoyable task.@n
+   It allows developers to create plugins with custom UIs using a simple C++ API.
+
+   @section Macros
+   You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see PluginMacros.
+
+   @section Plugin
+   TODO
+
+   @section Parameters
+   describe input and output, automable and rt safe, boolean etc, cv
+   @{
+*/
+
+/* ------------------------------------------------------------------------------------------------------------
+ * Plugin Macros */
+
+#ifdef DOXYGEN
+
+/**
+   @defgroup PluginMacros Plugin Macros
+
+   C Macros that describe your plugin. (defined in the "DistrhoPluginInfo.h" file)
+
+   With these macros you can tell the host what features your plugin requires.@n
+   Depending on which macros you enable, new functions will be available to call and/or override.
+
+   All values are either integer or strings.@n
+   For boolean-like values 1 means 'on' and 0 means 'off'.
+
+   The values defined in this file are for documentation purposes only.@n
+   All macros are disabled by default.
+
+   Only 4 macros are required, they are:
+    - @ref DISTRHO_PLUGIN_NAME
+    - @ref DISTRHO_PLUGIN_NUM_INPUTS
+    - @ref DISTRHO_PLUGIN_NUM_OUTPUTS
+    - @ref DISTRHO_PLUGIN_URI
+   @{
+ */
+
+/**
+   The plugin name.@n
+   This is used to identify your plugin before a Plugin instance can be created.
+   @note This macro is required.
+ */
+#define DISTRHO_PLUGIN_NAME "Plugin Name"
+
+/**
+   Number of audio inputs the plugin has.
+   @note This macro is required.
+ */
+#define DISTRHO_PLUGIN_NUM_INPUTS 2
+
+/**
+   Number of audio outputs the plugin has.
+   @note This macro is required.
+ */
+#define DISTRHO_PLUGIN_NUM_OUTPUTS 2
+
+/**
+   The plugin URI when exporting in LV2 format.
+   @note This macro is required.
+ */
+#define DISTRHO_PLUGIN_URI "urn:distrho:name"
+
+/**
+   Wherever the plugin has a custom UI.
+   @see DISTRHO_UI_USE_NANOVG
+   @see UI
+ */
+#define DISTRHO_PLUGIN_HAS_UI 1
+
+/**
+   Wherever the plugin processing is realtime-safe.@n
+   TODO - list rtsafe requirements
+ */
+#define DISTRHO_PLUGIN_IS_RT_SAFE 1
+
+/**
+   Wherever the plugin is a synth.@n
+   @ref DISTRHO_PLUGIN_WANTS_MIDI_INPUT is automatically enabled when this is too.
+   @see DISTRHO_PLUGIN_WANTS_MIDI_INPUT
+ */
+#define DISTRHO_PLUGIN_IS_SYNTH 1
+
+/**
+   Enable direct access between the UI and plugin code.
+   @see UI::d_getPluginInstancePointer()
+   @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
+         Try to avoid it at all costs!
+ */
+#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 1
+
+/**
+   Wherever the plugin introduces latency during audio or midi processing.
+   @see Plugin::d_setLatency(uint32_t)
+ */
+#define DISTRHO_PLUGIN_WANT_LATENCY 1
+
+/**
+   Wherever the plugin wants MIDI input.@n
+   This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.
+ */
+#define DISTRHO_PLUGIN_WANTS_MIDI_INPUT 1
+
+/**
+   Wherever the plugin wants MIDI output.
+   @see Plugin::d_writeMidiEvent(const MidiEvent&)
+ */
+#define DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT 1
+
+/**
+   Wherever the plugin provides its own internal programs.
+   @see Plugin::d_initProgramName(uint32_t, d_string&)
+   @see Plugin::d_setProgram(uint32_t)
+ */
+#define DISTRHO_PLUGIN_WANT_PROGRAMS 1
+
+/**
+   Wherever the plugin uses internal non-parameter data.
+   @see Plugin::d_initState(uint32_t, d_string&, d_string&)
+   @see Plugin::d_setState(const char*, const char*)
+ */
+#define DISTRHO_PLUGIN_WANT_STATE 1
+
+/**
+   Wherever the plugin wants time position information from the host.
+   @see Plugin::d_getTimePosition()
+ */
+#define DISTRHO_PLUGIN_WANT_TIMEPOS 1
+
+/**
+   Wherever the UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
+   When enabled your UI instance will subclass @ref NanoWidget instead of @ref Widget.
+ */
+#define DISTRHO_UI_USE_NANOVG 1
+
+/**
+   The UI URI when exporting in LV2 format.@n
+   By default this is set as @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
+ */
+#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+
+/** @} */
+
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * Parameter Hints */
@@ -77,10 +228,20 @@ static const uint32_t kParameterIsLogarithmic = 0x08;
  */
 static const uint32_t kParameterIsOutput = 0x10;
 
+/**
+   Parameter can be used as control voltage (LV2 only).
+ */
+static const uint32_t kParameterIsCV = 0x20;
+
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------
  * DPF Base structs */
+
+/**
+   @defgroup BaseStructs Base Structs
+   @{
+ */
 
 /**
    Parameter ranges.
@@ -375,6 +536,8 @@ struct TimePosition {
           bbt() {}
 };
 
+/** @} */
+
 /* ------------------------------------------------------------------------------------------------------------
  * DPF Plugin */
 
@@ -401,7 +564,7 @@ struct TimePosition {
    DISTRHO_PLUGIN_WANT_STATE activates internal state features.
    When enabled you need to implement d_initStateKey() and d_setState().
 
-   The process function d_run() changes wherever DISTRHO_PLUGIN_HAS_MIDI_INPUT is enabled or not.
+   The process function d_run() changes wherever DISTRHO_PLUGIN_WANTS_MIDI_INPUT is enabled or not.
    When enabled it provides midi input events.
  */
 class Plugin
@@ -452,11 +615,12 @@ public:
    /**
       Change the plugin audio output latency to @a frames.
       This function should only be called in the constructor, d_activate() and d_run().
+      @note This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled.
     */
-    void d_setLatency(const uint32_t frames) noexcept;
+    void d_setLatency(uint32_t frames) noexcept;
 #endif
 
-#if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
    /**
       Write a MIDI output event.
       This function must only be called during d_run().
@@ -577,7 +741,7 @@ protected:
     */
     virtual void d_deactivate() {}
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
    /**
       Run/process function for plugins with MIDI input.
       @note: Some parameters might be null if there are no audio inputs/outputs or MIDI events.
@@ -628,6 +792,8 @@ private:
    TODO.
  */
 extern Plugin* createPlugin();
+
+/** @} */
 
 // -----------------------------------------------------------------------------------------------------------
 

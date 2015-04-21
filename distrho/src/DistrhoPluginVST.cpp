@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -202,7 +202,7 @@ protected:
 
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-#if 0 //DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if 0 //DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         // TODO
 #else
         return; // unused
@@ -278,7 +278,7 @@ public:
         std::memset(fProgramName, 0, sizeof(char)*(32+1));
         std::strcpy(fProgramName, "Default");
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         fMidiEventCount = 0;
 #endif
 
@@ -390,7 +390,7 @@ public:
             if (value != 0)
             {
                 fPlugin.activate();
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
                 fMidiEventCount = 0;
 #endif
             }
@@ -548,7 +548,7 @@ public:
         }
 #endif // DISTRHO_PLUGIN_WANT_STATE
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         case effProcessEvents:
             if (const VstEvents* const events = (const VstEvents*)ptr)
             {
@@ -586,7 +586,7 @@ public:
             }
             break;
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_OS_MAC
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT || DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_OS_MAC
         case effCanDo:
             if (const char* const canDo = (const char*)ptr)
             {
@@ -597,13 +597,13 @@ public:
                     return 0xbeef0000;
                 }
 # endif
-# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
                 if (std::strcmp(canDo, "receiveVstEvents") == 0)
                     return 1;
                 if (std::strcmp(canDo, "receiveVstMidiEvent") == 0)
                     return 1;
 # endif
-# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
                 if (std::strcmp(canDo, "sendVstEvents") == 0)
                     return 1;
                 if (std::strcmp(canDo, "sendVstMidiEvent") == 0)
@@ -690,7 +690,7 @@ public:
         }
 #endif
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
         fPlugin.run(inputs, outputs, sampleFrames, fMidiEvents, fMidiEventCount);
         fMidiEventCount = 0;
 #else
@@ -724,7 +724,7 @@ private:
     // Temporary data
     char fProgramName[32+1];
 
-#if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+#if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
     uint32_t  fMidiEventCount;
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif

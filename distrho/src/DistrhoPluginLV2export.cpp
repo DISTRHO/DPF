@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -49,8 +49,8 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_HAS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_HAS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANTS_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 // -----------------------------------------------------------------------
 
@@ -255,7 +255,7 @@ void lv2_generate_ttl(const char* const basename)
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
 # endif
-# if DISTRHO_PLUGIN_HAS_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_INPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -276,7 +276,7 @@ void lv2_generate_ttl(const char* const basename)
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
 # endif
-# if DISTRHO_PLUGIN_HAS_MIDI_OUTPUT
+# if DISTRHO_PLUGIN_WANTS_MIDI_OUTPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
 # endif
             pluginString += "    ] ;\n\n";
