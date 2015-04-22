@@ -16,10 +16,11 @@ It uses the same format as the JACK Transport API, making porting some code easi
 
 
 List of plugins made with DPF:<br/>
- - [DISTRHO Mini-Series](https://github.com/DISTRHO/mini-series)
+ - [DISTRHO Mini-Series](https://github.com/DISTRHO/Mini-Series)
  - [DISTRHO MVerb](https://github.com/DISTRHO/MVerb)
- - [DISTRHO Nekobi](https://github.com/DISTRHO/nekobi)
- - [DISTRHO ProM](https://github.com/DISTRHO/prom)
+ - [DISTRHO Nekobi](https://github.com/DISTRHO/Nekobi)
+ - [DISTRHO ProM](https://github.com/DISTRHO/ProM)
+ - [DISTRHO ndc Plugs](https://github.com/DISTRHO/ndc-Plugs)
  - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins) (work in progress)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
 
