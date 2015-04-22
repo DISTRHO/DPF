@@ -59,6 +59,8 @@ public:
     void setOrientation(Orientation orientation) noexcept;
     void setRotationAngle(int angle);
 
+    void setImageLayerCount(uint count) noexcept;
+
 protected:
      void onDisplay() override;
      bool onMouse(const MouseEvent&) override;
@@ -85,7 +87,8 @@ private:
     Callback* fCallback;
 
     bool fIsImgVertical;
-    uint fImgLayerSize;
+    uint fImgLayerWidth;
+    uint fImgLayerHeight;
     uint fImgLayerCount;
     bool fIsReady;
     GLuint fTextureId;

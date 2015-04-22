@@ -40,14 +40,15 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fLastY(0),
       fCallback(nullptr),
       fIsImgVertical(image.getHeight() > image.getWidth()),
-      fImgLayerSize(fIsImgVertical ? image.getWidth() : image.getHeight()),
-      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerSize : image.getWidth()/fImgLayerSize),
+      fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
+      fImgLayerHeight(fImgLayerWidth),
+      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
       fIsReady(false),
       fTextureId(0),
       leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
-    setSize(fImgLayerSize, fImgLayerSize);
+    setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
 ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation) noexcept
@@ -68,14 +69,15 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fLastY(0),
       fCallback(nullptr),
       fIsImgVertical(image.getHeight() > image.getWidth()),
-      fImgLayerSize(fIsImgVertical ? image.getWidth() : image.getHeight()),
-      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerSize : image.getWidth()/fImgLayerSize),
+      fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
+      fImgLayerHeight(fImgLayerWidth),
+      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
       fIsReady(false),
       fTextureId(0),
       leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
-    setSize(fImgLayerSize, fImgLayerSize);
+    setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
 ImageKnob::ImageKnob(const ImageKnob& imageKnob)
@@ -96,14 +98,15 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fLastY(0),
       fCallback(imageKnob.fCallback),
       fIsImgVertical(imageKnob.fIsImgVertical),
-      fImgLayerSize(imageKnob.fImgLayerSize),
+      fImgLayerWidth(imageKnob.fImgLayerWidth),
+      fImgLayerHeight(imageKnob.fImgLayerHeight),
       fImgLayerCount(imageKnob.fImgLayerCount),
       fIsReady(false),
       fTextureId(0),
       leakDetector_ImageKnob()
 {
     glGenTextures(1, &fTextureId);
-    setSize(fImgLayerSize, fImgLayerSize);
+    setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
 ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
@@ -123,9 +126,10 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     fLastX    = 0;
     fLastY    = 0;
     fCallback = imageKnob.fCallback;
-    fIsImgVertical = imageKnob.fIsImgVertical;
-    fImgLayerSize  = imageKnob.fImgLayerSize;
-    fImgLayerCount = imageKnob.fImgLayerCount;
+    fIsImgVertical  = imageKnob.fIsImgVertical;
+    fImgLayerWidth  = imageKnob.fImgLayerWidth;
+    fImgLayerHeight = imageKnob.fImgLayerHeight;
+    fImgLayerCount  = imageKnob.fImgLayerCount;
     fIsReady  = false;
 
     if (fTextureId != 0)
@@ -135,7 +139,7 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     }
 
     glGenTextures(1, &fTextureId);
-    setSize(fImgLayerSize, fImgLayerSize);
+    setSize(fImgLayerWidth, fImgLayerHeight);
 
     return *this;
 }
@@ -250,6 +254,20 @@ void ImageKnob::setRotationAngle(int angle)
     fIsReady = false;
 }
 
+void ImageKnob::setImageLayerCount(uint count) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(count > 1,);
+
+    fImgLayerCount = count;
+
+    if (fIsImgVertical)
+        fImgLayerHeight = fImage.getHeight()/count;
+    else
+        fImgLayerWidth = fImage.getWidth()/count;
+
+    setSize(fImgLayerWidth, fImgLayerHeight);
+}
+
 void ImageKnob::onDisplay()
 {
     const float normValue = ((fUsingLog ? _invlogscale(fValue) : fValue) - fMinimum) / (fMaximum - fMinimum);
@@ -277,7 +295,10 @@ void ImageKnob::onDisplay()
             DISTRHO_SAFE_ASSERT_RETURN(fImgLayerCount > 0,);
             DISTRHO_SAFE_ASSERT_RETURN(normValue >= 0.0f,);
 
-            const uint layerDataSize   = fImgLayerSize * fImgLayerSize * ((fImage.getFormat() == GL_BGRA || fImage.getFormat() == GL_RGBA) ? 4 : 3);
+            const uint& v1(fIsImgVertical ? fImgLayerWidth : fImgLayerHeight);
+            const uint& v2(fIsImgVertical ? fImgLayerHeight : fImgLayerWidth);
+
+            const uint layerDataSize   = v1 * v2 * ((fImage.getFormat() == GL_BGRA || fImage.getFormat() == GL_RGBA) ? 4 : 3);
             /*      */ imageDataOffset = layerDataSize * uint(normValue * float(fImgLayerCount-1));
         }
 
