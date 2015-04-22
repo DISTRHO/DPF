@@ -95,9 +95,9 @@ void ImageSwitch::setCallback(Callback* callback) noexcept
 void ImageSwitch::onDisplay()
 {
     if (fIsDown)
-        fImageNormal.draw();
-    else
         fImageDown.draw();
+    else
+        fImageNormal.draw();
 }
 
 bool ImageSwitch::onMouse(const MouseEvent& ev)
