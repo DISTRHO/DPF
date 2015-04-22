@@ -195,7 +195,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
         </tr>
       </table>
 </div><div class="memdoc">
-<p><a class="el" href="classPlugin.html">Plugin</a> class constructor. You must set all parameter values to their defaults, matching <a class="el" href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a>. If you're using states you must also set them to their defaults by calling <a class="el" href="classPlugin.html#ad9c46a36cab96f52a0370043093bca68">d_setState()</a>. </p>
+<p><a class="el" href="classPlugin.html">Plugin</a> class constructor. You must set all parameter values to their defaults, matching <a class="el" href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a>. </p>
 
 </div>
 </div>
@@ -293,7 +293,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current host transport time position. This function should only be called during <a class="el" href="classPlugin.html#af67102a7c6d19a8530ce0e3293e55667">d_run()</a>. You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd>: TimePos is not supported in LADSPA and DSSI plugin formats. </dd></dl>
+<p>Get the current host transport time position. This function should only be called during <a class="el" href="classPlugin.html#af67102a7c6d19a8530ce0e3293e55667">d_run()</a>. You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd>: <a class="el" href="structTimePosition.html">TimePosition</a> is not supported in LADSPA and DSSI plugin formats. </dd></dl>
 
 </div>
 </div>
@@ -439,7 +439,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin license name (a single line of text). </p>
+<p>Get the plugin license name (a single line of text).<br />
+For commercial plugins this should return some copyright information. </p>
 
 </div>
 </div>
@@ -658,7 +659,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change a parameter value. The host may call this function from any context, including realtime processing. When a parameter is marked as automable, you must ensure no non-realtime operations are called. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
+<p>Change a parameter value. The host may call this function from any context, including realtime processing. When a parameter is marked as automable, you must ensure no non-realtime operations are performed. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
 
 </div>
 </div>
@@ -880,7 +881,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 21 2015 15:18:54 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 22 2015 11:04:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

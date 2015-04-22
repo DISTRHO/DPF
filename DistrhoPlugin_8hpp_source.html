@@ -356,7 +356,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00267"></a><span class="lineno"><a class="line" href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">  267</a></span>&#160;    <span class="keywordtype">float</span> <a class="code" href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">max</a>;</div>
 <div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="comment">      Default constructor.</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="comment">      Default constructor, using 0.0 as minimum, 1.0 as maximum and 0.0 as default.</span></div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00272"></a><span class="lineno"><a class="line" href="structParameterRanges.html#adb9b2712df3401eb0c5e11362d865d4e">  272</a></span>&#160;    <a class="code" href="structParameterRanges.html#adb9b2712df3401eb0c5e11362d865d4e">ParameterRanges</a>() noexcept</div>
 <div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        : def(0.0f),</div>
@@ -478,7 +478,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment">      The unit of this parameter.</span></div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;<span class="comment">      This means something like &quot;dB&quot;, &quot;kHz&quot; and &quot;ms&quot;.</span></div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;<span class="comment">      Can be left blank if units do not apply to this parameter.</span></div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;<span class="comment">      Can be left blank if a unit does not apply to this parameter.</span></div>
 <div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00394"></a><span class="lineno"><a class="line" href="structParameter.html#aa9ee36848d60d8ddd9185b9a3f2ce93f">  394</a></span>&#160;    d_string <a class="code" href="structParameter.html#aa9ee36848d60d8ddd9185b9a3f2ce93f">unit</a>;</div>
 <div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment"></span></div>
@@ -662,85 +662,85 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;<span class="comment">      Plugin class constructor.</span></div>
 <div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;<span class="comment">      You must set all parameter values to their defaults, matching ParameterRanges::def.</span></div>
-<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;<span class="comment">      If you&#39;re using states you must also set them to their defaults by calling d_setState().</span></div>
-<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;    <a class="code" href="classPlugin.html#a3096e491376cb9378be55915d748de57">Plugin</a>(<span class="keyword">const</span> uint32_t parameterCount, <span class="keyword">const</span> uint32_t programCount, <span class="keyword">const</span> uint32_t stateCount);</div>
-<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;<span class="comment">      Destructor.</span></div>
-<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPlugin.html#a89814b8f0b1c91e49140d42eb8331383">~Plugin</a>();</div>
-<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;</div>
-<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;<span class="comment">    * Host state */</span></div>
-<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="comment">      Get the current buffer size that will probably be used during processing, in frames.</span></div>
-<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;<span class="comment">      This value will remain constant between activate and deactivate.</span></div>
-<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;<span class="comment">      @note: This value is only a hint!</span></div>
-<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;<span class="comment">             Hosts might call d_run() with a higher or lower number of frames.</span></div>
-<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;<span class="comment">      @see d_bufferSizeChanged(uint32_t)</span></div>
-<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;    uint32_t <a class="code" href="classPlugin.html#aa0feb17c3dcf13a106505eb6d6b2a3ac">d_getBufferSize</a>() <span class="keyword">const</span> noexcept;</div>
-<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;<span class="comment">      Get the current sample rate that will be used during processing.</span></div>
-<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;<span class="comment">      This value will remain constant between activate and deactivate.</span></div>
-<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;<span class="comment">      @see d_sampleRateChanged(double)</span></div>
-<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;    <span class="keywordtype">double</span> <a class="code" href="classPlugin.html#ace888940905e8875284e07c52bf7404f">d_getSampleRate</a>() <span class="keyword">const</span> noexcept;</div>
-<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;</div>
-<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_TIMEPOS</span></div>
-<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;<span class="comment">      Get the current host transport time position.</span></div>
-<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;<span class="comment">      This function should only be called during d_run().</span></div>
-<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;<span class="comment">      You can call this during other times, but the returned position is not guaranteed to be in sync.</span></div>
-<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;<span class="comment">      @note: TimePos is not supported in LADSPA and DSSI plugin formats.</span></div>
-<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;    <span class="keyword">const</span> <a class="code" href="structTimePosition.html">TimePosition</a>&amp; <a class="code" href="classPlugin.html#ade0a082a3a2936286537a04f4b972225">d_getTimePosition</a>() <span class="keyword">const</span> noexcept;</div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;</div>
-<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_LATENCY</span></div>
-<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;<span class="comment">      Change the plugin audio output latency to @a frames.</span></div>
-<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;<span class="comment">      This function should only be called in the constructor, d_activate() and d_run().</span></div>
-<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;<span class="comment">      @note This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled.</span></div>
-<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a7816b45ffb52b0a6308cabb792b1a56f">d_setLatency</a>(uint32_t frames) noexcept;</div>
-<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;</div>
-<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT</span></div>
-<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;<span class="comment">      Write a MIDI output event.</span></div>
-<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;<span class="comment">      This function must only be called during d_run().</span></div>
-<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;<span class="comment">      Returns false when the host buffer is full, in which case do not call this again until the next d_run().</span></div>
-<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlugin.html#afa10aea18e4036b4a7487f2779d92e0f">d_writeMidiEvent</a>(<span class="keyword">const</span> <a class="code" href="structMidiEvent.html">MidiEvent</a>&amp; midiEvent) noexcept;</div>
-<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;</div>
-<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;<span class="comment">    * Information */</span></div>
-<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;<span class="comment">      Get the plugin name.</span></div>
-<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;<span class="comment">      Returns DISTRHO_PLUGIN_NAME by default.</span></div>
-<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00640"></a><span class="lineno"><a class="line" href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">  640</a></span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">d_getName</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">DISTRHO_PLUGIN_NAME</a>; }</div>
-<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;<span class="comment">      Get the plugin label.</span></div>
-<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;<span class="comment">      A plugin label follows the same rules as Parameter::symbol, with the exception that it can start with numbers.</span></div>
-<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#ae512b28d1b274a055de33812cf094d81">d_getLabel</a>() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;<span class="comment">      Get the plugin author/maker.</span></div>
-<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a0eaf2f46f04d60526622afb5a86e026c">d_getMaker</a>() <span class="keyword">const</span> = 0;</div>
-<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;<span class="comment">      Get the plugin license name (a single line of text).</span></div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;    <a class="code" href="classPlugin.html#a3096e491376cb9378be55915d748de57">Plugin</a>(<span class="keyword">const</span> uint32_t parameterCount, <span class="keyword">const</span> uint32_t programCount, <span class="keyword">const</span> uint32_t stateCount);</div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;<span class="comment">      Destructor.</span></div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classPlugin.html#a89814b8f0b1c91e49140d42eb8331383">~Plugin</a>();</div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;</div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;<span class="comment">    * Host state */</span></div>
+<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="comment">      Get the current buffer size that will probably be used during processing, in frames.</span></div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="comment">      This value will remain constant between activate and deactivate.</span></div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;<span class="comment">      @note: This value is only a hint!</span></div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;<span class="comment">             Hosts might call d_run() with a higher or lower number of frames.</span></div>
+<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;<span class="comment">      @see d_bufferSizeChanged(uint32_t)</span></div>
+<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;    uint32_t <a class="code" href="classPlugin.html#aa0feb17c3dcf13a106505eb6d6b2a3ac">d_getBufferSize</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;<span class="comment">      Get the current sample rate that will be used during processing.</span></div>
+<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;<span class="comment">      This value will remain constant between activate and deactivate.</span></div>
+<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;<span class="comment">      @see d_sampleRateChanged(double)</span></div>
+<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;    <span class="keywordtype">double</span> <a class="code" href="classPlugin.html#ace888940905e8875284e07c52bf7404f">d_getSampleRate</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;</div>
+<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_TIMEPOS</span></div>
+<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;<span class="comment">      Get the current host transport time position.</span></div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;<span class="comment">      This function should only be called during d_run().</span></div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;<span class="comment">      You can call this during other times, but the returned position is not guaranteed to be in sync.</span></div>
+<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;<span class="comment">      @note: TimePosition is not supported in LADSPA and DSSI plugin formats.</span></div>
+<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;    <span class="keyword">const</span> <a class="code" href="structTimePosition.html">TimePosition</a>&amp; <a class="code" href="classPlugin.html#ade0a082a3a2936286537a04f4b972225">d_getTimePosition</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;</div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_LATENCY</span></div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;<span class="comment">      Change the plugin audio output latency to @a frames.</span></div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;<span class="comment">      This function should only be called in the constructor, d_activate() and d_run().</span></div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;<span class="comment">      @note This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled.</span></div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a7816b45ffb52b0a6308cabb792b1a56f">d_setLatency</a>(uint32_t frames) noexcept;</div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT</span></div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;<span class="comment">      Write a MIDI output event.</span></div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;<span class="comment">      This function must only be called during d_run().</span></div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;<span class="comment">      Returns false when the host buffer is full, in which case do not call this again until the next d_run().</span></div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlugin.html#afa10aea18e4036b4a7487f2779d92e0f">d_writeMidiEvent</a>(<span class="keyword">const</span> <a class="code" href="structMidiEvent.html">MidiEvent</a>&amp; midiEvent) noexcept;</div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;<span class="comment">    * Information */</span></div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;<span class="comment">      Get the plugin name.</span></div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;<span class="comment">      Returns DISTRHO_PLUGIN_NAME by default.</span></div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00639"></a><span class="lineno"><a class="line" href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">  639</a></span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">d_getName</a>()<span class="keyword"> const </span>{ <span class="keywordflow">return</span> <a class="code" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">DISTRHO_PLUGIN_NAME</a>; }</div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;<span class="comment">      Get the plugin label.</span></div>
+<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;<span class="comment">      A plugin label follows the same rules as Parameter::symbol, with the exception that it can start with numbers.</span></div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#ae512b28d1b274a055de33812cf094d81">d_getLabel</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;<span class="comment">      Get the plugin author/maker.</span></div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a0eaf2f46f04d60526622afb5a86e026c">d_getMaker</a>() <span class="keyword">const</span> = 0;</div>
+<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;<span class="comment">      Get the plugin license name (a single line of text).@n</span></div>
+<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;<span class="comment">      For commercial plugins this should return some copyright information.</span></div>
 <div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;    <span class="keyword">virtual</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#ae9333c170accfd2a237448a4579d5fef">d_getLicense</a>() <span class="keyword">const</span> = 0;</div>
 <div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;<span class="comment"></span></div>
@@ -795,7 +795,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;<span class="comment">      Change a parameter value.</span></div>
 <div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;<span class="comment">      The host may call this function from any context, including realtime processing.</span></div>
-<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;<span class="comment">      When a parameter is marked as automable, you must ensure no non-realtime operations are called.</span></div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;<span class="comment">      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.</span></div>
 <div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;<span class="comment">      @note This function will only be called for parameter inputs.</span></div>
 <div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a4cdd613f58a013429094700f3d83904a">d_setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value) = 0;</div>
@@ -906,7 +906,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="ttc" id="structParameterRanges_html_a1dac84c100f420bfc529a4d2ea60dc7c"><div class="ttname"><a href="structParameterRanges.html#a1dac84c100f420bfc529a4d2ea60dc7c">ParameterRanges::fixValue</a></div><div class="ttdeci">void fixValue(float &amp;value) const noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:296</div></div>
 <div class="ttc" id="classPlugin_html_a469b53e1c1417a32d766cf96d1b3c45e"><div class="ttname"><a href="classPlugin.html#a469b53e1c1417a32d766cf96d1b3c45e">Plugin::d_sampleRateChanged</a></div><div class="ttdeci">virtual void d_sampleRateChanged(double newSampleRate)</div></div>
 <div class="ttc" id="structTimePosition_1_1BarBeatTick_html_ab8cfc3f2709a79e733e58556712da062"><div class="ttname"><a href="structTimePosition_1_1BarBeatTick.html#ab8cfc3f2709a79e733e58556712da062">TimePosition::BarBeatTick::ticksPerBeat</a></div><div class="ttdeci">double ticksPerBeat</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:508</div></div>
-<div class="ttc" id="classPlugin_html_a0f8fb7aa5ab05ba246e158b1024dd031"><div class="ttname"><a href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">Plugin::d_getName</a></div><div class="ttdeci">virtual const char * d_getName() const </div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:640</div></div>
+<div class="ttc" id="classPlugin_html_a0f8fb7aa5ab05ba246e158b1024dd031"><div class="ttname"><a href="classPlugin.html#a0f8fb7aa5ab05ba246e158b1024dd031">Plugin::d_getName</a></div><div class="ttdeci">virtual const char * d_getName() const </div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:639</div></div>
 <div class="ttc" id="structMidiEvent_html"><div class="ttname"><a href="structMidiEvent.html">MidiEvent</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:416</div></div>
 <div class="ttc" id="structTimePosition_1_1BarBeatTick_html_ad104eba852516842d8c4776f9d495d21"><div class="ttname"><a href="structTimePosition_1_1BarBeatTick.html#ad104eba852516842d8c4776f9d495d21">TimePosition::BarBeatTick::bar</a></div><div class="ttdeci">int32_t bar</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:473</div></div>
 <div class="ttc" id="classPlugin_html_af67102a7c6d19a8530ce0e3293e55667"><div class="ttname"><a href="classPlugin.html#af67102a7c6d19a8530ce0e3293e55667">Plugin::d_run</a></div><div class="ttdeci">virtual void d_run(const float **inputs, float **outputs, uint32_t frames, const MidiEvent *midiEvents, uint32_t midiEventCount)=0</div></div>
@@ -962,7 +962,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Apr 21 2015 15:18:54 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Apr 22 2015 11:04:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>
