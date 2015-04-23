@@ -109,6 +109,7 @@ void lv2_generate_ttl(const char* const basename)
 # else
         manifestString += "    ui:binary <" + pluginDLL + "." DISTRHO_DLL_EXTENSION "> ;\n";
 #endif
+        manifestString += "\n";
         manifestString += "    lv2:extensionData ui:idleInterface ,\n";
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
         manifestString += "                      ui:showInterface ,\n";
@@ -116,9 +117,11 @@ void lv2_generate_ttl(const char* const basename)
 # else
         manifestString += "                      ui:showInterface ;\n";
 # endif
+        manifestString += "\n";
         manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
         manifestString += "                        ui:resize ,\n";
         manifestString += "                        ui:touch ;\n";
+        manifestString += "\n";
 # if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "    lv2:requiredFeature <" LV2_DATA_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_INSTANCE_ACCESS_URI "> ,\n";
@@ -205,18 +208,27 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i, ++portIndex)
             {
+                const AudioPort& port(plugin.getAudioPort(true, i));
+
                 if (i == 0)
                     pluginString += "    lv2:port [\n";
                 else
                     pluginString += "    [\n";
 
-                pluginString += "        a lv2:InputPort, lv2:AudioPort ;\n";
+                if (port.hints & kAudioPortIsCV)
+                    pluginString += "        a lv2:InputPort, lv2:CVPort ;\n";
+                else
+                    pluginString += "        a lv2:InputPort, lv2:AudioPort ;\n";
+
                 pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
-                pluginString += "        lv2:symbol \"lv2_audio_in_" + d_string(i+1) + "\" ;\n";
-                pluginString += "        lv2:name \"Audio Input " + d_string(i+1) + "\" ;\n";
+                pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
+                pluginString += "        lv2:name \"" + port.name + "\" ;\n";
+
+                if (port.hints & kAudioPortIsSidechain)
+                    pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
                 if (i+1 == DISTRHO_PLUGIN_NUM_INPUTS)
-                    pluginString += "    ] ;\n\n";
+                    pluginString += "    ] ;\n";
                 else
                     pluginString += "    ] ,\n";
             }
@@ -226,18 +238,27 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i, ++portIndex)
             {
+                const AudioPort& port(plugin.getAudioPort(false, i));
+
                 if (i == 0)
                     pluginString += "    lv2:port [\n";
                 else
                     pluginString += "    [\n";
 
-                pluginString += "        a lv2:OutputPort, lv2:AudioPort ;\n";
+                if (port.hints & kAudioPortIsCV)
+                    pluginString += "        a lv2:OutputPort, lv2:CVPort ;\n";
+                else
+                    pluginString += "        a lv2:OutputPort, lv2:AudioPort ;\n";
+
                 pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
-                pluginString += "        lv2:symbol \"lv2_audio_out_" + d_string(i+1) + "\" ;\n";
-                pluginString += "        lv2:name \"Audio Output " + d_string(i+1) + "\" ;\n";
+                pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
+                pluginString += "        lv2:name \"" + port.name + "\" ;\n";
+
+                if (port.hints & kAudioPortIsSidechain)
+                    pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
                 if (i+1 == DISTRHO_PLUGIN_NUM_OUTPUTS)
-                    pluginString += "    ] ;\n\n";
+                    pluginString += "    ] ;\n";
                 else
                     pluginString += "    ] ,\n";
             }

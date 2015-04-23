@@ -28,6 +28,7 @@ double   d_lastSampleRate = 0.0;
  * Static fallback data, see DistrhoPluginInternal.hpp */
 
 const d_string        PluginExporter::sFallbackString;
+const AudioPort       PluginExporter::sFallbackAudioPort;
 const ParameterRanges PluginExporter::sFallbackRanges;
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -36,6 +37,10 @@ const ParameterRanges PluginExporter::sFallbackRanges;
 Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount)
     : pData(new PrivateData())
 {
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    pData->audioPorts = new AudioPort[DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS];
+#endif
+
     if (parameterCount > 0)
     {
         pData->parameterCount = parameterCount;
@@ -103,6 +108,27 @@ bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
     return false;
 }
 #endif
+
+/* ------------------------------------------------------------------------------------------------------------
+ * Init */
+
+void Plugin::d_initAudioPort(bool input, uint32_t index, AudioPort& port)
+{
+    if (port.hints & kAudioPortIsCV)
+    {
+        port.name    = input ? "CV Input " : "CV Output ";
+        port.name   += d_string(index+1);
+        port.symbol  = input ? "cv_in_" : "cv_out_";
+        port.symbol += d_string(index+1);
+    }
+    else
+    {
+        port.name    = input ? "Audio Input " : "Audio Output ";
+        port.name   += d_string(index+1);
+        port.symbol  = input ? "audio_in_" : "audio_out_";
+        port.symbol += d_string(index+1);
+    }
+}
 
 /* ------------------------------------------------------------------------------------------------------------
  * Callbacks (optional) */

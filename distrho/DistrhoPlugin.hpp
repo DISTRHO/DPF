@@ -186,6 +186,29 @@ START_NAMESPACE_DISTRHO
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------
+ * Audio Port Hints */
+
+/**
+   @defgroup AudioPortHints Audio Port Hints
+
+   Various audio port hints.
+   @see AudioPort::hints
+   @{
+ */
+
+/**
+   Audio port can be used as control voltage (LV2 only).
+ */
+static const uint32_t kAudioPortIsCV = 0x1;
+
+/**
+   Audio port should be used as sidechan (LV2 only).
+ */
+static const uint32_t kAudioPortIsSidechain = 0x2;
+
+/** @} */
+
+/* ------------------------------------------------------------------------------------------------------------
  * Parameter Hints */
 
 /**
@@ -242,6 +265,40 @@ static const uint32_t kParameterIsCV = 0x20;
    @defgroup BaseStructs Base Structs
    @{
  */
+
+/**
+   Audio Port.
+ */
+struct AudioPort {
+   /**
+      Hints describing this audio port.
+      @see AudioPortHints
+    */
+    uint32_t hints;
+
+   /**
+      The name of this audio port.
+      An audio port name can contain any character, but hosts might have a hard time with non-ascii ones.
+      The name doesn't have to be unique within a plugin instance, but it's recommended.
+    */
+    d_string name;
+
+   /**
+      The symbol of this audio port.
+      An audio port symbol is a short restricted name used as a machine and human readable identifier.
+      The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
+      @note: Audio port and parameter symbols MUST be unique within a plugin instance.
+    */
+    d_string symbol;
+
+   /**
+      Default constructor for a regular audio port.
+    */
+    AudioPort() noexcept
+        : hints(0x0),
+          name(),
+          symbol() {}
+};
 
 /**
    Parameter ranges.
@@ -669,6 +726,12 @@ protected:
 
    /* --------------------------------------------------------------------------------------------------------
     * Init */
+
+   /**
+      Initialize the audio port @a index.
+      This function will be called once, shortly after the plugin is created.
+    */
+    virtual void d_initAudioPort(bool input, uint32_t index, AudioPort& port);
 
    /**
       Initialize the parameter @a index.

@@ -38,6 +38,10 @@ extern double   d_lastSampleRate;
 struct Plugin::PrivateData {
     bool isProcessing;
 
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    AudioPort* audioPorts;
+#endif
+
     uint32_t   parameterCount;
     Parameter* parameters;
 
@@ -65,6 +69,9 @@ struct Plugin::PrivateData {
 
     PrivateData() noexcept
         : isProcessing(false),
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+          audioPorts(nullptr),
+#endif
           parameterCount(0),
           parameters(nullptr),
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -88,6 +95,14 @@ struct Plugin::PrivateData {
 
     ~PrivateData() noexcept
     {
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        if (audioPorts != nullptr)
+        {
+            delete[] audioPorts;
+            audioPorts = nullptr;
+        }
+#endif
+
         if (parameters != nullptr)
         {
             delete[] parameters;
@@ -131,6 +146,16 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
+
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        {
+            uint32_t j=0;
+            for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i, ++j)
+                fPlugin->d_initAudioPort(true, i, fData->audioPorts[j]);
+            for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i, ++j)
+                fPlugin->d_initAudioPort(false, i, fData->audioPorts[j]);
+        }
+#endif
 
         for (uint32_t i=0, count=fData->parameterCount; i < count; ++i)
             fPlugin->d_initParameter(i, fData->parameters[i]);
@@ -208,6 +233,21 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
 
         return fData->latency;
+    }
+#endif
+
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    const AudioPort& getAudioPort(const bool input, const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackAudioPort);
+
+        if (input) {
+            DISTRHO_SAFE_ASSERT_RETURN(index < DISTRHO_PLUGIN_NUM_INPUTS,  sFallbackAudioPort);
+        } else {
+            DISTRHO_SAFE_ASSERT_RETURN(index < DISTRHO_PLUGIN_NUM_OUTPUTS, sFallbackAudioPort);
+        }
+
+        return fData->audioPorts[index + (input ? 0 : DISTRHO_PLUGIN_NUM_INPUTS)];
     }
 #endif
 
@@ -458,6 +498,7 @@ private:
     // Static fallback data, see DistrhoPlugin.cpp
 
     static const d_string        sFallbackString;
+    static const AudioPort       sFallbackAudioPort;
     static const ParameterRanges sFallbackRanges;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
