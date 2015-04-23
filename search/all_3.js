@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['getfixedandnormalizedvalue',['getFixedAndNormalizedValue',['../structParameterRanges.html#a82698a1e07b1b04ccb5df0de4db0d0be',1,'ParameterRanges']]],
-  ['getfixedvalue',['getFixedValue',['../structParameterRanges.html#acd3d977c154ddb3138f36c0b6d2b7626',1,'ParameterRanges']]],
-  ['getnormalizedvalue',['getNormalizedValue',['../structParameterRanges.html#ad16ef939c1caa2f51e9a4041f769f86e',1,'ParameterRanges']]],
-  ['getunnormalizedvalue',['getUnnormalizedValue',['../structParameterRanges.html#a992f75a925b3cd5e66544087708ea3c3',1,'ParameterRanges']]]
+  ['fixdefault',['fixDefault',['../structParameterRanges.html#a17519e584ccc28e87b73bfbd1a81cf10',1,'ParameterRanges']]],
+  ['fixvalue',['fixValue',['../structParameterRanges.html#a1dac84c100f420bfc529a4d2ea60dc7c',1,'ParameterRanges']]],
+  ['frame',['frame',['../structMidiEvent.html#aca2f6590b33bd2175ab71f985747d88e',1,'MidiEvent::frame()'],['../structTimePosition.html#aa3606d1c518c7ebe6335bc19f72b015b',1,'TimePosition::frame()']]]
 ];

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['tick',['tick',['../structTimePosition_1_1BarBeatTick.html#ad38d7364a5441f1f49c3538f5691a299',1,'TimePosition::BarBeatTick']]],
-  ['ticksperbeat',['ticksPerBeat',['../structTimePosition_1_1BarBeatTick.html#ab8cfc3f2709a79e733e58556712da062',1,'TimePosition::BarBeatTick']]],
-  ['timeposition',['TimePosition',['../structTimePosition.html',1,'TimePosition'],['../structTimePosition.html#aee816daeed95cf309ded1087a0c800ae',1,'TimePosition::TimePosition()']]]
+  ['size',['size',['../structMidiEvent.html#a48b420a6dbca6502113b92c336a3041e',1,'MidiEvent']]],
+  ['symbol',['symbol',['../structAudioPort.html#a24142c8e3d5a7214488ba2151e6e42ad',1,'AudioPort::symbol()'],['../structParameter.html#a0b5193e6131f65878dfb6fe4d9f5e970',1,'Parameter::symbol()']]]
 ];

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['parameter_20hints',['Parameter Hints',['../group__ParameterHints.html',1,'']]],
-  ['plugin_20macros',['Plugin Macros',['../group__PluginMacros.html',1,'']]]
+  ['base_20structs',['Base Structs',['../group__BaseStructs.html',1,'']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['base_20structs',['Base Structs',['../group__BaseStructs.html',1,'']]]
+  ['audio_20port_20hints',['Audio Port Hints',['../group__AudioPortHints.html',1,'']]]
 ];
