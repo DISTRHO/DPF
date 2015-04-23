@@ -5,6 +5,12 @@ import Image
 
 # -----------------------------------------------------
 
+formats = {
+    2: "GL_LUMINANCE",
+    3: "GL_BGR",
+    4: "GL_BGRA"
+}
+
 def png2rgba(namespace, filenames):
 
     fdH = open("%s.hpp" % namespace, "w")
@@ -36,17 +42,20 @@ def png2rgba(namespace, filenames):
         height = len(pngData)
         for dataBlock in pngData:
             width = len(dataBlock)
-            channels = len(dataBlock[0])
+            if isinstance(dataBlock[0], int):
+                channels = 2
+            else:
+                channels = len(dataBlock[0])
             break
         else:
             print("Invalid image found, cannot continue!")
             quit()
 
-        if channels not in (3, 4):
+        if channels not in formats.keys():
             print("Invalid image channel count, cannot continue!")
             quit()
 
-        print("Generating data for \"%s\" using '%s' type" % (filename, "GL_BGR" if channels == 3 else "GL_BGRA"))
+        print("Generating data for \"%s\" using '%s' type" % (filename, formats[channels]))
         #print("  Width:    %i" % width)
         #print("  Height:   %i" % height)
         #print("  DataSize: %i" % (width * height * channels))
@@ -69,9 +78,13 @@ def png2rgba(namespace, filenames):
                 fdC.write(" ")
 
             for data in dataBlock:
-                if channels == 3:
+                if channels == 2:
+                    fdC.write(" %3u," % data)
+
+                elif channels == 3:
                     r, g, b = data
                     fdC.write(" %3u, %3u, %3u," % (b, g, r))
+
                 else:
                     r, g, b, a = data
 
