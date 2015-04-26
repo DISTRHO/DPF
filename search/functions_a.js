@@ -5,5 +5,6 @@ var searchData=
   ['linecap',['lineCap',['../classNanoVG.html#a95dfc697ae6fe9c8d525430c09f839d1',1,'NanoVG']]],
   ['linejoin',['lineJoin',['../classNanoVG.html#a73767c9ade6a757bc6e1f4a2d45bdaeb',1,'NanoVG']]],
   ['lineto',['lineTo',['../classNanoVG.html#a63f509eaeb04475a8541ed8e846f352f',1,'NanoVG']]],
-  ['loadfrommemory',['loadFromMemory',['../classImage.html#a097350feb2b30fd9289c346039298394',1,'Image::loadFromMemory(const char *const rawData, const uint width, const uint height, const GLenum format=GL_BGRA, const GLenum type=GL_UNSIGNED_BYTE) noexcept'],['../classImage.html#a2851a65c5885085be1d96878762fd860',1,'Image::loadFromMemory(const char *const rawData, const Size&lt; uint &gt; &amp;size, const GLenum format=GL_BGRA, const GLenum type=GL_UNSIGNED_BYTE) noexcept']]]
+  ['loadfrommemory',['loadFromMemory',['../classImage.html#a097350feb2b30fd9289c346039298394',1,'Image::loadFromMemory(const char *const rawData, const uint width, const uint height, const GLenum format=GL_BGRA, const GLenum type=GL_UNSIGNED_BYTE) noexcept'],['../classImage.html#a2851a65c5885085be1d96878762fd860',1,'Image::loadFromMemory(const char *const rawData, const Size&lt; uint &gt; &amp;size, const GLenum format=GL_BGRA, const GLenum type=GL_UNSIGNED_BYTE) noexcept']]],
+  ['loadprogram',['loadProgram',['../classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09',1,'Plugin']]]
 ];

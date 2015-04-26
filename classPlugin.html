@@ -137,8 +137,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a2d1da98c90568bb4547662bc4f02c31f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6911a881fabb9eca9daf0eadbaad8599"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">setParameterValue</a> (uint32_t index, float value)=0</td></tr>
 <tr class="separator:a6911a881fabb9eca9daf0eadbaad8599"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af2bfc89eec6b984c17ed9e5b3aab8a20"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#af2bfc89eec6b984c17ed9e5b3aab8a20">setProgram</a> (uint32_t index)=0</td></tr>
-<tr class="separator:af2bfc89eec6b984c17ed9e5b3aab8a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">loadProgram</a> (uint32_t index)=0</td></tr>
+<tr class="separator:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState</a> (const String &amp;key, const String &amp;value)=0</td></tr>
 <tr class="separator:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate</a> ()</td></tr>
@@ -171,7 +171,7 @@ There is no limit on how many times <a class="el" href="classPlugin.html#a0a969c
 Buffer size is only a hint though, the host might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames.</p>
 <p>Some of this class functions are only available according to some macros.</p>
 <p>DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.<br />
-When enabled you need to implement <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName()</a> and <a class="el" href="classPlugin.html#af2bfc89eec6b984c17ed9e5b3aab8a20">setProgram()</a>.</p>
+When enabled you need to implement <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName()</a> and setProgram().</p>
 <p>DISTRHO_PLUGIN_WANT_STATE activates internal state features.<br />
 When enabled you need to implement initStateKey() and <a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState()</a>.</p>
 <p>The process function <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> changes wherever DISTRHO_PLUGIN_WANT_MIDI_INPUT is enabled or not.<br />
@@ -206,7 +206,8 @@ When enabled it provides midi input events. </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p><a class="el" href="classPlugin.html">Plugin</a> class constructor. You must set all parameter values to their defaults, matching <a class="el" href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a>. </p>
+<p><a class="el" href="classPlugin.html">Plugin</a> class constructor.<br />
+You must set all parameter values to their defaults, matching <a class="el" href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a>. </p>
 
 </div>
 </div>
@@ -255,7 +256,9 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current buffer size that will probably be used during processing, in frames. This value will remain constant between activate and deactivate. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
+<p>Get the current buffer size that will probably be used during processing, in frames.<br />
+This value will remain constant between activate and deactivate. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint!<br />
+ Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a9f6c8ad6b054056649d0250e527e1297">bufferSizeChanged(uint32_t)</a> </dd></dl>
 
 </div>
@@ -280,7 +283,8 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current sample rate that will be used during processing. This value will remain constant between activate and deactivate. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2fcbfa1893f44e661d0d8cd53391dadc">sampleRateChanged(double)</a> </dd></dl>
+<p>Get the current sample rate that will be used during processing.<br />
+This value will remain constant between activate and deactivate. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2fcbfa1893f44e661d0d8cd53391dadc">sampleRateChanged(double)</a> </dd></dl>
 
 </div>
 </div>
@@ -304,7 +308,9 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current host transport time position. This function should only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd><a class="el" href="structTimePosition.html">TimePosition</a> is not supported in LADSPA and DSSI plugin formats. </dd></dl>
+<p>Get the current host transport time position.<br />
+This function should only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>.<br />
+You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd><a class="el" href="structTimePosition.html">TimePosition</a> is not supported in LADSPA and DSSI plugin formats. </dd></dl>
 
 </div>
 </div>
@@ -329,7 +335,8 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change the plugin audio output latency to <em>frames</em>. This function should only be called in the constructor, <a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate()</a> and <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled. </dd></dl>
+<p>Change the plugin audio output latency to <em>frames</em>.<br />
+This function should only be called in the constructor, <a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate()</a> and <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled. </dd></dl>
 
 </div>
 </div>
@@ -354,7 +361,9 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Write a MIDI output event. This function must only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. Returns false when the host buffer is full, in which case do not call this again until the next <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p>
+<p>Write a MIDI output event.<br />
+This function must only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>.<br />
+Returns false when the host buffer is full, in which case do not call this again until the next <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p>
 
 </div>
 </div>
@@ -378,7 +387,8 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin name. Returns DISTRHO_PLUGIN_NAME by default. </p>
+<p>Get the plugin name.<br />
+Returns DISTRHO_PLUGIN_NAME by default. </p>
 
 </div>
 </div>
@@ -402,7 +412,8 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin label. This label is a short restricted name consisting of only _, a-z, A-Z and 0-9 characters. </p>
+<p>Get the plugin label.<br />
+This label is a short restricted name consisting of only _, a-z, A-Z and 0-9 characters. </p>
 
 </div>
 </div>
@@ -475,7 +486,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin version, in hexadecimal. TODO format to be defined </p>
+<p>Get the plugin version, in hexadecimal.<br />
+TODO format to be defined </p>
 
 </div>
 </div>
@@ -499,7 +511,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin unique Id. This value is used by LADSPA, DSSI and VST plugin formats. </p>
+<p>Get the plugin unique Id.<br />
+This value is used by LADSPA, DSSI and VST plugin formats. </p>
 
 </div>
 </div>
@@ -540,7 +553,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Initialize the audio port <em>index</em>. This function will be called once, shortly after the plugin is created. </p>
+<p>Initialize the audio port <em>index</em>.<br />
+This function will be called once, shortly after the plugin is created. </p>
 
 </div>
 </div>
@@ -575,7 +589,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Initialize the parameter <em>index</em>. This function will be called once, shortly after the plugin is created. </p>
+<p>Initialize the parameter <em>index</em>.<br />
+This function will be called once, shortly after the plugin is created. </p>
 
 </div>
 </div>
@@ -610,7 +625,9 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set the name of the program <em>index</em>. This function will be called once, shortly after the plugin is created. Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled. </p>
+<p>Set the name of the program <em>index</em>.<br />
+This function will be called once, shortly after the plugin is created.<br />
+Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled. </p>
 
 </div>
 </div>
@@ -651,7 +668,9 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set the state key and default value of <em>index</em>. This function will be called once, shortly after the plugin is created. Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled. </p>
+<p>Set the state key and default value of <em>index</em>.<br />
+This function will be called once, shortly after the plugin is created.<br />
+Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled. </p>
 
 </div>
 </div>
@@ -676,7 +695,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current value of a parameter. The host may call this function from any context, including realtime processing. </p>
+<p>Get the current value of a parameter.<br />
+The host may call this function from any context, including realtime processing. </p>
 
 </div>
 </div>
@@ -711,11 +731,13 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change a parameter value. The host may call this function from any context, including realtime processing. When a parameter is marked as automable, you must ensure no non-realtime operations are performed. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
+<p>Change a parameter value.<br />
+The host may call this function from any context, including realtime processing.<br />
+When a parameter is marked as automable, you must ensure no non-realtime operations are performed. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
 
 </div>
 </div>
-<a class="anchor" id="af2bfc89eec6b984c17ed9e5b3aab8a20"></a>
+<a class="anchor" id="ab629f35c60406d6f2c0b9d530e67cf09"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -723,7 +745,7 @@ For commercial plugins this should return some short copyright information. </p>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void Plugin::setProgram </td>
+          <td class="memname">virtual void Plugin::loadProgram </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -736,7 +758,9 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change the currently used program to <em>index</em>. The host may call this function from any context, including realtime processing. Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled. </p>
+<p>Load a program.<br />
+The host may call this function from any context, including realtime processing.<br />
+Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled. </p>
 
 </div>
 </div>
@@ -771,7 +795,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change an internal state <em>key</em> to <em>value</em>. Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled. </p>
+<p>Change an internal state <em>key</em> to <em>value</em>.<br />
+Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled. </p>
 
 </div>
 </div>
@@ -897,7 +922,9 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Optional callback to inform the plugin about a buffer size change. This function will only be called when the plugin is deactivated. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
+<p>Optional callback to inform the plugin about a buffer size change.<br />
+This function will only be called when the plugin is deactivated. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint!<br />
+ Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2643e638f62cfd4990247ec66bed60d2">getBufferSize()</a> </dd></dl>
 
 </div>
@@ -923,7 +950,8 @@ For commercial plugins this should return some short copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Optional callback to inform the plugin about a sample rate change. This function will only be called when the plugin is deactivated. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a3e162cfe8f1c52bf09805fd327bcc3c4">getSampleRate()</a> </dd></dl>
+<p>Optional callback to inform the plugin about a sample rate change.<br />
+This function will only be called when the plugin is deactivated. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a3e162cfe8f1c52bf09805fd327bcc3c4">getSampleRate()</a> </dd></dl>
 
 </div>
 </div>
@@ -933,7 +961,7 @@ For commercial plugins this should return some short copyright information. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 15:48:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 16:30:13 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>
