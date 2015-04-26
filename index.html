@@ -82,17 +82,85 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 It allows developers to create plugins with custom UIs using a simple C++ API.</p>
 <h1><a class="anchor" id="Macros"></a>
 Macros</h1>
-<p>You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see <a class="el" href="group__PluginMacros.html">Plugin Macros</a>.</p>
+<p>You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see <a class="el" href="group__PluginMacros.html">Plugin Macros</a>.<br />
+This file is included in the main DPF code to figure out which features for each plugin format to export.</p>
+<p>For example, a plugin (with UI) that use states will require LV2 hosts to support Atom and Worker extensions for message passing from the UI to the plugin.<br />
+If your plugin does not make use of states, the Worker extension is not set as a required feature.</p>
 <h1><a class="anchor" id="Plugin"></a>
 Plugin</h1>
-<p>TODO</p>
+<p>The next step is to create your plugin code by subclassing DPF's <a class="el" href="index.html#Plugin">Plugin</a> class.<br />
+You need to pass the number of parameters in the constructor and also the number of programs and states, if any.</p>
+<p>Here's an example of an audio plugin that simply mutes the host output: </p><div class="fragment"><div class="line"><span class="keyword">class </span>MutePlugin : <span class="keyword">public</span> <a class="code" href="classPlugin.html">Plugin</a></div>
+<div class="line">{</div>
+<div class="line"><span class="keyword">public</span>:</div>
+<div class="line">   MutePlugin()</div>
+<div class="line">       : <a class="code" href="classPlugin.html">Plugin</a>(0, 0, 0) <span class="comment">// 0 parameters, 0 programs and 0 states</span></div>
+<div class="line">   {</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line"><span class="keyword">protected</span>:</div>
+<div class="line">   <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a00f7945c16149db6845fbcc2af729f4f">getLabel</a>()<span class="keyword"> const override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="keywordflow">return</span> <span class="stringliteral">&quot;Mute&quot;</span>;</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line">   <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a955832840de786a7a22798f0ef451c5d">getMaker</a>()<span class="keyword"> const override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="keywordflow">return</span> <span class="stringliteral">&quot;DPF&quot;</span>;</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line">   <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="classPlugin.html#a686a3c92a376a185d6fd97efd59125d1">getLicense</a>()<span class="keyword"> const override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="keywordflow">return</span> <span class="stringliteral">&quot;MIT&quot;</span>;</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line">   uint32_t <a class="code" href="classPlugin.html#abae540dd93caf4834270358a8aad334a">getVersion</a>()<span class="keyword"> const override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="keywordflow">return</span> 0x1000;</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line">   int64_t <a class="code" href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">getUniqueId</a>()<span class="keyword"> const override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="keywordflow">return</span> cconst(<span class="charliteral">&#39;M&#39;</span>, <span class="charliteral">&#39;u&#39;</span>, <span class="charliteral">&#39;t&#39;</span>, <span class="charliteral">&#39;e&#39;</span>);</div>
+<div class="line">   }</div>
+<div class="line"></div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run</a>(<span class="keyword">const</span> <span class="keywordtype">float</span>**, <span class="keywordtype">float</span>** outputs, uint32_t frames)<span class="keyword"> override</span></div>
+<div class="line"><span class="keyword">   </span>{</div>
+<div class="line">       <span class="comment">// get the left and right audio outputs</span></div>
+<div class="line">       <span class="keywordtype">float</span>* <span class="keyword">const</span> outL = outputs[0];</div>
+<div class="line">       <span class="keywordtype">float</span>* <span class="keyword">const</span> outR = outputs[1];</div>
+<div class="line"></div>
+<div class="line">       <span class="comment">// mute audio</span></div>
+<div class="line">       std::memset(outL, 0, <span class="keyword">sizeof</span>(<span class="keywordtype">float</span>)*frames);</div>
+<div class="line">       std::memset(outR, 0, <span class="keyword">sizeof</span>(<span class="keywordtype">float</span>)*frames);</div>
+<div class="line">   }</div>
+<div class="line">};</div>
+</div><!-- fragment --><p>See the <a class="el" href="index.html#Plugin">Plugin</a> class for more information and to understand what each function does.</p>
 <h1><a class="anchor" id="Parameters"></a>
 Parameters</h1>
-<p>describe input and output, automable and rt safe, boolean etc, cv </p>
+<p>describe input and output, automable and rt safe, boolean etc, cv</p>
+<h1><a class="anchor" id="Programs"></a>
+Programs</h1>
+<p>describe them</p>
+<h1><a class="anchor" id="States"></a>
+States</h1>
+<p>describe them</p>
+<h1><a class="anchor" id="MIDI"></a>
+MIDI</h1>
+<p>describe them</p>
+<h1><a class="anchor" id="Latency"></a>
+Latency</h1>
+<p>describe it</p>
+<h1><a class="anchor" id="Time-Position"></a>
+Time-Position</h1>
+<p>describe it</p>
+<h1><a class="anchor" id="UI"></a>
+UI</h1>
+<p>describe them </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 24 2015 00:23:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 14:49:36 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

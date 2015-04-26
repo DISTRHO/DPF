@@ -93,8 +93,6 @@ Variables</h2></td></tr>
 <tr class="separator:gabc539ecbfe420246a33f93aed32b8a3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga0a3633c93e8589f4b3e6124bb97ad8d4"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ParameterHints.html#ga0a3633c93e8589f4b3e6124bb97ad8d4">kParameterIsOutput</a> = 0x10</td></tr>
 <tr class="separator:ga0a3633c93e8589f4b3e6124bb97ad8d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ga1eae4d034f2ff1bc14035d87c4b63b14"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ParameterHints.html#ga1eae4d034f2ff1bc14035d87c4b63b14">kParameterIsCV</a> = 0x20</td></tr>
-<tr class="separator:ga1eae4d034f2ff1bc14035d87c4b63b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Various parameter hints. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a> </dd></dl>
@@ -116,7 +114,7 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p><a class="el" href="structParameter.html">Parameter</a> is automable (real-time safe). </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a4cdd613f58a013429094700f3d83904a">Plugin::d_setParameterValue()</a> </dd></dl>
+<p><a class="el" href="structParameter.html">Parameter</a> is automable (real-time safe). </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">Plugin::setParameterValue(uint32_t, float)</a> </dd></dl>
 
 </div>
 </div>
@@ -201,35 +199,14 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p><a class="el" href="structParameter.html">Parameter</a> is of output type. When unset, parameter is assumed to be of input type.</p>
-<p><a class="el" href="structParameter.html">Parameter</a> inputs are changed by the host and must not be changed by the plugin. The only exception being when changing programs, see <a class="el" href="classPlugin.html#a1d001e50781b35df23f6d9a218f5f804">Plugin::d_setProgram()</a>. Outputs are changed by the plugin and never modified by the host. </p>
-
-</div>
-</div>
-<a class="anchor" id="ga1eae4d034f2ff1bc14035d87c4b63b14"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint32_t kParameterIsCV = 0x20</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p><a class="el" href="structParameter.html">Parameter</a> can be used as control voltage (LV2 only). </p>
+<p><a class="el" href="structParameter.html">Parameter</a> inputs are changed by the host and must not be changed by the plugin. The only exception being when changing programs, see <a class="el" href="classPlugin.html#af2bfc89eec6b984c17ed9e5b3aab8a20">Plugin::setProgram()</a>. Outputs are changed by the plugin and never modified by the host. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 24 2015 00:23:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 14:49:34 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

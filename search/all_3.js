@@ -1,6 +1,28 @@
 var searchData=
 [
-  ['fixdefault',['fixDefault',['../structParameterRanges.html#a17519e584ccc28e87b73bfbd1a81cf10',1,'ParameterRanges']]],
-  ['fixvalue',['fixValue',['../structParameterRanges.html#a1dac84c100f420bfc529a4d2ea60dc7c',1,'ParameterRanges']]],
-  ['frame',['frame',['../structMidiEvent.html#aca2f6590b33bd2175ab71f985747d88e',1,'MidiEvent::frame()'],['../structTimePosition.html#aa3606d1c518c7ebe6335bc19f72b015b',1,'TimePosition::frame()']]]
+  ['d_5fstring',['d_string',['../classd__string.html',1,'']]],
+  ['data',['data',['../structMidiEvent.html#aba54410d44eef48c10516f29452ef3a9',1,'MidiEvent']]],
+  ['deactivated',['deactivated',['../classPlugin.html#a6f5d5d235ba624d082daed41a7af8fdd',1,'Plugin']]],
+  ['def',['def',['../structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c',1,'ParameterRanges']]],
+  ['degtorad',['degToRad',['../classNanoVG.html#ae3913bdf0efc2f5504422f558dca2c45',1,'NanoVG']]],
+  ['distrho_5fplugin_5fhas_5fui',['DISTRHO_PLUGIN_HAS_UI',['../group__PluginMacros.html#gacf8a1af679c09637ba0bdc5f4f8e37dd',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fis_5frt_5fsafe',['DISTRHO_PLUGIN_IS_RT_SAFE',['../group__PluginMacros.html#ga82546dd199fcea338b113f2f6da84ced',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fis_5fsynth',['DISTRHO_PLUGIN_IS_SYNTH',['../group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fname',['DISTRHO_PLUGIN_NAME',['../group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fnum_5finputs',['DISTRHO_PLUGIN_NUM_INPUTS',['../group__PluginMacros.html#ga5f4f3d9a5dc3c23882d158e636319998',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fnum_5foutputs',['DISTRHO_PLUGIN_NUM_OUTPUTS',['../group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5furi',['DISTRHO_PLUGIN_URI',['../group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5fdirect_5faccess',['DISTRHO_PLUGIN_WANT_DIRECT_ACCESS',['../group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5flatency',['DISTRHO_PLUGIN_WANT_LATENCY',['../group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5fmidi_5finput',['DISTRHO_PLUGIN_WANT_MIDI_INPUT',['../group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5fmidi_5foutput',['DISTRHO_PLUGIN_WANT_MIDI_OUTPUT',['../group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5fprograms',['DISTRHO_PLUGIN_WANT_PROGRAMS',['../group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5fstate',['DISTRHO_PLUGIN_WANT_STATE',['../group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fplugin_5fwant_5ftimepos',['DISTRHO_PLUGIN_WANT_TIMEPOS',['../group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fui_5furi',['DISTRHO_UI_URI',['../group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c',1,'DistrhoInfo.hpp']]],
+  ['distrho_5fui_5fuse_5fnanovg',['DISTRHO_UI_USE_NANOVG',['../group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd',1,'DistrhoInfo.hpp']]],
+  ['draw',['draw',['../singletonLine.html#af3eebf8905576276741caab216516949',1,'Line::draw()'],['../singletonCircle.html#ae1006bb2486c75b45e43675783521915',1,'Circle::draw()'],['../singletonTriangle.html#a5dd94312d41f36fb149e03d90800bb53',1,'Triangle::draw()'],['../singletonRectangle.html#a415da25901ad63d87e3bac7755535cda',1,'Rectangle::draw()'],['../classImage.html#ae1e16dcef3072e4e49ec2887a9c1245a',1,'Image::draw()']]],
+  ['drawat',['drawAt',['../classImage.html#ab63094dc07e6d62624827bca904b5cdd',1,'Image::drawAt(const int x, const int y)'],['../classImage.html#aed2dc99624de978eade8124d2c099cfa',1,'Image::drawAt(const Point&lt; int &gt; &amp;pos)']]],
+  ['drawoutline',['drawOutline',['../singletonCircle.html#a59ad688a9f13a2e639502a8adc979111',1,'Circle::drawOutline()'],['../singletonTriangle.html#a93cda515489108aa6c14b0b1ab8cff11',1,'Triangle::drawOutline()'],['../singletonRectangle.html#a562e46203701309da8748dcc5277373e',1,'Rectangle::drawOutline()']]],
+  ['distrho_20_25plugin_20framework',['DISTRHO %Plugin Framework',['../index.html',1,'']]]
 ];

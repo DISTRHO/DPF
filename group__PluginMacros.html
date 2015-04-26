@@ -122,7 +122,7 @@ Macros</h2></td></tr>
 Depending on which macros you enable, new functions will be available to call and/or override.</p>
 <p>All values are either integer or strings.<br />
 For boolean-like values 1 means 'on' and 0 means 'off'.</p>
-<p>The values defined in this file are for documentation purposes only.<br />
+<p>The values defined in this group are for documentation purposes only.<br />
 All macros are disabled by default.</p>
 <p>Only 4 macros are required, they are:</p><ul>
 <li><a class="el" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">DISTRHO_PLUGIN_NAME</a></li>
@@ -236,7 +236,7 @@ TODO - list rtsafe requirements </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enable direct access between the UI and plugin code. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classUI.html#a5393f505fc8702905c15c70c9fcf0d48">UI::d_getPluginInstancePointer()</a> </dd></dl>
+<p>Enable direct access between the UI and plugin code. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classUI.html#a0863a8f7ca7fc7e172e703c58518329f">UI::getPluginInstancePointer()</a> </dd></dl>
 <dl class="section note"><dt>Note</dt><dd>DO NOT USE THIS UNLESS STRICTLY NECESSARY!! Try to avoid it at all costs! </dd></dl>
 
 </div>
@@ -250,7 +250,7 @@ TODO - list rtsafe requirements </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin introduces latency during audio or midi processing. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a7816b45ffb52b0a6308cabb792b1a56f">Plugin::d_setLatency(uint32_t)</a> </dd></dl>
+<p>Wherever the plugin introduces latency during audio or midi processing. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">Plugin::setLatency(uint32_t)</a> </dd></dl>
 
 </div>
 </div>
@@ -277,7 +277,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin wants MIDI output. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#afa10aea18e4036b4a7487f2779d92e0f">Plugin::d_writeMidiEvent(const MidiEvent&amp;)</a> </dd></dl>
+<p>Wherever the plugin wants MIDI output. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a0467eef817ac130cbbe1c0fbe09660c6">Plugin::writeMidiEvent(const MidiEvent&amp;)</a> </dd></dl>
 
 </div>
 </div>
@@ -290,9 +290,9 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin provides its own internal programs. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a8a1792b7c5c6a3fd9cd626c7156ec3b6">Plugin::d_initProgramName(uint32_t, d_string&amp;)</a> </dd>
+<p>Wherever the plugin provides its own internal programs. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> </dd>
 <dd>
-<a class="el" href="classPlugin.html#a1d001e50781b35df23f6d9a218f5f804">Plugin::d_setProgram(uint32_t)</a> </dd></dl>
+<a class="el" href="classPlugin.html#af2bfc89eec6b984c17ed9e5b3aab8a20">Plugin::setProgram(uint32_t)</a> </dd></dl>
 
 </div>
 </div>
@@ -305,9 +305,9 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a65f9f9d4a30b0a56dfa42703c0b4db76">Plugin::d_initState(uint32_t, d_string&amp;, d_string&amp;)</a> </dd>
+<p>Wherever the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">Plugin::initState(uint32_t, String&amp;, String&amp;)</a> </dd>
 <dd>
-<a class="el" href="classPlugin.html#ad9c46a36cab96f52a0370043093bca68">Plugin::d_setState(const char*, const char*)</a> </dd></dl>
+Plugin::setState(const char*, const char*) </dd></dl>
 
 </div>
 </div>
@@ -320,7 +320,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin wants time position information from the host. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ade0a082a3a2936286537a04f4b972225">Plugin::d_getTimePosition()</a> </dd></dl>
+<p>Wherever the plugin wants time position information from the host. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">Plugin::getTimePosition()</a> </dd></dl>
 
 </div>
 </div>
@@ -333,8 +333,8 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the UI uses NanoVG for drawing instead of the default raw OpenGL calls.<br />
-When enabled your UI instance will subclass NanoWidget instead of Widget. </p>
+<p>Wherever the UI uses <a class="el" href="classNanoVG.html">NanoVG</a> for drawing instead of the default raw OpenGL calls.<br />
+When enabled your UI instance will subclass <a class="el" href="classNanoWidget.html">NanoWidget</a> instead of <a class="el" href="classWidget.html">Widget</a>. </p>
 
 </div>
 </div>
@@ -355,7 +355,7 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Apr 24 2015 00:23:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 14:49:34 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

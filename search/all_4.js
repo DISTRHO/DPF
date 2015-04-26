@@ -1,7 +1,8 @@
 var searchData=
 [
-  ['getfixedandnormalizedvalue',['getFixedAndNormalizedValue',['../structParameterRanges.html#a82698a1e07b1b04ccb5df0de4db0d0be',1,'ParameterRanges']]],
-  ['getfixedvalue',['getFixedValue',['../structParameterRanges.html#acd3d977c154ddb3138f36c0b6d2b7626',1,'ParameterRanges']]],
-  ['getnormalizedvalue',['getNormalizedValue',['../structParameterRanges.html#ad16ef939c1caa2f51e9a4041f769f86e',1,'ParameterRanges']]],
-  ['getunnormalizedvalue',['getUnnormalizedValue',['../structParameterRanges.html#a992f75a925b3cd5e66544087708ea3c3',1,'ParameterRanges']]]
+  ['editparameter',['editParameter',['../classUI.html#aeea59720583d501254284e5be540f60e',1,'UI']]],
+  ['ellipse',['ellipse',['../classNanoVG.html#a2081ea8d4c33481d24ae98d1a65a6f9b',1,'NanoVG']]],
+  ['endframe',['endFrame',['../classNanoVG.html#a432d8c79b21f61eb1010a75cc13ee711',1,'NanoVG']]],
+  ['entry_20points',['Entry Points',['../group__EntryPoints.html',1,'']]],
+  ['exec',['exec',['../classApp.html#a94fa325175749054947480e1ae66b110',1,'App']]]
 ];
