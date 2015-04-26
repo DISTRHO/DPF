@@ -46,30 +46,30 @@ UI::~UI()
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
 
-double UI::d_getSampleRate() const noexcept
+double UI::getSampleRate() const noexcept
 {
     return pData->sampleRate;
 }
 
-void UI::d_editParameter(const uint32_t index, const bool started)
+void UI::editParameter(const uint32_t index, const bool started)
 {
     pData->editParamCallback(index + pData->parameterOffset, started);
 }
 
-void UI::d_setParameterValue(const uint32_t index, const float value)
+void UI::setParameterValue(const uint32_t index, const float value)
 {
     pData->setParamCallback(index + pData->parameterOffset, value);
 }
 
 #if DISTRHO_PLUGIN_WANT_STATE
-void UI::d_setState(const char* const key, const char* const value)
+void UI::setState(const char* const key, const char* const value)
 {
     pData->setStateCallback(key, value);
 }
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-void UI::d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+void UI::sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
 {
     pData->sendNoteCallback(channel, note, velocity);
 }
@@ -79,7 +79,7 @@ void UI::d_sendNote(const uint8_t channel, const uint8_t note, const uint8_t vel
 /* ------------------------------------------------------------------------------------------------------------
  * Direct DSP access */
 
-void* UI::d_getPluginInstancePointer() const noexcept
+void* UI::getPluginInstancePointer() const noexcept
 {
     return pData->dspPtr;
 }
@@ -88,16 +88,16 @@ void* UI::d_getPluginInstancePointer() const noexcept
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks (optional) */
 
-void UI::d_sampleRateChanged(double) {}
+void UI::sampleRateChanged(double) {}
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
-void UI::d_uiFileBrowserSelected(const char*)
+void UI::uiFileBrowserSelected(const char*)
 {
 }
 
-void UI::d_uiReshape(uint width, uint height)
+void UI::uiReshape(uint width, uint height)
 {
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

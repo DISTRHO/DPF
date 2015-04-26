@@ -27,7 +27,7 @@ double   d_lastSampleRate = 0.0;
 /* ------------------------------------------------------------------------------------------------------------
  * Static fallback data, see DistrhoPluginInternal.hpp */
 
-const d_string        PluginExporter::sFallbackString;
+const String          PluginExporter::sFallbackString;
 const AudioPort       PluginExporter::sFallbackAudioPort;
 const ParameterRanges PluginExporter::sFallbackRanges;
 
@@ -51,7 +51,7 @@ Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const
     if (programCount > 0)
     {
         pData->programCount = programCount;
-        pData->programNames = new d_string[programCount];
+        pData->programNames = new String[programCount];
     }
 #else
     DISTRHO_SAFE_ASSERT(programCount == 0);
@@ -61,8 +61,8 @@ Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const
     if (stateCount > 0)
     {
         pData->stateCount     = stateCount;
-        pData->stateKeys      = new d_string[stateCount];
-        pData->stateDefValues = new d_string[stateCount];
+        pData->stateKeys      = new String[stateCount];
+        pData->stateDefValues = new String[stateCount];
     }
 #else
     DISTRHO_SAFE_ASSERT(stateCount == 0);
@@ -77,32 +77,32 @@ Plugin::~Plugin()
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
 
-uint32_t Plugin::d_getBufferSize() const noexcept
+uint32_t Plugin::getBufferSize() const noexcept
 {
     return pData->bufferSize;
 }
 
-double Plugin::d_getSampleRate() const noexcept
+double Plugin::getSampleRate() const noexcept
 {
     return pData->sampleRate;
 }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-const TimePosition& Plugin::d_getTimePosition() const noexcept
+const TimePosition& Plugin::getTimePosition() const noexcept
 {
     return pData->timePosition;
 }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
-void Plugin::d_setLatency(const uint32_t frames) noexcept
+void Plugin::setLatency(const uint32_t frames) noexcept
 {
     pData->latency = frames;
 }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
+bool Plugin::writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
 {
     // TODO
     return false;
@@ -112,29 +112,29 @@ bool Plugin::d_writeMidiEvent(const MidiEvent& /*midiEvent*/) noexcept
 /* ------------------------------------------------------------------------------------------------------------
  * Init */
 
-void Plugin::d_initAudioPort(bool input, uint32_t index, AudioPort& port)
+void Plugin::initAudioPort(bool input, uint32_t index, AudioPort& port)
 {
     if (port.hints & kAudioPortIsCV)
     {
         port.name    = input ? "CV Input " : "CV Output ";
-        port.name   += d_string(index+1);
+        port.name   += String(index+1);
         port.symbol  = input ? "cv_in_" : "cv_out_";
-        port.symbol += d_string(index+1);
+        port.symbol += String(index+1);
     }
     else
     {
         port.name    = input ? "Audio Input " : "Audio Output ";
-        port.name   += d_string(index+1);
+        port.name   += String(index+1);
         port.symbol  = input ? "audio_in_" : "audio_out_";
-        port.symbol += d_string(index+1);
+        port.symbol += String(index+1);
     }
 }
 
 /* ------------------------------------------------------------------------------------------------------------
  * Callbacks (optional) */
 
-void Plugin::d_bufferSizeChanged(uint32_t) {}
-void Plugin::d_sampleRateChanged(double)   {}
+void Plugin::bufferSizeChanged(uint32_t) {}
+void Plugin::sampleRateChanged(double)   {}
 
 // -----------------------------------------------------------------------------------------------------------
 
