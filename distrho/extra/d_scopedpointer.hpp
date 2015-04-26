@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,23 +26,6 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // The following code was based from juce-core ScopedPointer class
 // Copyright (C) 2013 Raw Material Software Ltd.
-
-/**
-    Used by container classes as an indirect way to delete an object of a
-    particular type.
-
-    The generic implementation of this class simply calls 'delete', but you can
-    create a specialised version of it for a particular class if you need to
-    delete that type of object in a more appropriate way.
-*/
-template<typename ObjectType>
-struct ContainerDeletePolicy
-{
-    static void destroy(ObjectType* const object)
-    {
-        delete object;
-    }
-};
 
 //==============================================================================
 /**
@@ -107,7 +90,7 @@ public:
     */
     ~ScopedPointer()
     {
-        ContainerDeletePolicy<ObjectType>::destroy(object);
+        delete object;
     }
 
     /** Changes this ScopedPointer to point to a new object.
@@ -130,7 +113,7 @@ public:
             ObjectType* const oldObject = object;
             object = objectToTransferFrom.object;
             objectToTransferFrom.object = nullptr;
-            ContainerDeletePolicy<ObjectType>::destroy(oldObject);
+            delete oldObject;
         }
 
         return *this;
@@ -149,7 +132,7 @@ public:
         {
             ObjectType* const oldObject = object;
             object = newObjectToTakePossessionOf;
-            ContainerDeletePolicy<ObjectType>::destroy(oldObject);
+            delete oldObject;
         }
 
         return *this;

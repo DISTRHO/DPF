@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,9 +21,7 @@
 #include "d_sleep.hpp"
 #include "d_string.hpp"
 
-#if defined(__GLIBC__) && (__GLIBC__ * 1000 + __GLIBC_MINOR__) >= 2012
-// has pthread_setname_np
-#elif defined(DISTRHO_OS_LINUX)
+#ifdef DISTRHO_OS_LINUX
 # include <sys/prctl.h>
 #endif
 
@@ -156,7 +154,7 @@ public:
             if (isThreadRunning())
             {
                 // should never happen!
-                d_stderr2("Carla assertion failure: \"! isThreadRunning()\" in file %s, line %i", __FILE__, __LINE__);
+                d_stderr2("assertion failure: \"! isThreadRunning()\" in file %s, line %i", __FILE__, __LINE__);
 
                 // copy thread id so we can clear our one
                 pthread_t threadId;
@@ -188,7 +186,7 @@ public:
      * Returns the name of the thread.
      * This is the name that gets set in the constructor.
      */
-    const d_string& getThreadName() const noexcept
+    const String& getThreadName() const noexcept
     {
         return fName;
     }
@@ -200,10 +198,11 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
+#ifdef DISTRHO_OS_LINUX
+        prctl(PR_SET_NAME, name, 0, 0, 0);
+#endif
 #if defined(__GLIBC__) && (__GLIBC__ * 1000 + __GLIBC_MINOR__) >= 2012
         pthread_setname_np(pthread_self(), name);
-#elif defined(DISTRHO_OS_LINUX)
-        prctl(PR_SET_NAME, name, 0, 0, 0);
 #endif
     }
 
@@ -211,7 +210,7 @@ public:
 
 private:
     Mutex              fLock;       // Thread lock
-    const d_string     fName;       // Thread name
+    const String       fName;       // Thread name
     volatile pthread_t fHandle;     // Handle for this thread
     volatile bool      fShouldExit; // true if thread should exit
 

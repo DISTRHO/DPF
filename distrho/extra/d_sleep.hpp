@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,6 +29,9 @@
 // -----------------------------------------------------------------------
 // d_*sleep
 
+/*
+ * Sleep for 'secs' seconds.
+ */
 static inline
 void d_sleep(const uint secs) noexcept
 {
@@ -43,6 +46,9 @@ void d_sleep(const uint secs) noexcept
     } DISTRHO_SAFE_EXCEPTION("d_sleep");
 }
 
+/*
+ * Sleep for 'msecs' milliseconds.
+ */
 static inline
 void d_msleep(const uint msecs) noexcept
 {

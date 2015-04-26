@@ -201,6 +201,24 @@ bool d_isNotZero(const T& value)
     return std::abs(value) >= std::numeric_limits<T>::epsilon();
 }
 
+/*
+ * Get next power of 2.
+ */
+static inline
+uint32_t d_nextPowerOf2(uint32_t size) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0, 0);
+
+    // http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+    --size;
+    size |= size >> 1;
+    size |= size >> 2;
+    size |= size >> 4;
+    size |= size >> 8;
+    size |= size >> 16;
+    return ++size;
+}
+
 // -----------------------------------------------------------------------
 
 #endif // DISTRHO_UTILS_HPP_INCLUDED

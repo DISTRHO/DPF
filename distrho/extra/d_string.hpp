@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -22,9 +22,9 @@
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
-// d_string class
+// String class
 
-class d_string
+class String
 {
 public:
     // -------------------------------------------------------------------
@@ -33,143 +33,153 @@ public:
     /*
      * Empty string.
      */
-    explicit d_string() noexcept
-    {
-        _init();
-    }
+    explicit String() noexcept
+        : fBuffer(_null()),
+          fBufferLen(0) {}
 
     /*
      * Simple character.
      */
-    explicit d_string(const char c) noexcept
+    explicit String(const char c) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char ch[2];
         ch[0] = c;
         ch[1] = '\0';
 
-        _init();
         _dup(ch);
     }
 
     /*
      * Simple char string.
      */
-    explicit d_string(char* const strBuf) noexcept
+    explicit String(char* const strBuf) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Simple const char string.
      */
-    explicit d_string(const char* const strBuf) noexcept
+    explicit String(const char* const strBuf) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Integer.
      */
-    explicit d_string(const int value) noexcept
+    explicit String(const int value) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%d", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Unsigned integer, possibly in hexadecimal.
      */
-    explicit d_string(const unsigned int value, const bool hexadecimal = false) noexcept
+    explicit String(const unsigned int value, const bool hexadecimal = false) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%x" : "%u", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Long integer.
      */
-    explicit d_string(const long value) noexcept
+    explicit String(const long value) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%ld", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Long unsigned integer, possibly hexadecimal.
      */
-    explicit d_string(const unsigned long value, const bool hexadecimal = false) noexcept
+    explicit String(const unsigned long value, const bool hexadecimal = false) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%lx" : "%lu", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Long long integer.
      */
-    explicit d_string(const long long value) noexcept
+    explicit String(const long long value) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%lld", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Long long unsigned integer, possibly hexadecimal.
      */
-    explicit d_string(const unsigned long long value, const bool hexadecimal = false) noexcept
+    explicit String(const unsigned long long value, const bool hexadecimal = false) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%llx" : "%llu", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Single-precision floating point number.
      */
-    explicit d_string(const float value) noexcept
+    explicit String(const float value) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%f", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
     /*
      * Double-precision floating point number.
      */
-    explicit d_string(const double value) noexcept
+    explicit String(const double value) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%g", value);
         strBuf[0xff] = '\0';
 
-        _init();
         _dup(strBuf);
     }
 
@@ -179,9 +189,10 @@ public:
     /*
      * Create string from another string.
      */
-    d_string(const d_string& str) noexcept
+    String(const String& str) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0)
     {
-        _init();
         _dup(str.fBuffer);
     }
 
@@ -191,7 +202,7 @@ public:
     /*
      * Destructor.
      */
-    ~d_string() noexcept
+    ~String() noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fBuffer != nullptr,);
 
@@ -210,7 +221,7 @@ public:
     /*
      * Get length of the string.
      */
-    size_t length() const noexcept
+    std::size_t length() const noexcept
     {
         return fBufferLen;
     }
@@ -243,7 +254,7 @@ public:
 #ifdef __USE_GNU
             return (strcasestr(fBuffer, strBuf) != nullptr);
 #else
-            d_string tmp1(fBuffer), tmp2(strBuf);
+            String tmp1(fBuffer), tmp2(strBuf);
 
             // memory allocation failed or empty string(s)
             if (tmp1.fBuffer == _null() || tmp2.fBuffer == _null())
@@ -261,7 +272,7 @@ public:
     /*
      * Check if character at 'pos' is a digit.
      */
-    bool isDigit(const size_t pos) const noexcept
+    bool isDigit(const std::size_t pos) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(pos < fBufferLen, false);
 
@@ -285,7 +296,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(prefix != nullptr, false);
 
-        const size_t prefixLen(std::strlen(prefix));
+        const std::size_t prefixLen(std::strlen(prefix));
 
         if (fBufferLen < prefixLen)
             return false;
@@ -310,7 +321,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(suffix != nullptr, false);
 
-        const size_t suffixLen(std::strlen(suffix));
+        const std::size_t suffixLen(std::strlen(suffix));
 
         if (fBufferLen < suffixLen)
             return false;
@@ -322,7 +333,7 @@ public:
      * Find the first occurrence of character 'c' in the string.
      * Returns "length()" if the character is not found.
      */
-    size_t find(const char c, bool* const found = nullptr) const noexcept
+    std::size_t find(const char c, bool* const found = nullptr) const noexcept
     {
         if (fBufferLen == 0 || c == '\0')
         {
@@ -331,7 +342,7 @@ public:
             return fBufferLen;
         }
 
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (fBuffer[i] == c)
             {
@@ -350,7 +361,7 @@ public:
      * Find the first occurrence of string 'strBuf' in the string.
      * Returns "length()" if the string is not found.
      */
-    size_t find(const char* const strBuf, bool* const found = nullptr) const noexcept
+    std::size_t find(const char* const strBuf, bool* const found = nullptr) const noexcept
     {
         if (fBufferLen == 0 || strBuf == nullptr || strBuf[0] == '\0')
         {
@@ -375,7 +386,7 @@ public:
 
             if (found != nullptr)
                 *found = true;
-            return static_cast<size_t>(ret);
+            return static_cast<std::size_t>(ret);
         }
 
         if (found != nullptr)
@@ -387,7 +398,7 @@ public:
      * Find the last occurrence of character 'c' in the string.
      * Returns "length()" if the character is not found.
      */
-    size_t rfind(const char c, bool* const found = nullptr) const noexcept
+    std::size_t rfind(const char c, bool* const found = nullptr) const noexcept
     {
         if (fBufferLen == 0 || c == '\0')
         {
@@ -396,7 +407,7 @@ public:
             return fBufferLen;
         }
 
-        for (size_t i=fBufferLen; i > 0; --i)
+        for (std::size_t i=fBufferLen; i > 0; --i)
         {
             if (fBuffer[i-1] == c)
             {
@@ -415,7 +426,7 @@ public:
      * Find the last occurrence of string 'strBuf' in the string.
      * Returns "length()" if the string is not found.
      */
-    size_t rfind(const char* const strBuf, bool* const found = nullptr) const noexcept
+    std::size_t rfind(const char* const strBuf, bool* const found = nullptr) const noexcept
     {
         if (found != nullptr)
             *found = false;
@@ -423,12 +434,12 @@ public:
         if (fBufferLen == 0 || strBuf == nullptr || strBuf[0] == '\0')
             return fBufferLen;
 
-        const size_t strBufLen(std::strlen(strBuf));
+        const std::size_t strBufLen(std::strlen(strBuf));
 
-        size_t ret = fBufferLen;
+        std::size_t ret = fBufferLen;
         const char* tmpBuf = fBuffer;
 
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (std::strstr(tmpBuf+1, strBuf) == nullptr && std::strncmp(tmpBuf, strBuf, strBufLen) == 0)
             {
@@ -455,37 +466,41 @@ public:
     /*
      * Replace all occurrences of character 'before' with character 'after'.
      */
-    void replace(const char before, const char after) noexcept
+    String& replace(const char before, const char after) noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' && after != '\0',);
+        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' && after != '\0', *this);
 
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (fBuffer[i] == before)
                 fBuffer[i] = after;
         }
+
+        return *this;
     }
 
     /*
      * Truncate the string to size 'n'.
      */
-    void truncate(const size_t n) noexcept
+    String& truncate(const std::size_t n) noexcept
     {
         if (n >= fBufferLen)
-            return;
+            return *this;
 
-        for (size_t i=n; i < fBufferLen; ++i)
+        for (std::size_t i=n; i < fBufferLen; ++i)
             fBuffer[i] = '\0';
 
         fBufferLen = n;
+
+        return *this;
     }
 
     /*
      * Convert all non-basic characters to '_'.
      */
-    void toBasic() noexcept
+    String& toBasic() noexcept
     {
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (fBuffer[i] >= '0' && fBuffer[i] <= '9')
                 continue;
@@ -498,34 +513,40 @@ public:
 
             fBuffer[i] = '_';
         }
+
+        return *this;
     }
 
     /*
      * Convert to all ascii characters to lowercase.
      */
-    void toLower() noexcept
+    String& toLower() noexcept
     {
         static const char kCharDiff('a' - 'A');
 
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (fBuffer[i] >= 'A' && fBuffer[i] <= 'Z')
                 fBuffer[i] = static_cast<char>(fBuffer[i] + kCharDiff);
         }
+
+        return *this;
     }
 
     /*
      * Convert to all ascii characters to uppercase.
      */
-    void toUpper() noexcept
+    String& toUpper() noexcept
     {
         static const char kCharDiff('a' - 'A');
 
-        for (size_t i=0; i < fBufferLen; ++i)
+        for (std::size_t i=0; i < fBufferLen; ++i)
         {
             if (fBuffer[i] >= 'a' && fBuffer[i] <= 'z')
                 fBuffer[i] = static_cast<char>(fBuffer[i] - kCharDiff);
         }
+
+        return *this;
     }
 
     /*
@@ -537,6 +558,81 @@ public:
     }
 
     // -------------------------------------------------------------------
+    // base64 stuff, based on http://www.adp-gmbh.ch/cpp/common/base64.html
+    // Copyright (C) 2004-2008 René Nyffenegger
+
+    static String asBase64(const void* const data, const std::size_t dataSize)
+    {
+        static const char* const kBase64Chars =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            "abcdefghijklmnopqrstuvwxyz"
+            "0123456789+/";
+
+        const std::size_t kTmpBufSize = d_nextPowerOf2(dataSize/3);
+
+        const uchar* bytesToEncode((const uchar*)data);
+
+        uint i=0, j=0;
+        uint charArray3[3], charArray4[4];
+
+        char strBuf[kTmpBufSize+1];
+        strBuf[kTmpBufSize] = '\0';
+        std::size_t strBufIndex = 0;
+
+        String ret;
+
+        for (std::size_t s=0; s<dataSize; ++s)
+        {
+            charArray3[i++] = *(bytesToEncode++);
+
+            if (i == 3)
+            {
+                charArray4[0] =  (charArray3[0] & 0xfc) >> 2;
+                charArray4[1] = ((charArray3[0] & 0x03) << 4) + ((charArray3[1] & 0xf0) >> 4);
+                charArray4[2] = ((charArray3[1] & 0x0f) << 2) + ((charArray3[2] & 0xc0) >> 6);
+                charArray4[3] =   charArray3[2] & 0x3f;
+
+                for (i=0; i<4; ++i)
+                    strBuf[strBufIndex++] = kBase64Chars[charArray4[i]];
+
+                if (strBufIndex >= kTmpBufSize-7)
+                {
+                    strBuf[strBufIndex] = '\0';
+                    strBufIndex = 0;
+                    ret += strBuf;
+                }
+
+                i = 0;
+            }
+        }
+
+        if (i != 0)
+        {
+            for (j=i; j<3; ++j)
+              charArray3[j] = '\0';
+
+            charArray4[0] =  (charArray3[0] & 0xfc) >> 2;
+            charArray4[1] = ((charArray3[0] & 0x03) << 4) + ((charArray3[1] & 0xf0) >> 4);
+            charArray4[2] = ((charArray3[1] & 0x0f) << 2) + ((charArray3[2] & 0xc0) >> 6);
+            charArray4[3] =   charArray3[2] & 0x3f;
+
+            for (j=0; j<4 && i<3 && j<i+1; ++j)
+                strBuf[strBufIndex++] = kBase64Chars[charArray4[j]];
+
+            for (; i++ < 3;)
+                strBuf[strBufIndex++] = '=';
+        }
+
+        if (strBufIndex != 0)
+        {
+            strBuf[strBufIndex] = '\0';
+            ret += strBuf;
+        }
+
+        return ret;
+    }
+
+    // -------------------------------------------------------------------
     // public operators
 
     operator const char*() const noexcept
@@ -544,7 +640,7 @@ public:
         return fBuffer;
     }
 
-    char operator[](const size_t pos) const noexcept
+    char operator[](const std::size_t pos) const noexcept
     {
         if (pos < fBufferLen)
             return fBuffer[pos];
@@ -556,7 +652,7 @@ public:
         return fallback;
     }
 
-    char& operator[](const size_t pos) noexcept
+    char& operator[](const std::size_t pos) noexcept
     {
         if (pos < fBufferLen)
             return fBuffer[pos];
@@ -573,7 +669,7 @@ public:
         return (strBuf != nullptr && std::strcmp(fBuffer, strBuf) == 0);
     }
 
-    bool operator==(const d_string& str) const noexcept
+    bool operator==(const String& str) const noexcept
     {
         return operator==(str.fBuffer);
     }
@@ -583,32 +679,32 @@ public:
         return !operator==(strBuf);
     }
 
-    bool operator!=(const d_string& str) const noexcept
+    bool operator!=(const String& str) const noexcept
     {
         return !operator==(str.fBuffer);
     }
 
-    d_string& operator=(const char* const strBuf) noexcept
+    String& operator=(const char* const strBuf) noexcept
     {
         _dup(strBuf);
 
         return *this;
     }
 
-    d_string& operator=(const d_string& str) noexcept
+    String& operator=(const String& str) noexcept
     {
         _dup(str.fBuffer);
 
         return *this;
     }
 
-    d_string& operator+=(const char* const strBuf) noexcept
+    String& operator+=(const char* const strBuf) noexcept
     {
         if (strBuf == nullptr)
             return *this;
 
-        const size_t newBufSize = fBufferLen + std::strlen(strBuf) + 1;
-        char         newBuf[newBufSize];
+        const std::size_t newBufSize = fBufferLen + std::strlen(strBuf) + 1;
+        char              newBuf[newBufSize];
 
         std::strcpy(newBuf, fBuffer);
         std::strcat(newBuf, strBuf);
@@ -618,25 +714,25 @@ public:
         return *this;
     }
 
-    d_string& operator+=(const d_string& str) noexcept
+    String& operator+=(const String& str) noexcept
     {
         return operator+=(str.fBuffer);
     }
 
-    d_string operator+(const char* const strBuf) noexcept
+    String operator+(const char* const strBuf) noexcept
     {
-        const size_t newBufSize = fBufferLen + ((strBuf != nullptr) ? std::strlen(strBuf) : 0) + 1;
-        char         newBuf[newBufSize];
+        const std::size_t newBufSize = fBufferLen + ((strBuf != nullptr) ? std::strlen(strBuf) : 0) + 1;
+        char              newBuf[newBufSize];
 
         std::strcpy(newBuf, fBuffer);
 
         if (strBuf != nullptr)
             std::strcat(newBuf, strBuf);
 
-        return d_string(newBuf);
+        return String(newBuf);
     }
 
-    d_string operator+(const d_string& str) noexcept
+    String operator+(const String& str) noexcept
     {
         return operator+(str.fBuffer);
     }
@@ -644,8 +740,8 @@ public:
     // -------------------------------------------------------------------
 
 private:
-    char*  fBuffer;    // the actual string buffer
-    size_t fBufferLen; // string length
+    char*       fBuffer;    // the actual string buffer
+    std::size_t fBufferLen; // string length
 
     /*
      * Static null string.
@@ -658,16 +754,6 @@ private:
     }
 
     /*
-     * Shared init function.
-     * Called on all constructors.
-     */
-    void _init() noexcept
-    {
-        fBuffer    = _null();
-        fBufferLen = 0;
-    }
-
-    /*
      * Helper function.
      * Called whenever the string needs to be allocated.
      *
@@ -675,7 +761,7 @@ private:
      * - Allocates string only if 'strBuf' is not null and new string contents are different
      * - If 'strBuf' is null, 'size' must be 0
      */
-    void _dup(const char* const strBuf, const size_t size = 0) noexcept
+    void _dup(const char* const strBuf, const std::size_t size = 0) noexcept
     {
         if (strBuf != nullptr)
         {
@@ -690,7 +776,11 @@ private:
             fBuffer    = (char*)std::malloc(fBufferLen+1);
 
             if (fBuffer == nullptr)
-                return _init();
+            {
+                fBuffer    = _null();
+                fBufferLen = 0;
+                return;
+            }
 
             std::strcpy(fBuffer, strBuf);
 
@@ -707,40 +797,40 @@ private:
             DISTRHO_SAFE_ASSERT(fBuffer != nullptr);
             std::free(fBuffer);
 
-            _init();
+            fBuffer    = _null();
+            fBufferLen = 0;
         }
     }
 
-    DISTRHO_LEAK_DETECTOR(d_string)
     DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 // -----------------------------------------------------------------------
 
 static inline
-d_string operator+(const d_string& strBefore, const char* const strBufAfter) noexcept
+String operator+(const String& strBefore, const char* const strBufAfter) noexcept
 {
     const char* const strBufBefore = strBefore.buffer();
-    const size_t      newBufSize   = strBefore.length() + ((strBufAfter != nullptr) ? std::strlen(strBufAfter) : 0) + 1;
+    const std::size_t newBufSize   = strBefore.length() + ((strBufAfter != nullptr) ? std::strlen(strBufAfter) : 0) + 1;
     char newBuf[newBufSize];
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
 
-    return d_string(newBuf);
+    return String(newBuf);
 }
 
 static inline
-d_string operator+(const char* const strBufBefore, const d_string& strAfter) noexcept
+String operator+(const char* const strBufBefore, const String& strAfter) noexcept
 {
     const char* const strBufAfter = strAfter.buffer();
-    const size_t      newBufSize  = ((strBufBefore != nullptr) ? std::strlen(strBufBefore) : 0) + strAfter.length() + 1;
+    const std::size_t newBufSize  = ((strBufBefore != nullptr) ? std::strlen(strBufBefore) : 0) + strAfter.length() + 1;
     char newBuf[newBufSize];
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
 
-    return d_string(newBuf);
+    return String(newBuf);
 }
 
 // -----------------------------------------------------------------------
