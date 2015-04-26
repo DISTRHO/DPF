@@ -17,7 +17,7 @@
 #ifndef DISTRHO_UI_HPP_INCLUDED
 #define DISTRHO_UI_HPP_INCLUDED
 
-#include "extra/d_leakdetector.hpp"
+#include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
 #if DISTRHO_UI_USE_NANOVG

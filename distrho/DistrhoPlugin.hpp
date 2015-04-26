@@ -17,7 +17,7 @@
 #ifndef DISTRHO_PLUGIN_HPP_INCLUDED
 #define DISTRHO_PLUGIN_HPP_INCLUDED
 
-#include "extra/d_string.hpp"
+#include "extra/String.hpp"
 #include "src/DistrhoPluginChecks.h"
 
 START_NAMESPACE_DISTRHO
