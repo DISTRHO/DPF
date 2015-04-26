@@ -51,25 +51,25 @@ double UI::getSampleRate() const noexcept
     return pData->sampleRate;
 }
 
-void UI::editParameter(const uint32_t index, const bool started)
+void UI::editParameter(uint32_t index, bool started)
 {
     pData->editParamCallback(index + pData->parameterOffset, started);
 }
 
-void UI::setParameterValue(const uint32_t index, const float value)
+void UI::setParameterValue(uint32_t index, float value)
 {
     pData->setParamCallback(index + pData->parameterOffset, value);
 }
 
 #if DISTRHO_PLUGIN_WANT_STATE
-void UI::setState(const char* const key, const char* const value)
+void UI::setState(const char* key, const char* value)
 {
     pData->setStateCallback(key, value);
 }
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-void UI::sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 {
     pData->sendNoteCallback(channel, note, velocity);
 }

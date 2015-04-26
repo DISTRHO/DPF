@@ -64,7 +64,7 @@ struct ERect {
 
 START_NAMESPACE_DISTRHO
 
-typedef std::map<const d_string,d_string> StringMap;
+typedef std::map<const String, String> StringMap;
 
 // -----------------------------------------------------------------------
 
@@ -315,8 +315,8 @@ public:
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
         {
-            const d_string& d_key(fPlugin.getStateKey(i));
-            fStateMap[d_key] = fPlugin.getStateDefaultValue(i);
+            const String& dkey(fPlugin.getStateKey(i));
+            fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
 #endif
     }
@@ -436,8 +436,8 @@ public:
 # if DISTRHO_PLUGIN_WANT_STATE
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
-                    const d_string& key   = cit->first;
-                    const d_string& value = cit->second;
+                    const String& key   = cit->first;
+                    const String& value = cit->second;
 
                     fVstUI->setStateFromPlugin(key, value);
                 }
@@ -485,15 +485,15 @@ public:
             }
             else
             {
-                d_string chunkStr;
+                String chunkStr;
 
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
-                    const d_string& key   = cit->first;
-                    const d_string& value = cit->second;
+                    const String& key   = cit->first;
+                    const String& value = cit->second;
 
                     // join key and value
-                    d_string tmpStr;
+                    String tmpStr;
                     tmpStr  = key;
                     tmpStr += "\xff";
                     tmpStr += value;
@@ -773,9 +773,9 @@ private:
         // check if key already exists
         for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
         {
-            const d_string& d_key(it->first);
+            const String& dkey(it->first);
 
-            if (d_key == key)
+            if (dkey == key)
             {
                 it->second = newValue;
                 return;

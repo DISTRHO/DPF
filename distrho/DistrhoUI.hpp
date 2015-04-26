@@ -71,25 +71,25 @@ public:
    /**
       TODO: Document this.
     */
-    void editParameter(const uint32_t index, const bool started);
+    void editParameter(uint32_t index, bool started);
 
    /**
       TODO: Document this.
     */
-    void setParameterValue(const uint32_t index, const float value);
+    void setParameterValue(uint32_t index, float value);
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
       TODO: Document this.
     */
-    void setState(const char* const key, const char* const value);
+    void setState(const char* key, const char* value);
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
    /**
       TODO: Document this.
     */
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity);
+    void sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
@@ -114,10 +114,10 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
    /**
-      The current program has changed on the plugin side.
+      A program has been loaded on the plugin side.
       This is called by the host to inform the UI about program changes.
     */
-    virtual void programChanged(uint32_t index) = 0;
+    virtual void programLoaded(uint32_t index) = 0;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE

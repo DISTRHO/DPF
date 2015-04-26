@@ -175,7 +175,7 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        fUI->d_uiReshape(width, height);
+        fUI->uiReshape(width, height);
         fIsReady = true;
     }
 
@@ -184,7 +184,7 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        fUI->d_uiFileBrowserSelected(filename);
+        fUI->uiFileBrowserSelected(filename);
     }
 
 private:
@@ -257,15 +257,15 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        fUI->d_parameterChanged(index, value);
+        fUI->parameterChanged(index, value);
     }
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-    void programChanged(const uint32_t index)
+    void programLoaded(const uint32_t index)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        fUI->d_programChanged(index);
+        fUI->programLoaded(index);
     }
 #endif
 
@@ -276,7 +276,7 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0',);
         DISTRHO_SAFE_ASSERT_RETURN(value != nullptr,);
 
-        fUI->d_stateChanged(key, value);
+        fUI->stateChanged(key, value);
     }
 #endif
 
@@ -295,7 +295,7 @@ public:
     void exec_idle()
     {
         if (glWindow.isReady())
-            fUI->d_uiIdle();
+            fUI->uiIdle();
     }
 
     bool idle()
@@ -305,7 +305,7 @@ public:
         glApp.idle();
 
         if (glWindow.isReady())
-            fUI->d_uiIdle();
+            fUI->uiIdle();
 
         return ! glApp.isQuiting();
     }
@@ -364,7 +364,7 @@ public:
         fData->sampleRate = sampleRate;
 
         if (doCallback)
-            fUI->d_sampleRateChanged(sampleRate);
+            fUI->sampleRateChanged(sampleRate);
     }
 
 private:

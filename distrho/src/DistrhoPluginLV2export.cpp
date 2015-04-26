@@ -66,8 +66,8 @@ void lv2_generate_ttl(const char* const basename)
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 
-    d_string pluginDLL(basename);
-    d_string pluginTTL(pluginDLL + ".ttl");
+    String pluginDLL(basename);
+    String pluginTTL(pluginDLL + ".ttl");
 
     // ---------------------------------------------
 
@@ -75,7 +75,7 @@ void lv2_generate_ttl(const char* const basename)
         std::cout << "Writing manifest.ttl..."; std::cout.flush();
         std::fstream manifestFile("manifest.ttl", std::ios::out);
 
-        d_string manifestString;
+        String manifestString;
         manifestString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
         manifestString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
 #if DISTRHO_PLUGIN_HAS_UI
@@ -101,7 +101,7 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    a ui:X11UI ;\n";
 # endif
 # if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-        d_string pluginUI(pluginDLL);
+        String pluginUI(pluginDLL);
         pluginUI.truncate(pluginDLL.rfind("_dsp"));
         pluginUI += "_ui";
 
@@ -143,7 +143,7 @@ void lv2_generate_ttl(const char* const basename)
         std::cout << "Writing " << pluginTTL << "..."; std::cout.flush();
         std::fstream pluginFile(pluginTTL, std::ios::out);
 
-        d_string pluginString;
+        String pluginString;
 
         // header
 #if DISTRHO_LV2_USE_EVENTS_IN
@@ -220,7 +220,7 @@ void lv2_generate_ttl(const char* const basename)
                 else
                     pluginString += "        a lv2:InputPort, lv2:AudioPort ;\n";
 
-                pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+                pluginString += "        lv2:index " + String(portIndex) + " ;\n";
                 pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
                 pluginString += "        lv2:name \"" + port.name + "\" ;\n";
 
@@ -250,7 +250,7 @@ void lv2_generate_ttl(const char* const basename)
                 else
                     pluginString += "        a lv2:OutputPort, lv2:AudioPort ;\n";
 
-                pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+                pluginString += "        lv2:index " + String(portIndex) + " ;\n";
                 pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
                 pluginString += "        lv2:name \"" + port.name + "\" ;\n";
 
@@ -268,10 +268,10 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_LV2_USE_EVENTS_IN
             pluginString += "    lv2:port [\n";
             pluginString += "        a lv2:InputPort, atom:AtomPort ;\n";
-            pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+            pluginString += "        lv2:index " + String(portIndex) + " ;\n";
             pluginString += "        lv2:name \"Events Input\" ;\n";
             pluginString += "        lv2:symbol \"lv2_events_in\" ;\n";
-            pluginString += "        rsz:minimumSize " + d_string(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
+            pluginString += "        rsz:minimumSize " + String(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
             pluginString += "        atom:bufferType atom:Sequence ;\n";
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
@@ -289,10 +289,10 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_LV2_USE_EVENTS_OUT
             pluginString += "    lv2:port [\n";
             pluginString += "        a lv2:OutputPort, atom:AtomPort ;\n";
-            pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+            pluginString += "        lv2:index " + String(portIndex) + " ;\n";
             pluginString += "        lv2:name \"Events Output\" ;\n";
             pluginString += "        lv2:symbol \"lv2_events_out\" ;\n";
-            pluginString += "        rsz:minimumSize " + d_string(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
+            pluginString += "        rsz:minimumSize " + String(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
             pluginString += "        atom:bufferType atom:Sequence ;\n";
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
             pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
@@ -307,7 +307,7 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_PLUGIN_WANT_LATENCY
             pluginString += "    lv2:port [\n";
             pluginString += "        a lv2:OutputPort, lv2:ControlPort ;\n";
-            pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+            pluginString += "        lv2:index " + String(portIndex) + " ;\n";
             pluginString += "        lv2:name \"Latency\" ;\n";
             pluginString += "        lv2:symbol \"lv2_latency\" ;\n";
             pluginString += "        lv2:designation lv2:latency ;\n";
@@ -328,15 +328,15 @@ void lv2_generate_ttl(const char* const basename)
                 else
                     pluginString += "        a lv2:InputPort, lv2:ControlPort ;\n";
 
-                pluginString += "        lv2:index " + d_string(portIndex) + " ;\n";
+                pluginString += "        lv2:index " + String(portIndex) + " ;\n";
                 pluginString += "        lv2:name \"" + plugin.getParameterName(i) + "\" ;\n";
 
                 // symbol
                 {
-                    d_string symbol(plugin.getParameterSymbol(i));
+                    String symbol(plugin.getParameterSymbol(i));
 
                     if (symbol.isEmpty())
-                        symbol = "lv2_port_" + d_string(portIndex-1);
+                        symbol = "lv2_port_" + String(portIndex-1);
 
                     pluginString += "        lv2:symbol \"" + symbol + "\" ;\n";
                 }
@@ -347,21 +347,21 @@ void lv2_generate_ttl(const char* const basename)
 
                     if (plugin.getParameterHints(i) & kParameterIsInteger)
                     {
-                        pluginString += "        lv2:default " + d_string(int(plugin.getParameterValue(i))) + " ;\n";
-                        pluginString += "        lv2:minimum " + d_string(int(ranges.min)) + " ;\n";
-                        pluginString += "        lv2:maximum " + d_string(int(ranges.max)) + " ;\n";
+                        pluginString += "        lv2:default " + String(int(plugin.getParameterValue(i))) + " ;\n";
+                        pluginString += "        lv2:minimum " + String(int(ranges.min)) + " ;\n";
+                        pluginString += "        lv2:maximum " + String(int(ranges.max)) + " ;\n";
                     }
                     else
                     {
-                        pluginString += "        lv2:default " + d_string(plugin.getParameterValue(i)) + " ;\n";
-                        pluginString += "        lv2:minimum " + d_string(ranges.min) + " ;\n";
-                        pluginString += "        lv2:maximum " + d_string(ranges.max) + " ;\n";
+                        pluginString += "        lv2:default " + String(plugin.getParameterValue(i)) + " ;\n";
+                        pluginString += "        lv2:minimum " + String(ranges.min) + " ;\n";
+                        pluginString += "        lv2:maximum " + String(ranges.max) + " ;\n";
                     }
                 }
 
                 // unit
                 {
-                    const d_string& unit(plugin.getParameterUnit(i));
+                    const String& unit(plugin.getParameterUnit(i));
 
                     if (! unit.isEmpty())
                     {
@@ -421,8 +421,8 @@ void lv2_generate_ttl(const char* const basename)
             }
         }
 
-        pluginString += "    doap:name \"" + d_string(plugin.getName()) + "\" ;\n";
-        pluginString += "    doap:maintainer [ foaf:name \"" + d_string(plugin.getMaker()) + "\" ] .\n";
+        pluginString += "    doap:name \"" + String(plugin.getName()) + "\" ;\n";
+        pluginString += "    doap:maintainer [ foaf:name \"" + String(plugin.getMaker()) + "\" ] .\n";
 
         pluginFile << pluginString << std::endl;
         pluginFile.close();

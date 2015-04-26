@@ -24,7 +24,7 @@
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 #else
-# include "extra/d_sleep.hpp"
+# include "../extra/Sleep.hpp"
 #endif
 
 #include "jack/jack.h"
@@ -129,9 +129,9 @@ public:
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (fPlugin.getProgramCount() > 0)
         {
-            fPlugin.setProgram(0);
+            fPlugin.loadProgram(0);
 # if DISTRHO_PLUGIN_HAS_UI
-            fUI.programChanged(0);
+            fUI.programLoaded(0);
 # endif
         }
 #endif
@@ -461,7 +461,7 @@ int main()
 
     if (client == nullptr)
     {
-        d_string errorString;
+        String errorString;
 
         if (status & JackFailure)
             errorString += "Overall operation failed;\n";

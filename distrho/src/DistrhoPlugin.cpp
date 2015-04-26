@@ -34,7 +34,7 @@ const ParameterRanges PluginExporter::sFallbackRanges;
 /* ------------------------------------------------------------------------------------------------------------
  * Plugin */
 
-Plugin::Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount)
+Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : pData(new PrivateData())
 {
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
@@ -95,7 +95,7 @@ const TimePosition& Plugin::getTimePosition() const noexcept
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
-void Plugin::setLatency(const uint32_t frames) noexcept
+void Plugin::setLatency(uint32_t frames) noexcept
 {
     pData->latency = frames;
 }

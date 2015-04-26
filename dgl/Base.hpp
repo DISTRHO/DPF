@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,8 +17,8 @@
 #ifndef DGL_BASE_HPP_INCLUDED
 #define DGL_BASE_HPP_INCLUDED
 
-#include "../distrho/extra/d_leakdetector.hpp"
-#include "../distrho/extra/d_scopedpointer.hpp"
+#include "../distrho/extra/LeakDetector.hpp"
+#include "../distrho/extra/ScopedPointer.hpp"
 
 // -----------------------------------------------------------------------
 // Define namespace

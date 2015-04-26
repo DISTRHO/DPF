@@ -20,7 +20,7 @@
 # error DSSI UIs do not support direct access!
 #endif
 
-#include "../extra/d_sleep.hpp"
+#include "../extra/Sleep.hpp"
 
 #include <lo/lo.h>
 
@@ -136,7 +136,7 @@ public:
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     void dssiui_program(ulong bank, ulong program)
     {
-        fUI.programChanged(bank * 128 + program);
+        fUI.programLoaded(bank * 128 + program);
     }
 #endif
 

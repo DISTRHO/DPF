@@ -166,7 +166,7 @@ struct ParameterRanges {
    /**
       Constructor using custom values.
     */
-    ParameterRanges(const float df, const float mn, const float mx) noexcept
+    ParameterRanges(float df, float mn, float mx) noexcept
         : def(df),
           min(mn),
           max(mx) {}
@@ -468,7 +468,7 @@ public:
       Plugin class constructor.@n
       You must set all parameter values to their defaults, matching ParameterRanges::def.
     */
-    Plugin(const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount);
+    Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount);
 
    /**
       Destructor.

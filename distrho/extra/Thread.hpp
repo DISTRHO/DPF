@@ -17,9 +17,9 @@
 #ifndef DISTRHO_THREAD_HPP_INCLUDED
 #define DISTRHO_THREAD_HPP_INCLUDED
 
-#include "d_mutex.hpp"
-#include "d_sleep.hpp"
-#include "d_string.hpp"
+#include "Mutex.hpp"
+#include "Sleep.hpp"
+#include "String.hpp"
 
 #ifdef DISTRHO_OS_LINUX
 # include <sys/prctl.h>

@@ -49,7 +49,7 @@
 
 START_NAMESPACE_DISTRHO
 
-typedef std::map<const d_string,d_string> StringMap;
+typedef std::map<const String, String> StringMap;
 
 // -----------------------------------------------------------------------
 
@@ -119,8 +119,8 @@ public:
             {
                 fNeededUiSends[i] = false;
 
-                const d_string& d_key(fPlugin.getStateKey(i));
-                fStateMap[d_key] = fPlugin.getStateDefaultValue(i);
+                const String& dkey(fPlugin.getStateKey(i));
+                fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
             }
         }
         else
@@ -538,16 +538,16 @@ public:
             if (! fNeededUiSends[i])
                 continue;
 
-            const d_string& key = fPlugin.getStateKey(i);
+            const String& key = fPlugin.getStateKey(i);
 
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
-                const d_string& curKey = cit->first;
+                const String& curKey = cit->first;
 
                 if (curKey != key)
                     continue;
 
-                const d_string& value = cit->second;
+                const String& value = cit->second;
 
                 // set msg size (key + value + separator + 2x null terminator)
                 const size_t msgSize(key.length()+value.length()+3);
@@ -661,7 +661,7 @@ public:
         if (realProgram >= fPlugin.getProgramCount())
             return;
 
-        fPlugin.setProgram(realProgram);
+        fPlugin.loadProgram(realProgram);
 
         // Update control inputs
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
@@ -684,10 +684,10 @@ public:
     {
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
-            const d_string& key   = cit->first;
-            const d_string& value = cit->second;
+            const String& key   = cit->first;
+            const String& value = cit->second;
 
-            const d_string urnKey("urn:distrho:" + key);
+            const String urnKey("urn:distrho:" + key);
 
             // some hosts need +1 for the null terminator, even though the type is string
             store(handle, fUridMap->map(fUridMap->handle, urnKey.buffer()), value.buffer(), value.length()+1, fURIDs.atomString, LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
@@ -703,8 +703,8 @@ public:
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
-            const d_string& key(fPlugin.getStateKey(i));
-            const d_string urnKey("urn:distrho:" + key);
+            const String& key(fPlugin.getStateKey(i));
+            const String urnKey("urn:distrho:" + key);
 
             size  = 0;
             type  = 0;
@@ -858,9 +858,9 @@ private:
         // check if key already exists
         for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
         {
-            const d_string& d_key(it->first);
+            const String& dkey(it->first);
 
-            if (d_key == key)
+            if (dkey == key)
             {
                 it->second = newValue;
                 return;

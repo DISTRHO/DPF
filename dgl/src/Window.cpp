@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,7 +20,7 @@
 #include "AppPrivateData.hpp"
 #include "../Widget.hpp"
 #include "../Window.hpp"
-#include "../../distrho/extra/d_string.hpp"
+#include "../../distrho/extra/String.hpp"
 
 #undef PUGL_HAVE_CAIRO
 #undef PUGL_HAVE_GL
@@ -1028,7 +1028,7 @@ void Window::repaint() noexcept
 bool Window::openFileBrowser(const FileBrowserOptions& options)
 {
 #ifdef SOFD_HAVE_X11
-    using DISTRHO_NAMESPACE::d_string;
+    using DISTRHO_NAMESPACE::String;
 
     // --------------------------------------------------------------------------
     // configure start dir
@@ -1036,7 +1036,7 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     // TODO: get abspath if needed
     // TODO: cross-platform
 
-    d_string startDir(options.startDir);
+    String startDir(options.startDir);
 
     if (startDir.isEmpty())
     {
@@ -1057,7 +1057,7 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     // --------------------------------------------------------------------------
     // configure title
 
-    d_string title(options.title);
+    String title(options.title);
 
     if (title.isEmpty())
     {

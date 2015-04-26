@@ -314,7 +314,7 @@ public:
 
         DISTRHO_SAFE_ASSERT_RETURN(realProgram < fPlugin.getProgramCount(),);
 
-        fPlugin.setProgram(realProgram);
+        fPlugin.loadProgram(realProgram);
 
         // Update control inputs
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
@@ -530,10 +530,9 @@ public:
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (ulong i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i, ++port)
         {
-            char portName[24] = { '\0' };
-            std::sprintf(portName, "Audio Input %lu", i+1);
+            const AudioPort& aport(plugin.getAudioPort(true, i));
 
-            portNames[port]       = strdup(portName);
+            portNames[port]       = strdup(aport.name);
             portDescriptors[port] = LADSPA_PORT_AUDIO | LADSPA_PORT_INPUT;
 
             portRangeHints[port].HintDescriptor = 0x0;
@@ -545,10 +544,9 @@ public:
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (ulong i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i, ++port)
         {
-            char portName[24] = { '\0' };
-            std::sprintf(portName, "Audio Output %lu", i+1);
+            const AudioPort& aport(plugin.getAudioPort(false, i));
 
-            portNames[port]       = strdup(portName);
+            portNames[port]       = strdup(aport.name);
             portDescriptors[port] = LADSPA_PORT_AUDIO | LADSPA_PORT_OUTPUT;
 
             portRangeHints[port].HintDescriptor = 0x0;

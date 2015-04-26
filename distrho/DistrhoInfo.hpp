@@ -337,7 +337,7 @@ START_NAMESPACE_DISTRHO
           Set the name of the program @a index.
           This function will be called once, shortly after the plugin is created.
         */
-      void initProgramName(uint32_t index, d_string& programName)
+      void initProgramName(uint32_t index, String& programName)
       {
           switch(index)
           {
