@@ -255,7 +255,7 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current buffer size that will probably be used during processing, in frames. This value will remain constant between activate and deactivate. </p><dl class="section note"><dt>Note</dt><dd>: This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
+<p>Get the current buffer size that will probably be used during processing, in frames. This value will remain constant between activate and deactivate. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a9f6c8ad6b054056649d0250e527e1297">bufferSizeChanged(uint32_t)</a> </dd></dl>
 
 </div>
@@ -304,7 +304,7 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the current host transport time position. This function should only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd>: <a class="el" href="structTimePosition.html">TimePosition</a> is not supported in LADSPA and DSSI plugin formats. </dd></dl>
+<p>Get the current host transport time position. This function should only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. You can call this during other times, but the returned position is not guaranteed to be in sync. </p><dl class="section note"><dt>Note</dt><dd><a class="el" href="structTimePosition.html">TimePosition</a> is not supported in LADSPA and DSSI plugin formats. </dd></dl>
 
 </div>
 </div>
@@ -402,7 +402,7 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Get the plugin label. A plugin label follows the same rules as <a class="el" href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a>, with the exception that it can start with numbers. </p>
+<p>Get the plugin label. This label is a short restricted name consisting of only _, a-z, A-Z and 0-9 characters. </p>
 
 </div>
 </div>
@@ -451,7 +451,7 @@ When enabled it provides midi input events. </p>
 </table>
 </div><div class="memdoc">
 <p>Get the plugin license name (a single line of text).<br />
-For commercial plugins this should return some copyright information. </p>
+For commercial plugins this should return some short copyright information. </p>
 
 </div>
 </div>
@@ -872,7 +872,7 @@ For commercial plugins this should return some copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Run/process function for plugins with MIDI input. </p><dl class="section note"><dt>Note</dt><dd>: Some parameters might be null if there are no audio inputs/outputs or MIDI events. </dd></dl>
+<p>Run/process function for plugins with MIDI input. </p><dl class="section note"><dt>Note</dt><dd>Some parameters might be null if there are no audio inputs/outputs or MIDI events. </dd></dl>
 
 </div>
 </div>
@@ -897,7 +897,7 @@ For commercial plugins this should return some copyright information. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Optional callback to inform the plugin about a buffer size change. This function will only be called when the plugin is deactivated. </p><dl class="section note"><dt>Note</dt><dd>: This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
+<p>Optional callback to inform the plugin about a buffer size change. This function will only be called when the plugin is deactivated. </p><dl class="section note"><dt>Note</dt><dd>This value is only a hint! Hosts might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2643e638f62cfd4990247ec66bed60d2">getBufferSize()</a> </dd></dl>
 
 </div>
@@ -933,7 +933,7 @@ For commercial plugins this should return some copyright information. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 14:55:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 15:43:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>
