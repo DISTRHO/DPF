@@ -17,7 +17,7 @@
 #ifndef DISTRHO_STRING_HPP_INCLUDED
 #define DISTRHO_STRING_HPP_INCLUDED
 
-#include "LeakDetector.hpp"
+#include "../DistrhoUtils.hpp"
 
 START_NAMESPACE_DISTRHO
 

@@ -18,6 +18,7 @@
 #define DISTRHO_PLUGIN_HPP_INCLUDED
 
 #include "extra/String.hpp"
+#include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
 START_NAMESPACE_DISTRHO
@@ -591,7 +592,7 @@ protected:
       This function will be called once, shortly after the plugin is created.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue) = 0;
+    virtual void initState(uint32_t index, const char* stateKey, String& defaultStateValue) = 0;
 #endif
 
    /* --------------------------------------------------------------------------------------------------------
@@ -625,7 +626,7 @@ protected:
       Change an internal state @a key to @a value.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void setState(const String& key, const String& value) = 0;
+    virtual void setState(const char* key, const char* value) = 0;
 #endif
 
    /* --------------------------------------------------------------------------------------------------------
