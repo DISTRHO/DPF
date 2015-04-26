@@ -150,10 +150,14 @@ public:
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         {
             uint32_t j=0;
+# if DISTRHO_PLUGIN_NUM_INPUTS > 0
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i, ++j)
                 fPlugin->initAudioPort(true, i, fData->audioPorts[j]);
+# endif
+# if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i, ++j)
                 fPlugin->initAudioPort(false, i, fData->audioPorts[j]);
+# endif
         }
 #endif
 
@@ -241,10 +245,17 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackAudioPort);
 
-        if (input) {
+        if (input)
+        {
+# if DISTRHO_PLUGIN_NUM_INPUTS > 0
             DISTRHO_SAFE_ASSERT_RETURN(index < DISTRHO_PLUGIN_NUM_INPUTS,  sFallbackAudioPort);
-        } else {
+# endif
+        }
+        else
+        {
+# if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             DISTRHO_SAFE_ASSERT_RETURN(index < DISTRHO_PLUGIN_NUM_OUTPUTS, sFallbackAudioPort);
+# endif
         }
 
         return fData->audioPorts[index + (input ? 0 : DISTRHO_PLUGIN_NUM_INPUTS)];
