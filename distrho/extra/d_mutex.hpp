@@ -38,6 +38,7 @@ public:
      * Constructor.
      */
     Mutex() noexcept
+        : fMutex()
     {
         pthread_mutex_init(&fMutex, nullptr);
     }
@@ -92,6 +93,11 @@ public:
      * Constructor.
      */
     RecursiveMutex() noexcept
+#ifdef DISTRHO_OS_WINDOWS
+        : fSection()
+#else
+        : fMutex()
+#endif
     {
 #ifdef DISTRHO_OS_WINDOWS
         InitializeCriticalSection(&fSection);
@@ -168,16 +174,16 @@ private:
 // Helper class to lock&unlock a mutex during a function scope.
 
 template <class Mutex>
-class ScopedLocker
+class ScopeLocker
 {
 public:
-    ScopedLocker(const Mutex& mutex) noexcept
+    ScopeLocker(const Mutex& mutex) noexcept
         : fMutex(mutex)
     {
         fMutex.lock();
     }
 
-    ~ScopedLocker() noexcept
+    ~ScopeLocker() noexcept
     {
         fMutex.unlock();
     }
@@ -186,23 +192,58 @@ private:
     const Mutex& fMutex;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedLocker)
+    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeLocker)
+};
+
+// -----------------------------------------------------------------------
+// Helper class to try-lock&unlock a mutex during a function scope.
+
+template <class Mutex>
+class ScopeTryLocker
+{
+public:
+    ScopeTryLocker(const Mutex& mutex) noexcept
+        : fMutex(mutex),
+          fLocked(mutex.tryLock()) {}
+
+    ~ScopeTryLocker() noexcept
+    {
+        if (fLocked)
+            fMutex.unlock();
+    }
+
+    bool wasLocked() const noexcept
+    {
+        return fLocked;
+    }
+
+    bool wasNotLocked() const noexcept
+    {
+        return !fLocked;
+    }
+
+private:
+    const Mutex& fMutex;
+    const bool   fLocked;
+
+    DISTRHO_PREVENT_HEAP_ALLOCATION
+    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeTryLocker)
 };
 
 // -----------------------------------------------------------------------
 // Helper class to unlock&lock a mutex during a function scope.
 
 template <class Mutex>
-class ScopedUnlocker
+class ScopeUnlocker
 {
 public:
-    ScopedUnlocker(const Mutex& mutex) noexcept
+    ScopeUnlocker(const Mutex& mutex) noexcept
         : fMutex(mutex)
     {
         fMutex.unlock();
     }
 
-    ~ScopedUnlocker() noexcept
+    ~ScopeUnlocker() noexcept
     {
         fMutex.lock();
     }
@@ -211,17 +252,20 @@ private:
     const Mutex& fMutex;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedUnlocker)
+    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeUnlocker)
 };
 
 // -----------------------------------------------------------------------
 // Define types
 
-typedef ScopedLocker<Mutex>          MutexLocker;
-typedef ScopedLocker<RecursiveMutex> RecursiveMutexLocker;
+typedef ScopeLocker<Mutex>          MutexLocker;
+typedef ScopeLocker<RecursiveMutex> RecursiveMutexLocker;
 
-typedef ScopedUnlocker<Mutex>          MutexUnlocker;
-typedef ScopedUnlocker<RecursiveMutex> RecursiveMutexUnlocker;
+typedef ScopeTryLocker<Mutex>          MutexTryLocker;
+typedef ScopeTryLocker<RecursiveMutex> RecursiveMutexTryLocker;
+
+typedef ScopeUnlocker<Mutex>          MutexUnlocker;
+typedef ScopeUnlocker<RecursiveMutex> RecursiveMutexUnlocker;
 
 // -----------------------------------------------------------------------
 
