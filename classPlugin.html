@@ -139,8 +139,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a6911a881fabb9eca9daf0eadbaad8599"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">loadProgram</a> (uint32_t index)=0</td></tr>
 <tr class="separator:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState</a> (const <a class="el" href="classString.html">String</a> &amp;key, const <a class="el" href="classString.html">String</a> &amp;value)=0</td></tr>
-<tr class="separator:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad25ed64a2f00f48c86d2ae0016ea3e59"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ad25ed64a2f00f48c86d2ae0016ea3e59">setState</a> (const char *key, const char *value)=0</td></tr>
+<tr class="separator:ad25ed64a2f00f48c86d2ae0016ea3e59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate</a> ()</td></tr>
 <tr class="separator:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa089a56572bc8f1cb7e4b538c0d19c46"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46">deactivate</a> ()</td></tr>
@@ -171,9 +171,9 @@ There is no limit on how many times <a class="el" href="classPlugin.html#a0a969c
 Buffer size is only a hint though, the host might call <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> with a higher or lower number of frames.</p>
 <p>Some of this class functions are only available according to some macros.</p>
 <p>DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.<br />
-When enabled you need to implement <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName()</a> and setProgram().</p>
+When enabled you need to implement <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName()</a> and <a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">loadProgram()</a>.</p>
 <p>DISTRHO_PLUGIN_WANT_STATE activates internal state features.<br />
-When enabled you need to implement initStateKey() and <a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState()</a>.</p>
+When enabled you need to implement initStateKey() and <a class="el" href="classPlugin.html#ad25ed64a2f00f48c86d2ae0016ea3e59">setState()</a>.</p>
 <p>The process function <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> changes wherever DISTRHO_PLUGIN_WANT_MIDI_INPUT is enabled or not.<br />
 When enabled it provides midi input events. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -764,7 +764,7 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
 
 </div>
 </div>
-<a class="anchor" id="a3c6aeb79775ecf24ffbfc7dafd3d449b"></a>
+<a class="anchor" id="ad25ed64a2f00f48c86d2ae0016ea3e59"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -774,13 +774,13 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
         <tr>
           <td class="memname">virtual void Plugin::setState </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="classString.html">String</a> &amp;&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="classString.html">String</a> &amp;&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -961,7 +961,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 17:53:37 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 21:48:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

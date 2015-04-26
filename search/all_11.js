@@ -30,7 +30,7 @@ var searchData=
   ['setstartpos',['setStartPos',['../singletonLine.html#a958d534b1b0c2d581b110dd26c0d4cea',1,'Line::setStartPos(const T &amp;x, const T &amp;y) noexcept'],['../singletonLine.html#aa078f8d0f2cf36e3162bc1977dc56d4b',1,'Line::setStartPos(const Point&lt; T &gt; &amp;pos) noexcept']]],
   ['setstartx',['setStartX',['../singletonLine.html#ad2b10d3144ba0711f9ecb444bb08ad4c',1,'Line']]],
   ['setstarty',['setStartY',['../singletonLine.html#ae35ba55c6ff3bae24c7f05133b9e003b',1,'Line']]],
-  ['setstate',['setState',['../classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b',1,'Plugin::setState()'],['../classUI.html#abc94a38afa658849f3fdfd66cd8f5f51',1,'UI::setState()']]],
+  ['setstate',['setState',['../classPlugin.html#ad25ed64a2f00f48c86d2ae0016ea3e59',1,'Plugin::setState()'],['../classUI.html#abc94a38afa658849f3fdfd66cd8f5f51',1,'UI::setState()']]],
   ['setvisible',['setVisible',['../classWidget.html#a0bec84d07a6c508e069da9821993d1c2',1,'Widget']]],
   ['setwidth',['setWidth',['../classSize.html#aa552662217b3e8e9c0b6d69d7bc22665',1,'Size::setWidth()'],['../singletonRectangle.html#a75ce3e3a2e8745a1d749dd9da02e9443',1,'Rectangle::setWidth()'],['../classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea',1,'Widget::setWidth()']]],
   ['setx',['setX',['../classPoint.html#a1539a6f24282a1d637b60ccfbbf46629',1,'Point::setX()'],['../singletonCircle.html#acc96a188288cdf83fd822bb41f8f2be1',1,'Circle::setX()'],['../singletonRectangle.html#af618ee618bd029fbe66291228041990e',1,'Rectangle::setX()']]],
