@@ -83,7 +83,7 @@ static const uint32_t kParameterIsLogarithmic = 0x08;
    When unset, parameter is assumed to be of input type.
 
    Parameter inputs are changed by the host and must not be changed by the plugin.@n
-   The only exception being when changing programs, see Plugin::setProgram().@n
+   The only exception being when changing programs, see Plugin::loadProgram().@n
    Outputs are changed by the plugin and never modified by the host.
  */
 static const uint32_t kParameterIsOutput = 0x10;
@@ -453,7 +453,7 @@ struct TimePosition {
    Some of this class functions are only available according to some macros.
 
    DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.@n
-   When enabled you need to implement initProgramName() and setProgram().
+   When enabled you need to implement initProgramName() and loadProgram().
 
    DISTRHO_PLUGIN_WANT_STATE activates internal state features.@n
    When enabled you need to implement initStateKey() and setState().

@@ -533,7 +533,7 @@ START_NAMESPACE_DISTRHO
 /**
    Wherever the plugin provides its own internal programs.
    @see Plugin::initProgramName(uint32_t, String&)
-   @see Plugin::setProgram(uint32_t)
+   @see Plugin::loadProgram(uint32_t)
  */
 #define DISTRHO_PLUGIN_WANT_PROGRAMS 1
 
