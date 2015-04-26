@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['ui',['UI',['../classUI.html',1,'']]]
+  ['widget',['Widget',['../classWidget.html',1,'']]],
+  ['window',['Window',['../classWindow.html',1,'']]]
 ];

@@ -89,16 +89,16 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 <p>This is the complete list of members for <a class="el" href="classUI.html">UI</a>, including all inherited members.</p>
 <table class="directory">
-  <tr class="even"><td class="entry"><a class="el" href="classUI.html#aeea59720583d501254284e5be540f60e">editParameter</a>(const uint32_t index, const bool started)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a2efcd4f21af0470e91fb6a342d7667a0">editParameter</a>(uint32_t index, bool started)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr><td class="entry"><a class="el" href="classUI.html#a0863a8f7ca7fc7e172e703c58518329f">getPluginInstancePointer</a>() const noexcept</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classUI.html#a97d880182254652f94e7bed355370c07">getSampleRate</a>() const noexcept</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr><td class="entry"><a class="el" href="classUI.html#a8de15be030bbdf0eb81461349cb1cc77">onResize</a>(const ResizeEvent &amp;ev) override</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classUI.html#ab3086d302a9685b25abf144ade3e88f6">parameterChanged</a>(uint32_t index, float value)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classUI.html#a84c36578d87c5b569d1ab6a372f31937">programChanged</a>(uint32_t index)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classUI.html#a2f043dd1b2e179248a19918c5483cfae">programLoaded</a>(uint32_t index)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classUI.html#ac3e98726ca71f95a1e6c867706ebd9be">sampleRateChanged</a>(double newSampleRate)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">virtual</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classUI.html#a95d686f44e486f7ed1505399612b4f84">sendNote</a>(const uint8_t channel, const uint8_t note, const uint8_t velocity)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classUI.html#ab280fd0729e3b51d15ededbd61f5c93c">setParameterValue</a>(const uint32_t index, const float value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
-  <tr><td class="entry"><a class="el" href="classUI.html#aa50fc2fef715805435a14f653cb90cbd">setState</a>(const char *const key, const char *const value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">sendNote</a>(uint8_t channel, uint8_t note, uint8_t velocity)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">setParameterValue</a>(uint32_t index, float value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
+  <tr><td class="entry"><a class="el" href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">setState</a>(const char *key, const char *value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">stateChanged</a>(const char *key, const char *value)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
   <tr><td class="entry"><a class="el" href="classUI.html#ad3425075e4a23234a8568d1893b54f22">UI</a>(uint width=0, uint height=0)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>UIExporter</b> (defined in <a class="el" href="classUI.html">UI</a>)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">friend</span></td></tr>
@@ -110,7 +110,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 16:30:13 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 17:53:37 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['keyboardevent',['KeyboardEvent',['../structWidget_1_1KeyboardEvent.html',1,'Widget']]]
+  ['leakedobjectdetector',['LeakedObjectDetector',['../classLeakedObjectDetector.html',1,'']]],
+  ['line',['Line',['../singletonLine.html',1,'']]]
 ];

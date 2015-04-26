@@ -110,14 +110,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a47e7b6111faba049dfee4738d067cc42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97d880182254652f94e7bed355370c07"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a97d880182254652f94e7bed355370c07">getSampleRate</a> () const noexcept</td></tr>
 <tr class="separator:a97d880182254652f94e7bed355370c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeea59720583d501254284e5be540f60e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#aeea59720583d501254284e5be540f60e">editParameter</a> (const uint32_t index, const bool started)</td></tr>
-<tr class="separator:aeea59720583d501254284e5be540f60e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab280fd0729e3b51d15ededbd61f5c93c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ab280fd0729e3b51d15ededbd61f5c93c">setParameterValue</a> (const uint32_t index, const float value)</td></tr>
-<tr class="separator:ab280fd0729e3b51d15ededbd61f5c93c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa50fc2fef715805435a14f653cb90cbd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#aa50fc2fef715805435a14f653cb90cbd">setState</a> (const char *const key, const char *const value)</td></tr>
-<tr class="separator:aa50fc2fef715805435a14f653cb90cbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a95d686f44e486f7ed1505399612b4f84"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a95d686f44e486f7ed1505399612b4f84">sendNote</a> (const uint8_t channel, const uint8_t note, const uint8_t velocity)</td></tr>
-<tr class="separator:a95d686f44e486f7ed1505399612b4f84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2efcd4f21af0470e91fb6a342d7667a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a2efcd4f21af0470e91fb6a342d7667a0">editParameter</a> (uint32_t index, bool started)</td></tr>
+<tr class="separator:a2efcd4f21af0470e91fb6a342d7667a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a973db6e8805f0aa9be3457685564ab8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">setParameterValue</a> (uint32_t index, float value)</td></tr>
+<tr class="separator:a973db6e8805f0aa9be3457685564ab8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc94a38afa658849f3fdfd66cd8f5f51"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">setState</a> (const char *key, const char *value)</td></tr>
+<tr class="separator:abc94a38afa658849f3fdfd66cd8f5f51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d630b2b1696e01015d869a5b434eb6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">sendNote</a> (uint8_t channel, uint8_t note, uint8_t velocity)</td></tr>
+<tr class="separator:a9d630b2b1696e01015d869a5b434eb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0863a8f7ca7fc7e172e703c58518329f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a0863a8f7ca7fc7e172e703c58518329f">getPluginInstancePointer</a> () const noexcept</td></tr>
 <tr class="separator:a0863a8f7ca7fc7e172e703c58518329f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -125,8 +125,8 @@ Public Member Functions</h2></td></tr>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:ab3086d302a9685b25abf144ade3e88f6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ab3086d302a9685b25abf144ade3e88f6">parameterChanged</a> (uint32_t index, float value)=0</td></tr>
 <tr class="separator:ab3086d302a9685b25abf144ade3e88f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a84c36578d87c5b569d1ab6a372f31937"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a84c36578d87c5b569d1ab6a372f31937">programChanged</a> (uint32_t index)=0</td></tr>
-<tr class="separator:a84c36578d87c5b569d1ab6a372f31937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f043dd1b2e179248a19918c5483cfae"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a2f043dd1b2e179248a19918c5483cfae">programLoaded</a> (uint32_t index)=0</td></tr>
+<tr class="separator:a2f043dd1b2e179248a19918c5483cfae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1bdc7e158d974e82f0535f1658d66575"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">stateChanged</a> (const char *key, const char *value)=0</td></tr>
 <tr class="separator:a1bdc7e158d974e82f0535f1658d66575"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3e98726ca71f95a1e6c867706ebd9be"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ac3e98726ca71f95a1e6c867706ebd9be">sampleRateChanged</a> (double newSampleRate)</td></tr>
@@ -230,20 +230,20 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="aeea59720583d501254284e5be540f60e"></a>
+<a class="anchor" id="a2efcd4f21af0470e91fb6a342d7667a0"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void UI::editParameter </td>
           <td>(</td>
-          <td class="paramtype">const uint32_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>index</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const bool&#160;</td>
+          <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>started</em>&#160;</td>
         </tr>
         <tr>
@@ -257,20 +257,20 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="ab280fd0729e3b51d15ededbd61f5c93c"></a>
+<a class="anchor" id="a973db6e8805f0aa9be3457685564ab8a"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void UI::setParameterValue </td>
           <td>(</td>
-          <td class="paramtype">const uint32_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>index</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const float&#160;</td>
+          <td class="paramtype">float&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -284,20 +284,20 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="aa50fc2fef715805435a14f653cb90cbd"></a>
+<a class="anchor" id="abc94a38afa658849f3fdfd66cd8f5f51"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void UI::setState </td>
           <td>(</td>
-          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *const&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -311,26 +311,26 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="a95d686f44e486f7ed1505399612b4f84"></a>
+<a class="anchor" id="a9d630b2b1696e01015d869a5b434eb6e"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">void UI::sendNote </td>
           <td>(</td>
-          <td class="paramtype">const uint8_t&#160;</td>
+          <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>channel</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint8_t&#160;</td>
+          <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>note</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint8_t&#160;</td>
+          <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>velocity</em>&#160;</td>
         </tr>
         <tr>
@@ -403,7 +403,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="a84c36578d87c5b569d1ab6a372f31937"></a>
+<a class="anchor" id="a2f043dd1b2e179248a19918c5483cfae"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -411,7 +411,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void UI::programChanged </td>
+          <td class="memname">virtual void UI::programLoaded </td>
           <td>(</td>
           <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>index</em></td><td>)</td>
@@ -424,7 +424,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The current program has changed on the plugin side. This is called by the host to inform the <a class="el" href="classUI.html">UI</a> about program changes. </p>
+<p>A program has been loaded on the plugin side. This is called by the host to inform the <a class="el" href="classUI.html">UI</a> about program changes. </p>
 
 </div>
 </div>
@@ -603,7 +603,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 16:30:13 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 17:53:37 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

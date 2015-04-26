@@ -96,8 +96,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3096e491376cb9378be55915d748de57"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3096e491376cb9378be55915d748de57">Plugin</a> (const uint32_t parameterCount, const uint32_t programCount, const uint32_t stateCount)</td></tr>
-<tr class="separator:a3096e491376cb9378be55915d748de57"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb5a3632da5a5c4110172a3a78e1fd32"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#acb5a3632da5a5c4110172a3a78e1fd32">Plugin</a> (uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)</td></tr>
+<tr class="separator:acb5a3632da5a5c4110172a3a78e1fd32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89814b8f0b1c91e49140d42eb8331383"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a89814b8f0b1c91e49140d42eb8331383">~Plugin</a> ()</td></tr>
 <tr class="separator:a89814b8f0b1c91e49140d42eb8331383"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2643e638f62cfd4990247ec66bed60d2"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2643e638f62cfd4990247ec66bed60d2">getBufferSize</a> () const noexcept</td></tr>
@@ -129,9 +129,9 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a75f30935198a0acba25f4ea92af72dc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b0ec59527a1c2f4b01f17fc8c18ea8b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a5b0ec59527a1c2f4b01f17fc8c18ea8b">initParameter</a> (uint32_t index, <a class="el" href="structParameter.html">Parameter</a> &amp;parameter)=0</td></tr>
 <tr class="separator:a5b0ec59527a1c2f4b01f17fc8c18ea8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54d66af3111541b7c118f9749ef0231b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName</a> (uint32_t index, String &amp;programName)=0</td></tr>
+<tr class="memitem:a54d66af3111541b7c118f9749ef0231b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName</a> (uint32_t index, <a class="el" href="classString.html">String</a> &amp;programName)=0</td></tr>
 <tr class="separator:a54d66af3111541b7c118f9749ef0231b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae301a970a8b5cff3c7ecef927ea20080"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">initState</a> (uint32_t index, String &amp;stateKey, String &amp;defaultStateValue)=0</td></tr>
+<tr class="memitem:ae301a970a8b5cff3c7ecef927ea20080"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">initState</a> (uint32_t index, <a class="el" href="classString.html">String</a> &amp;stateKey, <a class="el" href="classString.html">String</a> &amp;defaultStateValue)=0</td></tr>
 <tr class="separator:ae301a970a8b5cff3c7ecef927ea20080"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d1da98c90568bb4547662bc4f02c31f"><td class="memItemLeft" align="right" valign="top">virtual float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">getParameterValue</a> (uint32_t index) const =0</td></tr>
 <tr class="separator:a2d1da98c90568bb4547662bc4f02c31f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,7 +139,7 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a6911a881fabb9eca9daf0eadbaad8599"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">loadProgram</a> (uint32_t index)=0</td></tr>
 <tr class="separator:ab629f35c60406d6f2c0b9d530e67cf09"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState</a> (const String &amp;key, const String &amp;value)=0</td></tr>
+<tr class="memitem:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState</a> (const <a class="el" href="classString.html">String</a> &amp;key, const <a class="el" href="classString.html">String</a> &amp;value)=0</td></tr>
 <tr class="separator:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate</a> ()</td></tr>
 <tr class="separator:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -177,26 +177,26 @@ When enabled you need to implement initStateKey() and <a class="el" href="classP
 <p>The process function <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> changes wherever DISTRHO_PLUGIN_WANT_MIDI_INPUT is enabled or not.<br />
 When enabled it provides midi input events. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a3096e491376cb9378be55915d748de57"></a>
+<a class="anchor" id="acb5a3632da5a5c4110172a3a78e1fd32"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">Plugin::Plugin </td>
           <td>(</td>
-          <td class="paramtype">const uint32_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>parameterCount</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint32_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>programCount</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const uint32_t&#160;</td>
+          <td class="paramtype">uint32_t&#160;</td>
           <td class="paramname"><em>stateCount</em>&#160;</td>
         </tr>
         <tr>
@@ -610,7 +610,7 @@ This function will be called once, shortly after the plugin is created. </p>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">String &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classString.html">String</a> &amp;&#160;</td>
           <td class="paramname"><em>programName</em>&#160;</td>
         </tr>
         <tr>
@@ -647,13 +647,13 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">String &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classString.html">String</a> &amp;&#160;</td>
           <td class="paramname"><em>stateKey</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">String &amp;&#160;</td>
+          <td class="paramtype"><a class="el" href="classString.html">String</a> &amp;&#160;</td>
           <td class="paramname"><em>defaultStateValue</em>&#160;</td>
         </tr>
         <tr>
@@ -774,13 +774,13 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
         <tr>
           <td class="memname">virtual void Plugin::setState </td>
           <td>(</td>
-          <td class="paramtype">const String &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classString.html">String</a> &amp;&#160;</td>
           <td class="paramname"><em>key</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const String &amp;&#160;</td>
+          <td class="paramtype">const <a class="el" href="classString.html">String</a> &amp;&#160;</td>
           <td class="paramname"><em>value</em>&#160;</td>
         </tr>
         <tr>
@@ -961,7 +961,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 16:30:13 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 17:53:37 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

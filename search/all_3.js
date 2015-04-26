@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['d_5fstring',['d_string',['../classd__string.html',1,'']]],
   ['data',['data',['../structMidiEvent.html#aba54410d44eef48c10516f29452ef3a9',1,'MidiEvent']]],
   ['deactivate',['deactivate',['../classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46',1,'Plugin']]],
   ['def',['def',['../structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c',1,'ParameterRanges']]],

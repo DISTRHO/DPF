@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['d_5fstring',['d_string',['../classd__string.html',1,'']]]
+  ['filebrowseroptions',['FileBrowserOptions',['../structWindow_1_1FileBrowserOptions.html',1,'Window']]]
 ];

@@ -106,7 +106,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="preprocessor">#ifndef DISTRHO_UI_HPP_INCLUDED</span></div>
 <div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="preprocessor">#define DISTRHO_UI_HPP_INCLUDED</span></div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;</div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;extra/d_leakdetector.hpp&quot;</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;extra/LeakDetector.hpp&quot;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="preprocessor">#include &quot;src/DistrhoPluginChecks.h&quot;</span></div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;</div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="preprocessor">#if DISTRHO_UI_USE_NANOVG</span></div>
@@ -160,25 +160,25 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">      TODO: Document this.</span></div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#aeea59720583d501254284e5be540f60e">editParameter</a>(<span class="keyword">const</span> uint32_t index, <span class="keyword">const</span> <span class="keywordtype">bool</span> started);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#a2efcd4f21af0470e91fb6a342d7667a0">editParameter</a>(uint32_t index, <span class="keywordtype">bool</span> started);</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">      TODO: Document this.</span></div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#ab280fd0729e3b51d15ededbd61f5c93c">setParameterValue</a>(<span class="keyword">const</span> uint32_t index, <span class="keyword">const</span> <span class="keywordtype">float</span> value);</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value);</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;</div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_STATE</span></div>
 <div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">      TODO: Document this.</span></div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#aa50fc2fef715805435a14f653cb90cbd">setState</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> key, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> value);</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">setState</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* key, <span class="keyword">const</span> <span class="keywordtype">char</span>* value);</div>
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_IS_SYNTH</span></div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">      TODO: Document this.</span></div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#a95d686f44e486f7ed1505399612b4f84">sendNote</a>(<span class="keyword">const</span> uint8_t channel, <span class="keyword">const</span> uint8_t note, <span class="keyword">const</span> uint8_t velocity);</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">sendNote</a>(uint8_t channel, uint8_t note, uint8_t velocity);</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS</span></div>
@@ -203,10 +203,10 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;</div>
 <div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_PROGRAMS</span></div>
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">      The current program has changed on the plugin side.</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">      A program has been loaded on the plugin side.</span></div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">      This is called by the host to inform the UI about program changes.</span></div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classUI.html#a84c36578d87c5b569d1ab6a372f31937">programChanged</a>(uint32_t index) = 0;</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classUI.html#a2f043dd1b2e179248a19918c5483cfae">programLoaded</a>(uint32_t index) = 0;</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;</div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="preprocessor">#if DISTRHO_PLUGIN_WANT_STATE</span></div>
@@ -297,20 +297,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;END_NAMESPACE_DISTRHO</div>
 <div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;</div>
 <div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="preprocessor">#endif // DISTRHO_UI_HPP_INCLUDED</span></div>
+<div class="ttc" id="classUI_html_a2efcd4f21af0470e91fb6a342d7667a0"><div class="ttname"><a href="classUI.html#a2efcd4f21af0470e91fb6a342d7667a0">UI::editParameter</a></div><div class="ttdeci">void editParameter(uint32_t index, bool started)</div></div>
 <div class="ttc" id="classUI_html_ab3086d302a9685b25abf144ade3e88f6"><div class="ttname"><a href="classUI.html#ab3086d302a9685b25abf144ade3e88f6">UI::parameterChanged</a></div><div class="ttdeci">virtual void parameterChanged(uint32_t index, float value)=0</div></div>
 <div class="ttc" id="classUI_html_a8de15be030bbdf0eb81461349cb1cc77"><div class="ttname"><a href="classUI.html#a8de15be030bbdf0eb81461349cb1cc77">UI::onResize</a></div><div class="ttdeci">void onResize(const ResizeEvent &amp;ev) override</div></div>
 <div class="ttc" id="classUI_html_a47e7b6111faba049dfee4738d067cc42"><div class="ttname"><a href="classUI.html#a47e7b6111faba049dfee4738d067cc42">UI::~UI</a></div><div class="ttdeci">virtual ~UI()</div></div>
-<div class="ttc" id="classUI_html_aeea59720583d501254284e5be540f60e"><div class="ttname"><a href="classUI.html#aeea59720583d501254284e5be540f60e">UI::editParameter</a></div><div class="ttdeci">void editParameter(const uint32_t index, const bool started)</div></div>
+<div class="ttc" id="classUI_html_a973db6e8805f0aa9be3457685564ab8a"><div class="ttname"><a href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">UI::setParameterValue</a></div><div class="ttdeci">void setParameterValue(uint32_t index, float value)</div></div>
 <div class="ttc" id="classUI_html_a0863a8f7ca7fc7e172e703c58518329f"><div class="ttname"><a href="classUI.html#a0863a8f7ca7fc7e172e703c58518329f">UI::getPluginInstancePointer</a></div><div class="ttdeci">void * getPluginInstancePointer() const noexcept</div></div>
-<div class="ttc" id="classUI_html_a84c36578d87c5b569d1ab6a372f31937"><div class="ttname"><a href="classUI.html#a84c36578d87c5b569d1ab6a372f31937">UI::programChanged</a></div><div class="ttdeci">virtual void programChanged(uint32_t index)=0</div></div>
 <div class="ttc" id="classUI_html_ac3e98726ca71f95a1e6c867706ebd9be"><div class="ttname"><a href="classUI.html#ac3e98726ca71f95a1e6c867706ebd9be">UI::sampleRateChanged</a></div><div class="ttdeci">virtual void sampleRateChanged(double newSampleRate)</div></div>
-<div class="ttc" id="classUI_html_aa50fc2fef715805435a14f653cb90cbd"><div class="ttname"><a href="classUI.html#aa50fc2fef715805435a14f653cb90cbd">UI::setState</a></div><div class="ttdeci">void setState(const char *const key, const char *const value)</div></div>
+<div class="ttc" id="classUI_html_a2f043dd1b2e179248a19918c5483cfae"><div class="ttname"><a href="classUI.html#a2f043dd1b2e179248a19918c5483cfae">UI::programLoaded</a></div><div class="ttdeci">virtual void programLoaded(uint32_t index)=0</div></div>
+<div class="ttc" id="classUI_html_a9d630b2b1696e01015d869a5b434eb6e"><div class="ttname"><a href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">UI::sendNote</a></div><div class="ttdeci">void sendNote(uint8_t channel, uint8_t note, uint8_t velocity)</div></div>
 <div class="ttc" id="classUI_html_ad3425075e4a23234a8568d1893b54f22"><div class="ttname"><a href="classUI.html#ad3425075e4a23234a8568d1893b54f22">UI::UI</a></div><div class="ttdeci">UI(uint width=0, uint height=0)</div></div>
 <div class="ttc" id="group__EntryPoints_html_gaad0ced21537a067680729bee6a65d8c8"><div class="ttname"><a href="group__EntryPoints.html#gaad0ced21537a067680729bee6a65d8c8">createUI</a></div><div class="ttdeci">UI * createUI()</div></div>
-<div class="ttc" id="classUI_html_ab280fd0729e3b51d15ededbd61f5c93c"><div class="ttname"><a href="classUI.html#ab280fd0729e3b51d15ededbd61f5c93c">UI::setParameterValue</a></div><div class="ttdeci">void setParameterValue(const uint32_t index, const float value)</div></div>
 <div class="ttc" id="classUI_html_a1bdc7e158d974e82f0535f1658d66575"><div class="ttname"><a href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">UI::stateChanged</a></div><div class="ttdeci">virtual void stateChanged(const char *key, const char *value)=0</div></div>
 <div class="ttc" id="classUI_html_a97d880182254652f94e7bed355370c07"><div class="ttname"><a href="classUI.html#a97d880182254652f94e7bed355370c07">UI::getSampleRate</a></div><div class="ttdeci">double getSampleRate() const noexcept</div></div>
-<div class="ttc" id="classUI_html_a95d686f44e486f7ed1505399612b4f84"><div class="ttname"><a href="classUI.html#a95d686f44e486f7ed1505399612b4f84">UI::sendNote</a></div><div class="ttdeci">void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)</div></div>
+<div class="ttc" id="classUI_html_abc94a38afa658849f3fdfd66cd8f5f51"><div class="ttname"><a href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">UI::setState</a></div><div class="ttdeci">void setState(const char *key, const char *value)</div></div>
 <div class="ttc" id="classUI_html_a6d4697296129d3a6bc34fc810d6297ac"><div class="ttname"><a href="classUI.html#a6d4697296129d3a6bc34fc810d6297ac">UI::uiFileBrowserSelected</a></div><div class="ttdeci">virtual void uiFileBrowserSelected(const char *filename)</div></div>
 <div class="ttc" id="classUI_html_ab6861389e1bb01268a189dadbeb4fbcc"><div class="ttname"><a href="classUI.html#ab6861389e1bb01268a189dadbeb4fbcc">UI::uiReshape</a></div><div class="ttdeci">virtual void uiReshape(uint width, uint height)</div></div>
 <div class="ttc" id="classUI_html"><div class="ttname"><a href="classUI.html">UI</a></div><div class="ttdef"><b>Definition:</b> DistrhoUI.hpp:48</div></div>
@@ -318,7 +318,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 16:30:13 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 17:53:36 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>
