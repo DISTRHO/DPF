@@ -107,9 +107,9 @@ public:
     bool*   parameterChecks;
     float*  parameterValues;
 
-#if DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
-#endif
+# endif
 };
 
 // -----------------------------------------------------------------------
@@ -160,12 +160,12 @@ public:
     // -------------------------------------------------------------------
     // functions called from the plugin side, may block
 
-#if DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_STATE
     void setStateFromPlugin(const char* const key, const char* const value)
     {
         fUI.stateChanged(key, value);
     }
-#endif
+# endif
 
     // -------------------------------------------------------------------
 
@@ -191,25 +191,25 @@ protected:
 
     void setState(const char* const key, const char* const value)
     {
-#if DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_STATE
         fUiHelper->setStateFromUI(key, value);
-#else
+# else
         return; // unused
         (void)key;
         (void)value;
-#endif
+# endif
     }
 
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-#if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
         // TODO
-#else
+# else
         return; // unused
         (void)channel;
         (void)note;
         (void)velocity;
-#endif
+# endif
     }
 
     void setSize(const uint width, const uint height)
@@ -537,8 +537,10 @@ public:
 
                 setStateFromUI(key, value);
 
+# if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
                     fVstUI->setStateFromPlugin(key, value);
+# endif
 
                 // get next key
                 key = value+(std::strlen(value)+1);
@@ -762,7 +764,11 @@ private:
     // -------------------------------------------------------------------
     // functions called from the UI side, may block
 
+# if DISTRHO_PLUGIN_HAS_UI
     void setStateFromUI(const char* const key, const char* const newValue) override
+# else
+    void setStateFromUI(const char* const key, const char* const newValue)
+# endif
     {
         fPlugin.setState(key, newValue);
 

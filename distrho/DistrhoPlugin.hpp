@@ -592,7 +592,7 @@ protected:
       This function will be called once, shortly after the plugin is created.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void initState(uint32_t index, const char* stateKey, String& defaultStateValue) = 0;
+    virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue) = 0;
 #endif
 
    /* --------------------------------------------------------------------------------------------------------
