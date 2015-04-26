@@ -252,7 +252,6 @@ The host will simply read their values and not change them.</p>
 <div class="line"><span class="comment"></span></div>
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Get the current value of a parameter.</span></div>
-<div class="line"><span class="comment">     The host may call this function from any context, including realtime processing.</span></div>
 <div class="line"><span class="comment">   */</span></div>
 <div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">getParameterValue</a>(uint32_t index)<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
@@ -263,9 +262,6 @@ The host will simply read their values and not change them.</p>
 <div class="line"><span class="comment"></span></div>
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Change a parameter value.</span></div>
-<div class="line"><span class="comment">     The host may call this function from any context, including realtime processing.</span></div>
-<div class="line"><span class="comment">     When a parameter is marked as automable, you must ensure no non-realtime operations are performed.</span></div>
-<div class="line"><span class="comment">     NOTE: This function will only be called for parameter inputs.</span></div>
 <div class="line"><span class="comment">   */</span></div>
 <div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
@@ -310,7 +306,7 @@ UI</h1>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 15:43:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 15:47:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

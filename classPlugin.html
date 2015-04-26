@@ -141,10 +141,10 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:af2bfc89eec6b984c17ed9e5b3aab8a20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3c6aeb79775ecf24ffbfc7dafd3d449b">setState</a> (const String &amp;key, const String &amp;value)=0</td></tr>
 <tr class="separator:a3c6aeb79775ecf24ffbfc7dafd3d449b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c215b23ee7fcc9b49edbd91d985a4e1"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a1c215b23ee7fcc9b49edbd91d985a4e1">activated</a> ()</td></tr>
-<tr class="separator:a1c215b23ee7fcc9b49edbd91d985a4e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6f5d5d235ba624d082daed41a7af8fdd"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a6f5d5d235ba624d082daed41a7af8fdd">deactivated</a> ()</td></tr>
-<tr class="separator:a6f5d5d235ba624d082daed41a7af8fdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate</a> ()</td></tr>
+<tr class="separator:aa5c1262f5ca20536bb5850fdd6faa22c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa089a56572bc8f1cb7e4b538c0d19c46"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46">deactivate</a> ()</td></tr>
+<tr class="separator:aa089a56572bc8f1cb7e4b538c0d19c46"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a969c78f8455ac6ba65fa42e8c498f6"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run</a> (const float **inputs, float **outputs, uint32_t frames, const <a class="el" href="structMidiEvent.html">MidiEvent</a> *midiEvents, uint32_t midiEventCount)=0</td></tr>
 <tr class="separator:a0a969c78f8455ac6ba65fa42e8c498f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f6c8ad6b054056649d0250e527e1297"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a9f6c8ad6b054056649d0250e527e1297">bufferSizeChanged</a> (uint32_t newBufferSize)</td></tr>
@@ -164,7 +164,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginExporter</b></
 They can be called from a plugin instance at anytime unless stated otherwise.<br />
 All other methods are to be implemented by the plugin and will be called by the host.</p>
 <p>Shortly after a plugin instance is created, the various init* functions will be called by the host.<br />
-Host will call activate() before <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>, and deactivate() before the plugin instance is destroyed.<br />
+Host will call <a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate()</a> before <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>, and <a class="el" href="classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46">deactivate()</a> before the plugin instance is destroyed.<br />
 The host may call deactivate right after activate and vice-versa, but never activate/deactivate consecutively.<br />
 There is no limit on how many times <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> is called, only that activate/deactivate will be called in between.</p>
 <p>The buffer size and sample rate values will remain constant between activate and deactivate.<br />
@@ -329,7 +329,7 @@ When enabled it provides midi input events. </p>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Change the plugin audio output latency to <em>frames</em>. This function should only be called in the constructor, activate() and <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled. </dd></dl>
+<p>Change the plugin audio output latency to <em>frames</em>. This function should only be called in the constructor, <a class="el" href="classPlugin.html#aa5c1262f5ca20536bb5850fdd6faa22c">activate()</a> and <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_LATENCY is enabled. </dd></dl>
 
 </div>
 </div>
@@ -775,7 +775,7 @@ For commercial plugins this should return some short copyright information. </p>
 
 </div>
 </div>
-<a class="anchor" id="a1c215b23ee7fcc9b49edbd91d985a4e1"></a>
+<a class="anchor" id="aa5c1262f5ca20536bb5850fdd6faa22c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -783,7 +783,7 @@ For commercial plugins this should return some short copyright information. </p>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void Plugin::activated </td>
+          <td class="memname">virtual void Plugin::activate </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -799,7 +799,7 @@ For commercial plugins this should return some short copyright information. </p>
 
 </div>
 </div>
-<a class="anchor" id="a6f5d5d235ba624d082daed41a7af8fdd"></a>
+<a class="anchor" id="aa089a56572bc8f1cb7e4b538c0d19c46"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -807,7 +807,7 @@ For commercial plugins this should return some short copyright information. </p>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">virtual void Plugin::deactivated </td>
+          <td class="memname">virtual void Plugin::deactivate </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -933,7 +933,7 @@ For commercial plugins this should return some short copyright information. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 15:43:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 15:47:57 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

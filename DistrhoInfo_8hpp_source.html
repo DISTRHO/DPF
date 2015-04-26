@@ -304,204 +304,200 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment"></span></div>
 <div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment">     /**</span></div>
 <div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment">        Get the current value of a parameter.</span></div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">        The host may call this function from any context, including realtime processing.</span></div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment">      */</span></div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;      float getParameterValue(uint32_t index) const override</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;      {</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;          // same as before, ignore index check</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;          return fGain;</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;      }</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">     /**</span></div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">        Change a parameter value.</span></div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">        The host may call this function from any context, including realtime processing.</span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">        When a parameter is marked as automable, you must ensure no non-realtime operations are performed.</span></div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment">        NOTE: This function will only be called for parameter inputs.</span></div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">      */</span></div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;      void setParameterValue(uint32_t index, float value) override</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      {</div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;          // same as before, ignore index check</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;          fGain = value;</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;      }</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;     /* ----------------------------------------------------------------------------------------</div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;      * Audio/MIDI Processing */</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;      void run(const float**, float** outputs, uint32_t frames) override</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;      {</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;          // get the mono input and output</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;          const float* const in  = inputs[0];</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;          /* */ float* const out = outputs[0];</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;          // apply gain against all samples</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;          for (uint32_t i=0; i &lt; frames; ++i)</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;              out[i] = in[i] * fGain;</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;      }</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;   };</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;   @endcode</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;   See the Parameter struct for more information about parameters.</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;   @section Programs</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;   describe them</div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;   @section States</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;   describe them</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;   @section MIDI</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;   describe them</div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;   @section Latency</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;   describe it</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;   @section Time-Position</div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;   describe it</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">      */</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;      float getParameterValue(uint32_t index) const override</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;      {</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;          // same as before, ignore index check</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;          return fGain;</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;      }</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">     /**</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">        Change a parameter value.</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">      */</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;      void setParameterValue(uint32_t index, float value) override</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;      {</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;          // same as before, ignore index check</div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;</div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;          fGain = value;</div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;      }</div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;     /* ----------------------------------------------------------------------------------------</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;      * Audio/MIDI Processing */</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;      void run(const float**, float** outputs, uint32_t frames) override</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;      {</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;          // get the mono input and output</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;          const float* const in  = inputs[0];</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;          /* */ float* const out = outputs[0];</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;          // apply gain against all samples</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;          for (uint32_t i=0; i &lt; frames; ++i)</div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;              out[i] = in[i] * fGain;</div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;      }</div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;   };</div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;   @endcode</div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;   See the Parameter struct for more information about parameters.</div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;   @section Programs</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;   describe them</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;   @section States</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;   describe them</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;   @section MIDI</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;   describe them</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;   @section Latency</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;   describe it</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;</div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;   @section Time-Position</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;   describe it</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;   @section UI</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;   describe them</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;*/</div>
 <div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;   @section UI</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;   describe them</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;*/</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;/* ------------------------------------------------------------------------------------------------------------</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; * Plugin Macros */</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">   @defgroup PluginMacros Plugin Macros</span></div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">   C Macros that describe your plugin. (defined in the &quot;DistrhoPluginInfo.h&quot; file)</span></div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">   With these macros you can tell the host what features your plugin requires.@n</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">   Depending on which macros you enable, new functions will be available to call and/or override.</span></div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">   All values are either integer or strings.@n</span></div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">   For boolean-like values 1 means &#39;on&#39; and 0 means &#39;off&#39;.</span></div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">   The values defined in this group are for documentation purposes only.@n</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">   All macros are disabled by default.</span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">   Only 4 macros are required, they are:</span></div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NAME</span></div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NUM_INPUTS</span></div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NUM_OUTPUTS</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_URI</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">   @{</span></div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">   The plugin name.@n</span></div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">   This is used to identify your plugin before a Plugin instance can be created.</span></div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">   @note This macro is required.</span></div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00307"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">  307</a></span>&#160;#define DISTRHO_PLUGIN_NAME &quot;Plugin Name&quot;</div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">   Number of audio inputs the plugin has.</span></div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">   @note This macro is required.</span></div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00313"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5f4f3d9a5dc3c23882d158e636319998">  313</a></span>&#160;#define DISTRHO_PLUGIN_NUM_INPUTS 2</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment">   Number of audio outputs the plugin has.</span></div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;<span class="comment">   @note This macro is required.</span></div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00319"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">  319</a></span>&#160;#define DISTRHO_PLUGIN_NUM_OUTPUTS 2</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment">   The plugin URI when exporting in LV2 format.</span></div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">   @note This macro is required.</span></div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00325"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">  325</a></span>&#160;#define DISTRHO_PLUGIN_URI &quot;urn:distrho:name&quot;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="comment">   Wherever the plugin has a custom %UI.</span></div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_NANOVG</span></div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment">   @see UI</span></div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00332"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gacf8a1af679c09637ba0bdc5f4f8e37dd">  332</a></span>&#160;#define DISTRHO_PLUGIN_HAS_UI 1</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment">   Wherever the plugin processing is realtime-safe.@n</span></div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">   TODO - list rtsafe requirements</span></div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00338"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga82546dd199fcea338b113f2f6da84ced">  338</a></span>&#160;#define DISTRHO_PLUGIN_IS_RT_SAFE 1</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">   Wherever the plugin is a synth.@n</span></div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment">   @ref DISTRHO_PLUGIN_WANT_MIDI_INPUT is automatically enabled when this is too.</span></div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment">   @see DISTRHO_PLUGIN_WANT_MIDI_INPUT</span></div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00345"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72">  345</a></span>&#160;#define DISTRHO_PLUGIN_IS_SYNTH 1</div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment">   Enable direct access between the %UI and plugin code.</span></div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment">   @see UI::getPluginInstancePointer()</span></div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment">   @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!</span></div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">         Try to avoid it at all costs!</span></div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00353"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1">  353</a></span>&#160;#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment">   Wherever the plugin introduces latency during audio or midi processing.</span></div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment">   @see Plugin::setLatency(uint32_t)</span></div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00359"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930">  359</a></span>&#160;#define DISTRHO_PLUGIN_WANT_LATENCY 1</div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment">   Wherever the plugin wants MIDI input.@n</span></div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">   This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.</span></div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00365"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">  365</a></span>&#160;#define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment">   Wherever the plugin wants MIDI output.</span></div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment">   @see Plugin::writeMidiEvent(const MidiEvent&amp;)</span></div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073">  371</a></span>&#160;#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1</div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;<span class="comment">   Wherever the plugin provides its own internal programs.</span></div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="comment">   @see Plugin::initProgramName(uint32_t, String&amp;)</span></div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="comment">   @see Plugin::setProgram(uint32_t)</span></div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00378"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">  378</a></span>&#160;#define DISTRHO_PLUGIN_WANT_PROGRAMS 1</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;<span class="comment">   Wherever the plugin uses internal non-parameter data.</span></div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;<span class="comment">   @see Plugin::initState(uint32_t, String&amp;, String&amp;)</span></div>
-<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="comment">   @see Plugin::setState(const char*, const char*)</span></div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00385"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">  385</a></span>&#160;#define DISTRHO_PLUGIN_WANT_STATE 1</div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment">   Wherever the plugin wants time position information from the host.</span></div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">   @see Plugin::getTimePosition()</span></div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00391"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2">  391</a></span>&#160;#define DISTRHO_PLUGIN_WANT_TIMEPOS 1</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;<span class="comment">   Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n</span></div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment">   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.</span></div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00397"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">  397</a></span>&#160;#define DISTRHO_UI_USE_NANOVG 1</div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="comment">   The %UI URI when exporting in LV2 format.@n</span></div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;<span class="comment">   By default this is set to @ref DISTRHO_PLUGIN_URI with &quot;#UI&quot; as suffix.</span></div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00403"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">  403</a></span>&#160;#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI &quot;#UI&quot;</div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;<span class="comment"></span></div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;/* ------------------------------------------------------------------------------------------------------------</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; * Plugin Macros */</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">   @defgroup PluginMacros Plugin Macros</span></div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">   C Macros that describe your plugin. (defined in the &quot;DistrhoPluginInfo.h&quot; file)</span></div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">   With these macros you can tell the host what features your plugin requires.@n</span></div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">   Depending on which macros you enable, new functions will be available to call and/or override.</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">   All values are either integer or strings.@n</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">   For boolean-like values 1 means &#39;on&#39; and 0 means &#39;off&#39;.</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">   The values defined in this group are for documentation purposes only.@n</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">   All macros are disabled by default.</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">   Only 4 macros are required, they are:</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NAME</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NUM_INPUTS</span></div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_NUM_OUTPUTS</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">    - @ref DISTRHO_PLUGIN_URI</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">   The plugin name.@n</span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">   This is used to identify your plugin before a Plugin instance can be created.</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">   @note This macro is required.</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">  303</a></span>&#160;#define DISTRHO_PLUGIN_NAME &quot;Plugin Name&quot;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">   Number of audio inputs the plugin has.</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">   @note This macro is required.</span></div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00309"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5f4f3d9a5dc3c23882d158e636319998">  309</a></span>&#160;#define DISTRHO_PLUGIN_NUM_INPUTS 2</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">   Number of audio outputs the plugin has.</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment">   @note This macro is required.</span></div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00315"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">  315</a></span>&#160;#define DISTRHO_PLUGIN_NUM_OUTPUTS 2</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment">   The plugin URI when exporting in LV2 format.</span></div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;<span class="comment">   @note This macro is required.</span></div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00321"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">  321</a></span>&#160;#define DISTRHO_PLUGIN_URI &quot;urn:distrho:name&quot;</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">   Wherever the plugin has a custom %UI.</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_NANOVG</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment">   @see UI</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00328"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gacf8a1af679c09637ba0bdc5f4f8e37dd">  328</a></span>&#160;#define DISTRHO_PLUGIN_HAS_UI 1</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="comment">   Wherever the plugin processing is realtime-safe.@n</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;<span class="comment">   TODO - list rtsafe requirements</span></div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00334"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga82546dd199fcea338b113f2f6da84ced">  334</a></span>&#160;#define DISTRHO_PLUGIN_IS_RT_SAFE 1</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment">   Wherever the plugin is a synth.@n</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">   @ref DISTRHO_PLUGIN_WANT_MIDI_INPUT is automatically enabled when this is too.</span></div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">   @see DISTRHO_PLUGIN_WANT_MIDI_INPUT</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00341"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72">  341</a></span>&#160;#define DISTRHO_PLUGIN_IS_SYNTH 1</div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="comment">   Enable direct access between the %UI and plugin code.</span></div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment">   @see UI::getPluginInstancePointer()</span></div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">   @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">         Try to avoid it at all costs!</span></div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00349"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1">  349</a></span>&#160;#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0</div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment">   Wherever the plugin introduces latency during audio or midi processing.</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment">   @see Plugin::setLatency(uint32_t)</span></div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00355"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930">  355</a></span>&#160;#define DISTRHO_PLUGIN_WANT_LATENCY 1</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment">   Wherever the plugin wants MIDI input.@n</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment">   This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">  361</a></span>&#160;#define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">   Wherever the plugin wants MIDI output.</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">   @see Plugin::writeMidiEvent(const MidiEvent&amp;)</span></div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073">  367</a></span>&#160;#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment">   Wherever the plugin provides its own internal programs.</span></div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<span class="comment">   @see Plugin::initProgramName(uint32_t, String&amp;)</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="comment">   @see Plugin::setProgram(uint32_t)</span></div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00374"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">  374</a></span>&#160;#define DISTRHO_PLUGIN_WANT_PROGRAMS 1</div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment">   Wherever the plugin uses internal non-parameter data.</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;<span class="comment">   @see Plugin::initState(uint32_t, String&amp;, String&amp;)</span></div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="comment">   @see Plugin::setState(const char*, const char*)</span></div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00381"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">  381</a></span>&#160;#define DISTRHO_PLUGIN_WANT_STATE 1</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment">   Wherever the plugin wants time position information from the host.</span></div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment">   @see Plugin::getTimePosition()</span></div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00387"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2">  387</a></span>&#160;#define DISTRHO_PLUGIN_WANT_TIMEPOS 1</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment">   Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n</span></div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;<span class="comment">   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.</span></div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00393"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">  393</a></span>&#160;#define DISTRHO_UI_USE_NANOVG 1</div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment">   The %UI URI when exporting in LV2 format.@n</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="comment">   By default this is set to @ref DISTRHO_PLUGIN_URI with &quot;#UI&quot; as suffix.</span></div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">  399</a></span>&#160;#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI &quot;#UI&quot;</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="comment"></span></div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;</div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;// -----------------------------------------------------------------------------------------------------------</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;END_NAMESPACE_DISTRHO</div>
 <div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;</div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;// -----------------------------------------------------------------------------------------------------------</div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;</div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;END_NAMESPACE_DISTRHO</div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;</div>
-<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;#endif // DOXYGEN</div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;#endif // DOXYGEN</div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 15:43:46 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 26 2015 15:47:55 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

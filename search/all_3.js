@@ -2,7 +2,7 @@ var searchData=
 [
   ['d_5fstring',['d_string',['../classd__string.html',1,'']]],
   ['data',['data',['../structMidiEvent.html#aba54410d44eef48c10516f29452ef3a9',1,'MidiEvent']]],
-  ['deactivated',['deactivated',['../classPlugin.html#a6f5d5d235ba624d082daed41a7af8fdd',1,'Plugin']]],
+  ['deactivate',['deactivate',['../classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46',1,'Plugin']]],
   ['def',['def',['../structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c',1,'ParameterRanges']]],
   ['degtorad',['degToRad',['../classNanoVG.html#ae3913bdf0efc2f5504422f558dca2c45',1,'NanoVG']]],
   ['distrho_5fplugin_5fhas_5fui',['DISTRHO_PLUGIN_HAS_UI',['../group__PluginMacros.html#gacf8a1af679c09637ba0bdc5f4f8e37dd',1,'DistrhoInfo.hpp']]],
