@@ -43,6 +43,7 @@
 // -----------------------------------------------------------------------
 // Include NanoVG OpenGL implementation
 
+#define STB_IMAGE_STATIC 1
 #define NANOVG_GL2_IMPLEMENTATION 1
 #include "nanovg/nanovg_gl.h"
 
@@ -158,15 +159,7 @@ void NanoImage::_updateSize()
 // -----------------------------------------------------------------------
 // NanoVG
 
-NanoVG::NanoVG()
-    : fContext(nvgCreateGL(512, 512, NVG_ANTIALIAS)),
-      fInFrame(false),
-      leakDetector_NanoVG()
-{
-    DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
-}
-
-NanoVG::NanoVG(const int textAtlasWidth, const int textAtlasHeight)
+NanoVG::NanoVG(int textAtlasWidth, int textAtlasHeight)
     : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS)),
       fInFrame(false),
       leakDetector_NanoVG()

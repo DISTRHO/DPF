@@ -79,8 +79,8 @@ enum NVGalign {
 	// Vertical align
 	NVG_ALIGN_TOP 		= 1<<3,	// Align text vertically to top.
 	NVG_ALIGN_MIDDLE	= 1<<4,	// Align text vertically to middle.
-	NVG_ALIGN_BOTTOM	= 1<<5,	// Align text vertically to bottom.
-	NVG_ALIGN_BASELINE	= 1<<6, // Default, align text vertically to baseline.
+	NVG_ALIGN_BOTTOM	= 1<<5,	// Align text vertically to bottom. 
+	NVG_ALIGN_BASELINE	= 1<<6, // Default, align text vertically to baseline. 
 };
 
 struct NVGglyphPosition {
@@ -183,7 +183,7 @@ void nvgReset(NVGcontext* ctx);
 // Solid color is simply defined as a color value, different kinds of paints can be created
 // using nvgLinearGradient(), nvgBoxGradient(), nvgRadialGradient() and nvgImagePattern().
 //
-// Current render style can be saved and restored using nvgSave() and nvgRestore().
+// Current render style can be saved and restored using nvgSave() and nvgRestore(). 
 
 // Sets current stroke style to a solid color.
 void nvgStrokeColor(NVGcontext* ctx, NVGcolor color);
@@ -231,7 +231,7 @@ void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
 // Apart from nvgResetTransform(), each transformation function first creates
 // specific transformation matrix and pre-multiplies the current transformation by it.
 //
-// Current coordinate system (transformation) can be saved and restored using nvgSave() and nvgRestore().
+// Current coordinate system (transformation) can be saved and restored using nvgSave() and nvgRestore(). 
 
 // Resets current transform to a identity matrix.
 void nvgResetTransform(NVGcontext* ctx);
@@ -246,16 +246,16 @@ void nvgTransform(NVGcontext* ctx, float a, float b, float c, float d, float e, 
 // Translates current coordinate system.
 void nvgTranslate(NVGcontext* ctx, float x, float y);
 
-// Rotates current coordinate system. Angle is specifid in radians.
+// Rotates current coordinate system. Angle is specified in radians.
 void nvgRotate(NVGcontext* ctx, float angle);
 
-// Skews the current coordinate system along X axis. Angle is specifid in radians.
+// Skews the current coordinate system along X axis. Angle is specified in radians.
 void nvgSkewX(NVGcontext* ctx, float angle);
 
-// Skews the current coordinate system along Y axis. Angle is specifid in radians.
+// Skews the current coordinate system along Y axis. Angle is specified in radians.
 void nvgSkewY(NVGcontext* ctx, float angle);
 
-// Scales the current coordinat system.
+// Scales the current coordinate system.
 void nvgScale(NVGcontext* ctx, float x, float y);
 
 // Stores the top part (a-f) of the current transformation matrix in to the specified buffer.
@@ -267,7 +267,7 @@ void nvgCurrentTransform(NVGcontext* ctx, float* xform);
 
 
 // The following functions can be used to make calculations on 2x3 transformation matrices.
-// A 2x3 matrix is representated as float[6].
+// A 2x3 matrix is represented as float[6].
 
 // Sets the transform to identity matrix.
 void nvgTransformIdentity(float* dst);
@@ -278,13 +278,13 @@ void nvgTransformTranslate(float* dst, float tx, float ty);
 // Sets the transform to scale matrix.
 void nvgTransformScale(float* dst, float sx, float sy);
 
-// Sets the transform to rotate matrix. Angle is specifid in radians.
+// Sets the transform to rotate matrix. Angle is specified in radians.
 void nvgTransformRotate(float* dst, float a);
 
-// Sets the transform to skew-x matrix. Angle is specifid in radians.
+// Sets the transform to skew-x matrix. Angle is specified in radians.
 void nvgTransformSkewX(float* dst, float a);
 
-// Sets the transform to skew-y matrix. Angle is specifid in radians.
+// Sets the transform to skew-y matrix. Angle is specified in radians.
 void nvgTransformSkewY(float* dst, float a);
 
 // Sets the transform to the result of multiplication of two transforms, of A = A*B.
@@ -300,7 +300,7 @@ int nvgTransformInverse(float* dst, const float* src);
 // Transform a point by given transform.
 void nvgTransformPoint(float* dstx, float* dsty, const float* xform, float srcx, float srcy);
 
-// Converts degress to radians and vice versa.
+// Converts degrees to radians and vice versa.
 float nvgDegToRad(float deg);
 float nvgRadToDeg(float rad);
 
@@ -309,23 +309,24 @@ float nvgRadToDeg(float rad);
 //
 // NanoVG allows you to load jpg, png, psd, tga, pic and gif files to be used for rendering.
 // In addition you can upload your own image. The image loading is provided by stb_image.
+// The parameter imageFlags is combination of flags defined in NVGimageFlags.
 
 // Creates image by loading it from the disk from specified file name.
 // Returns handle to the image.
-int nvgCreateImage(NVGcontext* ctx, const char* filename);
+int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 
 // Creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
-int nvgCreateImageMem(NVGcontext* ctx, unsigned char* data, int ndata);
+int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata);
 
 // Creates image from specified image data.
 // Returns handle to the image.
-int nvgCreateImageRGBA(NVGcontext* ctx, int w, int h, const unsigned char* data);
+int nvgCreateImageRGBA(NVGcontext* ctx, int w, int h, int imageFlags, const unsigned char* data);
 
 // Updates image data specified by image handle.
 void nvgUpdateImage(NVGcontext* ctx, int image, const unsigned char* data);
 
-// Returns the domensions of a created image.
+// Returns the dimensions of a created image.
 void nvgImageSize(NVGcontext* ctx, int image, int* w, int* h);
 
 // Deletes created image.
@@ -341,38 +342,45 @@ void nvgDeleteImage(NVGcontext* ctx, int image);
 // of the linear gradient, icol specifies the start color and ocol the end color.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgLinearGradient(NVGcontext* ctx, float sx, float sy, float ex, float ey,
-								  NVGcolor icol, NVGcolor ocol);
+						   NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns a box gradient. Box gradient is a feathered rounded rectangle, it is useful for rendering
-// drop shadows or hilights for boxes. Parameters (x,y) define the top-left corner of the rectangle,
+// drop shadows or highlights for boxes. Parameters (x,y) define the top-left corner of the rectangle,
 // (w,h) define the size of the rectangle, r defines the corner radius, and f feather. Feather defines how blurry
 // the border of the rectangle is. Parameter icol specifies the inner color and ocol the outer color of the gradient.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgBoxGradient(NVGcontext* ctx, float x, float y, float w, float h,
-							   float r, float f, NVGcolor icol, NVGcolor ocol);
+						float r, float f, NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns a radial gradient. Parameters (cx,cy) specify the center, inr and outr specify
 // the inner and outer radius of the gradient, icol specifies the start color and ocol the end color.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float outr,
-								  NVGcolor icol, NVGcolor ocol);
+						   NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
-// (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render,
-// and repeat is combination of NVG_REPEATX and NVG_REPEATY which tells if the image should be repeated across x or y.
+// (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
-								float angle, int image, int repeat);
+						 float angle, int image, float alpha);
 
 //
 // Scissoring
 //
-// Scissoring allows you to clip the rendering into a rectangle. This is useful for varius
-// user interface cases like rendering a text edit or a timeline.
+// Scissoring allows you to clip the rendering into a rectangle. This is useful for various
+// user interface cases like rendering a text edit or a timeline. 
 
-// Sets the current
+// Sets the current scissor rectangle.
 // The scissor rectangle is transformed by the current transform.
 void nvgScissor(NVGcontext* ctx, float x, float y, float w, float h);
+
+// Intersects current scissor rectangle with the specified rectangle.
+// The scissor rectangle is transformed by the current transform.
+// Note: in case the rotation of previous scissor rect differs from
+// the current one, the intersection will be done between the specified
+// rectangle and the previous scissor rectangle transformed in the current
+// transform space. The resulting shape is always rectangle.
+void nvgIntersectScissor(NVGcontext* ctx, float x, float y, float w, float h);
 
 // Reset and disables scissoring.
 void nvgResetScissor(NVGcontext* ctx);
@@ -403,8 +411,11 @@ void nvgMoveTo(NVGcontext* ctx, float x, float y);
 // Adds line segment from the last point in the path to the specified point.
 void nvgLineTo(NVGcontext* ctx, float x, float y);
 
-// Adds bezier segment from last point in the path via two control points to the specified point.
+// Adds cubic bezier segment from last point in the path via two control points to the specified point.
 void nvgBezierTo(NVGcontext* ctx, float c1x, float c1y, float c2x, float c2y, float x, float y);
+
+// Adds quadratic bezier segment from last point in the path via a control point to the specified point.
+void nvgQuadTo(NVGcontext* ctx, float cx, float cy, float x, float y);
 
 // Adds an arc segment at the corner defined by the last path point, and two specified points.
 void nvgArcTo(NVGcontext* ctx, float x1, float y1, float x2, float y2, float radius);
@@ -412,10 +423,12 @@ void nvgArcTo(NVGcontext* ctx, float x1, float y1, float x2, float y2, float rad
 // Closes current sub-path with a line segment.
 void nvgClosePath(NVGcontext* ctx);
 
-// Sets the current sub-path winding, see NVGwinding and NVGsolidity.
+// Sets the current sub-path winding, see NVGwinding and NVGsolidity. 
 void nvgPathWinding(NVGcontext* ctx, int dir);
 
-// Creates new arc shaped sub-path.
+// Creates new circle arc shaped sub-path. The arc center is at cx,cy, the arc radius is r,
+// and the arc is drawn from angle a0 to a1, and swept in direction dir (NVG_CCW, or NVG_CW).
+// Angles are specified in radians.
 void nvgArc(NVGcontext* ctx, float cx, float cy, float r, float a0, float a1, int dir);
 
 // Creates new rectangle shaped sub-path.
@@ -427,7 +440,7 @@ void nvgRoundedRect(NVGcontext* ctx, float x, float y, float w, float h, float r
 // Creates new ellipse shaped sub-path.
 void nvgEllipse(NVGcontext* ctx, float cx, float cy, float rx, float ry);
 
-// Creates new circle shaped sub-path.
+// Creates new circle shaped sub-path. 
 void nvgCircle(NVGcontext* ctx, float cx, float cy, float r);
 
 // Fills the current path with current fill style.
@@ -490,10 +503,10 @@ void nvgFontBlur(NVGcontext* ctx, float blur);
 // Sets the letter spacing of current text style.
 void nvgTextLetterSpacing(NVGcontext* ctx, float spacing);
 
-// Sets the proportional line height of current text style. The line height is specified as multiple of font size.
+// Sets the proportional line height of current text style. The line height is specified as multiple of font size. 
 void nvgTextLineHeight(NVGcontext* ctx, float lineHeight);
 
-// Sets the text align of current text style, see NVGaling for options.
+// Sets the text align of current text style, see NVGalign for options.
 void nvgTextAlign(NVGcontext* ctx, int align);
 
 // Sets the font face based on specified id of current text style.

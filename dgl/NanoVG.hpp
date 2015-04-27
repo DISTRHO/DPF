@@ -180,9 +180,12 @@ public:
         ALIGN_BASELINE = 1 << 6  // Align vertically to baseline (default).
     };
 
-    enum Alpha {
-        STRAIGHT_ALPHA,
-        PREMULTIPLIED_ALPHA
+    enum ImageFlags {
+        IMAGE_GENERATE_MIPMAPS = 1 << 0, // Generate mipmaps during creation of the image.
+        IMAGE_REPEAT_X         = 1 << 1, // Repeat image in X direction.
+        IMAGE_REPEAT_Y         = 1 << 2, // Repeat image in Y direction.
+        IMAGE_FLIP_Y           = 1 << 3, // Flips (inverses) image in Y direction when rendered.
+        IMAGE_PREMULTIPLIED    = 1 << 4, // Image data has premultiplied alpha.
     };
 
     enum LineCap {
@@ -191,12 +194,6 @@ public:
         SQUARE,
         BEVEL,
         MITER
-    };
-
-    enum PatternRepeat {
-        REPEAT_NONE = 0x0, // No repeat
-        REPEAT_X    = 0x1, // Repeat in X direction
-        REPEAT_Y    = 0x2  // Repeat in Y direction
     };
 
     enum Solidity {
@@ -217,7 +214,6 @@ public:
         Color innerColor;
         Color outerColor;
         int   imageId;
-        PatternRepeat repeat;
 
         Paint() noexcept;
 
@@ -246,14 +242,8 @@ public:
 
    /**
       Constructor.
-      Uses 512x512 as default atlas size.
     */
-    NanoVG();
-
-   /**
-      Constructor using custom text atlas size.
-    */
-    NanoVG(const int textAtlasWidth, const int textAtlasHeight);
+    NanoVG(int textAtlasWidth = 512, int textAtlasHeight = 512);
 
    /**
       Destructor.
@@ -273,12 +263,17 @@ public:
       Begin drawing a new frame.
       @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
     */
-    void beginFrame(const uint width, const uint height, const float scaleFactor = 1.0f, const Alpha alpha = PREMULTIPLIED_ALPHA);
+    void beginFrame(const uint width, const uint height, const float scaleFactor = 1.0f);
 
    /**
       Begin drawing a new frame inside a widget.
     */
     void beginFrame(Widget* const widget);
+
+   /**
+      Cancels drawing the current frame.
+    */
+    void cancelFrame();
 
    /**
       Ends drawing flushing remaining render state.
@@ -373,6 +368,12 @@ public:
       Can be one of MITER, ROUND, BEVEL.
     */
     void lineJoin(LineCap join = MITER);
+
+   /**
+      Sets the transparency applied to all rendered shapes.
+      Already transparent paths will get proportionally more transparent as well.
+    */
+    void globalAlpha(float alpha);
 
    /* --------------------------------------------------------------------
     * Transforms */
@@ -539,7 +540,7 @@ public:
       and repeat tells if the image should be repeated across x or y.
       The gradient is transformed by the current transform when it is passed to fillPaint() or strokePaint().
     */
-    Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, PatternRepeat repeat);
+    //Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, PatternRepeat repeat);
 
    /* --------------------------------------------------------------------
     * Scissoring */
