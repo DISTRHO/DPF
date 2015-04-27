@@ -212,8 +212,23 @@ void NanoVG::endFrame()
 {
     DISTRHO_SAFE_ASSERT_RETURN(fInFrame,);
 
+    // Save current blend state
+    GLboolean blendEnabled;
+    GLint blendSrc, blendDst;
+    glGetBooleanv(GL_BLEND, &blendEnabled);
+    glGetIntegerv(GL_BLEND_SRC_ALPHA, &blendSrc);
+    glGetIntegerv(GL_BLEND_DST_ALPHA, &blendDst);
+
     if (fContext != nullptr)
         nvgEndFrame(fContext);
+
+    // Restore blend state
+    if (blendEnabled)
+        glEnable(GL_BLEND);
+    else
+        glDisable(GL_BLEND);
+
+    glBlendFunc(blendSrc, blendDst);
 
     fInFrame = false;
 }
