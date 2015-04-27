@@ -114,7 +114,7 @@ private:
    These can be used as paints for strokes and fills.
 
    @section Scissoring
-   Scissoring allows you to clip the rendering into a rectangle. This is useful for varius
+   Scissoring allows you to clip the rendering into a rectangle. This is useful for various
    user interface cases like rendering a text edit or a timeline.
 
    @section Paths
@@ -496,17 +496,23 @@ public:
    /**
       Creates image by loading it from the disk from specified file name.
     */
-    NanoImage* createImage(const char* filename);
+    NanoImage* createImage(const char* filename, int imageFlags);
+
+    // TODO overloaded?
 
    /**
       Creates image by loading it from the specified chunk of memory.
     */
-    NanoImage* createImageMem(uchar* data, int ndata);
+    NanoImage* createImageMem(uchar* data, int ndata, int imageFlags);
+
+    // TODO overloaded?
 
    /**
       Creates image from specified image data.
     */
-    NanoImage* createImageRGBA(uint w, uint h, const uchar* data);
+    NanoImage* createImageRGBA(uint w, uint h, const uchar* data, int imageFlags);
+
+    // TODO overloaded?
 
    /* --------------------------------------------------------------------
     * Paints */
@@ -536,20 +542,29 @@ public:
 
    /**
       Creates and returns an image pattern. Parameters (ox,oy) specify the left-top location of the image pattern,
-      (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render,
-      and repeat tells if the image should be repeated across x or y.
+      (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
       The gradient is transformed by the current transform when it is passed to fillPaint() or strokePaint().
     */
-    //Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, PatternRepeat repeat);
+    Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, float alpha);
 
    /* --------------------------------------------------------------------
     * Scissoring */
 
    /**
-      Sets the current
+      Sets the current scissor rectangle.
       The scissor rectangle is transformed by the current transform.
     */
     void scissor(float x, float y, float w, float h);
+
+   /**
+      Intersects current scissor rectangle with the specified rectangle.
+      The scissor rectangle is transformed by the current transform.
+      Note: in case the rotation of previous scissor rect differs from
+      the current one, the intersection will be done between the specified
+      rectangle and the previous scissor rectangle transformed in the current
+      transform space. The resulting shape is always rectangle.
+    */
+    void intersectScissor(float x, float y, float w, float h);
 
    /**
       Reset and disables scissoring.
@@ -575,9 +590,14 @@ public:
     void lineTo(float x, float y);
 
    /**
-      Adds bezier segment from last point in the path via two control points to the specified point.
+      Adds cubic bezier segment from last point in the path via two control points to the specified point.
     */
     void bezierTo(float c1x, float c1y, float c2x, float c2y, float x, float y);
+
+   /**
+      Adds quadratic bezier segment from last point in the path via a control point to the specified point.
+    */
+    void quadTo(float cx, float cy, float x, float y);
 
    /**
       Adds an arc segment at the corner defined by the last path point, and two specified points.
@@ -595,7 +615,9 @@ public:
     void pathWinding(Winding dir);
 
    /**
-      Creates new arc shaped sub-path.
+      Creates new circle arc shaped sub-path. The arc center is at cx,cy, the arc radius is r,
+      and the arc is drawn from angle a0 to a1, and swept in direction dir (NVG_CCW or NVG_CW).
+      Angles are specified in radians.
     */
     void arc(float cx, float cy, float r, float a0, float a1, Winding dir);
 
