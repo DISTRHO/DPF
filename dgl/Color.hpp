@@ -25,8 +25,6 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-// TODO: create color from "#333" and "#112233" like strings
-
 /**
    A color made from red, green, blue and alpha floating-point values in [0..1] range.
 */

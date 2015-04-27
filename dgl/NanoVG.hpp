@@ -168,6 +168,33 @@ private:
 class NanoVG
 {
 public:
+    enum CreateFlags {
+       /**
+          Flag indicating if geometry based anti-aliasing is used (may not be needed when using MSAA).
+        */
+        CREATE_ANTIALIAS = 1 << 0,
+
+       /**
+          Flag indicating if strokes should be drawn using stencil buffer. The rendering will be a little
+          slower, but path overlaps (i.e. self-intersecting or sharp turns) will be drawn just once.
+        */
+        CREATE_STENCIL_STROKES = 1 << 1,
+
+       /**
+          Flag indicating that additional debug checks are done.
+        */
+        CREATE_DEBUG = 1 << 2,
+    };
+
+    enum ImageFlags {
+        IMAGE_GENERATE_MIPMAPS = 1 << 0, // Generate mipmaps during creation of the image.
+        IMAGE_REPEAT_X         = 1 << 1, // Repeat image in X direction.
+        IMAGE_REPEAT_Y         = 1 << 2, // Repeat image in Y direction.
+        IMAGE_FLIP_Y           = 1 << 3, // Flips (inverses) image in Y direction when rendered.
+        IMAGE_PREMULTIPLIED    = 1 << 4, // Image data has premultiplied alpha.
+        IMAGE_NODELETE         = 1 << 16,// Do not delete GL texture handle.
+    };
+
     enum Align {
         // Horizontal align
         ALIGN_LEFT     = 1 << 0, // Align horizontally to left (default).
@@ -178,14 +205,6 @@ public:
         ALIGN_MIDDLE   = 1 << 4, // Align vertically to middle.
         ALIGN_BOTTOM   = 1 << 5, // Align vertically to bottom.
         ALIGN_BASELINE = 1 << 6  // Align vertically to baseline (default).
-    };
-
-    enum ImageFlags {
-        IMAGE_GENERATE_MIPMAPS = 1 << 0, // Generate mipmaps during creation of the image.
-        IMAGE_REPEAT_X         = 1 << 1, // Repeat image in X direction.
-        IMAGE_REPEAT_Y         = 1 << 2, // Repeat image in Y direction.
-        IMAGE_FLIP_Y           = 1 << 3, // Flips (inverses) image in Y direction when rendered.
-        IMAGE_PREMULTIPLIED    = 1 << 4, // Image data has premultiplied alpha.
     };
 
     enum LineCap {
@@ -243,7 +262,7 @@ public:
    /**
       Constructor.
     */
-    NanoVG(int textAtlasWidth = 512, int textAtlasHeight = 512);
+    NanoVG(int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.

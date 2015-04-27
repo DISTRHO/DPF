@@ -43,7 +43,7 @@
 // -----------------------------------------------------------------------
 // Include NanoVG OpenGL implementation
 
-#define STB_IMAGE_STATIC 1
+//#define STB_IMAGE_STATIC 1
 #define NANOVG_GL2_IMPLEMENTATION 1
 #include "nanovg/nanovg_gl.h"
 
@@ -80,14 +80,14 @@ START_NAMESPACE_DGL
 // Paint
 
 NanoVG::Paint::Paint() noexcept
-    : radius(0.0f), feather(0.0f), innerColor(), outerColor(), imageId(0), repeat(REPEAT_NONE)
+    : radius(0.0f), feather(0.0f), innerColor(), outerColor(), imageId(0)
 {
     std::memset(xform, 0, sizeof(float)*6);
     std::memset(extent, 0, sizeof(float)*2);
 }
 
 NanoVG::Paint::Paint(const NVGpaint& p) noexcept
-    : radius(p.radius), feather(p.feather), innerColor(p.innerColor), outerColor(p.outerColor), imageId(p.image), repeat(static_cast<PatternRepeat>(p.repeat))
+    : radius(p.radius), feather(p.feather), innerColor(p.innerColor), outerColor(p.outerColor), imageId(p.image)
 {
     std::memcpy(xform, p.xform, sizeof(float)*6);
     std::memcpy(extent, p.extent, sizeof(float)*2);
@@ -101,7 +101,6 @@ NanoVG::Paint::operator NVGpaint() const noexcept
     p.innerColor = innerColor;
     p.outerColor = outerColor;
     p.image = imageId;
-    p.repeat = repeat;
     std::memcpy(p.xform, xform, sizeof(float)*6);
     std::memcpy(p.extent, extent, sizeof(float)*2);
     return p;
@@ -159,8 +158,8 @@ void NanoImage::_updateSize()
 // -----------------------------------------------------------------------
 // NanoVG
 
-NanoVG::NanoVG(int textAtlasWidth, int textAtlasHeight)
-    : fContext(nvgCreateGL(textAtlasWidth, textAtlasHeight, NVG_ANTIALIAS)),
+NanoVG::NanoVG(int flags)
+    : fContext(nvgCreateGL(flags)),
       fInFrame(false),
       leakDetector_NanoVG()
 {
@@ -177,14 +176,14 @@ NanoVG::~NanoVG()
 
 // -----------------------------------------------------------------------
 
-void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor, const Alpha alpha)
+void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor)
 {
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
 
     fInFrame = true;
-    nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor, static_cast<NVGalpha>(alpha));
+    nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor);
 }
 
 void NanoVG::beginFrame(Widget* const widget)
@@ -196,7 +195,17 @@ void NanoVG::beginFrame(Widget* const widget)
     Window& window(widget->getParentWindow());
 
     fInFrame = true;
-    nvgBeginFrame(fContext, static_cast<int>(window.getWidth()), static_cast<int>(window.getHeight()), 1.0f, NVG_PREMULTIPLIED_ALPHA);
+    nvgBeginFrame(fContext, static_cast<int>(window.getWidth()), static_cast<int>(window.getHeight()), 1.0f);
+}
+
+void NanoVG::cancelFrame()
+{
+    DISTRHO_SAFE_ASSERT_RETURN(fInFrame,);
+
+    if (fContext != nullptr)
+        nvgCancelFrame(fContext);
+
+    fInFrame = false;
 }
 
 void NanoVG::endFrame()
@@ -329,6 +338,12 @@ void NanoVG::lineJoin(NanoVG::LineCap join)
         nvgLineJoin(fContext, join);
 }
 
+void NanoVG::globalAlpha(float alpha)
+{
+    if (fContext != nullptr)
+        nvgGlobalAlpha(fContext, alpha);
+}
+
 // -----------------------------------------------------------------------
 // Transforms
 
@@ -452,35 +467,35 @@ float NanoVG::radToDeg(float rad)
 // -----------------------------------------------------------------------
 // Images
 
-NanoImage* NanoVG::createImage(const char* filename)
+NanoImage* NanoVG::createImage(const char* filename, int imageFlags)
 {
     if (fContext == nullptr) return nullptr;
     DISTRHO_SAFE_ASSERT_RETURN(filename != nullptr && filename[0] != '\0', nullptr);
 
-    if (const int imageId = nvgCreateImage(fContext, filename))
+    if (const int imageId = nvgCreateImage(fContext, filename, imageFlags))
         return new NanoImage(fContext, imageId);
 
     return nullptr;
 }
 
-NanoImage* NanoVG::createImageMem(uchar* data, int ndata)
+NanoImage* NanoVG::createImageMem(uchar* data, int ndata, int imageFlags)
 {
     if (fContext == nullptr) return nullptr;
     DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, nullptr);
     DISTRHO_SAFE_ASSERT_RETURN(ndata > 0, nullptr);
 
-    if (const int imageId = nvgCreateImageMem(fContext, data, ndata))
+    if (const int imageId = nvgCreateImageMem(fContext, imageFlags, data, ndata))
         return new NanoImage(fContext, imageId);
 
     return nullptr;
 }
 
-NanoImage* NanoVG::createImageRGBA(uint w, uint h, const uchar* data)
+NanoImage* NanoVG::createImageRGBA(uint w, uint h, const uchar* data, int imageFlags)
 {
     if (fContext == nullptr) return nullptr;
     DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, nullptr);
 
-    if (const int imageId = nvgCreateImageRGBA(fContext, static_cast<int>(w), static_cast<int>(h), data))
+    if (const int imageId = nvgCreateImageRGBA(fContext, static_cast<int>(w), static_cast<int>(h), imageFlags, data))
         return new NanoImage(fContext, imageId);
 
     return nullptr;
@@ -507,12 +522,12 @@ NanoVG::Paint NanoVG::radialGradient(float cx, float cy, float inr, float outr, 
     return nvgRadialGradient(fContext, cx, cy, inr, outr, icol, ocol);
 }
 
-NanoVG::Paint NanoVG::imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, NanoVG::PatternRepeat repeat)
+NanoVG::Paint NanoVG::imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, float alpha)
 {
     if (fContext == nullptr) return Paint();
     DISTRHO_SAFE_ASSERT_RETURN(image != nullptr, Paint());
 
-    return nvgImagePattern(fContext, ox, oy, ex, ey, angle, image->fImageId, repeat);
+    return nvgImagePattern(fContext, ox, oy, ex, ey, angle, image->fImageId, alpha);
 }
 
 // -----------------------------------------------------------------------
@@ -522,6 +537,12 @@ void NanoVG::scissor(float x, float y, float w, float h)
 {
     if (fContext != nullptr)
         nvgScissor(fContext, x, y, w, h);
+}
+
+void NanoVG::intersectScissor(float x, float y, float w, float h)
+{
+    if (fContext != nullptr)
+        nvgIntersectScissor(fContext, x, y, w, h);
 }
 
 void NanoVG::resetScissor()
@@ -555,6 +576,12 @@ void NanoVG::bezierTo(float c1x, float c1y, float c2x, float c2y, float x, float
 {
     if (fContext != nullptr)
         nvgBezierTo(fContext, c1x, c1y, c2x, c2y, x, y);
+}
+
+void NanoVG::quadTo(float cx, float cy, float x, float y)
+{
+    if (fContext != nullptr)
+        nvgQuadTo(fContext, cx, cy, x, y);
 }
 
 void NanoVG::arcTo(float x1, float y1, float x2, float y2, float radius)
