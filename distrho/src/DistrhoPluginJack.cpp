@@ -165,6 +165,8 @@ public:
         jack_set_process_callback(fClient, jackProcessCallback, this);
         jack_on_shutdown(fClient, jackShutdownCallback, this);
 
+        fPlugin.activate();
+
         jack_activate(fClient);
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -186,6 +188,8 @@ public:
             return;
 
         jack_deactivate(fClient);
+
+        fPlugin.deactivate();
 
 #if DISTRHO_PLUGIN_IS_SYNTH
         jack_port_unregister(fClient, fPortMidiIn);
