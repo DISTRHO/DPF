@@ -36,11 +36,45 @@ START_NAMESPACE_DGL
  */
 class NanoImage
 {
+private:
+    struct Handle {
+        NVGcontext* context;
+        int         imageId;
+
+        Handle() noexcept
+            : context(nullptr),
+              imageId(0) {}
+
+        Handle(NVGcontext* c, int id) noexcept
+            : context(c),
+              imageId(id) {}
+    };
+
 public:
+   /**
+      Constructor for an invalid/null image.
+    */
+    NanoImage();
+
+   /**
+      Constructor.
+    */
+    NanoImage(const Handle& handle);
+
    /**
       Destructor.
     */
     ~NanoImage();
+
+   /**
+      Create a new image without recreating the C++ class.
+    */
+    NanoImage& operator=(const Handle& handle);
+
+   /**
+      Wherever the image is valid.
+    */
+    bool isValid() const noexcept;
 
    /**
       Get size.
@@ -57,16 +91,8 @@ public:
     */
     void updateImage(const uchar* const data);
 
-protected:
-   /**
-      Constructors are protected.
-      NanoImages must be created within a NanoVG or NanoWidget class.
-    */
-    NanoImage(NVGcontext* const context, const int imageId) noexcept;
-
 private:
-    NVGcontext* fContext;
-    int fImageId;
+    Handle fHandle;
     Size<uint> fSize;
     friend class NanoVG;
 
@@ -265,6 +291,7 @@ public:
 
    /**
       Constructor.
+      @see CreateFlags
     */
     NanoVG(int flags = CREATE_ANTIALIAS);
 
@@ -519,30 +546,50 @@ public:
    /**
       Creates image by loading it from the disk from specified file name.
     */
-    NanoImage* createImage(const char* filename, int imageFlags);
+    NanoImage::Handle createImageFromFile(const char* filename, ImageFlags imageFlags);
 
-    // TODO overloaded?
+   /**
+      Creates image by loading it from the disk from specified file name.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromFile(const char* filename, int imageFlags);
 
    /**
       Creates image by loading it from the specified chunk of memory.
     */
-    NanoImage* createImageMem(uchar* data, int ndata, int imageFlags);
+    NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, ImageFlags imageFlags);
 
-    // TODO overloaded?
+   /**
+      Creates image by loading it from the specified chunk of memory.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, int imageFlags);
 
    /**
       Creates image from specified image data.
     */
-    NanoImage* createImageRGBA(uint w, uint h, const uchar* data, int imageFlags);
+    NanoImage::Handle createImageFromRGBA(uint w, uint h, const uchar* data, ImageFlags imageFlags);
 
-    // TODO overloaded?
+   /**
+      Creates image from specified image data.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromRGBA(uint w, uint h, const uchar* data, int imageFlags);
 
    /**
       Creates image from an OpenGL texture handle.
     */
-    NanoImage* createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture = false);
+    NanoImage::Handle createImageFromTextureHandle(GLuint textureId, uint w, uint h, ImageFlags imageFlags, bool deleteTexture = false);
 
-    // TODO overloaded?
+   /**
+      Creates image from an OpenGL texture handle.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture = false);
 
    /* --------------------------------------------------------------------
     * Paints */
@@ -575,7 +622,7 @@ public:
       (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
       The gradient is transformed by the current transform when it is passed to fillPaint() or strokePaint().
     */
-    Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage* image, float alpha);
+    Paint imagePattern(float ox, float oy, float ex, float ey, float angle, const NanoImage& image, float alpha);
 
    /* --------------------------------------------------------------------
     * Scissoring */
@@ -688,13 +735,13 @@ public:
       Creates font by loading it from the disk from specified file name.
       Returns handle to the font.
     */
-    FontId createFont(const char* name, const char* filename);
+    FontId createFontFromFile(const char* name, const char* filename);
 
    /**
       Creates font by loading it from the specified memory chunk.
       Returns handle to the font.
     */
-    FontId createFontMem(const char* name, const uchar* data, int ndata, bool freeData);
+    FontId createFontFromMemory(const char* name, const uchar* data, uint dataSize, bool freeData);
 
    /**
       Finds a loaded font of specified name, and returns handle to it, or -1 if the font is not found.
@@ -767,13 +814,13 @@ public:
       if the bounding box of the text should be returned. The bounds value are [xmin,ymin, xmax,ymax]
       Measured values are returned in local coordinate space.
     */
-    void textBoxBounds(float x, float y, float breakRowWidth, const char* string, const char* end, float* bounds);
+    void textBoxBounds(float x, float y, float breakRowWidth, const char* string, const char* end, float bounds[4]);
 
    /**
       Calculates the glyph x positions of the specified text. If end is specified only the sub-string will be used.
       Measured values are returned in local coordinate space.
     */
-    int textGlyphPositions(float x, float y, const char* string, const char* end, GlyphPosition* positions, int maxPositions);
+    int textGlyphPositions(float x, float y, const char* string, const char* end, GlyphPosition& positions, int maxPositions);
 
    /**
       Returns the vertical metrics based on the current text style.
@@ -786,7 +833,7 @@ public:
       White space is stripped at the beginning of the rows, the text is split at word boundaries or when new-line characters are encountered.
       Words longer than the max width are slit at nearest character (i.e. no hyphenation).
     */
-    int textBreakLines(const char* string, const char* end, float breakRowWidth, TextRow* rows, int maxRows);
+    int textBreakLines(const char* string, const char* end, float breakRowWidth, TextRow& rows, int maxRows);
 
 private:
     NVGcontext* const fContext;
@@ -811,10 +858,11 @@ class NanoWidget : public Widget,
 public:
    /**
       Constructor.
+      @see CreateFlags
     */
-    NanoWidget(Window& parent)
+    NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS)
         : Widget(parent),
-          NanoVG(),
+          NanoVG(flags),
           leakDetector_NanoWidget()
     {
         setNeedsScaling(true);
@@ -834,12 +882,9 @@ private:
     */
     void onDisplay() override
     {
-        //glPushAttrib(GL_PIXEL_MODE_BIT|GL_STENCIL_BUFFER_BIT|GL_ENABLE_BIT);
         beginFrame(getWidth(), getHeight());
         onNanoDisplay();
         endFrame();
-        //glPopAttrib();
-        glDisable(GL_CULL_FACE);
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
