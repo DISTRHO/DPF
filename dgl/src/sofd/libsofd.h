@@ -21,13 +21,13 @@
  * THE SOFTWARE.
  */
 
-#ifdef SOFD_HAVE_X11
+#ifndef LIBSOFD_H
+#define LIBSOFD_H
+
 #include <X11/Xlib.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 /* public API */
-
-typedef struct FibInternalsImpl FibInternals;
 
 /** open a file select dialog
  * @param dpy X Display connection
@@ -173,3 +173,5 @@ unsigned int x_fib_recent_count ();
  * @return pointer to static string
  */
 const char *x_fib_recent_at (unsigned int i);
+
+#endif // LIBSOFD_H
