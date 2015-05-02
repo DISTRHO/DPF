@@ -46,6 +46,7 @@
 //#define STB_IMAGE_STATIC 1
 #define NANOVG_GL2_IMPLEMENTATION 1
 #include "nanovg/nanovg_gl.h"
+#include "oui-blendish/blendish.h"
 
 #if defined(NANOVG_GL2)
 # define nvgCreateGL nvgCreateGL2
@@ -127,6 +128,11 @@ NanoImage::~NanoImage()
 Size<uint> NanoImage::getSize() const noexcept
 {
     return fSize;
+}
+
+GLuint NanoImage::getTextureHandle() const
+{
+    return nvglImageHandle(fContext, fImageId);
 }
 
 void NanoImage::updateImage(const uchar* const data)

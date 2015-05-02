@@ -48,6 +48,11 @@ public:
     Size<uint> getSize() const noexcept;
 
    /**
+      Get the OpenGL texture handle.
+    */
+    GLuint getTextureHandle() const;
+
+   /**
       Update image data.
     */
     void updateImage(const uchar* const data);
