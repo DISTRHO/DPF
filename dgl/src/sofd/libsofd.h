@@ -110,8 +110,6 @@ int x_fib_cfg_buttons (int k, int v);
  */
 int x_fib_cfg_filter_callback (int (*cb)(const char*));
 
-#endif /* END X11 specific functions */
-
 /* 'recently used' API. x-platform
  * NOTE: all functions use a static cache and are not reentrant.
  * It is expected that none of these functions are called in
