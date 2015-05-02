@@ -196,8 +196,7 @@ public:
         IMAGE_REPEAT_X         = 1 << 1, // Repeat image in X direction.
         IMAGE_REPEAT_Y         = 1 << 2, // Repeat image in Y direction.
         IMAGE_FLIP_Y           = 1 << 3, // Flips (inverses) image in Y direction when rendered.
-        IMAGE_PREMULTIPLIED    = 1 << 4, // Image data has premultiplied alpha.
-        IMAGE_NODELETE         = 1 << 16,// Do not delete GL texture handle.
+        IMAGE_PREMULTIPLIED    = 1 << 4  // Image data has premultiplied alpha.
     };
 
     enum Align {
@@ -535,6 +534,13 @@ public:
       Creates image from specified image data.
     */
     NanoImage* createImageRGBA(uint w, uint h, const uchar* data, int imageFlags);
+
+    // TODO overloaded?
+
+   /**
+      Creates image from an OpenGL texture handle.
+    */
+    NanoImage* createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture = false);
 
     // TODO overloaded?
 

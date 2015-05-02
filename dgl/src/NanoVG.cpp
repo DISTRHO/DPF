@@ -522,6 +522,20 @@ NanoImage* NanoVG::createImageRGBA(uint w, uint h, const uchar* data, int imageF
     return nullptr;
 }
 
+NanoImage* NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture)
+{
+    if (fContext == nullptr) return nullptr;
+    DISTRHO_SAFE_ASSERT_RETURN(textureId != 0, nullptr);
+
+    if (! deleteTexture)
+        imageFlags |= NVG_IMAGE_NODELETE;
+
+    if (const int imageId = nvglCreateImageFromHandle(fContext, textureId, static_cast<int>(w), static_cast<int>(h), imageFlags))
+        return new NanoImage(fContext, imageId);
+
+    return nullptr;
+}
+
 // -----------------------------------------------------------------------
 // Paints
 
