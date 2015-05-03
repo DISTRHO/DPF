@@ -19,12 +19,15 @@
 
 #include "Geometry.hpp"
 
+#include <vector>
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 // Forward class names
 
 class App;
+class NanoWidget;
 class Window;
 class StandaloneWindow;
 
@@ -171,6 +174,11 @@ public:
       Constructor.
     */
     explicit Widget(Window& parent);
+
+   /**
+      Constructor for a subwidget.
+    */
+    explicit Widget(Widget* groupWidget);
 
    /**
       Destructor.
@@ -369,11 +377,20 @@ private:
     Window& fParent;
     bool    fNeedsFullViewport;
     bool    fNeedsScaling;
+    bool    fSkipDisplay;
     bool    fVisible;
     uint    fId;
     Point<int> fAbsolutePos;
     Size<uint> fSize;
+    std::vector<Widget*> fSubWidgets;
 
+   /** @internal */
+    explicit Widget(Widget* groupWidget, bool addToSubWidgets);
+
+   /** @internal */
+    void _displaySubWidgets();
+
+    friend class NanoWidget;
     friend class Window;
     friend class StandaloneWindow;
 

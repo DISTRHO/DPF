@@ -26,6 +26,7 @@ Widget::Widget(Window& parent)
     : fParent(parent),
       fNeedsFullViewport(false),
       fNeedsScaling(false),
+      fSkipDisplay(false),
       fVisible(true),
       fId(0),
       fAbsolutePos(0, 0),
@@ -35,9 +36,42 @@ Widget::Widget(Window& parent)
     fParent._addWidget(this);
 }
 
+Widget::Widget(Widget* groupWidget)
+    : fParent(groupWidget->getParentWindow()),
+      fNeedsFullViewport(false),
+      fNeedsScaling(false),
+      fSkipDisplay(true),
+      fVisible(true),
+      fId(0),
+      fAbsolutePos(0, 0),
+      fSize(0, 0),
+      leakDetector_Widget()
+{
+    fParent._addWidget(this);
+    groupWidget->fSubWidgets.push_back(this);
+}
+
+Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
+    : fParent(groupWidget->getParentWindow()),
+      fNeedsFullViewport(false),
+      fNeedsScaling(false),
+      fSkipDisplay(true),
+      fVisible(true),
+      fId(0),
+      fAbsolutePos(0, 0),
+      fSize(0, 0),
+      leakDetector_Widget()
+{
+    fParent._addWidget(this);
+
+    if (addToSubWidgets)
+        groupWidget->fSubWidgets.push_back(this);
+}
+
 Widget::~Widget()
 {
     fParent._removeWidget(this);
+    fSubWidgets.clear();
 }
 
 bool Widget::isVisible() const noexcept
@@ -248,6 +282,44 @@ void Widget::setNeedsFullViewport(bool yesNo) noexcept
 void Widget::setNeedsScaling(bool yesNo) noexcept
 {
     fNeedsScaling = yesNo;
+}
+
+void Widget::_displaySubWidgets()
+{
+    for (std::vector<Widget*>::iterator it = fSubWidgets.begin(); it != fSubWidgets.end(); ++it)
+    {
+        Widget* const widget(*it);
+
+        if (widget->fNeedsScaling)
+        {
+            // limit viewport to widget bounds
+            glViewport(widget->getAbsoluteX(),
+                       fParent.getHeight() - static_cast<int>(widget->getHeight()) - widget->getAbsoluteY(),
+                       static_cast<GLsizei>(widget->getWidth()),
+                       static_cast<GLsizei>(widget->getHeight()));
+        }
+        else
+        {
+            // only set viewport pos
+            glViewport(widget->getAbsoluteX(),
+                       /*fParent.getHeight() - static_cast<int>(widget->getHeight())*/ - widget->getAbsoluteY(),
+                       static_cast<GLsizei>(fParent.getWidth()),
+                       static_cast<GLsizei>(fParent.getHeight()));
+
+            // then cut the outer bounds
+            glScissor(widget->getAbsoluteX(),
+                      fParent.getHeight() - static_cast<int>(widget->getHeight()) - widget->getAbsoluteY(),
+                      static_cast<GLsizei>(widget->getWidth()),
+                      static_cast<GLsizei>(widget->getHeight()));
+
+            glEnable(GL_SCISSOR_TEST);
+        }
+
+        widget->onDisplay();
+
+        if (! fNeedsScaling)
+            glDisable(GL_SCISSOR_TEST);
+    }
 }
 
 // -----------------------------------------------------------------------

@@ -296,6 +296,11 @@ public:
     NanoVG(int flags = CREATE_ANTIALIAS);
 
    /**
+      Constructor reusing a NanoVG context, used for subwidgets.
+    */
+    NanoVG(NanoWidget* groupWidget);
+
+   /**
       Destructor.
     */
     virtual ~NanoVG();
@@ -838,6 +843,7 @@ public:
 private:
     NVGcontext* const fContext;
     bool fInFrame;
+    bool fIsSubWidget;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
 };
@@ -860,13 +866,38 @@ public:
       Constructor.
       @see CreateFlags
     */
-    NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS)
+    explicit NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS)
         : Widget(parent),
           NanoVG(flags),
           leakDetector_NanoWidget()
     {
         setNeedsScaling(true);
     }
+
+   /**
+      Constructor for a subwidget.
+    */
+    explicit NanoWidget(Widget* groupWidget, int flags = CREATE_ANTIALIAS)
+        : Widget(groupWidget, true),
+          NanoVG(flags),
+          leakDetector_NanoWidget()
+    {
+        setNeedsScaling(true);
+    }
+
+   /**
+      Constructor for a subwidget.
+    */
+    explicit NanoWidget(NanoWidget* groupWidget)
+        : Widget(groupWidget, false),
+          NanoVG(groupWidget),
+          leakDetector_NanoWidget()
+    {
+        setNeedsScaling(true);
+        groupWidget->fNanoSubWidgets.push_back(this);
+    }
+
+    //  fNanoSubWidgets.clear();
 
 protected:
    /**
@@ -876,6 +907,8 @@ protected:
     virtual void onNanoDisplay() = 0;
 
 private:
+    std::vector<NanoWidget*> fNanoSubWidgets;
+
    /**
       Widget display function.
       Implemented internally to wrap begin/endFrame() automatically.
@@ -884,6 +917,13 @@ private:
     {
         beginFrame(getWidth(), getHeight());
         onNanoDisplay();
+
+        for (std::vector<NanoWidget*>::iterator it = fNanoSubWidgets.begin(); it != fNanoSubWidgets.end(); ++it)
+        {
+            NanoWidget* const widget(*it);
+            widget->onNanoDisplay();
+        }
+
         endFrame();
     }
 

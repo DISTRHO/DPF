@@ -43,8 +43,9 @@
 // -----------------------------------------------------------------------
 // Include NanoVG OpenGL implementation
 
-//#define STB_IMAGE_STATIC 1
-#define NANOVG_GL2_IMPLEMENTATION 1
+//#define STB_IMAGE_STATIC
+#define BLENDISH_IMPLEMENTATION
+#define NANOVG_GL2_IMPLEMENTATION
 #include "nanovg/nanovg_gl.h"
 #include "oui-blendish/blendish.h"
 
@@ -188,16 +189,25 @@ void NanoImage::_updateSize()
 NanoVG::NanoVG(int flags)
     : fContext(nvgCreateGL(flags)),
       fInFrame(false),
+      fIsSubWidget(false),
       leakDetector_NanoVG()
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
+}
+
+NanoVG::NanoVG(NanoWidget* groupWidget)
+    : fContext(groupWidget->fContext),
+      fInFrame(false),
+      fIsSubWidget(true),
+      leakDetector_NanoVG()
+{
 }
 
 NanoVG::~NanoVG()
 {
     DISTRHO_SAFE_ASSERT(! fInFrame);
 
-    if (fContext != nullptr)
+    if (fContext != nullptr && ! fIsSubWidget)
         nvgDeleteGL(fContext);
 }
 

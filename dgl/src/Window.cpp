@@ -659,7 +659,7 @@ struct Window::PrivateData {
         {
             Widget* const widget(*it);
 
-            if (widget->isVisible())
+            if (widget->isVisible() && ! widget->fSkipDisplay)
             {
                 // reset color
                 glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -706,6 +706,8 @@ struct Window::PrivateData {
                     glDisable(GL_SCISSOR_TEST);
                     needsDisableScissor = false;
                 }
+
+                widget->_displaySubWidgets();
             }
         }
 
