@@ -56,7 +56,7 @@ private:
         if (fWidget == nullptr)
         {
             fWidget = widget;
-            fWidget->setNeedsFullViewport(true);
+            fWidget->fNeedsFullViewport = true;
         }
         Window::_addWidget(widget);
     }
@@ -65,7 +65,7 @@ private:
     {
         if (fWidget == widget)
         {
-            fWidget->setNeedsFullViewport(false);
+            fWidget->fNeedsFullViewport = false;
             fWidget = nullptr;
         }
         Window::_removeWidget(widget);

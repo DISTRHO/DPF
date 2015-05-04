@@ -86,7 +86,6 @@ private:
     void setAbsoluteY(int) const noexcept {}
     void setAbsolutePos(int, int) const noexcept {}
     void setAbsolutePos(const Point<int>&) const noexcept {}
-    void setNeedsFullViewport(bool) const noexcept {}
 
     DISTRHO_LEAK_DETECTOR(ImageSlider)
 };

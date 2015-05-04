@@ -871,7 +871,7 @@ public:
           NanoVG(flags),
           leakDetector_NanoWidget()
     {
-        setNeedsScaling(true);
+        fNeedsScaling = true;
     }
 
    /**
@@ -882,7 +882,7 @@ public:
           NanoVG(flags),
           leakDetector_NanoWidget()
     {
-        setNeedsScaling(true);
+        fNeedsScaling = true;
     }
 
    /**
@@ -893,7 +893,7 @@ public:
           NanoVG(groupWidget),
           leakDetector_NanoWidget()
     {
-        setNeedsScaling(true);
+        fNeedsScaling = true;
         groupWidget->fNanoSubWidgets.push_back(this);
     }
 

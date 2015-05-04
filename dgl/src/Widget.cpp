@@ -274,16 +274,6 @@ void Widget::onResize(const ResizeEvent&)
 {
 }
 
-void Widget::setNeedsFullViewport(bool yesNo) noexcept
-{
-    fNeedsFullViewport = yesNo;
-}
-
-void Widget::setNeedsScaling(bool yesNo) noexcept
-{
-    fNeedsScaling = yesNo;
-}
-
 void Widget::_displaySubWidgets()
 {
     for (std::vector<Widget*>::iterator it = fSubWidgets.begin(); it != fSubWidgets.end(); ++it)

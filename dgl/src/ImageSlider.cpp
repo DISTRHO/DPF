@@ -40,7 +40,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fSliderArea(),
       leakDetector_ImageSlider()
 {
-    Widget::setNeedsFullViewport(true);
+    fNeedsFullViewport = true;
 }
 
 ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
@@ -61,7 +61,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fSliderArea(),
       leakDetector_ImageSlider()
 {
-    Widget::setNeedsFullViewport(true);
+    fNeedsFullViewport = true;
 }
 
 ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
@@ -82,7 +82,7 @@ ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
       fSliderArea(imageSlider.fSliderArea),
       leakDetector_ImageSlider()
 {
-    Widget::setNeedsFullViewport(true);
+    fNeedsFullViewport = true;
 }
 
 ImageSlider& ImageSlider::operator=(const ImageSlider& imageSlider) noexcept

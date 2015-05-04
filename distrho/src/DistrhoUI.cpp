@@ -32,7 +32,7 @@ UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
       pData(new PrivateData())
 {
-    UIWidget::setNeedsFullViewport(true);
+    fNeedsFullViewport = true;
 
     if (width > 0 && height > 0)
         setSize(width, height);
