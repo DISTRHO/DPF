@@ -19,11 +19,7 @@ OBJS = \
 	src/Color.cpp.o \
 	src/Geometry.cpp.o \
 	src/Image.cpp.o \
-	src/ImageAboutWindow.cpp.o \
-	src/ImageButton.cpp.o \
-	src/ImageKnob.cpp.o \
-	src/ImageSlider.cpp.o \
-	src/ImageSwitch.cpp.o \
+	src/ImageWidgets.cpp.o \
 	src/NanoVG.cpp.o \
 	src/Widget.cpp.o
 
