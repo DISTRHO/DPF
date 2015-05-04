@@ -93,24 +93,42 @@ ImageButton::ImageButton(Window& parent, const Image& image) noexcept
       fImageNormal(image),
       fImageHover(image),
       fImageDown(image),
-      fCurImage(&fImageNormal),
+      fCurImage(fImageNormal),
       fCurButton(-1),
       fCallback(nullptr),
-      leakDetector_ImageButton() {}
+      leakDetector_ImageButton()
+{
+    setSize(fCurImage.getSize());
+}
+
+ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept
+    : Widget(parent),
+      fImageNormal(imageNormal),
+      fImageHover(imageNormal),
+      fImageDown(imageDown),
+      fCurImage(fImageNormal),
+      fCurButton(-1),
+      fCallback(nullptr),
+      leakDetector_ImageButton()
+{
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
+
+    setSize(fCurImage.getSize());
+}
 
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
     : Widget(parent),
       fImageNormal(imageNormal),
       fImageHover(imageHover),
       fImageDown(imageDown),
-      fCurImage(&fImageNormal),
+      fCurImage(fImageNormal),
       fCurButton(-1),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
-    setSize(fCurImage->getSize());
+    setSize(fCurImage.getSize());
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
@@ -118,55 +136,42 @@ ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
       fImageNormal(image),
       fImageHover(image),
       fImageDown(image),
-      fCurImage(&fImageNormal),
+      fCurImage(fImageNormal),
       fCurButton(-1),
       fCallback(nullptr),
-      leakDetector_ImageButton() {}
+      leakDetector_ImageButton()
+{
+    setSize(fCurImage.getSize());
+}
+
+ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept
+    : Widget(widget->getParentWindow()),
+      fImageNormal(imageNormal),
+      fImageHover(imageNormal),
+      fImageDown(imageDown),
+      fCurImage(fImageNormal),
+      fCurButton(-1),
+      fCallback(nullptr),
+      leakDetector_ImageButton()
+{
+    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
+
+    setSize(fCurImage.getSize());
+}
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
     : Widget(widget->getParentWindow()),
       fImageNormal(imageNormal),
       fImageHover(imageHover),
       fImageDown(imageDown),
-      fCurImage(&fImageNormal),
+      fCurImage(fImageNormal),
       fCurButton(-1),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
 
-    setSize(fCurImage->getSize());
-}
-
-ImageButton::ImageButton(const ImageButton& imageButton) noexcept
-    : Widget(imageButton.getParentWindow()),
-      fImageNormal(imageButton.fImageNormal),
-      fImageHover(imageButton.fImageHover),
-      fImageDown(imageButton.fImageDown),
-      fCurImage(&fImageNormal),
-      fCurButton(-1),
-      fCallback(imageButton.fCallback),
-      leakDetector_ImageButton()
-{
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
-
-    setSize(fCurImage->getSize());
-}
-
-ImageButton& ImageButton::operator=(const ImageButton& imageButton) noexcept
-{
-    fImageNormal = imageButton.fImageNormal;
-    fImageHover  = imageButton.fImageHover;
-    fImageDown   = imageButton.fImageDown;
-    fCurImage    = &fImageNormal;
-    fCurButton   = -1;
-    fCallback    = imageButton.fCallback;
-
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
-
-    setSize(fCurImage->getSize());
-
-    return *this;
+    setSize(fCurImage.getSize());
 }
 
 void ImageButton::setCallback(Callback* callback) noexcept
@@ -176,16 +181,16 @@ void ImageButton::setCallback(Callback* callback) noexcept
 
 void ImageButton::onDisplay()
 {
-    fCurImage->draw();
+    fCurImage.draw();
 }
 
 bool ImageButton::onMouse(const MouseEvent& ev)
 {
     if (fCurButton != -1 && ! ev.press)
     {
-        if (fCurImage != &fImageNormal)
+        if (&fCurImage != &fImageNormal)
         {
-            fCurImage = &fImageNormal;
+            fCurImage = fImageNormal;
             repaint();
         }
 
@@ -213,9 +218,9 @@ bool ImageButton::onMouse(const MouseEvent& ev)
 
     if (ev.press && contains(ev.pos))
     {
-        if (fCurImage != &fImageDown)
+        if (&fCurImage != &fImageDown)
         {
-            fCurImage = &fImageDown;
+            fCurImage = fImageDown;
             repaint();
         }
 
@@ -233,9 +238,9 @@ bool ImageButton::onMotion(const MotionEvent& ev)
 
     if (contains(ev.pos))
     {
-        if (fCurImage != &fImageHover)
+        if (&fCurImage != &fImageHover)
         {
-            fCurImage = &fImageHover;
+            fCurImage = fImageHover;
             repaint();
         }
 
@@ -243,9 +248,9 @@ bool ImageButton::onMotion(const MotionEvent& ev)
     }
     else
     {
-        if (fCurImage != &fImageNormal)
+        if (&fCurImage != &fImageNormal)
         {
-            fCurImage = &fImageNormal;
+            fCurImage = fImageNormal;
             repaint();
         }
 

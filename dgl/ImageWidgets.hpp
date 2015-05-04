@@ -59,11 +59,12 @@ public:
     };
 
     explicit ImageButton(Window& parent, const Image& image) noexcept;
+    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept;
     explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+
     explicit ImageButton(Widget* widget, const Image& image) noexcept;
+    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept;
     explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
-    explicit ImageButton(const ImageButton& imageButton) noexcept;
-    ImageButton& operator=(const ImageButton& imageButton) noexcept;
 
     void setCallback(Callback* callback) noexcept;
 
@@ -76,7 +77,7 @@ private:
     Image  fImageNormal;
     Image  fImageHover;
     Image  fImageDown;
-    Image* fCurImage;
+    Image& fCurImage;
     int    fCurButton;
 
     Callback* fCallback;
