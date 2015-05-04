@@ -83,7 +83,7 @@ struct Color {
 
    /**
       Check if this color matches another.
-      @note: Comparison is forced within 8-bit color values.
+      @note Comparison is forced within 8-bit color values.
     */
     bool isEqual(const Color& color, bool withAlpha = true) noexcept;
     bool isNotEqual(const Color& color, bool withAlpha = true) noexcept;

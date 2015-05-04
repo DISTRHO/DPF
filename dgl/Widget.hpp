@@ -360,16 +360,16 @@ protected:
    /**
       Tell the parent window this widget needs the full viewport.
       When enabled, the local widget coordinates are ignored.
-      @note: This is an internal function;
-             You do not need it under normal circumstances.
+      @note This is an internal function;
+            You do not need it under normal circumstances.
     */
     void setNeedsFullViewport(bool yesNo) noexcept;
 
    /**
       Tell the parent window this widget needs scaling.
       When enabled, the widget viewport is scaled to match width and height.
-      @note: This is an internal function;
-             You do not need it under normal circumstances.
+      @note This is an internal function;
+            You do not need it under normal circumstances.
     */
     void setNeedsScaling(bool yesNo) noexcept;
 
