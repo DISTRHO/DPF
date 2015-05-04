@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../ImageSwitch.hpp"
+#include "../ImageWidgets.hpp"
 
 START_NAMESPACE_DGL
 

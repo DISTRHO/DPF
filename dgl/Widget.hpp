@@ -27,6 +27,7 @@ START_NAMESPACE_DGL
 // Forward class names
 
 class App;
+class ImageSlider;
 class NanoWidget;
 class Window;
 class StandaloneWindow;

@@ -17,51 +17,7 @@
 #ifndef DGL_IMAGE_BUTTON_HPP_INCLUDED
 #define DGL_IMAGE_BUTTON_HPP_INCLUDED
 
-#include "Image.hpp"
-#include "Widget.hpp"
-
-START_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-
-class ImageButton : public Widget
-{
-public:
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
-    };
-
-    explicit ImageButton(Window& parent, const Image& image) noexcept;
-    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
-    explicit ImageButton(Widget* widget, const Image& image) noexcept;
-    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
-    explicit ImageButton(const ImageButton& imageButton) noexcept;
-    ImageButton& operator=(const ImageButton& imageButton) noexcept;
-
-    void setCallback(Callback* callback) noexcept;
-
-protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-     bool onMotion(const MotionEvent&) override;
-
-private:
-    Image  fImageNormal;
-    Image  fImageHover;
-    Image  fImageDown;
-    Image* fCurImage;
-    int    fCurButton;
-
-    Callback* fCallback;
-
-    DISTRHO_LEAK_DETECTOR(ImageButton)
-};
-
-// -----------------------------------------------------------------------
-
-END_NAMESPACE_DGL
+#warning This is a deprecated file, please include ImageWidgets.hpp instead.
+#include "ImageWidgets.hpp"
 
 #endif // DGL_IMAGE_BUTTON_HPP_INCLUDED

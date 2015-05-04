@@ -14,7 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../ImageKnob.hpp"
+#include "../ImageWidgets.hpp"
 
 #include <cmath>
 
