@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoUIInternal.hpp"
+#include "src/WidgetPrivateData.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -32,7 +33,7 @@ UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
       pData(new PrivateData())
 {
-    fNeedsFullViewport = true;
+    ((UIWidget*)this)->pData->needsFullViewport = false;
 
     if (width > 0 && height > 0)
         setSize(width, height);
