@@ -203,12 +203,13 @@ bool ImageButton::onMouse(const MouseEvent& ev)
         DISTRHO_SAFE_ASSERT(fCurState == 2);
 
         // release button
+        const int button = fCurButton;
         fCurButton = -1;
 
         // cursor was moved outside the button bounds, ignore click
         if (! contains(ev.pos))
         {
-            fCurState  = 0;
+            fCurState = 0;
             repaint();
             return true;
         }
@@ -218,7 +219,7 @@ bool ImageButton::onMouse(const MouseEvent& ev)
         repaint();
 
         if (fCallback != nullptr)
-            fCallback->imageButtonClicked(this, fCurButton);
+            fCallback->imageButtonClicked(this, button);
 
         return true;
     }

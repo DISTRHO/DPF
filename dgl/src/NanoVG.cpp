@@ -44,10 +44,8 @@
 // Include NanoVG OpenGL implementation
 
 //#define STB_IMAGE_STATIC
-#define BLENDISH_IMPLEMENTATION
 #define NANOVG_GL2_IMPLEMENTATION
 #include "nanovg/nanovg_gl.h"
-#include "oui-blendish/blendish.h"
 
 #if defined(NANOVG_GL2)
 # define nvgCreateGL nvgCreateGL2

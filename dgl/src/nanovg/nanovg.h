@@ -317,7 +317,7 @@ int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 
 // Creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
-int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata);
+int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, const unsigned char* data, int ndata);
 
 // Creates image from specified image data.
 // Returns handle to the image.
@@ -489,7 +489,7 @@ int nvgCreateFont(NVGcontext* ctx, const char* name, const char* filename);
 
 // Creates image by loading it from the specified memory chunk.
 // Returns handle to the font.
-int nvgCreateFontMem(NVGcontext* ctx, const char* name, unsigned char* data, int ndata, int freeData);
+int nvgCreateFontMem(NVGcontext* ctx, const char* name, const unsigned char* data, int ndata, int freeData);
 
 // Finds a loaded font of specified name, and returns handle to it, or -1 if the font is not found.
 int nvgFindFont(NVGcontext* ctx, const char* name);

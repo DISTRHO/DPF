@@ -97,7 +97,7 @@ int fonsResetAtlas(FONScontext* stash, int width, int height);
 
 // Add fonts
 int fonsAddFont(FONScontext* s, const char* name, const char* path);
-int fonsAddFontMem(FONScontext* s, const char* name, unsigned char* data, int ndata, int freeData);
+int fonsAddFontMem(FONScontext* s, const char* name, const unsigned char* data, int ndata, int freeData);
 int fonsGetFontByName(FONScontext* s, const char* name);
 
 // State handling
@@ -161,7 +161,7 @@ int fons__tt_init(FONScontext *context)
 	return ftError == 0;
 }
 
-int fons__tt_loadFont(FONScontext *context, FONSttFontImpl *font, unsigned char *data, int dataSize)
+int fons__tt_loadFont(FONScontext *context, FONSttFontImpl *font, const unsigned char *data, int dataSize)
 {
 	FT_Error ftError;
 	FONS_NOTUSED(context);
@@ -256,7 +256,7 @@ int fons__tt_init(FONScontext *context)
 	return 1;
 }
 
-int fons__tt_loadFont(FONScontext *context, FONSttFontImpl *font, unsigned char *data, int dataSize)
+int fons__tt_loadFont(FONScontext *context, FONSttFontImpl *font, const unsigned char *data, int dataSize)
 {
 	int stbError;
 	FONS_NOTUSED(dataSize);
@@ -361,7 +361,7 @@ struct FONSfont
 {
 	FONSttFontImpl font;
 	char name[64];
-	unsigned char* data;
+	const unsigned char* data;
 	int dataSize;
 	unsigned char freeData;
 	float ascender;
@@ -818,7 +818,7 @@ static void fons__freeFont(FONSfont* font)
 {
 	if (font == NULL) return;
 	if (font->glyphs) free(font->glyphs);
-	if (font->freeData && font->data) free(font->data);
+	if (font->freeData && font->data) free((void*)font->data);
 	free(font);
 }
 
@@ -878,7 +878,7 @@ error:
 	FONS_NOTUSED(ignore);
 }
 
-int fonsAddFontMem(FONScontext* stash, const char* name, unsigned char* data, int dataSize, int freeData)
+int fonsAddFontMem(FONScontext* stash, const char* name, const unsigned char* data, int dataSize, int freeData)
 {
 	int i, ascent, descent, fh, lineGap;
 	FONSfont* font;

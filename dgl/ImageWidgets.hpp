@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_WIDGETS_HPP_INCLUDED
-#define DGL_WIDGETS_HPP_INCLUDED
+#ifndef DGL_IMAGE_WIDGETS_HPP_INCLUDED
+#define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
 #include "Image.hpp"
 #include "Widget.hpp"
@@ -74,11 +74,11 @@ protected:
      bool onMotion(const MotionEvent&) override;
 
 private:
-    Image  fImageNormal;
-    Image  fImageHover;
-    Image  fImageDown;
-    int    fCurButton;
-    int    fCurState;
+    Image fImageNormal;
+    Image fImageHover;
+    Image fImageDown;
+    int   fCurButton;
+    int   fCurState;
 
     Callback* fCallback;
 
@@ -270,4 +270,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif // DGL_WIDGETS_HPP_INCLUDED
+#endif // DGL_IMAGE_WIDGETS_HPP_INCLUDED
