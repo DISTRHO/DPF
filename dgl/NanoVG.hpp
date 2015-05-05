@@ -317,7 +317,6 @@ public:
 
    /**
       Begin drawing a new frame.
-      @param withAlha Controls if drawing the shapes to the render target should be done using straight or pre-multiplied alpha.
     */
     void beginFrame(const uint width, const uint height, const float scaleFactor = 1.0f);
 
