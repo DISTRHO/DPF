@@ -355,7 +355,23 @@ struct Window::PrivateData {
         fModal.enabled = false;
 
         if (fModal.parent != nullptr)
+        {
             fModal.parent->fModal.childFocus = nullptr;
+
+            // the mouse position probably changed since the modal appeared,
+            // so send a mouse motion event to the modal's parent window
+#if defined(DISTRHO_OS_WINDOWS)
+            // TODO
+#elif defined(DISTRHO_OS_MAC)
+            // TODO
+#elif defined(DISTRHO_OS_LINUX)
+            int i, wx, wy;
+            uint u;
+            ::Window w;
+            if (XQueryPointer(fModal.parent->xDisplay, fModal.parent->xWindow, &w, &w, &i, &i, &wx, &wy, &u) == True)
+                fModal.parent->onPuglMotion(wx, wy);
+#endif
+        }
 
         DBG("Ok\n");
     }

@@ -21,10 +21,14 @@
 
 #include <vector>
 
-START_NAMESPACE_DGL
-
 // -----------------------------------------------------------------------
 // Forward class names
+
+START_NAMESPACE_DISTRHO
+class UI;
+END_NAMESPACE_DISTRHO
+
+START_NAMESPACE_DGL
 
 class App;
 class ImageSlider;
@@ -379,6 +383,7 @@ private:
     friend class NanoWidget;
     friend class Window;
     friend class StandaloneWindow;
+    friend class DISTRHO_NAMESPACE::UI;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Widget)
 };

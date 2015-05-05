@@ -93,12 +93,12 @@ ImageButton::ImageButton(Window& parent, const Image& image) noexcept
       fImageNormal(image),
       fImageHover(image),
       fImageDown(image),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    setSize(fCurImage.getSize());
+    setSize(image.getSize());
 }
 
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept
@@ -106,14 +106,14 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageHover(imageNormal),
       fImageDown(imageDown),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
 
-    setSize(fCurImage.getSize());
+    setSize(imageNormal.getSize());
 }
 
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
@@ -121,14 +121,14 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageHover(imageHover),
       fImageDown(imageDown),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
-    setSize(fCurImage.getSize());
+    setSize(imageNormal.getSize());
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
@@ -136,12 +136,12 @@ ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
       fImageNormal(image),
       fImageHover(image),
       fImageDown(image),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    setSize(fCurImage.getSize());
+    setSize(image.getSize());
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept
@@ -149,14 +149,14 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageHover(imageNormal),
       fImageDown(imageDown),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
 
-    setSize(fCurImage.getSize());
+    setSize(imageNormal.getSize());
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
@@ -164,14 +164,14 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageHover(imageHover),
       fImageDown(imageDown),
-      fCurImage(fImageNormal),
       fCurButton(-1),
+      fCurState(0),
       fCallback(nullptr),
       leakDetector_ImageButton()
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageHover.getSize() && fImageHover.getSize() == fImageDown.getSize());
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
-    setSize(fCurImage.getSize());
+    setSize(imageNormal.getSize());
 }
 
 void ImageButton::setCallback(Callback* callback) noexcept
@@ -181,50 +181,54 @@ void ImageButton::setCallback(Callback* callback) noexcept
 
 void ImageButton::onDisplay()
 {
-    fCurImage.draw();
+    switch (fCurState)
+    {
+    case 2:
+        fImageDown.draw();
+        break;
+    case 1:
+        fImageHover.draw();
+        break;
+    default:
+        fImageNormal.draw();
+        break;
+    }
 }
 
 bool ImageButton::onMouse(const MouseEvent& ev)
 {
+    // button was released, handle it now
     if (fCurButton != -1 && ! ev.press)
     {
-        if (&fCurImage != &fImageNormal)
-        {
-            fCurImage = fImageNormal;
-            repaint();
-        }
+        DISTRHO_SAFE_ASSERT(fCurState == 2);
 
+        // release button
+        fCurButton = -1;
+
+        // cursor was moved outside the button bounds, ignore click
         if (! contains(ev.pos))
         {
-            fCurButton = -1;
-            return false;
+            fCurState  = 0;
+            repaint();
+            return true;
         }
+
+        // still on bounds, register click
+        fCurState = 1;
+        repaint();
 
         if (fCallback != nullptr)
             fCallback->imageButtonClicked(this, fCurButton);
 
-#if 0
-        if (contains(ev.pos))
-        {
-           fCurImage = &fImageHover;
-           repaint();
-        }
-#endif
-
-        fCurButton = -1;
-
         return true;
     }
 
+    // button was pressed, wait for release
     if (ev.press && contains(ev.pos))
     {
-        if (&fCurImage != &fImageDown)
-        {
-            fCurImage = fImageDown;
-            repaint();
-        }
-
         fCurButton = ev.button;
+        fCurState  = 2;
+        repaint();
         return true;
     }
 
@@ -233,29 +237,32 @@ bool ImageButton::onMouse(const MouseEvent& ev)
 
 bool ImageButton::onMotion(const MotionEvent& ev)
 {
+    // keep pressed
     if (fCurButton != -1)
         return true;
 
     if (contains(ev.pos))
     {
-        if (&fCurImage != &fImageHover)
+        // check if entering hover
+        if (fCurState == 0)
         {
-            fCurImage = fImageHover;
+            fCurState = 1;
             repaint();
+            return true;
         }
-
-        return true;
     }
     else
     {
-        if (&fCurImage != &fImageNormal)
+        // check if exiting hover
+        if (fCurState == 1)
         {
-            fCurImage = fImageNormal;
+            fCurState = 0;
             repaint();
+            return true;
         }
-
-        return false;
     }
+
+    return false;
 }
 
 // -----------------------------------------------------------------------

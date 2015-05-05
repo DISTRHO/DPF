@@ -77,8 +77,8 @@ private:
     Image  fImageNormal;
     Image  fImageHover;
     Image  fImageDown;
-    Image& fCurImage;
     int    fCurButton;
+    int    fCurState;
 
     Callback* fCallback;
 
