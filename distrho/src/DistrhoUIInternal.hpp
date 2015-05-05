@@ -18,10 +18,10 @@
 #define DISTRHO_UI_INTERNAL_HPP_INCLUDED
 
 #include "../DistrhoUI.hpp"
-#include "../../dgl/App.hpp"
+#include "../../dgl/Application.hpp"
 #include "../../dgl/Window.hpp"
 
-using DGL::App;
+using DGL::Application;
 using DGL::IdleCallback;
 using DGL::Window;
 
@@ -142,7 +142,7 @@ UI* createUiWrapper(void* const dspPtr, Window* const window)
 class UIExporterWindow : public Window
 {
 public:
-    UIExporterWindow(App& app, const intptr_t winId, void* const dspPtr)
+    UIExporterWindow(Application& app, const intptr_t winId, void* const dspPtr)
         : Window(app, winId),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
@@ -371,7 +371,7 @@ private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
-    App glApp;
+    Application      glApp;
     UIExporterWindow glWindow;
 
     // prevent recursion
