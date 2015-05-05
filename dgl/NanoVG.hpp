@@ -26,6 +26,11 @@ struct NVGpaint;
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// Forward class names
+
+class NanoVG;
+
+// -----------------------------------------------------------------------
 // NanoImage
 
 /**
@@ -72,7 +77,7 @@ public:
     NanoImage& operator=(const Handle& handle);
 
    /**
-      Wherever the image is valid.
+      Wherever this image is valid.
     */
     bool isValid() const noexcept;
 
@@ -86,16 +91,12 @@ public:
     */
     GLuint getTextureHandle() const;
 
-   /**
-      Update image data.
-    */
-    void updateImage(const uchar* const data);
-
 private:
     Handle fHandle;
     Size<uint> fSize;
     friend class NanoVG;
 
+   /** @internal */
     void _updateSize();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoImage)

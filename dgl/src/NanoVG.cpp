@@ -77,44 +77,12 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
-// Paint
-
-NanoVG::Paint::Paint() noexcept
-    : radius(0.0f), feather(0.0f), innerColor(), outerColor(), imageId(0)
-{
-    std::memset(xform, 0, sizeof(float)*6);
-    std::memset(extent, 0, sizeof(float)*2);
-}
-
-NanoVG::Paint::Paint(const NVGpaint& p) noexcept
-    : radius(p.radius), feather(p.feather), innerColor(p.innerColor), outerColor(p.outerColor), imageId(p.image)
-{
-    std::memcpy(xform, p.xform, sizeof(float)*6);
-    std::memcpy(extent, p.extent, sizeof(float)*2);
-}
-
-NanoVG::Paint::operator NVGpaint() const noexcept
-{
-    NVGpaint p;
-    p.radius = radius;
-    p.feather = feather;
-    p.innerColor = innerColor;
-    p.outerColor = outerColor;
-    p.image = imageId;
-    std::memcpy(p.xform, xform, sizeof(float)*6);
-    std::memcpy(p.extent, extent, sizeof(float)*2);
-    return p;
-}
-
-// -----------------------------------------------------------------------
 // NanoImage
 
 NanoImage::NanoImage()
     : fHandle(),
       fSize(),
-      leakDetector_NanoImage()
-{
-}
+      leakDetector_NanoImage() {}
 
 NanoImage::NanoImage(const Handle& handle)
     : fHandle(handle),
@@ -160,15 +128,6 @@ GLuint NanoImage::getTextureHandle() const
     return nvglImageHandle(fHandle.context, fHandle.imageId);
 }
 
-void NanoImage::updateImage(const uchar* const data)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
-    DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0,);
-
-    nvgUpdateImage(fHandle.context, fHandle.imageId, data);
-    _updateSize();
-}
-
 void NanoImage::_updateSize()
 {
     int w=0, h=0;
@@ -179,6 +138,36 @@ void NanoImage::_updateSize()
     if (h < 0) h = 0;
 
     fSize.setSize(static_cast<uint>(w), static_cast<uint>(h));
+}
+
+// -----------------------------------------------------------------------
+// Paint
+
+NanoVG::Paint::Paint() noexcept
+    : radius(0.0f), feather(0.0f), innerColor(), outerColor(), imageId(0)
+{
+    std::memset(xform, 0, sizeof(float)*6);
+    std::memset(extent, 0, sizeof(float)*2);
+}
+
+NanoVG::Paint::Paint(const NVGpaint& p) noexcept
+    : radius(p.radius), feather(p.feather), innerColor(p.innerColor), outerColor(p.outerColor), imageId(p.image)
+{
+    std::memcpy(xform, p.xform, sizeof(float)*6);
+    std::memcpy(extent, p.extent, sizeof(float)*2);
+}
+
+NanoVG::Paint::operator NVGpaint() const noexcept
+{
+    NVGpaint p;
+    p.radius = radius;
+    p.feather = feather;
+    p.innerColor = innerColor;
+    p.outerColor = outerColor;
+    p.image = imageId;
+    std::memcpy(p.xform, xform, sizeof(float)*6);
+    std::memcpy(p.extent, extent, sizeof(float)*2);
+    return p;
 }
 
 // -----------------------------------------------------------------------

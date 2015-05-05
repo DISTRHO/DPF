@@ -38,7 +38,7 @@ struct Color {
     };
 
    /**
-      Create black color.
+      Create solid black color.
     */
     Color() noexcept;
 
