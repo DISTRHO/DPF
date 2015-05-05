@@ -60,7 +60,7 @@ void ImageAboutWindow::onDisplay()
 
 bool ImageAboutWindow::onKeyboard(const KeyboardEvent& ev)
 {
-    if (ev.press && ev.key == CHAR_ESCAPE)
+    if (ev.press && ev.key == kCharEscape)
     {
         Window::close();
         return true;
@@ -591,7 +591,7 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
         if (! contains(ev.pos))
             return false;
 
-        if ((ev.mod & MODIFIER_SHIFT) != 0 && fUsingDefault)
+        if ((ev.mod & kModifierShift) != 0 && fUsingDefault)
         {
             setValue(fValueDef, true);
             fValueTmp = fValue;
@@ -631,7 +631,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     {
         if (const int movX = ev.pos.getX() - fLastX)
         {
-            d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
+            d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
             value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movX));
             doVal = true;
         }
@@ -640,7 +640,7 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     {
         if (const int movY = fLastY - ev.pos.getY())
         {
-            d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
+            d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
             value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movY));
             doVal = true;
         }
@@ -680,7 +680,7 @@ bool ImageKnob::onScroll(const ScrollEvent& ev)
     if (! contains(ev.pos))
         return false;
 
-    const float d     = (ev.mod & MODIFIER_CTRL) ? 2000.0f : 200.0f;
+    const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
     float       value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
 
     if (fUsingLog)
@@ -733,6 +733,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fValueTmp(fValue),
       fDragging(false),
       fInverted(false),
+      fValueIsSet(false),
       fStartedX(0),
       fStartedY(0),
       fCallback(nullptr),
@@ -754,6 +755,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fValueTmp(fValue),
       fDragging(false),
       fInverted(false),
+      fValueIsSet(false),
       fStartedX(0),
       fStartedY(0),
       fCallback(nullptr),
@@ -765,50 +767,32 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
     fNeedsFullViewport = true;
 }
 
-ImageSlider::ImageSlider(const ImageSlider& imageSlider) noexcept
-    : Widget(imageSlider.getParentWindow()),
-      fImage(imageSlider.fImage),
-      fMinimum(imageSlider.fMinimum),
-      fMaximum(imageSlider.fMaximum),
-      fStep(imageSlider.fStep),
-      fValue(imageSlider.fValue),
-      fValueTmp(fValue),
-      fDragging(false),
-      fInverted(imageSlider.fInverted),
-      fStartedX(0),
-      fStartedY(0),
-      fCallback(imageSlider.fCallback),
-      fStartPos(imageSlider.fStartPos),
-      fEndPos(imageSlider.fEndPos),
-      fSliderArea(imageSlider.fSliderArea),
-      leakDetector_ImageSlider()
-{
-    fNeedsFullViewport = true;
-}
-
-ImageSlider& ImageSlider::operator=(const ImageSlider& imageSlider) noexcept
-{
-    fImage    = imageSlider.fImage;
-    fMinimum  = imageSlider.fMinimum;
-    fMaximum  = imageSlider.fMaximum;
-    fStep     = imageSlider.fStep;
-    fValue    = imageSlider.fValue;
-    fValueTmp = fValue;
-    fDragging = false;
-    fInverted = imageSlider.fInverted;
-    fStartedX = 0;
-    fStartedY = 0;
-    fCallback = imageSlider.fCallback;
-    fStartPos = imageSlider.fStartPos;
-    fEndPos   = imageSlider.fEndPos;
-    fSliderArea = imageSlider.fSliderArea;
-
-    return *this;
-}
-
 float ImageSlider::getValue() const noexcept
 {
     return fValue;
+}
+
+void ImageSlider::setValue(float value, bool sendCallback) noexcept
+{
+    if (! fValueIsSet)
+        fValueIsSet = true;
+
+    if (d_isEqual(fValue, value))
+        return;
+
+    fValue = value;
+
+    if (d_isZero(fStep))
+        fValueTmp = value;
+
+    repaint();
+
+    if (sendCallback && fCallback != nullptr)
+    {
+        try {
+            fCallback->imageSliderValueChanged(this, fValue);
+        } DISTRHO_SAFE_EXCEPTION("ImageSlider::setValue");
+    }
 }
 
 void ImageSlider::setStartPos(const Point<int>& startPos) noexcept
@@ -844,12 +828,15 @@ void ImageSlider::setInverted(bool inverted) noexcept
 
 void ImageSlider::setRange(float min, float max) noexcept
 {
+    fMinimum = min;
+    fMaximum = max;
+
     if (fValue < min)
     {
         fValue = min;
         repaint();
 
-        if (fCallback != nullptr)
+        if (fCallback != nullptr && fValueIsSet)
         {
             try {
                 fCallback->imageSliderValueChanged(this, fValue);
@@ -861,41 +848,18 @@ void ImageSlider::setRange(float min, float max) noexcept
         fValue = max;
         repaint();
 
-        if (fCallback != nullptr)
+        if (fCallback != nullptr && fValueIsSet)
         {
             try {
                 fCallback->imageSliderValueChanged(this, fValue);
             } DISTRHO_SAFE_EXCEPTION("ImageSlider::setRange > max");
         }
     }
-
-    fMinimum = min;
-    fMaximum = max;
 }
 
 void ImageSlider::setStep(float step) noexcept
 {
     fStep = step;
-}
-
-void ImageSlider::setValue(float value, bool sendCallback) noexcept
-{
-    if (d_isEqual(fValue, value))
-        return;
-
-    fValue = value;
-
-    if (d_isZero(fStep))
-        fValueTmp = value;
-
-    repaint();
-
-    if (sendCallback && fCallback != nullptr)
-    {
-        try {
-            fCallback->imageSliderValueChanged(this, fValue);
-        } DISTRHO_SAFE_EXCEPTION("ImageSlider::setValue");
-    }
 }
 
 void ImageSlider::setCallback(Callback* callback) noexcept

@@ -14,58 +14,62 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_APP_PRIVATE_DATA_HPP_INCLUDED
-#define DGL_APP_PRIVATE_DATA_HPP_INCLUDED
-
-#include "../App.hpp"
-#include "../../distrho/extra/Sleep.hpp"
-
-#include <list>
+#include "ApplicationPrivateData.hpp"
+#include "../Window.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-struct App::PrivateData {
-    bool doLoop;
-    uint visibleWindows;
-    std::list<Window*> windows;
-    std::list<IdleCallback*> idleCallbacks;
+Application::Application()
+    : pData(new PrivateData()),
+      leakDetector_Application() {}
 
-    PrivateData()
-        : doLoop(true),
-          visibleWindows(0),
-          windows(),
-          idleCallbacks() {}
+Application::~Application()
+{
+    delete pData;
+}
 
-    ~PrivateData()
+void Application::idle()
+{
+    for (std::list<Window*>::iterator it = pData->windows.begin(), ite = pData->windows.end(); it != ite; ++it)
     {
-        DISTRHO_SAFE_ASSERT(! doLoop);
-        DISTRHO_SAFE_ASSERT(visibleWindows == 0);
-
-        windows.clear();
-        idleCallbacks.clear();
+        Window* const window(*it);
+        window->_idle();
     }
 
-    void oneShown() noexcept
+    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(), ite = pData->idleCallbacks.end(); it != ite; ++it)
     {
-        if (++visibleWindows == 1)
-            doLoop = true;
+        IdleCallback* const idleCallback(*it);
+        idleCallback->idleCallback();
     }
+}
 
-    void oneHidden() noexcept
+void Application::exec()
+{
+    for (; pData->doLoop;)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(visibleWindows > 0,);
-
-        if (--visibleWindows == 0)
-            doLoop = false;
+        idle();
+        d_msleep(10);
     }
+}
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
-};
+void Application::quit()
+{
+    pData->doLoop = false;
+
+    for (std::list<Window*>::reverse_iterator rit = pData->windows.rbegin(), rite = pData->windows.rend(); rit != rite; ++rit)
+    {
+        Window* const window(*rit);
+        window->close();
+    }
+}
+
+bool Application::isQuiting() const noexcept
+{
+    return !pData->doLoop;
+}
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-#endif // DGL_APP_PRIVATE_DATA_HPP_INCLUDED

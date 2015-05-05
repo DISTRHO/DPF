@@ -38,18 +38,18 @@ class Window;
    In standalone mode an application will automatically quit its
    event-loop when all its windows are closed.
  */
-class App
+class Application
 {
 public:
    /**
       Constructor.
     */
-    App();
+    Application();
 
    /**
       Destructor.
     */
-    ~App();
+    ~Application();
 
    /**
       Idle function.
@@ -81,7 +81,7 @@ private:
     PrivateData* const pData;
     friend class Window;
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(App)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Application)
 };
 
 // -----------------------------------------------------------------------

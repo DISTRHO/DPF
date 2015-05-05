@@ -164,6 +164,8 @@ private:
 
 // -----------------------------------------------------------------------
 
+// note set range and step before setting the value
+
 class ImageSlider : public Widget
 {
 public:
@@ -178,10 +180,9 @@ public:
 
     explicit ImageSlider(Window& parent, const Image& image) noexcept;
     explicit ImageSlider(Widget* widget, const Image& image) noexcept;
-    explicit ImageSlider(const ImageSlider& imageSlider) noexcept;
-    ImageSlider& operator=(const ImageSlider& imageSlider) noexcept;
 
     float getValue() const noexcept;
+    void setValue(float value, bool sendCallback = false) noexcept;
 
     void setStartPos(const Point<int>& startPos) noexcept;
     void setStartPos(int x, int y) noexcept;
@@ -191,7 +192,6 @@ public:
     void setInverted(bool inverted) noexcept;
     void setRange(float min, float max) noexcept;
     void setStep(float step) noexcept;
-    void setValue(float value, bool sendCallback = false) noexcept;
 
     void setCallback(Callback* callback) noexcept;
 
@@ -210,6 +210,7 @@ private:
 
     bool fDragging;
     bool fInverted;
+    bool fValueIsSet;
     int  fStartedX;
     int  fStartedY;
 

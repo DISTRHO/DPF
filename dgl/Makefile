@@ -15,7 +15,7 @@ LINK_FLAGS      += $(DGL_LIBS)
 # --------------------------------------------------------------
 
 OBJS = \
-	src/App.cpp.o \
+	src/Application.cpp.o \
 	src/Color.cpp.o \
 	src/Geometry.cpp.o \
 	src/Image.cpp.o \

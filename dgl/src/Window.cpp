@@ -17,10 +17,7 @@
 // we need this for now
 //#define PUGL_GRAB_FOCUS 1
 
-#include "AppPrivateData.hpp"
-#include "../Widget.hpp"
-#include "../Window.hpp"
-#include "../../distrho/extra/String.hpp"
+#include "../../distrho/src/DistrhoDefines.h"
 
 #undef PUGL_HAVE_CAIRO
 #undef PUGL_HAVE_GL
@@ -41,6 +38,11 @@ extern "C" {
 #else
 # error Unsupported platform
 #endif
+
+#include "ApplicationPrivateData.hpp"
+#include "../Widget.hpp"
+#include "../Window.hpp"
+#include "../../distrho/extra/String.hpp"
 
 #define FOR_EACH_WIDGET(it) \
   for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
@@ -64,7 +66,7 @@ START_NAMESPACE_DGL
 // Window Private
 
 struct Window::PrivateData {
-    PrivateData(App& app, Window* const self)
+    PrivateData(Application& app, Window* const self)
         : fApp(app),
           fSelf(self),
           fView(puglInit()),
@@ -93,7 +95,7 @@ struct Window::PrivateData {
         init();
     }
 
-    PrivateData(App& app, Window* const self, Window& parent)
+    PrivateData(Application& app, Window* const self, Window& parent)
         : fApp(app),
           fSelf(self),
           fView(puglInit()),
@@ -132,7 +134,7 @@ struct Window::PrivateData {
 #endif
     }
 
-    PrivateData(App& app, Window* const self, const intptr_t parentId)
+    PrivateData(Application& app, Window* const self, const intptr_t parentId)
         : fApp(app),
           fSelf(self),
           fView(puglInit()),
@@ -884,9 +886,9 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
-    App&      fApp;
-    Window*   fSelf;
-    PuglView* fView;
+    Application& fApp;
+    Window*      fSelf;
+    PuglView*    fView;
 
     bool fFirstInit;
     bool fVisible;
@@ -990,15 +992,15 @@ struct Window::PrivateData {
 // -----------------------------------------------------------------------
 // Window
 
-Window::Window(App& app)
+Window::Window(Application& app)
     : pData(new PrivateData(app, this)),
       leakDetector_Window() {}
 
-Window::Window(App& app, Window& parent)
+Window::Window(Application& app, Window& parent)
     : pData(new PrivateData(app, this, parent)),
       leakDetector_Window() {}
 
-Window::Window(App& app, intptr_t parentId)
+Window::Window(Application& app, intptr_t parentId)
     : pData(new PrivateData(app, this, parentId)),
       leakDetector_Window() {}
 
@@ -1169,7 +1171,7 @@ void Window::setTransientWinId(uintptr_t winId)
     pData->setTransientWinId(winId);
 }
 
-App& Window::getApp() const noexcept
+Application& Window::getApp() const noexcept
 {
     return pData->fApp;
 }

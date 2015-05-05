@@ -210,7 +210,7 @@ void Widget::setAbsolutePos(const Point<int>& pos) noexcept
     fParent.repaint();
 }
 
-App& Widget::getParentApp() const noexcept
+Application& Widget::getParentApp() const noexcept
 {
     return fParent.getApp();
 }

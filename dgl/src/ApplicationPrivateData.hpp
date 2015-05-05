@@ -14,62 +14,58 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "AppPrivateData.hpp"
-#include "../Window.hpp"
+#ifndef DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+#define DGL_APP_PRIVATE_DATA_HPP_INCLUDED
+
+#include "../Application.hpp"
+#include "../../distrho/extra/Sleep.hpp"
+
+#include <list>
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-App::App()
-    : pData(new PrivateData()),
-      leakDetector_App() {}
+struct Application::PrivateData {
+    bool doLoop;
+    uint visibleWindows;
+    std::list<Window*> windows;
+    std::list<IdleCallback*> idleCallbacks;
 
-App::~App()
-{
-    delete pData;
-}
+    PrivateData()
+        : doLoop(true),
+          visibleWindows(0),
+          windows(),
+          idleCallbacks() {}
 
-void App::idle()
-{
-    for (std::list<Window*>::iterator it = pData->windows.begin(), ite = pData->windows.end(); it != ite; ++it)
+    ~PrivateData()
     {
-        Window* const window(*it);
-        window->_idle();
+        DISTRHO_SAFE_ASSERT(! doLoop);
+        DISTRHO_SAFE_ASSERT(visibleWindows == 0);
+
+        windows.clear();
+        idleCallbacks.clear();
     }
 
-    for (std::list<IdleCallback*>::iterator it = pData->idleCallbacks.begin(), ite = pData->idleCallbacks.end(); it != ite; ++it)
+    void oneShown() noexcept
     {
-        IdleCallback* const idleCallback(*it);
-        idleCallback->idleCallback();
+        if (++visibleWindows == 1)
+            doLoop = true;
     }
-}
 
-void App::exec()
-{
-    for (; pData->doLoop;)
+    void oneHidden() noexcept
     {
-        idle();
-        d_msleep(10);
+        DISTRHO_SAFE_ASSERT_RETURN(visibleWindows > 0,);
+
+        if (--visibleWindows == 0)
+            doLoop = false;
     }
-}
 
-void App::quit()
-{
-    pData->doLoop = false;
-
-    for (std::list<Window*>::reverse_iterator rit = pData->windows.rbegin(), rite = pData->windows.rend(); rit != rite; ++rit)
-    {
-        Window* const window(*rit);
-        window->close();
-    }
-}
-
-bool App::isQuiting() const noexcept
-{
-    return !pData->doLoop;
-}
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#endif // DGL_APP_PRIVATE_DATA_HPP_INCLUDED

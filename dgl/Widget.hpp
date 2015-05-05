@@ -30,7 +30,7 @@ END_NAMESPACE_DISTRHO
 
 START_NAMESPACE_DGL
 
-class App;
+class Application;
 class ImageSlider;
 class NanoWidget;
 class Window;
@@ -287,7 +287,7 @@ public:
       Get this widget's window application.
       Same as calling getParentWindow().getApp().
     */
-    App& getParentApp() const noexcept;
+    Application& getParentApp() const noexcept;
 
    /**
       Get parent window, as passed in the constructor.

@@ -17,7 +17,7 @@
 #ifndef DGL_STANDALONE_WINDOW_HPP_INCLUDED
 #define DGL_STANDALONE_WINDOW_HPP_INCLUDED
 
-#include "App.hpp"
+#include "Application.hpp"
 #include "Widget.hpp"
 #include "Window.hpp"
 
@@ -25,19 +25,19 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class StandaloneWindow : public App,
+class StandaloneWindow : public Application,
                          public Window
 {
 public:
     StandaloneWindow()
-        : App(),
-          Window((App&)*this),
+        : Application(),
+          Window((Application&)*this),
           fWidget(nullptr) {}
 
     void exec()
     {
         Window::show();
-        App::exec();
+        Application::exec();
     }
 
 protected:
