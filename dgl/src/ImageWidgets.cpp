@@ -15,8 +15,7 @@
  */
 
 #include "../ImageWidgets.hpp"
-
-#include <cmath>
+#include "WidgetPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
@@ -742,7 +741,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fSliderArea(),
       leakDetector_ImageSlider()
 {
-    fNeedsFullViewport = true;
+    pData->needsFullViewport = true;
 }
 
 ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
@@ -764,7 +763,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fSliderArea(),
       leakDetector_ImageSlider()
 {
-    fNeedsFullViewport = true;
+    pData->needsFullViewport = true;
 }
 
 float ImageSlider::getValue() const noexcept

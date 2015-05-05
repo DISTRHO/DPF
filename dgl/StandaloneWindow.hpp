@@ -29,47 +29,27 @@ class StandaloneWindow : public Application,
                          public Window
 {
 public:
-    StandaloneWindow()
-        : Application(),
-          Window((Application&)*this),
-          fWidget(nullptr) {}
+   /**
+      Constructor.
+    */
+    StandaloneWindow();
 
-    void exec()
-    {
-        Window::show();
-        Application::exec();
-    }
-
-protected:
-    void onReshape(uint width, uint height) override
-    {
-        if (fWidget != nullptr)
-            fWidget->setSize(width, height);
-        Window::onReshape(width, height);
-    }
+   /**
+      Show window and execute application.
+    */
+    void exec();
 
 private:
     Widget* fWidget;
 
-    void _addWidget(Widget* widget) override
-    {
-        if (fWidget == nullptr)
-        {
-            fWidget = widget;
-            fWidget->fNeedsFullViewport = true;
-        }
-        Window::_addWidget(widget);
-    }
+   /** @internal */
+    void onReshape(uint width, uint height) override;
 
-    void _removeWidget(Widget* widget) override
-    {
-        if (fWidget == widget)
-        {
-            fWidget->fNeedsFullViewport = false;
-            fWidget = nullptr;
-        }
-        Window::_removeWidget(widget);
-    }
+   /** @internal */
+    void _addWidget(Widget* widget) override;
+
+   /** @internal */
+    void _removeWidget(Widget* widget) override;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

@@ -603,4 +603,7 @@ puglGetContext(PuglView* view)
 	}
 #endif
 	return NULL;
+
+	// may be unused
+	(void)view;
 }

@@ -867,38 +867,22 @@ public:
       Constructor.
       @see CreateFlags
     */
-    explicit NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS)
-        : Widget(parent),
-          NanoVG(flags),
-          leakDetector_NanoWidget()
-    {
-        fNeedsScaling = true;
-    }
+    explicit NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a subwidget.
     */
-    explicit NanoWidget(Widget* groupWidget, int flags = CREATE_ANTIALIAS)
-        : Widget(groupWidget, true),
-          NanoVG(flags),
-          leakDetector_NanoWidget()
-    {
-        fNeedsScaling = true;
-    }
+    explicit NanoWidget(Widget* groupWidget, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a subwidget.
+      Constructor for a subwidget, reusing a NanoVG context.
     */
-    explicit NanoWidget(NanoWidget* groupWidget)
-        : Widget(groupWidget, false),
-          NanoVG(groupWidget),
-          leakDetector_NanoWidget()
-    {
-        fNeedsScaling = true;
-        groupWidget->fNanoSubWidgets.push_back(this);
-    }
+    explicit NanoWidget(NanoWidget* groupWidget);
 
-    //  fNanoSubWidgets.clear();
+   /**
+      Destructor.
+    */
+    virtual ~NanoWidget();
 
 protected:
    /**
@@ -908,25 +892,21 @@ protected:
     virtual void onNanoDisplay() = 0;
 
 private:
-    std::vector<NanoWidget*> fNanoSubWidgets;
+    struct PrivateData;
+    PrivateData* const nData;
 
    /**
       Widget display function.
       Implemented internally to wrap begin/endFrame() automatically.
     */
-    void onDisplay() override
-    {
-        beginFrame(getWidth(), getHeight());
-        onNanoDisplay();
+    void onDisplay() override;
 
-        for (std::vector<NanoWidget*>::iterator it = fNanoSubWidgets.begin(); it != fNanoSubWidgets.end(); ++it)
-        {
-            NanoWidget* const widget(*it);
-            widget->onNanoDisplay();
-        }
-
-        endFrame();
-    }
+    // these should not be used
+    void beginFrame(uint,uint) {}
+    void beginFrame(uint,uint,float) {}
+    void beginFrame(Widget*) {}
+    void cancelFrame() {}
+    void endFrame() {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
 };

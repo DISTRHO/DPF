@@ -363,21 +363,11 @@ protected:
     virtual void onResize(const ResizeEvent&);
 
 private:
-    Window& fParent;
-    bool    fNeedsFullViewport;
-    bool    fNeedsScaling;
-    bool    fSkipDisplay;
-    bool    fVisible;
-    uint    fId;
-    Point<int> fAbsolutePos;
-    Size<uint> fSize;
-    std::vector<Widget*> fSubWidgets;
+    struct PrivateData;
+    PrivateData* const pData;
 
    /** @internal */
     explicit Widget(Widget* groupWidget, bool addToSubWidgets);
-
-   /** @internal */
-    void _displaySubWidgets();
 
     friend class ImageSlider;
     friend class NanoWidget;

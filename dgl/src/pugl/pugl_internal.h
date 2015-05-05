@@ -225,6 +225,7 @@ puglEnterContext(PuglView* view);
 void
 puglLeaveContext(PuglView* view, bool flush);
 
+#if 0
 /** Return the code point for buf, or the replacement character on error. */
 static uint32_t
 puglDecodeUTF8(const uint8_t* buf)
@@ -258,6 +259,7 @@ puglDecodeUTF8(const uint8_t* buf)
 	}
 	return 0xFFFD;
 }
+#endif
 
 static void
 puglDefaultReshape(PuglView* view, int width, int height)

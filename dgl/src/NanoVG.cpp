@@ -15,7 +15,7 @@
  */
 
 #include "../NanoVG.hpp"
-#include "../Window.hpp"
+#include "WidgetPrivateData.hpp"
 
 // -----------------------------------------------------------------------
 // Ignore some warnings if debugging
@@ -855,6 +855,69 @@ int NanoVG::textBreakLines(const char* string, const char* end, float breakRowWi
     if (fContext != nullptr)
         return nvgTextBreakLines(fContext, string, end, breakRowWidth, (NVGtextRow*)&rows, maxRows);
     return 0;
+}
+
+// -----------------------------------------------------------------------
+
+struct NanoWidget::PrivateData {
+    NanoWidget* const self;
+    std::vector<NanoWidget*> subWidgets;
+
+    PrivateData(NanoWidget* const s)
+        : self(s),
+          subWidgets() {}
+
+    ~PrivateData()
+    {
+        subWidgets.clear();
+    }
+};
+
+NanoWidget::NanoWidget(Window& parent, int flags)
+    : Widget(parent),
+      NanoVG(flags),
+      nData(new PrivateData(this)),
+      leakDetector_NanoWidget()
+{
+    pData->needsScaling = true;
+}
+
+NanoWidget::NanoWidget(Widget* groupWidget, int flags)
+    : Widget(groupWidget, true),
+      NanoVG(flags),
+      nData(new PrivateData(this)),
+      leakDetector_NanoWidget()
+{
+    pData->needsScaling = true;
+}
+
+NanoWidget::NanoWidget(NanoWidget* groupWidget)
+    : Widget(groupWidget, false),
+      NanoVG(groupWidget),
+      nData(new PrivateData(this)),
+      leakDetector_NanoWidget()
+{
+    pData->needsScaling = true;
+    groupWidget->nData->subWidgets.push_back(this);
+}
+
+NanoWidget::~NanoWidget()
+{
+    delete nData;
+}
+
+void NanoWidget::onDisplay()
+{
+    NanoVG::beginFrame(getWidth(), getHeight());
+    onNanoDisplay();
+
+    for (std::vector<NanoWidget*>::iterator it = nData->subWidgets.begin(); it != nData->subWidgets.end(); ++it)
+    {
+        NanoWidget* const widget(*it);
+        widget->onNanoDisplay();
+    }
+
+    NanoVG::endFrame();
 }
 
 // -----------------------------------------------------------------------

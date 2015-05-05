@@ -40,8 +40,8 @@ extern "C" {
 #endif
 
 #include "ApplicationPrivateData.hpp"
-#include "../Widget.hpp"
-#include "../Window.hpp"
+#include "WidgetPrivateData.hpp"
+#include "../StandaloneWindow.hpp"
 #include "../../distrho/extra/String.hpp"
 
 #define FOR_EACH_WIDGET(it) \
@@ -671,62 +671,10 @@ struct Window::PrivateData {
     {
         fSelf->onDisplayBefore();
 
-        bool needsDisableScissor = false;
-
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
-
-            if (widget->isVisible() && ! widget->fSkipDisplay)
-            {
-                // reset color
-                glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-                if (widget->fNeedsFullViewport || (widget->fAbsolutePos.isZero() && widget->fSize == Size<uint>(fWidth, fHeight)))
-                {
-                    // full viewport size
-                    glViewport(0,
-                               0,
-                               static_cast<GLsizei>(fWidth),
-                               static_cast<GLsizei>(fHeight));
-                }
-                else if (! widget->fNeedsScaling)
-                {
-                    // only set viewport pos
-                    glViewport(widget->getAbsoluteX(),
-                               /*fView->height - static_cast<int>(widget->getHeight())*/ - widget->getAbsoluteY(),
-                               static_cast<GLsizei>(fWidth),
-                               static_cast<GLsizei>(fHeight));
-
-                    // then cut the outer bounds
-                    glScissor(widget->getAbsoluteX(),
-                              fView->height - static_cast<int>(widget->getHeight()) - widget->getAbsoluteY(),
-                              static_cast<GLsizei>(widget->getWidth()),
-                              static_cast<GLsizei>(widget->getHeight()));
-
-                    glEnable(GL_SCISSOR_TEST);
-                    needsDisableScissor = true;
-                }
-                else
-                {
-                    // limit viewport to widget bounds
-                    glViewport(widget->getAbsoluteX(),
-                               fView->height - static_cast<int>(widget->getHeight()) - widget->getAbsoluteY(),
-                               static_cast<GLsizei>(widget->getWidth()),
-                               static_cast<GLsizei>(widget->getHeight()));
-                }
-
-                // display widget
-                widget->onDisplay();
-
-                if (needsDisableScissor)
-                {
-                    glDisable(GL_SCISSOR_TEST);
-                    needsDisableScissor = false;
-                }
-
-                widget->_displaySubWidgets();
-            }
+            widget->pData->display(fWidth, fHeight);
         }
 
         fSelf->onDisplayAfter();
@@ -864,7 +812,7 @@ struct Window::PrivateData {
         {
             Widget* const widget(*it);
 
-            if (widget->fNeedsFullViewport)
+            if (widget->pData->needsFullViewport)
                 widget->setSize(fWidth, fHeight);
         }
     }
@@ -1242,6 +1190,46 @@ void Window::onClose()
 
 void Window::fileBrowserSelected(const char*)
 {
+}
+
+// -----------------------------------------------------------------------
+
+StandaloneWindow::StandaloneWindow()
+    : Application(),
+      Window((Application&)*this),
+      fWidget(nullptr) {}
+
+void StandaloneWindow::exec()
+{
+    Window::show();
+    Application::exec();
+}
+
+void StandaloneWindow::onReshape(uint width, uint height)
+{
+    if (fWidget != nullptr)
+        fWidget->setSize(width, height);
+    Window::onReshape(width, height);
+}
+
+void StandaloneWindow::_addWidget(Widget* widget)
+{
+    if (fWidget == nullptr)
+    {
+        fWidget = widget;
+        fWidget->pData->needsFullViewport = true;
+    }
+    Window::_addWidget(widget);
+}
+
+void StandaloneWindow::_removeWidget(Widget* widget)
+{
+    if (fWidget == widget)
+    {
+        fWidget->pData->needsFullViewport = false;
+        fWidget = nullptr;
+    }
+    Window::_removeWidget(widget);
 }
 
 // -----------------------------------------------------------------------
