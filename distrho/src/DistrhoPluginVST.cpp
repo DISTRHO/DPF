@@ -170,14 +170,18 @@ public:
     // -------------------------------------------------------------------
 
 protected:
-    intptr_t hostCallback(const int32_t opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt)
+    intptr_t hostCallback(const int32_t opcode,
+                          const int32_t index = 0,
+                          const intptr_t value = 0,
+                          void* const ptr = nullptr,
+                          const float opt = 0.0f)
     {
         return fAudioMaster(fEffect, opcode, index, value, ptr, opt);
     }
 
     void editParameter(const uint32_t index, const bool started)
     {
-        hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index, 0, nullptr, 0.0f);
+        hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
     }
 
     void setParameterValue(const uint32_t index, const float realValue)
@@ -215,7 +219,7 @@ protected:
     void setSize(const uint width, const uint height)
     {
         fUI.setWindowSize(width, height);
-        hostCallback(audioMasterSizeWindow, width, height, nullptr, 0.0f);
+        hostCallback(audioMasterSizeWindow, width, height);
     }
 
 private:
@@ -389,10 +393,27 @@ public:
         case effMainsChanged:
             if (value != 0)
             {
-                fPlugin.activate();
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 fMidiEventCount = 0;
+
+                // tell host we want MIDI events
+                hostCallback(audioMasterWantMidi);
 #endif
+
+                // deactivate for possible changes
+                fPlugin.deactivateIfNeeded();
+
+                // check if something changed
+                const uint32_t bufferSize = static_cast<uint32_t>(hostCallback(audioMasterGetBlockSize));
+                const double   sampleRate = static_cast<double>(hostCallback(audioMasterGetSampleRate));
+
+                if (bufferSize != 0)
+                    fPlugin.setBufferSize(bufferSize, true);
+
+                if (sampleRate != 0.0)
+                    fPlugin.setSampleRate(sampleRate, true);
+
+                fPlugin.activate();
             }
             else
             {
@@ -552,6 +573,12 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         case effProcessEvents:
+            if (! fPlugin.isActive())
+            {
+                // host has not activated the plugin yet, nasty!
+                vst_dispatcher(effMainsChanged, 0, 1, nullptr, 0.0f);
+            }
+
             if (const VstEvents* const events = (const VstEvents*)ptr)
             {
                 if (events->numEvents == 0)
@@ -648,10 +675,19 @@ public:
 
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
+        if (sampleFrames <= 0)
+            return;
+
+        if (! fPlugin.isActive())
+        {
+            // host has not activated the plugin yet, nasty!
+            vst_dispatcher(effMainsChanged, 0, 1, nullptr, 0.0f);
+        }
+
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         static const int kWantVstTimeFlags(kVstTransportPlaying|kVstPpqPosValid|kVstTempoValid|kVstTimeSigValid);
 
-        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)fAudioMaster(fEffect, audioMasterGetTime, 0, kWantVstTimeFlags, nullptr, 0.0f))
+        if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)hostCallback(audioMasterGetTime, 0, kWantVstTimeFlags))
         {
             fTimePosition.frame     =   vstTimeInfo->samplePos;
             fTimePosition.playing   =  (vstTimeInfo->flags & kVstTransportPlaying);
@@ -748,6 +784,18 @@ private:
     char*     fStateChunk;
     StringMap fStateMap;
 #endif
+
+    // -------------------------------------------------------------------
+    // host callback
+
+    intptr_t hostCallback(const int32_t opcode,
+                          const int32_t index = 0,
+                          const intptr_t value = 0,
+                          void* const ptr = nullptr,
+                          const float opt = 0.0f)
+    {
+        return fAudioMaster(fEffect, opcode, index, value, ptr, opt);
+    }
 
     // -------------------------------------------------------------------
     // functions called from the plugin side, RT no block

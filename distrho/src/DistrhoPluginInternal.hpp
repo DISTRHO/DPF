@@ -406,9 +406,15 @@ public:
 
     // -------------------------------------------------------------------
 
+    bool isActive() const noexcept
+    {
+        return fIsActive;
+    }
+
     void activate()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(! fIsActive,);
 
         fIsActive = true;
         fPlugin->activate();
@@ -417,9 +423,21 @@ public:
     void deactivate()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fIsActive,);
 
         fIsActive = false;
         fPlugin->deactivate();
+    }
+
+    void deactivateIfNeeded()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+
+        if (fIsActive)
+        {
+            fIsActive = false;
+            fPlugin->deactivate();
+        }
     }
 
 #if DISTRHO_PLUGIN_IS_SYNTH
@@ -428,6 +446,12 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+
+        if (! fIsActive)
+        {
+            fIsActive = true;
+            fPlugin->activate();
+        }
 
         fData->isProcessing = true;
         fPlugin->run(inputs, outputs, frames, midiEvents, midiEventCount);
@@ -438,6 +462,12 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+
+        if (! fIsActive)
+        {
+            fIsActive = true;
+            fPlugin->activate();
+        }
 
         fData->isProcessing = true;
         fPlugin->run(inputs, outputs, frames);
