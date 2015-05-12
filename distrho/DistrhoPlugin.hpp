@@ -298,6 +298,16 @@ struct Parameter {
           symbol(),
           unit(),
           ranges() {}
+
+   /**
+      Constructor using custom values.
+    */
+    Parameter(uint32_t h, const char* n, const char* s, const char* u, float def, float min, float max) noexcept
+        : hints(h),
+          name(n),
+          symbol(s),
+          unit(u),
+          ranges(def, min, max) {}
 };
 
 /**
