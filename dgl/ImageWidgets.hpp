@@ -58,13 +58,15 @@ public:
         virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
     };
 
-    explicit ImageButton(Window& parent, const Image& image) noexcept;
-    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept;
-    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    explicit ImageButton(Window& parent, const Image& image);
+    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown);
+    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
 
-    explicit ImageButton(Widget* widget, const Image& image) noexcept;
-    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept;
-    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept;
+    explicit ImageButton(Widget* widget, const Image& image);
+    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown);
+    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
+
+    ~ImageButton() override;
 
     void setCallback(Callback* callback) noexcept;
 
@@ -74,13 +76,8 @@ protected:
      bool onMotion(const MotionEvent&) override;
 
 private:
-    Image fImageNormal;
-    Image fImageHover;
-    Image fImageDown;
-    int   fCurButton;
-    int   fCurState;
-
-    Callback* fCallback;
+    struct PrivateData;
+    PrivateData* const pData;
 
     DISTRHO_LEAK_DETECTOR(ImageButton)
 };

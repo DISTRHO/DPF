@@ -15,6 +15,7 @@
  */
 
 #include "../NanoWidgets.hpp"
+#include "Common.hpp"
 
 #define BLENDISH_IMPLEMENTATION
 #include "nanovg/nanovg.h"
@@ -38,149 +39,100 @@ static void registerBlendishResourcesIfNeeded(NVGcontext* const context)
 
 // -----------------------------------------------------------------------
 
-BlendishButton::BlendishButton(Window& parent, const char* text, int iconId) noexcept
+struct BlendishButton::PrivateData {
+    ButtonImpl impl;
+    int iconId;
+    DISTRHO_NAMESPACE::String text;
+
+    PrivateData(Widget* const s, const char* const t, const int i) noexcept
+        : impl(s),
+          iconId(i),
+          text(t) {}
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
+
+// -----------------------------------------------------------------------
+
+BlendishButton::BlendishButton(Window& parent, const char* text, int iconId)
     : NanoWidget(parent),
-      fCurButton(-1),
-      fCurState(0),
-      fIconId(iconId),
-      fText(text),
-      fCallback(nullptr),
+      pData(new PrivateData(this, text, iconId)),
       leakDetector_BlendishButton()
 {
     registerBlendishResourcesIfNeeded(getContext());
     _updateBounds();
 }
 
-BlendishButton::BlendishButton(NanoWidget* widget, const char* text, int iconId) noexcept
+BlendishButton::BlendishButton(NanoWidget* widget, const char* text, int iconId)
     : NanoWidget(widget),
-      fCurButton(-1),
-      fCurState(0),
-      fIconId(iconId),
-      fText(text),
-      fCallback(nullptr),
+      pData(new PrivateData(this, text, iconId)),
       leakDetector_BlendishButton()
 {
     registerBlendishResourcesIfNeeded(getContext());
     _updateBounds();
+}
+
+BlendishButton::~BlendishButton()
+{
+    delete pData;
 }
 
 int BlendishButton::getIconId() const noexcept
 {
-    return fIconId;
+    return pData->iconId;
 }
 
 void BlendishButton::setIconId(int iconId) noexcept
 {
-    if (fIconId == iconId)
+    if (pData->iconId == iconId)
         return;
 
-    fIconId = iconId;
+    pData->iconId = iconId;
     _updateBounds();
     repaint();
 }
 
 const char* BlendishButton::getText() const noexcept
 {
-    return fText;
+    return pData->text;
 }
 
 void BlendishButton::setText(const char* text) noexcept
 {
-    if (fText == text)
+    if (pData->text == text)
         return;
 
-    fText = text;
+    pData->text = text;
     _updateBounds();
     repaint();
 }
 
 void BlendishButton::setCallback(Callback* callback) noexcept
 {
-    fCallback = callback;
+    pData->impl.callback_b = callback;
 }
 
 void BlendishButton::onNanoDisplay()
 {
     bndToolButton(getContext(),
                   getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight(),
-                  0, static_cast<BNDwidgetState>(fCurState), fIconId, fText);
+                  0, static_cast<BNDwidgetState>(pData->impl.state), pData->iconId, pData->text);
 }
 
 bool BlendishButton::onMouse(const MouseEvent& ev)
 {
-    // button was released, handle it now
-    if (fCurButton != -1 && ! ev.press)
-    {
-        DISTRHO_SAFE_ASSERT(fCurState == 2);
-
-        // release button
-        const int button = fCurButton;
-        fCurButton = -1;
-
-        // cursor was moved outside the button bounds, ignore click
-        if (! contains(ev.pos))
-        {
-            fCurState = 0;
-            repaint();
-            return true;
-        }
-
-        // still on bounds, register click
-        fCurState = 1;
-        repaint();
-
-        if (fCallback != nullptr)
-            fCallback->blendishButtonClicked(this, button);
-
-        return true;
-    }
-
-    // button was pressed, wait for release
-    if (ev.press && contains(ev.pos))
-    {
-        fCurButton = ev.button;
-        fCurState  = 2;
-        repaint();
-        return true;
-    }
-
-    return false;
+    return pData->impl.onMouse(ev);
 }
 
 bool BlendishButton::onMotion(const MotionEvent& ev)
 {
-    // keep pressed
-    if (fCurButton != -1)
-        return true;
-
-    if (contains(ev.pos))
-    {
-        // check if entering hover
-        if (fCurState == 0)
-        {
-            fCurState = 1;
-            repaint();
-            return true;
-        }
-    }
-    else
-    {
-        // check if exiting hover
-        if (fCurState == 1)
-        {
-            fCurState = 0;
-            repaint();
-            return true;
-        }
-    }
-
-    return false;
+    return pData->impl.onMotion(ev);
 }
 
 void BlendishButton::_updateBounds()
 {
-    const float width  = bndLabelWidth (getContext(), fIconId, fText);
-    const float height = bndLabelHeight(getContext(), fIconId, fText, width);
+    const float width  = bndLabelWidth (getContext(), pData->iconId, pData->text);
+    const float height = bndLabelHeight(getContext(), pData->iconId, pData->text, width);
 
     setSize(width, height);
 }

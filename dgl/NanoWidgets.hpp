@@ -34,8 +34,9 @@ public:
         virtual void blendishButtonClicked(BlendishButton* blendishButton, int button) = 0;
     };
 
-    explicit BlendishButton(Window& parent, const char* text = "", int iconId = -1) noexcept;
-    explicit BlendishButton(NanoWidget* widget, const char* text = "", int iconId = -1) noexcept;
+    explicit BlendishButton(Window& parent, const char* text = "", int iconId = -1);
+    explicit BlendishButton(NanoWidget* widget, const char* text = "", int iconId = -1);
+    ~BlendishButton() override;
 
     int getIconId() const noexcept;
     void setIconId(int iconId) noexcept;
@@ -51,12 +52,8 @@ protected:
      bool onMotion(const MotionEvent&) override;
 
 private:
-    int fCurButton;
-    int fCurState;
-    int fIconId;
-    DISTRHO_NAMESPACE::String fText;
-
-    Callback* fCallback;
+    struct PrivateData;
+    PrivateData* const pData;
 
     void _updateBounds();
 

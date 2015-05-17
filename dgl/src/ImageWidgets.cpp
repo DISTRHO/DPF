@@ -15,6 +15,7 @@
  */
 
 #include "../ImageWidgets.hpp"
+#include "Common.hpp"
 #include "WidgetPrivateData.hpp"
 
 START_NAMESPACE_DGL
@@ -87,27 +88,34 @@ void ImageAboutWindow::onReshape(uint width, uint height)
 
 // -----------------------------------------------------------------------
 
-ImageButton::ImageButton(Window& parent, const Image& image) noexcept
+struct ImageButton::PrivateData {
+    ButtonImpl impl;
+    Image imageNormal;
+    Image imageHover;
+    Image imageDown;
+
+    PrivateData(Widget* const s, const Image& normal, const Image& hover, const Image& down)
+        : impl(s),
+          imageNormal(normal),
+          imageHover(hover),
+          imageDown(down) {}
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
+
+// -----------------------------------------------------------------------
+
+ImageButton::ImageButton(Window& parent, const Image& image)
     : Widget(parent),
-      fImageNormal(image),
-      fImageHover(image),
-      fImageDown(image),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, image, image, image)),
       leakDetector_ImageButton()
 {
     setSize(image.getSize());
 }
 
-ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept
+ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown)
     : Widget(parent),
-      fImageNormal(imageNormal),
-      fImageHover(imageNormal),
-      fImageDown(imageDown),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, imageNormal, imageNormal, imageDown)),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
@@ -115,14 +123,9 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
     setSize(imageNormal.getSize());
 }
 
-ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
+ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
     : Widget(parent),
-      fImageNormal(imageNormal),
-      fImageHover(imageHover),
-      fImageDown(imageDown),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, imageNormal, imageHover, imageDown)),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
@@ -130,27 +133,17 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
     setSize(imageNormal.getSize());
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& image) noexcept
+ImageButton::ImageButton(Widget* widget, const Image& image)
     : Widget(widget->getParentWindow()),
-      fImageNormal(image),
-      fImageHover(image),
-      fImageDown(image),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, image, image, image)),
       leakDetector_ImageButton()
 {
     setSize(image.getSize());
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept
+ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown)
     : Widget(widget->getParentWindow()),
-      fImageNormal(imageNormal),
-      fImageHover(imageNormal),
-      fImageDown(imageDown),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, imageNormal, imageNormal, imageDown)),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
@@ -158,111 +151,50 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
     setSize(imageNormal.getSize());
 }
 
-ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown) noexcept
+ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
     : Widget(widget->getParentWindow()),
-      fImageNormal(imageNormal),
-      fImageHover(imageHover),
-      fImageDown(imageDown),
-      fCurButton(-1),
-      fCurState(0),
-      fCallback(nullptr),
+      pData(new PrivateData(this, imageNormal, imageHover, imageDown)),
       leakDetector_ImageButton()
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
     setSize(imageNormal.getSize());
+}
+
+ImageButton::~ImageButton()
+{
+    delete pData;
 }
 
 void ImageButton::setCallback(Callback* callback) noexcept
 {
-    fCallback = callback;
+    pData->impl.callback_i = callback;
 }
 
 void ImageButton::onDisplay()
 {
-    switch (fCurState)
+    switch (pData->impl.state)
     {
-    case 2:
-        fImageDown.draw();
+    case ButtonImpl::kStateDown:
+        pData->imageDown.draw();
         break;
-    case 1:
-        fImageHover.draw();
+    case ButtonImpl::kStateHover:
+        pData->imageHover.draw();
         break;
     default:
-        fImageNormal.draw();
+        pData->imageNormal.draw();
         break;
     }
 }
 
 bool ImageButton::onMouse(const MouseEvent& ev)
 {
-    // button was released, handle it now
-    if (fCurButton != -1 && ! ev.press)
-    {
-        DISTRHO_SAFE_ASSERT(fCurState == 2);
-
-        // release button
-        const int button = fCurButton;
-        fCurButton = -1;
-
-        // cursor was moved outside the button bounds, ignore click
-        if (! contains(ev.pos))
-        {
-            fCurState = 0;
-            repaint();
-            return true;
-        }
-
-        // still on bounds, register click
-        fCurState = 1;
-        repaint();
-
-        if (fCallback != nullptr)
-            fCallback->imageButtonClicked(this, button);
-
-        return true;
-    }
-
-    // button was pressed, wait for release
-    if (ev.press && contains(ev.pos))
-    {
-        fCurButton = ev.button;
-        fCurState  = 2;
-        repaint();
-        return true;
-    }
-
-    return false;
+    return pData->impl.onMouse(ev);
 }
 
 bool ImageButton::onMotion(const MotionEvent& ev)
 {
-    // keep pressed
-    if (fCurButton != -1)
-        return true;
-
-    if (contains(ev.pos))
-    {
-        // check if entering hover
-        if (fCurState == 0)
-        {
-            fCurState = 1;
-            repaint();
-            return true;
-        }
-    }
-    else
-    {
-        // check if exiting hover
-        if (fCurState == 1)
-        {
-            fCurState = 0;
-            repaint();
-            return true;
-        }
-    }
-
-    return false;
+    return pData->impl.onMotion(ev);
 }
 
 // -----------------------------------------------------------------------
