@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['quit',['quit',['../classApp.html#ab474007a8e53ffa41f9a13e0640b387f',1,'App']]]
+  ['quadto',['quadTo',['../classNanoVG.html#ad21dce44617cb0ed89bcafa794c56fde',1,'NanoVG']]],
+  ['quit',['quit',['../classApplication.html#af77b716ee803aecb2ce1674695dc3986',1,'Application']]]
 ];

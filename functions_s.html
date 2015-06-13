@@ -71,6 +71,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li class="current"><a href="functions.html"><span>All</span></a></li>
       <li><a href="functions_func.html"><span>Functions</span></a></li>
       <li><a href="functions_vars.html"><span>Variables</span></a></li>
+      <li><a href="functions_enum.html"><span>Enumerations</span></a></li>
+      <li><a href="functions_eval.html"><span>Enumerator</span></a></li>
     </ul>
   </div>
   <div id="navrow4" class="tabs3">
@@ -106,7 +108,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -170,12 +172,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>setLatency()
 : <a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">Plugin</a>
 </li>
-<li>setNeedsFullViewport()
-: <a class="el" href="classWidget.html#aa92462db80ed1dc8334910038cd262cc">Widget</a>
-</li>
-<li>setNeedsScaling()
-: <a class="el" href="classWidget.html#a2ce358088e8f3b65621afd02c675bad8">Widget</a>
-</li>
 <li>setNumSegments()
 : <a class="el" href="singletonCircle.html#a34fa92504c0bcc008958779fa4d66c32">Circle&lt; T &gt;</a>
 </li>
@@ -184,9 +180,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">UI</a>
 </li>
 <li>setPos()
-: <a class="el" href="singletonCircle.html#addce92ba3813dc8ae1222127a9dd932d">Circle&lt; T &gt;</a>
+: <a class="el" href="singletonCircle.html#a2046a9238a3870276e1dac7fb684eacb">Circle&lt; T &gt;</a>
 , <a class="el" href="classPoint.html#aac5c7220da858d14140ff0c78684d4e2">Point&lt; T &gt;</a>
-, <a class="el" href="singletonRectangle.html#a52adba9ba93242a51de29865818fd776">Rectangle&lt; T &gt;</a>
+, <a class="el" href="singletonRectangle.html#ae0904b281ed4811e6901d0d78c30f08e">Rectangle&lt; T &gt;</a>
 </li>
 <li>setRectangle()
 : <a class="el" href="singletonRectangle.html#a2907d68a36a3ba97cb8ef14f86d85075">Rectangle&lt; T &gt;</a>
@@ -198,7 +194,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">Widget</a>
 </li>
 <li>setStartPos()
-: <a class="el" href="singletonLine.html#a958d534b1b0c2d581b110dd26c0d4cea">Line&lt; T &gt;</a>
+: <a class="el" href="singletonLine.html#aa078f8d0f2cf36e3162bc1977dc56d4b">Line&lt; T &gt;</a>
 </li>
 <li>setStartX()
 : <a class="el" href="singletonLine.html#ad2b10d3144ba0711f9ecb444bb08ad4c">Line&lt; T &gt;</a>
@@ -250,6 +246,9 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <li>SpecialEvent()
 : <a class="el" href="structWidget_1_1SpecialEvent.html#aabddc200eb8494dccac663b83248b14b">Widget::SpecialEvent</a>
 </li>
+<li>StandaloneWindow()
+: <a class="el" href="classStandaloneWindow.html#aeb7ab25b40e0bc0c890cf363dddc8202">StandaloneWindow</a>
+</li>
 <li>stateChanged()
 : <a class="el" href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">UI</a>
 </li>
@@ -276,7 +275,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 21:48:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jun 13 2015 16:50:14 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

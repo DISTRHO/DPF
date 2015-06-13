@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -114,15 +114,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a3b01d6090df65f24716b1620d21297f3"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3b01d6090df65f24716b1620d21297f3"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>ImageSlider</b> (<a class="el" href="classWidget.html">Widget</a> *widget, const <a class="el" href="classImage.html">Image</a> &amp;image) noexcept</td></tr>
 <tr class="separator:a3b01d6090df65f24716b1620d21297f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e5516c34ccb5cda66e4595fa950842d"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a9e5516c34ccb5cda66e4595fa950842d"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ImageSlider</b> (const <a class="el" href="classImageSlider.html">ImageSlider</a> &amp;imageSlider) noexcept</td></tr>
-<tr class="separator:a9e5516c34ccb5cda66e4595fa950842d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfd906e5a85064cf8cfdf368fc15bfc2"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="acfd906e5a85064cf8cfdf368fc15bfc2"></a>
-<a class="el" href="classImageSlider.html">ImageSlider</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classImageSlider.html">ImageSlider</a> &amp;imageSlider) noexcept</td></tr>
-<tr class="separator:acfd906e5a85064cf8cfdf368fc15bfc2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeffa859326bfd569f65bd8a045ffbff5"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="aeffa859326bfd569f65bd8a045ffbff5"></a>
 float&#160;</td><td class="memItemRight" valign="bottom"><b>getValue</b> () const noexcept</td></tr>
 <tr class="separator:aeffa859326bfd569f65bd8a045ffbff5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae3fdca22e15cc0cf049a65c5e6c99ef6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3fdca22e15cc0cf049a65c5e6c99ef6"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setValue</b> (float value, bool sendCallback=false) noexcept</td></tr>
+<tr class="separator:ae3fdca22e15cc0cf049a65c5e6c99ef6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5688a04059e94d3a8843dff124cf456c"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a5688a04059e94d3a8843dff124cf456c"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setStartPos</b> (const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;startPos) noexcept</td></tr>
 <tr class="separator:a5688a04059e94d3a8843dff124cf456c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -144,15 +141,14 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setRange</b> (float m
 <tr class="memitem:a1905792b11539050d314d4712ba9fc3f"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a1905792b11539050d314d4712ba9fc3f"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setStep</b> (float step) noexcept</td></tr>
 <tr class="separator:a1905792b11539050d314d4712ba9fc3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3fdca22e15cc0cf049a65c5e6c99ef6"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae3fdca22e15cc0cf049a65c5e6c99ef6"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setValue</b> (float value, bool sendCallback=false) noexcept</td></tr>
-<tr class="separator:ae3fdca22e15cc0cf049a65c5e6c99ef6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a100677ab6df47653cb44bed75a0feb14"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a100677ab6df47653cb44bed75a0feb14"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setCallback</b> (<a class="el" href="classImageSlider_1_1Callback.html">Callback</a> *callback) noexcept</td></tr>
 <tr class="separator:a100677ab6df47653cb44bed75a0feb14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classWidget"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classWidget')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classWidget.html">Widget</a></td></tr>
 <tr class="memitem:a556f58c8ff8a80ae22cc4df7e5f8218c inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a556f58c8ff8a80ae22cc4df7e5f8218c">Widget</a> (<a class="el" href="classWindow.html">Window</a> &amp;parent)</td></tr>
 <tr class="separator:a556f58c8ff8a80ae22cc4df7e5f8218c inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c9ae5d2378d0c917cce894745f263cc inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a9c9ae5d2378d0c917cce894745f263cc">Widget</a> (<a class="el" href="classWidget.html">Widget</a> *groupWidget)</td></tr>
+<tr class="separator:a9c9ae5d2378d0c917cce894745f263cc inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a714cf798aadb4d615f6f60a355382c02 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">~Widget</a> ()</td></tr>
 <tr class="separator:a714cf798aadb4d615f6f60a355382c02 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a234a8ee8a685dc211ad11f492f0dbc71 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">isVisible</a> () const noexcept</td></tr>
@@ -191,8 +187,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setCallback</b> (<a c
 <tr class="separator:a1f58ab9f12f0e88da6bf600c504b53c5 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65b3a31bbf5cfbecdf5cf84ae27ae089 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a65b3a31bbf5cfbecdf5cf84ae27ae089">setAbsolutePos</a> (const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;pos) noexcept</td></tr>
 <tr class="separator:a65b3a31bbf5cfbecdf5cf84ae27ae089 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa1fe45064cf9bb107fe1dcdb2384d33 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classApp.html">App</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#afa1fe45064cf9bb107fe1dcdb2384d33">getParentApp</a> () const noexcept</td></tr>
-<tr class="separator:afa1fe45064cf9bb107fe1dcdb2384d33 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa514fb1c20038ba9793e4409e9b18876 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classApplication.html">Application</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#aa514fb1c20038ba9793e4409e9b18876">getParentApp</a> () const noexcept</td></tr>
+<tr class="separator:aa514fb1c20038ba9793e4409e9b18876 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e0b0b2293bb63b2d84774542cc6a421 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classWindow.html">Window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a0e0b0b2293bb63b2d84774542cc6a421">getParentWindow</a> () const noexcept</td></tr>
 <tr class="separator:a0e0b0b2293bb63b2d84774542cc6a421 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a655f9dac3838b52a3deec1a4b9e6001b inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a655f9dac3838b52a3deec1a4b9e6001b">contains</a> (int x, int y) const noexcept</td></tr>
@@ -223,10 +219,6 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa92462db80ed1dc8334910038cd262cc inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#aa92462db80ed1dc8334910038cd262cc">setNeedsFullViewport</a> (bool yesNo) noexcept</td></tr>
-<tr class="separator:aa92462db80ed1dc8334910038cd262cc inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ce358088e8f3b65621afd02c675bad8 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a2ce358088e8f3b65621afd02c675bad8">setNeedsScaling</a> (bool yesNo) noexcept</td></tr>
-<tr class="separator:a2ce358088e8f3b65621afd02c675bad8 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a6c734dabcf0af01513fb5dec5b716831"></a>
@@ -310,12 +302,12 @@ Protected Member Functions</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>dgl/<a class="el" href="ImageSlider_8hpp_source.html">ImageSlider.hpp</a></li>
+<li>dgl/<a class="el" href="ImageWidgets_8hpp_source.html">ImageWidgets.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 21:48:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jun 13 2015 16:50:14 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

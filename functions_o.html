@@ -71,6 +71,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
       <li class="current"><a href="functions.html"><span>All</span></a></li>
       <li><a href="functions_func.html"><span>Functions</span></a></li>
       <li><a href="functions_vars.html"><span>Variables</span></a></li>
+      <li><a href="functions_enum.html"><span>Enumerations</span></a></li>
+      <li><a href="functions_eval.html"><span>Enumerator</span></a></li>
     </ul>
   </div>
   <div id="navrow4" class="tabs3">
@@ -106,7 +108,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -132,13 +134,15 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classWidget.html#a9fa874aede538b41348f1029524aea11">Widget</a>
 </li>
 <li>onMotion()
-: <a class="el" href="classImageButton.html#a53676b7a0cc31f78a371ef363344f7ba">ImageButton</a>
+: <a class="el" href="classBlendishButton.html#adb20abe302c3bab29d45f4322a3e1a34">BlendishButton</a>
+, <a class="el" href="classImageButton.html#a53676b7a0cc31f78a371ef363344f7ba">ImageButton</a>
 , <a class="el" href="classImageKnob.html#a299a1721471747dc173633f21bd75b1f">ImageKnob</a>
 , <a class="el" href="classImageSlider.html#a2950b1058ae7c6d20397135615b4583c">ImageSlider</a>
 , <a class="el" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">Widget</a>
 </li>
 <li>onMouse()
-: <a class="el" href="classImageAboutWindow.html#a5af153208057de4baf7264c9a7bd30cd">ImageAboutWindow</a>
+: <a class="el" href="classBlendishButton.html#ac8a812df414d8fb16d829ca5c63db6af">BlendishButton</a>
+, <a class="el" href="classImageAboutWindow.html#a5af153208057de4baf7264c9a7bd30cd">ImageAboutWindow</a>
 , <a class="el" href="classImageButton.html#acea33c4a730d0dce4f87a67cc290d747">ImageButton</a>
 , <a class="el" href="classImageKnob.html#a473247914d3751d629dd8690f74af07b">ImageKnob</a>
 , <a class="el" href="classImageSlider.html#a6ffe0c5b79ef8e397876154b904f0981">ImageSlider</a>
@@ -146,7 +150,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 , <a class="el" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">Widget</a>
 </li>
 <li>onNanoDisplay()
-: <a class="el" href="classNanoWidget.html#a50c53f68d816358fdb6abad250917372">NanoWidget</a>
+: <a class="el" href="classBlendishButton.html#a77174a06da0cf28b577212a55d310bf9">BlendishButton</a>
+, <a class="el" href="classNanoWidget.html#a50c53f68d816358fdb6abad250917372">NanoWidget</a>
 </li>
 <li>onResize()
 : <a class="el" href="classUI.html#a8de15be030bbdf0eb81461349cb1cc77">UI</a>
@@ -169,13 +174,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 : <a class="el" href="classScopedPointer.html#a6eedc84349cbe629cc1abb79ffa74e87">ScopedPointer&lt; ObjectType &gt;</a>
 </li>
 <li>operator=()
-: <a class="el" href="classScopedPointer.html#a88ee7f038e57471539d3181141c0390e">ScopedPointer&lt; ObjectType &gt;</a>
+: <a class="el" href="classNanoImage.html#a50e5456835e48157abc365a1e095f591">NanoImage</a>
+, <a class="el" href="classScopedPointer.html#afefc7940828d72c056e03804cd6bea9f">ScopedPointer&lt; ObjectType &gt;</a>
 </li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 21:48:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jun 13 2015 16:50:14 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

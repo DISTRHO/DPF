@@ -71,7 +71,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Pages</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Enumerations</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Enumerator</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Modules</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(7)"><span class="SelectionMark">&#160;</span>Pages</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -106,6 +106,7 @@ Inheritance diagram for Widget:</div>
 <area href="classImageSlider.html" alt="ImageSlider" shape="rect" coords="396,56,518,80"/>
 <area href="classImageSwitch.html" alt="ImageSwitch" shape="rect" coords="528,56,650,80"/>
 <area href="classNanoWidget.html" alt="NanoWidget" shape="rect" coords="660,56,782,80"/>
+<area href="classBlendishButton.html" alt="BlendishButton" shape="rect" coords="660,112,782,136"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -130,6 +131,8 @@ Classes</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a556f58c8ff8a80ae22cc4df7e5f8218c"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a556f58c8ff8a80ae22cc4df7e5f8218c">Widget</a> (<a class="el" href="classWindow.html">Window</a> &amp;parent)</td></tr>
 <tr class="separator:a556f58c8ff8a80ae22cc4df7e5f8218c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9c9ae5d2378d0c917cce894745f263cc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a9c9ae5d2378d0c917cce894745f263cc">Widget</a> (<a class="el" href="classWidget.html">Widget</a> *groupWidget)</td></tr>
+<tr class="separator:a9c9ae5d2378d0c917cce894745f263cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a714cf798aadb4d615f6f60a355382c02"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">~Widget</a> ()</td></tr>
 <tr class="separator:a714cf798aadb4d615f6f60a355382c02"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a234a8ee8a685dc211ad11f492f0dbc71"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">isVisible</a> () const noexcept</td></tr>
@@ -168,8 +171,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1f58ab9f12f0e88da6bf600c504b53c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a65b3a31bbf5cfbecdf5cf84ae27ae089"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a65b3a31bbf5cfbecdf5cf84ae27ae089">setAbsolutePos</a> (const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;pos) noexcept</td></tr>
 <tr class="separator:a65b3a31bbf5cfbecdf5cf84ae27ae089"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afa1fe45064cf9bb107fe1dcdb2384d33"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classApp.html">App</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#afa1fe45064cf9bb107fe1dcdb2384d33">getParentApp</a> () const noexcept</td></tr>
-<tr class="separator:afa1fe45064cf9bb107fe1dcdb2384d33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa514fb1c20038ba9793e4409e9b18876"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classApplication.html">Application</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#aa514fb1c20038ba9793e4409e9b18876">getParentApp</a> () const noexcept</td></tr>
+<tr class="separator:aa514fb1c20038ba9793e4409e9b18876"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e0b0b2293bb63b2d84774542cc6a421"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classWindow.html">Window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a0e0b0b2293bb63b2d84774542cc6a421">getParentWindow</a> () const noexcept</td></tr>
 <tr class="separator:a0e0b0b2293bb63b2d84774542cc6a421"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a655f9dac3838b52a3deec1a4b9e6001b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a655f9dac3838b52a3deec1a4b9e6001b">contains</a> (int x, int y) const noexcept</td></tr>
@@ -199,19 +202,24 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa92462db80ed1dc8334910038cd262cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#aa92462db80ed1dc8334910038cd262cc">setNeedsFullViewport</a> (bool yesNo) noexcept</td></tr>
-<tr class="separator:aa92462db80ed1dc8334910038cd262cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ce358088e8f3b65621afd02c675bad8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a2ce358088e8f3b65621afd02c675bad8">setNeedsScaling</a> (bool yesNo) noexcept</td></tr>
-<tr class="separator:a2ce358088e8f3b65621afd02c675bad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
+<tr class="memitem:ae9d788928dd02019fa039f43f86fab3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="ae9d788928dd02019fa039f43f86fab3e"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>ImageSlider</b></td></tr>
+<tr class="separator:ae9d788928dd02019fa039f43f86fab3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3869e9fbc1a90febfa8403ecfc383416"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a3869e9fbc1a90febfa8403ecfc383416"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>NanoWidget</b></td></tr>
+<tr class="separator:a3869e9fbc1a90febfa8403ecfc383416"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a553f958a25683445088050a69d3de8e9"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a553f958a25683445088050a69d3de8e9"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 <tr class="separator:a553f958a25683445088050a69d3de8e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a46d8d52b6ee3f8a662192a4b4775cb3e"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b></td></tr>
 <tr class="separator:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4678008eb5ff101fdefcab3090b98468"><td class="memItemLeft" align="right" valign="top"><a class="anchor" id="a4678008eb5ff101fdefcab3090b98468"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>DISTRHO_NAMESPACE::UI</b></td></tr>
+<tr class="separator:a4678008eb5ff101fdefcab3090b98468"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base DGL <a class="el" href="classWidget.html">Widget</a> class.</p>
@@ -243,6 +251,31 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 </table>
 </div><div class="memdoc">
 <p>Constructor. </p>
+
+</div>
+</div>
+<a class="anchor" id="a9c9ae5d2378d0c917cce894745f263cc"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">Widget::Widget </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classWidget.html">Widget</a> *&#160;</td>
+          <td class="paramname"><em>groupWidget</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Constructor for a subwidget. </p>
 
 </div>
 </div>
@@ -708,7 +741,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="afa1fe45064cf9bb107fe1dcdb2384d33"></a>
+<a class="anchor" id="aa514fb1c20038ba9793e4409e9b18876"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -716,7 +749,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="classApp.html">App</a>&amp; Widget::getParentApp </td>
+          <td class="memname"><a class="el" href="classApplication.html">Application</a>&amp; Widget::getParentApp </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -911,7 +944,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 </div><div class="memdoc">
 <p>A function called to draw the view contents with OpenGL. </p>
 
-<p>Implemented in <a class="el" href="classImageKnob.html#a7123a12c906463700df8c6f24cd0a62f">ImageKnob</a>, <a class="el" href="classImageSlider.html#a6c734dabcf0af01513fb5dec5b716831">ImageSlider</a>, <a class="el" href="classImageSwitch.html#a45cdf75bf08adf50742150f3d2029f76">ImageSwitch</a>, <a class="el" href="classImageButton.html#abb0d1081f8c794657ccbbcffb2d75efc">ImageButton</a>, and <a class="el" href="classImageAboutWindow.html#a4ebc99f9674e37ebdeeaa1ef9a71a0fc">ImageAboutWindow</a>.</p>
+<p>Implemented in <a class="el" href="classImageSwitch.html#a45cdf75bf08adf50742150f3d2029f76">ImageSwitch</a>, <a class="el" href="classImageSlider.html#a6c734dabcf0af01513fb5dec5b716831">ImageSlider</a>, <a class="el" href="classImageKnob.html#a7123a12c906463700df8c6f24cd0a62f">ImageKnob</a>, <a class="el" href="classImageButton.html#abb0d1081f8c794657ccbbcffb2d75efc">ImageButton</a>, and <a class="el" href="classImageAboutWindow.html#a4ebc99f9674e37ebdeeaa1ef9a71a0fc">ImageAboutWindow</a>.</p>
 
 </div>
 </div>
@@ -990,7 +1023,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 </div><div class="memdoc">
 <p>A function called when a mouse button is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="classImageKnob.html#a473247914d3751d629dd8690f74af07b">ImageKnob</a>, <a class="el" href="classImageSlider.html#a6ffe0c5b79ef8e397876154b904f0981">ImageSlider</a>, <a class="el" href="classImageSwitch.html#aa2371a540211636f96ac3a3a161ee563">ImageSwitch</a>, <a class="el" href="classImageButton.html#acea33c4a730d0dce4f87a67cc290d747">ImageButton</a>, and <a class="el" href="classImageAboutWindow.html#a5af153208057de4baf7264c9a7bd30cd">ImageAboutWindow</a>.</p>
+<p>Reimplemented in <a class="el" href="classImageSwitch.html#aa2371a540211636f96ac3a3a161ee563">ImageSwitch</a>, <a class="el" href="classImageSlider.html#a6ffe0c5b79ef8e397876154b904f0981">ImageSlider</a>, <a class="el" href="classImageKnob.html#a473247914d3751d629dd8690f74af07b">ImageKnob</a>, <a class="el" href="classImageButton.html#acea33c4a730d0dce4f87a67cc290d747">ImageButton</a>, <a class="el" href="classBlendishButton.html#ac8a812df414d8fb16d829ca5c63db6af">BlendishButton</a>, and <a class="el" href="classImageAboutWindow.html#a5af153208057de4baf7264c9a7bd30cd">ImageAboutWindow</a>.</p>
 
 </div>
 </div>
@@ -1017,7 +1050,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 </div><div class="memdoc">
 <p>A function called when the pointer moves. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="classImageKnob.html#a299a1721471747dc173633f21bd75b1f">ImageKnob</a>, <a class="el" href="classImageSlider.html#a2950b1058ae7c6d20397135615b4583c">ImageSlider</a>, and <a class="el" href="classImageButton.html#a53676b7a0cc31f78a371ef363344f7ba">ImageButton</a>.</p>
+<p>Reimplemented in <a class="el" href="classImageSlider.html#a2950b1058ae7c6d20397135615b4583c">ImageSlider</a>, <a class="el" href="classImageKnob.html#a299a1721471747dc173633f21bd75b1f">ImageKnob</a>, <a class="el" href="classImageButton.html#a53676b7a0cc31f78a371ef363344f7ba">ImageButton</a>, and <a class="el" href="classBlendishButton.html#adb20abe302c3bab29d45f4322a3e1a34">BlendishButton</a>.</p>
 
 </div>
 </div>
@@ -1073,63 +1106,13 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b>
 
 </div>
 </div>
-<a class="anchor" id="aa92462db80ed1dc8334910038cd262cc"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Widget::setNeedsFullViewport </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>yesNo</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Tell the parent window this widget needs the full viewport. When enabled, the local widget coordinates are ignored. </p><dl class="section note"><dt>Note</dt><dd>: This is an internal function; You do not need it under normal circumstances. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a2ce358088e8f3b65621afd02c675bad8"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">void Widget::setNeedsScaling </td>
-          <td>(</td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>yesNo</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Tell the parent window this widget needs scaling. When enabled, the widget viewport is scaled to match width and height. </p><dl class="section note"><dt>Note</dt><dd>: This is an internal function; You do not need it under normal circumstances. </dd></dl>
-
-</div>
-</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>dgl/<a class="el" href="Widget_8hpp_source.html">Widget.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Apr 26 2015 21:48:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jun 13 2015 16:50:14 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.8
 </small></address>

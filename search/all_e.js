@@ -1,7 +1,7 @@
 var searchData=
 [
   ['paint',['Paint',['../structNanoVG_1_1Paint.html',1,'NanoVG']]],
-  ['parameter',['Parameter',['../structParameter.html',1,'Parameter'],['../structParameter.html#a12ced87d6d832deccb6c8ce2c8313b2e',1,'Parameter::Parameter()']]],
+  ['parameter',['Parameter',['../structParameter.html',1,'Parameter'],['../structParameter.html#a12ced87d6d832deccb6c8ce2c8313b2e',1,'Parameter::Parameter() noexcept'],['../structParameter.html#af0c5eeebedfe0058775a7ff4d904b6ab',1,'Parameter::Parameter(uint32_t h, const char *n, const char *s, const char *u, float def, float min, float max) noexcept']]],
   ['parameterchanged',['parameterChanged',['../classUI.html#ab3086d302a9685b25abf144ade3e88f6',1,'UI']]],
   ['parameter_20hints',['Parameter Hints',['../group__ParameterHints.html',1,'']]],
   ['parameterranges',['ParameterRanges',['../structParameterRanges.html',1,'ParameterRanges'],['../structParameterRanges.html#adb9b2712df3401eb0c5e11362d865d4e',1,'ParameterRanges::ParameterRanges() noexcept'],['../structParameterRanges.html#a75337384c041ef8cd1a1cd2ba57ac205',1,'ParameterRanges::ParameterRanges(float df, float mn, float mx) noexcept']]],

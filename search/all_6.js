@@ -21,7 +21,7 @@ var searchData=
   ['getnormalizedvalue',['getNormalizedValue',['../structParameterRanges.html#ad16ef939c1caa2f51e9a4041f769f86e',1,'ParameterRanges']]],
   ['getnumsegments',['getNumSegments',['../singletonCircle.html#a3a1586ea9115cc97473a2338127223b6',1,'Circle']]],
   ['getparametervalue',['getParameterValue',['../classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f',1,'Plugin']]],
-  ['getparentapp',['getParentApp',['../classWidget.html#afa1fe45064cf9bb107fe1dcdb2384d33',1,'Widget']]],
+  ['getparentapp',['getParentApp',['../classWidget.html#aa514fb1c20038ba9793e4409e9b18876',1,'Widget']]],
   ['getparentwindow',['getParentWindow',['../classWidget.html#a0e0b0b2293bb63b2d84774542cc6a421',1,'Widget']]],
   ['getplugininstancepointer',['getPluginInstancePointer',['../classUI.html#a0863a8f7ca7fc7e172e703c58518329f',1,'UI']]],
   ['getpos',['getPos',['../singletonCircle.html#abdabe0a9d85db389485c69d6a7b6071e',1,'Circle::getPos()'],['../singletonRectangle.html#aa91fa8951b6a77c86a3df804b1ed0717',1,'Rectangle::getPos()']]],
@@ -31,6 +31,7 @@ var searchData=
   ['getstartpos',['getStartPos',['../singletonLine.html#a2c5ecf6513f1b1fd846a80915aff5744',1,'Line']]],
   ['getstartx',['getStartX',['../singletonLine.html#a7f3af6a8c08af69188714a83353e09fb',1,'Line']]],
   ['getstarty',['getStartY',['../singletonLine.html#a5a5ef0a94283339f2c20406a3d9fbb04',1,'Line']]],
+  ['gettexturehandle',['getTextureHandle',['../classNanoImage.html#a9c0f5b15005f825aba9685d7a9e7966a',1,'NanoImage']]],
   ['gettimeposition',['getTimePosition',['../classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1',1,'Plugin']]],
   ['gettype',['getType',['../classImage.html#aafdd618cccc80f83a438b0c335de6205',1,'Image']]],
   ['getuniqueid',['getUniqueId',['../classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66',1,'Plugin']]],
@@ -39,6 +40,7 @@ var searchData=
   ['getwidth',['getWidth',['../classSize.html#a3e65e5ff12f6bf57eaa6f45c54346942',1,'Size::getWidth()'],['../singletonRectangle.html#a5974e66bef8300fa6e052d846d07afb1',1,'Rectangle::getWidth()'],['../classImage.html#a695d30afad2b73bc0e4208a94d052aea',1,'Image::getWidth()'],['../classWidget.html#a169c317caf734c6664494a573e427b40',1,'Widget::getWidth()']]],
   ['getx',['getX',['../classPoint.html#af6d528d5f73b06282aae5be3b188528e',1,'Point::getX()'],['../singletonCircle.html#a2f8530b43b24d28380e232367fea0823',1,'Circle::getX()'],['../singletonRectangle.html#aa7a5dc1efa46ac87abdc57850f65c1ef',1,'Rectangle::getX()']]],
   ['gety',['getY',['../classPoint.html#ab0250670052f5169c57de84a09d7534b',1,'Point::getY()'],['../singletonCircle.html#af1bdfeb5875cf8e6a8f09ad295d3bb09',1,'Circle::getY()'],['../singletonRectangle.html#a8f2fb02ceea742b6155a476be3694ec9',1,'Rectangle::getY()']]],
+  ['globalalpha',['globalAlpha',['../classNanoVG.html#acbae67cbb34b396bd1dff9cdc3c6712b',1,'NanoVG']]],
   ['glyphposition',['GlyphPosition',['../structNanoVG_1_1GlyphPosition.html',1,'NanoVG']]],
   ['growby',['growBy',['../classSize.html#ac6cb1721051ed5c8f21467f009d72982',1,'Size::growBy()'],['../singletonRectangle.html#a043d677b0fa28c50a18ed30bcb84e02b',1,'Rectangle::growBy()']]]
 ];
