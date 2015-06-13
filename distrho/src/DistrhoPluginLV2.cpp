@@ -839,7 +839,6 @@ private:
     struct Lv2PositionData {
         int64_t  bar;
         float    barBeat;
-        double   beat;
         uint32_t beatUnit;
         float    beatsPerBar;
         float    beatsPerMinute;
@@ -850,7 +849,6 @@ private:
         Lv2PositionData()
             : bar(-1),
               barBeat(-1.0f),
-              beat(-1.0),
               beatUnit(0),
               beatsPerBar(0.0f),
               beatsPerMinute(0.0f),
