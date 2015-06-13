@@ -40,10 +40,6 @@
 # error DISTRHO_PLUGIN_URI undefined!
 #endif
 
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
-# warning LV2 TimePos still TODO
-#endif
-
 #define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 #define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
@@ -61,9 +57,6 @@ public:
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
-# if DISTRHO_PLUGIN_WANT_TIMEPOS
-          fLastTimeSpeed(0.0),
-# endif
           fURIDs(uridMap),
 #endif
           fUridMap(uridMap),
@@ -133,8 +126,7 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        // hosts may not send all values, resulting on some invalid ones
-        fTimePosition.bbt.valid = false;
+        // hosts may not send all values, resulting on some invalid data
         fTimePosition.bbt.bar   = 1;
         fTimePosition.bbt.beat  = 1;
         fTimePosition.bbt.tick  = 0;
@@ -311,142 +303,178 @@ public:
 
                 LV2_Atom* bar     = nullptr;
                 LV2_Atom* barBeat = nullptr;
-                LV2_Atom* beat     = nullptr;
                 LV2_Atom* beatUnit = nullptr;
                 LV2_Atom* beatsPerBar = nullptr;
                 LV2_Atom* beatsPerMinute = nullptr;
-                LV2_Atom* ticksPerBeat = nullptr;
                 LV2_Atom* frame = nullptr;
                 LV2_Atom* speed = nullptr;
+                LV2_Atom* ticksPerBeat = nullptr;
 
                 lv2_atom_object_get(obj,
                                     fURIDs.timeBar, &bar,
                                     fURIDs.timeBarBeat, &barBeat,
-                                    fURIDs.timeBeat, &beat,
                                     fURIDs.timeBeatUnit, &beatUnit,
                                     fURIDs.timeBeatsPerBar, &beatsPerBar,
                                     fURIDs.timeBeatsPerMinute, &beatsPerMinute,
-                                    fURIDs.timeTicksPerBeat, &ticksPerBeat,
                                     fURIDs.timeFrame, &frame,
                                     fURIDs.timeSpeed, &speed,
+                                    fURIDs.timeTicksPerBeat, &ticksPerBeat,
                                     nullptr);
+
+                // need to handle this first as other values depend on it
+                if (ticksPerBeat != nullptr)
+                {
+                    /**/ if (ticksPerBeat->type == fURIDs.atomDouble)
+                        fLastPositionData.ticksPerBeat = ((LV2_Atom_Double*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomFloat)
+                        fLastPositionData.ticksPerBeat = ((LV2_Atom_Float*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomInt)
+                        fLastPositionData.ticksPerBeat = ((LV2_Atom_Int*)ticksPerBeat)->body;
+                    else if (ticksPerBeat->type == fURIDs.atomLong)
+                        fLastPositionData.ticksPerBeat = ((LV2_Atom_Long*)ticksPerBeat)->body;
+                    else
+                        d_stderr("Unknown lv2 ticksPerBeat value type");
+
+                    if (fLastPositionData.ticksPerBeat > 0)
+                        fTimePosition.bbt.ticksPerBeat = fLastPositionData.ticksPerBeat;
+                }
+
+                // same
+                if (speed != nullptr)
+                {
+                    /**/ if (speed->type == fURIDs.atomDouble)
+                        fLastPositionData.speed = ((LV2_Atom_Double*)speed)->body;
+                    else if (speed->type == fURIDs.atomFloat)
+                        fLastPositionData.speed = ((LV2_Atom_Float*)speed)->body;
+                    else if (speed->type == fURIDs.atomInt)
+                        fLastPositionData.speed = ((LV2_Atom_Int*)speed)->body;
+                    else if (speed->type == fURIDs.atomLong)
+                        fLastPositionData.speed = ((LV2_Atom_Long*)speed)->body;
+                    else
+                        d_stderr("Unknown lv2 speed value type");
+
+                    fTimePosition.playing = d_isNotZero(fLastPositionData.speed);
+                }
 
                 if (bar != nullptr)
                 {
                     /**/ if (bar->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.bar = ((LV2_Atom_Double*)bar)->body + 1.0;
+                        fLastPositionData.bar = ((LV2_Atom_Double*)bar)->body;
                     else if (bar->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.bar = ((LV2_Atom_Float*)bar)->body + 1.0f;
+                        fLastPositionData.bar = ((LV2_Atom_Float*)bar)->body;
                     else if (bar->type == fURIDs.atomInt)
-                        fTimePosition.bbt.bar = ((LV2_Atom_Int*)bar)->body + 1;
+                        fLastPositionData.bar = ((LV2_Atom_Int*)bar)->body;
                     else if (bar->type == fURIDs.atomLong)
-                        fTimePosition.bbt.bar = ((LV2_Atom_Long*)bar)->body + 1;
+                        fLastPositionData.bar = ((LV2_Atom_Long*)bar)->body;
                     else
                         d_stderr("Unknown lv2 bar value type");
-                }
 
-                if (ticksPerBeat != nullptr)
-                {
-                    /**/ if (ticksPerBeat->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Double*)ticksPerBeat)->body;
-                    else if (ticksPerBeat->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Float*)ticksPerBeat)->body;
-                    else if (ticksPerBeat->type == fURIDs.atomInt)
-                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Int*)ticksPerBeat)->body;
-                    else if (ticksPerBeat->type == fURIDs.atomLong)
-                        fTimePosition.bbt.ticksPerBeat = ((LV2_Atom_Long*)ticksPerBeat)->body;
-                    else
-                        d_stderr("Unknown lv2 ticksPerBeat value type");
+                    if (fLastPositionData.bar >= 0)
+                        fTimePosition.bbt.bar = fLastPositionData.bar + 1;
                 }
 
                 if (barBeat != nullptr)
                 {
-                    double barBeatValue = 0.0;
-
                     /**/ if (barBeat->type == fURIDs.atomDouble)
-                        barBeatValue = ((LV2_Atom_Double*)barBeat)->body;
+                        fLastPositionData.barBeat = ((LV2_Atom_Double*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomFloat)
-                        barBeatValue = ((LV2_Atom_Float*)barBeat)->body;
+                        fLastPositionData.barBeat = ((LV2_Atom_Float*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomInt)
-                        barBeatValue = ((LV2_Atom_Int*)barBeat)->body;
+                        fLastPositionData.barBeat = ((LV2_Atom_Int*)barBeat)->body;
                     else if (barBeat->type == fURIDs.atomLong)
-                        barBeatValue = ((LV2_Atom_Long*)barBeat)->body;
+                        fLastPositionData.barBeat = ((LV2_Atom_Long*)barBeat)->body;
                     else
                         d_stderr("Unknown lv2 barBeat value type");
 
-                    const double rest = std::fmod(barBeatValue, 1.0);
-                    fTimePosition.bbt.beat = barBeatValue-rest+1.0;
-                    fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
-                }
-                // barBeat includes beat
-                else if (beat != nullptr)
-                {
-                    /**/ if (beat->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.beat = ((LV2_Atom_Double*)beat)->body + 1.0;
-                    else if (beat->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.beat = ((LV2_Atom_Float*)beat)->body + 1.0f;
-                    else if (beat->type == fURIDs.atomInt)
-                        fTimePosition.bbt.beat = ((LV2_Atom_Int*)beat)->body + 1;
-                    else if (beat->type == fURIDs.atomLong)
-                        fTimePosition.bbt.beat = ((LV2_Atom_Long*)beat)->body + 1;
-                    else
-                        d_stderr("Unknown lv2 beat value type");
+                    if (fLastPositionData.barBeat >= 0.0f)
+                    {
+                        const double rest = std::fmod(fLastPositionData.barBeat, 1.0);
+                        fTimePosition.bbt.beat = fLastPositionData.barBeat-rest+1.0;
+                        fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
+                    }
                 }
 
                 if (beatUnit != nullptr)
                 {
                     /**/ if (beatUnit->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.beatType = ((LV2_Atom_Double*)beatUnit)->body;
+                        fLastPositionData.beatUnit = ((LV2_Atom_Double*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.beatType = ((LV2_Atom_Float*)beatUnit)->body;
+                        fLastPositionData.beatUnit = ((LV2_Atom_Float*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomInt)
-                        fTimePosition.bbt.beatType = ((LV2_Atom_Int*)beatUnit)->body;
+                        fLastPositionData.beatUnit = ((LV2_Atom_Int*)beatUnit)->body;
                     else if (beatUnit->type == fURIDs.atomLong)
-                        fTimePosition.bbt.beatType = ((LV2_Atom_Long*)beatUnit)->body;
+                        fLastPositionData.beatUnit = ((LV2_Atom_Long*)beatUnit)->body;
                     else
                         d_stderr("Unknown lv2 beatUnit value type");
+
+                    if (fLastPositionData.beatUnit > 0)
+                        fTimePosition.bbt.beatType = fLastPositionData.beatUnit;
                 }
 
                 if (beatsPerBar != nullptr)
                 {
                     /**/ if (beatsPerBar->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Double*)beatsPerBar)->body;
+                        fLastPositionData.beatsPerBar = ((LV2_Atom_Double*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Float*)beatsPerBar)->body;
+                        fLastPositionData.beatsPerBar = ((LV2_Atom_Float*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomInt)
-                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Int*)beatsPerBar)->body;
+                        fLastPositionData.beatsPerBar = ((LV2_Atom_Int*)beatsPerBar)->body;
                     else if (beatsPerBar->type == fURIDs.atomLong)
-                        fTimePosition.bbt.beatsPerBar = ((LV2_Atom_Long*)beatsPerBar)->body;
+                        fLastPositionData.beatsPerBar = ((LV2_Atom_Long*)beatsPerBar)->body;
                     else
                         d_stderr("Unknown lv2 beatsPerBar value type");
+
+                    if (fLastPositionData.beatsPerBar > 0.0f)
+                        fTimePosition.bbt.beatsPerBar = fLastPositionData.beatsPerBar;
                 }
 
                 if (beatsPerMinute != nullptr)
                 {
                     /**/ if (beatsPerMinute->type == fURIDs.atomDouble)
-                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Double*)beatsPerMinute)->body;
+                        fLastPositionData.beatsPerMinute = ((LV2_Atom_Double*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomFloat)
-                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Float*)beatsPerMinute)->body;
+                        fLastPositionData.beatsPerMinute = ((LV2_Atom_Float*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomInt)
-                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Int*)beatsPerMinute)->body;
+                        fLastPositionData.beatsPerMinute = ((LV2_Atom_Int*)beatsPerMinute)->body;
                     else if (beatsPerMinute->type == fURIDs.atomLong)
-                        fTimePosition.bbt.beatsPerMinute = ((LV2_Atom_Long*)beatsPerMinute)->body;
+                        fLastPositionData.beatsPerMinute = ((LV2_Atom_Long*)beatsPerMinute)->body;
                     else
                         d_stderr("Unknown lv2 beatsPerMinute value type");
+
+                    if (fLastPositionData.beatsPerMinute > 0.0f)
+                    {
+                        fTimePosition.bbt.beatsPerMinute = fLastPositionData.beatsPerMinute;
+
+                        if (d_isNotZero(fLastPositionData.speed))
+                            fTimePosition.bbt.beatsPerMinute *= std::abs(fLastPositionData.speed);
+                    }
                 }
 
-                fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
-
-                if (frame != nullptr && frame->type == fURIDs.atomLong)
-                    fTimePosition.frame = ((LV2_Atom_Long*)frame)->body;
-
-                if (speed != nullptr && speed->type == fURIDs.atomFloat)
+                if (frame != nullptr)
                 {
-                    fLastTimeSpeed = ((LV2_Atom_Float*)speed)->body;
-                    fTimePosition.playing = (fLastTimeSpeed == 1.0);
+                    /**/ if (frame->type == fURIDs.atomDouble)
+                        fLastPositionData.frame = ((LV2_Atom_Double*)frame)->body;
+                    else if (frame->type == fURIDs.atomFloat)
+                        fLastPositionData.frame = ((LV2_Atom_Float*)frame)->body;
+                    else if (frame->type == fURIDs.atomInt)
+                        fLastPositionData.frame = ((LV2_Atom_Int*)frame)->body;
+                    else if (frame->type == fURIDs.atomLong)
+                        fLastPositionData.frame = ((LV2_Atom_Long*)frame)->body;
+                    else
+                        d_stderr("Unknown lv2 frame value type");
+
+                    if (fLastPositionData.frame >= 0)
+                        fTimePosition.frame = fLastPositionData.frame;
                 }
 
-                fTimePosition.bbt.valid = (beatsPerMinute != nullptr && beatsPerBar != nullptr && beatUnit != nullptr);
+                fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
+                                                 fTimePosition.bbt.beatsPerBar*
+                                                 (fTimePosition.bbt.bar-1);
+
+                fTimePosition.bbt.valid = (fLastPositionData.beatsPerMinute > 0.0 &&
+                                           fLastPositionData.beatUnit > 0 &&
+                                           fLastPositionData.beatsPerBar > 0.0f);
+
                 continue;
             }
 # endif
@@ -485,37 +513,56 @@ public:
 
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
         // update timePos for next callback
-        if (fLastTimeSpeed != 0.0)
+        if (d_isNotZero(fLastPositionData.speed))
         {
-            const double newFrames = fLastTimeSpeed*sampleCount;
+            if (fLastPositionData.speed > 0.0)
+            {
+                // playing forwards
+                fLastPositionData.frame += sampleCount;
+            }
+            else
+            {
+                // playing backwards
+                fLastPositionData.frame -= sampleCount;
 
-            fTimePosition.frame += newFrames;
+                if (fLastPositionData.frame < 0)
+                    fLastPositionData.frame = 0;
+            }
+
+            fTimePosition.frame = fLastPositionData.frame;
 
             if (fTimePosition.bbt.valid)
             {
-                const double samplesPerBeat = 60.0 / fTimePosition.bbt.beatsPerMinute * fSampleRate;
-                const double ticksPerSample = fTimePosition.bbt.ticksPerBeat / samplesPerBeat;
+                const double beatsPerMinute = fLastPositionData.beatsPerMinute * fLastPositionData.speed;
+                const double framesPerBeat  = 60.0 * fSampleRate / beatsPerMinute;
+                const double addedBarBeats  = double(sampleCount) / framesPerBeat;
 
-                double newTickPos = double(fTimePosition.bbt.tick) + ticksPerSample*newFrames;
-                double newBeatPos = double(fTimePosition.bbt.beat)-1.0;
-                double newBarPos  = double(fTimePosition.bbt.bar)-1.0;
-
-                for (; newTickPos >= fTimePosition.bbt.ticksPerBeat;)
+                if (fLastPositionData.bar >= 0)
                 {
-                    ++newBeatPos;
-                    newTickPos -= fTimePosition.bbt.ticksPerBeat;
+                    fLastPositionData.bar += std::floor((fLastPositionData.barBeat+addedBarBeats)/
+                                                         fLastPositionData.beatsPerBar);
+
+                    if (fLastPositionData.bar < 0)
+                        fLastPositionData.bar = 0;
+
+                    fTimePosition.bbt.bar = fLastPositionData.bar + 1;
+
+                    fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
+                                                     fTimePosition.bbt.beatsPerBar*
+                                                    (fTimePosition.bbt.bar-1);
                 }
 
-                for (; newBeatPos >= fTimePosition.bbt.beatsPerBar;)
+                if (fLastPositionData.barBeat >= 0.0f)
                 {
-                    ++newBarPos;
-                    newBeatPos -= fTimePosition.bbt.beatsPerBar;
+                    fLastPositionData.barBeat = std::fmod(fLastPositionData.barBeat+addedBarBeats,
+                                                          fTimePosition.bbt.beatsPerBar);
+
+                    const double rest = std::fmod(fLastPositionData.barBeat, 1.0);
+                    fTimePosition.bbt.beat = fLastPositionData.barBeat-rest+1.0;
+                    fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
                 }
 
-                fTimePosition.bbt.bar  = newBarPos+1.0;
-                fTimePosition.bbt.beat = newBeatPos+1.0;
-                fTimePosition.bbt.tick = newTickPos;
-                fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
+                fTimePosition.bbt.beatsPerMinute = std::abs(beatsPerMinute);
             }
         }
 # endif
@@ -788,7 +835,30 @@ private:
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
-    double       fLastTimeSpeed;
+
+    struct Lv2PositionData {
+        int64_t  bar;
+        float    barBeat;
+        double   beat;
+        uint32_t beatUnit;
+        float    beatsPerBar;
+        float    beatsPerMinute;
+        int64_t  frame;
+        double   speed;
+        int64_t  ticksPerBeat;
+
+        Lv2PositionData()
+            : bar(-1),
+              barBeat(-1.0f),
+              beat(-1.0),
+              beatUnit(0),
+              beatsPerBar(0.0f),
+              beatsPerMinute(0.0f),
+              frame(-1),
+              speed(0.0),
+              ticksPerBeat(-1) {}
+
+    } fLastPositionData;
 #endif
 
     // LV2 URIDs
@@ -807,7 +877,6 @@ private:
         LV2_URID timePosition;
         LV2_URID timeBar;
         LV2_URID timeBarBeat;
-        LV2_URID timeBeat;
         LV2_URID timeBeatUnit;
         LV2_URID timeBeatsPerBar;
         LV2_URID timeBeatsPerMinute;
@@ -829,7 +898,6 @@ private:
               timePosition(uridMap->map(uridMap->handle, LV2_TIME__Position)),
               timeBar(uridMap->map(uridMap->handle, LV2_TIME__bar)),
               timeBarBeat(uridMap->map(uridMap->handle, LV2_TIME__barBeat)),
-              timeBeat(uridMap->map(uridMap->handle, LV2_TIME__beat)),
               timeBeatUnit(uridMap->map(uridMap->handle, LV2_TIME__beatUnit)),
               timeBeatsPerBar(uridMap->map(uridMap->handle, LV2_TIME__beatsPerBar)),
               timeBeatsPerMinute(uridMap->map(uridMap->handle, LV2_TIME__beatsPerMinute)),
