@@ -537,29 +537,29 @@ public:
                 const double framesPerBeat  = 60.0 * fSampleRate / beatsPerMinute;
                 const double addedBarBeats  = double(sampleCount) / framesPerBeat;
 
-                if (fLastPositionData.bar >= 0)
-                {
-                    fLastPositionData.bar += std::floor((fLastPositionData.barBeat+addedBarBeats)/
-                                                         fLastPositionData.beatsPerBar);
-
-                    if (fLastPositionData.bar < 0)
-                        fLastPositionData.bar = 0;
-
-                    fTimePosition.bbt.bar = fLastPositionData.bar + 1;
-
-                    fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
-                                                     fTimePosition.bbt.beatsPerBar*
-                                                    (fTimePosition.bbt.bar-1);
-                }
-
                 if (fLastPositionData.barBeat >= 0.0f)
                 {
                     fLastPositionData.barBeat = std::fmod(fLastPositionData.barBeat+addedBarBeats,
-                                                          fTimePosition.bbt.beatsPerBar);
+                                                          fLastPositionData.beatsPerBar);
 
                     const double rest = std::fmod(fLastPositionData.barBeat, 1.0);
                     fTimePosition.bbt.beat = fLastPositionData.barBeat-rest+1.0;
                     fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
+
+                    if (fLastPositionData.bar >= 0)
+                    {
+                        fLastPositionData.bar += std::floor((fLastPositionData.barBeat+addedBarBeats)/
+                                                             fLastPositionData.beatsPerBar);
+
+                        if (fLastPositionData.bar < 0)
+                            fLastPositionData.bar = 0;
+
+                        fTimePosition.bbt.bar = fLastPositionData.bar + 1;
+
+                        fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
+                                                         fTimePosition.bbt.beatsPerBar*
+                                                        (fTimePosition.bbt.bar-1);
+                    }
                 }
 
                 fTimePosition.bbt.beatsPerMinute = std::abs(beatsPerMinute);
