@@ -107,14 +107,14 @@ protected:
     * DSP/Plugin Callbacks */
 
    /**
-      A parameter has changed on the plugin side.
+      A parameter has changed on the plugin side.@n
       This is called by the host to inform the UI about parameter changes.
     */
     virtual void parameterChanged(uint32_t index, float value) = 0;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
    /**
-      A program has been loaded on the plugin side.
+      A program has been loaded on the plugin side.@n
       This is called by the host to inform the UI about program changes.
     */
     virtual void programLoaded(uint32_t index) = 0;
@@ -122,7 +122,7 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
-      A state has changed on the plugin side.
+      A state has changed on the plugin side.@n
       This is called by the host to inform the UI about state changes.
     */
     virtual void stateChanged(const char* key, const char* value) = 0;
