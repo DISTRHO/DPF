@@ -18,13 +18,14 @@
    @file pugl_win.cpp Windows/WGL Pugl Implementation.
 */
 
+#include <winsock2.h>
 #include <windows.h>
 #include <windowsx.h>
 #include <GL/gl.h>
 
 #include <ctime>
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include "pugl/pugl_internal.h"
 
