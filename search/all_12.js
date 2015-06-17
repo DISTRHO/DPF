@@ -3,7 +3,7 @@ var searchData=
   ['text',['text',['../classNanoVG.html#af9526a1c4b2d5e1db0190c32ba9a1eaa',1,'NanoVG']]],
   ['textalign',['textAlign',['../classNanoVG.html#a9c942ced1722beff8e326a6cf0c9a1d1',1,'NanoVG::textAlign(Align align)'],['../classNanoVG.html#a9a1a5e00351ff92ebb9795a2127f0529',1,'NanoVG::textAlign(int align)']]],
   ['textbounds',['textBounds',['../classNanoVG.html#a281c71d51c5f9d6fb5d6e8369ca650f4',1,'NanoVG']]],
-  ['textbox',['textBox',['../classNanoVG.html#aaa73324a5969916f910fb9a41e7e5358',1,'NanoVG']]],
+  ['textbox',['textBox',['../classNanoVG.html#a16f910cddbecd570d3c125e217f51e10',1,'NanoVG']]],
   ['textboxbounds',['textBoxBounds',['../classNanoVG.html#a47e41ef76a4682f0418ba8d0a60f6ea8',1,'NanoVG']]],
   ['textbreaklines',['textBreakLines',['../classNanoVG.html#ab403a3cdf19dd2af4c75bb180c5e0fb8',1,'NanoVG']]],
   ['textglyphpositions',['textGlyphPositions',['../classNanoVG.html#ae8476a381526e6ef89150529594cbf35',1,'NanoVG']]],
@@ -27,5 +27,5 @@ var searchData=
   ['transformskewy',['transformSkewY',['../classNanoVG.html#af23e7f6a6056e5efe72944fa68767704',1,'NanoVG']]],
   ['transformtranslate',['transformTranslate',['../classNanoVG.html#a022e3cdfa06f5bc9103b37dfa64adb2c',1,'NanoVG']]],
   ['translate',['translate',['../classNanoVG.html#abc1d6466eb7fdc57a869ec7b9fdd6bdf',1,'NanoVG']]],
-  ['triangle',['Triangle',['../singletonTriangle.html',1,'Triangle&lt; T &gt;'],['../singletonTriangle.html#ad3ae4f80efb4b18f4f8b8a25543aa10c',1,'Triangle::Triangle() noexcept'],['../singletonTriangle.html#a394b031be82e2e0c043547ad1e551ddb',1,'Triangle::Triangle(const T &amp;x1, const T &amp;y1, const T &amp;x2, const T &amp;y2, const T &amp;x3, const T &amp;y3) noexcept'],['../singletonTriangle.html#a79fdc0930afc294c7bce90a2cd3075ed',1,'Triangle::Triangle(const Point&lt; T &gt; &amp;pos1, const Point&lt; T &gt; &amp;pos2, const Point&lt; T &gt; &amp;pos3) noexcept'],['../singletonTriangle.html#a5130f571dd5de1f070573929637544ce',1,'Triangle::Triangle(const Triangle&lt; T &gt; &amp;tri) noexcept']]]
+  ['triangle',['Triangle',['../classTriangle.html',1,'Triangle&lt; T &gt;'],['../classTriangle.html#ad3ae4f80efb4b18f4f8b8a25543aa10c',1,'Triangle::Triangle() noexcept'],['../classTriangle.html#a394b031be82e2e0c043547ad1e551ddb',1,'Triangle::Triangle(const T &amp;x1, const T &amp;y1, const T &amp;x2, const T &amp;y2, const T &amp;x3, const T &amp;y3) noexcept'],['../classTriangle.html#a79fdc0930afc294c7bce90a2cd3075ed',1,'Triangle::Triangle(const Point&lt; T &gt; &amp;pos1, const Point&lt; T &gt; &amp;pos2, const Point&lt; T &gt; &amp;pos3) noexcept'],['../classTriangle.html#a5130f571dd5de1f070573929637544ce',1,'Triangle::Triangle(const Triangle&lt; T &gt; &amp;tri) noexcept']]]
 ];
