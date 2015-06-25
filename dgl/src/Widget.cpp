@@ -22,22 +22,19 @@ START_NAMESPACE_DGL
 // Widget
 
 Widget::Widget(Window& parent)
-    : pData(new PrivateData(this, parent, nullptr, false)),
-      leakDetector_Widget()
+    : pData(new PrivateData(this, parent, nullptr, false))
 {
     parent._addWidget(this);
 }
 
 Widget::Widget(Widget* groupWidget)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true)),
-      leakDetector_Widget()
+    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true))
 {
     pData->parent._addWidget(this);
 }
 
 Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets)),
-      leakDetector_Widget()
+    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets))
 {
     pData->parent._addWidget(this);
 }

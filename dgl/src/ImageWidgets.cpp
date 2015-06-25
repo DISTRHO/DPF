@@ -25,8 +25,7 @@ START_NAMESPACE_DGL
 ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
     : Window(parent.getApp(), parent),
       Widget((Window&)*this),
-      fImgBackground(image),
-      leakDetector_ImageAboutWindow()
+      fImgBackground(image)
 {
     Window::setResizable(false);
     Window::setSize(image.getSize());
@@ -36,8 +35,7 @@ ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
 ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
     : Window(widget->getParentApp(), widget->getParentWindow()),
       Widget((Window&)*this),
-      fImgBackground(image),
-      leakDetector_ImageAboutWindow()
+      fImgBackground(image)
 {
     Window::setResizable(false);
     Window::setSize(image.getSize());
@@ -107,16 +105,14 @@ struct ImageButton::PrivateData {
 
 ImageButton::ImageButton(Window& parent, const Image& image)
     : Widget(parent),
-      pData(new PrivateData(this, image, image, image)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, image, image, image))
 {
     setSize(image.getSize());
 }
 
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown)
     : Widget(parent),
-      pData(new PrivateData(this, imageNormal, imageNormal, imageDown)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
 
@@ -125,8 +121,7 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
 
 ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
     : Widget(parent),
-      pData(new PrivateData(this, imageNormal, imageHover, imageDown)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
@@ -135,16 +130,14 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
 
 ImageButton::ImageButton(Widget* widget, const Image& image)
     : Widget(widget->getParentWindow()),
-      pData(new PrivateData(this, image, image, image)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, image, image, image))
 {
     setSize(image.getSize());
 }
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown)
     : Widget(widget->getParentWindow()),
-      pData(new PrivateData(this, imageNormal, imageNormal, imageDown)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
 
@@ -153,8 +146,7 @@ ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& 
 
 ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
     : Widget(widget->getParentWindow()),
-      pData(new PrivateData(this, imageNormal, imageHover, imageDown)),
-      leakDetector_ImageButton()
+      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
@@ -221,8 +213,7 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fImgLayerHeight(fImgLayerWidth),
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
       fIsReady(false),
-      fTextureId(0),
-      leakDetector_ImageKnob()
+      fTextureId(0)
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerWidth, fImgLayerHeight);
@@ -250,8 +241,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fImgLayerHeight(fImgLayerWidth),
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
       fIsReady(false),
-      fTextureId(0),
-      leakDetector_ImageKnob()
+      fTextureId(0)
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerWidth, fImgLayerHeight);
@@ -279,8 +269,7 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fImgLayerHeight(imageKnob.fImgLayerHeight),
       fImgLayerCount(imageKnob.fImgLayerCount),
       fIsReady(false),
-      fTextureId(0),
-      leakDetector_ImageKnob()
+      fTextureId(0)
 {
     glGenTextures(1, &fTextureId);
     setSize(fImgLayerWidth, fImgLayerHeight);
@@ -670,8 +659,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fCallback(nullptr),
       fStartPos(),
       fEndPos(),
-      fSliderArea(),
-      leakDetector_ImageSlider()
+      fSliderArea()
 {
     pData->needsFullViewport = true;
 }
@@ -692,8 +680,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fCallback(nullptr),
       fStartPos(),
       fEndPos(),
-      fSliderArea(),
-      leakDetector_ImageSlider()
+      fSliderArea()
 {
     pData->needsFullViewport = true;
 }
@@ -997,8 +984,7 @@ ImageSwitch::ImageSwitch(Window& parent, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageDown(imageDown),
       fIsDown(false),
-      fCallback(nullptr),
-      leakDetector_ImageSwitch()
+      fCallback(nullptr)
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 
@@ -1010,8 +996,7 @@ ImageSwitch::ImageSwitch(Widget* widget, const Image& imageNormal, const Image& 
       fImageNormal(imageNormal),
       fImageDown(imageDown),
       fIsDown(false),
-      fCallback(nullptr),
-      leakDetector_ImageSwitch()
+      fCallback(nullptr)
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 
@@ -1023,8 +1008,7 @@ ImageSwitch::ImageSwitch(const ImageSwitch& imageSwitch) noexcept
       fImageNormal(imageSwitch.fImageNormal),
       fImageDown(imageSwitch.fImageDown),
       fIsDown(imageSwitch.fIsDown),
-      fCallback(imageSwitch.fCallback),
-      leakDetector_ImageSwitch()
+      fCallback(imageSwitch.fCallback)
 {
     DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
 

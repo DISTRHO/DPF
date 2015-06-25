@@ -80,16 +80,15 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0),
+          hwnd(0)
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0),
+          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(true),
           mView(nullptr),
-          mWindow(nullptr),
+          mWindow(nullptr)
 #endif
-          leakDetector_PrivateData()
     {
         DBG("Creating window without parent..."); DBGF;
         init();
@@ -109,16 +108,15 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(parent.pData),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0),
+          hwnd(0)
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0),
+          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
           mView(nullptr),
-          mWindow(nullptr),
+          mWindow(nullptr)
 #endif
-          leakDetector_PrivateData()
     {
         DBG("Creating window with parent..."); DBGF;
         init();
@@ -148,16 +146,15 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
-          hwnd(0),
+          hwnd(0)
 #elif defined(DISTRHO_OS_LINUX)
           xDisplay(nullptr),
-          xWindow(0),
+          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(parentId == 0),
           mView(nullptr),
-          mWindow(nullptr),
+          mWindow(nullptr)
 #endif
-          leakDetector_PrivateData()
     {
         if (fUsingEmbed)
         {
@@ -941,16 +938,13 @@ struct Window::PrivateData {
 // Window
 
 Window::Window(Application& app)
-    : pData(new PrivateData(app, this)),
-      leakDetector_Window() {}
+    : pData(new PrivateData(app, this)) {}
 
 Window::Window(Application& app, Window& parent)
-    : pData(new PrivateData(app, this, parent)),
-      leakDetector_Window() {}
+    : pData(new PrivateData(app, this, parent)) {}
 
 Window::Window(Application& app, intptr_t parentId)
-    : pData(new PrivateData(app, this, parentId)),
-      leakDetector_Window() {}
+    : pData(new PrivateData(app, this, parentId)) {}
 
 Window::~Window()
 {

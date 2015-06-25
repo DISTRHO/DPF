@@ -56,8 +56,7 @@ struct BlendishButton::PrivateData {
 
 BlendishButton::BlendishButton(Window& parent, const char* text, int iconId)
     : NanoWidget(parent),
-      pData(new PrivateData(this, text, iconId)),
-      leakDetector_BlendishButton()
+      pData(new PrivateData(this, text, iconId))
 {
     registerBlendishResourcesIfNeeded(getContext());
     _updateBounds();
@@ -65,8 +64,7 @@ BlendishButton::BlendishButton(Window& parent, const char* text, int iconId)
 
 BlendishButton::BlendishButton(NanoWidget* widget, const char* text, int iconId)
     : NanoWidget(widget),
-      pData(new PrivateData(this, text, iconId)),
-      leakDetector_BlendishButton()
+      pData(new PrivateData(this, text, iconId))
 {
     registerBlendishResourcesIfNeeded(getContext());
     _updateBounds();

@@ -81,13 +81,11 @@ START_NAMESPACE_DGL
 
 NanoImage::NanoImage()
     : fHandle(),
-      fSize(),
-      leakDetector_NanoImage() {}
+      fSize() {}
 
 NanoImage::NanoImage(const Handle& handle)
     : fHandle(handle),
-      fSize(),
-      leakDetector_NanoImage()
+      fSize()
 {
     DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0,);
 
@@ -176,8 +174,7 @@ NanoVG::Paint::operator NVGpaint() const noexcept
 NanoVG::NanoVG(int flags)
     : fContext(nvgCreateGL(flags)),
       fInFrame(false),
-      fIsSubWidget(false),
-      leakDetector_NanoVG()
+      fIsSubWidget(false)
 {
     DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr,);
 }
@@ -185,8 +182,7 @@ NanoVG::NanoVG(int flags)
 NanoVG::NanoVG(NanoWidget* groupWidget)
     : fContext(groupWidget->fContext),
       fInFrame(false),
-      fIsSubWidget(true),
-      leakDetector_NanoVG()
+      fIsSubWidget(true)
 {
 }
 
@@ -876,8 +872,7 @@ struct NanoWidget::PrivateData {
 NanoWidget::NanoWidget(Window& parent, int flags)
     : Widget(parent),
       NanoVG(flags),
-      nData(new PrivateData(this)),
-      leakDetector_NanoWidget()
+      nData(new PrivateData(this))
 {
     pData->needsScaling = true;
 }
@@ -885,8 +880,7 @@ NanoWidget::NanoWidget(Window& parent, int flags)
 NanoWidget::NanoWidget(Widget* groupWidget, int flags)
     : Widget(groupWidget, true),
       NanoVG(flags),
-      nData(new PrivateData(this)),
-      leakDetector_NanoWidget()
+      nData(new PrivateData(this))
 {
     pData->needsScaling = true;
 }
@@ -894,8 +888,7 @@ NanoWidget::NanoWidget(Widget* groupWidget, int flags)
 NanoWidget::NanoWidget(NanoWidget* groupWidget)
     : Widget(groupWidget, false),
       NanoVG(groupWidget),
-      nData(new PrivateData(this)),
-      leakDetector_NanoWidget()
+      nData(new PrivateData(this))
 {
     pData->needsScaling = true;
     groupWidget->nData->subWidgets.push_back(this);
