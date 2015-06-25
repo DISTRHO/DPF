@@ -32,6 +32,7 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_JOIN_MACRO_HELPER(a, b) a ## b
 #define DISTRHO_JOIN_MACRO(item1, item2) DISTRHO_JOIN_MACRO_HELPER(item1, item2)
 
+#ifdef DEBUG
 /** This macro lets you embed a leak-detecting object inside a class.\n
     To use it, simply declare a DISTRHO_LEAK_DETECTOR(YourClassName) inside a private section
     of the class declaration. E.g.
@@ -47,14 +48,20 @@ START_NAMESPACE_DISTRHO
     };
     \endcode
 */
-#define DISTRHO_LEAK_DETECTOR(ClassName)                                          \
+# define DISTRHO_LEAK_DETECTOR(ClassName)                                         \
     friend class DISTRHO_NAMESPACE::LeakedObjectDetector<ClassName>;              \
     static const char* getLeakedObjectClassName() noexcept { return #ClassName; } \
     DISTRHO_NAMESPACE::LeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector_, ClassName);
 
-#define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
-    DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)                      \
+# define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
+    DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)                       \
     DISTRHO_LEAK_DETECTOR(ClassName)
+#else
+/** Don't use leak detection on release builds. */
+# define DISTRHO_LEAK_DETECTOR(ClassName)
+# define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
+    DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)
+#endif
 
 //==============================================================================
 /**
