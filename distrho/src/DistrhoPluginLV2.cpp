@@ -124,18 +124,6 @@ public:
         // unused
         (void)fWorker;
 #endif
-
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
-        // hosts may not send all values, resulting on some invalid data
-        fTimePosition.bbt.bar   = 1;
-        fTimePosition.bbt.beat  = 1;
-        fTimePosition.bbt.tick  = 0;
-        fTimePosition.bbt.barStartTick = 0;
-        fTimePosition.bbt.beatsPerBar  = 4;
-        fTimePosition.bbt.beatType     = 4;
-        fTimePosition.bbt.ticksPerBeat = 960.0;
-        fTimePosition.bbt.beatsPerMinute = 120.0;
-#endif
     }
 
     ~PluginLv2()
@@ -167,6 +155,19 @@ public:
 
     void lv2_activate()
     {
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
+        std::memset(&fTimePosition, 0, sizeof(TimePosition));
+
+        // hosts may not send all values, resulting on some invalid data
+        fTimePosition.bbt.bar   = 1;
+        fTimePosition.bbt.beat  = 1;
+        fTimePosition.bbt.tick  = 0;
+        fTimePosition.bbt.barStartTick = 0;
+        fTimePosition.bbt.beatsPerBar  = 4;
+        fTimePosition.bbt.beatType     = 4;
+        fTimePosition.bbt.ticksPerBeat = 960.0;
+        fTimePosition.bbt.beatsPerMinute = 120.0;
+#endif
         fPlugin.activate();
     }
 
@@ -321,7 +322,7 @@ public:
                     else
                         d_stderr("Unknown lv2 ticksPerBeat value type");
 
-                    if (fLastPositionData.ticksPerBeat > 0)
+                    if (fLastPositionData.ticksPerBeat > 0.0)
                         fTimePosition.bbt.ticksPerBeat = fLastPositionData.ticksPerBeat;
                 }
 
@@ -854,7 +855,7 @@ private:
         float    beatsPerMinute;
         int64_t  frame;
         double   speed;
-        int64_t  ticksPerBeat;
+        double   ticksPerBeat;
 
         Lv2PositionData()
             : bar(-1),
@@ -864,7 +865,7 @@ private:
               beatsPerMinute(0.0f),
               frame(-1),
               speed(0.0),
-              ticksPerBeat(-1) {}
+              ticksPerBeat(-1.0) {}
 
     } fLastPositionData;
 #endif
