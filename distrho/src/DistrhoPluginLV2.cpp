@@ -574,6 +574,8 @@ public:
 
                     fTimePosition.bbt.beatsPerMinute = std::abs(beatsPerMinute);
                 }
+
+                fPlugin.setTimePosition(fTimePosition);
             }
 #endif
         }
