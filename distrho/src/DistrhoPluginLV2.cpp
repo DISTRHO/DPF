@@ -661,7 +661,7 @@ public:
     {
         for (int i=0; options[i].key != 0; ++i)
         {
-            if (options[i].key == fUridMap->map(fUridMap->handle, LV2_BUF_SIZE__maxBlockLength))
+            if (options[i].key == fUridMap->map(fUridMap->handle, LV2_BUF_SIZE__nominalBlockLength))
             {
                 if (options[i].type == fUridMap->map(fUridMap->handle, LV2_ATOM__Int))
                 {
@@ -671,7 +671,7 @@ public:
                 }
                 else
                 {
-                    d_stderr("Host changed maxBlockLength but with wrong value type");
+                    d_stderr("Host changed nominalBlockLength but with wrong value type");
                     continue;
                 }
             }
@@ -1010,12 +1010,12 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 
     for (int i=0; options[i].key != 0; ++i)
     {
-        if (options[i].key == uridMap->map(uridMap->handle, LV2_BUF_SIZE__maxBlockLength))
+        if (options[i].key == uridMap->map(uridMap->handle, LV2_BUF_SIZE__nominalBlockLength))
         {
             if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Int))
                 d_lastBufferSize = *(const int*)options[i].value;
             else
-                d_stderr("Host provides maxBlockLength but has wrong value type");
+                d_stderr("Host provides nominalBlockLength but has wrong value type");
 
             break;
         }
@@ -1023,7 +1023,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 
     if (d_lastBufferSize == 0)
     {
-        d_stderr("Host does not provide maxBlockLength option");
+        d_stderr("Host does not provide nominalBlockLength option");
         d_lastBufferSize = 2048;
     }
 
