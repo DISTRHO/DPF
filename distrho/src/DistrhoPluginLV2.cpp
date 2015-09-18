@@ -1013,7 +1013,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 #endif
 
     d_lastBufferSize = 0;
-    usingNominal = false;
+    bool usingNominal = false;
 
     for (int i=0; options[i].key != 0; ++i)
     {
