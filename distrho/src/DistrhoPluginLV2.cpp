@@ -57,9 +57,7 @@ public:
           fPortControls(nullptr),
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
-#if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
           fURIDs(uridMap),
-#endif
           fUridMap(uridMap),
           fWorker(worker)
     {
@@ -881,7 +879,6 @@ private:
 #endif
 
     // LV2 URIDs
-#if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
     struct URIDs {
         LV2_URID atomBlank;
         LV2_URID atomObject;
@@ -924,7 +921,6 @@ private:
               timeFrame(uridMap->map(uridMap->handle, LV2_TIME__frame)),
               timeSpeed(uridMap->map(uridMap->handle, LV2_TIME__speed)) {}
     } fURIDs;
-#endif
 
     // LV2 features
     const LV2_URID_Map* const fUridMap;
