@@ -677,12 +677,15 @@ struct Window::PrivateData {
         fSelf->onDisplayAfter();
     }
 
-    void onPuglKeyboard(const bool press, const uint key)
+    int onPuglKeyboard(const bool press, const uint key)
     {
         DBGp("PUGL: onKeyboard : %i %i\n", press, key);
 
         if (fModal.childFocus != nullptr)
-            return fModal.childFocus->focus();
+        {
+            fModal.childFocus->focus();
+            return 0;
+        }
 
         Widget::KeyboardEvent ev;
         ev.press = press;
@@ -695,16 +698,21 @@ struct Window::PrivateData {
             Widget* const widget(*rit);
 
             if (widget->isVisible() && widget->onKeyboard(ev))
-                break;
+                return 0;
         }
+
+        return 1;
     }
 
-    void onPuglSpecial(const bool press, const Key key)
+    int onPuglSpecial(const bool press, const Key key)
     {
         DBGp("PUGL: onSpecial : %i %i\n", press, key);
 
         if (fModal.childFocus != nullptr)
-            return fModal.childFocus->focus();
+        {
+            fModal.childFocus->focus();
+            return 0;
+        }
 
         Widget::SpecialEvent ev;
         ev.press = press;
@@ -717,8 +725,10 @@ struct Window::PrivateData {
             Widget* const widget(*rit);
 
             if (widget->isVisible() && widget->onSpecial(ev))
-                break;
+                return 0;
         }
+
+        return 1;
     }
 
     void onPuglMouse(const int button, const bool press, const int x, const int y)
@@ -889,14 +899,14 @@ struct Window::PrivateData {
         handlePtr->onPuglDisplay();
     }
 
-    static void onKeyboardCallback(PuglView* view, bool press, uint32_t key)
+    static int onKeyboardCallback(PuglView* view, bool press, uint32_t key)
     {
-        handlePtr->onPuglKeyboard(press, key);
+        return handlePtr->onPuglKeyboard(press, key);
     }
 
-    static void onSpecialCallback(PuglView* view, bool press, PuglKey key)
+    static int onSpecialCallback(PuglView* view, bool press, PuglKey key)
     {
-        handlePtr->onPuglSpecial(press, static_cast<Key>(key));
+        return handlePtr->onPuglSpecial(press, static_cast<Key>(key));
     }
 
     static void onMouseCallback(PuglView* view, int button, bool press, int x, int y)

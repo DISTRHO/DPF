@@ -430,6 +430,7 @@ dispatchKey(PuglView* view, XEvent* event, bool press)
 {
 	KeySym    sym;
 	char      str[5];
+	PuglKey   special;
 	const int n = XLookupString(&event->xkey, str, 4, &sym, NULL);
 
 	if (sym == XK_Escape && view->closeFunc && !press && !view->parent) {
@@ -438,18 +439,30 @@ dispatchKey(PuglView* view, XEvent* event, bool press)
 		return;
 	}
 	if (n == 0) {
+		goto send_event;
 		return;
 	}
 	if (n > 1) {
 		fprintf(stderr, "warning: Unsupported multi-byte key %X\n", (int)sym);
+		goto send_event;
 		return;
 	}
 
-	const PuglKey special = keySymToSpecial(sym);
+	special = keySymToSpecial(sym);
 	if (special && view->specialFunc) {
-		view->specialFunc(view, press, special);
+		if (view->specialFunc(view, press, special) == 0) {
+			return;
+		}
 	} else if (!special && view->keyboardFunc) {
-		view->keyboardFunc(view, press, str[0]);
+		if (view->keyboardFunc(view, press, str[0]) == 0) {
+			return;
+		}
+	}
+
+send_event:
+	if (view->parent) {
+		event->xany.window = view->parent;
+		XSendEvent(view->impl->display, view->parent, True, press ? KeyPressMask : KeyReleaseMask, event);
 	}
 }
 
