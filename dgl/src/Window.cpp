@@ -264,6 +264,12 @@ struct Window::PrivateData {
             fView = nullptr;
         }
 
+        if (fTitle != nullptr)
+        {
+            std::free(fTitle);
+            fTitle = nullptr;
+        }
+
 #if defined(DISTRHO_OS_WINDOWS)
         hwnd = 0;
 #elif defined(DISTRHO_OS_MAC)
