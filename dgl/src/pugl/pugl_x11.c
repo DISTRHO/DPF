@@ -460,9 +460,34 @@ dispatchKey(PuglView* view, XEvent* event, bool press)
 	}
 
 send_event:
-	if (view->parent) {
-		event->xany.window = view->parent;
-		XSendEvent(view->impl->display, view->parent, True, press ? KeyPressMask : KeyReleaseMask, event);
+	if (view->parent != 0) {
+		if (view->topparent == 0) {
+			uint nchildren;
+			Window root, newparent, oldparent, *children;
+
+			oldparent = view->topparent = view->parent;
+			while (XQueryTree(view->impl->display, oldparent, &root, &newparent, &children, &nchildren) != 0) {
+				if (nchildren == 0 || children == NULL) {
+					break;
+				}
+				XFree(children);
+				if (newparent == 0 || newparent == root) {
+					break;
+				}
+
+				// FIXME: this needs a proper check for desktop-style window
+				if (newparent < 0x6000000 &&
+					XGetTransientForHint(view->impl->display, oldparent, &newparent) == 0) {
+					break;
+				}
+
+				view->topparent = oldparent = newparent;
+			}
+		}
+
+		event->xkey.time   = 0; // purposefully set an invalid time, used for feedback detection
+		event->xany.window = view->topparent;
+		XSendEvent(view->impl->display, view->topparent, False, NoEventMask, event);
 	}
 }
 
@@ -492,7 +517,11 @@ puglProcessEvents(PuglView* view)
 			break;
 		}
 
-		if (event.xany.window != view->impl->win) {
+		if (event.xany.window != view->impl->win &&
+			(view->parent == 0 || event.xany.window != (Window)view->parent)) {
+			continue;
+		}
+		if ((event.type == KeyPress || event.type == KeyRelease) && event.xkey.time == 0) {
 			continue;
 		}
 

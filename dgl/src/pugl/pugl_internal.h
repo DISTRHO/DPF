@@ -59,6 +59,7 @@ struct PuglViewImpl {
 	PuglInternals* impl;
 
 	PuglNativeWindow parent;
+	PuglNativeWindow topparent;
 	PuglContextType  ctx_type;
 	uintptr_t        transient_parent;
 
