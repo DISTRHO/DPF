@@ -932,6 +932,7 @@ NanoWidget::NanoWidget(NanoWidget* groupWidget)
       nData(new PrivateData(this))
 {
     pData->needsScaling = true;
+    pData->skipDisplay = true;
     groupWidget->nData->subWidgets.push_back(this);
 }
 
