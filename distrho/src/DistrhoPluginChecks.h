@@ -105,5 +105,13 @@
 #endif
 
 // -----------------------------------------------------------------------
+// Disable UI if DGL is not available
+
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL)
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
+// -----------------------------------------------------------------------
 
 #endif // DISTRHO_PLUGIN_CHECKS_H_INCLUDED
