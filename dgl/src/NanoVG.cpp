@@ -16,6 +16,7 @@
 
 #include "../NanoVG.hpp"
 #include "WidgetPrivateData.hpp"
+#include "resources/Resources.h"
 
 // -----------------------------------------------------------------------
 
@@ -892,6 +893,16 @@ int NanoVG::textBreakLines(const char* string, const char* end, float breakRowWi
     if (fContext != nullptr)
         return nvgTextBreakLines(fContext, string, end, breakRowWidth, (NVGtextRow*)&rows, maxRows);
     return 0;
+}
+
+void NanoVG::loadSharedResources()
+{
+    if (nvgFindFont(fContext, NANOVG_DEJAVU_SANS_TTF) >= 0)
+        return;
+
+    using namespace dpf_resources;
+
+    nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (const uchar*)dejavusans_ttf, dejavusans_ttf_size, 0);
 }
 
 // -----------------------------------------------------------------------
