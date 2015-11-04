@@ -25,6 +25,7 @@ OBJS = \
 	src/ImageWidgets.cpp.o \
 	src/NanoVG.cpp.o \
 	src/NanoWidgets.cpp.o \
+	src/Resources.cpp.o \
 	src/Widget.cpp.o
 
 ifeq ($(MACOS),true)

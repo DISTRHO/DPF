@@ -1,7 +1,7 @@
 /* (Auto-generated binary data file). */
 
-#ifndef BINARY_DPF_RESOURCES_H
-#define BINARY_DPF_RESOURCES_H
+#ifndef BINARY_DPF_RESOURCES_HPP_INCLUDED
+#define BINARY_DPF_RESOURCES_HPP_INCLUDED
 
 namespace dpf_resources
 {

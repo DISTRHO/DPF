@@ -15,8 +15,8 @@
  */
 
 #include "../NanoVG.hpp"
+#include "Resources.hpp"
 #include "WidgetPrivateData.hpp"
-#include "resources/Resources.h"
 
 // -----------------------------------------------------------------------
 

@@ -15,11 +15,11 @@
  */
 
 #include "Common.hpp"
+#include "Resources.hpp"
 
 #define BLENDISH_IMPLEMENTATION
 #include "nanovg/nanovg.h"
 #include "oui-blendish/blendish.h"
-#include "resources/Resources.h"
 #include "../distrho/extra/String.hpp"
 
 START_NAMESPACE_DGL
