@@ -536,8 +536,9 @@ void lv2_generate_ttl(const char* const basename)
 
             presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
 
-            // TODO
-# if 0 // DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_STATE
+# warning "Exporting LV2 Presets with state not supported yet"
+#  if 0
             for (uint32_t j=0; j<numStates; ++j)
             {
                 if (j == 0)
@@ -562,6 +563,7 @@ void lv2_generate_ttl(const char* const basename)
                     presetString += "    ] ,\n";
                 }
             }
+#  endif
 # endif
 
             for (uint32_t j=0; j <numParameters; ++j)
