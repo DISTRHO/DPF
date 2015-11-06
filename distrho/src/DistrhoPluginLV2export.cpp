@@ -116,7 +116,7 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    a lv2:Plugin ;\n";
         manifestString += "    lv2:binary <" + pluginDLL + "." DISTRHO_DLL_EXTENSION "> ;\n";
 #if DISTRHO_PLUGIN_USES_MODGUI
-        manifestString += "    rdfs:seeAlso <" + pluginTTL + "> ,\n
+        manifestString += "    rdfs:seeAlso <" + pluginTTL + "> ,\n";
         manifestString += "                 <modgui.ttl> .\n";
 #else
         manifestString += "    rdfs:seeAlso <" + pluginTTL + "> .\n";
