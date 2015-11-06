@@ -156,6 +156,7 @@ void lv2_generate_ttl(const char* const basename)
             manifestString += "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
             manifestString += "    a pset:Preset ;\n";
             manifestString += "    lv2:appliesTo <" DISTRHO_PLUGIN_URI "> ;\n";
+            manifestString += "    rdfs:label \"" + plugin.getProgramName(i) + "\" ;\n\n";
             manifestString += "    rdfs:seeAlso <presets.ttl> .\n";
             manifestString += "\n";
         }
@@ -530,7 +531,6 @@ void lv2_generate_ttl(const char* const basename)
             plugin.loadProgram(i);
 
             presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
-            presetString += "    rdfs:label \"" + plugin.getProgramName(i) + "\" ;\n\n";
 
             // TODO
 # if 0 // DISTRHO_PLUGIN_WANT_STATE
