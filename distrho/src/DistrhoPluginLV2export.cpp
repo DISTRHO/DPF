@@ -148,17 +148,21 @@ void lv2_generate_ttl(const char* const basename)
         char strBuf[0xff+1];
         strBuf[0xff] = '\0';
 
+        String presetString;
+
         // Presets
         for (uint32_t i = 0; i < plugin.getProgramCount(); ++i)
         {
             std::snprintf(strBuf, 0xff, "%03i", i+1);
 
-            manifestString += "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
-            manifestString += "    a pset:Preset ;\n";
-            manifestString += "    lv2:appliesTo <" DISTRHO_PLUGIN_URI "> ;\n";
-            manifestString += "    rdfs:label \"" + plugin.getProgramName(i) + "\" ;\n\n";
-            manifestString += "    rdfs:seeAlso <presets.ttl> .\n";
-            manifestString += "\n";
+            presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
+            presetString += "    a pset:Preset ;\n";
+            presetString += "    lv2:appliesTo <" DISTRHO_PLUGIN_URI "> ;\n";
+            presetString += "    rdfs:label \"" + plugin.getProgramName(i) + "\" ;\n\n";
+            presetString += "    rdfs:seeAlso <presets.ttl> .\n";
+            presetString += "\n";
+
+            manifestString += presetString;
         }
 #endif
 
