@@ -589,7 +589,7 @@ void lv2_generate_ttl(const char* const basename)
 
         const uint32_t numParameters = plugin.getParameterCount();
         const uint32_t numPrograms   = plugin.getProgramCount();
-# if DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
         const uint32_t numStates     = plugin.getStateCount();
 # endif
 
@@ -608,20 +608,23 @@ void lv2_generate_ttl(const char* const basename)
 
             presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
 
-# if DISTRHO_PLUGIN_WANT_STATE
-# warning "Exporting LV2 Presets with state not supported yet"
-#  if 0
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
             for (uint32_t j=0; j<numStates; ++j)
             {
+                const String key   = plugin.getStateKey(j);
+                const String value = plugin.getState(key);
+
                 if (j == 0)
                     presetString += "    state:state [\n";
                 else
                     presetString += "    [\n";
 
-                presetString += "        <urn:distrho:" + plugin.getStateKey(j) + ">\n";
-                presetString += "\"\"\"\n";
-                presetString += plugin.getState(j);
-                presetString += "\"\"\"\n";
+                presetString += "        <urn:distrho:" + key + ">\n";
+
+                if (value.length() < 10)
+                    presetString += "            \"" + value + "\" ;\n";
+                else
+                    presetString += "\"\"\"\n" + value + "\"\"\" ;\n";
 
                 if (j+1 == numStates)
                 {
@@ -635,7 +638,6 @@ void lv2_generate_ttl(const char* const basename)
                     presetString += "    ] ,\n";
                 }
             }
-#  endif
 # endif
 
             for (uint32_t j=0; j <numParameters; ++j)

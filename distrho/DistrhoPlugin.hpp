@@ -644,6 +644,16 @@ protected:
     virtual void loadProgram(uint32_t index) = 0;
 #endif
 
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
+   /**
+      Get the value of an internal state.@n
+      The host may call this function from any non-realtime context.@n
+      Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_PROGRAMS or DISTRHO_PLUGIN_WANT_FULL_STATE is enabled.
+      @note The use of this function breaks compatibility with the DSSI format.
+    */
+    virtual String getState(const char* key) const = 0;
+#endif
+
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
       Change an internal state @a key to @a value.@n

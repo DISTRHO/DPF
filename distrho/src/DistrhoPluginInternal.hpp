@@ -385,6 +385,16 @@ public:
         return fData->stateDefValues[index];
     }
 
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+    String getState(const char* key) const
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackString);
+        DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0', sFallbackString);
+
+        return fPlugin->getState(key);
+    }
+# endif
+
     void setState(const char* const key, const char* const value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
