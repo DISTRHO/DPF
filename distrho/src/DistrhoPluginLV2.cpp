@@ -743,6 +743,15 @@ public:
             if (fPortControls[i] != nullptr)
                 *fPortControls[i] = fLastControlValues[i];
         }
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+        // Update state
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key = cit->first;
+            fStateMap[key] = fPlugin.getState(key);
+        }
+# endif
     }
 #endif
 
@@ -751,6 +760,15 @@ public:
 #if DISTRHO_PLUGIN_WANT_STATE
     LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle)
     {
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+        // Update current state
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key = cit->first;
+            fStateMap[key] = fPlugin.getState(key);
+        }
+# endif
+
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key   = cit->first;
