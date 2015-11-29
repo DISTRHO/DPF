@@ -488,7 +488,7 @@ void lv2_generate_ttl(const char* const basename)
 #ifdef DISTRHO_PLUGIN_BRAND
         // MOD
         pluginString += "    mod:brand \"" DISTRHO_PLUGIN_BRAND "\" ;\n";
-        pluginString += "    mod:label \"" + String(plugin.getName()) + "\" ;\n\n";
+        pluginString += "    mod:label \"" DISTRHO_PLUGIN_NAME "\" ;\n\n";
 #endif
 
         // name
