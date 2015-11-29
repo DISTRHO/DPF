@@ -581,7 +581,6 @@ void lv2_generate_ttl(const char* const basename)
         String presetsString;
         presetsString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
         presetsString += "@prefix pset:  <" LV2_PRESETS_PREFIX "> .\n";
-        presetsString += "@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n";
 # if DISTRHO_PLUGIN_WANT_STATE
         presetsString += "@prefix state: <" LV2_STATE_PREFIX "> .\n";
 # endif
@@ -609,35 +608,24 @@ void lv2_generate_ttl(const char* const basename)
             presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
+            presetString += "    state:state [\n";
             for (uint32_t j=0; j<numStates; ++j)
             {
                 const String key   = plugin.getStateKey(j);
                 const String value = plugin.getState(key);
 
-                if (j == 0)
-                    presetString += "    state:state [\n";
-                else
-                    presetString += "    [\n";
-
-                presetString += "        <urn:distrho:" + key + ">\n";
+                presetString += "        <urn:distrho:" + key + ">";
 
                 if (value.length() < 10)
-                    presetString += "            \"" + value + "\" ;\n";
+                    presetString += " \"" + value + "\" ;\n";
                 else
-                    presetString += "\"\"\"\n" + value + "\"\"\" ;\n";
-
-                if (j+1 == numStates)
-                {
-                    if (numParameters > 0)
-                        presetString += "    ] ;\n\n";
-                    else
-                        presetString += "    ] .\n\n";
-                }
-                else
-                {
-                    presetString += "    ] ,\n";
-                }
+                    presetString += "\n\"\"\"\n" + value + "\n\"\"\" ;\n";
             }
+
+            if (numParameters > 0)
+                presetString += "    ] ;\n\n";
+            else
+                presetString += "    ] .\n\n";
 # endif
 
             for (uint32_t j=0; j <numParameters; ++j)
