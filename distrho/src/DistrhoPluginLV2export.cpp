@@ -195,6 +195,10 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix doap: <http://usefulinc.com/ns/doap#> .\n";
         pluginString += "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n";
         pluginString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
+#ifdef DISTRHO_PLUGIN_BRAND
+        pluginString += "@prefix mod:  <http://moddevices.com/ns/mod#> .\n";
+#endif
+        pluginString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
         pluginString += "@prefix rsz:  <" LV2_RESIZE_PORT_PREFIX "> .\n";
 #if DISTRHO_PLUGIN_HAS_UI
         pluginString += "@prefix ui:   <" LV2_UI_PREFIX "> .\n";
@@ -266,7 +270,7 @@ void lv2_generate_ttl(const char* const basename)
                     pluginString += "        a lv2:InputPort, lv2:AudioPort ;\n";
 
                 pluginString += "        lv2:index " + String(portIndex) + " ;\n";
-                pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
+                pluginString += "        lv2:symbol \"lv2_" + port.symbol + "\" ;\n";
                 pluginString += "        lv2:name \"" + port.name + "\" ;\n";
 
                 if (port.hints & kAudioPortIsSidechain)
@@ -296,7 +300,7 @@ void lv2_generate_ttl(const char* const basename)
                     pluginString += "        a lv2:OutputPort, lv2:AudioPort ;\n";
 
                 pluginString += "        lv2:index " + String(portIndex) + " ;\n";
-                pluginString += "        lv2:symbol \"" + port.symbol + "\" ;\n";
+                pluginString += "        lv2:symbol \"lv2_" + port.symbol + "\" ;\n";
                 pluginString += "        lv2:name \"" + port.name + "\" ;\n";
 
                 if (port.hints & kAudioPortIsSidechain)
@@ -426,6 +430,14 @@ void lv2_generate_ttl(const char* const basename)
                         {
                             pluginString += "        unit:unit unit:mhz ;\n";
                         }
+                        else if (unit == "ms")
+                        {
+                            pluginString += "        unit:unit unit:ms ;\n";
+                        }
+                        else if (unit == "s")
+                        {
+                            pluginString += "        unit:unit unit:s ;\n";
+                        }
                         else if (unit == "%")
                         {
                             pluginString += "        unit:unit unit:pc ;\n";
@@ -433,8 +445,7 @@ void lv2_generate_ttl(const char* const basename)
                         else
                         {
                             pluginString += "        unit:unit [\n";
-                            pluginString += "            a unit:Unit ;\n";
-                            pluginString += "            unit:name   \"" + unit + "\" ;\n";
+                            pluginString += "            rdfs:label  \"" + unit + "\" ;\n";
                             pluginString += "            unit:symbol \"" + unit + "\" ;\n";
                             pluginString += "            unit:render \"%f " + unit + "\" ;\n";
                             pluginString += "        ] ;\n";
@@ -466,8 +477,60 @@ void lv2_generate_ttl(const char* const basename)
             }
         }
 
+        // comment
+        {
+            const String comment(plugin.getDescription());
+
+            if (comment.isNotEmpty())
+                pluginString += "    rdfs:comment \"\"\"\n" + comment + "\n\"\"\" ;\n\n";
+        }
+
+#ifdef DISTRHO_PLUGIN_BRAND
+        // MOD
+        pluginString += "    mod:brand \"" DISTRHO_PLUGIN_BRAND "\" ;\n";
+        pluginString += "    mod:label \"" + String(plugin.getName()) + "\" ;\n\n";
+#endif
+
+        // name
         pluginString += "    doap:name \"" + String(plugin.getName()) + "\" ;\n";
-        pluginString += "    doap:maintainer [ foaf:name \"" + String(plugin.getMaker()) + "\" ] .\n";
+
+        // license
+        {
+            const String license(plugin.getLicense());
+
+            if (license.contains("://"))
+                pluginString += "    doap:license <" +  license + "> ;\n\n";
+            else
+                pluginString += "    doap:license \"" +  license + "\" ;\n\n";
+        }
+
+        // developer
+        {
+            const String homepage(plugin.getHomePage());
+
+            pluginString += "    doap:maintainer [\n";
+            pluginString += "        foaf:name \"" + String(plugin.getMaker()) + "\" ;\n";
+
+            if (homepage.isNotEmpty())
+                pluginString += "        foaf:homepage <" + homepage + "> ;\n";
+
+            pluginString += "    ] ;\n\n";
+        }
+
+        {
+            const uint32_t version(plugin.getVersion());
+
+            const uint32_t majorVersion = (version & 0xFF0000) >> 16;
+            const uint32_t microVersion = (version & 0x00FF00) >> 8;
+            /* */ uint32_t minorVersion = (version & 0x0000FF) >> 0;
+
+            // NOTE: LV2 ignores 'major' version and says 0 for minor is pre-release/unstable.
+            if (majorVersion > 0)
+                minorVersion += 2;
+
+            pluginString += "    lv2:microVersion " + String(microVersion) + " ;\n";
+            pluginString += "    lv2:minorVersion " + String(minorVersion) + " .\n";
+        }
 
         pluginFile << pluginString << std::endl;
         pluginFile.close();

@@ -550,25 +550,38 @@ protected:
     virtual const char* getLabel() const = 0;
 
    /**
+      Get an extensive comment/description about the plugin.@n
+      Optional, returns nothing by default.
+    */
+    virtual const char* getDescription() const { return ""; }
+
+   /**
       Get the plugin author/maker.
     */
     virtual const char* getMaker() const = 0;
 
    /**
-      Get the plugin license name (a single line of text).@n
+      Get the plugin homepage.@n
+      Optional, returns nothing by default.
+    */
+    virtual const char* getHomePage() const { return ""; }
+
+   /**
+      Get the plugin license (a single line of text or a URL).@n
       For commercial plugins this should return some short copyright information.
     */
     virtual const char* getLicense() const = 0;
 
    /**
-      Get the plugin version, in hexadecimal.@n
-      TODO format to be defined
+      Get the plugin version, in hexadecimal.
+      @see d_version()
     */
     virtual uint32_t getVersion() const = 0;
 
    /**
       Get the plugin unique Id.@n
       This value is used by LADSPA, DSSI and VST plugin formats.
+      @see d_cconst()
     */
     virtual int64_t getUniqueId() const = 0;
 

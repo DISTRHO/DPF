@@ -196,11 +196,25 @@ public:
         return fPlugin->getLabel();
     }
 
+    const char* getDescription() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, "");
+
+        return fPlugin->getDescription();
+    }
+
     const char* getMaker() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, "");
 
         return fPlugin->getMaker();
+    }
+
+    const char* getHomePage() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, "");
+
+        return fPlugin->getHomePage();
     }
 
     const char* getLicense() const noexcept

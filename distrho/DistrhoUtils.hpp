@@ -63,6 +63,15 @@ int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_
 }
 
 /*
+ * Return an hexadecimal representation of a MAJ.MIN.MICRO version number.
+ */
+static inline
+uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept
+{
+    return (major << 16) | (minor << 8) | (micro << 0);
+}
+
+/*
  * Dummy function.
  */
 static inline
