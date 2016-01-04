@@ -54,11 +54,20 @@ public:
     /*
      * Simple char string.
      */
-    explicit String(char* const strBuf) noexcept
+    explicit String(char* const strBuf, const bool copyData = true) noexcept
         : fBuffer(_null()),
           fBufferLen(0)
     {
-        _dup(strBuf);
+        if (copyData || strBuf == nullptr)
+        {
+            _dup(strBuf);
+        }
+        else
+        {
+            fBuffer    = strBuf;
+            fBufferLen = std::strlen(strBuf);
+        }
+
     }
 
     /*
