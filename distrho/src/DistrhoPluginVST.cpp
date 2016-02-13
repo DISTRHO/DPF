@@ -546,7 +546,7 @@ public:
 
                 fStateChunk = new char[chunkSize];
                 std::memcpy(fStateChunk, chunkStr.buffer(), chunkStr.length());
-                fStateChunk[chunkSize] = '\0';
+                fStateChunk[chunkSize-1] = '\0';
 
                 for (std::size_t i=0; i<chunkSize; ++i)
                 {
