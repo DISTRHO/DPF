@@ -42,6 +42,10 @@
 # endif
 #endif
 
+#if defined(DISTRHO_OS_LINUX) || defined(DISTRHO_OS_MAC)
+# define DISTRHO_OS_UNIX
+#endif
+
 #ifndef DISTRHO_DLL_EXTENSION
 # define DISTRHO_DLL_EXTENSION "so"
 #endif
