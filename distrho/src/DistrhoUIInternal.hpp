@@ -30,9 +30,12 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // Static data, see DistrhoUI.cpp
 
-extern double  d_lastUiSampleRate;
-extern void*   d_lastUiDspPtr;
-extern Window* d_lastUiWindow;
+extern double    d_lastUiSampleRate;
+extern void*     d_lastUiDspPtr;
+#ifdef HAVE_DGL
+extern Window*   d_lastUiWindow;
+#endif
+extern uintptr_t g_nextWindowId;
 
 // -----------------------------------------------------------------------
 // UI callbacks
