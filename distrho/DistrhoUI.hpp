@@ -20,7 +20,10 @@
 #include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#if DISTRHO_UI_USE_NANOVG
+#ifndef HAVE_DGL
+# include "extra/ExternalWindow.hpp"
+typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
+#elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL::NanoWidget UIWidget;
 #else

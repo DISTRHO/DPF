@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,12 +18,14 @@
 #define DISTRHO_UI_INTERNAL_HPP_INCLUDED
 
 #include "../DistrhoUI.hpp"
-#include "../../dgl/Application.hpp"
-#include "../../dgl/Window.hpp"
 
+#ifdef HAVE_DGL
+# include "../../dgl/Application.hpp"
+# include "../../dgl/Window.hpp"
 using DGL::Application;
 using DGL::IdleCallback;
 using DGL::Window;
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -131,6 +133,7 @@ struct UI::PrivateData {
 // -----------------------------------------------------------------------
 // Plugin Window, needed to take care of resize properly
 
+#ifdef HAVE_DGL
 static inline
 UI* createUiWrapper(void* const dspPtr, Window* const window)
 {
@@ -194,6 +197,18 @@ private:
     UI* const fUI;
     bool fIsReady;
 };
+#else
+static inline
+UI* createUiWrapper(void* const dspPtr, const uintptr_t winId)
+{
+    d_lastUiDspPtr = dspPtr;
+    g_nextWindowId = winId;
+    UI* const ret  = createUI();
+    d_lastUiDspPtr = nullptr;
+    g_nextWindowId = 0;
+    return ret;
+}
+#endif
 
 // -----------------------------------------------------------------------
 // UI exporter class
@@ -204,10 +219,14 @@ public:
     UIExporter(void* const ptr, const intptr_t winId,
                const editParamFunc editParamCall, const setParamFunc setParamCall, const setStateFunc setStateCall, const sendNoteFunc sendNoteCall, const setSizeFunc setSizeCall,
                void* const dspPtr = nullptr)
+#ifdef HAVE_DGL
         : glApp(),
           glWindow(glApp, winId, dspPtr),
           fChangingSize(false),
           fUI(glWindow.getUI()),
+#else
+        : fUI(createUiWrapper(dspPtr, winId)),
+#endif
           fData((fUI != nullptr) ? fUI->pData : nullptr)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
@@ -225,24 +244,42 @@ public:
 
     uint getWidth() const noexcept
     {
+#ifdef HAVE_DGL
         return glWindow.getWidth();
+#else
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, 1);
+        return fUI->getWidth();
+#endif
     }
 
     uint getHeight() const noexcept
     {
+#ifdef HAVE_DGL
         return glWindow.getHeight();
+#else
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, 1);
+        return fUI->getHeight();
+#endif
     }
 
     bool isVisible() const noexcept
     {
+#ifdef HAVE_DGL
         return glWindow.isVisible();
+#else
+        return true;
+#endif
     }
 
     // -------------------------------------------------------------------
 
     intptr_t getWindowId() const noexcept
     {
+#ifdef HAVE_DGL
         return glWindow.getWindowId();
+#else
+        return 0;
+#endif
     }
 
     // -------------------------------------------------------------------
@@ -285,6 +322,7 @@ public:
 
     // -------------------------------------------------------------------
 
+#ifdef HAVE_DGL
     void exec(IdleCallback* const cb)
     {
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
@@ -352,6 +390,14 @@ public:
 
         return ! glApp.isQuiting();
     }
+#else
+    bool idle() { return true; }
+    void quit() {}
+    void setWindowSize(const uint width, const uint height, const bool updateUI = false) {}
+    void setWindowTitle(const char* const uiTitle) {}
+    void setWindowTransientWinId(const uintptr_t winId) {}
+    bool setWindowVisible(const bool yesNo) { return true; }
+#endif
 
     // -------------------------------------------------------------------
 
@@ -371,6 +417,7 @@ public:
     }
 
 private:
+#ifdef HAVE_DGL
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
@@ -379,6 +426,7 @@ private:
 
     // prevent recursion
     bool fChangingSize;
+#endif
 
     // -------------------------------------------------------------------
     // Widget and DistrhoUI data
