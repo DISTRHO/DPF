@@ -19,6 +19,14 @@
 
 #include "../DistrhoUtils.hpp"
 
+#ifdef DISTRHO_OS_UNIX
+# include <cerrno>
+# include <sys/wait.h>
+# include <unistd.h>
+#else
+# error Unsupported platform!
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -29,7 +37,13 @@ class ExternalWindow
 public:
     ExternalWindow(const uint w = 1, const uint h = 1)
         : width(w),
-          height(h) {}
+          height(h),
+          pid(0) {}
+
+    ~ExternalWindow()
+    {
+        terminateAndWaitForProcess();
+    }
 
     uint getWidth() const noexcept
     {
@@ -41,17 +55,99 @@ public:
         return height;
     }
 
-    void setSize(const uint w, const uint h) noexcept
+    bool isRunning() noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(w > 0 && h > 0,)
+        if (pid <= 0)
+            return false;
 
-        width = w;
-        height = h;
+        const pid_t p = ::waitpid(pid, nullptr, WNOHANG);
+
+        if (p == pid || (p == -1 && errno == ECHILD))
+        {
+            printf("NOTICE: Child process exited while idle\n");
+            pid = 0;
+            return false;
+        }
+
+        return true;
+    }
+
+protected:
+    bool startExternalProcess(const char* args[])
+    {
+        terminateAndWaitForProcess();
+
+        pid = vfork();
+
+        switch (pid)
+        {
+        case 0:
+            execvp(args[0], (char**)args);
+            _exit(1);
+            return false;
+
+        case -1:
+            printf("Could not start external ui\n");
+            return false;
+
+        default:
+            return true;
+        }
     }
 
 private:
     uint width;
     uint height;
+    pid_t pid;
+
+    friend class UIExporter;
+
+    void terminateAndWaitForProcess()
+    {
+        if (pid <= 0)
+            return;
+
+        printf("Waiting for previous process to stop,,,\n");
+
+        bool sendTerm = true;
+
+        for (pid_t p;;)
+        {
+            p = ::waitpid(pid, nullptr, WNOHANG);
+
+            switch (p)
+            {
+            case 0:
+                if (sendTerm)
+                {
+                    sendTerm = false;
+                    ::kill(pid, SIGTERM);
+                }
+                break;
+
+            case -1:
+                if (errno == ECHILD)
+                {
+                    printf("Done! (no such process)\n");
+                    pid = 0;
+                    return;
+                }
+                break;
+
+            default:
+                if (p == pid)
+                {
+                    printf("Done! (clean wait)\n");
+                    pid = 0;
+                    return;
+                }
+                break;
+            }
+
+            // 5 msec
+            usleep(5*1000);
+        }
+    }
 
     DISTRHO_DECLARE_NON_COPY_CLASS(ExternalWindow)
 };
