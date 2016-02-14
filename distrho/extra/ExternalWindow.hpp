@@ -17,7 +17,7 @@
 #ifndef DISTRHO_EXTERNAL_WINDOW_HPP_INCLUDED
 #define DISTRHO_EXTERNAL_WINDOW_HPP_INCLUDED
 
-#include "../DistrhoUtils.hpp"
+#include "String.hpp"
 
 #ifdef DISTRHO_OS_UNIX
 # include <cerrno>
@@ -35,12 +35,13 @@ START_NAMESPACE_DISTRHO
 class ExternalWindow
 {
 public:
-    ExternalWindow(const uint w = 1, const uint h = 1)
+    ExternalWindow(const uint w = 1, const uint h = 1, const char* const t = "")
         : width(w),
           height(h),
+          title(t),
           pid(0) {}
 
-    ~ExternalWindow()
+    virtual ~ExternalWindow()
     {
         terminateAndWaitForProcess();
     }
@@ -53,6 +54,16 @@ public:
     uint getHeight() const noexcept
     {
         return height;
+    }
+
+    const char* getTitle() const noexcept
+    {
+        return title;
+    }
+
+    void setTitle(const char* const t) noexcept
+    {
+        title = t;
     }
 
     bool isRunning() noexcept
@@ -98,6 +109,7 @@ protected:
 private:
     uint width;
     uint height;
+    String title;
     pid_t pid;
 
     friend class UIExporter;

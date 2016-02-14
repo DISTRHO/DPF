@@ -370,6 +370,16 @@ public:
 
     // -------------------------------------------------------------------
 
+    void setWindowTitle(const char* const uiTitle)
+    {
+#ifdef HAVE_DGL
+        glWindow.setTitle(uiTitle);
+#else
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+        fUI->setTitle(uiTitle);
+#endif
+    }
+
 #ifdef HAVE_DGL
     void setWindowSize(const uint width, const uint height, const bool updateUI = false)
     {
@@ -386,11 +396,6 @@ public:
         fChangingSize = false;
     }
 
-    void setWindowTitle(const char* const uiTitle)
-    {
-        glWindow.setTitle(uiTitle);
-    }
-
     void setWindowTransientWinId(const uintptr_t winId)
     {
         glWindow.setTransientWinId(winId);
@@ -404,7 +409,6 @@ public:
     }
 #else
     void setWindowSize(const uint width, const uint height, const bool updateUI = false) {}
-    void setWindowTitle(const char* const uiTitle) {}
     void setWindowTransientWinId(const uintptr_t winId) {}
     bool setWindowVisible(const bool yesNo) { return true; }
 #endif
