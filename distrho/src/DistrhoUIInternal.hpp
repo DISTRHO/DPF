@@ -267,7 +267,8 @@ public:
 #ifdef HAVE_DGL
         return glWindow.isVisible();
 #else
-        return true;
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, false);
+        return fUI->isRunning();
 #endif
     }
 
@@ -338,27 +339,38 @@ public:
         if (glWindow.isReady())
             fUI->uiIdle();
     }
+#endif
 
     bool idle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr, false);
 
+#ifdef HAVE_DGL
         glApp.idle();
 
         if (glWindow.isReady())
             fUI->uiIdle();
 
         return ! glApp.isQuiting();
+#else
+        return fUI->isRunning();
+#endif
     }
 
     void quit()
     {
+#ifdef HAVE_DGL
         glWindow.close();
         glApp.quit();
+#else
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+        fUI->terminateAndWaitForProcess();
+#endif
     }
 
     // -------------------------------------------------------------------
 
+#ifdef HAVE_DGL
     void setWindowSize(const uint width, const uint height, const bool updateUI = false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
@@ -391,8 +403,6 @@ public:
         return ! glApp.isQuiting();
     }
 #else
-    bool idle() { return true; }
-    void quit() {}
     void setWindowSize(const uint width, const uint height, const bool updateUI = false) {}
     void setWindowTitle(const char* const uiTitle) {}
     void setWindowTransientWinId(const uintptr_t winId) {}
