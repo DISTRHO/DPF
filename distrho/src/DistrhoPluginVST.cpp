@@ -636,36 +636,38 @@ public:
             }
             break;
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_OS_MAC
         case effCanDo:
             if (const char* const canDo = (const char*)ptr)
             {
-# if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
+#if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
                 if (std::strcmp(canDo, "hasCockosViewAsConfig") == 0)
                 {
                     fUsingNsView = true;
                     return 0xbeef0000;
                 }
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                if (std::strcmp(canDo, "receiveVstEvents") == 0)
+#endif
+                if (std::strcmp(canDo, "receiveVstEvents") == 0 ||
+                    std::strcmp(canDo, "receiveVstMidiEvent") == 0)
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                     return 1;
-                if (std::strcmp(canDo, "receiveVstMidiEvent") == 0)
+#else
+                    return -1;
+#endif
+                if (std::strcmp(canDo, "sendVstEvents") == 0 ||
+                    std::strcmp(canDo, "sendVstMidiEvent") == 0)
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
                     return 1;
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-                if (std::strcmp(canDo, "sendVstEvents") == 0)
-                    return 1;
-                if (std::strcmp(canDo, "sendVstMidiEvent") == 0)
-                    return 1;
-# endif
-# if DISTRHO_PLUGIN_WANT_TIMEPOS
+#else
+                    return -1;
+#endif
                 if (std::strcmp(canDo, "receiveVstTimeInfo") == 0)
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
                     return 1;
-# endif
+#else
+                    return -1;
+#endif
             }
             break;
-#endif
 
         //case effStartProcess:
         //case effStopProcess:
