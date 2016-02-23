@@ -340,6 +340,8 @@ public:
 
     intptr_t vst_dispatcher(const int32_t opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt)
     {
+        intptr_t ret = 0;
+
         switch (opcode)
         {
         case effGetProgram:
@@ -512,7 +514,7 @@ public:
             {
                 fStateChunk    = new char[1];
                 fStateChunk[0] = '\0';
-                return 1;
+                ret = 1;
             }
             else
             {
@@ -554,11 +556,11 @@ public:
                         fStateChunk[i] = '\0';
                 }
 
-                return chunkSize;
+                ret = chunkSize;
             }
 
             *(void**)ptr = fStateChunk;
-            break;
+            return ret;
 
         case effSetChunk:
         {
