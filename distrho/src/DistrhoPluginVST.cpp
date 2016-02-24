@@ -340,7 +340,9 @@ public:
 
     intptr_t vst_dispatcher(const int32_t opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt)
     {
+#if DISTRHO_PLUGIN_WANT_STATE
         intptr_t ret = 0;
+#endif
 
         switch (opcode)
         {
