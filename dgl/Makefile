@@ -12,9 +12,6 @@ BUILD_C_FLAGS   += $(DGL_FLAGS) -I. -Isrc
 BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc
 LINK_FLAGS      += $(DGL_LIBS)
 
-# needed by oui-blendish
-BUILD_CXX_FLAGS += -Wno-unused-parameter
-
 # --------------------------------------------------------------
 
 OBJS = \
@@ -24,7 +21,6 @@ OBJS = \
 	src/Image.cpp.o \
 	src/ImageWidgets.cpp.o \
 	src/NanoVG.cpp.o \
-	src/NanoWidgets.cpp.o \
 	src/Resources.cpp.o \
 	src/Widget.cpp.o
 

@@ -159,7 +159,7 @@ ImageButton::~ImageButton()
 
 void ImageButton::setCallback(Callback* callback) noexcept
 {
-    pData->impl.callback_i = callback;
+    pData->impl.callback_img = callback;
 }
 
 void ImageButton::onDisplay()
