@@ -23,10 +23,10 @@ endif
 # Set build and link flags
 
 BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
-BASE_OPTS  = -O2 -ffast-math -mtune=generic -msse -msse2 -fdata-sections -ffunction-sections
+BASE_OPTS  = -O2 -mtune=generic -msse -msse2 -fdata-sections -ffunction-sections
 
-ifneq ($(MACOS),true)
-# MacOS doesn't support this
+ifneq ($(MACOS_OLD),true)
+# Old MacOS doesn't support this
 BASE_OPTS += -mfpmath=sse
 endif
 
@@ -40,19 +40,13 @@ endif
 
 ifeq ($(RASPPI),true)
 # Raspberry-Pi optimization flags
-BASE_OPTS  = -O2 -ffast-math -march=armv6 -mfpu=vfp -mfloat-abi=hard
-LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
-endif
-
-ifeq ($(PANDORA),true)
-# OpenPandora optimization flags
-BASE_OPTS  = -O2 -ffast-math -march=armv7-a -mcpu=cortex-a8 -mtune=cortex-a8 -mfpu=neon -mfloat-abi=softfp
+BASE_OPTS  = -O2 -march=armv6 -mfpu=vfp -mfloat-abi=hard
 LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
 endif
 
 ifneq ($(NOOPT),true)
 # No optimization flags
-BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
+BASE_OPTS  = -O2 -fdata-sections -ffunction-sections
 endif
 
 ifneq ($(WIN32),true)
@@ -68,14 +62,18 @@ BASE_FLAGS += -DNDEBUG $(BASE_OPTS) -fvisibility=hidden
 CXXFLAGS   += -fvisibility-inlines-hidden
 endif
 
-BUILD_C_FLAGS   = $(BASE_FLAGS) -std=c99 -std=gnu99 $(CFLAGS)
-BUILD_CXX_FLAGS = $(BASE_FLAGS) -std=c++0x -std=gnu++0x $(CXXFLAGS) $(CPPFLAGS)
+BUILD_C_FLAGS   = $(BASE_FLAGS) -std=c99 $(CFLAGS)
+BUILD_CXX_FLAGS = $(BASE_FLAGS) -std=c++11 $(CXXFLAGS) $(CPPFLAGS)
 LINK_FLAGS      = $(LINK_OPTS) -Wl,--no-undefined $(LDFLAGS)
 
 ifeq ($(MACOS),true)
+# 'no-undefined' is always enabled
+LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
+endif
+
+ifeq ($(MACOS_OLD),true)
 # No C++11 support
 BUILD_CXX_FLAGS = $(BASE_FLAGS) $(CXXFLAGS) $(CPPFLAGS)
-LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
 endif
 
 # --------------------------------------------------------------
