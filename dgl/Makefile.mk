@@ -39,7 +39,7 @@ BASE_OPTS  = -O2 -march=armv6 -mfpu=vfp -mfloat-abi=hard
 LINK_OPTS  = -Wl,-O1 -Wl,--as-needed -Wl,--strip-all
 endif
 
-ifneq ($(NOOPT),true)
+ifeq ($(NOOPT),true)
 # No optimization flags
 BASE_OPTS  = -O2 -fdata-sections -ffunction-sections
 endif
