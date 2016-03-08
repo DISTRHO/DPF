@@ -25,11 +25,6 @@ endif
 BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
 BASE_OPTS  = -O2 -mtune=generic -msse -msse2 -fdata-sections -ffunction-sections
 
-ifneq ($(MACOS_OLD),true)
-# Old MacOS doesn't support this
-BASE_OPTS += -mfpmath=sse
-endif
-
 ifeq ($(MACOS),true)
 # MacOS linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip -Wl,-dead_strip_dylibs
@@ -64,11 +59,13 @@ endif
 
 BUILD_C_FLAGS   = $(BASE_FLAGS) -std=c99 $(CFLAGS)
 BUILD_CXX_FLAGS = $(BASE_FLAGS) -std=c++11 $(CXXFLAGS) $(CPPFLAGS)
-LINK_FLAGS      = $(LINK_OPTS) -Wl,--no-undefined $(LDFLAGS)
 
 ifeq ($(MACOS),true)
 # 'no-undefined' is always enabled
 LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
+else
+# Specify 'no-undefined'
+LINK_FLAGS      = $(LINK_OPTS) -Wl,--no-undefined $(LDFLAGS)
 endif
 
 ifeq ($(MACOS_OLD),true)
