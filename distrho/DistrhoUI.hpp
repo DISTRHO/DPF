@@ -119,6 +119,13 @@ public:
              it will return 0 when called from anywhere else.
     */
     static uintptr_t getNextWindowId() noexcept;
+
+   /**
+      Get the bundle path that will be used for the next UI.
+      @note: This function is only valid during createUI(),
+             it will return null when called from anywhere else.
+    */
+    static const char* getNextBundlePath() noexcept;
 #endif
 
 protected:
