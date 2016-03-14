@@ -99,19 +99,21 @@ void* UI::getPluginInstancePointer() const noexcept
 }
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EMBED_UI && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
- * External embeddable UI helpers */
-
-uintptr_t UI::getNextWindowId() noexcept
-{
-    return g_nextWindowId;
-}
+ * External UI helpers */
 
 const char* UI::getNextBundlePath() noexcept
 {
     return g_nextBundlePath;
 }
+
+# if DISTRHO_PLUGIN_HAS_EMBED_UI
+uintptr_t UI::getNextWindowId() noexcept
+{
+    return g_nextWindowId;
+}
+# endif
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------
