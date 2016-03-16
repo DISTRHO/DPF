@@ -17,6 +17,7 @@ It uses the same format as the JACK Transport API, making porting some code easi
 
 
 List of plugins made with DPF:<br/>
+ - [DISTRHO glBars](https://github.com/DISTRHO/glBars)
  - [DISTRHO Kars](https://github.com/DISTRHO/Kars)
  - [DISTRHO Mini-Series](https://github.com/DISTRHO/Mini-Series)
  - [DISTRHO MVerb](https://github.com/DISTRHO/MVerb)
