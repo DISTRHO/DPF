@@ -199,8 +199,6 @@ puglDisplay(PuglView* view)
 
 - (void) reshape
 {
-	[[self openGLContext] update];
-
 	if (!puglview) {
 		/* NOTE: Apparently reshape gets called when the GC gets around to
 		   deleting the view (?), so we must have reset puglview to NULL when
@@ -208,6 +206,8 @@ puglDisplay(PuglView* view)
 		*/
 		return;
 	}
+
+	[[self openGLContext] update];
 
 	NSRect bounds = [self bounds];
 	int    width  = bounds.size.width;
@@ -438,11 +438,13 @@ void
 puglLeaveContext(PuglView* view, bool flush)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL && flush) {
-		if (view->impl->glview->doubleBuffered) {
-			[[view->impl->glview openGLContext] flushBuffer];
-		} else {
-			glFlush();
+	if (view->ctx_type == PUGL_GL) {
+		if (flush) {
+			if (view->impl->glview->doubleBuffered) {
+				[[view->impl->glview openGLContext] flushBuffer];
+			} else {
+				glFlush();
+			}
 		}
 		//[NSOpenGLContext clearCurrentContext];
 	}
