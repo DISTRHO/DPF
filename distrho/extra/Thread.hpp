@@ -37,7 +37,7 @@ protected:
      * Constructor.
      */
     Thread(const char* const threadName = nullptr) noexcept
-        : fLock(),
+        : fLock(false),
           fSignal(fLock),
           fName(threadName),
 #ifdef PTW32_DLLPORT
