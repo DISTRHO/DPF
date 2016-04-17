@@ -9,10 +9,10 @@ build: ../lv2_ttl_generator
 endif
 
 ../lv2_ttl_generator: lv2_ttl_generator.c
-	$(CC) $< -o $@ -ldl
+	$(CC) $< $(CFLAGS) -o $@ $(LDFLAGS) -ldl
 
 ../lv2_ttl_generator.exe: lv2_ttl_generator.c
-	$(CC) $< -o $@ -static
+	$(CC) $< $(CFLAGS) -o $@ $(LDFLAGS) -static
 	touch ../lv2_ttl_generator
 
 clean:
