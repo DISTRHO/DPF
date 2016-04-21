@@ -359,7 +359,7 @@ void lv2_generate_ttl(const char* const basename)
             pluginString += "        lv2:name \"Latency\" ;\n";
             pluginString += "        lv2:symbol \"lv2_latency\" ;\n";
             pluginString += "        lv2:designation lv2:latency ;\n";
-            pluginString += "        lv2:portProperty lv2:reportsLatency, lv2:integer ;\n";
+            pluginString += "        lv2:portProperty lv2:reportsLatency, lv2:integer, <" LV2_PORT_PROPS__notOnGUI "> ;\n";
             pluginString += "    ] ;\n\n";
             ++portIndex;
 #endif
