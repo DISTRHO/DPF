@@ -114,7 +114,9 @@ public:
         {
             const uint32_t parameterOffset(fUI.getParameterOffset());
 
-            DISTRHO_SAFE_ASSERT_RETURN(rindex >= parameterOffset,)
+            if (rindex < parameterOffset)
+                return;
+
             DISTRHO_SAFE_ASSERT_RETURN(bufferSize == sizeof(float),)
 
             const float value(*(const float*)buffer);
