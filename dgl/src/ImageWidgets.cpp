@@ -195,6 +195,7 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fImage(image),
       fMinimum(0.0f),
       fMaximum(1.0f),
+      fScrollStep(0.0f),
       fStep(0.0f),
       fValue(0.5f),
       fValueDef(fValue),
@@ -223,6 +224,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fImage(image),
       fMinimum(0.0f),
       fMaximum(1.0f),
+      fScrollStep(0.0f),
       fStep(0.0f),
       fValue(0.5f),
       fValueDef(fValue),
@@ -251,6 +253,7 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fImage(imageKnob.fImage),
       fMinimum(imageKnob.fMinimum),
       fMaximum(imageKnob.fMaximum),
+      fScrollStep(imageKnob.fScrollStep),
       fStep(imageKnob.fStep),
       fValue(imageKnob.fValue),
       fValueDef(imageKnob.fValueDef),
@@ -279,6 +282,7 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     fImage    = imageKnob.fImage;
     fMinimum  = imageKnob.fMinimum;
     fMaximum  = imageKnob.fMaximum;
+    fScrollStep = imageKnob.fScrollStep;
     fStep     = imageKnob.fStep;
     fValue    = imageKnob.fValue;
     fValueDef = imageKnob.fValueDef;
@@ -361,6 +365,11 @@ void ImageKnob::setRange(float min, float max) noexcept
 
     fMinimum = min;
     fMaximum = max;
+}
+
+void ImageKnob::setScrollStep(float step) noexcept
+{
+    fScrollStep = step;
 }
 
 void ImageKnob::setStep(float step) noexcept
@@ -599,8 +608,16 @@ bool ImageKnob::onScroll(const ScrollEvent& ev)
     if (! contains(ev.pos))
         return false;
 
-    const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-    float       value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
+    float value, d;
+
+    if (d_isZero(fScrollStep)) {
+        d = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+        value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
+    } else {
+        d = (ev.mod & kModifierControl) ? fScrollStep * 0.1f : fScrollStep;
+        value = (fUsingLog ? _invlogscale(fValueTmp + d * ev.delta.getY())
+                           : fValueTmp + d * ev.delta.getY());
+    }
 
     if (fUsingLog)
         value = _logscale(value);
