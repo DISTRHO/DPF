@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['glyphposition',['GlyphPosition',['../structNanoVG_1_1GlyphPosition.html',1,'NanoVG']]]
+  ['filebrowseroptions',['FileBrowserOptions',['../structWindow_1_1FileBrowserOptions.html',1,'Window']]]
 ];

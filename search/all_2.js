@@ -3,7 +3,6 @@ var searchData=
   ['callback',['Callback',['../classImageButton_1_1Callback.html',1,'ImageButton']]],
   ['callback',['Callback',['../classImageKnob_1_1Callback.html',1,'ImageKnob']]],
   ['callback',['Callback',['../classImageSwitch_1_1Callback.html',1,'ImageSwitch']]],
-  ['callback',['Callback',['../classBlendishButton_1_1Callback.html',1,'BlendishButton']]],
   ['callback',['Callback',['../classImageSlider_1_1Callback.html',1,'ImageSlider']]],
   ['cancelframe',['cancelFrame',['../classNanoVG.html#a5c47888aaa114b8ca9a0431383c1c0f1',1,'NanoVG']]],
   ['circle',['Circle',['../classCircle.html',1,'Circle&lt; T &gt;'],['../classCircle.html#a69bf0ddae80047ef3e9b230930eb1ba6',1,'Circle::Circle() noexcept'],['../classCircle.html#a391892aed07c5239153a038fea80423b',1,'Circle::Circle(const T &amp;x, const T &amp;y, const float size, const uint numSegments=300)'],['../classCircle.html#ab0e9f6bedf3dfa9fd958c573eca46368',1,'Circle::Circle(const Point&lt; T &gt; &amp;pos, const float size, const uint numSegments=300)'],['../classCircle.html#aeee15927ea13e9114aa53a8c26c5e1df',1,'Circle::Circle(const Circle&lt; T &gt; &amp;cir) noexcept'],['../classNanoVG.html#aa3230d48ce48f050d3ad636fc2ff4235',1,'NanoVG::circle()']]],
