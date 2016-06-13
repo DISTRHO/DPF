@@ -14,7 +14,9 @@ CXX ?= g++
 ifneq ($(HAIKU),true)
 ifneq ($(MACOS),true)
 ifneq ($(WIN32),true)
+ifneq ($(WIN64),true)
 LINUX=true
+endif
 endif
 endif
 endif
@@ -45,8 +47,14 @@ BASE_OPTS  = -O2 -fdata-sections -ffunction-sections
 endif
 
 ifneq ($(WIN32),true)
+ifneq ($(WIN64),true)
 # not needed for Windows
 BASE_FLAGS += -fPIC -DPIC
+endif
+endif
+
+ifeq ($(WIN32),true)
+BASE_OPTS += -m32
 endif
 
 ifeq ($(DEBUG),true)
@@ -121,6 +129,10 @@ DGL_LIBS  = -framework OpenGL -framework Cocoa
 endif
 
 ifeq ($(WIN32),true)
+DGL_LIBS  = -lopengl32 -lgdi32
+endif
+
+ifeq ($(WIN64),true)
 DGL_LIBS  = -lopengl32 -lgdi32
 endif
 
