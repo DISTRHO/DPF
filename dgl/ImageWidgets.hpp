@@ -112,7 +112,6 @@ public:
     void setDefault(float def) noexcept;
     void setRange(float min, float max) noexcept;
     void setStep(float step) noexcept;
-    void setScrollStep(float step) noexcept;
     void setValue(float value, bool sendCallback = false) noexcept;
     void setUsingLogScale(bool yesNo) noexcept;
 
@@ -132,7 +131,6 @@ private:
     Image fImage;
     float fMinimum;
     float fMaximum;
-    float fScrollStep;
     float fStep;
     float fValue;
     float fValueDef;
