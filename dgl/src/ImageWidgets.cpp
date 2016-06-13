@@ -630,14 +630,14 @@ float ImageKnob::_logscale(float value) const
 {
     const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
     const float a = fMaximum/std::exp(fMaximum*b);
-    return a * std::exp(b*value);
+    return a * std::exp(b * std::max(std::min(value, fMaximum), fMinimum));
 }
 
 float ImageKnob::_invlogscale(float value) const
 {
     const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
     const float a = fMaximum/std::exp(fMaximum*b);
-    return std::log(value/a)/b;
+    return std::log(std::max(std::min(value, fMaximum), fMinimum) / a) / b;
 }
 
 // -----------------------------------------------------------------------
