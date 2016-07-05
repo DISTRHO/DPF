@@ -250,17 +250,16 @@ public:
                 midiEvents[j].data[2] = 0;
                 midiEvents[j].data[3] = 0;
                 break;
-#if 0 // TODO
             case SND_SEQ_EVENT_PITCHBEND:
                 j = midiEventCount++;
                 midiEvents[j].frame   = seqEvent.time.tick;
                 midiEvents[j].size    = 3;
                 midiEvents[j].data[0] = 0xE0 + seqEvent.data.control.channel;
-                midiEvents[j].data[1] = 0;
-                midiEvents[j].data[2] = 0;
+				uint16_t tempvalue = seqEvent.data.control.value + 8192;
+                midiEvents[j].data[1] = tempvalue & 0x7F;
+                midiEvents[j].data[2] = tempvalue >> 7;
                 midiEvents[j].data[3] = 0;
                 break;
-#endif
             }
         }
 
