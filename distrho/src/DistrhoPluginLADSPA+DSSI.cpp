@@ -255,7 +255,7 @@ public:
                 midiEvents[j].frame   = seqEvent.time.tick;
                 midiEvents[j].size    = 3;
                 midiEvents[j].data[0] = 0xE0 + seqEvent.data.control.channel;
-				uint16_t tempvalue = seqEvent.data.control.value + 8192;
+                uint16_t tempvalue = seqEvent.data.control.value + 8192;
                 midiEvents[j].data[1] = tempvalue & 0x7F;
                 midiEvents[j].data[2] = tempvalue >> 7;
                 midiEvents[j].data[3] = 0;
