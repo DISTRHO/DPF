@@ -290,6 +290,14 @@ struct Parameter {
     ParameterRanges ranges;
 
    /**
+      MIDI CC to use by default on this parameter.@n
+      A value of 0 or 32 (bank change) is considered invalid.@n
+      Must also be less or equal to 120.
+      @note This value is only a hint! Hosts might map it automatically or completely ignore it.
+    */
+    uint8_t midiCC;
+
+   /**
       Default constructor for a null parameter.
     */
     Parameter() noexcept
@@ -297,7 +305,8 @@ struct Parameter {
           name(),
           symbol(),
           unit(),
-          ranges() {}
+          ranges(),
+          midiCC(0) {}
 
    /**
       Constructor using custom values.
@@ -307,7 +316,8 @@ struct Parameter {
           name(n),
           symbol(s),
           unit(u),
-          ranges(def, min, max) {}
+          ranges(def, min, max),
+          midiCC(0) {}
 };
 
 /**

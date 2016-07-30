@@ -323,6 +323,13 @@ public:
         return fData->parameters[index].ranges;
     }
 
+    uint8_t getParameterMidiCC(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0);
+
+        return fData->parameters[index].midiCC;
+    }
+
     float getParameterValue(const uint32_t index) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);

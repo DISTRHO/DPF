@@ -328,6 +328,16 @@ public:
         }
     }
 # endif
+
+    int dssi_get_midi_controller_for_port(const ulong port) noexcept
+    {
+        const uint8_t midiCC = fPlugin.getParameterMidiCC(port);
+
+        if (midiCC == 0 || midiCC == 32 || midiCC >= 0x78)
+            return DSSI_NONE;
+
+        return DSSI_CC(midiCC);
+    }
 #endif
 
     // -------------------------------------------------------------------
@@ -434,6 +444,11 @@ static void dssi_select_program(LADSPA_Handle instance, ulong bank, ulong progra
 }
 # endif
 
+static int dssi_get_midi_controller_for_port(LADSPA_Handle instance, ulong port)
+{
+    return instancePtr->dssi_get_midi_controller_for_port(port);
+}
+
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 static void dssi_run_synth(LADSPA_Handle instance, ulong sampleCount, snd_seq_event_t* events, ulong eventCount)
 {
@@ -488,7 +503,7 @@ static DSSI_Descriptor sDssiDescriptor = {
     /* get_program                  */ nullptr,
     /* select_program               */ nullptr,
 # endif
-    /* get_midi_controller_for_port */ nullptr,
+    dssi_get_midi_controller_for_port,
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     dssi_run_synth,
 # else
