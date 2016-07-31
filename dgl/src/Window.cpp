@@ -79,13 +79,13 @@ struct Window::PrivateData {
           fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0)
-#elif defined(DISTRHO_OS_LINUX)
-          xDisplay(nullptr),
-          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(true),
           mView(nullptr),
           mWindow(nullptr)
+#else
+          xDisplay(nullptr),
+          xWindow(0)
 #endif
     {
         DBG("Creating window without parent..."); DBGF;
@@ -107,26 +107,26 @@ struct Window::PrivateData {
           fModal(parent.pData),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0)
-#elif defined(DISTRHO_OS_LINUX)
-          xDisplay(nullptr),
-          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
           mView(nullptr),
           mWindow(nullptr)
+#else
+          xDisplay(nullptr),
+          xWindow(0)
 #endif
     {
         DBG("Creating window with parent..."); DBGF;
         init();
 
         const PuglInternals* const parentImpl(parent.pData->fView->impl);
-#if defined(DISTRHO_OS_LINUX)
-        XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
-//#elif defined(DISTRHO_OS_MAC)
-//        [parentImpl->window orderWindow:NSWindowBelow relativeTo:[[mView window] windowNumber]];
+#if defined(DISTRHO_OS_WINDOWS)
+        // TODO
+#elif defined(DISTRHO_OS_MAC)
+        // TODO
+        //[parentImpl->window orderWindow:NSWindowBelow relativeTo:[[mView window] windowNumber]];
 #else
-        // unused
-        return; (void)parentImpl;
+        XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
 #endif
     }
 
@@ -145,13 +145,13 @@ struct Window::PrivateData {
           fModal(),
 #if defined(DISTRHO_OS_WINDOWS)
           hwnd(0)
-#elif defined(DISTRHO_OS_LINUX)
-          xDisplay(nullptr),
-          xWindow(0)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(parentId == 0),
           mView(nullptr),
           mWindow(nullptr)
+#else
+          xDisplay(nullptr),
+          xWindow(0)
 #endif
     {
         if (fUsingEmbed)
@@ -213,7 +213,7 @@ struct Window::PrivateData {
         } else {
             DISTRHO_SAFE_ASSERT(mWindow != nullptr);
         }
-#elif defined(DISTRHO_OS_LINUX)
+#else
         xDisplay = impl->display;
         xWindow  = impl->win;
         DISTRHO_SAFE_ASSERT(xWindow != 0);
@@ -273,7 +273,7 @@ struct Window::PrivateData {
 #elif defined(DISTRHO_OS_MAC)
         mView   = nullptr;
         mWindow = nullptr;
-#elif defined(DISTRHO_OS_LINUX)
+#else
         xDisplay = nullptr;
         xWindow  = 0;
 #endif
@@ -367,7 +367,7 @@ struct Window::PrivateData {
             // TODO
 #elif defined(DISTRHO_OS_MAC)
             // TODO
-#elif defined(DISTRHO_OS_LINUX)
+#else
             int i, wx, wy;
             uint u;
             ::Window w;
@@ -395,7 +395,7 @@ struct Window::PrivateData {
             //[NSApp activateIgnoringOtherApps:YES];
             //[mWindow makeKeyAndOrderFront:mWindow];
         }
-#elif defined(DISTRHO_OS_LINUX)
+#else
         XRaiseWindow(xDisplay, xWindow);
         XSetInputFocus(xDisplay, xWindow, RevertToPointerRoot, CurrentTime);
         XFlush(xDisplay);
@@ -446,7 +446,7 @@ struct Window::PrivateData {
             else
                 [mView setHidden:YES];
         }
-#elif defined(DISTRHO_OS_LINUX)
+#else
         if (yesNo)
             XMapRaised(xDisplay, xWindow);
         else
@@ -550,7 +550,7 @@ struct Window::PrivateData {
                 [[mWindow standardWindowButton:NSWindowZoomButton] setHidden:YES];
             }
         }
-#elif defined(DISTRHO_OS_LINUX)
+#else
         XResizeWindow(xDisplay, xWindow, width, height);
 
         if (! fResizable)
@@ -606,19 +606,19 @@ struct Window::PrivateData {
 
             [mWindow setTitle:titleString];
         }
-#elif defined(DISTRHO_OS_LINUX)
+#else
         XStoreName(xDisplay, xWindow, title);
 #endif
     }
 
     void setTransientWinId(const uintptr_t winId)
     {
-#if defined(DISTRHO_OS_LINUX)
-        XSetTransientForHint(xDisplay, xWindow, static_cast< ::Window>(winId));
+#if defined(DISTRHO_OS_WINDOWS)
+        // TODO
+#elif defined(DISTRHO_OS_MAC)
+        // TODO
 #else
-        return;
-        // unused
-        (void)winId;
+        XSetTransientForHint(xDisplay, xWindow, static_cast< ::Window>(winId));
 #endif
     }
 
@@ -884,13 +884,13 @@ struct Window::PrivateData {
 
 #if defined(DISTRHO_OS_WINDOWS)
     HWND     hwnd;
-#elif defined(DISTRHO_OS_LINUX)
-    Display* xDisplay;
-    ::Window xWindow;
 #elif defined(DISTRHO_OS_MAC)
     bool            fNeedsIdle;
     PuglOpenGLView* mView;
     id              mWindow;
+#else
+    Display* xDisplay;
+    ::Window xWindow;
 #endif
 
     // -------------------------------------------------------------------
