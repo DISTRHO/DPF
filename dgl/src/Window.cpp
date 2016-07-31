@@ -29,14 +29,12 @@
 # include "pugl/pugl_win.cpp"
 #elif defined(DISTRHO_OS_MAC)
 # include "pugl/pugl_osx.m"
-#elif defined(DISTRHO_OS_LINUX)
+#else
 # include <sys/types.h>
 # include <unistd.h>
 extern "C" {
 # include "pugl/pugl_x11.c"
 }
-#else
-# error Unsupported platform
 #endif
 
 #include "ApplicationPrivateData.hpp"
