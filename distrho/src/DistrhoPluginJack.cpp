@@ -70,20 +70,14 @@ static void closeSignalHandler(int) noexcept
 
 static void initSignalHandler()
 {
-    struct sigaction sint;
-    struct sigaction sterm;
+    struct sigaction sig;
+    memset(&sig, 0, sizeof(sig));
 
-    sint.sa_handler  = closeSignalHandler;
-    sint.sa_flags    = SA_RESTART;
-    sint.sa_restorer = nullptr;
-    sigemptyset(&sint.sa_mask);
-    sigaction(SIGINT, &sint, nullptr);
-
-    sterm.sa_handler  = closeSignalHandler;
-    sterm.sa_flags    = SA_RESTART;
-    sterm.sa_restorer = nullptr;
-    sigemptyset(&sterm.sa_mask);
-    sigaction(SIGTERM, &sterm, nullptr);
+    sig.sa_handler = closeSignalHandler;
+    sig.sa_flags   = SA_RESTART;
+    sigemptyset(&sig.sa_mask);
+    sigaction(SIGINT, &sig, nullptr);
+    sigaction(SIGTERM, &sig, nullptr);
 }
 #endif
 
