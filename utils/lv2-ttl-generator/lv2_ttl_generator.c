@@ -30,6 +30,7 @@
 
 typedef void (*TTL_Generator_Function)(const char* basename);
 
+#ifdef TTL_GENERATOR_WINDOWS
 void ErrorExit(LPTSTR lpszFunction)
 {
     // Retrieve the system error message for the last-error code
