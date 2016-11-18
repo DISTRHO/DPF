@@ -395,13 +395,15 @@ void lv2_generate_ttl(const char* const basename)
 
                     if (plugin.getParameterHints(i) & kParameterIsInteger)
                     {
-                        pluginString += "        lv2:default " + String(int(plugin.getParameterValue(i))) + " ;\n";
+                        if (! plugin.isParameterOutput(i))
+                            pluginString += "        lv2:default " + String(int(plugin.getParameterValue(i))) + " ;\n";
                         pluginString += "        lv2:minimum " + String(int(ranges.min)) + " ;\n";
                         pluginString += "        lv2:maximum " + String(int(ranges.max)) + " ;\n";
                     }
                     else
                     {
-                        pluginString += "        lv2:default " + String(plugin.getParameterValue(i)) + " ;\n";
+                        if (! plugin.isParameterOutput(i))
+                            pluginString += "        lv2:default " + String(plugin.getParameterValue(i)) + " ;\n";
                         pluginString += "        lv2:minimum " + String(ranges.min) + " ;\n";
                         pluginString += "        lv2:maximum " + String(ranges.max) + " ;\n";
                     }
