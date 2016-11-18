@@ -239,7 +239,7 @@ protected:
         const size_t msgSize(tmpStr.length()+1);
 
         // reserve atom space
-        const size_t atomSize(lv2_atom_pad_size(sizeof(LV2_Atom) + msgSize));
+        const size_t atomSize(sizeof(LV2_Atom) + msgSize);
         char         atomBuf[atomSize];
         std::memset(atomBuf, 0, atomSize);
 
