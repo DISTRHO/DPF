@@ -589,9 +589,13 @@ public:
 #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI
         const uint32_t capacity = fPortEventsOut->atom.size;
 
-        bool needsInit = true;
         uint32_t size, offset = 0;
         LV2_Atom_Event* aev;
+
+        fPortEventsOut->atom.size = 0;
+        fPortEventsOut->atom.type = fURIDs.atomSequence;
+        fPortEventsOut->body.unit = 0;
+        fPortEventsOut->body.pad  = 0;
 
         // TODO - MIDI Output
 
@@ -616,15 +620,6 @@ public:
 
                 if (sizeof(LV2_Atom_Event) + msgSize > capacity - offset)
                     break;
-
-                if (needsInit)
-                {
-                    fPortEventsOut->atom.size = 0;
-                    fPortEventsOut->atom.type = fURIDs.atomSequence;
-                    fPortEventsOut->body.unit = 0;
-                    fPortEventsOut->body.pad  = 0;
-                    needsInit = false;
-                }
 
                 // reserve msg space
                 char msgBuf[msgSize];
