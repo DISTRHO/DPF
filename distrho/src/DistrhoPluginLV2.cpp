@@ -592,7 +592,7 @@ public:
         uint32_t size, offset = 0;
         LV2_Atom_Event* aev;
 
-        fPortEventsOut->atom.size = 0;
+        fPortEventsOut->atom.size = sizeof(LV2_Atom_Sequence_Body);
         fPortEventsOut->atom.type = fURIDs.atomSequence;
         fPortEventsOut->body.unit = 0;
         fPortEventsOut->body.pad  = 0;
