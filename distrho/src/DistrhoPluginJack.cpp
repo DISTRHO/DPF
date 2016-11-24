@@ -157,7 +157,9 @@ public:
         else
         {
             fLastOutputValues = nullptr;
+#if DISTRHO_PLUGIN_HAS_UI
             fParametersChanged = nullptr;
+#endif
         }
 
         jack_set_buffer_size_callback(fClient, jackBufferSizeCallback, this);
@@ -358,7 +360,9 @@ protected:
                         const float scaled = static_cast<float>(value)/127.0f;
                         const float fvalue = fPlugin.getParameterRanges(j).getUnnormalizedValue(scaled);
                         fPlugin.setParameterValue(j, fvalue);
+#if DISTRHO_PLUGIN_HAS_UI
                         fParametersChanged[j] = true;
+#endif
                         break;
                     }
                 }
