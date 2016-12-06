@@ -97,23 +97,24 @@ public:
 #endif
           fClient(client)
     {
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         char strBuf[0xff+1];
         strBuf[0xff] = '\0';
 
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+# if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
         {
             std::snprintf(strBuf, 0xff, "in%i", i+1);
             fPortAudioIns[i] = jack_port_register(fClient, strBuf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
         }
-#endif
-
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+# endif
+# if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
             std::snprintf(strBuf, 0xff, "out%i", i+1);
             fPortAudioOuts[i] = jack_port_register(fClient, strBuf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
         }
+# endif
 #endif
 
         fPortEventsIn = jack_port_register(fClient, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
