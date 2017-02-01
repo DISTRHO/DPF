@@ -708,7 +708,7 @@ protected:
    /**
       Get the value of an internal state.@n
       The host may call this function from any non-realtime context.@n
-      Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_PROGRAMS or DISTRHO_PLUGIN_WANT_FULL_STATE is enabled.
+      Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_FULL_STATE is enabled.
       @note The use of this function breaks compatibility with the DSSI format.
     */
     virtual String getState(const char* key) const = 0;
