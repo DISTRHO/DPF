@@ -134,6 +134,29 @@ struct AudioPort {
 };
 
 /**
+   Parameter designation.@n
+   Allows a parameter to be specially designated for a task, like bypass.
+
+   Each designation is unique, there must be only one parameter that uses it.@n
+   The use of designated parameters is completely optional.
+
+   @note Designated parameters have strict ranges.
+   @see ParameterRanges::adjustForDesignation()
+ */
+enum ParameterDesignation {
+   /**
+     Null or unset designation.
+    */
+    kParameterDesignationNull = 0,
+
+   /**
+     Bypass designation.@n
+     When on (> 0.5f), it means the plugin must run in a bypassed state.
+    */
+    kParameterDesignationBypass = 1
+};
+
+/**
    Parameter ranges.@n
    This is used to set the default, minimum and maximum values of a parameter.
 
@@ -171,6 +194,23 @@ struct ParameterRanges {
         : def(df),
           min(mn),
           max(mx) {}
+
+   /**
+      Adjust ranges for a specific parameter designation.
+    */
+    void adjustForDesignation(ParameterDesignation d) noexcept
+    {
+        switch (d)
+        {
+        case kParameterDesignationNull:
+            break;
+        case kParameterDesignationBypass:
+            def = 0.0f;
+            min = 0.0f;
+            max = 1.0f;
+            break;
+        }
+    }
 
    /**
       Fix the default value within range.
@@ -290,6 +330,11 @@ struct Parameter {
     ParameterRanges ranges;
 
    /**
+      Designation for this parameter.
+    */
+    ParameterDesignation designation;
+
+   /**
       MIDI CC to use by default on this parameter.@n
       A value of 0 or 32 (bank change) is considered invalid.@n
       Must also be less or equal to 120.
@@ -306,6 +351,7 @@ struct Parameter {
           symbol(),
           unit(),
           ranges(),
+          designation(kParameterDesignationNull),
           midiCC(0) {}
 
    /**
@@ -317,6 +363,7 @@ struct Parameter {
           symbol(s),
           unit(u),
           ranges(def, min, max),
+          designation(kParameterDesignationNull),
           midiCC(0) {}
 };
 
