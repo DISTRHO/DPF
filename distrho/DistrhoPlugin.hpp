@@ -588,7 +588,7 @@ public:
       Returns false when the host buffer is full, in which case do not call this again until the next run().
       @note This function is not implemented yet!@n
             It's here so that developers can prepare MIDI plugins in advance.@n
-            If you plan to use this, please report to DPF authos so it can be implemented.
+            If you plan to use this, please report to DPF authors so it can be implemented.
     */
     bool writeMidiEvent(const MidiEvent& midiEvent) noexcept;
 #endif
