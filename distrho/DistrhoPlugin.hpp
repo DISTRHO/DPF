@@ -196,23 +196,6 @@ struct ParameterRanges {
           max(mx) {}
 
    /**
-      Adjust ranges for a specific parameter designation.
-    */
-    void adjustForDesignation(ParameterDesignation d) noexcept
-    {
-        switch (d)
-        {
-        case kParameterDesignationNull:
-            break;
-        case kParameterDesignationBypass:
-            def = 0.0f;
-            min = 0.0f;
-            max = 1.0f;
-            break;
-        }
-    }
-
-   /**
       Fix the default value within range.
     */
     void fixDefault() noexcept
@@ -365,6 +348,30 @@ struct Parameter {
           ranges(def, min, max),
           designation(kParameterDesignationNull),
           midiCC(0) {}
+
+   /**
+      Initialize a parameter for a specific designation.
+    */
+    void initDesignation(ParameterDesignation d) noexcept
+    {
+        designation = d;
+
+        switch (d)
+        {
+        case kParameterDesignationNull:
+            break;
+        case kParameterDesignationBypass:
+            hints  = kParameterIsAutomable|kParameterIsBoolean|kParameterIsInteger;
+            name   = "Bypass";
+            symbol = "dpf_bypass";
+            unit   = "";
+            midiCC = 0;
+            ranges.def = 0.0f;
+            ranges.min = 0.0f;
+            ranges.max = 1.0f;
+            break;
+        }
+    }
 };
 
 /**
