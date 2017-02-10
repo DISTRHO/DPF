@@ -290,6 +290,13 @@ public:
         return fData->parameters[index].hints;
     }
 
+    ParameterDesignation getParameterDesignation(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, kParameterDesignationNull);
+
+        return fData->parameters[index].designation;
+    }
+
     bool isParameterOutput(const uint32_t index) const noexcept
     {
         return (getParameterHints(index) & kParameterIsOutput);

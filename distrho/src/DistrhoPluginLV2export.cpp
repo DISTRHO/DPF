@@ -377,10 +377,34 @@ void lv2_generate_ttl(const char* const basename)
                     pluginString += "        a lv2:InputPort, lv2:ControlPort ;\n";
 
                 pluginString += "        lv2:index " + String(portIndex) + " ;\n";
-                pluginString += "        lv2:name \"" + plugin.getParameterName(i) + "\" ;\n";
 
-                // symbol
+                bool designated = false;
+
+                // designation
+                if (! plugin.isParameterOutput(i))
                 {
+                    switch (plugin.getParameterDesignation(i))
+                    {
+                    case kParameterDesignationNull:
+                        break;
+                    case kParameterDesignationBypass:
+                        designated = true;
+                        pluginString += "        lv2:name \"Enabled\" ;\n";
+                        pluginString += "        lv2:symbol \"lv2_enabled\" ;\n";
+                        pluginString += "        lv2:default 1 ;\n";
+                        pluginString += "        lv2:minimum 0 ;\n";
+                        pluginString += "        lv2:maximum 1 ;\n";
+                        pluginString += "        lv2:portProperty lv2:toggled , lv2:integer ;\n";
+                        pluginString += "        lv2:designation lv2:enabled ;\n";
+                        break;
+                    }
+                }
+
+                // name and symbol
+                if (! designated)
+                {
+                    pluginString += "        lv2:name \"" + plugin.getParameterName(i) + "\" ;\n";
+
                     String symbol(plugin.getParameterSymbol(i));
 
                     if (symbol.isEmpty())
@@ -390,6 +414,7 @@ void lv2_generate_ttl(const char* const basename)
                 }
 
                 // ranges
+                if (! designated)
                 {
                     const ParameterRanges& ranges(plugin.getParameterRanges(i));
 
@@ -410,6 +435,7 @@ void lv2_generate_ttl(const char* const basename)
                 }
 
                 // unit
+                if (! designated)
                 {
                     const String& unit(plugin.getParameterUnit(i));
 
@@ -455,6 +481,7 @@ void lv2_generate_ttl(const char* const basename)
                 }
 
                 // hints
+                if (! designated)
                 {
                     const uint32_t hints(plugin.getParameterHints(i));
 

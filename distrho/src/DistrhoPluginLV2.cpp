@@ -512,6 +512,12 @@ public:
             if (fLastControlValues[i] != curValue && ! fPlugin.isParameterOutput(i))
             {
                 fLastControlValues[i] = curValue;
+
+                if (fPlugin.getParameterDesignation(i) == kParameterDesignationBypass)
+                {
+                    curValue = 1.0f - curValue;
+                }
+
                 fPlugin.setParameterValue(i, curValue);
             }
         }
