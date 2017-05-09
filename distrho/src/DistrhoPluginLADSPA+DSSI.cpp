@@ -331,7 +331,12 @@ public:
 
     int dssi_get_midi_controller_for_port(const ulong port) noexcept
     {
-        const uint8_t midiCC = fPlugin.getParameterMidiCC(port);
+        const uint32_t parameterOffset = fPlugin.getParameterOffset();
+
+        if (port > parameterOffset)
+            return DSSI_NONE;
+
+        const uint8_t midiCC = fPlugin.getParameterMidiCC(port-parameterOffset);
 
         if (midiCC == 0 || midiCC == 32 || midiCC >= 0x78)
             return DSSI_NONE;

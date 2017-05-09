@@ -43,6 +43,7 @@ struct Plugin::PrivateData {
 #endif
 
     uint32_t   parameterCount;
+    uint32_t   parameterOffset;
     Parameter* parameters;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -73,6 +74,7 @@ struct Plugin::PrivateData {
           audioPorts(nullptr),
 #endif
           parameterCount(0),
+          parameterOffset(0),
           parameters(nullptr),
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
           programCount(0),
@@ -91,6 +93,22 @@ struct Plugin::PrivateData {
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
+
+#if defined(DISTRHO_PLUGIN_TARGET_DSSI) || defined(DISTRHO_PLUGIN_TARGET_LV2)
+        parameterOffset += DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS;
+# if DISTRHO_PLUGIN_WANT_LATENCY
+        parameterOffset += 1;
+# endif
+#endif
+
+#ifdef DISTRHO_PLUGIN_TARGET_LV2
+# if (DISTRHO_PLUGIN_IS_SYNTH || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
+        parameterOffset += 1;
+#  if DISTRHO_PLUGIN_WANT_STATE
+        parameterOffset += 1;
+#  endif
+# endif
+#endif
     }
 
     ~PrivateData() noexcept
@@ -281,6 +299,13 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
 
         return fData->parameterCount;
+    }
+
+    uint32_t getParameterOffset() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        return fData->parameterOffset;
     }
 
     uint32_t getParameterHints(const uint32_t index) const noexcept
