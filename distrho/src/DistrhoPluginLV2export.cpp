@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2017 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -635,7 +635,18 @@ void lv2_generate_ttl(const char* const basename)
 
             plugin.loadProgram(i);
 
-            presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
+            presetString = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+            if (numParameters == 0 && numStates == 0)
+#else
+            if (numParameters == 0)
+#endif
+            {
+                presetString += "    .";
+                presetsString += presetString;
+                continue;
+            }
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
             presetString += "    state:state [\n";
@@ -658,12 +669,22 @@ void lv2_generate_ttl(const char* const basename)
                 presetString += "    ] .\n\n";
 # endif
 
+            bool firstParameter = true;
+
             for (uint32_t j=0; j <numParameters; ++j)
             {
-                if (j == 0)
+                if (plugin.isParameterOutput(j))
+                    continue;
+
+                if (firstParameter)
+                {
                     presetString += "    lv2:port [\n";
+                    firstParameter = false;
+                }
                 else
+                {
                     presetString += "    [\n";
+                }
 
                 presetString += "        lv2:symbol \"" + plugin.getParameterSymbol(j) + "\" ;\n";
 
@@ -672,7 +693,7 @@ void lv2_generate_ttl(const char* const basename)
                 else
                     presetString += "        pset:value " + String(plugin.getParameterValue(j)) + " ;\n";
 
-                if (j+1 == numParameters)
+                if (j+1 == numParameters || (j+2 == numParameters && plugin.isParameterOutput(j+1)))
                     presetString += "    ] .\n\n";
                 else
                     presetString += "    ] ,\n";
