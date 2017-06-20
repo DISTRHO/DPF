@@ -30,6 +30,10 @@
 #include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
 
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+# include "libmodauth.h"
+#endif
+
 #ifdef noexcept
 # undef noexcept
 #endif
@@ -58,6 +62,9 @@ class PluginLv2
 public:
     PluginLv2(const double sampleRate, const LV2_URID_Map* const uridMap, const LV2_Worker_Schedule* const worker, const bool usingNominal)
         : fUsingNominal(usingNominal),
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+          fRunCount(0),
+#endif
           fPortControls(nullptr),
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
@@ -525,10 +532,19 @@ public:
         // Run plugin
         if (sampleCount != 0)
         {
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+            fRunCount = mod_license_run_begin(fRunCount, sampleCount);
+#endif
+
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount, fMidiEvents, midiEventCount);
 #else
             fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
+#endif
+
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                mod_license_run_noise(fRunCount, fPortAudioOuts[i], sampleCount, i);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -847,6 +863,10 @@ private:
     PluginExporter fPlugin;
     const bool fUsingNominal; // if false use maxBlockLength
 
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+    uint32_t fRunCount;
+#endif
+
     // LV2 ports
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
     const float*  fPortAudioIns[DISTRHO_PLUGIN_NUM_INPUTS];
@@ -1035,6 +1055,10 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     }
 #endif
 
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+    mod_check_license(features, DISTRHO_PLUGIN_URI);
+#endif
+
     d_lastBufferSize = 0;
     bool usingNominal = false;
 
@@ -1194,7 +1218,11 @@ static const void* lv2_extension_data(const char* uri)
         return &directaccess;
 #endif
 
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+    return mod_license_interface(uri);
+#else
     return nullptr;
+#endif
 }
 
 #undef instancePtr

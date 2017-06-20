@@ -34,6 +34,10 @@
 #include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
 
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+# include "mod-license.h"
+#endif
+
 #include <fstream>
 #include <iostream>
 
@@ -225,6 +229,9 @@ void lv2_generate_ttl(const char* const basename)
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         pluginString += ",\n                      <" LV2_PROGRAMS__Interface "> ";
 #endif
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+        pluginString += ",\n                      <" MOD_LICENSE__interface "> ";
+#endif
         pluginString += ";\n\n";
 
         // optionalFeatures
@@ -241,6 +248,9 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += ",\n                        <" LV2_URID__map "> ";
 #if DISTRHO_PLUGIN_WANT_STATE
         pluginString += ",\n                        <" LV2_WORKER__schedule "> ";
+#endif
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+        pluginString += ",\n                        <" MOD_LICENSE__feature "> ";
 #endif
         pluginString += ";\n\n";
 
