@@ -201,6 +201,7 @@ void lv2_generate_ttl(const char* const basename)
 #ifdef DISTRHO_PLUGIN_BRAND
         pluginString += "@prefix mod:  <http://moddevices.com/ns/mod#> .\n";
 #endif
+        pluginString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
         pluginString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
         pluginString += "@prefix rsz:  <" LV2_RESIZE_PORT_PREFIX "> .\n";
 #if DISTRHO_PLUGIN_HAS_UI
@@ -252,6 +253,12 @@ void lv2_generate_ttl(const char* const basename)
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
         pluginString += ",\n                        <" MOD_LICENSE__feature "> ";
 #endif
+        pluginString += ";\n\n";
+
+        // supportedOption
+        pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ";
+        pluginString += ",\n                         <" LV2_BUF_SIZE__maxBlockLength "> ";
+        pluginString += ",\n                         <" LV2_PARAMETERS__sampleRate "> ";
         pluginString += ";\n\n";
 
         // UI
@@ -583,8 +590,9 @@ void lv2_generate_ttl(const char* const basename)
         std::fstream uiFile(uiTTL, std::ios::out);
 
         String uiString;
-        uiString += "@prefix lv2: <" LV2_CORE_PREFIX "> .\n";
-        uiString += "@prefix ui:  <" LV2_UI_PREFIX "> .\n";
+        uiString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
+        uiString += "@prefix ui:   <" LV2_UI_PREFIX "> .\n";
+        uiString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
         uiString += "\n";
 
         uiString += "<" DISTRHO_UI_URI ">\n";
@@ -603,7 +611,10 @@ void lv2_generate_ttl(const char* const basename)
         uiString += "\n";
 #  endif
         uiString += "    lv2:requiredFeature <" LV2_OPTIONS__options "> ,\n";
-        uiString += "                        <" LV2_URID__map "> .\n";
+        uiString += "                        <" LV2_URID__map "> ;\n";
+
+        uiString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .";
+        uiString += "\n\n";
 
         uiFile << uiString << std::endl;
         uiFile.close();

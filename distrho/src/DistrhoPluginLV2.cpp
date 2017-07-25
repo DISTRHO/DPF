@@ -23,6 +23,7 @@
 #include "lv2/instance-access.h"
 #include "lv2/midi.h"
 #include "lv2/options.h"
+#include "lv2/parameters.h"
 #include "lv2/state.h"
 #include "lv2/time.h"
 #include "lv2/urid.h"
@@ -685,7 +686,7 @@ public:
             {
                 if (options[i].type == fURIDs.atomInt)
                 {
-                    const int bufferSize(*(const int*)options[i].value);
+                    const int32_t bufferSize(*(const int32_t*)options[i].value);
                     fPlugin.setBufferSize(bufferSize);
                 }
                 else
@@ -697,7 +698,7 @@ public:
             {
                 if (options[i].type == fURIDs.atomInt)
                 {
-                    const int bufferSize(*(const int*)options[i].value);
+                    const int32_t bufferSize(*(const int32_t*)options[i].value);
                     fPlugin.setBufferSize(bufferSize);
                 }
                 else
@@ -705,11 +706,11 @@ public:
                     d_stderr("Host changed maxBlockLength but with wrong value type");
                 }
             }
-            else if (options[i].key == fUridMap->map(fUridMap->handle, LV2_CORE__sampleRate))
+            else if (options[i].key == fUridMap->map(fUridMap->handle, LV2_PARAMETERS__sampleRate))
             {
-                if (options[i].type == fURIDs.atomDouble)
+                if (options[i].type == fURIDs.atomFloat)
                 {
-                    const double sampleRate(*(const double*)options[i].value);
+                    const float sampleRate(*(const float*)options[i].value);
                     fSampleRate = sampleRate;
                     fPlugin.setSampleRate(sampleRate);
                 }
