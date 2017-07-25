@@ -503,7 +503,11 @@ void lv2_generate_ttl(const char* const basename)
                     const uint32_t hints(plugin.getParameterHints(i));
 
                     if (hints & kParameterIsBoolean)
+                    {
+                        if (hints & kParameterIsTrigger)
+                            pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__trigger "> ;\n";
                         pluginString += "        lv2:portProperty lv2:toggled ;\n";
+                    }
                     if (hints & kParameterIsInteger)
                         pluginString += "        lv2:portProperty lv2:integer ;\n";
                     if (hints & kParameterIsLogarithmic)
