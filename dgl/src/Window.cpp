@@ -845,6 +845,90 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    bool handlePluginKeyboard(const bool press, const uint key)
+    {
+        DBGp("PUGL: handlePluginKeyboard : %i %i\n", press, key);
+
+        if (fModal.childFocus != nullptr)
+        {
+            fModal.childFocus->focus();
+            return true;
+        }
+
+        Widget::KeyboardEvent ev;
+        ev.press = press;
+        ev.key   = key;
+        ev.mod   = static_cast<Modifier>(fView->mods);
+        ev.time  = 0;
+
+        if ((ev.mod & kModifierShift) != 0 && ev.key >= 'a' && ev.key <= 'z')
+            ev.key -= 'a' - 'A'; // a-z -> A-Z
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            if (widget->isVisible() && widget->onKeyboard(ev))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool handlePluginSpecial(const bool press, const Key key)
+    {
+        DBGp("PUGL: handlePluginSpecial : %i %i\n", press, key);
+
+        if (fModal.childFocus != nullptr)
+        {
+            fModal.childFocus->focus();
+            return true;
+        }
+
+        int mods = 0x0;
+
+        switch (key)
+        {
+        case kKeyShift:
+            mods |= kModifierShift;
+            break;
+        case kKeyControl:
+            mods |= kModifierControl;
+            break;
+        case kKeyAlt:
+            mods |= kModifierAlt;
+            break;
+        default:
+            break;
+        }
+
+        if (mods != 0x0)
+        {
+            if (press)
+                fView->mods |= mods;
+            else
+                fView->mods &= ~(mods);
+        }
+
+        Widget::SpecialEvent ev;
+        ev.press = press;
+        ev.key   = key;
+        ev.mod   = static_cast<Modifier>(fView->mods);
+        ev.time  = 0;
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            if (widget->isVisible() && widget->onSpecial(ev))
+                return true;
+        }
+
+        return false;
+    }
+
+    // -------------------------------------------------------------------
+
     Application& fApp;
     Window*      fSelf;
     PuglView*    fView;
@@ -1198,6 +1282,16 @@ void Window::onClose()
 
 void Window::fileBrowserSelected(const char*)
 {
+}
+
+bool Window::handlePluginKeyboard(const bool press, const uint key)
+{
+    return pData->handlePluginKeyboard(press, key);
+}
+
+bool Window::handlePluginSpecial(const bool press, const Key key)
+{
+    return pData->handlePluginSpecial(press, key);
 }
 
 // -----------------------------------------------------------------------
