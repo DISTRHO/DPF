@@ -171,6 +171,7 @@ public:
 
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         int special = 0;
@@ -215,6 +216,7 @@ public:
 
         if (index > 0 || (value == 7 && index == 0))
             return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
+# endif
 
         return 0;
     }
