@@ -177,9 +177,9 @@ public:
         switch (value)
         {
         // special casing (can be combined with normal keys)
-        case 54: fUI.handlePluginSpecial(down, kKeyShift);   break;
-        case 55: fUI.handlePluginSpecial(down, kKeyControl); break;
-        case 56: fUI.handlePluginSpecial(down, kKeyAlt);     break;
+        case 54: special = kKeyShift;   break;
+        case 55: special = kKeyControl; break;
+        case 56: special = kKeyAlt;     break;
 
         // convert some specials to normal keys
         case  1: index = kCharBackspace; break;
@@ -213,7 +213,7 @@ public:
         if (special != 0)
             return fUI.handlePluginSpecial(down, static_cast<Key>(special));
 
-        if (index >= 0)
+        if (index > 0 || (value == 7 && index == 0))
             return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
 
         return 0;
