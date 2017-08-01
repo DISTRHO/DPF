@@ -187,6 +187,9 @@ public:
         case  6: index = kCharEscape;    break;
         case 22: index = kCharDelete;    break;
 
+        //Other keycodes
+        case 7:  index = ' '; break;
+
         // handle rest of special keys
         case 40: special = kKeyF1;       break;
         case 41: special = kKeyF2;       break;
@@ -214,7 +217,7 @@ public:
         if (special != 0)
             return fUI.handlePluginSpecial(down, static_cast<Key>(special));
 
-        if (index > 0 || (value == 7 && index == 0))
+        if (index > 0)
             return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
 # endif
 
