@@ -124,8 +124,20 @@ public:
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer())
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer()),
+          fShouldCaptureVstKeys(false)
     {
+        // FIXME only needed for windows?
+//#ifdef DISTRHO_OS_WINDOWS
+        char strBuf[0xff+1];
+        std::memset(strBuf, 0, sizeof(char)*(0xff+1));
+        hostCallback(audioMasterGetProductString, 0, 0, strBuf);
+        d_stdout("Plugin UI running in '%s'", strBuf);
+
+        // TODO make a white-list of needed hosts
+        if (/*std::strcmp(strBuf, "") == 0*/ true)
+            fShouldCaptureVstKeys = true;
+//#endif
     }
 
     // -------------------------------------------------------------------
@@ -172,6 +184,9 @@ public:
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        if (! fShouldCaptureVstKeys)
+            return 0;
+
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         int special = 0;
@@ -284,6 +299,7 @@ private:
 
     // Plugin UI
     UIExporter fUI;
+    bool fShouldCaptureVstKeys;
 
     // -------------------------------------------------------------------
     // Callbacks
