@@ -177,14 +177,10 @@ public:
         int special = 0;
         switch (value)
         {
-        // special casing (can be combined with normal keys)
-        case 54: fUI.handlePluginSpecial(down, kKeyShift);   break;
-        case 55: fUI.handlePluginSpecial(down, kKeyControl); break;
-        case 56: fUI.handlePluginSpecial(down, kKeyAlt);     break;
-
         // convert some specials to normal keys
         case  1: index = kCharBackspace; break;
         case  6: index = kCharEscape;    break;
+        case  7: index = ' ';            break;
         case 22: index = kCharDelete;    break;
 
         // handle rest of special keys
@@ -209,6 +205,9 @@ public:
         case 10: special = kKeyHome;     break;
         case  9: special = kKeyEnd;      break;
         case 21: special = kKeyInsert;   break;
+        case 54: special = kKeyShift;    break;
+        case 55: special = kKeyControl;  break;
+        case 56: special = kKeyAlt;      break;
         }
 
         if (special != 0)
