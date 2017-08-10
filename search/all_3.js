@@ -4,6 +4,7 @@ var searchData=
   ['deactivate',['deactivate',['../classPlugin.html#aa089a56572bc8f1cb7e4b538c0d19c46',1,'Plugin']]],
   ['def',['def',['../structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c',1,'ParameterRanges']]],
   ['degtorad',['degToRad',['../classNanoVG.html#ae3913bdf0efc2f5504422f558dca2c45',1,'NanoVG']]],
+  ['designation',['designation',['../structParameter.html#a3bbf6f7d5ccea9a13504bd6ee3713986',1,'Parameter']]],
   ['distrho_5fplugin_5fhas_5fui',['DISTRHO_PLUGIN_HAS_UI',['../group__PluginMacros.html#gacf8a1af679c09637ba0bdc5f4f8e37dd',1,'DistrhoInfo.hpp']]],
   ['distrho_5fplugin_5fis_5frt_5fsafe',['DISTRHO_PLUGIN_IS_RT_SAFE',['../group__PluginMacros.html#ga82546dd199fcea338b113f2f6da84ced',1,'DistrhoInfo.hpp']]],
   ['distrho_5fplugin_5fis_5fsynth',['DISTRHO_PLUGIN_IS_SYNTH',['../group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72',1,'DistrhoInfo.hpp']]],
@@ -20,8 +21,8 @@ var searchData=
   ['distrho_5fplugin_5fwant_5ftimepos',['DISTRHO_PLUGIN_WANT_TIMEPOS',['../group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2',1,'DistrhoInfo.hpp']]],
   ['distrho_5fui_5furi',['DISTRHO_UI_URI',['../group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c',1,'DistrhoInfo.hpp']]],
   ['distrho_5fui_5fuse_5fnanovg',['DISTRHO_UI_USE_NANOVG',['../group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd',1,'DistrhoInfo.hpp']]],
-  ['draw',['draw',['../classLine.html#af3eebf8905576276741caab216516949',1,'Line::draw()'],['../classCircle.html#ae1006bb2486c75b45e43675783521915',1,'Circle::draw()'],['../classTriangle.html#a5dd94312d41f36fb149e03d90800bb53',1,'Triangle::draw()'],['../classRectangle.html#a415da25901ad63d87e3bac7755535cda',1,'Rectangle::draw()'],['../classImage.html#ae1e16dcef3072e4e49ec2887a9c1245a',1,'Image::draw()']]],
+  ['draw',['draw',['../classLine.html#a9b03435850fbf70f4b4f2c770ccbef26',1,'Line::draw()'],['../classCircle.html#aef6c0dfc4fbe1424aa78e0f877e02f7e',1,'Circle::draw()'],['../classTriangle.html#acc75d7e5d4ead5e7f478130ee23ef7d1',1,'Triangle::draw()'],['../classRectangle.html#a0548ec66efbb8e8f73f1f55c882246c7',1,'Rectangle::draw()'],['../classImage.html#ae1e16dcef3072e4e49ec2887a9c1245a',1,'Image::draw()']]],
   ['drawat',['drawAt',['../classImage.html#ab63094dc07e6d62624827bca904b5cdd',1,'Image::drawAt(const int x, const int y)'],['../classImage.html#aed2dc99624de978eade8124d2c099cfa',1,'Image::drawAt(const Point&lt; int &gt; &amp;pos)']]],
-  ['drawoutline',['drawOutline',['../classCircle.html#a59ad688a9f13a2e639502a8adc979111',1,'Circle::drawOutline()'],['../classTriangle.html#a93cda515489108aa6c14b0b1ab8cff11',1,'Triangle::drawOutline()'],['../classRectangle.html#a562e46203701309da8748dcc5277373e',1,'Rectangle::drawOutline()']]],
+  ['drawoutline',['drawOutline',['../classCircle.html#a3de394252f2a46e21406470f424e5020',1,'Circle::drawOutline()'],['../classTriangle.html#a60957339ac66694afa4c10e839844d42',1,'Triangle::drawOutline()'],['../classRectangle.html#a8e769a45af62f8dd14d4f14e450fe75f',1,'Rectangle::drawOutline()']]],
   ['distrho_20_25plugin_20framework',['DISTRHO %Plugin Framework',['../index.html',1,'']]]
 ];
