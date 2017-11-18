@@ -16,7 +16,10 @@
 # CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import os, numpy, sys
-import Image
+try:
+    import Image
+except:
+    from PIL import Image
 
 # -----------------------------------------------------
 
