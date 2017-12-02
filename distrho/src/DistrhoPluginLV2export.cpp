@@ -703,7 +703,7 @@ void lv2_generate_ttl(const char* const basename)
                 else
                     presetString += "        pset:value " + String(plugin.getParameterValue(j)) + " ;\n";
 
-                if (j+1 == numParameters || (j+2 == numParameters && plugin.isParameterOutput(j+1)))
+                if (j+1 == numParameters || plugin.isParameterOutput(j+1))
                     presetString += "    ] .\n\n";
                 else
                     presetString += "    ] ,\n";
