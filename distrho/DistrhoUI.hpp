@@ -25,10 +25,10 @@
 typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
-typedef DGL::NanoWidget UIWidget;
+typedef DGL_NAMESPACE::NanoWidget UIWidget;
 #else
 # include "../dgl/Widget.hpp"
-typedef DGL::Widget UIWidget;
+typedef DGL_NAMESPACE::Widget UIWidget;
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -175,11 +175,13 @@ protected:
     */
     virtual void uiIdle() {}
 
+#ifndef DGL_FILE_BROWSER_DISABLED
    /**
       File browser selected function.
       @see Window::fileBrowserSelected(const char*)
     */
     virtual void uiFileBrowserSelected(const char* filename);
+#endif
 
    /**
       OpenGL window reshape function, called when parent window is resized.
@@ -212,7 +214,7 @@ private:
     void setAbsoluteX(int) const noexcept {}
     void setAbsoluteY(int) const noexcept {}
     void setAbsolutePos(int, int) const noexcept {}
-    void setAbsolutePos(const DGL::Point<int>&) const noexcept {}
+    void setAbsolutePos(const DGL_NAMESPACE::Point<int>&) const noexcept {}
 #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)

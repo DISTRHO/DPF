@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -33,7 +33,7 @@
 # include <stdint.h>
 #endif
 
-#if defined(DISTRHO_OS_MAC) && ! defined(CARLA_OS_MAC) && ! (defined(DISTRHO_PROPER_CPP11_SUPPORT) && defined(__clang__))
+#if defined(DISTRHO_OS_MAC) && ! defined(CARLA_OS_MAC) && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
 namespace std {
 inline float fmin(float __x, float __y)
   { return __builtin_fminf(__x, __y); }

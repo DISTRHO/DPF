@@ -22,9 +22,9 @@
 #ifdef HAVE_DGL
 # include "../../dgl/Application.hpp"
 # include "../../dgl/Window.hpp"
-using DGL::Application;
-using DGL::IdleCallback;
-using DGL::Window;
+using DGL_NAMESPACE::Application;
+using DGL_NAMESPACE::IdleCallback;
+using DGL_NAMESPACE::Window;
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -186,6 +186,7 @@ protected:
         fIsReady = true;
     }
 
+#ifndef DGL_FILE_BROWSER_DISABLED
     // custom file-browser selected
     void fileBrowserSelected(const char* filename) override
     {
@@ -193,6 +194,7 @@ protected:
 
         fUI->uiFileBrowserSelected(filename);
     }
+#endif
 
 private:
     UI* const fUI;
