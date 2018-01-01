@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -972,8 +972,18 @@ END_NAMESPACE_DGL
 
 #undef final
 
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wmisleading-indentation"
+# pragma GCC diagnostic ignored "-Wshift-negative-value"
+#endif
+
 extern "C" {
 #include "nanovg/nanovg.c"
 }
+
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+# pragma GCC diagnostic pop
+#endif
 
 // -----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -25,6 +25,11 @@
 
 #include "pugl/pugl.h"
 
+#if defined(__GNUC__) && (__GNUC__ >= 7)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#endif
+
 #if defined(DISTRHO_OS_WINDOWS)
 # include "pugl/pugl_win.cpp"
 #elif defined(DISTRHO_OS_MAC)
@@ -35,6 +40,10 @@
 extern "C" {
 # include "pugl/pugl_x11.c"
 }
+#endif
+
+#if defined(__GNUC__) && (__GNUC__ >= 7)
+# pragma GCC diagnostic pop
 #endif
 
 #include "ApplicationPrivateData.hpp"
@@ -123,11 +132,14 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_WINDOWS)
         // TODO
 #elif defined(DISTRHO_OS_MAC)
-        // TODO
-        //[parentImpl->window orderWindow:NSWindowBelow relativeTo:[[mView window] windowNumber]];
+        [parentImpl->window orderWindow:NSWindowBelow relativeTo:[[mView window] windowNumber]];
 #else
         XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
 #endif
+        return;
+
+        // maybe unused
+        (void)parentImpl;
     }
 
     PrivateData(Application& app, Window* const self, const intptr_t parentId)
@@ -392,11 +404,7 @@ struct Window::PrivateData {
         SetFocus(hwnd);
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
-        {
-            // TODO
-            //[NSApp activateIgnoringOtherApps:YES];
-            //[mWindow makeKeyAndOrderFront:mWindow];
-        }
+            [mWindow makeKeyWindow];
 #else
         XRaiseWindow(xDisplay, xWindow);
         XSetInputFocus(xDisplay, xWindow, RevertToPointerRoot, CurrentTime);
@@ -615,10 +623,17 @@ struct Window::PrivateData {
 
     void setTransientWinId(const uintptr_t winId)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(winId != 0,);
+
 #if defined(DISTRHO_OS_WINDOWS)
         // TODO
 #elif defined(DISTRHO_OS_MAC)
-        // TODO
+        NSWindow* const window = [NSApp windowWithWindowNumber:winId];
+        DISTRHO_SAFE_ASSERT_RETURN(window != nullptr,);
+
+        [window addChildWindow:mWindow
+                       ordered:NSWindowAbove];
+        [mWindow makeKeyWindow];
 #else
         XSetTransientForHint(xDisplay, xWindow, static_cast< ::Window>(winId));
 #endif
