@@ -258,7 +258,7 @@ void lv2_generate_ttl(const char* const basename)
         // supportedOptions
         pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ,\n";
         pluginString += "                         <" LV2_BUF_SIZE__maxBlockLength "> ,\n";
-        pluginString += "                         <" LV2_PARAMETERS__sampleRate "> ,\n";
+        pluginString += "                         <" LV2_PARAMETERS__sampleRate "> ;\n";
         pluginString += "\n";
 
         // UI
