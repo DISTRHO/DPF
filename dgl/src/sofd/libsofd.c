@@ -2126,6 +2126,7 @@ int x_fib_handle_events (Display *dpy, XEvent *event) {
 			if (!strcmp (XGetAtomName (dpy, event->xclient.message_type), "WM_PROTOCOLS")) {
 				_status = -1;
 			}
+			break;
 		case ConfigureNotify:
 			if (
 					(event->xconfigure.width > 1 && event->xconfigure.height > 1)
@@ -2319,6 +2320,7 @@ int x_fib_cfg_buttons (int k, int v) {
 				_btn_filter.flags |= 2;
 				_fib_filter_fn = 0;
 			}
+			break;
 		default:
 			return -2;
 	}
