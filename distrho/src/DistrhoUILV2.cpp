@@ -190,6 +190,20 @@ public:
                     continue;
                 }
             }
+            else if (options[i].key == fUridMap->map(fUridMap->handle, LV2_CORE__sampleRate))
+            {
+                if (options[i].type == fUridMap->map(fUridMap->handle, LV2_ATOM__Double))
+                {
+                    const double sampleRate(*(const double*)options[i].value);
+                    fUI.setSampleRate(sampleRate);
+                    continue;
+                }
+                else
+                {
+                    d_stderr("Host changed sampleRate but with wrong value type");
+                    continue;
+                }
+            }
         }
 
         return LV2_OPTIONS_SUCCESS;

@@ -719,6 +719,19 @@ public:
                     d_stderr("Host changed sampleRate but with wrong value type");
                 }
             }
+            else if (options[i].key == fUridMap->map(fUridMap->handle, LV2_CORE__sampleRate))
+            {
+                if (options[i].type == fURIDs.atomDouble)
+                {
+                    const double sampleRate(*(const double*)options[i].value);
+                    fSampleRate = sampleRate;
+                    fPlugin.setSampleRate(sampleRate);
+                }
+                else
+                {
+                    d_stderr("Host changed sampleRate but with wrong value type");
+                }
+            }
         }
 
         return LV2_OPTIONS_SUCCESS;

@@ -259,6 +259,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ";
         pluginString += ",\n                         <" LV2_BUF_SIZE__maxBlockLength "> ";
         pluginString += ",\n                         <" LV2_PARAMETERS__sampleRate "> ";
+        pluginString += ",\n                         <" LV2_CORE__sampleRate "> ";
         pluginString += ";\n\n";
 
         // UI
@@ -613,7 +614,8 @@ void lv2_generate_ttl(const char* const basename)
         uiString += "    lv2:requiredFeature <" LV2_OPTIONS__options "> ,\n";
         uiString += "                        <" LV2_URID__map "> ;\n";
 
-        uiString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .";
+        uiString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> ,\n";
+        uiString += "    opts:supportedOption <" LV2_CORE__sampleRate "> .";
         uiString += "\n\n";
 
         uiFile << uiString << std::endl;
