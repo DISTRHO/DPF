@@ -504,7 +504,7 @@ void lv2_generate_ttl(const char* const basename)
 
                     if (hints & kParameterIsBoolean)
                     {
-                        if (hints & kParameterIsTrigger)
+                        if ((hints & kParameterIsTrigger) == kParameterIsTrigger)
                             pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__trigger "> ;\n";
                         pluginString += "        lv2:portProperty lv2:toggled ;\n";
                     }
