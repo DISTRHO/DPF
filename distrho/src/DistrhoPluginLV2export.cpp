@@ -614,7 +614,6 @@ void lv2_generate_ttl(const char* const basename)
         uiString += "                        <" LV2_URID__map "> ;\n";
 
         uiString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .\n";
-        uiString += "\n\n";
 
         uiFile << uiString << std::endl;
         uiFile.close();
