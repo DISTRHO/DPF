@@ -93,7 +93,7 @@ static const uint32_t kParameterIsOutput = 0x10;
    Parameter value is a trigger.
    This is only supported in LV2 plugins.
 */
-static const uint32_t kParameterIsTrigger = 0x20;
+static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
 
 /** @} */
 
