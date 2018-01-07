@@ -256,11 +256,11 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += ";\n\n";
 
         // supportedOptions
-        pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ";
-        pluginString += ",\n                         <" LV2_BUF_SIZE__maxBlockLength "> ";
-        pluginString += ",\n                         <" LV2_PARAMETERS__sampleRate "> ";
-        pluginString += ",\n                         <" LV2_CORE__sampleRate "> ";
-        pluginString += ";\n\n";
+        pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ,\n";
+        pluginString += "                         <" LV2_BUF_SIZE__maxBlockLength "> ,\n";
+        pluginString += "                         <" LV2_PARAMETERS__sampleRate "> ,\n";
+        pluginString += "                         <" LV2_CORE__sampleRate "> ;\n";
+        pluginString += "\n";
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI
