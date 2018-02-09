@@ -421,7 +421,7 @@ public:
         case effSetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO::strncpy(fProgramName, programName, 32);
+                DISTRHO_NAMESPACE::strncpy(fProgramName, programName, 32);
                 return 1;
             }
             break;
@@ -429,7 +429,7 @@ public:
         case effGetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO::strncpy(programName, fProgramName, 24);
+                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -437,7 +437,7 @@ public:
         case effGetProgramNameIndexed:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO::strncpy(programName, fProgramName, 24);
+                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -445,7 +445,7 @@ public:
         case effGetParamDisplay:
             if (ptr != nullptr && index < static_cast<int32_t>(fPlugin.getParameterCount()))
             {
-                DISTRHO::snprintf_param((char*)ptr, fPlugin.getParameterValue(index), 24);
+                DISTRHO_NAMESPACE::snprintf_param((char*)ptr, fPlugin.getParameterValue(index), 24);
                 return 1;
             }
             break;
@@ -1046,7 +1046,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParamLabel:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            DISTRHO::strncpy((char*)ptr, plugin.getParameterUnit(index), 8);
+            DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterUnit(index), 8);
             return 1;
         }
         return 0;
@@ -1054,7 +1054,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParamName:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            DISTRHO::strncpy((char*)ptr, plugin.getParameterName(index), 16);
+            DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterName(index), 16);
             return 1;
         }
         return 0;
@@ -1069,7 +1069,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetEffectName:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO::strncpy(cptr, plugin.getName(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getName(), 32);
             return 1;
         }
         return 0;
@@ -1077,7 +1077,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetVendorString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO::strncpy(cptr, plugin.getMaker(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getMaker(), 32);
             return 1;
         }
         return 0;
@@ -1085,7 +1085,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetProductString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO::strncpy(cptr, plugin.getLabel(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getLabel(), 32);
             return 1;
         }
         return 0;
