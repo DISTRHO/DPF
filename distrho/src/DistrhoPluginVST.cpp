@@ -1058,7 +1058,36 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             return 1;
         }
         return 0;
+    case effGetParameterProperties:
+        if(ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        {
+            const uint32_t hints = plugin.getParameterHints(index);
+            
+            if((hints & kParameterIsOutput) != 0)
+                return 1;
 
+            if(VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
+            {
+                if((hints & kParameterIsInteger) != 0) 
+                {
+                    properties->flags = kVstParameterUsesIntStep | kVstParameterUsesIntegerMinMax;
+                    const ParameterRanges& ranges(plugin.getParameterRanges(index));
+
+                    properties->stepInteger = 1;
+                    properties->largeStepInteger = 1;
+                    properties->minInteger = static_cast<int32_t>(ranges.min);
+                    properties->maxInteger = static_cast<int32_t>(ranges.max);
+                }
+                else if((hints & kParameterIsBoolean) != 0)
+                {
+                    properties->flags = kVstParameterIsSwitch;
+                }
+
+                return 1;
+            }
+        }
+        return 0;
+        
     case effGetPlugCategory:
 #if DISTRHO_PLUGIN_IS_SYNTH
         return kPlugCategSynth;
