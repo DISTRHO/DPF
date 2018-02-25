@@ -11,11 +11,6 @@ fi
 
 PWD=`pwd`
 
-if [ ! -d /System/Library ]; then
-  echo "This doesn't seem to be OSX, please stop!"
-  exit 0
-fi
-
 rm -rf *.vst/
 
 PLUGINS=`ls | grep vst.dylib`
@@ -27,7 +22,6 @@ for i in $PLUGINS; do
   rm -f $FILE.vst/Contents/MacOS/deleteme
   sed -i -e "s/X-PROJECTNAME-X/$FILE/" $FILE.vst/Contents/Info.plist
   rm -f $FILE.vst/Contents/Info.plist-e
-  SetFile -a B $FILE.vst
 done
 
 cd ..
