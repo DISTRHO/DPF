@@ -1107,7 +1107,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                     properties->flags = kVstParameterIsSwitch;
                 }
 
-                if(hints & kVstParameterCanRamp)
+                if(hints & kParameterIsLogarithmic)
                 {
                     properties->flags |= kVstParameterCanRamp;
                 }
