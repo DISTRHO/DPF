@@ -82,6 +82,12 @@ void snprintf_param(char* const dst, const float value, const size_t size)
     dst[size-1] = '\0';
 }
 
+void snprintf_param(char* const dst, const int32_t value, const size_t size)
+{
+    std::snprintf(dst, size-1, "%d", value);
+    dst[size-1] = '\0';
+}
+
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
@@ -445,7 +451,25 @@ public:
         case effGetParamDisplay:
             if (ptr != nullptr && index < static_cast<int32_t>(fPlugin.getParameterCount()))
             {
-                DISTRHO_NAMESPACE::snprintf_param((char*)ptr, fPlugin.getParameterValue(index), 24);
+                uint32_t hints = fPlugin.getParameterHints(index);
+                const float value = fPlugin.getParameterValue(index);
+
+                if(hints & kParameterIsBoolean)
+                {
+                    const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+                    const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+                    
+                    DISTRHO_NAMESPACE::strncpy((char*)ptr, value > midRange ? "on" : "off", 4);
+                }
+                else if(hints & kParameterIsInteger)
+                {
+                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, (int32_t)value, 24);
+                }
+                else
+                {
+                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
+                }
+
                 return 1;
             }
             break;
