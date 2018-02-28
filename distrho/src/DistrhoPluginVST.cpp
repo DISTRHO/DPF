@@ -451,17 +451,17 @@ public:
         case effGetParamDisplay:
             if (ptr != nullptr && index < static_cast<int32_t>(fPlugin.getParameterCount()))
             {
-                uint32_t hints = fPlugin.getParameterHints(index);
+                const uint32_t hints = fPlugin.getParameterHints(index);
                 const float value = fPlugin.getParameterValue(index);
 
-                if(hints & kParameterIsBoolean)
+                if (hints & kParameterIsBoolean)
                 {
                     const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
                     const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
                     
-                    DISTRHO_NAMESPACE::strncpy((char*)ptr, value > midRange ? "on" : "off", 4);
+                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value > midRange ? ranges.max : ranges.min, 24);
                 }
-                else if(hints & kParameterIsInteger)
+                else if (hints & kParameterIsInteger)
                 {
                     DISTRHO_NAMESPACE::snprintf_param((char*)ptr, (int32_t)value, 24);
                 }
@@ -1083,16 +1083,16 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         }
         return 0;
     case effGetParameterProperties:
-        if(ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
             const uint32_t hints = plugin.getParameterHints(index);
             
-            if(hints & kParameterIsOutput)
+            if (hints & kParameterIsOutput)
                 return 1;
 
-            if(VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
+            if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
             {
-                if(hints & kParameterIsInteger)
+                if (hints & kParameterIsInteger)
                 {
                     properties->flags = kVstParameterUsesIntStep | kVstParameterUsesIntegerMinMax;
                     const ParameterRanges& ranges(plugin.getParameterRanges(index));
@@ -1102,12 +1102,12 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
                 }
-                else if(hints & kParameterIsBoolean)
+                else if (hints & kParameterIsBoolean)
                 {
                     properties->flags = kVstParameterIsSwitch;
                 }
 
-                if(hints & kParameterIsLogarithmic)
+                if (hints & kParameterIsLogarithmic)
                 {
                     properties->flags |= kVstParameterCanRamp;
                 }
