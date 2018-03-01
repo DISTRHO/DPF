@@ -1092,7 +1092,13 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
             if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
             {
-                if (hints & kParameterIsInteger)
+                memset(properties, 0, sizeof(VstParameterProperties));
+
+                if (hints & kParameterIsBoolean)
+                {
+                    properties->flags = kVstParameterIsSwitch;
+                }
+                else if (hints & kParameterIsInteger)
                 {
                     properties->flags = kVstParameterUsesIntStep | kVstParameterUsesIntegerMinMax;
                     const ParameterRanges& ranges(plugin.getParameterRanges(index));
@@ -1101,10 +1107,6 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                     properties->largeStepInteger = 1;
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
-                }
-                else if (hints & kParameterIsBoolean)
-                {
-                    properties->flags = kVstParameterIsSwitch;
                 }
 
                 if (hints & kParameterIsLogarithmic)
