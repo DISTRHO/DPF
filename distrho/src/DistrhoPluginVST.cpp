@@ -82,7 +82,7 @@ void snprintf_param(char* const dst, const float value, const size_t size)
     dst[size-1] = '\0';
 }
 
-void snprintf_param(char* const dst, const int32_t value, const size_t size)
+void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
 {
     std::snprintf(dst, size-1, "%d", value);
     dst[size-1] = '\0';
@@ -463,7 +463,7 @@ public:
                 }
                 else if (hints & kParameterIsInteger)
                 {
-                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, (int32_t)value, 24);
+                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)(value + 0.5f), 24);
                 }
                 else
                 {
@@ -1082,29 +1082,29 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             return 1;
         }
         return 0;
+        
     case effGetParameterProperties:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            const uint32_t hints = plugin.getParameterHints(index);
-            
-            if (hints & kParameterIsOutput)
-                return 1;
-
             if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
+                
+                const uint32_t hints = plugin.getParameterHints(index);
+
+                if (hints & kParameterIsOutput)
+                    return 1;
 
                 if (hints & kParameterIsBoolean)
                 {
-                    properties->flags = kVstParameterIsSwitch;
+                    properties->flags |= kVstParameterIsSwitch;
                 }
-                else if (hints & kParameterIsInteger)
+                
+                if (hints & kParameterIsInteger)
                 {
-                    properties->flags = kVstParameterUsesIntStep | kVstParameterUsesIntegerMinMax;
+                    properties->flags |= kVstParameterUsesIntegerMinMax;
                     const ParameterRanges& ranges(plugin.getParameterRanges(index));
 
-                    properties->stepInteger = 1;
-                    properties->largeStepInteger = 1;
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
                 }
