@@ -453,20 +453,16 @@ public:
             {
                 const uint32_t hints = fPlugin.getParameterHints(index);
                 float value = fPlugin.getParameterValue(index);
-
+                
                 if (hints & kParameterIsBoolean)
                 {
                     const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
                     const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
                     
                     value = value > midRange ? ranges.max : ranges.min;
-
-                    if (hints & kParameterIsInteger)
-                        DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)value, 24);
-                    else
-                        DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
                 }
-                else if (hints & kParameterIsInteger)
+                
+                if (hints & kParameterIsInteger)
                 {
                     DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)std::round(value), 24);
                 }
