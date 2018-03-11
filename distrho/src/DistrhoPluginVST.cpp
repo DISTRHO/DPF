@@ -82,6 +82,12 @@ void snprintf_param(char* const dst, const float value, const size_t size)
     dst[size-1] = '\0';
 }
 
+void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
+{
+    std::snprintf(dst, size-1, "%d", value);
+    dst[size-1] = '\0';
+}
+
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
@@ -445,7 +451,26 @@ public:
         case effGetParamDisplay:
             if (ptr != nullptr && index < static_cast<int32_t>(fPlugin.getParameterCount()))
             {
-                DISTRHO_NAMESPACE::snprintf_param((char*)ptr, fPlugin.getParameterValue(index), 24);
+                const uint32_t hints = fPlugin.getParameterHints(index);
+                float value = fPlugin.getParameterValue(index);
+                
+                if (hints & kParameterIsBoolean)
+                {
+                    const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+                    const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+                    
+                    value = value > midRange ? ranges.max : ranges.min;
+                }
+                
+                if (hints & kParameterIsInteger)
+                {
+                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)std::round(value), 24);
+                }
+                else
+                {
+                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
+                }
+
                 return 1;
             }
             break;
@@ -1058,7 +1083,43 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             return 1;
         }
         return 0;
+        
+    case effGetParameterProperties:
+        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        {
+            if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
+            {
+                memset(properties, 0, sizeof(VstParameterProperties));
+                
+                const uint32_t hints = plugin.getParameterHints(index);
 
+                if (hints & kParameterIsOutput)
+                    return 1;
+
+                if (hints & kParameterIsBoolean)
+                {
+                    properties->flags |= kVstParameterIsSwitch;
+                }
+                
+                if (hints & kParameterIsInteger)
+                {
+                    properties->flags |= kVstParameterUsesIntegerMinMax;
+                    const ParameterRanges& ranges(plugin.getParameterRanges(index));
+
+                    properties->minInteger = static_cast<int32_t>(ranges.min);
+                    properties->maxInteger = static_cast<int32_t>(ranges.max);
+                }
+
+                if (hints & kParameterIsLogarithmic)
+                {
+                    properties->flags |= kVstParameterCanRamp;
+                }
+
+                return 1;
+            }
+        }
+        return 0;
+        
     case effGetPlugCategory:
 #if DISTRHO_PLUGIN_IS_SYNTH
         return kPlugCategSynth;
