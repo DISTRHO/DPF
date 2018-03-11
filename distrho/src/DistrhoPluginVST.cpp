@@ -468,7 +468,7 @@ public:
                 }
                 else if (hints & kParameterIsInteger)
                 {
-                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)(value + 0.5f), 24);
+                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)std::round(value), 24);
                 }
                 else
                 {
