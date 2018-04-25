@@ -317,7 +317,7 @@ protected:
         fPlugin.deactivate();
     }
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void process(float** const inBuffer, float** const outBuffer, const uint32_t frames, const NativeMidiEvent* const midiEvents, const uint32_t midiEventCount) override
     {
         MidiEvent realMidiEvents[midiEventCount];
