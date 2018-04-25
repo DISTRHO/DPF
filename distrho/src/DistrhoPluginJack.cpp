@@ -332,7 +332,7 @@ protected:
 
         if (const uint32_t eventCount = jack_midi_get_event_count(midiBuf))
         {
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             uint32_t  midiEventCount = 0;
             MidiEvent midiEvents[eventCount];
 #endif
@@ -383,7 +383,7 @@ protected:
                 }
 #endif
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 MidiEvent& midiEvent(midiEvents[midiEventCount++]);
 
                 midiEvent.frame = jevent.time;
@@ -396,11 +396,11 @@ protected:
 #endif
             }
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);
 #endif
         }
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         else
         {
             fPlugin.run(audioIns, audioOuts, nframes, nullptr, 0);
