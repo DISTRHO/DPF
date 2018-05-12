@@ -37,7 +37,7 @@
 #  define DISTRHO_DLL_EXTENSION "dylib"
 # elif defined(__HAIKU__)
 #  define DISTRHO_OS_HAIKU      1
-# elif defined(__linux__) || defined(__linux)
+# elif defined(__linux__) || defined(__linux) || defined(__GLIBC__)
 #  define DISTRHO_OS_LINUX 1
 # endif
 #endif
