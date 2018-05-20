@@ -472,8 +472,8 @@ void NanoVG::skewY(float angle)
 void NanoVG::scale(float x, float y)
 {
     if (fContext == nullptr) return;
-    DISTRHO_SAFE_ASSERT_RETURN(x > 0.0f,);
-    DISTRHO_SAFE_ASSERT_RETURN(y > 0.0f,);
+    DISTRHO_SAFE_ASSERT_RETURN(d_isNotZero(x),);
+    DISTRHO_SAFE_ASSERT_RETURN(d_isNotZero(y),);
 
     nvgScale(fContext, x, y);
 }
