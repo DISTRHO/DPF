@@ -24,8 +24,10 @@
 
 #include "pugl_internal.h"
 
-#define PuglWindow PuglWindow ## DGL_NAMESPACE
-#define PuglOpenGLView PuglOpenGLView ## DGL_NAMESPACE
+#include "../../distrho/extra/LeakDetector.hpp"
+
+#define PuglWindow DISTRHO_JOIN_MACRO(PuglWindow, DGL_NAMESPACE)
+#define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
 
 @interface PuglWindow : NSWindow
 {
