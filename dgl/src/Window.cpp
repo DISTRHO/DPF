@@ -33,6 +33,8 @@
 #if defined(DISTRHO_OS_WINDOWS)
 # include "pugl/pugl_win.cpp"
 #elif defined(DISTRHO_OS_MAC)
+# define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
+# define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
 # include "pugl/pugl_osx.m"
 #else
 # include <sys/types.h>
