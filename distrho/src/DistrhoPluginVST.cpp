@@ -280,8 +280,28 @@ protected:
 
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-# if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        // TODO
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (channel > 0xF)
+            return;
+
+        VstMidiEvent midiEvent;
+        memset(&midiEvent, 0, sizeof(VstMidiEvent));
+
+        midiEvent.type = kVstMidiType;
+        midiEvent.byteSize = sizeof(VstMidiEvent);
+
+        midiEvent.midiData[0] = channel;
+        midiEvent.midiData[0] += (velocity != 0) ? 0x90 : 0x80;
+        midiEvent.midiData[1] = note;
+        midiEvent.midiData[2] = velocity;
+
+        VstEvents event;
+        memset(&event, 0, sizeof(VstEvents));
+
+        event.numEvents = 1;
+        event.events[0] = (VstEvent*)&midiEvent;
+
+        fEffect->dispatcher(fEffect, effProcessEvents, 0, 0, &event, 0.0f);
 # else
         return; // unused
         (void)channel;
