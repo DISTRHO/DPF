@@ -93,7 +93,7 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, sendNoteCallback, setSizeCallback, fPlugin.getInstancePointer()),
 #endif
           fClient(client)
     {
@@ -433,6 +433,17 @@ protected:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        // TODO
+        return; // unused
+        (void)channel;
+        (void)note;
+        (void)velocity;
+    }
+#endif    
+    
 #if DISTRHO_PLUGIN_HAS_UI
     void setSize(const uint width, const uint height)
     {
@@ -512,6 +523,13 @@ private:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+        uiPtr->sendNote(channel, note, velocity);
+    }
+#endif
+    
 #if DISTRHO_PLUGIN_HAS_UI
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
