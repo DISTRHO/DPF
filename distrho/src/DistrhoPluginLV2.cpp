@@ -32,7 +32,7 @@
 #include "lv2/lv2_programs.h"
 
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-# include "libmodauth.h"
+# include "libmodla.h"
 #endif
 
 #ifdef noexcept
@@ -1057,7 +1057,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 #endif
 
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-    mod_check_license(features, DISTRHO_PLUGIN_URI);
+    mod_license_check(features, DISTRHO_PLUGIN_URI);
 #endif
 
     d_lastBufferSize = 0;
