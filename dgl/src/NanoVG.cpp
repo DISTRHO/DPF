@@ -865,7 +865,7 @@ float NanoVG::textBounds(float x, float y, const char* string, const char* end, 
 
     float b[4];
     const float ret = nvgTextBounds(fContext, x, y, string, end, b);
-    bounds = Rectangle<float>(b[0], b[1], b[2], b[3]);
+    bounds = Rectangle<float>(b[0], b[1], b[2] - b[0], b[3] - b[1]);
     return ret;
 }
 
