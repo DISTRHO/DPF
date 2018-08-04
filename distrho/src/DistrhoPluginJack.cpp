@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -41,6 +41,9 @@ START_NAMESPACE_DISTRHO
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_STATE
 static const setStateFunc setStateCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -91,7 +94,7 @@ class PluginJack
 {
 public:
     PluginJack(jack_client_t* const client)
-        : fPlugin(),
+        : fPlugin(this, writeMidiCallback),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
 #endif
@@ -118,6 +121,11 @@ public:
 #endif
 
         fPortEventsIn = jack_port_register(fClient, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fPortMidiOut = jack_port_register(fClient, "midi-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+        fPortMidiOutBuffer = nullptr;
+#endif
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (fPlugin.getProgramCount() > 0)
@@ -200,6 +208,11 @@ public:
 
         if (fClient == nullptr)
             return;
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        jack_port_unregister(fClient, fPortMidiOut);
+        fPortMidiOut = nullptr;
+#endif
 
         jack_port_unregister(fClient, fPortEventsIn);
         fPortEventsIn = nullptr;
@@ -330,6 +343,10 @@ protected:
 
         void* const midiBuf = jack_port_get_buffer(fPortEventsIn, nframes);
 
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fPortMidiOutBuffer = jack_port_get_buffer(fPortMidiOut, nframes);
+#endif
+
         if (const uint32_t eventCount = jack_midi_get_event_count(midiBuf))
         {
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -408,6 +425,10 @@ protected:
 #else
         fPlugin.run(audioIns, audioOuts, nframes);
 #endif
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fPortMidiOutBuffer = nullptr;
+#endif
     }
 
     void jackShutdown()
@@ -440,6 +461,18 @@ protected:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidi(const MidiEvent& midiEvent)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPortMidiOutBuffer != nullptr, false);
+
+        return jack_midi_event_write(fPortMidiOutBuffer,
+                                     midiEvent.frame,
+                                     midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
+                                     midiEvent.size) == 0;
+    }
+#endif
+
     // -------------------------------------------------------------------
 
 private:
@@ -457,6 +490,10 @@ private:
     jack_port_t* fPortAudioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];
 #endif
     jack_port_t* fPortEventsIn;
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    jack_port_t* fPortMidiOut;
+    void*        fPortMidiOutBuffer;
+#endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
 #endif
@@ -475,51 +512,58 @@ private:
     // -------------------------------------------------------------------
     // Callbacks
 
-    #define uiPtr ((PluginJack*)ptr)
+    #define thisPtr ((PluginJack*)ptr)
 
     static int jackBufferSizeCallback(jack_nframes_t nframes, void* ptr)
     {
-        uiPtr->jackBufferSize(nframes);
+        thisPtr->jackBufferSize(nframes);
         return 0;
     }
 
     static int jackSampleRateCallback(jack_nframes_t nframes, void* ptr)
     {
-        uiPtr->jackSampleRate(nframes);
+        thisPtr->jackSampleRate(nframes);
         return 0;
     }
 
     static int jackProcessCallback(jack_nframes_t nframes, void* ptr)
     {
-        uiPtr->jackProcess(nframes);
+        thisPtr->jackProcess(nframes);
         return 0;
     }
 
     static void jackShutdownCallback(void* ptr)
     {
-        uiPtr->jackShutdown();
+        thisPtr->jackShutdown();
     }
 
     static void setParameterValueCallback(void* ptr, uint32_t index, float value)
     {
-        uiPtr->setParameterValue(index, value);
+        thisPtr->setParameterValue(index, value);
     }
 
 #if DISTRHO_PLUGIN_WANT_STATE
     static void setStateCallback(void* ptr, const char* key, const char* value)
     {
-        uiPtr->setState(key, value);
+        thisPtr->setState(key, value);
     }
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
-        uiPtr->setSize(width, height);
+        thisPtr->setSize(width, height);
     }
 #endif
 
-    #undef uiPtr
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
+    {
+        return thisPtr->writeMidi(midiEvent);
+    }
+#endif
+
+    #undef thisPtr
 };
 
 END_NAMESPACE_DISTRHO

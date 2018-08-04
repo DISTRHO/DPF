@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -67,6 +67,12 @@ struct ERect {
 START_NAMESPACE_DISTRHO
 
 typedef std::map<const String, String> StringMap;
+
+static const int kVstMidiEventSize = static_cast<int>(sizeof(VstMidiEvent));
+
+#if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+static const writeMidiFunc writeMidiCallback = nullptr;
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -351,7 +357,8 @@ class PluginVst
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fAudioMaster(audioMaster),
+        : fPlugin(this, writeMidiCallback),
+          fAudioMaster(audioMaster),
           fEffect(effect)
     {
         std::memset(fProgramName, 0, sizeof(char)*(32+1));
@@ -453,15 +460,15 @@ public:
             {
                 const uint32_t hints = fPlugin.getParameterHints(index);
                 float value = fPlugin.getParameterValue(index);
-                
+
                 if (hints & kParameterIsBoolean)
                 {
                     const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
                     const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-                    
+
                     value = value > midRange ? ranges.max : ranges.min;
                 }
-                
+
                 if (hints & kParameterIsInteger)
                 {
                     DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)std::round(value), 24);
@@ -881,12 +888,12 @@ public:
     friend class UIVst;
 
 private:
+    // Plugin
+    PluginExporter fPlugin;
+
     // VST stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
-
-    // Plugin
-    PluginExporter fPlugin;
 
     // Temporary data
     char fProgramName[32+1];
@@ -934,6 +941,37 @@ private:
     {
         parameterValues[index] = realValue;
         parameterChecks[index] = true;
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidi(const MidiEvent& midiEvent)
+    {
+        if (midiEvent.size > 4)
+            return true;
+
+        VstEvents vstEvents;
+        std::memset(&vstEvents, 0, sizeof(VstEvents));
+
+        VstMidiEvent vstMidiEvent;
+        std::memset(&vstMidiEvent, 0, sizeof(VstMidiEvent));
+
+        vstEvents.numEvents = 1;
+        vstEvents.events[0] = (VstEvent*)&vstMidiEvent;
+
+        vstMidiEvent.type = kVstMidiType;
+        vstMidiEvent.byteSize    = kVstMidiEventSize;
+        vstMidiEvent.deltaFrames = midiEvent.frame;
+
+        for (uint8_t i=0; i<midiEvent.size; ++i)
+            vstMidiEvent.midiData[i] = midiEvent.data[i];
+
+        return hostCallback(audioMasterProcessEvents, 0, 0, &vstEvents) == 1;
+    }
+
+    static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
+    {
+        return ((PluginVst*)ptr)->writeMidi(midiEvent);
     }
 #endif
 
@@ -1002,7 +1040,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     }
 
     // Create dummy plugin to get data from
-    static PluginExporter plugin;
+    static PluginExporter plugin(nullptr, nullptr);
 
     if (doInternalInit)
     {

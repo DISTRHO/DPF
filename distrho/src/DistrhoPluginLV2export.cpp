@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2017 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -80,7 +80,7 @@ void lv2_generate_ttl(const char* const basename)
     // Dummy plugin to get data from
     d_lastBufferSize = 512;
     d_lastSampleRate = 44100.0;
-    PluginExporter plugin;
+    PluginExporter plugin(nullptr, nullptr);
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 

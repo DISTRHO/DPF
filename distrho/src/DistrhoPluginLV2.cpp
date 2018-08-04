@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -56,13 +56,18 @@ START_NAMESPACE_DISTRHO
 
 typedef std::map<const String, String> StringMap;
 
+#if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+static const writeMidiFunc writeMidiCallback = nullptr;
+#endif
+
 // -----------------------------------------------------------------------
 
 class PluginLv2
 {
 public:
     PluginLv2(const double sampleRate, const LV2_URID_Map* const uridMap, const LV2_Worker_Schedule* const worker, const bool usingNominal)
-        : fUsingNominal(usingNominal),
+        : fPlugin(this, writeMidiCallback),
+          fUsingNominal(usingNominal),
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
           fRunCount(0),
 #endif
@@ -106,9 +111,6 @@ public:
 
 #if DISTRHO_LV2_USE_EVENTS_IN
         fPortEventsIn = nullptr;
-#endif
-#if DISTRHO_LV2_USE_EVENTS_OUT
-        fPortEventsOut = nullptr;
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
         fPortLatency = nullptr;
@@ -226,7 +228,7 @@ public:
 #if DISTRHO_LV2_USE_EVENTS_OUT
         if (port == index++)
         {
-            fPortEventsOut = (LV2_Atom_Sequence*)dataLocation;
+            fEventsOutData.port = (LV2_Atom_Sequence*)dataLocation;
             return;
         }
 #endif
@@ -610,17 +612,11 @@ public:
         updateParameterOutputs();
 
 #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI
-        const uint32_t capacity = fPortEventsOut->atom.size;
+        fEventsOutData.initIfNeeded(fURIDs.atomSequence);
 
-        uint32_t size, offset = 0;
         LV2_Atom_Event* aev;
-
-        fPortEventsOut->atom.size = sizeof(LV2_Atom_Sequence_Body);
-        fPortEventsOut->atom.type = fURIDs.atomSequence;
-        fPortEventsOut->body.unit = 0;
-        fPortEventsOut->body.pad  = 0;
-
-        // TODO - MIDI Output
+        uint32_t offset = fEventsOutData.offset;
+        const uint32_t capacity = fEventsOutData.capacity;
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
@@ -645,6 +641,7 @@ public:
                     break;
 
                 // reserve msg space
+                // FIXME create a large enough buffer beforehand
                 char msgBuf[msgSize];
                 std::memset(msgBuf, 0, msgSize);
 
@@ -653,20 +650,22 @@ public:
                 std::memcpy(msgBuf+(key.length()+1), value.buffer(), value.length());
 
                 // put data
-                aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fPortEventsOut) + offset);
+                aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + offset);
                 aev->time.frames = 0;
                 aev->body.type   = fURIDs.distrhoState;
                 aev->body.size   = msgSize;
                 std::memcpy(LV2_ATOM_BODY(&aev->body), msgBuf, msgSize-1);
 
-                size    = lv2_atom_pad_size(sizeof(LV2_Atom_Event) + msgSize);
-                offset += size;
-                fPortEventsOut->atom.size += size;
+                fEventsOutData.growBy(lv2_atom_pad_size(sizeof(LV2_Atom_Event) + msgSize));
 
                 fNeededUiSends[i] = false;
                 break;
             }
         }
+#endif
+
+#if DISTRHO_LV2_USE_EVENTS_OUT
+        fEventsOutData.endRun();
 #endif
     }
 
@@ -883,9 +882,6 @@ private:
 #if DISTRHO_LV2_USE_EVENTS_IN
     LV2_Atom_Sequence* fPortEventsIn;
 #endif
-#if DISTRHO_LV2_USE_EVENTS_OUT
-    LV2_Atom_Sequence* fPortEventsOut;
-#endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
     float* fPortLatency;
 #endif
@@ -920,6 +916,44 @@ private:
               ticksPerBeat(-1.0) {}
 
     } fLastPositionData;
+#endif
+
+#if DISTRHO_LV2_USE_EVENTS_OUT
+    struct Lv2EventsOutData {
+        uint32_t capacity, offset;
+        LV2_Atom_Sequence* port;
+
+        Lv2EventsOutData()
+            : capacity(0),
+              offset(0),
+              port(nullptr) {}
+
+        void initIfNeeded(const LV2_URID uridAtomSequence)
+        {
+            if (capacity != 0)
+                return;
+
+            capacity = port->atom.size;
+
+            port->atom.size = sizeof(LV2_Atom_Sequence_Body);
+            port->atom.type = uridAtomSequence;
+            port->body.unit = 0;
+            port->body.pad  = 0;
+        }
+
+        void growBy(const uint32_t size)
+        {
+            offset += size;
+            port->atom.size += size;
+        }
+
+        void endRun()
+        {
+            capacity = 0;
+            offset = 0;
+        }
+
+    } fEventsOutData;
 #endif
 
     // LV2 URIDs
@@ -1016,6 +1050,38 @@ private:
             *fPortLatency = fPlugin.getLatency();
 #endif
     }
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidi(const MidiEvent& midiEvent)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fEventsOutData.port != nullptr, false);
+
+        fEventsOutData.initIfNeeded(fURIDs.atomSequence);
+
+        const uint32_t capacity = fEventsOutData.capacity;
+        const uint32_t offset = fEventsOutData.offset;
+
+        if (sizeof(LV2_Atom_Event) + midiEvent.size > capacity - offset)
+            return false;
+
+        LV2_Atom_Event* const aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + offset);
+        aev->time.frames = midiEvent.frame;
+        aev->body.type   = fURIDs.midiEvent;
+        aev->body.size   = midiEvent.size;
+        std::memcpy(LV2_ATOM_BODY(&aev->body),
+                    midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
+                    midiEvent.size);
+
+        fEventsOutData.growBy(lv2_atom_pad_size(sizeof(LV2_Atom_Event) + midiEvent.size));
+
+        return true;
+    }
+
+    static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
+    {
+        return ((PluginLv2*)ptr)->writeMidi(midiEvent);
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------

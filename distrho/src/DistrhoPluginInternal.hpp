@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,6 +31,11 @@ static const uint32_t kMaxMidiEvents = 512;
 
 extern uint32_t d_lastBufferSize;
 extern double   d_lastSampleRate;
+
+// -----------------------------------------------------------------------
+// DSP callbacks
+
+typedef bool (*writeMidiFunc) (void* ptr, const MidiEvent& midiEvent);
 
 // -----------------------------------------------------------------------
 // Plugin private data
@@ -65,6 +70,10 @@ struct Plugin::PrivateData {
     TimePosition timePosition;
 #endif
 
+    // Callbacks
+    void*         callbacksPtr;
+    writeMidiFunc writeMidiCallbackFunc;
+
     uint32_t bufferSize;
     double   sampleRate;
 
@@ -88,6 +97,8 @@ struct Plugin::PrivateData {
 #if DISTRHO_PLUGIN_WANT_LATENCY
           latency(0),
 #endif
+          callbacksPtr(nullptr),
+          writeMidiCallbackFunc(nullptr),
           bufferSize(d_lastBufferSize),
           sampleRate(d_lastSampleRate)
     {
@@ -149,6 +160,12 @@ struct Plugin::PrivateData {
         }
 #endif
     }
+
+    void writeMidiCallback(const MidiEvent& midiEvent)
+    {
+        if (writeMidiCallbackFunc != nullptr)
+            writeMidiCallbackFunc(callbacksPtr, midiEvent);
+    }
 };
 
 // -----------------------------------------------------------------------
@@ -157,7 +174,7 @@ struct Plugin::PrivateData {
 class PluginExporter
 {
 public:
-    PluginExporter()
+    PluginExporter(void* const callbacksPtr, const writeMidiFunc writeMidiCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
@@ -191,6 +208,9 @@ public:
         for (uint32_t i=0, count=fData->stateCount; i < count; ++i)
             fPlugin->initState(i, fData->stateKeys[i], fData->stateDefValues[i]);
 #endif
+
+        fData->callbacksPtr          = callbacksPtr;
+        fData->writeMidiCallbackFunc = writeMidiCall;
     }
 
     ~PluginExporter()

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -22,9 +22,12 @@
 
 #ifdef DISTRHO_PLUGIN_TARGET_DSSI
 # include "dssi/dssi.h"
+# if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+#  error DSSI does not support MIDI output
+# endif
 #else
 # include "ladspa/ladspa.h"
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 #  error Cannot use MIDI with LADSPA
 # endif
 # if DISTRHO_PLUGIN_WANT_STATE
@@ -44,7 +47,8 @@ class PluginLadspaDssi
 {
 public:
     PluginLadspaDssi()
-        : fPortControls(nullptr),
+        : fPlugin(nullptr, nullptr),
+          fPortControls(nullptr),
           fLastControlValues(nullptr)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
@@ -531,7 +535,7 @@ public:
         // Create dummy plugin to get data from
         d_lastBufferSize = 512;
         d_lastSampleRate = 44100.0;
-        PluginExporter plugin;
+        PluginExporter plugin(nullptr, nullptr);
         d_lastBufferSize = 0;
         d_lastSampleRate = 0.0;
 
