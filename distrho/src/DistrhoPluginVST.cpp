@@ -94,17 +94,16 @@ void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
     dst[size-1] = '\0';
 }
 
-#if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
-class UiHelper
+class ParameterCheckHelper
 {
 public:
-    UiHelper()
+    ParameterCheckHelper()
         : parameterChecks(nullptr),
           parameterValues(nullptr) {}
 
-    virtual ~UiHelper()
+    virtual ~ParameterCheckHelper()
     {
         if (parameterChecks != nullptr)
         {
@@ -121,17 +120,18 @@ public:
     bool*  parameterChecks;
     float* parameterValues;
 
-# if DISTRHO_PLUGIN_WANT_STATE
+#if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
-# endif
+#endif
 };
 
+#if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, UiHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId)
+    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId)
         : fAudioMaster(audioMaster),
           fEffect(effect),
           fUiHelper(uiHelper),
@@ -306,7 +306,7 @@ private:
     // Vst stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
-    UiHelper* const fUiHelper;
+    ParameterCheckHelper* const fUiHelper;
     PluginExporter* const fPlugin;
 
     // Plugin UI
@@ -349,11 +349,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_HAS_UI
-class PluginVst : public UiHelper
-#else
-class PluginVst
-#endif
+class PluginVst : public ParameterCheckHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
@@ -383,7 +379,7 @@ public:
             for (uint32_t i=0; i < paramCount; ++i)
             {
                 parameterChecks[i] = false;
-                parameterValues[i] = 0.0f;
+                parameterValues[i] = NAN;
             }
         }
 # if DISTRHO_OS_MAC
@@ -823,7 +819,10 @@ public:
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
         if (sampleFrames <= 0)
+        {
+            updateParameterOutputsAndTriggers();
             return;
+        }
 
         if (! fPlugin.isActive())
         {
@@ -882,16 +881,7 @@ public:
         fPlugin.run(inputs, outputs, sampleFrames);
 #endif
 
-#if DISTRHO_PLUGIN_HAS_UI
-        if (fVstUI == nullptr)
-            return;
-
-        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
-        {
-            if (fPlugin.isParameterOutput(i))
-                setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
-        }
-#endif
+        updateParameterOutputsAndTriggers();
     }
 
     // -------------------------------------------------------------------
@@ -946,6 +936,56 @@ private:
 
     // -------------------------------------------------------------------
     // functions called from the plugin side, RT no block
+
+    void updateParameterOutputsAndTriggers()
+    {
+        float curValue;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (fPlugin.isParameterOutput(i))
+            {
+                // NOTE: no output parameter support in VST, simulate it here
+                curValue = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(curValue, parameterValues[i]))
+                    continue;
+
+#if DISTRHO_PLUGIN_HAS_UI
+                if (fVstUI != nullptr)
+                    setParameterValueFromPlugin(i, curValue);
+                else
+#endif
+                parameterValues[i] = curValue;
+
+#ifndef DPF_VST_SHOW_PARAMETER_OUTPUTS
+                // skip automating parameter outputs from plugin if we disable them on VST
+                continue;
+#endif
+            }
+            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            {
+                // NOTE: no trigger support in VST parameters, simulate it here
+                curValue = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(curValue, fPlugin.getParameterRanges(i).def))
+                    continue;
+
+#if DISTRHO_PLUGIN_HAS_UI
+                if (fVstUI != nullptr)
+                    setParameterValueFromPlugin(i, curValue);
+#endif
+                fPlugin.setParameterValue(i, curValue);
+            }
+            else
+            {
+                continue;
+            }
+
+            const ParameterRanges& ranges(fPlugin.getParameterRanges(i));
+            hostCallback(audioMasterAutomate, i, 0, nullptr, ranges.getNormalizedValue(curValue));
+        }
+    }
 
 #if DISTRHO_PLUGIN_HAS_UI
     void setParameterValueFromPlugin(const uint32_t index, const float realValue)
@@ -1282,7 +1322,10 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     effect->version = plugin->getVersion();
 #endif
 
-    // VST doesn't support parameter outputs, hide them
+    // VST doesn't support parameter outputs. we can fake them, but it is a hack. Disabled by default.
+#ifdef DPF_VST_SHOW_PARAMETER_OUTPUTS
+    const int numParams = plugin->getParameterCount();
+#else
     int numParams = 0;
     bool outputsReached = false;
 
@@ -1297,6 +1340,7 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
         }
         outputsReached = true;
     }
+#endif
 
     // plugin fields
     effect->numParams   = numParams;

@@ -524,9 +524,7 @@ public:
                 fLastControlValues[i] = curValue;
 
                 if (fPlugin.getParameterDesignation(i) == kParameterDesignationBypass)
-                {
                     curValue = 1.0f - curValue;
-                }
 
                 fPlugin.setParameterValue(i, curValue);
             }
@@ -609,7 +607,7 @@ public:
 #endif
         }
 
-        updateParameterOutputs();
+        updateParameterOutputsAndTriggers();
 
 #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI
         fEventsOutData.initIfNeeded(fURIDs.atomSequence);
@@ -1032,17 +1030,23 @@ private:
     }
 #endif
 
-    void updateParameterOutputs()
+    void updateParameterOutputsAndTriggers()
     {
+        float curValue;
+
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (! fPlugin.isParameterOutput(i))
-                continue;
+            if (fPlugin.isParameterOutput(i))
+            {
+                curValue = fLastControlValues[i] = fPlugin.getParameterValue(i);
 
-            fLastControlValues[i] = fPlugin.getParameterValue(i);
-
-            if (fPortControls[i] != nullptr)
-                *fPortControls[i] = fLastControlValues[i];
+                if (fPortControls[i] != nullptr)
+                    *fPortControls[i] = curValue;
+            }
+            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            {
+                // NOTE: host is responsible for auto-updating control port buffers
+            }
         }
 
 #if DISTRHO_PLUGIN_WANT_LATENCY

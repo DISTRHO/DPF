@@ -430,6 +430,8 @@ protected:
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fPortMidiOutBuffer = nullptr;
 #endif
+
+        updateParameterTriggers();
     }
 
     void jackShutdown()
@@ -473,6 +475,23 @@ protected:
                                      midiEvent.size) == 0;
     }
 #endif
+
+    // NOTE: no trigger support for JACK, simulate it here
+    void updateParameterTriggers()
+    {
+        float defValue;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) != kParameterIsTrigger)
+                continue;
+
+            defValue = fPlugin.getParameterRanges(i).def;
+
+            if (d_isNotEqual(defValue, fPlugin.getParameterValue(i)))
+                fPlugin.setParameterValue(i, defValue);
+        }
+    }
 
     // -------------------------------------------------------------------
 

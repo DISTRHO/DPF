@@ -175,7 +175,7 @@ public:
     {
         // pre-roll
         if (sampleCount == 0)
-            return updateParameterOutputs();
+            return updateParameterOutputsAndTriggers();
 
         // Check for updated parameters
         float curValue;
@@ -272,7 +272,7 @@ public:
         fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
 #endif
 
-        updateParameterOutputs();
+        updateParameterOutputsAndTriggers();
 
 #if defined(DISTRHO_PLUGIN_TARGET_DSSI) && ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
         return; // unused
@@ -375,17 +375,33 @@ private:
 
     // -------------------------------------------------------------------
 
-    void updateParameterOutputs()
+    void updateParameterOutputsAndTriggers()
     {
+        float value;
+
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (! fPlugin.isParameterOutput(i))
-                continue;
+            if (fPlugin.isParameterOutput(i))
+            {
+                value = fLastControlValues[i] = fPlugin.getParameterValue(i);
 
-            fLastControlValues[i] = fPlugin.getParameterValue(i);
+                if (fPortControls[i] != nullptr)
+                    *fPortControls[i] = value;
+            }
+            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            {
+                // NOTE: no trigger support in LADSPA control ports, simulate it here
+                const float value = fPlugin.getParameterRanges(i).def;
 
-            if (fPortControls[i] != nullptr)
-                *fPortControls[i] = fLastControlValues[i];
+                if (d_isEqual(value, fPlugin.getParameterValue(i)))
+                    continue;
+
+                fLastControlValues[i] = value;
+                fPlugin.setParameterValue(i, value);
+
+                if (fPortControls[i] != nullptr)
+                    *fPortControls[i] = value;
+            }
         }
 
 #if DISTRHO_PLUGIN_WANT_LATENCY

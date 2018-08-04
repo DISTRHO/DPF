@@ -90,8 +90,11 @@ static const uint32_t kParameterIsLogarithmic = 0x08;
 static const uint32_t kParameterIsOutput = 0x10;
 
 /**
-   Parameter value is a trigger.
-   @note Cannot be used for output parameters
+   Parameter value is a trigger.@n
+   This means the value resets back to its default after each process/run call.@n
+   Cannot be used for output parameters.
+
+   @note Only officially supported under LV2. For other formats DPF simulates the behaviour.
 */
 static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
 
