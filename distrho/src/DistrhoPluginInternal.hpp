@@ -346,9 +346,14 @@ public:
         return fData->parameters[index].designation;
     }
 
+    bool isParameterInput(const uint32_t index) const noexcept
+    {
+        return (getParameterHints(index) & kParameterIsOutput) == 0x0;
+    }
+
     bool isParameterOutput(const uint32_t index) const noexcept
     {
-        return (getParameterHints(index) & kParameterIsOutput);
+        return (getParameterHints(index) & kParameterIsOutput) != 0x0;
     }
 
     const String& getParameterName(const uint32_t index) const noexcept

@@ -399,7 +399,7 @@ void lv2_generate_ttl(const char* const basename)
                 bool designated = false;
 
                 // designation
-                if (! plugin.isParameterOutput(i))
+                if (plugin.isParameterInput(i))
                 {
                     switch (plugin.getParameterDesignation(i))
                     {
@@ -435,14 +435,14 @@ void lv2_generate_ttl(const char* const basename)
 
                     if (plugin.getParameterHints(i) & kParameterIsInteger)
                     {
-                        if (! plugin.isParameterOutput(i))
+                        if (plugin.isParameterInput(i))
                             pluginString += "        lv2:default " + String(int(plugin.getParameterValue(i))) + " ;\n";
                         pluginString += "        lv2:minimum " + String(int(ranges.min)) + " ;\n";
                         pluginString += "        lv2:maximum " + String(int(ranges.max)) + " ;\n";
                     }
                     else
                     {
-                        if (! plugin.isParameterOutput(i))
+                        if (plugin.isParameterInput(i))
                             pluginString += "        lv2:default " + String(plugin.getParameterValue(i)) + " ;\n";
                         pluginString += "        lv2:minimum " + String(ranges.min) + " ;\n";
                         pluginString += "        lv2:maximum " + String(ranges.max) + " ;\n";
@@ -531,7 +531,7 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty lv2:integer ;\n";
                     if (hints & kParameterIsLogarithmic)
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__logarithmic "> ;\n";
-                    if ((hints & kParameterIsAutomable) == 0 && ! plugin.isParameterOutput(i))
+                    if ((hints & kParameterIsAutomable) == 0 && plugin.isParameterInput(i))
                     {
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__expensive "> ,\n";
                         pluginString += "                         <" LV2_KXSTUDIO_PROPERTIES__NonAutomable "> ;\n";

@@ -1331,7 +1331,7 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
 
     for (uint32_t i=0, count=plugin->getParameterCount(); i < count; ++i)
     {
-        if (! plugin->isParameterOutput(i))
+        if (plugin->isParameterInput(i))
         {
             // parameter outputs must be all at the end
             DISTRHO_SAFE_ASSERT_BREAK(! outputsReached);
