@@ -65,7 +65,7 @@ struct Widget::PrivateData {
 
     void display(const uint width, const uint height)
     {
-        if (skipDisplay || ! visible)
+        if (skipDisplay || size.isInvalid() || ! visible)
             return;
 
         bool needsDisableScissor = false;
