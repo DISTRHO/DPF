@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -27,9 +27,10 @@ double   d_lastSampleRate = 0.0;
 /* ------------------------------------------------------------------------------------------------------------
  * Static fallback data, see DistrhoPluginInternal.hpp */
 
-const String          PluginExporter::sFallbackString;
-const AudioPort       PluginExporter::sFallbackAudioPort;
-const ParameterRanges PluginExporter::sFallbackRanges;
+const String                     PluginExporter::sFallbackString;
+const AudioPort                  PluginExporter::sFallbackAudioPort;
+const ParameterRanges            PluginExporter::sFallbackRanges;
+const ParameterEnumerationValues PluginExporter::sFallbackEnumValues;
 
 /* ------------------------------------------------------------------------------------------------------------
  * Plugin */

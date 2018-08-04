@@ -372,6 +372,13 @@ public:
         return fData->parameters[index].unit;
     }
 
+    const ParameterEnumerationValues& getParameterEnumValues(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackEnumValues);
+
+        return fData->parameters[index].enumValues;
+    }
+
     const ParameterRanges& getParameterRanges(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackRanges);
@@ -625,9 +632,10 @@ private:
     // -------------------------------------------------------------------
     // Static fallback data, see DistrhoPlugin.cpp
 
-    static const String          sFallbackString;
-    static const AudioPort       sFallbackAudioPort;
-    static const ParameterRanges sFallbackRanges;
+    static const String                     sFallbackString;
+    static const AudioPort                  sFallbackAudioPort;
+    static const ParameterRanges            sFallbackRanges;
+    static const ParameterEnumerationValues sFallbackEnumValues;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
     DISTRHO_PREVENT_HEAP_ALLOCATION

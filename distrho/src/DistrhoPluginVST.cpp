@@ -468,15 +468,26 @@ public:
 
                     value = value > midRange ? ranges.max : ranges.min;
                 }
+                else if (hints & kParameterIsInteger)
+                {
+                    value = std::round(value);
+                }
+
+                const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(index));
+
+                for (uint8_t i = 0; i < enumValues.count; ++i)
+                {
+                    if (d_isNotEqual(value, enumValues.values[i].value))
+                        continue;
+
+                    DISTRHO_NAMESPACE::strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
+                    return 1;
+                }
 
                 if (hints & kParameterIsInteger)
-                {
-                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)std::round(value), 24);
-                }
+                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)value, 24);
                 else
-                {
                     DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
-                }
 
                 return 1;
             }
