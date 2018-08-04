@@ -1,9 +1,18 @@
 /*
- * aeffectx.h - simple header to allow VeSTige compilation and eventually work
+ * IMPORTANT: The author of DPF has no connection with the
+ * author of the VeSTige VST-compatibility header, has had no
+ * involvement in its creation.
+ *
+ * The VeSTige header is included in this package in the good-faith
+ * belief that it has been cleanly and legally reverse engineered
+ * without reference to the official VST SDK and without its
+ * developer(s) having agreed to the VST SDK license agreement.
+ */
+
+/*
+ * simple header to allow VeSTige compilation and eventually work
  *
  * Copyright (c) 2006 Javier Serrano Polo <jasp00/at/users.sourceforge.net>
- * 
- * This file is part of Linux MultiMedia Studio - http://lmms.sourceforge.net
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public
@@ -22,8 +31,8 @@
  *
  */
 #include <stdint.h>
-#ifndef _AEFFECTX_H
-#define _AEFFECTX_H
+#ifndef _VESTIGE_H
+#define _VESTIGE_H
 
 #define CCONST(a, b, c, d)( ( ( (int) a ) << 24 ) |		\
 				( ( (int) b ) << 16 ) |		\
@@ -87,11 +96,11 @@
 #define effFlagsIsSynth (1 << 8) // currently unused
 
 #define effOpen 0
-#define effClose 1 // currently unused
-#define effSetProgram 2 // currently unused
-#define effGetProgram 3 // currently unused
-#define effGetProgramName 5 // currently unused
-#define effGetParamName 8 // currently unused
+#define effClose 1
+#define effSetProgram 2
+#define effGetProgram 3
+#define effGetProgramName 5
+#define effGetParamName 8
 #define effSetSampleRate 10
 #define effSetBlockSize 11
 #define effMainsChanged 12
@@ -101,22 +110,42 @@
 #define effEditIdle 19
 #define effEditTop 20
 #define effProcessEvents 25
+#define effGetPlugCategory 35
 #define effGetEffectName 45
 #define effGetVendorString 47
 #define effGetProductString 48
 #define effGetVendorVersion 49
-#define effCanDo 51 // currently unused
-/* from http://asseca.com/vst-24-specs/efGetParameterProperties.html */
+#define effCanDo 51
+#define effIdle 53
 #define effGetParameterProperties 56
-#define effGetVstVersion 58 // currently unused
+#define effGetVstVersion 58
+#define effShellGetNextPlugin  70
+#define effStartProcess 71
+#define effStopProcess 72
 
-#define kEffectMagic (CCONST( 'V', 's', 't', 'P' ))
+#define effBeginSetProgram 67
+#define effEndSetProgram 68
+
+#ifdef WORDS_BIGENDIAN
+// "VstP"
+#define kEffectMagic 0x50747356
+#else
+// "PtsV"
+#define kEffectMagic 0x56737450
+#endif
+
 #define kVstLangEnglish 1
 #define kVstMidiType 1
 
 struct RemoteVstPlugin;
 
+#define kVstTransportChanged 1
 #define kVstTransportPlaying (1 << 1)
+#define kVstTransportCycleActive (1 << 2)
+#define kVstTransportRecording (1 << 3)
+
+#define kVstAutomationWriting (1 << 6)
+#define kVstAutomationReading (1 << 7)
 
 #define kVstNanosValid (1 << 8)
 #define kVstPpqPosValid (1 << 9)
@@ -174,26 +203,57 @@ struct _VstEvents
 	VstEvent * events[2];
 };
 
+enum Vestige2StringConstants
+{
+	VestigeMaxNameLen       = 64,
+	VestigeMaxLabelLen      = 64,
+	VestigeMaxShortLabelLen = 8,
+	VestigeMaxCategLabelLen = 24,
+	VestigeMaxFileNameLen   = 100
+};
+
+
+enum VstPlugCategory
+{
+	kPlugCategUnknown = 0,
+	kPlugCategEffect,
+	kPlugCategSynth,
+	kPlugCategAnalysis,
+	kPlugCategMastering,
+	kPlugCategSpacializer,
+	kPlugCategRoomFx,
+	kPlugSurroundFx,
+	kPlugCategRestoration,
+	kPlugCategOfflineProcess,
+	kPlugCategShell,
+	kPlugCategGenerator,
+	kPlugCategMaxCount
+};
+
 typedef struct _VstEvents VstEvents;
 
-/* this struct taken from http://asseca.com/vst-24-specs/efGetParameterProperties.html */
 struct _VstParameterProperties
 {
-	float stepFloat;
-	float smallStepFloat;
-	float largeStepFloat;
-	char label[64];
-	int32_t flags;
-	int32_t minInteger;
-	int32_t maxInteger;
-	int32_t stepInteger;
-	int32_t largeStepInteger;
-	char shortLabel[8];
+	float stepFloat;              /* float step */
+	float smallStepFloat;         /* small float step */
+	float largeStepFloat;         /* large float step */
+	char label[VestigeMaxLabelLen];  /* parameter label */
+	int32_t flags;               /* @see VstParameterFlags */
+	int32_t minInteger;          /* integer minimum */
+	int32_t maxInteger;          /* integer maximum */
+	int32_t stepInteger;         /* integer step */
+	int32_t largeStepInteger;    /* large integer step */
+	char shortLabel[VestigeMaxShortLabelLen]; /* short label, recommended: 6 + delimiter */
+	int16_t displayIndex;        /* index where this parameter should be displayed (starting with 0) */
+	int16_t category;            /* 0: no category, else group index + 1 */
+	int16_t numParametersInCategory; /* number of parameters in category */
+	int16_t reserved;            /* zero */
+	char categoryLabel[VestigeMaxCategLabelLen]; /* category label, e.g. "Osc 1"  */
+	char future[16];              /* reserved for future use */
 };
 
 typedef struct _VstParameterProperties VstParameterProperties;
 
-/* this enum taken from http://asseca.com/vst-24-specs/efGetParameterProperties.html */
 enum VstParameterFlags
 {
 	kVstParameterIsSwitch                = 1 << 0,  /* parameter is a switch (on/off) */
@@ -231,18 +291,19 @@ struct _AEffect
 	// Fill somewhere 28-2b
 	void *ptr1;
 	void *ptr2;
-	// Zeroes 2c-2f 30-33 34-37 38-3b
-	char empty3[4 + 4 + 4];
+	int initialDelay;
+	// Zeroes 30-33 34-37 38-3b
+	char empty2[4 + 4];
 	// 1.0f 3c-3f
 	float unkown_float;
 	// An object? pointer 40-43
-	void *ptr3;
+	void *object;
 	// Zeroes 44-47
 	void *user;
 	// Id 48-4b
 	int32_t uniqueID;
-	// Don't know 4c-4f
-	char unknown1[4];
+	// plugin version 4c-4f
+	int32_t version;
 	// processReplacing 50-53
 	void (* processReplacing) (struct _AEffect *, float **, float **, int);
 };

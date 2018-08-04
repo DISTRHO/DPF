@@ -41,7 +41,7 @@
 #include <string>
 
 #ifdef VESTIGE_HEADER
-# include "vestige/aeffectx.h"
+# include "vestige/vestige.h"
 #define effFlagsProgramChunks (1 << 5)
 #define effSetProgramName 4
 #define effGetParamLabel 6
@@ -51,7 +51,6 @@
 #define effCanBeAutomated 26
 #define effGetProgramNameIndexed 29
 #define effGetPlugCategory 35
-#define effIdle 53
 #define effEditKeyDown 59
 #define effEditKeyUp 60
 #define kPlugCategEffect 1
@@ -1066,17 +1065,10 @@ struct VstObject {
     PluginVst* plugin;
 };
 
-#ifdef VESTIGE_HEADER
-# define validObject  effect != nullptr && effect->ptr3 != nullptr
-# define validPlugin  effect != nullptr && effect->ptr3 != nullptr && ((VstObject*)effect->ptr3)->plugin != nullptr
-# define vstObjectPtr (VstObject*)effect->ptr3
-#else
-# define validObject  effect != nullptr && effect->object != nullptr
-# define validPlugin  effect != nullptr && effect->object != nullptr && ((VstObject*)effect->object)->plugin != nullptr
-# define vstObjectPtr (VstObject*)effect->object
-#endif
-
-#define pluginPtr     (vstObjectPtr)->plugin
+#define validObject  effect != nullptr && effect->object != nullptr
+#define validPlugin  effect != nullptr && effect->object != nullptr && ((VstObject*)effect->object)->plugin != nullptr
+#define vstObjectPtr (VstObject*)effect->object
+#define pluginPtr    (vstObjectPtr)->plugin
 
 static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t index, intptr_t value, void* ptr, float opt)
 {
@@ -1144,11 +1136,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             /* This code invalidates the object created in VSTPluginMain
              * Probably not safe against all hosts */
             obj->audioMaster = nullptr;
-# ifdef VESTIGE_HEADER
-            effect->ptr3 = nullptr;
-# else
-            vstObjectPtr = nullptr;
-# endif
+            effect->object = nullptr;
             delete obj;
 #endif
 
@@ -1172,14 +1160,14 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             return 1;
         }
         return 0;
-        
+
     case effGetParameterProperties:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
             if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
-                
+
                 const uint32_t hints = plugin.getParameterHints(index);
 
                 if (hints & kParameterIsOutput)
@@ -1189,7 +1177,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                 {
                     properties->flags |= kVstParameterIsSwitch;
                 }
-                
+
                 if (hints & kParameterIsInteger)
                 {
                     properties->flags |= kVstParameterUsesIntegerMinMax;
@@ -1208,7 +1196,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             }
         }
         return 0;
-        
+
     case effGetPlugCategory:
 #if DISTRHO_PLUGIN_IS_SYNTH
         return kPlugCategSynth;
@@ -1315,12 +1303,7 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     // vst fields
     effect->magic    = kEffectMagic;
     effect->uniqueID = plugin->getUniqueId();
-#ifdef VESTIGE_HEADER
-    int32_t* const version = (int32_t*)&effect->unknown1;
-    *version = plugin->getVersion();
-#else
-    effect->version = plugin->getVersion();
-#endif
+    effect->version  = plugin->getVersion();
 
     // VST doesn't support parameter outputs. we can fake them, but it is a hack. Disabled by default.
 #ifdef DPF_VST_SHOW_PARAMETER_OUTPUTS
@@ -1371,11 +1354,9 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     VstObject* const obj(new VstObject());
     obj->audioMaster = audioMaster;
     obj->plugin      = nullptr;
-#ifdef VESTIGE_HEADER
-    effect->ptr3   = obj;
-#else
+
+    // done
     effect->object = obj;
-#endif
 
     return effect;
 }
