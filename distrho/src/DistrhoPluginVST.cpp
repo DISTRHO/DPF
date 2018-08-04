@@ -53,8 +53,6 @@
 #define effGetPlugCategory 35
 #define effEditKeyDown 59
 #define effEditKeyUp 60
-#define kPlugCategEffect 1
-#define kPlugCategSynth 2
 #define kVstVersion 2400
 struct ERect {
     int16_t top, left, bottom, right;
