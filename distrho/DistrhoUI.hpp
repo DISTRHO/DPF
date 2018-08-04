@@ -94,6 +94,7 @@ public:
    /**
       sendNote.
       @TODO Document this.
+      @note Work in progress. Implemented for DSSI and LV2 formats.
     */
     void sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
 #endif
