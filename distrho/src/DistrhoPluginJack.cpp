@@ -345,6 +345,7 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fPortMidiOutBuffer = jack_port_get_buffer(fPortMidiOut, nframes);
+        jack_midi_clear_buffer(fPortMidiOutBuffer);
 #endif
 
         if (const uint32_t eventCount = jack_midi_get_event_count(midiBuf))

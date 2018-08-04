@@ -161,11 +161,15 @@ struct Plugin::PrivateData {
 #endif
     }
 
-    void writeMidiCallback(const MidiEvent& midiEvent)
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidiCallback(const MidiEvent& midiEvent)
     {
         if (writeMidiCallbackFunc != nullptr)
-            writeMidiCallbackFunc(callbacksPtr, midiEvent);
+            return writeMidiCallbackFunc(callbacksPtr, midiEvent);
+
+        return false;
     }
+#endif
 };
 
 // -----------------------------------------------------------------------
