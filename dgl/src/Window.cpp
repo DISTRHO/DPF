@@ -723,7 +723,7 @@ struct Window::PrivateData {
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
-            widget->pData->display(fWidth, fHeight);
+            widget->pData->display(fWidth, fHeight, false);
         }
 
         fSelf->onDisplayAfter();
