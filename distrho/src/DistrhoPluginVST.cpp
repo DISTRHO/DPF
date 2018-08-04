@@ -118,8 +118,8 @@ public:
         }
     }
 
-    bool*   parameterChecks;
-    float*  parameterValues;
+    bool*  parameterChecks;
+    float* parameterValues;
 
 # if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
@@ -390,7 +390,7 @@ public:
 #  ifdef __LP64__
         fUsingNsView = true;
 #  else
-#  warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
+#   warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
         fUsingNsView = false;
 #  endif
 # endif // DISTRHO_OS_MAC
