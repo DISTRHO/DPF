@@ -356,6 +356,18 @@ public:
         return (getParameterHints(index) & kParameterIsOutput) != 0x0;
     }
 
+    bool isParameterOutputOrTrigger(const uint32_t index) const noexcept
+    {
+        const uint32_t hints = getParameterHints(index);
+
+        if (hints & kParameterIsOutput)
+            return true;
+        if ((hints & kParameterIsTrigger) == kParameterIsTrigger)
+            return true;
+
+        return false;
+    }
+
     const String& getParameterName(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);

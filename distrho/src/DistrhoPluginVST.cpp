@@ -37,6 +37,7 @@
 #define VESTIGE_HEADER
 #define VST_FORCE_DEPRECATED 0
 
+#include <clocale>
 #include <map>
 #include <string>
 
@@ -90,6 +91,32 @@ void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
     std::snprintf(dst, size-1, "%d", value);
     dst[size-1] = '\0';
 }
+
+// -----------------------------------------------------------------------
+
+class ScopedSafeLocale {
+public:
+    ScopedSafeLocale() noexcept
+        : locale(::strdup(::setlocale(LC_NUMERIC, nullptr)))
+    {
+        ::setlocale(LC_NUMERIC, "C");
+    }
+
+    ~ScopedSafeLocale() noexcept
+    {
+        if (locale != nullptr)
+        {
+            ::setlocale(LC_NUMERIC, locale);
+            std::free(locale);
+        }
+    }
+
+private:
+    char* const locale;
+
+    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedSafeLocale)
+    DISTRHO_PREVENT_HEAP_ALLOCATION
+};
 
 // -----------------------------------------------------------------------
 
@@ -618,6 +645,7 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
         case effGetChunk:
+        {
             if (ptr == nullptr)
                 return 0;
 
@@ -627,7 +655,9 @@ public:
                 fStateChunk = nullptr;
             }
 
-            if (fPlugin.getStateCount() == 0)
+            const uint32_t paramCount = fPlugin.getParameterCount();
+
+            if (fPlugin.getStateCount() == 0 && paramCount == 0)
             {
                 fStateChunk    = new char[1];
                 fStateChunk[0] = '\0';
@@ -661,6 +691,30 @@ public:
                     chunkStr += tmpStr;
                 }
 
+                if (paramCount != 0)
+                {
+                    // add another separator
+                    chunkStr += "\xff";
+
+                    // temporarily set locale to "C" while converting floats
+                    const ScopedSafeLocale ssl;
+
+                    for (uint32_t i=0; i<paramCount; ++i)
+                    {
+                        if (fPlugin.isParameterOutputOrTrigger(i))
+                            continue;
+
+                        // join key and value
+                        String tmpStr;
+                        tmpStr  = fPlugin.getParameterSymbol(i);
+                        tmpStr += "\xff";
+                        tmpStr += String(fPlugin.getParameterValue(i));
+                        tmpStr += "\xff";
+
+                        chunkStr += tmpStr;
+                    }
+                }
+
                 const std::size_t chunkSize(chunkStr.length()+1);
 
                 fStateChunk = new char[chunkSize];
@@ -678,21 +732,27 @@ public:
 
             *(void**)ptr = fStateChunk;
             return ret;
+        }
 
         case effSetChunk:
         {
             if (value <= 1 || ptr == nullptr)
                 return 0;
 
+            const size_t chunkSize = static_cast<size_t>(value);
+
             const char* key   = (const char*)ptr;
             const char* value = nullptr;
+            size_t size, bytesRead = 0;
 
-            for (;;)
+            while (bytesRead < chunkSize)
             {
                 if (key[0] == '\0')
                     break;
 
-                value = key+(std::strlen(key)+1);
+                size  = std::strlen(key)+1;
+                value = key + size;
+                bytesRead += size;
 
                 setStateFromUI(key, value);
 
@@ -702,7 +762,52 @@ public:
 # endif
 
                 // get next key
-                key = value+(std::strlen(value)+1);
+                size = std::strlen(value)+1;
+                key  = value + size;
+                bytesRead += size;
+            }
+
+            const uint32_t paramCount = fPlugin.getParameterCount();
+
+            if (bytesRead+4 < chunkSize && paramCount != 0)
+            {
+                ++key;
+                float fvalue;
+
+                // temporarily set locale to "C" while converting floats
+                const ScopedSafeLocale ssl;
+
+                while (bytesRead < chunkSize)
+                {
+                    if (key[0] == '\0')
+                        break;
+
+                    size  = std::strlen(key)+1;
+                    value = key + size;
+                    bytesRead += size;
+
+                    // find parameter with this symbol, and set its value
+                    for (uint32_t i=0; i<paramCount; ++i)
+                    {
+                        if (fPlugin.isParameterOutputOrTrigger(i))
+                            continue;
+                        if (fPlugin.getParameterSymbol(i) != key)
+                            continue;
+
+                        fvalue = std::atof(value);
+                        fPlugin.setParameterValue(i, fvalue);
+# if DISTRHO_PLUGIN_HAS_UI
+                        if (fVstUI != nullptr)
+                            setParameterValueFromPlugin(i, fvalue);
+# endif
+                        break;
+                    }
+
+                    // get next key
+                    size = std::strlen(value)+1;
+                    key  = value + size;
+                    bytesRead += size;
+                }
             }
 
             return 1;
