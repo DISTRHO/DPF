@@ -187,7 +187,7 @@ public:
 
             curValue = *fPortControls[i];
 
-            if (fLastControlValues[i] != curValue && ! fPlugin.isParameterOutput(i))
+            if (d_isNotEqual(fLastControlValues[i], curValue) && ! fPlugin.isParameterOutput(i))
             {
                 fLastControlValues[i] = curValue;
                 fPlugin.setParameterValue(i, curValue);
@@ -391,7 +391,7 @@ private:
             else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
             {
                 // NOTE: no trigger support in LADSPA control ports, simulate it here
-                const float value = fPlugin.getParameterRanges(i).def;
+                value = fPlugin.getParameterRanges(i).def;
 
                 if (d_isEqual(value, fPlugin.getParameterValue(i)))
                     continue;

@@ -519,7 +519,7 @@ public:
 
             curValue = *fPortControls[i];
 
-            if (fLastControlValues[i] != curValue && ! fPlugin.isParameterOutput(i))
+            if (d_isNotEqual(fLastControlValues[i], curValue) && ! fPlugin.isParameterOutput(i))
             {
                 fLastControlValues[i] = curValue;
 
