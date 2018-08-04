@@ -34,8 +34,6 @@
 # define DISTRHO_PLUGIN_LV2_STATE_PREFIX "urn:distrho:"
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
-
 START_NAMESPACE_DISTRHO
 
 typedef struct _LV2_Atom_MidiEvent {
@@ -43,7 +41,7 @@ typedef struct _LV2_Atom_MidiEvent {
     uint8_t  data[3]; /**< MIDI data (body). */
 } LV2_Atom_MidiEvent;
 
-#if ! DISTRHO_LV2_USE_EVENTS_IN
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
 static const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
@@ -269,7 +267,7 @@ protected:
         fWriteFunction(fController, eventInPortIndex, atomSize, fEventTransferURID, atom);
     }
 
-#if DISTRHO_LV2_USE_EVENTS_IN
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
@@ -340,7 +338,7 @@ private:
         uiPtr->setState(key, value);
     }
 
-#if DISTRHO_LV2_USE_EVENTS_IN
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
     {
         uiPtr->sendNote(channel, note, velocity);

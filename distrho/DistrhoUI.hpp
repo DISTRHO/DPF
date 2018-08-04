@@ -90,7 +90,7 @@ public:
     void setState(const char* key, const char* value);
 #endif
 
-#if DISTRHO_PLUGIN_IS_SYNTH
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
    /**
       sendNote.
       @TODO Document this.

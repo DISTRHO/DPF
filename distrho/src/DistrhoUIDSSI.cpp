@@ -26,6 +26,10 @@
 
 START_NAMESPACE_DISTRHO
 
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
+
 // -----------------------------------------------------------------------
 
 struct OscData {
@@ -180,6 +184,7 @@ protected:
         fOscData.send_configure(key, value);
     }
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
         if (fOscData.server == nullptr)
@@ -195,6 +200,7 @@ protected:
         };
         fOscData.send_midi(mdata);
     }
+#endif
 
     void setSize(const uint width, const uint height)
     {
@@ -222,10 +228,12 @@ private:
         uiPtr->setState(key, value);
     }
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
     {
         uiPtr->sendNote(channel, note, velocity);
     }
+#endif
 
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
