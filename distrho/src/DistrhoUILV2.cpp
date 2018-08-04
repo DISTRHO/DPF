@@ -22,6 +22,7 @@
 #include "lv2/atom-util.h"
 #include "lv2/data-access.h"
 #include "lv2/instance-access.h"
+#include "lv2/midi.h"
 #include "lv2/options.h"
 #include "lv2/parameters.h"
 #include "lv2/ui.h"
@@ -33,7 +34,18 @@
 # define DISTRHO_PLUGIN_LV2_STATE_PREFIX "urn:distrho:"
 #endif
 
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+
 START_NAMESPACE_DISTRHO
+
+typedef struct _LV2_Atom_MidiEvent {
+    LV2_Atom atom;    /**< Atom header. */
+    uint8_t  data[3]; /**< MIDI data (body). */
+} LV2_Atom_MidiEvent;
+
+#if ! DISTRHO_LV2_USE_EVENTS_IN
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -51,6 +63,7 @@ public:
           fController(controller),
           fWriteFunction(writeFunc),
           fEventTransferURID(uridMap->map(uridMap->handle, LV2_ATOM__eventTransfer)),
+          fMidiEventURID(uridMap->map(uridMap->handle, LV2_MIDI__MidiEvent)),
           fKeyValueURID(uridMap->map(uridMap->handle, DISTRHO_PLUGIN_LV2_STATE_PREFIX "KeyValueState")),
           fWinIdWasNull(winId == 0)
     {
@@ -256,9 +269,28 @@ protected:
         fWriteFunction(fController, eventInPortIndex, atomSize, fEventTransferURID, atom);
     }
 
-    void sendNote(const uint8_t /*channel*/, const uint8_t /*note*/, const uint8_t /*velocity*/)
+#if DISTRHO_LV2_USE_EVENTS_IN
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
+
+        if (channel > 0xF)
+            return;
+
+        const uint32_t eventInPortIndex(DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS);
+
+        LV2_Atom_MidiEvent atomMidiEvent;
+        atomMidiEvent.atom.size = 3;
+        atomMidiEvent.atom.type = fMidiEventURID;
+
+        atomMidiEvent.data[0] = channel + (velocity != 0 ? 0x90 : 0x80);
+        atomMidiEvent.data[1] = note;
+        atomMidiEvent.data[2] = velocity;
+
+        // send to DSP side
+        fWriteFunction(fController, eventInPortIndex, sizeof(LV2_Atom_MidiEvent), fEventTransferURID, &atomMidiEvent);
     }
+#endif
 
     void setSize(const uint width, const uint height)
     {
@@ -282,6 +314,7 @@ private:
 
     // Need to save this
     const LV2_URID fEventTransferURID;
+    const LV2_URID fMidiEventURID;
     const LV2_URID fKeyValueURID;
 
     // using ui:showInterface if true
@@ -307,10 +340,12 @@ private:
         uiPtr->setState(key, value);
     }
 
+#if DISTRHO_LV2_USE_EVENTS_IN
     static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
     {
         uiPtr->sendNote(channel, note, velocity);
     }
+#endif
 
     static void setSizeCallback(void* ptr, uint width, uint height)
     {

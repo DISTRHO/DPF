@@ -187,9 +187,12 @@ protected:
         if (channel > 0xF)
             return;
 
-        uint8_t mdata[4] = { 0, channel, note, velocity };
-        mdata[1] += (velocity != 0) ? 0x90 : 0x80;
-
+        uint8_t mdata[4] = {
+            0,
+            channel + (velocity != 0 ? 0x90 : 0x80),
+            note,
+            velocity
+        };
         fOscData.send_midi(mdata);
     }
 
