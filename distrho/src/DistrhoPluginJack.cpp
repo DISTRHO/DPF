@@ -204,6 +204,14 @@ public:
             fLastOutputValues = nullptr;
         }
 
+#if DISTRHO_PLUGIN_HAS_UI
+        if (fParametersChanged != nullptr)
+        {
+            delete[] fParametersChanged;
+            fParametersChanged = nullptr;
+        }
+#endif
+
         fPlugin.deactivate();
 
         if (fClient == nullptr)
