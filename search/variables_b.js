@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['unit',['unit',['../structParameter.html#a2f79574998d34504e3a694163b4599a1',1,'Parameter']]]
+  ['ranges',['ranges',['../structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db',1,'Parameter']]],
+  ['restrictedmode',['restrictedMode',['../structParameterEnumerationValues.html#a014ebcacbe68c3f77f2f8ac9ffe3cd6f',1,'ParameterEnumerationValues']]]
 ];

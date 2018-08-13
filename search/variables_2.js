@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['frame',['frame',['../structMidiEvent.html#aca2f6590b33bd2175ab71f985747d88e',1,'MidiEvent::frame()'],['../structTimePosition.html#aa3606d1c518c7ebe6335bc19f72b015b',1,'TimePosition::frame()']]]
+  ['data',['data',['../structMidiEvent.html#aba54410d44eef48c10516f29452ef3a9',1,'MidiEvent']]],
+  ['def',['def',['../structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c',1,'ParameterRanges']]],
+  ['designation',['designation',['../structParameter.html#a3bbf6f7d5ccea9a13504bd6ee3713986',1,'Parameter']]]
 ];
