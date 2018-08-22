@@ -71,7 +71,7 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 
 void strncpy(char* const dst, const char* const src, const size_t size)
 {
-    std::strncpy(dst, src, size-1);
+    std::memcpy(dst, src, std::min(std::strlen(src), size-1));
     dst[size-1] = '\0';
 }
 
