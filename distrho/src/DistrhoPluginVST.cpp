@@ -34,6 +34,11 @@
 # undef noexcept
 #endif
 
+// No C++11 support
+#if __cplusplus <= 199711L
+# define noexcept
+#endif
+
 #define VESTIGE_HEADER
 #define VST_FORCE_DEPRECATED 0
 
