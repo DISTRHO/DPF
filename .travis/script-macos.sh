@@ -3,7 +3,7 @@
 set -e
 
 # Preparation
-_FLAGS="-Werror"
+_FLAGS="-DDISTRHO_NO_WARNINGS -Werror"
 export CFLAGS="${_FLAGS}"
 export CXXFLAGS="${_FLAGS}"
 export MACOS_OLD=true

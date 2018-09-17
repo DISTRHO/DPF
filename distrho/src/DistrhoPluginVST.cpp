@@ -405,7 +405,9 @@ public:
 #  ifdef __LP64__
         fUsingNsView = true;
 #  else
-#   warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
+#   ifndef DISTRHO_NO_WARNINGS
+#    warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
+#   endif
         fUsingNsView = false;
 #  endif
 # endif // DISTRHO_OS_MAC
