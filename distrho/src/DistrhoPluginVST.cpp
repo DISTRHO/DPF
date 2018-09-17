@@ -29,11 +29,6 @@
 # define __cdecl
 #endif
 
-// has some conflicts
-#ifdef noexcept
-# undef noexcept
-#endif
-
 #define VESTIGE_HEADER
 #define VST_FORCE_DEPRECATED 0
 
