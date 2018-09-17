@@ -1,4 +1,5 @@
 # DPF - DISTRHO Plugin Framework
+[![Build Status](https://travis-ci.org/DISTRHO/DPF.png)](https://travis-ci.org/DISTRHO/DPF)
 
 DPF is designed to make development of new plugins an easy and enjoyable task.<br/>
 It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
