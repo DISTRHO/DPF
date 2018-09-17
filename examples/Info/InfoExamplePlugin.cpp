@@ -220,9 +220,9 @@ protected:
         const TimePosition& timePos(getTimePosition());
 
         // set basic values
-        fParameters[kParameterTimePlaying]        = timePos.playing ? 1.0f : 0.0f;
-        fParameters[kParameterTimeFrame]          = timePos.frame;
-        fParameters[kParameterTimeValidBBT]       = timePos.bbt.valid ? 1.0f : 0.0f;
+        fParameters[kParameterTimePlaying]  = timePos.playing ? 1.0f : 0.0f;
+        fParameters[kParameterTimeFrame]    = timePos.frame;
+        fParameters[kParameterTimeValidBBT] = timePos.bbt.valid ? 1.0f : 0.0f;
 
         // set bbt
         if (timePos.bbt.valid)

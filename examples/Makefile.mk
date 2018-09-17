@@ -8,7 +8,7 @@
 
 include ../../Makefile.mk
 
-ifeq ($(OBJS_UI),)
+ifeq ($(FILES_UI),)
 HAVE_DGL = false
 endif
 
@@ -52,15 +52,6 @@ lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set distrho code files
-
-DISTRHO_PLUGIN_FILES = ../../distrho/DistrhoPluginMain.cpp
-
-ifeq ($(HAVE_DGL),true)
-DISTRHO_UI_FILES     = ../../distrho/DistrhoUIMain.cpp ../../build/libdgl.a
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
 # Handle plugins without UI
 
 ifneq ($(HAVE_DGL),true)
@@ -94,24 +85,46 @@ clean:
 	rm -rf $(TARGET_DIR)/$(NAME) $(TARGET_DIR)/$(NAME)-* $(TARGET_DIR)/$(NAME).lv2
 
 # ---------------------------------------------------------------------------------------------------------------------
+
+$(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: ../../distrho/DistrhoPluginMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginMain.cpp ($*)"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
+
+$(BUILD_DIR)/DistrhoUIMain_%.cpp.o: ../../distrho/DistrhoUIMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUIMain.cpp ($*)"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
+
+$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: ../../distrho/DistrhoPluginMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
+
+$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: ../../distrho/DistrhoUIMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 # JACK
 
 jack: $(jack)
 
-$(jack): $(OBJS_DSP) $(OBJS_UI) $(DISTRHO_PLUGIN_FILES) $(DISTRHO_UI_FILES)
+$(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o ../../build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --cflags --libs jack) -DDISTRHO_PLUGIN_TARGET_JACK -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs jack) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
 
 ladspa: $(ladspa_dsp)
 
-$(ladspa_dsp): $(OBJS_DSP) $(DISTRHO_PLUGIN_FILES)
+$(ladspa_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LADSPA.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LADSPA plugin for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_LADSPA -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DSSI
@@ -120,15 +133,15 @@ dssi:     $(dssi_dsp) $(dssi_ui)
 dssi_dsp: $(dssi_dsp)
 dssi_ui:  $(dssi_ui)
 
-$(dssi_dsp): $(OBJS_DSP) $(DISTRHO_PLUGIN_FILES)
+$(dssi_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI plugin library for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_DSSI -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
 
-$(dssi_ui): $(OBJS_UI) $(DISTRHO_UI_FILES)
+$(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o ../../build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI UI for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --cflags --libs liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs liblo) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LV2
@@ -137,30 +150,30 @@ lv2_one: $(lv2)
 lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(DISTRHO_PLUGIN_FILES) $(DISTRHO_UI_FILES)
+$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_LV2 -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
 
-$(lv2_dsp): $(OBJS_DSP) $(DISTRHO_PLUGIN_FILES)
+$(lv2_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin library for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_LV2 -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
 
-$(lv2_ui): $(OBJS_UI) $(DISTRHO_UI_FILES)
+$(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin UI for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_LV2 -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # VST
 
 vst: $(vst)
 
-$(vst): $(OBJS_DSP) $(OBJS_UI) $(DISTRHO_PLUGIN_FILES) $(DISTRHO_UI_FILES)
+$(vst): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST.cpp.o ../../build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -DDISTRHO_PLUGIN_TARGET_VST -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

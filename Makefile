@@ -6,16 +6,16 @@
 
 include Makefile.mk
 
-all: libs examples gen
+all: dgl examples gen
 
 # --------------------------------------------------------------
 
-libs:
+dgl:
 ifeq ($(HAVE_DGL),true)
 	$(MAKE) -C dgl
 endif
 
-examples: libs
+examples: dgl
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
@@ -51,4 +51,4 @@ clean:
 
 # --------------------------------------------------------------
 
-.PHONY: examples
+.PHONY: dgl examples

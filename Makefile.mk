@@ -172,18 +172,16 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for optional libs
 
-ifeq ($(LINUX),true)
+ifeq ($(MACOS_OR_WIN32),true)
+HAVE_DGL   = true
+else
 HAVE_DGL   = $(shell pkg-config --exists gl x11 && echo true)
 HAVE_JACK  = $(shell pkg-config --exists jack   && echo true)
 HAVE_LIBLO = $(shell pkg-config --exists liblo  && echo true)
 endif
 
-ifeq ($(MACOS),true)
-HAVE_DGL = true
-endif
-
-ifeq ($(WIN32),true)
-HAVE_DGL = true
+ifneq ($(HAVE_DGL),true)
+$(error DGL missing 22)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
