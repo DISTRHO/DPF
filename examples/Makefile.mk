@@ -57,7 +57,6 @@ vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
 ifneq ($(HAVE_DGL),true)
 dssi_ui =
 lv2_ui =
-DISTRHO_UI_FILES =
 DGL_LIBS =
 OBJS_UI =
 endif
@@ -170,7 +169,11 @@ $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
 
 vst: $(vst)
 
+ifeq ($(HAVE_DGL),true)
 $(vst): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST.cpp.o ../../build/libdgl.a
+else
+$(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
+endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
