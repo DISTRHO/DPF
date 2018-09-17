@@ -6,6 +6,7 @@ sudo apt-get install -y \
     g++ \
     pkg-config \
     libjack-jackd2-dev \
+    liblo-dev \
     libgl1-mesa-dev \
     libx11-dev \
     apple-x86-setup \
