@@ -1665,7 +1665,7 @@ static void add_place_raw (Display *dpy, const char *name, const char *path) {
 	strcpy (_placelist[_placecnt].name, name);
 	_placelist[_placecnt].flags = 0;
 
-	int sw;
+	int sw = -1;
 	query_font_geometry (dpy, _fib_gc, name, &sw, NULL, NULL, NULL);
 	if (sw > _fib_place_width) {
 		_fib_place_width = sw;

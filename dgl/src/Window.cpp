@@ -1201,6 +1201,9 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 # else
     // not implemented
     return false;
+
+    // unused
+    (void)options;
 # endif
 }
 #endif
