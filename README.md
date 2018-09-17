@@ -28,8 +28,8 @@ List of plugins made with DPF:<br/>
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
 
 
-Plugin examples are available [here](https://github.com/DISTRHO/plugin-examples).<br/>
-OpenGL UI examples are available [here](https://github.com/DISTRHO/gl-examples).
+Plugin examples are available in the `example/` folder inside this repo.<br/>
+Extra OpenGL UI examples are available [here](https://github.com/DISTRHO/gl-examples).
 
 
 Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
