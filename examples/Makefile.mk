@@ -185,4 +185,15 @@ ifeq ($(HAVE_DGL),true)
 -include $(OBJS_UI:%.o=%.d)
 endif
 
+-include $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_LADSPA.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.d
+
+-include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_VST.cpp.d
+
 # ---------------------------------------------------------------------------------------------------------------------
