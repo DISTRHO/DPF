@@ -143,6 +143,8 @@ public:
         if (const uint32_t count = fPlugin.getParameterCount())
         {
             fLastOutputValues = new float[count];
+            std::memset(fLastOutputValues, 0, sizeof(float)*count);
+
 #if DISTRHO_PLUGIN_HAS_UI
             fParametersChanged = new bool[count];
             std::memset(fParametersChanged, 0, sizeof(bool)*count);
@@ -150,17 +152,10 @@ public:
 
             for (uint32_t i=0; i < count; ++i)
             {
-                if (fPlugin.isParameterOutput(i))
-                {
-                    fLastOutputValues[i] = fPlugin.getParameterValue(i);
-                }
-                else
-                {
-                    fLastOutputValues[i] = 0.0f;
 #if DISTRHO_PLUGIN_HAS_UI
+                if (! fPlugin.isParameterOutput(i))
                     fUI.parameterChanged(i, fPlugin.getParameterValue(i));
 #endif
-                }
             }
         }
         else
