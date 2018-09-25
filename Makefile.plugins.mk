@@ -117,7 +117,11 @@ $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 
 jack: $(jack)
 
+ifeq ($(HAVE_DGL),true)
 $(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o $(DPF_PATH)/build/libdgl.a
+else
+$(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
+endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs jack) -o $@
