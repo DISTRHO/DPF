@@ -152,7 +152,7 @@ $(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o $(DPF_PATH)/build/l
 # ---------------------------------------------------------------------------------------------------------------------
 # LV2
 
-lv2_one: $(lv2)
+lv2: $(lv2)
 lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
