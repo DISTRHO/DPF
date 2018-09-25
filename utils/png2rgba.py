@@ -155,7 +155,7 @@ if __name__ == '__main__':
         print("Usage: %s <namespace> <artwork-folder>" % sys.argv[0])
         quit()
 
-    namespace = sys.argv[1]
+    namespace = sys.argv[1].replace("-","_")
     artFolder = sys.argv[2]
 
     if not os.path.exists(artFolder):
