@@ -4,9 +4,16 @@
 # Created by falkTX
 #
 
-# NAME, FILES_DSP and FILES_UI have been defined before
+# NOTE: NAME, FILES_DSP and FILES_UI must have been defined before including this file!
 
-include ../../Makefile.mk
+
+ifeq (,$(wildcard ../../Makefile.base.mk))
+DPF_PATH=../../dpf
+else
+DPF_PATH=../..
+endif
+
+include $(DPF_PATH)/Makefile.base.mk
 
 ifeq ($(FILES_UI),)
 HAVE_DGL = false
@@ -19,7 +26,7 @@ TARGET_DIR = ../../bin
 BUILD_DIR = ../../build/$(NAME)
 
 BUILD_C_FLAGS   += -I.
-BUILD_CXX_FLAGS += -I. -I../../distrho -I../../dgl
+BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
 
 ifeq ($(HAVE_DGL),true)
 BASE_FLAGS += -DHAVE_DGL
@@ -85,22 +92,22 @@ clean:
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-$(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: ../../distrho/DistrhoPluginMain.cpp
+$(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp ($*)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
 
-$(BUILD_DIR)/DistrhoUIMain_%.cpp.o: ../../distrho/DistrhoUIMain.cpp
+$(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp ($*)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
 
-$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: ../../distrho/DistrhoPluginMain.cpp
+$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
 
-$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: ../../distrho/DistrhoUIMain.cpp
+$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
@@ -110,7 +117,7 @@ $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: ../../distrho/DistrhoUIMain.cpp
 
 jack: $(jack)
 
-$(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o ../../build/libdgl.a
+$(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o $(DPF_PATH)/build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs jack) -o $@
@@ -137,7 +144,7 @@ $(dssi_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.o
 	@echo "Creating DSSI plugin library for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
 
-$(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o ../../build/libdgl.a
+$(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o $(DPF_PATH)/build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI UI for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs liblo) -o $@
@@ -149,7 +156,7 @@ lv2_one: $(lv2)
 lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
+$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DPF_PATH)/build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
@@ -159,7 +166,7 @@ $(lv2_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 	@echo "Creating LV2 plugin library for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
 
-$(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
+$(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DPF_PATH)/build/libdgl.a
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin UI for $(NAME)"
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
@@ -170,7 +177,7 @@ $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o ../../build/libdgl.a
 vst: $(vst)
 
 ifeq ($(HAVE_DGL),true)
-$(vst): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST.cpp.o ../../build/libdgl.a
+$(vst): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST.cpp.o $(DPF_PATH)/build/libdgl.a
 else
 $(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
 endif

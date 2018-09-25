@@ -21,7 +21,7 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
-include ../Makefile.mk
+include ../../Makefile.plugins.mk
 
 # --------------------------------------------------------------
 # Enable all possible plugin types

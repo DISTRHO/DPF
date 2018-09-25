@@ -4,7 +4,7 @@
 # Created by falkTX
 #
 
-include Makefile.mk
+include Makefile.base.mk
 
 all: dgl examples gen
 
