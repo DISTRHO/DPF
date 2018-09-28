@@ -180,6 +180,7 @@ public:
 
     float getValue() const noexcept;
     void setValue(float value, bool sendCallback = false) noexcept;
+    void setDefault(float def) noexcept;
 
     void setStartPos(const Point<int>& startPos) noexcept;
     void setStartPos(int x, int y) noexcept;
@@ -203,7 +204,9 @@ private:
     float fMaximum;
     float fStep;
     float fValue;
+    float fValueDef;
     float fValueTmp;
+    bool  fUsingDefault;
 
     bool fDragging;
     bool fInverted;
