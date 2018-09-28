@@ -649,7 +649,9 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fMaximum(1.0f),
       fStep(0.0f),
       fValue(0.5f),
+      fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingDefault(false),
       fDragging(false),
       fInverted(false),
       fValueIsSet(false),
@@ -670,7 +672,9 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fMaximum(1.0f),
       fStep(0.0f),
       fValue(0.5f),
+      fValueDef(fValue),
       fValueTmp(fValue),
+      fUsingDefault(false),
       fDragging(false),
       fInverted(false),
       fValueIsSet(false),
@@ -741,6 +745,12 @@ void ImageSlider::setInverted(bool inverted) noexcept
 
     fInverted = inverted;
     repaint();
+}
+
+void ImageSlider::setDefault(float value) noexcept
+{
+    fValueDef = value;
+    fUsingDefault = true;
 }
 
 void ImageSlider::setRange(float min, float max) noexcept
@@ -829,6 +839,13 @@ bool ImageSlider::onMouse(const MouseEvent& ev)
     {
         if (! fSliderArea.contains(ev.pos))
             return false;
+
+        if ((ev.mod & kModifierShift) != 0 && fUsingDefault)
+        {
+            setValue(fValueDef, true);
+            fValueTmp = fValue;
+            return true;
+        }
 
         float vper;
         const int x = ev.pos.getX();
