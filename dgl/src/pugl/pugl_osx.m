@@ -218,7 +218,7 @@ puglDisplay(PuglView* view)
 	if (puglview->reshapeFunc) {
 		puglview->reshapeFunc(puglview, width, height);
 	} else {
-		puglDefaultReshape(puglview, width, height);
+		puglDefaultReshape(width, height);
 	}
 
 	puglLeaveContext(puglview, false);
@@ -459,7 +459,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	
 	impl->glview->puglview = view;
 
-	if (view->resizable) {
+	if (view->user_resizable) {
 		[impl->glview setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
 	}
 

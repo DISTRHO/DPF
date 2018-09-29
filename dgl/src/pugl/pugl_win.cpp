@@ -129,7 +129,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	}
 
 	int winFlags = WS_POPUPWINDOW | WS_CAPTION;
-	if (view->resizable) {
+	if (view->user_resizable) {
 		winFlags |= WS_SIZEBOX;
 		if (view->min_width > 0 && view->min_height > 0) {
 			// Adjust the minimum window size to accomodate requested view size
@@ -223,7 +223,7 @@ puglReshape(PuglView* view, int width, int height)
 	if (view->reshapeFunc) {
 		view->reshapeFunc(view, width, height);
 	} else {
-		puglDefaultReshape(view, width, height);
+		puglDefaultReshape(width, height);
 	}
 
 	view->width  = width;

@@ -19,10 +19,6 @@
 
 #include "../Base.hpp"
 
-#undef PUGL_HAVE_CAIRO
-#undef PUGL_HAVE_GL
-#define PUGL_HAVE_GL 1
-
 #include "pugl/pugl.h"
 
 #if defined(__GNUC__) && (__GNUC__ >= 7)
@@ -619,7 +615,7 @@ struct Window::PrivateData {
             sizeHints.max_width  = static_cast<int>(width);
             sizeHints.max_height = static_cast<int>(height);
 
-            XSetNormalHints(xDisplay, xWindow, &sizeHints);
+            XSetWMNormalHints(xDisplay, xWindow, &sizeHints);
         }
 
         if (! forced)

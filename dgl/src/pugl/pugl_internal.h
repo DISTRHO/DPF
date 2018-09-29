@@ -20,26 +20,9 @@
    Note this file contains function definitions, so it must be compiled into
    the final binary exactly once.  Each platform specific implementation file
    including it once should achieve this.
-
-   If you are copying the pugl code into your source tree, the following
-   symbols can be defined to tweak pugl behaviour:
-
-   PUGL_HAVE_CAIRO: Include Cairo support code.
-   PUGL_HAVE_GL:    Include OpenGL support code.
-   PUGL_GRAB_FOCUS: Work around reparent keyboard issues by grabbing focus.
-   PUGL_VERBOSE:    Print GL information to console.
 */
 
-#include "pugl/pugl.h"
-
-#ifdef PUGL_VERBOSE
-#    include <stdio.h>
-#    define PUGL_LOG(str)       fprintf(stderr, "pugl: " str)
-#    define PUGL_LOGF(fmt, ...) fprintf(stderr, "pugl: " fmt, __VA_ARGS__)
-#else
-#    define PUGL_LOG(str)
-#    define PUGL_LOGF(fmt, ...)
-#endif
+#include "pugl.h"
 
 typedef struct PuglInternalsImpl PuglInternals;
 
@@ -51,12 +34,12 @@ struct PuglViewImpl {
 	PuglMotionFunc   motionFunc;
 	PuglMouseFunc    mouseFunc;
 	PuglReshapeFunc  reshapeFunc;
+	PuglResizeFunc   resizeFunc;
 	PuglScrollFunc   scrollFunc;
 	PuglSpecialFunc  specialFunc;
 	PuglFileSelectedFunc fileSelectedFunc;
 
-	PuglInternals* impl;
-
+	PuglInternals*   impl;
 	PuglNativeWindow parent;
 	uintptr_t        transient_parent;
 
@@ -68,7 +51,8 @@ struct PuglViewImpl {
 	bool     mouse_in_view;
 	bool     ignoreKeyRepeat;
 	bool     redisplay;
-	bool     resizable;
+	bool     user_resizable;
+	bool     pending_resize;
 	uint32_t event_timestamp_ms;
 };
 
@@ -118,13 +102,42 @@ puglInitWindowParent(PuglView* view, PuglNativeWindow parent)
 void
 puglInitUserResizable(PuglView* view, bool resizable)
 {
-	view->resizable = resizable;
+	view->user_resizable = resizable;
 }
 
 void
 puglInitTransientFor(PuglView* view, uintptr_t parent)
 {
 	view->transient_parent = parent;
+}
+
+PuglView*
+puglCreate(PuglNativeWindow parent,
+           const char*      title,
+           int              min_width,
+           int              min_height,
+           int              width,
+           int              height,
+           bool             resizable,
+           unsigned long    transientId)
+{
+	PuglView* view = puglInit();
+	if (!view) {
+		return NULL;
+	}
+
+	puglInitWindowParent(view, parent);
+	puglInitWindowMinSize(view, min_width, min_height);
+	puglInitWindowSize(view, width, height);
+	puglInitUserResizable(view, resizable);
+	puglInitTransientFor(view, transientId);
+
+	if (!puglCreateWindow(view, title)) {
+		free(view);
+		return NULL;
+	}
+
+	return view;
 }
 
 void
@@ -194,6 +207,12 @@ puglSetReshapeFunc(PuglView* view, PuglReshapeFunc reshapeFunc)
 }
 
 void
+puglSetResizeFunc(PuglView* view, PuglResizeFunc resizeFunc)
+{
+	view->resizeFunc = resizeFunc;
+}
+
+void
 puglSetScrollFunc(PuglView* view, PuglScrollFunc scrollFunc)
 {
 	view->scrollFunc = scrollFunc;
@@ -217,45 +236,19 @@ puglEnterContext(PuglView* view);
 void
 puglLeaveContext(PuglView* view, bool flush);
 
-#if 0
-/** Return the code point for buf, or the replacement character on error. */
-static uint32_t
-puglDecodeUTF8(const uint8_t* buf)
-{
-#define FAIL_IF(cond) { if (cond) return 0xFFFD; }
-
-	/* http://en.wikipedia.org/wiki/UTF-8 */
-
-	if (buf[0] < 0x80) {
-		return buf[0];
-	} else if (buf[0] < 0xC2) {
-		return 0xFFFD;
-	} else if (buf[0] < 0xE0) {
-		FAIL_IF((buf[1] & 0xC0) != 0x80);
-		return (buf[0] << 6) + buf[1] - 0x3080;
-	} else if (buf[0] < 0xF0) {
-		FAIL_IF((buf[1] & 0xC0) != 0x80);
-		FAIL_IF(buf[0] == 0xE0 && buf[1] < 0xA0);
-		FAIL_IF((buf[2] & 0xC0) != 0x80);
-		return (buf[0] << 12) + (buf[1] << 6) + buf[2] - 0xE2080;
-	} else if (buf[0] < 0xF5) {
-		FAIL_IF((buf[1] & 0xC0) != 0x80);
-		FAIL_IF(buf[0] == 0xF0 && buf[1] < 0x90);
-		FAIL_IF(buf[0] == 0xF4 && buf[1] >= 0x90);
-		FAIL_IF((buf[2] & 0xC0) != 0x80);
-		FAIL_IF((buf[3] & 0xC0) != 0x80);
-		return ((buf[0] << 18) +
-		        (buf[1] << 12) +
-		        (buf[2] << 6) +
-		        buf[3] - 0x3C82080);
-	}
-	return 0xFFFD;
-}
-#endif
-
 static void
-puglDefaultReshape(PuglView* view, int width, int height)
+puglDefaultReshape(int width, int height)
 {
+#ifdef ROBTK_HERE
+	glViewport(0, 0, width, height);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+#else
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, width, height, 0, 0, 1);
@@ -263,82 +256,5 @@ puglDefaultReshape(PuglView* view, int width, int height)
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	return;
-
-	// unused
-	(void)view;
-}
-
-#if 0
-static void
-puglDispatchEvent(PuglView* view, const PuglEvent* event)
-{
-	if (view->eventFunc) {
-		view->eventFunc(view, event);
-	}
-
-	switch (event->type) {
-	case PUGL_CONFIGURE:
-		puglEnterContext(view);
-		view->width  = event->configure.width;
-		view->height = event->configure.height;
-		if (view->reshapeFunc) {
-			view->reshapeFunc(view, view->width, view->height);
-		}
-		puglLeaveContext(view, false);
-		break;
-	case PUGL_EXPOSE:
-		if (event->expose.count == 0) {
-			puglEnterContext(view);
-			if (view->displayFunc) {
-				view->displayFunc(view);
-			}
-			view->redisplay = false;
-			puglLeaveContext(view, true);
-		}
-		break;
-	case PUGL_MOTION_NOTIFY:
-		view->event_timestamp_ms = event->motion.time;
-		view->mods               = event->motion.state;
-		if (view->motionFunc) {
-			view->motionFunc(view, event->motion.x, event->motion.y);
-		}
-		break;
-	case PUGL_SCROLL:
-		if (view->scrollFunc) {
-			view->scrollFunc(view,
-			                 event->scroll.x, event->scroll.y,
-			                 event->scroll.dx, event->scroll.dy);
-		}
-		break;
-	case PUGL_BUTTON_PRESS:
-	case PUGL_BUTTON_RELEASE:
-		view->event_timestamp_ms = event->button.time;
-		view->mods               = event->button.state;
-		if (view->mouseFunc) {
-			view->mouseFunc(view,
-			                event->button.button,
-			                event->type == PUGL_BUTTON_PRESS,
-			                event->button.x,
-			                event->button.y);
-		}
-		break;
-	case PUGL_KEY_PRESS:
-	case PUGL_KEY_RELEASE:
-		view->event_timestamp_ms = event->key.time;
-		view->mods               = event->key.state;
-		if (event->key.special && view->specialFunc) {
-			view->specialFunc(view,
-			                  event->type == PUGL_KEY_PRESS,
-			                  event->key.special);
-		} else if (event->key.character && view->keyboardFunc) {
-			view->keyboardFunc(view,
-			                   event->type == PUGL_KEY_PRESS,
-			                   event->key.character);
-		}
-		break;
-	default:
-		break;
-	}
-}
 #endif
+}

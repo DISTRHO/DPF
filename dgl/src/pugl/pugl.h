@@ -32,6 +32,7 @@
 #    include "OpenGL/gl.h"
 #else
 #    ifdef _WIN32
+#        include <winsock2.h>
 #        include <windows.h>  /* Broken Windows GL headers require this */
 #    endif
 #    include "GL/gl.h"
@@ -178,6 +179,16 @@ typedef void (*PuglMouseFunc)(
 typedef void (*PuglReshapeFunc)(PuglView* view, int width, int height);
 
 /**
+   A function called outside of gl-context when the plugin schedules a resize via puglPostResize.
+
+   @param view The view being resized.
+   @param width The new width to resize to (variable is initialized to current size)
+   @param height The new height to resize to (variable is initialized to current size)
+   @param set_hints If not null, set window-hints
+ */
+typedef void (*PuglResizeFunc)(PuglView* view, int *width, int *height, int *set_hints);
+
+/**
    A function called on scrolling (e.g. mouse wheel or track pad).
 
    The distances used here are in "lines", a single tick of a clicking mouse
@@ -281,13 +292,31 @@ PUGL_API int
 puglCreateWindow(PuglView* view, const char* title);
 
 /**
-   Show the current window.
+   Create a new GL window.
+   @param parent Parent window, or 0 for top level.
+   @param title Window title, or NULL.
+   @param width Window width in pixels.
+   @param height Window height in pixels.
+   @param resizable Whether window should be user resizable.
+*/
+PUGL_API PuglView*
+puglCreate(PuglNativeWindow parent,
+           const char*      title,
+           int              min_width,
+           int              min_height,
+           int              width,
+           int              height,
+           bool             resizable,
+           unsigned long    transientId);
+
+/**
+   Show Window (external ui)
 */
 PUGL_API void
 puglShowWindow(PuglView* view);
 
 /**
-   Hide the current window.
+   Hide Window (external ui)
 */
 PUGL_API void
 puglHideWindow(PuglView* view);
@@ -395,6 +424,12 @@ PUGL_API void
 puglSetReshapeFunc(PuglView* view, PuglReshapeFunc reshapeFunc);
 
 /**
+   Set callback function to change window size.
+*/
+PUGL_API void
+puglSetResizeFunc(PuglView* view, PuglResizeFunc resizeFunc);
+
+/**
    Set the function to call on file-browser selections.
 */
 PUGL_API void
@@ -403,6 +438,12 @@ puglSetFileSelectedFunc(PuglView* view, PuglFileSelectedFunc fileSelectedFunc);
 /**
    @}
 */
+
+/**
+   TODO document this.
+ */
+PUGL_API int
+puglUpdateGeometryConstraints(PuglView* view, int min_width, int min_height, bool aspect);
 
 /**
    Grab the input focus.
@@ -424,6 +465,12 @@ puglProcessEvents(PuglView* view);
 */
 PUGL_API void
 puglPostRedisplay(PuglView* view);
+
+/**
+   Request a resize on the next call to puglProcessEvents().
+*/
+PUGL_API void
+puglPostResize(PuglView* view);
 
 /**
    Destroy a GL window.
