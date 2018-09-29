@@ -24,7 +24,6 @@
 #include <stdint.h>
 
 #include "pugl/common.h"
-#include "pugl/event.h"
 
 #ifdef PUGL_SHARED
 #    ifdef _WIN32

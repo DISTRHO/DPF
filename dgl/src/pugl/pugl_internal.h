@@ -31,7 +31,6 @@
 */
 
 #include "pugl/pugl.h"
-#include "pugl/event.h"
 
 #ifdef PUGL_VERBOSE
 #    include <stdio.h>
