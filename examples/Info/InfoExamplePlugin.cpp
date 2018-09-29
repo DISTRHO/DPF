@@ -70,7 +70,7 @@ protected:
     */
     const char* getHomePage() const override
     {
-        return "https://github.com/DISTRHO/plugin-examples";
+        return "https://github.com/DISTRHO/DPF";
     }
 
    /**
@@ -193,7 +193,7 @@ protected:
     */
     void setParameterValue(uint32_t, float) override
     {
-        // this is only called for input paramters, which we have none of.
+        // this is only called for input parameters, which we have none of.
     }
 
    /* --------------------------------------------------------------------------------------------------------

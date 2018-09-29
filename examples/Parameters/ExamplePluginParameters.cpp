@@ -72,7 +72,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
     */
     const char* getHomePage() const override
     {
-        return "https://github.com/DISTRHO/plugin-examples";
+        return "https://github.com/DISTRHO/DPF";
     }
 
    /**

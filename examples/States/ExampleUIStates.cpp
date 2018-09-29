@@ -192,7 +192,7 @@ protected:
 
    /**
       Mouse press event.
-      This UI will de/activate blocks when you click them and reports it as a state change to the plugin.
+      This UI will de/activate blocks when you click them and report it as a state change to the plugin.
     */
     bool onMouse(const MouseEvent& ev) override
     {
