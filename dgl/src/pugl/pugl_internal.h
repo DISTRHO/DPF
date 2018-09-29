@@ -58,7 +58,6 @@ struct PuglViewImpl {
 	PuglInternals* impl;
 
 	PuglNativeWindow parent;
-	PuglContextType  ctx_type;
 	uintptr_t        transient_parent;
 
 	int      width;
@@ -126,12 +125,6 @@ void
 puglInitTransientFor(PuglView* view, uintptr_t parent)
 {
 	view->transient_parent = parent;
-}
-
-void
-puglInitContextType(PuglView* view, PuglContextType type)
-{
-	view->ctx_type = type;
 }
 
 void

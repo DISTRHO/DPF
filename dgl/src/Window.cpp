@@ -204,7 +204,6 @@ struct Window::PrivateData {
             return;
         }
 
-        puglInitContextType(fView, PUGL_GL);
         puglInitUserResizable(fView, fResizable);
         puglInitWindowSize(fView, static_cast<int>(fWidth), static_cast<int>(fHeight));
 

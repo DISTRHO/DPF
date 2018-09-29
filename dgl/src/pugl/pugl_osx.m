@@ -427,18 +427,13 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		[[view->impl->glview openGLContext] makeCurrentContext];
-	}
-#endif
+	[[view->impl->glview openGLContext] makeCurrentContext];
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-#ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL && flush) {
+	if (flush) {
 		if (view->impl->glview->doubleBuffered) {
 			[[view->impl->glview openGLContext] flushBuffer];
 		} else {
@@ -446,7 +441,6 @@ puglLeaveContext(PuglView* view, bool flush)
 		}
 		//[NSOpenGLContext clearCurrentContext];
 	}
-#endif
 }
 
 int
@@ -564,13 +558,4 @@ PuglNativeWindow
 puglGetNativeWindow(PuglView* view)
 {
 	return (PuglNativeWindow)view->impl->glview;
-}
-
-void*
-puglGetContext(PuglView* view)
-{
-	return NULL;
-
-	// unused
-	(void)view;
 }

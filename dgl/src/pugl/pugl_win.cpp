@@ -76,25 +76,17 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
 		wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
-	}
-#endif
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-#ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
 		if (flush) {
 			glFlush();
 			SwapBuffers(view->impl->hdc);
 		}
 		wglMakeCurrent(NULL, NULL);
-	}
-#endif
 }
 
 int
@@ -475,15 +467,4 @@ PuglNativeWindow
 puglGetNativeWindow(PuglView* view)
 {
 	return (PuglNativeWindow)view->impl->hwnd;
-}
-
-void*
-puglGetContext(PuglView* /*view*/)
-{
-#ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		// TODO
-	}
-#endif
-	return NULL;
 }
