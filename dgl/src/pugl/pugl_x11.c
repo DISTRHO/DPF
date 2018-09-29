@@ -62,66 +62,66 @@ getVisual(PuglView* view)
 	PuglInternals* const impl = view->impl;
 	XVisualInfo*         vi   = NULL;
 
-		/**
-		  Attributes for single-buffered RGBA with at least
-		  4 bits per color and a 16 bit depth buffer.
-		*/
-		int attrListSgl[] = {
-			GLX_RGBA,
-			GLX_RED_SIZE,        4,
-			GLX_GREEN_SIZE,      4,
-			GLX_BLUE_SIZE,       4,
-			GLX_DEPTH_SIZE,      16,
-			GLX_ARB_multisample, 1,
-			None
-		};
+	/**
+	  Attributes for single-buffered RGBA with at least
+	  4 bits per color and a 16 bit depth buffer.
+	*/
+	int attrListSgl[] = {
+		GLX_RGBA,
+		GLX_RED_SIZE,        4,
+		GLX_GREEN_SIZE,      4,
+		GLX_BLUE_SIZE,       4,
+		GLX_DEPTH_SIZE,      16,
+		GLX_ARB_multisample, 1,
+		None
+	};
 
-		/**
-		  Attributes for double-buffered RGBA with at least
-		  4 bits per color and a 16 bit depth buffer.
-		*/
-		int attrListDbl[] = {
-			GLX_RGBA,
-			GLX_DOUBLEBUFFER,
-			GLX_RED_SIZE,        4,
-			GLX_GREEN_SIZE,      4,
-			GLX_BLUE_SIZE,       4,
-			GLX_DEPTH_SIZE,      16,
-			GLX_ARB_multisample, 1,
-			None
-		};
+	/**
+	  Attributes for double-buffered RGBA with at least
+	  4 bits per color and a 16 bit depth buffer.
+	*/
+	int attrListDbl[] = {
+		GLX_RGBA,
+		GLX_DOUBLEBUFFER,
+		GLX_RED_SIZE,        4,
+		GLX_GREEN_SIZE,      4,
+		GLX_BLUE_SIZE,       4,
+		GLX_DEPTH_SIZE,      16,
+		GLX_ARB_multisample, 1,
+		None
+	};
 
-		/**
-		  Attributes for double-buffered RGBA with multi-sampling
-		  (antialiasing)
-		*/
-		int attrListDblMS[] = {
-			GLX_RGBA,
-			GLX_DOUBLEBUFFER,
-			GLX_RED_SIZE,       4,
-			GLX_GREEN_SIZE,     4,
-			GLX_BLUE_SIZE,      4,
-			GLX_ALPHA_SIZE,     4,
-			GLX_DEPTH_SIZE,     16,
-			GLX_SAMPLE_BUFFERS, 1,
-			GLX_SAMPLES,        4,
-			None
-		};
+	/**
+	  Attributes for double-buffered RGBA with multi-sampling
+	  (antialiasing)
+	*/
+	int attrListDblMS[] = {
+		GLX_RGBA,
+		GLX_DOUBLEBUFFER,
+		GLX_RED_SIZE,       4,
+		GLX_GREEN_SIZE,     4,
+		GLX_BLUE_SIZE,      4,
+		GLX_ALPHA_SIZE,     4,
+		GLX_DEPTH_SIZE,     16,
+		GLX_SAMPLE_BUFFERS, 1,
+		GLX_SAMPLES,        4,
+		None
+	};
 
-		impl->doubleBuffered = True;
+	impl->doubleBuffered = True;
 
-		vi = glXChooseVisual(impl->display, impl->screen, attrListDblMS);
+	vi = glXChooseVisual(impl->display, impl->screen, attrListDblMS);
 
-		if (vi == NULL) {
-			vi = glXChooseVisual(impl->display, impl->screen, attrListDbl);
-			PUGL_LOG("multisampling (antialiasing) is not available\n");
-		}
+	if (vi == NULL) {
+		vi = glXChooseVisual(impl->display, impl->screen, attrListDbl);
+		PUGL_LOG("multisampling (antialiasing) is not available\n");
+	}
 
-		if (vi == NULL) {
-			vi = glXChooseVisual(impl->display, impl->screen, attrListSgl);
-			impl->doubleBuffered = False;
-			PUGL_LOG("singlebuffered rendering will be used, no doublebuffering available\n");
-		}
+	if (vi == NULL) {
+		vi = glXChooseVisual(impl->display, impl->screen, attrListSgl);
+		impl->doubleBuffered = False;
+		PUGL_LOG("singlebuffered rendering will be used, no doublebuffering available\n");
+	}
 
 	return vi;
 }
@@ -131,8 +131,8 @@ createContext(PuglView* view, XVisualInfo* vi)
 {
 	PuglInternals* const impl = view->impl;
 
-		impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
-		return (impl->ctx != NULL);
+	impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
+	return (impl->ctx != NULL);
 }
 
 static void
@@ -140,26 +140,26 @@ destroyContext(PuglView* view)
 {
 	PuglInternals* const impl = view->impl;
 
-		glXDestroyContext(impl->display, impl->ctx);
-		impl->ctx = NULL;
+	glXDestroyContext(impl->display, impl->ctx);
+	impl->ctx = NULL;
 }
 
 void
 puglEnterContext(PuglView* view)
 {
-		glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
+	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-		if (flush) {
-			glFlush();
-			if (view->impl->doubleBuffered) {
-				glXSwapBuffers(view->impl->display, view->impl->win);
-			}
+	if (flush) {
+		glFlush();
+		if (view->impl->doubleBuffered) {
+			glXSwapBuffers(view->impl->display, view->impl->win);
 		}
-		glXMakeCurrent(view->impl->display, None, NULL);
+	}
+	glXMakeCurrent(view->impl->display, None, NULL);
 }
 
 int

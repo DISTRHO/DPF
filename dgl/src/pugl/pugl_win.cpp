@@ -76,17 +76,17 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-		wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-		if (flush) {
-			glFlush();
-			SwapBuffers(view->impl->hdc);
-		}
-		wglMakeCurrent(NULL, NULL);
+	if (flush) {
+		glFlush();
+		SwapBuffers(view->impl->hdc);
+	}
+	wglMakeCurrent(NULL, NULL);
 }
 
 int
