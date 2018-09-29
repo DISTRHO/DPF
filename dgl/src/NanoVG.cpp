@@ -948,7 +948,7 @@ NanoWidget::NanoWidget(NanoWidget* groupWidget)
       nData(new PrivateData(this))
 {
     pData->needsScaling = true;
-    pData->skipDisplay = true;
+    pData->skipDisplay = false;
     groupWidget->nData->subWidgets.push_back(this);
 }
 
@@ -960,13 +960,8 @@ NanoWidget::~NanoWidget()
 void NanoWidget::onDisplay()
 {
     NanoVG::beginFrame(getWidth(), getHeight());
-    onNanoDisplay();
 
-    for (std::vector<NanoWidget*>::iterator it = nData->subWidgets.begin(); it != nData->subWidgets.end(); ++it)
-    {
-        NanoWidget* const widget(*it);
-        widget->onNanoDisplay();
-    }
+    onNanoDisplay();
 
     NanoVG::endFrame();
 }
