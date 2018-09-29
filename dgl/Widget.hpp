@@ -176,6 +176,22 @@ public:
     };
 
    /**
+      Widget position changed event.
+      @a pos    The new absolute position of the widget.
+      @a oldPos The previous absolute position of the widget.
+      @see onPositionChanged
+    */
+    struct PositionChangedEvent {
+        Point<int> pos;
+        Point<int> oldPos;
+
+        /** Constuctor */
+        PositionChangedEvent() noexcept
+            : pos(0, 0),
+              oldPos(0, 0) {}
+    };
+
+   /**
       Constructor.
     */
     explicit Widget(Window& parent);
@@ -361,6 +377,11 @@ protected:
       A function called when the widget is resized.
     */
     virtual void onResize(const ResizeEvent&);
+
+   /**
+      A function called when the widget's absolute position is changed.
+    */
+    virtual void onPositionChanged(const PositionChangedEvent&);
 
 private:
     struct PrivateData;
