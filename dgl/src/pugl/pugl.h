@@ -25,25 +25,24 @@
 
 #include "pugl/common.h"
 
-#ifdef PUGL_SHARED
-#    ifdef _WIN32
-#        define PUGL_LIB_IMPORT __declspec(dllimport)
-#        define PUGL_LIB_EXPORT __declspec(dllexport)
-#    else
-#        define PUGL_LIB_IMPORT __attribute__((visibility("default")))
-#        define PUGL_LIB_EXPORT __attribute__((visibility("default")))
-#    endif
-#    ifdef PUGL_INTERNAL
-#        define PUGL_API PUGL_LIB_EXPORT
-#    else
-#        define PUGL_API PUGL_LIB_IMPORT
-#    endif
+/*
+  This API is pure portable C and contains no platform specific elements, or
+  even a GL dependency.  However, unfortunately GL includes vary across
+  platforms so they are included here to allow for pure portable programs.
+*/
+#ifdef __APPLE__
+#    include "OpenGL/gl.h"
 #else
 #    ifdef _WIN32
-#        define PUGL_API
-#    else
-#        define PUGL_API __attribute__((visibility("hidden")))
+#        include <windows.h>  /* Broken Windows GL headers require this */
 #    endif
+#    include "GL/gl.h"
+#endif
+
+#ifdef _WIN32
+#    define PUGL_API
+#else
+#    define PUGL_API __attribute__((visibility("hidden")))
 #endif
 
 #ifdef __cplusplus
