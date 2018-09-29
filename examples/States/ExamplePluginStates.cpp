@@ -72,7 +72,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
     */
     const char* getHomePage() const override
     {
-        return "https://github.com/DISTRHO/plugin-examples";
+        return "https://github.com/DISTRHO/DPF";
     }
 
    /**
@@ -277,7 +277,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
     void run(const float** inputs, float** outputs, uint32_t frames) override
     {
        /**
-          This plugin does nothing, it just demonstrates parameter usage.
+          This plugin does nothing, it just demonstrates state usage.
           So here we directly copy inputs over outputs, leaving the audio untouched.
           We need to be careful in case the host re-uses the same buffer for both ins and outs.
         */

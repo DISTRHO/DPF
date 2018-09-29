@@ -21,7 +21,7 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------------------------------------------
 
 /**
-  Plugin that demonstrates the latency API in DPF.
+  Plugin that demonstrates MIDI output in DPF.
  */
 class MidiThroughExamplePlugin : public Plugin
 {
@@ -47,7 +47,7 @@ protected:
     */
     const char* getDescription() const override
     {
-        return "Plugin that demonstrates the latency API in DPF.";
+        return "Plugin that demonstrates MIDI output in DPF.";
     }
 
    /**
@@ -63,7 +63,7 @@ protected:
     */
     const char* getHomePage() const override
     {
-        return "https://github.com/DISTRHO/plugin-examples";
+        return "https://github.com/DISTRHO/DPF";
     }
 
    /**

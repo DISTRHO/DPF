@@ -69,7 +69,7 @@ protected:
     */
     const char* getHomePage() const override
     {
-        return "https://github.com/DISTRHO/plugin-examples";
+        return "https://github.com/DISTRHO/DPF";
     }
 
    /**
