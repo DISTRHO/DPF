@@ -34,7 +34,7 @@ class ExampleUIMeters : public UI
 {
 public:
     ExampleUIMeters()
-        : UI(128, 512),
+        : UI(128, 512, true),
           // default color is green
           fColor(93, 231, 61),
           // which is value 0
