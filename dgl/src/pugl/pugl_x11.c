@@ -187,19 +187,18 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	XSetWindowAttributes attr;
 	memset(&attr, 0, sizeof(XSetWindowAttributes));
-	attr.background_pixel = BlackPixel(impl->display, impl->screen);
-	attr.border_pixel     = BlackPixel(impl->display, impl->screen);
-	attr.colormap         = cmap;
-	attr.event_mask       = (ExposureMask | StructureNotifyMask |
-	                         EnterWindowMask | LeaveWindowMask |
-	                         KeyPressMask | KeyReleaseMask |
-	                         ButtonPressMask | ButtonReleaseMask |
-	                         PointerMotionMask | FocusChangeMask);
+	attr.border_pixel = BlackPixel(impl->display, impl->screen);
+	attr.colormap     = cmap;
+	attr.event_mask   = (ExposureMask | StructureNotifyMask |
+	                     EnterWindowMask | LeaveWindowMask |
+	                     KeyPressMask | KeyReleaseMask |
+	                     ButtonPressMask | ButtonReleaseMask |
+	                     PointerMotionMask | FocusChangeMask);
 
 	impl->win = XCreateWindow(
 		impl->display, xParent,
 		0, 0, view->width, view->height, 0, vi->depth, InputOutput, vi->visual,
-		CWBackPixel | CWBorderPixel | CWColormap | CWEventMask, &attr);
+		CWBorderPixel | CWColormap | CWEventMask, &attr);
 
 	if (!impl->win) {
 		XCloseDisplay(impl->display);
