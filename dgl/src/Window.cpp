@@ -537,6 +537,7 @@ struct Window::PrivateData {
         DBG("Window setResizable called\n");
 
         fResizable = yesNo;
+        fView->user_resizable = yesNo;
 
 #if defined(DISTRHO_OS_WINDOWS)
         const int winFlags = fResizable ? GetWindowLong(hwnd, GWL_STYLE) |  WS_SIZEBOX
@@ -556,6 +557,8 @@ struct Window::PrivateData {
     {
         DISTRHO_SAFE_ASSERT_RETURN(fResizable,);
 
+        fView->min_width  = width;
+        fView->min_height = height;
         puglUpdateGeometryConstraints(fView, width, height, aspect);
     }
 
@@ -612,7 +615,6 @@ struct Window::PrivateData {
             }
         }
 #else
-        XResizeWindow(xDisplay, xWindow, width, height);
 
         if (! fResizable)
         {
@@ -629,6 +631,8 @@ struct Window::PrivateData {
 
             XSetWMNormalHints(xDisplay, xWindow, &sizeHints);
         }
+
+        XResizeWindow(xDisplay, xWindow, width, height);
 
         if (! forced)
             XFlush(xDisplay);
@@ -849,7 +853,7 @@ struct Window::PrivateData {
 
     void onPuglMotion(int x, int y)
     {
-        DBGp("PUGL: onMotion : %i %i\n", x, y);
+        // DBGp("PUGL: onMotion : %i %i\n", x, y);
 
         if (fModal.childFocus != nullptr)
             return;
