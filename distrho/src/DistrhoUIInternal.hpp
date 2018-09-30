@@ -62,6 +62,9 @@ struct UI::PrivateData {
 
     // UI
     const bool userResizable;
+    bool automaticallyScale;
+    uint minWidth;
+    uint minHeight;
 
     // Callbacks
     void*         callbacksPtr;
@@ -71,13 +74,16 @@ struct UI::PrivateData {
     sendNoteFunc  sendNoteCallbackFunc;
     setSizeFunc   setSizeCallbackFunc;
 
-    PrivateData(bool resizable) noexcept
+    PrivateData(const bool resizable) noexcept
         : sampleRate(d_lastUiSampleRate),
           parameterOffset(0),
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
           dspPtr(d_lastUiDspPtr),
 #endif
           userResizable(resizable),
+          automaticallyScale(false),
+          minWidth(0),
+          minHeight(0),
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
@@ -185,6 +191,14 @@ protected:
     void onReshape(uint width, uint height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
+
+        if (fUI->pData->automaticallyScale)
+        {
+            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(fUI->pData->minWidth);
+            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(fUI->pData->minHeight);
+            setScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
+        }
 
         fUI->setSize(width, height);
         fUI->uiReshape(width, height);

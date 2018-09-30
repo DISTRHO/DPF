@@ -62,11 +62,11 @@ public:
     virtual ~UI();
 
    /**
-      Set geometry constraints for the UI when resized by the user.
-      This is a convenience function that calls getParentWindow().setGeometryConstraints()
+      Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
       @see Window::setGeometryConstraints(uint,uint,bool)
+      @see Window::setScaling(double)
     */
-    void setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio);
+    void setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale = false);
 
    /* --------------------------------------------------------------------------------------------------------
     * Host state */

@@ -57,9 +57,16 @@ UI::~UI()
     delete pData;
 }
 
-void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio)
+void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale)
 {
-    return getParentWindow().setGeometryConstraints(minWidth, minHeight, keepAspectRatio);
+    DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(minHeight > 0,);
+
+    pData->automaticallyScale = automaticallyScale;
+    pData->minWidth = minWidth;
+    pData->minHeight = minHeight;
+
+    getParentWindow().setGeometryConstraints(minWidth, minHeight, keepAspectRatio);
 }
 
 /* ------------------------------------------------------------------------------------------------------------
