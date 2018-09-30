@@ -206,8 +206,10 @@ puglCreateWindow(PuglView* view, const char* title)
 		return 1;
 	}
 
-	puglUpdateGeometryConstraints(view, view->min_width, view->min_height, view->min_width != view->width);
-	XResizeWindow(view->impl->display, view->impl->win, view->width, view->height);
+	if (view->width > 1 || view->height > 1) {
+		puglUpdateGeometryConstraints(view, view->min_width, view->min_height, view->min_width != view->width);
+		XResizeWindow(view->impl->display, view->impl->win, view->width, view->height);
+	}
 
 	if (title) {
 		XStoreName(impl->display, impl->win, title);
@@ -419,6 +421,9 @@ send_event:
 PuglStatus
 puglProcessEvents(PuglView* view)
 {
+	int conf_width = -1;
+	int conf_height = -1;
+
 	XEvent event;
 	while (XPending(view->impl->display) > 0) {
 		XNextEvent(view->impl->display, &event);
@@ -464,16 +469,15 @@ puglProcessEvents(PuglView* view)
 		case ConfigureNotify:
 			if ((event.xconfigure.width != view->width) ||
 			    (event.xconfigure.height != view->height)) {
-				puglReshape(view,
-				            event.xconfigure.width,
-				            event.xconfigure.height);
+				conf_width = event.xconfigure.width;
+				conf_height = event.xconfigure.height;
 			}
 			break;
 		case Expose:
 			if (event.xexpose.count != 0) {
 				break;
 			}
-			puglDisplay(view);
+			view->redisplay = true;
 			break;
 		case MotionNotify:
 			setModifiers(view, event.xmotion.state, event.xmotion.time);
@@ -547,6 +551,10 @@ puglProcessEvents(PuglView* view)
 		default:
 			break;
 		}
+	}
+
+	if (conf_width != -1) {
+		puglReshape(view, conf_width, conf_height);
 	}
 
 	if (view->pending_resize) {
