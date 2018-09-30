@@ -63,6 +63,7 @@ struct UI::PrivateData {
     // UI
     const bool userResizable;
     bool automaticallyScale;
+    bool resizeInProgress;
     uint minWidth;
     uint minHeight;
 
@@ -82,6 +83,7 @@ struct UI::PrivateData {
 #endif
           userResizable(resizable),
           automaticallyScale(false),
+          resizeInProgress(false),
           minWidth(0),
           minHeight(0),
           callbacksPtr(nullptr),
@@ -191,16 +193,21 @@ protected:
     void onReshape(uint width, uint height) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
 
-        if (fUI->pData->automaticallyScale)
+        UI::PrivateData* const pData = fUI->pData;
+        DISTRHO_SAFE_ASSERT_RETURN(pData != nullptr,);
+
+        if (pData->automaticallyScale)
         {
-            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(fUI->pData->minWidth);
-            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(fUI->pData->minHeight);
+            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(pData->minWidth);
+            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(pData->minHeight);
             setScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
         }
 
+        pData->resizeInProgress = true;
         fUI->setSize(width, height);
+        pData->resizeInProgress = false;
+
         fUI->uiReshape(width, height);
         fIsReady = true;
     }

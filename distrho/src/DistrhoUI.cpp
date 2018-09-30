@@ -165,6 +165,9 @@ void UI::uiReshape(uint width, uint height)
 
 void UI::onResize(const ResizeEvent& ev)
 {
+    if (pData->resizeInProgress)
+        return;
+
     pData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
 }
 #endif
