@@ -468,3 +468,15 @@ puglGetNativeWindow(PuglView* view)
 {
 	return (PuglNativeWindow)view->impl->hwnd;
 }
+
+int
+puglUpdateGeometryConstraints(PuglView* view, int min_width, int min_height, bool aspect)
+{
+	// TODO
+	return 1;
+
+	(void)view;
+	(void)min_width;
+	(void)min_height;
+	(void)aspect;
+}

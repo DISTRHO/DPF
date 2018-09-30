@@ -436,7 +436,7 @@ public:
 
     bool handlePluginSpecial(const bool press, const Key key)
     {
-        return glWindow.handlePluginKeyboard(press, key);
+        return glWindow.handlePluginSpecial(press, key);
     }
 #else
     void setWindowSize(const uint, const uint, const bool) {}

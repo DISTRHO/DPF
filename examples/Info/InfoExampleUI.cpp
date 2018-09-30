@@ -37,7 +37,7 @@ public:
         fSampleRate = getSampleRate();
         fFont       = createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
 
-        setGeometryConstraints(405, 256, false);
+        setGeometryConstraints(405, 256, true);
     }
 
 protected:
