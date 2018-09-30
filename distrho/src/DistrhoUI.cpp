@@ -37,9 +37,9 @@ const char* g_nextBundlePath   = nullptr;
  * UI */
 
 #ifdef HAVE_DGL
-UI::UI(uint width, uint height)
+UI::UI(uint width, uint height, bool userResizable)
     : UIWidget(*d_lastUiWindow),
-      pData(new PrivateData())
+      pData(new PrivateData(userResizable))
 {
     ((UIWidget*)this)->pData->needsFullViewport = false;
 
@@ -47,14 +47,19 @@ UI::UI(uint width, uint height)
         setSize(width, height);
 }
 #else
-UI::UI(uint width, uint height)
+UI::UI(uint width, uint height, bool userResizable)
     : UIWidget(width, height),
-      pData(new PrivateData()) {}
+      pData(new PrivateData(userResizable)) {}
 #endif
 
 UI::~UI()
 {
     delete pData;
+}
+
+void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio)
+{
+    return getParentWindow().setGeometryConstraints(minWidth, minHeight, keepAspectRatio);
 }
 
 /* ------------------------------------------------------------------------------------------------------------

@@ -18,6 +18,8 @@
 
 #include "DistrhoUI.hpp"
 
+#include "Window.hpp"
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
@@ -26,13 +28,16 @@ class InfoExampleUI : public UI
 {
 public:
     InfoExampleUI()
-        : UI(405, 256)
+        : UI(405, 256, true),
+          fScale(1.0f)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
         std::memset(fStrBuf, 0, sizeof(char)*(0xff+1));
 
         fSampleRate = getSampleRate();
         fFont       = createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
+
+        setGeometryConstraints(405, 256, false);
     }
 
 protected:
@@ -69,13 +74,13 @@ protected:
     */
     void onNanoDisplay() override
     {
-        static const float lineHeight = 20;
+        const float lineHeight = 20 * fScale;
 
-        fontSize(15.0f);
+        fontSize(15.0f * fScale);
         textLineHeight(lineHeight);
 
-        float x = 0;
-        float y = 15;
+        float x = 0.0f * fScale;
+        float y = 15.0f * fScale;
 
         // buffer size
         drawLeft(x, y, "Buffer Size:");
@@ -104,8 +109,8 @@ protected:
         y+=lineHeight;
 
         // BBT
-        x = 200;
-        y = 15;
+        x = 200.0f * fScale;
+        y = 15.0f * fScale;
 
         const bool validBBT(fParameters[kParameterTimeValidBBT] > 0.5f);
         drawLeft(x, y, "BBT Valid:");
@@ -148,6 +153,14 @@ protected:
         y+=lineHeight;
     }
 
+
+    void onResize(const ResizeEvent& ev) override
+    {
+        fScale = static_cast<float>(ev.size.getHeight())/256.0f;
+
+        UI::onResize(ev);
+    }
+
     // -------------------------------------------------------------------------------------------------------
 
 private:
@@ -155,8 +168,9 @@ private:
     float  fParameters[kParameterCount];
     double fSampleRate;
 
-    // font
+    // UI stuff
     FontId fFont;
+    float fScale;
 
     // temp buf for text
     char fStrBuf[0xff+1];
@@ -190,7 +204,7 @@ private:
         beginPath();
         fillColor(200, 200, 200);
         textAlign(ALIGN_RIGHT|ALIGN_TOP);
-        textBox(x, y, 100, text);
+        textBox(x, y, 100 * fScale, text);
         closePath();
     }
 
@@ -199,7 +213,7 @@ private:
         beginPath();
         fillColor(255, 255, 255);
         textAlign(ALIGN_LEFT|ALIGN_TOP);
-        textBox(x+105, y, 100, text);
+        textBox(x + (105 * fScale), y, 100 * fScale, text);
         closePath();
     }
 

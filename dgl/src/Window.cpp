@@ -549,6 +549,15 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    void setGeometryConstraints(uint width, uint height, bool aspect)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fResizable,);
+
+        puglUpdateGeometryConstraints(fView, width, height, aspect);
+    }
+
+    // -------------------------------------------------------------------
+
     void setSize(uint width, uint height, const bool forced = false)
     {
         if (width <= 1 || height <= 1)
@@ -1234,6 +1243,11 @@ bool Window::isResizable() const noexcept
 void Window::setResizable(bool yesNo)
 {
     pData->setResizable(yesNo);
+}
+
+void Window::setGeometryConstraints(uint width, uint height, bool aspect)
+{
+    pData->setGeometryConstraints(width, height, aspect);
 }
 
 uint Window::getWidth() const noexcept

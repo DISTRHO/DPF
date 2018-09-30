@@ -98,6 +98,8 @@ public:
     bool isResizable() const noexcept;
     void setResizable(bool yesNo);
 
+    void setGeometryConstraints(uint width, uint height, bool aspect);
+
     uint getWidth() const noexcept;
     uint getHeight() const noexcept;
     Size<uint> getSize() const noexcept;

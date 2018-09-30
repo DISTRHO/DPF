@@ -54,12 +54,19 @@ public:
       UI class constructor.
       The UI should be initialized to a default state that matches the plugin side.
     */
-    UI(uint width = 0, uint height = 0);
+    UI(uint width = 0, uint height = 0, bool userResizable = false);
 
    /**
       Destructor.
     */
     virtual ~UI();
+
+   /**
+      Set geometry constraints for the UI when resized by the user.
+      This is a convenience function that calls getParentWindow().setGeometryConstraints()
+      @see Window::setGeometryConstraints(uint,uint,bool)
+    */
+    void setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio);
 
    /* --------------------------------------------------------------------------------------------------------
     * Host state */

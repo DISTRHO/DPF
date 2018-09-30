@@ -60,6 +60,9 @@ struct UI::PrivateData {
     void*    dspPtr;
 #endif
 
+    // UI
+    const bool userResizable;
+
     // Callbacks
     void*         callbacksPtr;
     editParamFunc editParamCallbackFunc;
@@ -68,12 +71,13 @@ struct UI::PrivateData {
     sendNoteFunc  sendNoteCallbackFunc;
     setSizeFunc   setSizeCallbackFunc;
 
-    PrivateData() noexcept
+    PrivateData(bool resizable) noexcept
         : sampleRate(d_lastUiSampleRate),
           parameterOffset(0),
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
           dspPtr(d_lastUiDspPtr),
 #endif
+          userResizable(resizable),
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
@@ -155,9 +159,9 @@ public:
           fIsReady(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
 
-        // set window size
-        setResizable(false);
+        setResizable(fUI->pData->userResizable);
         setSize(fUI->getWidth(), fUI->getHeight());
     }
 
@@ -182,6 +186,7 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
+        fUI->setSize(width, height);
         fUI->uiReshape(width, height);
         fIsReady = true;
     }
