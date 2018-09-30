@@ -63,7 +63,7 @@ struct Widget::PrivateData {
         subWidgets.clear();
     }
 
-    void display(const uint width, const uint height, const bool renderingSubWidget)
+    void display(const uint width, const uint height, const double scaling, const bool renderingSubWidget)
     {
         if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
             return;
@@ -76,29 +76,32 @@ struct Widget::PrivateData {
         if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
         {
             // full viewport size
-            glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+            glViewport(0,
+                       -(height * scaling - height),
+                       width * scaling,
+                       height * scaling);
         }
         else if (needsScaling)
         {
             // limit viewport to widget bounds
             glViewport(absolutePos.getX(),
-                       static_cast<int>(height - self->getHeight()) - absolutePos.getY(),
-                       static_cast<GLsizei>(self->getWidth()),
-                       static_cast<GLsizei>(self->getHeight()));
+                       height - self->getHeight() - absolutePos.getY(),
+                       self->getWidth(),
+                       self->getHeight());
         }
         else
         {
             // only set viewport pos
-            glViewport(absolutePos.getX(),
-                       /*static_cast<int>(height - self->getHeight())*/ - absolutePos.getY(),
-                       static_cast<GLsizei>(width),
-                       static_cast<GLsizei>(height));
+            glViewport(absolutePos.getX() * scaling,
+                       -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
+                       std::round(width * scaling),
+                       std::round(height * scaling));
 
             // then cut the outer bounds
-            glScissor(absolutePos.getX(),
-                      static_cast<int>(height - self->getHeight()) - absolutePos.getY(),
-                      static_cast<GLsizei>(self->getWidth()),
-                      static_cast<GLsizei>(self->getHeight()));
+            glScissor(absolutePos.getX() * scaling,
+                      height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
+                      std::round(self->getWidth() * scaling),
+                      std::round(self->getHeight() * scaling));
 
             glEnable(GL_SCISSOR_TEST);
             needsDisableScissor = true;
@@ -113,17 +116,17 @@ struct Widget::PrivateData {
             needsDisableScissor = false;
         }
 
-        displaySubWidgets(width, height);
+        displaySubWidgets(width, height, scaling);
     }
 
-    void displaySubWidgets(const uint width, const uint height)
+    void displaySubWidgets(const uint width, const uint height, const double scaling)
     {
         for (std::vector<Widget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
         {
             Widget* const widget(*it);
             DISTRHO_SAFE_ASSERT_CONTINUE(widget->pData != this);
 
-            widget->pData->display(width, height, true);
+            widget->pData->display(width, height, scaling, true);
         }
     }
 

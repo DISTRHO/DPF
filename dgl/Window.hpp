@@ -111,6 +111,9 @@ public:
 
     void setTransientWinId(uintptr_t winId);
 
+    double getScaling() const noexcept;
+    void setScaling(double scaling) noexcept;
+
     Application& getApp() const noexcept;
     intptr_t getWindowId() const noexcept;
 

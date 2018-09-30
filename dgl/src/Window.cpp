@@ -83,6 +83,7 @@ struct Window::PrivateData {
           fUsingEmbed(false),
           fWidth(1),
           fHeight(1),
+          fScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(),
@@ -113,6 +114,7 @@ struct Window::PrivateData {
           fUsingEmbed(false),
           fWidth(1),
           fHeight(1),
+          fScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(parent.pData),
@@ -155,6 +157,7 @@ struct Window::PrivateData {
           fUsingEmbed(parentId != 0),
           fWidth(1),
           fHeight(1),
+          fScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(),
@@ -689,6 +692,20 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    double getScaling() const noexcept
+    {
+        return fScaling;
+    }
+
+    void setScaling(double scaling) noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0,);
+
+        fScaling = scaling;
+    }
+
+    // -------------------------------------------------------------------
+
     void addWidget(Widget* const widget)
     {
         fWidgets.push_back(widget);
@@ -740,7 +757,7 @@ struct Window::PrivateData {
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
-            widget->pData->display(fWidth, fHeight, false);
+            widget->pData->display(fWidth, fHeight, fScaling, false);
         }
 
         fSelf->onDisplayAfter();
@@ -800,7 +817,7 @@ struct Window::PrivateData {
         return 1;
     }
 
-    void onPuglMouse(const int button, const bool press, const int x, const int y)
+    void onPuglMouse(const int button, const bool press, int x, int y)
     {
         DBGp("PUGL: onMouse : %i %i %i %i\n", button, press, x, y);
 
@@ -809,6 +826,9 @@ struct Window::PrivateData {
 
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
+
+        x /= fScaling;
+        y /= fScaling;
 
         Widget::MouseEvent ev;
         ev.button = button;
@@ -827,12 +847,15 @@ struct Window::PrivateData {
         }
     }
 
-    void onPuglMotion(const int x, const int y)
+    void onPuglMotion(int x, int y)
     {
         DBGp("PUGL: onMotion : %i %i\n", x, y);
 
         if (fModal.childFocus != nullptr)
             return;
+
+        x /= fScaling;
+        y /= fScaling;
 
         Widget::MotionEvent ev;
         ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
@@ -849,12 +872,17 @@ struct Window::PrivateData {
         }
     }
 
-    void onPuglScroll(const int x, const int y, const float dx, const float dy)
+    void onPuglScroll(int x, int y, float dx, float dy)
     {
         DBGp("PUGL: onScroll : %i %i %f %f\n", x, y, dx, dy);
 
         if (fModal.childFocus != nullptr)
             return;
+
+        x /= fScaling;
+        y /= fScaling;
+        dx /= fScaling;
+        dy /= fScaling;
 
         Widget::ScrollEvent ev;
         ev.delta = Point<float>(dx, dy);
@@ -1004,6 +1032,7 @@ struct Window::PrivateData {
     bool fUsingEmbed;
     uint fWidth;
     uint fHeight;
+    double fScaling;
     char* fTitle;
     std::list<Widget*> fWidgets;
 
@@ -1288,6 +1317,16 @@ void Window::setTitle(const char* title)
 void Window::setTransientWinId(uintptr_t winId)
 {
     pData->setTransientWinId(winId);
+}
+
+double Window::getScaling() const noexcept
+{
+    return pData->getScaling();
+}
+
+void Window::setScaling(double scaling) noexcept
+{
+    pData->setScaling(scaling);
 }
 
 Application& Window::getApp() const noexcept
