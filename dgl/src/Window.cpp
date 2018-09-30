@@ -710,6 +710,18 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    bool getIgnoringKeyRepeat() const noexcept
+    {
+        return fView->ignoreKeyRepeat;
+    }
+
+    void setIgnoringKeyRepeat(bool ignore) noexcept
+    {
+        puglIgnoreKeyRepeat(fView, ignore);
+    }
+
+    // -------------------------------------------------------------------
+
     void addWidget(Widget* const widget)
     {
         fWidgets.push_back(widget);
@@ -1331,6 +1343,16 @@ double Window::getScaling() const noexcept
 void Window::setScaling(double scaling) noexcept
 {
     pData->setScaling(scaling);
+}
+
+bool Window::getIgnoringKeyRepeat() const noexcept
+{
+    return pData->getIgnoringKeyRepeat();
+}
+
+void Window::setIgnoringKeyRepeat(bool ignore) noexcept
+{
+    pData->setIgnoringKeyRepeat(ignore);
 }
 
 Application& Window::getApp() const noexcept
