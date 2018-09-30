@@ -57,6 +57,11 @@ UI::~UI()
     delete pData;
 }
 
+bool UI::isUserResizable() const noexcept
+{
+    return pData->userResizable;
+}
+
 void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale)
 {
     DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);

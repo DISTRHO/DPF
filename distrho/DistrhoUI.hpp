@@ -62,6 +62,12 @@ public:
     virtual ~UI();
 
    /**
+      Wherever this UI is resizable by the user.
+      This simply returns the value passed in the constructor.
+    */
+    bool isUserResizable() const noexcept;
+
+   /**
       Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
       @see Window::setGeometryConstraints(uint,uint,bool)
       @see Window::setScaling(double)

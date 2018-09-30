@@ -153,7 +153,7 @@ struct Window::PrivateData {
           fView(puglInit()),
           fFirstInit(true),
           fVisible(parentId != 0),
-          fResizable(parentId == 0),
+          fResizable(true),
           fUsingEmbed(parentId != 0),
           fWidth(1),
           fHeight(1),

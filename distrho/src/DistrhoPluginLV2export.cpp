@@ -139,8 +139,17 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         manifestString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
-        manifestString += "                        ui:resize ,\n";
+        /*
+        if (! pluginUI.isUserResizable())
+        {
+            manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
+            manifestString += "                        ui:resize ,\n";
+        }
+        else
+        */
+        {
+            manifestString += "    lv2:optionalFeature ui:resize ,\n";
+        }
         manifestString += "                        ui:touch ;\n";
         manifestString += "\n";
 #  endif
@@ -148,9 +157,10 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "                        <" LV2_INSTANCE_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_OPTIONS__options "> ,\n";
         manifestString += "                        <" LV2_URID__map "> .\n";
-# else
+        manifestString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .\n";
+# else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
-# endif
+# endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "\n";
 #endif
 
@@ -628,8 +638,17 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         uiString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
-        uiString += "                        ui:resize ,\n";
+        /*
+        if (! pluginUI.isUserResizable())
+        {
+            uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
+            uiString += "                        ui:resize ,\n";
+        }
+        else
+        */
+        {
+            uiString += "    lv2:optionalFeature ui:resize ,\n";
+        }
         uiString += "                        ui:touch ;\n";
         uiString += "\n";
 #  endif
