@@ -77,12 +77,12 @@ all:
 # Common
 
 $(BUILD_DIR)/%.c.o: %.c
-	-@mkdir -p "$(BUILD_DIR)/$(shell dirname $<)"
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
-	-@mkdir -p "$(BUILD_DIR)/$(shell dirname $<)"
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
