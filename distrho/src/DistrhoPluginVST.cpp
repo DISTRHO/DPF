@@ -71,18 +71,21 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 
 void strncpy(char* const dst, const char* const src, const size_t size)
 {
-    std::strncpy(dst, src, size-1);
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+    std::memcpy(dst, src, std::min(std::strlen(src), size-1));
     dst[size-1] = '\0';
 }
 
 void snprintf_param(char* const dst, const float value, const size_t size)
 {
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
     std::snprintf(dst, size-1, "%f", value);
     dst[size-1] = '\0';
 }
 
 void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
 {
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
     std::snprintf(dst, size-1, "%d", value);
     dst[size-1] = '\0';
 }
