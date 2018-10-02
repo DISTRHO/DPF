@@ -613,7 +613,6 @@ public:
         fEventsOutData.initIfNeeded(fURIDs.atomSequence);
 
         LV2_Atom_Event* aev;
-        uint32_t offset = fEventsOutData.offset;
         const uint32_t capacity = fEventsOutData.capacity;
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
@@ -635,8 +634,11 @@ public:
                 // set msg size (key + value + separator + 2x null terminator)
                 const size_t msgSize(key.length()+value.length()+3);
 
-                if (sizeof(LV2_Atom_Event) + msgSize > capacity - offset)
+                if (sizeof(LV2_Atom_Event) + msgSize > capacity - fEventsOutData.offset)
+                {
+                    d_stdout("Sending key '%s' to UI failed, out of space", key.buffer());
                     break;
+                }
 
                 // reserve msg space
                 // FIXME create a large enough buffer beforehand
@@ -644,15 +646,15 @@ public:
                 std::memset(msgBuf, 0, msgSize);
 
                 // write key and value in atom bufer
-                std::memcpy(msgBuf, key.buffer(), key.length());
-                std::memcpy(msgBuf+(key.length()+1), value.buffer(), value.length());
+                std::memcpy(msgBuf, key.buffer(), key.length()+1);
+                std::memcpy(msgBuf+(key.length()+1), value.buffer(), value.length()+1);
 
                 // put data
-                aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + offset);
+                aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + fEventsOutData.offset);
                 aev->time.frames = 0;
                 aev->body.type   = fURIDs.distrhoState;
                 aev->body.size   = msgSize;
-                std::memcpy(LV2_ATOM_BODY(&aev->body), msgBuf, msgSize-1);
+                std::memcpy(LV2_ATOM_BODY(&aev->body), msgBuf, msgSize);
 
                 fEventsOutData.growBy(lv2_atom_pad_size(sizeof(LV2_Atom_Event) + msgSize));
 

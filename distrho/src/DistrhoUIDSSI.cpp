@@ -194,7 +194,7 @@ protected:
 
         uint8_t mdata[4] = {
             0,
-            channel + (velocity != 0 ? 0x90 : 0x80),
+            static_cast<uint8_t>(channel + (velocity != 0 ? 0x90 : 0x80)),
             note,
             velocity
         };
