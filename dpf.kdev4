@@ -7,3 +7,6 @@ Excludes=*/.*,*/*~,*/*.a
 
 [Project]
 VersionControlSupport=kdevgit
+
+[Project]
+Mezzarius
