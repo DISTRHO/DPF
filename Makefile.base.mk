@@ -128,6 +128,10 @@ BASE_FLAGS += -DNDEBUG $(BASE_OPTS) -fvisibility=hidden
 CXXFLAGS   += -fvisibility-inlines-hidden
 endif
 
+ifeq ($(DISABLE_WINDOW_LOGS),true)
+BASE_FLAGS += -DDISABLE_WINDOW_LOGS
+endif
+
 BUILD_C_FLAGS   = $(BASE_FLAGS) -std=gnu99 $(CFLAGS)
 BUILD_CXX_FLAGS = $(BASE_FLAGS) -std=gnu++0x $(CXXFLAGS)
 LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
