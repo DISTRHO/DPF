@@ -192,7 +192,7 @@ void lv2_generate_ttl(const char* const basename)
         String pluginString;
 
         // header
-#if DISTRHO_LV2_USE_EVENTS_IN
+#if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
         pluginString += "@prefix atom: <" LV2_ATOM_PREFIX "> .\n";
 #endif
         pluginString += "@prefix doap: <http://usefulinc.com/ns/doap#> .\n";
