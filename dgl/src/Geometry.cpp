@@ -441,6 +441,7 @@ void Line<T>::moveBy(const Point<T>& pos) noexcept
     fPosEnd.moveBy(pos);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Line<T>::draw()
 {
@@ -455,6 +456,7 @@ void Line<T>::draw()
 
     glEnd();
 }
+#endif
 
 template<typename T>
 bool Line<T>::isNull() const noexcept
@@ -614,6 +616,7 @@ void Circle<T>::setNumSegments(const uint num)
     fSin = std::sin(fTheta);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Circle<T>::draw()
 {
@@ -625,6 +628,7 @@ void Circle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 Circle<T>& Circle<T>::operator=(const Circle<T>& cir) noexcept
@@ -650,6 +654,7 @@ bool Circle<T>::operator!=(const Circle<T>& cir) const noexcept
     return (fPos != cir.fPos || d_isNotEqual(fSize, cir.fSize) || fNumSegments != cir.fNumSegments);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Circle<T>::_draw(const bool outline)
 {
@@ -670,6 +675,7 @@ void Circle<T>::_draw(const bool outline)
 
     glEnd();
 }
+#endif
 
 // -----------------------------------------------------------------------
 // Triangle
@@ -698,6 +704,7 @@ Triangle<T>::Triangle(const Triangle<T>& tri) noexcept
       fPos2(tri.fPos2),
       fPos3(tri.fPos3) {}
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Triangle<T>::draw()
 {
@@ -709,6 +716,7 @@ void Triangle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 bool Triangle<T>::isNull() const noexcept
@@ -755,6 +763,7 @@ bool Triangle<T>::operator!=(const Triangle<T>& tri) const noexcept
     return (fPos1 != tri.fPos1 || fPos2 != tri.fPos2 || fPos3 != tri.fPos3);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Triangle<T>::_draw(const bool outline)
 {
@@ -770,6 +779,7 @@ void Triangle<T>::_draw(const bool outline)
 
     glEnd();
 }
+#endif
 
 // -----------------------------------------------------------------------
 // Rectangle
@@ -952,6 +962,7 @@ bool Rectangle<T>::containsY(const T& y) const noexcept
     return (y >= fPos.fY && y <= fPos.fY + fSize.fHeight);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Rectangle<T>::draw()
 {
@@ -963,6 +974,7 @@ void Rectangle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 Rectangle<T>& Rectangle<T>::operator=(const Rectangle<T>& rect) noexcept
@@ -998,6 +1010,7 @@ bool Rectangle<T>::operator!=(const Rectangle<T>& rect) const noexcept
     return (fPos != rect.fPos || fSize != rect.fSize);
 }
 
+#if defined(HAVE_DGL)
 template<typename T>
 void Rectangle<T>::_draw(const bool outline)
 {
@@ -1021,6 +1034,7 @@ void Rectangle<T>::_draw(const bool outline)
 
     glEnd();
 }
+#endif
 
 // -----------------------------------------------------------------------
 // Possible template data types

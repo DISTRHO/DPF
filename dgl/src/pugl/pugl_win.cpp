@@ -21,7 +21,13 @@
 #include <winsock2.h>
 #include <windows.h>
 #include <windowsx.h>
+#ifdef PUGL_HAVE_GL
 #include <GL/gl.h>
+#endif
+#ifdef PUGL_HAVE_CAIRO
+#include <cairo/cairo.h>
+#include <cairo/cairo-win32.h>
+#endif
 
 #include <ctime>
 #include <cstdio>
@@ -48,8 +54,13 @@ HINSTANCE hInstance = NULL;
 
 struct PuglInternalsImpl {
 	HWND     hwnd;
+#ifdef PUGL_HAVE_GL
 	HDC      hdc;
 	HGLRC    hglrc;
+#endif
+#ifdef PUGL_HAVE_CAIRO
+	cairo_t*         cr;
+#endif
 	WNDCLASS wc;
 };
 
@@ -76,17 +87,25 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL) {
+		wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
+	}
+#endif
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-	if (flush) {
-		glFlush();
-		SwapBuffers(view->impl->hdc);
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL) {
+		if (flush) {
+			glFlush();
+			SwapBuffers(view->impl->hdc);
+		}
+		wglMakeCurrent(NULL, NULL);
 	}
-	wglMakeCurrent(NULL, NULL);
+#endif
 }
 
 int
@@ -124,7 +143,6 @@ puglCreateWindow(PuglView* view, const char* title)
 	if (!RegisterClass(&impl->wc)) {
 		free((void*)impl->wc.lpszClassName);
 		free(impl);
-		free(view);
 		return 1;
 	}
 
@@ -155,37 +173,39 @@ puglCreateWindow(PuglView* view, const char* title)
 		UnregisterClass(impl->wc.lpszClassName, NULL);
 		free((void*)impl->wc.lpszClassName);
 		free(impl);
-		free(view);
 		return 1;
 	}
 
 	SetWindowLongPtr(impl->hwnd, GWLP_USERDATA, (LONG_PTR)view);
 
-	impl->hdc = GetDC(impl->hwnd);
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL) {
+		impl->hdc = GetDC(impl->hwnd);
 
-	PIXELFORMATDESCRIPTOR pfd;
-	ZeroMemory(&pfd, sizeof(pfd));
-	pfd.nSize      = sizeof(pfd);
-	pfd.nVersion   = 1;
-	pfd.dwFlags    = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	pfd.iPixelType = PFD_TYPE_RGBA;
-	pfd.cColorBits = 24;
-	pfd.cDepthBits = 16;
-	pfd.iLayerType = PFD_MAIN_PLANE;
+		PIXELFORMATDESCRIPTOR pfd;
+		ZeroMemory(&pfd, sizeof(pfd));
+		pfd.nSize      = sizeof(pfd);
+		pfd.nVersion   = 1;
+		pfd.dwFlags    = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+		pfd.iPixelType = PFD_TYPE_RGBA;
+		pfd.cColorBits = 24;
+		pfd.cDepthBits = 16;
+		pfd.iLayerType = PFD_MAIN_PLANE;
 
-	int format = ChoosePixelFormat(impl->hdc, &pfd);
-	SetPixelFormat(impl->hdc, format, &pfd);
+		int format = ChoosePixelFormat(impl->hdc, &pfd);
+		SetPixelFormat(impl->hdc, format, &pfd);
 
-	impl->hglrc = wglCreateContext(impl->hdc);
-	if (!impl->hglrc) {
-		ReleaseDC (impl->hwnd, impl->hdc);
-		DestroyWindow (impl->hwnd);
-		UnregisterClass (impl->wc.lpszClassName, NULL);
-		free((void*)impl->wc.lpszClassName);
-		free(impl);
-		free(view);
-		return 1;
+		impl->hglrc = wglCreateContext(impl->hdc);
+		if (!impl->hglrc) {
+			ReleaseDC (impl->hwnd, impl->hdc);
+			DestroyWindow (impl->hwnd);
+			UnregisterClass (impl->wc.lpszClassName, NULL);
+			free((void*)impl->wc.lpszClassName);
+			free(impl);
+			return 1;
+		}
 	}
+#endif
 
 	return PUGL_SUCCESS;
 }
@@ -205,13 +225,23 @@ puglHideWindow(PuglView* view)
 void
 puglDestroy(PuglView* view)
 {
-	wglMakeCurrent(NULL, NULL);
-	wglDeleteContext(view->impl->hglrc);
-	ReleaseDC(view->impl->hwnd, view->impl->hdc);
-	DestroyWindow(view->impl->hwnd);
-	UnregisterClass(view->impl->wc.lpszClassName, NULL);
-	free((void*)view->impl->wc.lpszClassName);
-	free(view->impl);
+	if (!view) {
+		return;
+	}
+
+	PuglInternals* const impl = view->impl;
+
+#ifdef PUGL_HAVE_GL
+	if (view->ctx_type == PUGL_GL) {
+		wglMakeCurrent(NULL, NULL);
+		wglDeleteContext(impl->hglrc);
+	}
+	ReleaseDC(impl->hwnd, impl->hdc);
+#endif
+	DestroyWindow(impl->hwnd);
+	UnregisterClass(impl->wc.lpszClassName, NULL);
+	free((void*)impl->wc.lpszClassName);
+	free(impl);
 	free(view);
 }
 
@@ -329,9 +359,32 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		mmi->ptMinTrackSize.y = view->min_height;
 		break;
 	case WM_PAINT:
-		BeginPaint(view->impl->hwnd, &ps);
-		puglDisplay(view);
-		EndPaint(view->impl->hwnd, &ps);
+#ifdef PUGL_HAVE_GL
+		if (view->ctx_type == PUGL_GL) {
+			BeginPaint(view->impl->hwnd, &ps);
+			puglDisplay(view);
+			EndPaint(view->impl->hwnd, &ps);
+		}
+#endif
+#ifdef PUGL_HAVE_CAIRO
+		if (view->ctx_type == PUGL_CAIRO) {
+			HDC hdc = BeginPaint(view->impl->hwnd, &ps);
+			if (hdc == NULL)
+				break;
+			cairo_surface_t *surface = cairo_win32_surface_create(hdc);
+			if (surface) {
+				cairo_t *cr = cairo_create(surface);
+				if (cr) {
+					view->impl->cr = cr;
+					puglDisplay(view);
+					view->impl->cr = NULL;
+					cairo_destroy(cr);
+				}
+				cairo_surface_destroy(surface);
+			}
+			EndPaint(view->impl->hwnd, &ps);
+		}
+#endif
 		break;
 	case WM_MOUSEMOVE:
 		if (view->motionFunc) {
@@ -467,6 +520,20 @@ PuglNativeWindow
 puglGetNativeWindow(PuglView* view)
 {
 	return (PuglNativeWindow)view->impl->hwnd;
+}
+
+void*
+puglGetContext(PuglView* view)
+{
+#ifdef PUGL_HAVE_CAIRO
+	if (view->ctx_type == PUGL_CAIRO) {
+		return view->impl->cr;
+	}
+#endif
+	return NULL;
+
+	// may be unused
+	(void)view;
 }
 
 int

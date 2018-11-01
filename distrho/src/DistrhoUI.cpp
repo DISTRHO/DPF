@@ -152,6 +152,7 @@ void UI::uiFileBrowserSelected(const char*)
 
 void UI::uiReshape(uint width, uint height)
 {
+#if defined(HAVE_DGL)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);
@@ -160,6 +161,7 @@ void UI::uiReshape(uint width, uint height)
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------

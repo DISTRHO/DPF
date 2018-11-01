@@ -19,6 +19,16 @@
 
 #include "../Base.hpp"
 
+#undef PUGL_HAVE_CAIRO
+#undef PUGL_HAVE_GL
+
+#if defined(HAVE_DGL)
+#define PUGL_HAVE_GL 1
+#endif
+#if defined(HAVE_DCAIRO)
+#define PUGL_HAVE_CAIRO 1
+#endif
+
 #include "pugl/pugl.h"
 
 #if defined(__GNUC__) && (__GNUC__ >= 7)
@@ -203,6 +213,14 @@ struct Window::PrivateData {
             return;
         }
 
+#if defined(HAVE_DGL)
+        PuglContextType contextType = PUGL_GL;
+#endif
+#if defined(HAVE_DCAIRO)
+        PuglContextType contextType = PUGL_CAIRO;
+#endif
+
+        puglInitContextType(fView, contextType);
         puglInitUserResizable(fView, fResizable);
         puglInitWindowSize(fView, static_cast<int>(fWidth), static_cast<int>(fHeight));
 
@@ -222,11 +240,12 @@ struct Window::PrivateData {
         puglCreateWindow(fView, nullptr);
 
         PuglInternals* impl = fView->impl;
+
 #if defined(DISTRHO_OS_WINDOWS)
         hwnd = impl->hwnd;
         DISTRHO_SAFE_ASSERT(hwnd != 0);
 #elif defined(DISTRHO_OS_MAC)
-        mView   = impl->glview;
+        mView   = impl->view;
         mWindow = impl->window;
         DISTRHO_SAFE_ASSERT(mView != nullptr);
         if (fUsingEmbed) {
@@ -1081,7 +1100,7 @@ struct Window::PrivateData {
     HWND hwndParent;
 #elif defined(DISTRHO_OS_MAC)
     bool            fNeedsIdle;
-    PuglOpenGLView* mView;
+    NSView<PuglGenericView>* mView;
     id              mWindow;
     id              mParentWindow;
 #else
@@ -1365,6 +1384,13 @@ intptr_t Window::getWindowId() const noexcept
     return puglGetNativeWindow(pData->fView);
 }
 
+#if defined(HAVE_DCAIRO)
+cairo_t* Window::getGraphics() const noexcept
+{
+    return (cairo_t*)puglGetContext(pData->fView);
+}
+#endif
+
 void Window::_addWidget(Widget* const widget)
 {
     pData->addWidget(widget);
@@ -1400,8 +1426,10 @@ void Window::removeIdleCallback(IdleCallback* const callback)
 
 void Window::onDisplayBefore()
 {
+#if defined(HAVE_DGL)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+#endif
 }
 
 void Window::onDisplayAfter()
@@ -1410,6 +1438,7 @@ void Window::onDisplayAfter()
 
 void Window::onReshape(uint width, uint height)
 {
+#if defined(HAVE_DGL)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);
@@ -1418,6 +1447,7 @@ void Window::onReshape(uint width, uint height)
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#endif
 }
 
 void Window::onClose()

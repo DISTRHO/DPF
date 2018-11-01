@@ -19,7 +19,9 @@
 
 #include "Base.hpp"
 
+#if !defined(HAVE_DCAIRO)
 struct NVGcolor;
+#endif
 
 START_NAMESPACE_DGL
 
@@ -95,12 +97,14 @@ struct Color {
     */
     void fixBounds() noexcept;
 
+#if !defined(HAVE_DCAIRO)
    /**
       @internal
       Needed for NanoVG compatibility.
     */
     Color(const NVGcolor&) noexcept;
     operator NVGcolor() const noexcept;
+#endif
 };
 
 // -----------------------------------------------------------------------

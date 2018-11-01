@@ -346,10 +346,12 @@ public:
     */
     void moveBy(const Point<T>& pos) noexcept;
 
+#if defined(HAVE_DGL)
    /**
       Draw this line using the current OpenGL state.
     */
     void draw();
+#endif
 
    /**
       Return true if line is null (start and end pos are equal).
@@ -460,6 +462,7 @@ public:
     */
     void setNumSegments(const uint num);
 
+#if defined(HAVE_DGL)
    /**
       Draw this circle using the current OpenGL state.
     */
@@ -469,6 +472,7 @@ public:
       Draw lines (outline of this circle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
     Circle<T>& operator=(const Circle<T>& cir) noexcept;
     bool operator==(const Circle<T>& cir) const noexcept;
@@ -482,7 +486,9 @@ private:
     // cached values
     float fTheta, fCos, fSin;
 
+#if defined(HAVE_DGL)
     void _draw(const bool outline);
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -516,6 +522,7 @@ public:
     */
     Triangle(const Triangle<T>& tri) noexcept;
 
+#if defined(HAVE_DGL)
    /**
       Draw this triangle using the current OpenGL state.
     */
@@ -525,6 +532,7 @@ public:
       Draw lines (outline of this triangle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
    /**
       Return true if triangle is null (all its points are equal).
@@ -556,7 +564,9 @@ public:
 private:
     Point<T> fPos1, fPos2, fPos3;
 
+#if defined(HAVE_DGL)
     void _draw(const bool outline);
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -720,6 +730,7 @@ public:
     */
     bool containsY(const T& y) const noexcept;
 
+#if defined(HAVE_DGL)
    /**
       Draw this rectangle using the current OpenGL state.
     */
@@ -729,6 +740,7 @@ public:
       Draw lines (outline of this rectangle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
     Rectangle<T>& operator*=(double m) noexcept;
@@ -740,7 +752,9 @@ private:
     Point<T> fPos;
     Size<T>  fSize;
 
+#if defined(HAVE_DGL)
     void _draw(const bool outline);
+#endif
 };
 
 // -----------------------------------------------------------------------

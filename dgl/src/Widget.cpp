@@ -189,6 +189,13 @@ Window& Widget::getParentWindow() const noexcept
     return pData->parent;
 }
 
+#if defined(HAVE_DCAIRO)
+cairo_t* Widget::getGraphics() const noexcept
+{
+    return pData->parent.getGraphics();
+}
+#endif
+
 bool Widget::contains(int x, int y) const noexcept
 {
     return (x >= 0 && y >= 0 && static_cast<uint>(x) < pData->size.getWidth() && static_cast<uint>(y) < pData->size.getHeight());
