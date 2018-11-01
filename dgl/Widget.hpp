@@ -312,6 +312,10 @@ public:
     */
     Window& getParentWindow() const noexcept;
 
+#if defined(HAVE_DCAIRO)
+    cairo_t* getGraphics() const noexcept;
+#endif
+
    /**
       Check if this widget contains the point defined by @a x and @a y.
     */

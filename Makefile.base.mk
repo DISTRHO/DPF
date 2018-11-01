@@ -189,6 +189,8 @@ endif
 
 ifeq ($(HAVE_DGL),true)
 
+DGL_FLAGS += -DHAVE_DGL
+
 ifeq ($(MACOS),true)
 DGL_LIBS  = -framework OpenGL -framework Cocoa
 endif
@@ -198,8 +200,8 @@ DGL_LIBS  = -lopengl32 -lgdi32
 endif
 
 ifneq ($(MACOS_OR_WIN32),true)
-DGL_FLAGS = $(shell pkg-config --cflags gl x11)
-DGL_LIBS  = $(shell pkg-config --libs gl x11)
+DGL_FLAGS += $(shell pkg-config --cflags gl x11)
+DGL_LIBS  += $(shell pkg-config --libs gl x11)
 endif
 
 endif # HAVE_DGL

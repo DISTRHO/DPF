@@ -119,6 +119,10 @@ public:
     Application& getApp() const noexcept;
     intptr_t getWindowId() const noexcept;
 
+#if defined(HAVE_DCAIRO)
+    cairo_t* getGraphics() const noexcept;
+#endif
+
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);
 

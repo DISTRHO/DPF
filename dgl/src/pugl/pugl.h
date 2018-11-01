@@ -274,6 +274,20 @@ PUGL_API void
 puglInitTransientFor(PuglView* view, uintptr_t parent);
 
 /**
+   Drawing context type.
+*/
+typedef enum {
+	PUGL_GL,
+	PUGL_CAIRO
+} PuglContextType;
+
+/**
+   Set the context type before creating a window.
+*/
+PUGL_API void
+puglInitContextType(PuglView* view, PuglContextType type);
+
+/**
    @}
 */
 
@@ -348,6 +362,14 @@ puglSetHandle(PuglView* view, PuglHandle handle);
 */
 PUGL_API PuglHandle
 puglGetHandle(PuglView* view);
+
+/**
+   Get the drawing context.
+   For PUGL_GL contexts, this is unused and returns NULL.
+   For PUGL_CAIRO contexts, this returns a pointer to a cairo_t.
+*/
+PUGL_API void*
+puglGetContext(PuglView* view);
 
 /**
    Return the timestamp (if any) of the currently-processing event.

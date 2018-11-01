@@ -68,6 +68,7 @@ struct Widget::PrivateData {
         if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
             return;
 
+#if defined(HAVE_DGL)
         bool needsDisableScissor = false;
 
         // reset color
@@ -106,15 +107,18 @@ struct Widget::PrivateData {
             glEnable(GL_SCISSOR_TEST);
             needsDisableScissor = true;
         }
+#endif
 
         // display widget
         self->onDisplay();
 
+#if defined(HAVE_DGL)
         if (needsDisableScissor)
         {
             glDisable(GL_SCISSOR_TEST);
             needsDisableScissor = false;
         }
+#endif
 
         displaySubWidgets(width, height, scaling);
     }
