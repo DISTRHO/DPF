@@ -57,7 +57,7 @@ extern "C" {
 #define FOR_EACH_WIDGET_INV(rit) \
   for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
 
-#ifdef DEBUG
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
 # define DBG(msg)  std::fprintf(stderr, "%s", msg);
 # define DBGp(...) std::fprintf(stderr, __VA_ARGS__);
 # define DBGF      std::fflush(stderr);

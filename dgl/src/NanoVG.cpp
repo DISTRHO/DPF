@@ -447,10 +447,8 @@ void NanoVG::translate(float x, float y)
 
 void NanoVG::rotate(float angle)
 {
-    if (fContext == nullptr) return;
-    DISTRHO_SAFE_ASSERT_RETURN(angle > 0.0f,);
-
-    nvgRotate(fContext, angle);
+    if (fContext != nullptr)
+        nvgRotate(fContext, angle);
 }
 
 void NanoVG::skewX(float angle)
