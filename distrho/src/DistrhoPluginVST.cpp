@@ -76,7 +76,7 @@ void strncpy(char* const dst, const char* const src, const size_t size)
     if (const size_t len = std::min(std::strlen(src), size-1U))
     {
         std::memcpy(dst, src, len);
-        dst[len-1] = '\0';
+        dst[len] = '\0';
     }
     else
     {
