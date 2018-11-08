@@ -72,9 +72,16 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 void strncpy(char* const dst, const char* const src, const size_t size)
 {
     DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    if (const size_t len = std::strlen(src))
-        std::memcpy(dst, src, std::min(len, size)-1);
-    dst[size-1] = '\0';
+
+    if (const size_t len = std::min(std::strlen(src), size-1U))
+    {
+        std::memcpy(dst, src, len);
+        dst[len-1] = '\0';
+    }
+    else
+    {
+        dst[0] = '\0';
+    }
 }
 
 void snprintf_param(char* const dst, const float value, const size_t size)
