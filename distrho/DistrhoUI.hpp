@@ -194,7 +194,7 @@ protected:
       File browser selected function.
       @see Window::fileBrowserSelected(const char*)
     */
-    virtual void uiFileBrowserSelected(const char* filename);
+    virtual void uiFileBrowserSelected(const char* const key, const char* filename);
 #endif
 
    /**

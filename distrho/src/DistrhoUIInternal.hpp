@@ -43,11 +43,12 @@ extern const char* g_nextBundlePath;
 // -----------------------------------------------------------------------
 // UI callbacks
 
-typedef void (*editParamFunc) (void* ptr, uint32_t rindex, bool started);
-typedef void (*setParamFunc)  (void* ptr, uint32_t rindex, float value);
-typedef void (*setStateFunc)  (void* ptr, const char* key, const char* value);
-typedef void (*sendNoteFunc)  (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
-typedef void (*setSizeFunc)   (void* ptr, uint width, uint height);
+typedef void (*editParamFunc)  (void* ptr, uint32_t rindex, bool started);
+typedef void (*setParamFunc)   (void* ptr, uint32_t rindex, float value);
+typedef void (*setStateFunc)   (void* ptr, const char* key, const char* value);
+typedef void (*sendNoteFunc)   (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
+typedef void (*setSizeFunc)    (void* ptr, uint width, uint height);
+typedef void (*fileDialogFunc) (void* ptr, const char* key, const char* filename);
 
 // -----------------------------------------------------------------------
 // UI private data
@@ -68,12 +69,13 @@ struct UI::PrivateData {
     uint minHeight;
 
     // Callbacks
-    void*         callbacksPtr;
-    editParamFunc editParamCallbackFunc;
-    setParamFunc  setParamCallbackFunc;
-    setStateFunc  setStateCallbackFunc;
-    sendNoteFunc  sendNoteCallbackFunc;
-    setSizeFunc   setSizeCallbackFunc;
+    void*          callbacksPtr;
+    editParamFunc  editParamCallbackFunc;
+    setParamFunc   setParamCallbackFunc;
+    setStateFunc   setStateCallbackFunc;
+    sendNoteFunc   sendNoteCallbackFunc;
+    setSizeFunc    setSizeCallbackFunc;
+    fileDialogFunc fileDialogCallbackFunc;
 
     PrivateData(const bool resizable) noexcept
         : sampleRate(d_lastUiSampleRate),
@@ -91,7 +93,8 @@ struct UI::PrivateData {
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
           sendNoteCallbackFunc(nullptr),
-          setSizeCallbackFunc(nullptr)
+          setSizeCallbackFunc(nullptr),
+          fileDialogCallbackFunc(nullptr)
     {
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
 
@@ -140,6 +143,12 @@ struct UI::PrivateData {
     {
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(callbacksPtr, width, height);
+    }
+
+    void fileDialogCallback(const char* key, const char* value)
+    {
+        if (fileDialogCallbackFunc != nullptr)
+            fileDialogCallbackFunc(callbacksPtr, key, value);
     }
 };
 
@@ -254,6 +263,7 @@ public:
                const setStateFunc setStateCall,
                const sendNoteFunc sendNoteCall,
                const setSizeFunc setSizeCall,
+               const fileDialogFunc fileDialogCall,
                void* const dspPtr = nullptr,
                const char* const bundlePath = nullptr)
 #ifdef HAVE_DGL
@@ -269,12 +279,13 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
 
-        fData->callbacksPtr          = callbacksPtr;
-        fData->editParamCallbackFunc = editParamCall;
-        fData->setParamCallbackFunc  = setParamCall;
-        fData->setStateCallbackFunc  = setStateCall;
-        fData->sendNoteCallbackFunc  = sendNoteCall;
-        fData->setSizeCallbackFunc   = setSizeCall;
+        fData->callbacksPtr           = callbacksPtr;
+        fData->editParamCallbackFunc  = editParamCall;
+        fData->setParamCallbackFunc   = setParamCall;
+        fData->setStateCallbackFunc   = setStateCall;
+        fData->sendNoteCallbackFunc   = sendNoteCall;
+        fData->setSizeCallbackFunc    = setSizeCall;
+        fData->fileDialogCallbackFunc = fileDialogCall;
 
 #ifdef HAVE_DGL
         // unused

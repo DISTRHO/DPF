@@ -43,6 +43,7 @@ public:
     struct FileBrowserOptions {
         const char* startDir;
         const char* title;
+        const char* const* extensions;
         uint width;
         uint height;
 
@@ -69,6 +70,7 @@ public:
         FileBrowserOptions()
             : startDir(nullptr),
               title(nullptr),
+              extensions(nullptr),
               width(0),
               height(0),
               buttons() {}

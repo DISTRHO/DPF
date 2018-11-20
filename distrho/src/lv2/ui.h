@@ -118,6 +118,15 @@ typedef void (*LV2UI_Write_Function)(LV2UI_Controller controller,
                                      const void*      buffer);
 
 /**
+*/
+typedef struct _LV2UI_Parameter_Request {
+    void* handle;
+
+	uint32_t (*request)(void*    instance,
+	                    LV2_URID urid);
+} LV2UI_Parameter_Request;
+
+/**
    A plugin UI.
 
    A pointer to an object of this type is returned by the lv2ui_descriptor()

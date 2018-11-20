@@ -19,20 +19,21 @@
 #include "../extra/String.hpp"
 
 #include "lv2/atom.h"
+#include "lv2/atom-forge.h"
 #include "lv2/atom-util.h"
 #include "lv2/data-access.h"
 #include "lv2/instance-access.h"
 #include "lv2/midi.h"
 #include "lv2/options.h"
 #include "lv2/parameters.h"
+#include "lv2/patch.h"
 #include "lv2/ui.h"
 #include "lv2/urid.h"
 #include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
 
-#ifndef DISTRHO_PLUGIN_LV2_STATE_PREFIX
-# define DISTRHO_PLUGIN_LV2_STATE_PREFIX "urn:distrho:"
-#endif
+#define DISTRHO_PLUGIN_LV2_PARAMS_PREFIX "urn:distrho:param:" // FIXME, use plugin URI
+#define DISTRHO_PLUGIN_LV2_STATE_PREFIX  "urn:distrho:"
 
 START_NAMESPACE_DISTRHO
 
@@ -44,6 +45,9 @@ typedef struct _LV2_Atom_MidiEvent {
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
 static const sendNoteFunc sendNoteCallback = nullptr;
 #endif
+#ifdef DGL_FILE_BROWSER_DISABLED
+static const fileDialogFunc openFileDialogCallback = nullptr;
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -51,17 +55,33 @@ class UiLv2
 {
 public:
     UiLv2(const char* const bundlePath, const intptr_t winId,
-          const LV2_Options_Option* options, const LV2_URID_Map* const uridMap, const LV2UI_Resize* const uiResz, const LV2UI_Touch* uiTouch,
-          const LV2UI_Controller controller, const LV2UI_Write_Function writeFunc,
-          LV2UI_Widget* const widget, void* const dspPtr)
-        : fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, dspPtr, bundlePath),
+          const LV2_Options_Option* options,
+          const LV2_URID_Map* const uridMap,
+          const LV2_URID_Unmap* const uridUnmap,
+          const LV2UI_Resize* const uiResz,
+          const LV2UI_Touch* uiTouch,
+          const LV2UI_Controller controller,
+          const LV2UI_Write_Function writeFunc,
+          LV2UI_Widget* const widget,
+          void* const dspPtr)
+        : fUI(this, winId,
+              editParameterCallback, setParameterCallback, setStateCallback,
+              sendNoteCallback, setSizeCallback, openFileDialogCallback,
+              dspPtr, bundlePath),
           fUridMap(uridMap),
+          fUridUnmap(uridUnmap),
+          fUiParamReq(),
           fUiResize(uiResz),
           fUiTouch(uiTouch),
           fController(controller),
           fWriteFunction(writeFunc),
-          fEventTransferURID(uridMap->map(uridMap->handle, LV2_ATOM__eventTransfer)),
+          fAtomEventTransferURID(uridMap->map(uridMap->handle, LV2_ATOM__eventTransfer)),
+          fAtomFloatURID(uridMap->map(uridMap->handle, LV2_ATOM__Float)),
+          fAtomLongURID(uridMap->map(uridMap->handle, LV2_ATOM__Long)),
+          fAtomStringURID(uridMap->map(uridMap->handle, LV2_ATOM__String)),
           fMidiEventURID(uridMap->map(uridMap->handle, LV2_MIDI__MidiEvent)),
+          fParamSampleRateURID(uridMap->map(uridMap->handle, LV2_PARAMETERS__sampleRate)),
+          fPatchSetURID(uridMap->map(uridMap->handle, LV2_PATCH__Set)),
           fKeyValueURID(uridMap->map(uridMap->handle, DISTRHO_PLUGIN_LV2_STATE_PREFIX "KeyValueState")),
           fWinIdWasNull(winId == 0)
     {
@@ -82,8 +102,8 @@ public:
         // if winId == 0 then options must not be null
         DISTRHO_SAFE_ASSERT_RETURN(options != nullptr,);
 
-        const LV2_URID uridWindowTitle(uridMap->map(uridMap->handle, LV2_UI__windowTitle));
-        const LV2_URID uridTransientWinId(uridMap->map(uridMap->handle, LV2_KXSTUDIO_PROPERTIES__TransientWindowId));
+        const LV2_URID uridWindowTitle    = uridMap->map(uridMap->handle, LV2_UI__windowTitle);
+        const LV2_URID uridTransientWinId = uridMap->map(uridMap->handle, LV2_KXSTUDIO_PROPERTIES__TransientWindowId);
 
         bool hasTitle = false;
 
@@ -91,7 +111,7 @@ public:
         {
             if (options[i].key == uridTransientWinId)
             {
-                if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Long))
+                if (options[i].type == fAtomLongURID)
                 {
                     if (const int64_t transientWinId = *(const int64_t*)options[i].value)
                         fUI.setWindowTransientWinId(static_cast<intptr_t>(transientWinId));
@@ -101,7 +121,7 @@ public:
             }
             else if (options[i].key == uridWindowTitle)
             {
-                if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__String))
+                if (options[i].type == fAtomStringURID)
                 {
                     if (const char* const windowTitle = (const char*)options[i].value)
                     {
@@ -134,19 +154,45 @@ public:
             const float value(*(const float*)buffer);
             fUI.parameterChanged(rindex-parameterOffset, value);
         }
-#if DISTRHO_PLUGIN_WANT_STATE
         else if (format == fEventTransferURID)
         {
             const LV2_Atom* const atom((const LV2_Atom*)buffer);
 
-            DISTRHO_SAFE_ASSERT_RETURN(atom->type == fKeyValueURID,);
 
-            const char* const key   = (const char*)LV2_ATOM_BODY_CONST(atom);
-            const char* const value = key+(std::strlen(key)+1);
+            if (atom->type == fKeyValueURID)
+            {
+#if DISTRHO_PLUGIN_WANT_STATE
+                const char* const key   = (const char*)LV2_ATOM_BODY_CONST(atom);
+                const char* const value = key+(std::strlen(key)+1);
 
-            fUI.stateChanged(key, value);
-        }
+                fUI.stateChanged(key, value);
 #endif
+            }
+            else if (atom->type == fKeyValueURID) // blank or object
+            {
+                const LV2_Atom_Object* const object = (const LV2_Atom_Object*)atom;
+                DISTRHO_SAFE_ASSERT_RETURN(object->body.otype == fPatchSetURID,);
+
+                const LV2_Atom* property = nullptr;
+                const LV2_Atom* filePath = nullptr;
+                lv2_atom_object_get(object, fPatchPropertyURID, &property, &filePath, nullptr);
+                DISTRHO_SAFE_ASSERT_RETURN(property != nullptr,);
+                DISTRHO_SAFE_ASSERT_RETURN(property->type != fAtomStringURID,);
+                DISTRHO_SAFE_ASSERT_RETURN(filePath != nullptr,);
+                DISTRHO_SAFE_ASSERT_RETURN(filePath->type != fAtomPathURID,);
+
+                const char* const bodyURI = fUridUnmap->unmap(fUridUnmap->handle,
+                                                              ((const LV2_Atom_URID*)property)->body);
+
+                DISTRHO_SAFE_ASSERT_CONTINUE(bodyURI != nullptr && *bodyURI != '\0');
+
+                const char* const key = std::strstr(bodyURI, DISTRHO_PLUGIN_LV2_PARAMS_PREFIX);
+                DISTRHO_SAFE_ASSERT_RETURN(key != nullptr,);
+
+                const char* const filename = (const char*)(filePath + 1);
+                fUI.uiFileBrowserSelected(filename);
+            }
+        }
     }
 
     // -------------------------------------------------------------------
@@ -187,19 +233,17 @@ public:
     {
         for (int i=0; options[i].key != 0; ++i)
         {
-            if (options[i].key == fUridMap->map(fUridMap->handle, LV2_PARAMETERS__sampleRate))
+            if (options[i].key == fParamSampleRateURID)
             {
-                if (options[i].type == fUridMap->map(fUridMap->handle, LV2_ATOM__Float))
+                if (options[i].type == fAtomFloatURID)
                 {
                     const float sampleRate(*(const float*)options[i].value);
                     fUI.setSampleRate(sampleRate);
                     continue;
                 }
-                else
-                {
-                    d_stderr("Host changed UI sample-rate but with wrong value type");
-                    continue;
-                }
+
+                d_stderr("Host changed UI sample-rate but with wrong value type");
+                continue;
             }
         }
 
@@ -298,21 +342,40 @@ protected:
             fUiResize->ui_resize(fUiResize->handle, width, height);
     }
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+    bool openFileDialog(const char* const key)
+    {
+        String dkey(DISTRHO_PLUGIN_LV2_PARAMS_PREFIX);
+        dkey += key;
+
+        const LV2_URID urid = fUridMap->map(fUridMap->handle, dkey.buffer());
+
+        return fUiParamReq->request(fUiParamReq->handle, urid) == 0;
+    }
+#endif
+
 private:
     UIExporter fUI;
 
     // LV2 features
-    const LV2_URID_Map* const fUridMap;
-    const LV2UI_Resize* const fUiResize;
-    const LV2UI_Touch*  const fUiTouch;
+    const LV2_URID_Map*            const fUridMap;
+    const LV2_URID_Unmap*          const fUridUnmap;
+    const LV2UI_Parameter_Request* const fUiParamReq;
+    const LV2UI_Resize*            const fUiResize;
+    const LV2UI_Touch*             const fUiTouch;
 
     // LV2 UI stuff
     const LV2UI_Controller     fController;
     const LV2UI_Write_Function fWriteFunction;
 
     // Need to save this
-    const LV2_URID fEventTransferURID;
+    const LV2_URID fAtomFloatURID;
+    const LV2_URID fAtomEventTransferURID;
+    const LV2_URID fAtomLongURID;
+    const LV2_URID fAtomStringURID;
     const LV2_URID fMidiEventURID;
+    const LV2_URID fPatchSetURID;
+    const LV2_URID fParamSampleRateURID;
     const LV2_URID fKeyValueURID;
 
     // using ui:showInterface if true
@@ -350,6 +413,13 @@ private:
         uiPtr->setSize(width, height);
     }
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+    static bool openFileDialogCallback(void* ptr, uint width, uint height)
+    {
+        return uiPtr->openFileDialog();
+    }
+#endif
+
     #undef uiPtr
 };
 
@@ -364,12 +434,13 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
         return nullptr;
     }
 
-    const LV2_Options_Option* options = nullptr;
-    const LV2_URID_Map*       uridMap = nullptr;
-    const LV2UI_Resize*      uiResize = nullptr;
-    const LV2UI_Touch*       uiTouch  = nullptr;
-    void*                    parentId = nullptr;
-    void*                    instance = nullptr;
+    const LV2_Options_Option* options   = nullptr;
+    const LV2_URID_Map*       uridMap   = nullptr;
+    const LV2_URID_Unmap*     uridUnmap = nullptr;
+    const LV2UI_Resize*       uiResize  = nullptr;
+    const LV2UI_Touch*        uiTouch   = nullptr;
+    void*                     parentId  = nullptr;
+    void*                     instance  = nullptr;
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     struct LV2_DirectAccess_Interface {
@@ -384,6 +455,8 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
             options = (const LV2_Options_Option*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_URID__map) == 0)
             uridMap = (const LV2_URID_Map*)features[i]->data;
+        else if (std::strcmp(features[i]->URI, LV2_URID__unmap) == 0)
+            uridUnmap = (const LV2_URID_Unmap*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_UI__resize) == 0)
             uiResize = (const LV2UI_Resize*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_UI__parent) == 0)
@@ -458,7 +531,8 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
         d_lastUiSampleRate = 44100.0;
     }
 
-    return new UiLv2(bundlePath, winId, options, uridMap, uiResize, uiTouch, controller, writeFunction, widget, instance);
+    return new UiLv2(bundlePath, winId, options, uridMap, uridUnmap, uiResize, uiTouch,
+                     controller, writeFunction, widget, instance);
 }
 
 #define uiPtr ((UiLv2*)ui)
