@@ -118,6 +118,11 @@ public:
             fUI.setWindowTitle(DISTRHO_PLUGIN_NAME);
     }
 
+    ~UiLv2()
+    {
+        fUI.quit();
+    }
+
     // -------------------------------------------------------------------
 
     void lv2ui_port_event(const uint32_t rindex, const uint32_t bufferSize, const uint32_t format, const void* const buffer)
