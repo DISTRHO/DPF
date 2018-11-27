@@ -292,7 +292,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setWindowSize(width, height, false);
+        fUI.setWindowSize(width, height);
 
         if (fUiResize != nullptr && ! fWinIdWasNull)
             fUiResize->ui_resize(fUiResize->handle, width, height);

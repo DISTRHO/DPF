@@ -328,7 +328,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setWindowSize(width, height, false);
+        fUI.setWindowSize(width, height);
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
