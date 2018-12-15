@@ -240,7 +240,7 @@ public:
     {
     public:
         virtual ~Callback() {}
-        virtual void imageSwitchClicked(ImageSwitch* imageButton, bool down) = 0;
+        virtual void imageSwitchClicked(ImageSwitch* imageSwitch, bool down) = 0;
     };
 
     explicit ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept;
