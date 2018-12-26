@@ -1385,7 +1385,7 @@ intptr_t Window::getWindowId() const noexcept
 }
 
 #if defined(HAVE_DCAIRO)
-cairo_t* Window::getGraphics() const noexcept
+cairo_t* Window::getContext() const noexcept
 {
     return (cairo_t*)puglGetContext(pData->fView);
 }

@@ -313,7 +313,7 @@ public:
     Window& getParentWindow() const noexcept;
 
 #if defined(HAVE_DCAIRO)
-    cairo_t* getGraphics() const noexcept;
+    cairo_t* getContext() const noexcept;
 #endif
 
    /**

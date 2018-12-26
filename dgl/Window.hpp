@@ -120,7 +120,7 @@ public:
     intptr_t getWindowId() const noexcept;
 
 #if defined(HAVE_DCAIRO)
-    cairo_t* getGraphics() const noexcept;
+    cairo_t* getContext() const noexcept;
 #endif
 
     void addIdleCallback(IdleCallback* const callback);
