@@ -190,9 +190,9 @@ Window& Widget::getParentWindow() const noexcept
 }
 
 #if defined(HAVE_DCAIRO)
-cairo_t* Widget::getGraphics() const noexcept
+cairo_t* Widget::getContext() const noexcept
 {
-    return pData->parent.getGraphics();
+    return pData->parent.getContext();
 }
 #endif
 
