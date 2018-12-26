@@ -105,6 +105,21 @@ Color::Color(const Color& color1, const Color& color2, float u) noexcept
     interpolate(color2, u);
 }
 
+#if !defined(HAVE_DGL)
+static float computeHue(float h, float m1, float m2)
+{
+    if (h < 0) h += 1;
+    if (h > 1) h -= 1;
+    if (h < 1.0f/6.0f)
+        return m1 + (m2 - m1) * h * 6.0f;
+    else if (h < 3.0f/6.0f)
+        return m2;
+    else if (h < 4.0f/6.0f)
+        return m1 + (m2 - m1) * (2.0f/3.0f - h) * 6.0f;
+    return m1;
+}
+#endif
+
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
 #if defined(HAVE_DGL)
@@ -118,21 +133,9 @@ Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
     fixRange(lightness);
     m2 = lightness <= 0.5f ? (lightness * (1 + saturation)) : (lightness + saturation - lightness * saturation);
     m1 = 2 * lightness - m2;
-    auto hue_ = [](float h, float m1, float m2) -> float
-    {
-        if (h < 0) h += 1;
-        if (h > 1) h -= 1;
-        if (h < 1.0f/6.0f)
-            return m1 + (m2 - m1) * h * 6.0f;
-        else if (h < 3.0f/6.0f)
-            return m2;
-        else if (h < 4.0f/6.0f)
-            return m1 + (m2 - m1) * (2.0f/3.0f - h) * 6.0f;
-        return m1;
-    };
-    col.red = hue_(hue + 1.0f/3.0f, m1, m2);
-    col.green = hue_(hue, m1, m2);
-    col.blue = hue_(hue - 1.0f/3.0f, m1, m2);
+    col.red = computeHue(hue + 1.0f/3.0f, m1, m2);
+    col.green = computeHue(hue, m1, m2);
+    col.blue = computeHue(hue - 1.0f/3.0f, m1, m2);
     col.alpha = alpha;
     col.fixBounds();
     return col;
