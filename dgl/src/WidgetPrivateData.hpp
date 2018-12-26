@@ -68,7 +68,7 @@ struct Widget::PrivateData {
         if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
             return;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
         bool needsDisableScissor = false;
 
         // reset color
@@ -112,7 +112,7 @@ struct Widget::PrivateData {
         // display widget
         self->onDisplay();
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
         if (needsDisableScissor)
         {
             glDisable(GL_SCISSOR_TEST);

@@ -73,7 +73,7 @@
 // -----------------------------------------------------------------------
 // OpenGL includes
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
 
 #ifdef DISTRHO_OS_MAC
 # include <OpenGL/gl.h>
@@ -90,14 +90,14 @@
 // -----------------------------------------------------------------------
 // Cairo includes
 
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
 # include <cairo/cairo.h>
 #endif
 
 // -----------------------------------------------------------------------
 // Missing OpenGL defines
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
 
 #if defined(GL_BGR_EXT) && ! defined(GL_BGR)
 # define GL_BGR GL_BGR_EXT

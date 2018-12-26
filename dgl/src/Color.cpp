@@ -16,7 +16,7 @@
 
 #include "../Color.hpp"
 
-#if !defined(HAVE_DCAIRO)
+#ifndef HAVE_DCAIRO
 #include "nanovg/nanovg.h"
 #endif
 
@@ -105,7 +105,7 @@ Color::Color(const Color& color1, const Color& color2, float u) noexcept
     interpolate(color2, u);
 }
 
-#if !defined(HAVE_DGL)
+#ifndef HAVE_DGL
 static float computeHue(float h, float m1, float m2)
 {
     if (h < 0) h += 1;
@@ -122,7 +122,7 @@ static float computeHue(float h, float m1, float m2)
 
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     return nvgHSLA(hue, saturation, lightness, static_cast<uchar>(getFixedRange(alpha)*255.0f));
 #else
     float m1, m2;
@@ -258,7 +258,7 @@ void Color::fixBounds() noexcept
 
 // -----------------------------------------------------------------------
 
-#if !defined(HAVE_DCAIRO)
+#ifndef HAVE_DCAIRO
 Color::Color(const NVGcolor& c) noexcept
     : red(c.r), green(c.g), blue(c.b), alpha(c.a)
 {

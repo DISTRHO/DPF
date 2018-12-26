@@ -189,7 +189,7 @@ Window& Widget::getParentWindow() const noexcept
     return pData->parent;
 }
 
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
 cairo_t* Widget::getContext() const noexcept
 {
     return pData->parent.getContext();
