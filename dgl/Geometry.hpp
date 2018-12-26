@@ -346,7 +346,7 @@ public:
     */
     void moveBy(const Point<T>& pos) noexcept;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
    /**
       Draw this line using the current OpenGL state.
     */
@@ -462,7 +462,7 @@ public:
     */
     void setNumSegments(const uint num);
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
    /**
       Draw this circle using the current OpenGL state.
     */
@@ -486,7 +486,7 @@ private:
     // cached values
     float fTheta, fCos, fSin;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     void _draw(const bool outline);
 #endif
 };
@@ -522,7 +522,7 @@ public:
     */
     Triangle(const Triangle<T>& tri) noexcept;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
    /**
       Draw this triangle using the current OpenGL state.
     */
@@ -564,7 +564,7 @@ public:
 private:
     Point<T> fPos1, fPos2, fPos3;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     void _draw(const bool outline);
 #endif
 };
@@ -730,7 +730,7 @@ public:
     */
     bool containsY(const T& y) const noexcept;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
    /**
       Draw this rectangle using the current OpenGL state.
     */
@@ -752,7 +752,7 @@ private:
     Point<T> fPos;
     Size<T>  fSize;
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     void _draw(const bool outline);
 #endif
 };

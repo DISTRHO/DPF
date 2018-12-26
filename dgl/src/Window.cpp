@@ -22,10 +22,10 @@
 #undef PUGL_HAVE_CAIRO
 #undef PUGL_HAVE_GL
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
 #define PUGL_HAVE_GL 1
 #endif
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
 #define PUGL_HAVE_CAIRO 1
 #endif
 
@@ -213,10 +213,10 @@ struct Window::PrivateData {
             return;
         }
 
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
         PuglContextType contextType = PUGL_GL;
 #endif
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
         PuglContextType contextType = PUGL_CAIRO;
 #endif
 
@@ -1384,7 +1384,7 @@ intptr_t Window::getWindowId() const noexcept
     return puglGetNativeWindow(pData->fView);
 }
 
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
 cairo_t* Window::getContext() const noexcept
 {
     return (cairo_t*)puglGetContext(pData->fView);
@@ -1426,7 +1426,7 @@ void Window::removeIdleCallback(IdleCallback* const callback)
 
 void Window::onDisplayBefore()
 {
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 #endif
@@ -1438,7 +1438,7 @@ void Window::onDisplayAfter()
 
 void Window::onReshape(uint width, uint height)
 {
-#if defined(HAVE_DGL)
+#ifdef HAVE_DGL
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);

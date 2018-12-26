@@ -19,7 +19,7 @@
 
 #include "Base.hpp"
 
-#if !defined(HAVE_DCAIRO)
+#ifndef HAVE_DCAIRO
 struct NVGcolor;
 #endif
 
@@ -97,7 +97,7 @@ struct Color {
     */
     void fixBounds() noexcept;
 
-#if !defined(HAVE_DCAIRO)
+#ifndef HAVE_DCAIRO
    /**
       @internal
       Needed for NanoVG compatibility.

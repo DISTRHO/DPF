@@ -119,7 +119,7 @@ public:
     Application& getApp() const noexcept;
     intptr_t getWindowId() const noexcept;
 
-#if defined(HAVE_DCAIRO)
+#ifdef HAVE_DCAIRO
     cairo_t* getContext() const noexcept;
 #endif
 
