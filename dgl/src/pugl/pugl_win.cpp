@@ -59,8 +59,10 @@ struct PuglInternalsImpl {
 	HGLRC    hglrc;
 #endif
 #ifdef PUGL_HAVE_CAIRO
-	cairo_t*         cr;
+	cairo_t*         buffer_cr;
+	cairo_surface_t* buffer_surface;
 #endif
+	HDC paintHdc;
 	WNDCLASS wc;
 };
 
@@ -235,8 +237,14 @@ puglDestroy(PuglView* view)
 	if (view->ctx_type == PUGL_GL) {
 		wglMakeCurrent(NULL, NULL);
 		wglDeleteContext(impl->hglrc);
+		ReleaseDC(impl->hwnd, impl->hdc);
 	}
-	ReleaseDC(impl->hwnd, impl->hdc);
+#endif
+#ifdef PUGL_HAVE_CAIRO
+	if (view->ctx_type == PUGL_CAIRO) {
+		cairo_destroy(impl->buffer_cr);
+		cairo_surface_destroy(impl->buffer_surface);
+	}
 #endif
 	DestroyWindow(impl->hwnd);
 	UnregisterClass(impl->wc.lpszClassName, NULL);
@@ -263,14 +271,63 @@ puglReshape(PuglView* view, int width, int height)
 static void
 puglDisplay(PuglView* view)
 {
+	PuglInternals* impl = view->impl;
+	bool success = true;
+
 	puglEnterContext(view);
 
-	view->redisplay = false;
-	if (view->displayFunc) {
-		view->displayFunc(view);
+#ifdef PUGL_HAVE_CAIRO
+	cairo_t *wc = NULL;
+	cairo_t *bc = NULL;
+	cairo_surface_t *ws = NULL;
+	cairo_surface_t *bs = NULL;
+
+	if (view->ctx_type == PUGL_CAIRO) {
+		HDC hdc = impl->paintHdc;
+		bc = impl->buffer_cr;
+		bs = impl->buffer_surface;
+		int w = view->width;
+		int h = view->height;
+		int bw = bs ? cairo_image_surface_get_width(bs) : -1;
+		int bh = bs ? cairo_image_surface_get_height(bs) : -1;
+		ws = hdc ? cairo_win32_surface_create(hdc) : NULL;
+		wc = ws ? cairo_create(ws) : NULL;
+		if (wc && (!bc || bw != w || bh != h)) {
+			cairo_destroy(bc);
+			cairo_surface_destroy(bs);
+			bs = cairo_surface_create_similar_image(ws, CAIRO_FORMAT_ARGB32, w, h);
+			bc = bs ? cairo_create(bs) : NULL;
+			impl->buffer_cr = bc;
+			impl->buffer_surface = bs;
+		}
+		success = wc != NULL && bc != NULL;
+	}
+#endif
+
+	if (success) {
+		view->redisplay = false;
+		if (view->displayFunc) {
+			view->displayFunc(view);
+		}
+#ifdef PUGL_HAVE_CAIRO
+		if (view->ctx_type == PUGL_CAIRO) {
+			cairo_set_source_surface(wc, bs, 0, 0);
+			cairo_paint(wc);
+		}
+#endif
 	}
 
-	puglLeaveContext(view, true);
+	puglLeaveContext(view, success);
+
+#ifdef PUGL_HAVE_CAIRO
+	if (view->ctx_type == PUGL_CAIRO) {
+		cairo_destroy(wc);
+		cairo_surface_destroy(ws);
+	}
+#endif
+
+	return;
+	(void)impl;
 }
 
 static PuglKey
@@ -359,32 +416,10 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 		mmi->ptMinTrackSize.y = view->min_height;
 		break;
 	case WM_PAINT:
-#ifdef PUGL_HAVE_GL
-		if (view->ctx_type == PUGL_GL) {
-			BeginPaint(view->impl->hwnd, &ps);
-			puglDisplay(view);
-			EndPaint(view->impl->hwnd, &ps);
-		}
-#endif
-#ifdef PUGL_HAVE_CAIRO
-		if (view->ctx_type == PUGL_CAIRO) {
-			HDC hdc = BeginPaint(view->impl->hwnd, &ps);
-			if (hdc == NULL)
-				break;
-			cairo_surface_t *surface = cairo_win32_surface_create(hdc);
-			if (surface) {
-				cairo_t *cr = cairo_create(surface);
-				if (cr) {
-					view->impl->cr = cr;
-					puglDisplay(view);
-					view->impl->cr = NULL;
-					cairo_destroy(cr);
-				}
-				cairo_surface_destroy(surface);
-			}
-			EndPaint(view->impl->hwnd, &ps);
-		}
-#endif
+		view->impl->paintHdc = BeginPaint(view->impl->hwnd, &ps);
+		puglDisplay(view);
+		view->impl->paintHdc = NULL;
+		EndPaint(view->impl->hwnd, &ps);
 		break;
 	case WM_MOUSEMOVE:
 		if (view->motionFunc) {
@@ -527,7 +562,7 @@ puglGetContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_CAIRO
 	if (view->ctx_type == PUGL_CAIRO) {
-		return view->impl->cr;
+		return view->impl->buffer_cr;
 	}
 #endif
 	return NULL;
