@@ -60,8 +60,10 @@ struct PuglInternalsImpl {
 	int        screen;
 	Window     win;
 #ifdef PUGL_HAVE_CAIRO
-	cairo_t*         cr;
-	cairo_surface_t* surface;
+	cairo_t*         xlib_cr;
+	cairo_t*         buffer_cr;
+	cairo_surface_t* xlib_surface;
+	cairo_surface_t* buffer_surface;
 #endif
 #ifdef PUGL_HAVE_GL
 	GLXContext ctx;
@@ -257,17 +259,17 @@ puglCreateWindow(PuglView* view, const char* title)
 
 #ifdef PUGL_HAVE_CAIRO
 	if (view->ctx_type == PUGL_CAIRO) {
-		impl->surface = cairo_xlib_surface_create(
+		impl->xlib_surface = cairo_xlib_surface_create(
 			impl->display, impl->win, vi->visual, view->width, view->height);
-		if (impl->surface == NULL || cairo_surface_status(impl->surface) != CAIRO_STATUS_SUCCESS) {
+		if (impl->xlib_surface == NULL || cairo_surface_status(impl->xlib_surface) != CAIRO_STATUS_SUCCESS) {
 			printf("puGL: failed to create cairo surface\n");
 		}
 		else {
-			impl->cr = cairo_create(impl->surface);
+			impl->xlib_cr = cairo_create(impl->xlib_surface);
 		}
-		if (impl->cr == NULL || cairo_status(impl->cr) != CAIRO_STATUS_SUCCESS) {
-			cairo_destroy(impl->cr);
-			cairo_surface_destroy(impl->surface);
+		if (impl->xlib_cr == NULL || cairo_status(impl->xlib_cr) != CAIRO_STATUS_SUCCESS) {
+			cairo_destroy(impl->xlib_cr);
+			cairo_surface_destroy(impl->xlib_surface);
 			XDestroyWindow(impl->display, impl->win);
 			XFree(vi);
 			XCloseDisplay(impl->display);
@@ -332,8 +334,10 @@ puglDestroy(PuglView* view)
 #endif
 #ifdef PUGL_HAVE_CAIRO
 	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_destroy(impl->cr);
-		cairo_surface_destroy(impl->surface);
+		cairo_destroy(impl->xlib_cr);
+		cairo_destroy(impl->buffer_cr);
+		cairo_surface_destroy(impl->xlib_surface);
+		cairo_surface_destroy(impl->buffer_surface);
 	}
 #endif
 	XDestroyWindow(impl->display, impl->win);
@@ -374,14 +378,51 @@ puglReshape(PuglView* view, int width, int height)
 static void
 puglDisplay(PuglView* view)
 {
+	PuglInternals* impl = view->impl;
+
 	puglEnterContext(view);
+
+#ifdef PUGL_HAVE_CAIRO
+	if (view->ctx_type == PUGL_CAIRO) {
+		cairo_t* bc = impl->buffer_cr;
+		cairo_surface_t* xs = impl->xlib_surface;
+		cairo_surface_t* bs = impl->buffer_surface;
+		int w = cairo_xlib_surface_get_width(xs);
+		int h = cairo_xlib_surface_get_height(xs);
+
+		int bw = bs ? cairo_image_surface_get_width(bs) : -1;
+		int bh = bs ? cairo_image_surface_get_height(bs) : -1;
+		if (!bc || bw != w || bh != h) {
+			cairo_destroy(bc);
+			cairo_surface_destroy(bs);
+			bs = cairo_surface_create_similar_image(xs, CAIRO_FORMAT_ARGB32, w, h);
+			bc = bs ? cairo_create(bs) : NULL;
+			impl->buffer_cr = bc;
+			impl->buffer_surface = bs;
+		}
+
+		if (!bc) {
+			puglLeaveContext(view, false);
+			return;
+		}
+	}
+#endif
 
 	view->redisplay = false;
 	if (view->displayFunc) {
 		view->displayFunc(view);
 	}
 
+#ifdef PUGL_HAVE_CAIRO
+	if (view->ctx_type == PUGL_CAIRO) {
+		cairo_t* xc = impl->xlib_cr;
+		cairo_set_source_surface(xc, impl->buffer_surface, 0, 0);
+		cairo_paint(xc);
+	}
+#endif
+
 	puglLeaveContext(view, true);
+	(void)impl;
 }
 
 static void
@@ -645,7 +686,7 @@ puglProcessEvents(PuglView* view)
 		if (view->ctx_type == PUGL_CAIRO) {
 			// Resize surfaces/contexts before dispatching
 			view->redisplay = true;
-			cairo_xlib_surface_set_size(view->impl->surface,
+			cairo_xlib_surface_set_size(view->impl->xlib_surface,
 			                            conf_width, conf_height);
 		}
 #endif
@@ -686,7 +727,7 @@ puglGetContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_CAIRO
 	if (view->ctx_type == PUGL_CAIRO) {
-		return view->impl->cr;
+		return view->impl->buffer_cr;
 	}
 #endif
 	return NULL;
