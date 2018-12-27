@@ -119,9 +119,7 @@ public:
     Application& getApp() const noexcept;
     intptr_t getWindowId() const noexcept;
 
-#ifdef HAVE_DCAIRO
-    cairo_t* getContext() const noexcept;
-#endif
+    const Context& getContext() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);

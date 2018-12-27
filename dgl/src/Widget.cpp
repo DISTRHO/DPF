@@ -189,12 +189,10 @@ Window& Widget::getParentWindow() const noexcept
     return pData->parent;
 }
 
-#ifdef HAVE_DCAIRO
-cairo_t* Widget::getContext() const noexcept
+const Context& Widget::getContext() const noexcept
 {
     return pData->parent.getContext();
 }
-#endif
 
 bool Widget::contains(int x, int y) const noexcept
 {

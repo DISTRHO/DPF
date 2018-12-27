@@ -184,6 +184,15 @@ enum Key {
     kKeySuper
 };
 
+/**
+   Type of graphics context.
+ */
+enum ContextType
+{
+    kContextGL,
+    kContextCairo
+};
+
 // -----------------------------------------------------------------------
 // Base DGL classes
 
@@ -195,6 +204,22 @@ class IdleCallback
 public:
     virtual ~IdleCallback() {}
     virtual void idleCallback() = 0;
+};
+
+/**
+   Graphics context.
+ */
+struct Context
+{
+    ContextType type;
+    union {
+#ifdef HAVE_DGL
+        struct { /* nothing for now */ } gl;
+#endif
+#ifdef HAVE_DCAIRO
+        struct { cairo_t* graphics; } cairo;
+#endif
+    };
 };
 
 // -----------------------------------------------------------------------

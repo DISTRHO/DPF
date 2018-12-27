@@ -312,9 +312,7 @@ public:
     */
     Window& getParentWindow() const noexcept;
 
-#ifdef HAVE_DCAIRO
-    cairo_t* getContext() const noexcept;
-#endif
+    const Context& getContext() const noexcept;
 
    /**
       Check if this widget contains the point defined by @a x and @a y.
