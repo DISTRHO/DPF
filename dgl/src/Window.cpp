@@ -214,13 +214,14 @@ struct Window::PrivateData {
         }
 
 #ifdef HAVE_DGL
-        PuglContextType contextType = PUGL_GL;
+        const ContextType contextType = kContextGL;
 #endif
 #ifdef HAVE_DCAIRO
-        PuglContextType contextType = PUGL_CAIRO;
+        const ContextType contextType = kContextCairo;
 #endif
+        fContext.type = contextType;
 
-        puglInitContextType(fView, contextType);
+        puglInitContextType(fView, (PuglContextType)contextType);
         puglInitUserResizable(fView, fResizable);
         puglInitWindowSize(fView, static_cast<int>(fWidth), static_cast<int>(fHeight));
 
@@ -1059,6 +1060,7 @@ struct Window::PrivateData {
 
     Application& fApp;
     Window*      fSelf;
+    Context      fContext;
     PuglView*    fView;
 
     bool fFirstInit;
@@ -1384,12 +1386,15 @@ intptr_t Window::getWindowId() const noexcept
     return puglGetNativeWindow(pData->fView);
 }
 
-#ifdef HAVE_DCAIRO
-cairo_t* Window::getContext() const noexcept
+const Context& Window::getContext() const noexcept
 {
-    return (cairo_t*)puglGetContext(pData->fView);
-}
+    Context& context = pData->fContext;
+#ifdef HAVE_DCAIRO
+    if (context.type == kContextCairo)
+        context.cairo.graphics = (cairo_t*)puglGetContext(pData->fView);
 #endif
+    return context;
+}
 
 void Window::_addWidget(Widget* const widget)
 {
