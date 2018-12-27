@@ -471,7 +471,7 @@ public:
         return glWindow.handlePluginSpecial(press, key);
     }
 #else
-    void setWindowSize(const uint, const uint, const bool) {}
+    void setWindowSize(const uint, const uint, const bool = false) {}
     void setWindowTransientWinId(const uintptr_t) {}
     bool setWindowVisible(const bool) { return true; }
 #endif

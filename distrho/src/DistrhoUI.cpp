@@ -62,6 +62,7 @@ bool UI::isUserResizable() const noexcept
     return pData->userResizable;
 }
 
+#ifdef HAVE_DGL
 void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale)
 {
     DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);
@@ -72,7 +73,9 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
     pData->minHeight = minHeight;
 
     getParentWindow().setGeometryConstraints(minWidth, minHeight, keepAspectRatio);
+
 }
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
