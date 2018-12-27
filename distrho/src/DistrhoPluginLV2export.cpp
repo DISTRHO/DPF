@@ -139,17 +139,9 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         manifestString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        /*
-        if (! pluginUI.isUserResizable())
-        {
-            manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
-            manifestString += "                        ui:resize ,\n";
-        }
-        else
-        */
-        {
-            manifestString += "    lv2:optionalFeature ui:resize ,\n";
-        }
+        // TODO: pluginUI.isUserResizable()
+        manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
+        manifestString += "                        ui:resize ,\n";
         manifestString += "                        ui:touch ;\n";
         manifestString += "\n";
 #  endif
@@ -638,17 +630,9 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         uiString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        /*
-        if (! pluginUI.isUserResizable())
-        {
-            uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
-            uiString += "                        ui:resize ,\n";
-        }
-        else
-        */
-        {
-            uiString += "    lv2:optionalFeature ui:resize ,\n";
-        }
+        // TODO: pluginUI.isUserResizable()
+        uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
+        uiString += "                        ui:resize ,\n";
         uiString += "                        ui:touch ;\n";
         uiString += "\n";
 #  endif
