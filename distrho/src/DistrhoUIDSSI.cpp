@@ -112,6 +112,7 @@ public:
 
     void exec()
     {
+        d_stdout("exec 1");
         for (;;)
         {
             fOscData.idle();
@@ -121,6 +122,7 @@ public:
 
             d_msleep(30);
         }
+        d_stdout("exec 3");
     }
 
     // -------------------------------------------------------------------

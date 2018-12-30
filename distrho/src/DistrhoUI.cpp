@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,8 +15,7 @@
  */
 
 #include "DistrhoUIInternal.hpp"
-
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "src/WidgetPrivateData.hpp"
 #endif
 
@@ -27,16 +26,21 @@ START_NAMESPACE_DISTRHO
 
 double      d_lastUiSampleRate = 0.0;
 void*       d_lastUiDspPtr     = nullptr;
-#ifdef HAVE_DGL
-Window*     d_lastUiWindow     = nullptr;
-#endif
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 uintptr_t   g_nextWindowId     = 0;
 const char* g_nextBundlePath   = nullptr;
+#else
+Window*     d_lastUiWindow     = nullptr;
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
 
-#ifdef HAVE_DGL
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+UI::UI(uint width, uint height, bool userResizable)
+    : UIWidget(width, height),
+      pData(new PrivateData(userResizable)) {}
+#else
 UI::UI(uint width, uint height, bool userResizable)
     : UIWidget(*d_lastUiWindow),
       pData(new PrivateData(userResizable))
@@ -46,10 +50,6 @@ UI::UI(uint width, uint height, bool userResizable)
     if (width > 0 && height > 0)
         setSize(width, height);
 }
-#else
-UI::UI(uint width, uint height, bool userResizable)
-    : UIWidget(width, height),
-      pData(new PrivateData(userResizable)) {}
 #endif
 
 UI::~UI()
@@ -62,7 +62,7 @@ bool UI::isUserResizable() const noexcept
     return pData->userResizable;
 }
 
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale)
 {
     DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);
@@ -73,7 +73,6 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
     pData->minHeight = minHeight;
 
     getParentWindow().setGeometryConstraints(minWidth, minHeight, keepAspectRatio);
-
 }
 #endif
 
@@ -141,15 +140,15 @@ uintptr_t UI::getNextWindowId() noexcept
 
 void UI::sampleRateChanged(double) {}
 
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+# ifndef DGL_FILE_BROWSER_DISABLED
 void UI::uiFileBrowserSelected(const char*)
 {
 }
-#endif
+# endif
 
 void UI::uiReshape(uint width, uint height)
 {
@@ -173,7 +172,7 @@ void UI::onResize(const ResizeEvent& ev)
 
     pData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
 }
-#endif
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------------------------------------------
 

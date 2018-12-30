@@ -40,6 +40,8 @@ public:
         : width(w),
           height(h),
           title(t),
+          transientWinId(0),
+          visible(false),
           pid(0) {}
 
     virtual ~ExternalWindow()
@@ -62,9 +64,14 @@ public:
         return title;
     }
 
-    void setTitle(const char* const t) noexcept
+    uintptr_t getTransientWinId() const noexcept
     {
-        title = t;
+        return transientWinId;
+    }
+
+    bool isVisible() const noexcept
+    {
+        return visible;
     }
 
     bool isRunning() noexcept
@@ -82,6 +89,27 @@ public:
         }
 
         return true;
+    }
+
+    virtual void setSize(uint w, uint h)
+    {
+        width = w;
+        height = h;
+    }
+
+    virtual void setTitle(const char* const t)
+    {
+        title = t;
+    }
+
+    virtual void setTransientWinId(const uintptr_t winId)
+    {
+        transientWinId = winId;
+    }
+
+    virtual void setVisible(const bool yesNo)
+    {
+        visible = yesNo;
     }
 
 protected:
@@ -106,14 +134,6 @@ protected:
             return true;
         }
     }
-
-private:
-    uint width;
-    uint height;
-    String title;
-    pid_t pid;
-
-    friend class UIExporter;
 
     void terminateAndWaitForProcess()
     {
@@ -161,6 +181,16 @@ private:
             usleep(5*1000);
         }
     }
+
+private:
+    uint width;
+    uint height;
+    String title;
+    uintptr_t transientWinId;
+    bool visible;
+    pid_t pid;
+
+    friend class UIExporter;
 
     DISTRHO_DECLARE_NON_COPY_CLASS(ExternalWindow)
 };
