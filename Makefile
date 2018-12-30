@@ -16,7 +16,6 @@ ifeq ($(HAVE_DGL),true)
 endif
 
 examples: dgl
-	$(MAKE) all -C examples/ExternalUI
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
@@ -24,12 +23,15 @@ examples: dgl
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
 
-	# ExternalUI launcher
+ifneq ($(WIN32),true)
+	# ExternalUI does not work on Windows
+	$(MAKE) all -C examples/ExternalUI
 	install -d bin/d_extui-dssi
 	install -d bin/d_extui.lv2
 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.sh
 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui-dssi/d_extui.sh
 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
+endif
 
 ifneq ($(CROSS_COMPILING),true)
 gen: examples utils/lv2_ttl_generator
