@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,7 +20,8 @@
 #include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#ifndef HAVE_DGL
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# include "../dgl/Base.hpp"
 # include "extra/ExternalWindow.hpp"
 typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
@@ -67,7 +68,7 @@ public:
     */
     bool isUserResizable() const noexcept;
 
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
       @see Window::setGeometryConstraints(uint,uint,bool)
@@ -181,7 +182,7 @@ protected:
     */
     virtual void sampleRateChanged(double newSampleRate);
 
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /* --------------------------------------------------------------------------------------------------------
     * UI Callbacks (optional) */
 
@@ -191,13 +192,13 @@ protected:
     */
     virtual void uiIdle() {}
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+# ifndef DGL_FILE_BROWSER_DISABLED
    /**
       File browser selected function.
       @see Window::fileBrowserSelected(const char*)
     */
     virtual void uiFileBrowserSelected(const char* filename);
-#endif
+# endif
 
    /**
       OpenGL window reshape function, called when parent window is resized.
@@ -225,7 +226,7 @@ private:
     friend class UIExporter;
     friend class UIExporterWindow;
 
-#ifdef HAVE_DGL
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     // these should not be used
     void setAbsoluteX(int) const noexcept {}
     void setAbsoluteY(int) const noexcept {}

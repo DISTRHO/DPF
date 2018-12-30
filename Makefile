@@ -16,12 +16,20 @@ ifeq ($(HAVE_DGL),true)
 endif
 
 examples: dgl
+	$(MAKE) all -C examples/ExternalUI
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
 	$(MAKE) all -C examples/MidiThrough
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
+
+	# ExternalUI launcher
+	install -d bin/d_extui-dssi
+	install -d bin/d_extui.lv2
+	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.sh
+	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui-dssi/d_extui.sh
+	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
 
 ifneq ($(CROSS_COMPILING),true)
 gen: examples utils/lv2_ttl_generator
@@ -40,6 +48,7 @@ endif
 
 clean:
 	$(MAKE) clean -C dgl
+	$(MAKE) clean -C examples/ExternalUI
 	$(MAKE) clean -C examples/Info
 	$(MAKE) clean -C examples/Latency
 	$(MAKE) clean -C examples/Meters
