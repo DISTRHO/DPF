@@ -23,8 +23,8 @@ examples: dgl
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
 
-ifneq ($(WIN32),true)
-	# ExternalUI does not work on Windows
+ifneq ($(MACOS_OR_WIN32),true)
+	# ExternalUI is WIP
 	$(MAKE) all -C examples/ExternalUI
 	install -d bin/d_extui-dssi
 	install -d bin/d_extui.lv2
