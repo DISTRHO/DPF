@@ -1,5 +1,6 @@
 /*
   Copyright 2012-2014 David Robillard <http://drobilla.net>
+  Copyright 2012-2019 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -274,20 +275,6 @@ PUGL_API void
 puglInitTransientFor(PuglView* view, uintptr_t parent);
 
 /**
-   Drawing context type.
-*/
-typedef enum {
-	PUGL_GL,
-	PUGL_CAIRO
-} PuglContextType;
-
-/**
-   Set the context type before creating a window.
-*/
-PUGL_API void
-puglInitContextType(PuglView* view, PuglContextType type);
-
-/**
    @}
 */
 
@@ -365,8 +352,8 @@ puglGetHandle(PuglView* view);
 
 /**
    Get the drawing context.
-   For PUGL_GL contexts, this is unused and returns NULL.
-   For PUGL_CAIRO contexts, this returns a pointer to a cairo_t.
+   For Cairo contexts, this returns a pointer to a cairo_t.
+   For everything else, this is unused and returns NULL.
 */
 PUGL_API void*
 puglGetContext(PuglView* view);

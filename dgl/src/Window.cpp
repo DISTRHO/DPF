@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -213,15 +213,6 @@ struct Window::PrivateData {
             return;
         }
 
-#ifdef HAVE_DGL
-        const ContextType contextType = kContextGL;
-#endif
-#ifdef HAVE_DCAIRO
-        const ContextType contextType = kContextCairo;
-#endif
-        fContext.type = contextType;
-
-        puglInitContextType(fView, (PuglContextType)contextType);
         puglInitUserResizable(fView, fResizable);
         puglInitWindowSize(fView, static_cast<int>(fWidth), static_cast<int>(fHeight));
 

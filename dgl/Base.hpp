@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -184,15 +184,6 @@ enum Key {
     kKeySuper
 };
 
-/**
-   Type of graphics context.
- */
-enum ContextType
-{
-    kContextGL,
-    kContextCairo
-};
-
 // -----------------------------------------------------------------------
 // Base DGL classes
 
@@ -211,15 +202,9 @@ public:
  */
 struct Context
 {
-    ContextType type;
-    union {
-#ifdef HAVE_DGL
-        struct { /* nothing for now */ } gl;
-#endif
 #ifdef HAVE_DCAIRO
-        struct { cairo_t* graphics; } cairo;
+    cairo_t* cairo;
 #endif
-    };
 };
 
 // -----------------------------------------------------------------------

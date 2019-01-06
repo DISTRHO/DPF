@@ -1,5 +1,6 @@
 /*
   Copyright 2012-2014 David Robillard <http://drobilla.net>
+  Copyright 2012-2019 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -90,9 +91,7 @@ void
 puglEnterContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
-	}
+	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
 #endif
 }
 
@@ -100,13 +99,11 @@ void
 puglLeaveContext(PuglView* view, bool flush)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		if (flush) {
-			glFlush();
-			SwapBuffers(view->impl->hdc);
-		}
-		wglMakeCurrent(NULL, NULL);
+	if (flush) {
+		glFlush();
+		SwapBuffers(view->impl->hdc);
 	}
+	wglMakeCurrent(NULL, NULL);
 #endif
 }
 
@@ -181,31 +178,29 @@ puglCreateWindow(PuglView* view, const char* title)
 	SetWindowLongPtr(impl->hwnd, GWLP_USERDATA, (LONG_PTR)view);
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		impl->hdc = GetDC(impl->hwnd);
+	impl->hdc = GetDC(impl->hwnd);
 
-		PIXELFORMATDESCRIPTOR pfd;
-		ZeroMemory(&pfd, sizeof(pfd));
-		pfd.nSize      = sizeof(pfd);
-		pfd.nVersion   = 1;
-		pfd.dwFlags    = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-		pfd.iPixelType = PFD_TYPE_RGBA;
-		pfd.cColorBits = 24;
-		pfd.cDepthBits = 16;
-		pfd.iLayerType = PFD_MAIN_PLANE;
+	PIXELFORMATDESCRIPTOR pfd;
+	ZeroMemory(&pfd, sizeof(pfd));
+	pfd.nSize      = sizeof(pfd);
+	pfd.nVersion   = 1;
+	pfd.dwFlags    = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+	pfd.iPixelType = PFD_TYPE_RGBA;
+	pfd.cColorBits = 24;
+	pfd.cDepthBits = 16;
+	pfd.iLayerType = PFD_MAIN_PLANE;
 
-		int format = ChoosePixelFormat(impl->hdc, &pfd);
-		SetPixelFormat(impl->hdc, format, &pfd);
+	int format = ChoosePixelFormat(impl->hdc, &pfd);
+	SetPixelFormat(impl->hdc, format, &pfd);
 
-		impl->hglrc = wglCreateContext(impl->hdc);
-		if (!impl->hglrc) {
-			ReleaseDC (impl->hwnd, impl->hdc);
-			DestroyWindow (impl->hwnd);
-			UnregisterClass (impl->wc.lpszClassName, NULL);
-			free((void*)impl->wc.lpszClassName);
-			free(impl);
-			return 1;
-		}
+	impl->hglrc = wglCreateContext(impl->hdc);
+	if (!impl->hglrc) {
+		ReleaseDC (impl->hwnd, impl->hdc);
+		DestroyWindow (impl->hwnd);
+		UnregisterClass (impl->wc.lpszClassName, NULL);
+		free((void*)impl->wc.lpszClassName);
+		free(impl);
+		return 1;
 	}
 #endif
 
@@ -234,17 +229,13 @@ puglDestroy(PuglView* view)
 	PuglInternals* const impl = view->impl;
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		wglMakeCurrent(NULL, NULL);
-		wglDeleteContext(impl->hglrc);
-		ReleaseDC(impl->hwnd, impl->hdc);
-	}
+	wglMakeCurrent(NULL, NULL);
+	wglDeleteContext(impl->hglrc);
+	ReleaseDC(impl->hwnd, impl->hdc);
 #endif
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_destroy(impl->buffer_cr);
-		cairo_surface_destroy(impl->buffer_surface);
-	}
+	cairo_destroy(impl->buffer_cr);
+	cairo_surface_destroy(impl->buffer_surface);
 #endif
 	DestroyWindow(impl->hwnd);
 	UnregisterClass(impl->wc.lpszClassName, NULL);
@@ -282,26 +273,24 @@ puglDisplay(PuglView* view)
 	cairo_surface_t *ws = NULL;
 	cairo_surface_t *bs = NULL;
 
-	if (view->ctx_type == PUGL_CAIRO) {
-		HDC hdc = impl->paintHdc;
-		bc = impl->buffer_cr;
-		bs = impl->buffer_surface;
-		int w = view->width;
-		int h = view->height;
-		int bw = bs ? cairo_image_surface_get_width(bs) : -1;
-		int bh = bs ? cairo_image_surface_get_height(bs) : -1;
-		ws = hdc ? cairo_win32_surface_create(hdc) : NULL;
-		wc = ws ? cairo_create(ws) : NULL;
-		if (wc && (!bc || bw != w || bh != h)) {
-			cairo_destroy(bc);
-			cairo_surface_destroy(bs);
-			bs = cairo_surface_create_similar_image(ws, CAIRO_FORMAT_ARGB32, w, h);
-			bc = bs ? cairo_create(bs) : NULL;
-			impl->buffer_cr = bc;
-			impl->buffer_surface = bs;
-		}
-		success = wc != NULL && bc != NULL;
+	HDC hdc = impl->paintHdc;
+	bc = impl->buffer_cr;
+	bs = impl->buffer_surface;
+	int w = view->width;
+	int h = view->height;
+	int bw = bs ? cairo_image_surface_get_width(bs) : -1;
+	int bh = bs ? cairo_image_surface_get_height(bs) : -1;
+	ws = hdc ? cairo_win32_surface_create(hdc) : NULL;
+	wc = ws ? cairo_create(ws) : NULL;
+	if (wc && (!bc || bw != w || bh != h)) {
+		cairo_destroy(bc);
+		cairo_surface_destroy(bs);
+		bs = cairo_surface_create_similar_image(ws, CAIRO_FORMAT_ARGB32, w, h);
+		bc = bs ? cairo_create(bs) : NULL;
+		impl->buffer_cr = bc;
+		impl->buffer_surface = bs;
 	}
+	success = wc != NULL && bc != NULL;
 #endif
 
 	if (success) {
@@ -310,20 +299,16 @@ puglDisplay(PuglView* view)
 			view->displayFunc(view);
 		}
 #ifdef PUGL_HAVE_CAIRO
-		if (view->ctx_type == PUGL_CAIRO) {
-			cairo_set_source_surface(wc, bs, 0, 0);
-			cairo_paint(wc);
-		}
+		cairo_set_source_surface(wc, bs, 0, 0);
+		cairo_paint(wc);
 #endif
 	}
 
 	puglLeaveContext(view, success);
 
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_destroy(wc);
-		cairo_surface_destroy(ws);
-	}
+	cairo_destroy(wc);
+	cairo_surface_destroy(ws);
 #endif
 
 	return;
@@ -561,9 +546,7 @@ void*
 puglGetContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		return view->impl->buffer_cr;
-	}
+	return view->impl->buffer_cr;
 #endif
 	return NULL;
 

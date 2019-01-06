@@ -1,5 +1,6 @@
 /*
   Copyright 2012 David Robillard <http://drobilla.net>
+  Copyright 2012-2019 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -774,25 +775,23 @@ void
 puglEnterContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		[[view->impl->glview openGLContext] makeCurrentContext];
-	}
+	[[view->impl->glview openGLContext] makeCurrentContext];
 #endif
 }
 
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
+	if (flush) {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL && flush) {
 		if (view->impl->glview->doubleBuffered) {
 			[[view->impl->glview openGLContext] flushBuffer];
 		} else {
 			glFlush();
 		}
 		//[NSOpenGLContext clearCurrentContext];
-	}
 #endif
+	}
 }
 
 int
@@ -804,14 +803,10 @@ puglCreateWindow(PuglView* view, const char* title)
 	[NSApplication sharedApplication];
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		impl->glview = [PuglOpenGLView new];
-	}
+	impl->glview = [PuglOpenGLView new];
 #endif
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		impl->cairoview = [PuglCairoView new];
-	}
+	impl->cairoview = [PuglCairoView new];
 #endif
 
 	if (!impl->view) {
@@ -925,9 +920,7 @@ void*
 puglGetContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		return [view->impl->cairoview cairoContext];
-	}
+	return [view->impl->cairoview cairoContext];
 #endif
 	return NULL;
 

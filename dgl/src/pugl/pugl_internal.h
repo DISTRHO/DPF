@@ -1,5 +1,6 @@
 /*
   Copyright 2012-2014 David Robillard <http://drobilla.net>
+  Copyright 2012-2019 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -41,7 +42,6 @@ struct PuglViewImpl {
 
 	PuglInternals*   impl;
 	PuglNativeWindow parent;
-	PuglContextType  ctx_type;
 	uintptr_t        transient_parent;
 
 	int      width;
@@ -139,12 +139,6 @@ puglCreate(PuglNativeWindow parent,
 	}
 
 	return view;
-}
-
-void
-puglInitContextType(PuglView* view, PuglContextType type)
-{
-	view->ctx_type = type;
 }
 
 void

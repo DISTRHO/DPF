@@ -2,6 +2,7 @@
   Copyright 2012-2014 David Robillard <http://drobilla.net>
   Copyright 2011-2012 Ben Loftis, Harrison Consoles
   Copyright 2013,2015 Robin Gareus <robin@gareus.org>
+  Copyright 2012-2019 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -129,9 +130,7 @@ void
 puglEnterContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
-	}
+	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
 #endif
 }
 
@@ -139,15 +138,13 @@ void
 puglLeaveContext(PuglView* view, bool flush)
 {
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		if (flush) {
-			glFlush();
-			if (view->impl->doubleBuffered) {
-				glXSwapBuffers(view->impl->display, view->impl->win);
-			}
+	if (flush) {
+		glFlush();
+		if (view->impl->doubleBuffered) {
+			glXSwapBuffers(view->impl->display, view->impl->win);
 		}
-		glXMakeCurrent(view->impl->display, None, NULL);
 	}
+	glXMakeCurrent(view->impl->display, None, NULL);
 #endif
 }
 
@@ -170,30 +167,26 @@ puglCreateWindow(PuglView* view, const char* title)
 	XVisualInfo*         vi   = NULL;
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		impl->doubleBuffered = True;
-		vi = glXChooseVisual(impl->display, impl->screen, attrListDblMS);
+	impl->doubleBuffered = True;
+	vi = glXChooseVisual(impl->display, impl->screen, attrListDblMS);
 
-		if (!vi) {
-			vi = glXChooseVisual(impl->display, impl->screen, attrListDbl);
+	if (!vi) {
+		vi = glXChooseVisual(impl->display, impl->screen, attrListDbl);
 #ifdef PUGL_VERBOSE
-			printf("puGL: multisampling (antialiasing) is not available\n");
+		printf("puGL: multisampling (antialiasing) is not available\n");
 #endif
-		}
+	}
 
-		if (!vi) {
-			vi = glXChooseVisual(impl->display, impl->screen, attrListSgl);
-			impl->doubleBuffered = False;
-		}
+	if (!vi) {
+		vi = glXChooseVisual(impl->display, impl->screen, attrListSgl);
+		impl->doubleBuffered = False;
 	}
 #endif
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		XVisualInfo pat;
-		int         n;
-		pat.screen = impl->screen;
-		vi         = XGetVisualInfo(impl->display, VisualScreenMask, &pat, &n);
-	}
+	XVisualInfo pat;
+	int         n;
+	pat.screen = impl->screen;
+	vi         = XGetVisualInfo(impl->display, VisualScreenMask, &pat, &n);
 #endif
 
 	if (!vi) {
@@ -211,15 +204,13 @@ puglCreateWindow(PuglView* view, const char* title)
 #endif
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
+	impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
 
-		if (!impl->ctx) {
-			XFree(vi);
-			XCloseDisplay(impl->display);
-			free(impl);
-			return 1;
-		}
+	if (!impl->ctx) {
+		XFree(vi);
+		XCloseDisplay(impl->display);
+		free(impl);
+		return 1;
 	}
 #endif
 
@@ -247,9 +238,7 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	if (!impl->win) {
 #ifdef PUGL_HAVE_GL
-		if (view->ctx_type == PUGL_GL) {
-			glXDestroyContext(impl->display, impl->ctx);
-		}
+		glXDestroyContext(impl->display, impl->ctx);
 #endif
 		XFree(vi);
 		XCloseDisplay(impl->display);
@@ -258,25 +247,23 @@ puglCreateWindow(PuglView* view, const char* title)
 	}
 
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		impl->xlib_surface = cairo_xlib_surface_create(
-			impl->display, impl->win, vi->visual, view->width, view->height);
-		if (impl->xlib_surface == NULL || cairo_surface_status(impl->xlib_surface) != CAIRO_STATUS_SUCCESS) {
-			printf("puGL: failed to create cairo surface\n");
-		}
-		else {
-			impl->xlib_cr = cairo_create(impl->xlib_surface);
-		}
-		if (impl->xlib_cr == NULL || cairo_status(impl->xlib_cr) != CAIRO_STATUS_SUCCESS) {
-			cairo_destroy(impl->xlib_cr);
-			cairo_surface_destroy(impl->xlib_surface);
-			XDestroyWindow(impl->display, impl->win);
-			XFree(vi);
-			XCloseDisplay(impl->display);
-			free(impl);
-			printf("puGL: failed to create cairo context\n");
-			return 1;
-		}
+	impl->xlib_surface = cairo_xlib_surface_create(
+		impl->display, impl->win, vi->visual, view->width, view->height);
+	if (impl->xlib_surface == NULL || cairo_surface_status(impl->xlib_surface) != CAIRO_STATUS_SUCCESS) {
+		printf("puGL: failed to create cairo surface\n");
+	}
+	else {
+		impl->xlib_cr = cairo_create(impl->xlib_surface);
+	}
+	if (impl->xlib_cr == NULL || cairo_status(impl->xlib_cr) != CAIRO_STATUS_SUCCESS) {
+		cairo_destroy(impl->xlib_cr);
+		cairo_surface_destroy(impl->xlib_surface);
+		XDestroyWindow(impl->display, impl->win);
+		XFree(vi);
+		XCloseDisplay(impl->display);
+		free(impl);
+		printf("puGL: failed to create cairo context\n");
+		return 1;
 	}
 #endif
 
@@ -328,17 +315,13 @@ puglDestroy(PuglView* view)
 #endif
 
 #ifdef PUGL_HAVE_GL
-	if (view->ctx_type == PUGL_GL) {
-		glXDestroyContext(impl->display, impl->ctx);
-	}
+	glXDestroyContext(impl->display, impl->ctx);
 #endif
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_destroy(impl->xlib_cr);
-		cairo_destroy(impl->buffer_cr);
-		cairo_surface_destroy(impl->xlib_surface);
-		cairo_surface_destroy(impl->buffer_surface);
-	}
+	cairo_destroy(impl->xlib_cr);
+	cairo_destroy(impl->buffer_cr);
+	cairo_surface_destroy(impl->xlib_surface);
+	cairo_surface_destroy(impl->buffer_surface);
 #endif
 	XDestroyWindow(impl->display, impl->win);
 	XCloseDisplay(impl->display);
@@ -383,28 +366,26 @@ puglDisplay(PuglView* view)
 	puglEnterContext(view);
 
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_t* bc = impl->buffer_cr;
-		cairo_surface_t* xs = impl->xlib_surface;
-		cairo_surface_t* bs = impl->buffer_surface;
-		int w = cairo_xlib_surface_get_width(xs);
-		int h = cairo_xlib_surface_get_height(xs);
+	cairo_t* bc = impl->buffer_cr;
+	cairo_surface_t* xs = impl->xlib_surface;
+	cairo_surface_t* bs = impl->buffer_surface;
+	int w = cairo_xlib_surface_get_width(xs);
+	int h = cairo_xlib_surface_get_height(xs);
 
-		int bw = bs ? cairo_image_surface_get_width(bs) : -1;
-		int bh = bs ? cairo_image_surface_get_height(bs) : -1;
-		if (!bc || bw != w || bh != h) {
-			cairo_destroy(bc);
-			cairo_surface_destroy(bs);
-			bs = cairo_surface_create_similar_image(xs, CAIRO_FORMAT_ARGB32, w, h);
-			bc = bs ? cairo_create(bs) : NULL;
-			impl->buffer_cr = bc;
-			impl->buffer_surface = bs;
-		}
+	int bw = bs ? cairo_image_surface_get_width(bs) : -1;
+	int bh = bs ? cairo_image_surface_get_height(bs) : -1;
+	if (!bc || bw != w || bh != h) {
+		cairo_destroy(bc);
+		cairo_surface_destroy(bs);
+		bs = cairo_surface_create_similar_image(xs, CAIRO_FORMAT_ARGB32, w, h);
+		bc = bs ? cairo_create(bs) : NULL;
+		impl->buffer_cr = bc;
+		impl->buffer_surface = bs;
+	}
 
-		if (!bc) {
-			puglLeaveContext(view, false);
-			return;
-		}
+	if (!bc) {
+		puglLeaveContext(view, false);
+		return;
 	}
 #endif
 
@@ -414,11 +395,9 @@ puglDisplay(PuglView* view)
 	}
 
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		cairo_t* xc = impl->xlib_cr;
-		cairo_set_source_surface(xc, impl->buffer_surface, 0, 0);
-		cairo_paint(xc);
-	}
+	cairo_t* xc = impl->xlib_cr;
+	cairo_set_source_surface(xc, impl->buffer_surface, 0, 0);
+	cairo_paint(xc);
 #endif
 
 	puglLeaveContext(view, true);
@@ -683,12 +662,10 @@ puglProcessEvents(PuglView* view)
 
 	if (conf_width != -1) {
 #ifdef PUGL_HAVE_CAIRO
-		if (view->ctx_type == PUGL_CAIRO) {
-			// Resize surfaces/contexts before dispatching
-			view->redisplay = true;
-			cairo_xlib_surface_set_size(view->impl->xlib_surface,
-			                            conf_width, conf_height);
-		}
+		// Resize surfaces/contexts before dispatching
+		view->redisplay = true;
+		cairo_xlib_surface_set_size(view->impl->xlib_surface,
+		                            conf_width, conf_height);
 #endif
 		puglReshape(view, conf_width, conf_height);
 	}
@@ -726,9 +703,7 @@ void*
 puglGetContext(PuglView* view)
 {
 #ifdef PUGL_HAVE_CAIRO
-	if (view->ctx_type == PUGL_CAIRO) {
-		return view->impl->buffer_cr;
-	}
+	return view->impl->buffer_cr;
 #endif
 	return NULL;
 
