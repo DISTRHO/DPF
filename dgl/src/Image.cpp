@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,8 +21,7 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 
 Image::Image()
-    : fRawData(nullptr),
-      fSize(0, 0),
+    : ImageBase(),
       fFormat(0),
       fType(0),
       fTextureId(0),
@@ -31,9 +30,18 @@ Image::Image()
     glGenTextures(1, &fTextureId);
 }
 
+Image::Image(const Image& image)
+    : ImageBase(image),
+      fFormat(image.fFormat),
+      fType(image.fType),
+      fTextureId(0),
+      fIsReady(false)
+{
+    glGenTextures(1, &fTextureId);
+}
+
 Image::Image(const char* const rawData, const uint width, const uint height, const GLenum format, const GLenum type)
-    : fRawData(rawData),
-      fSize(width, height),
+    : ImageBase(rawData, width, height),
       fFormat(format),
       fType(type),
       fTextureId(0),
@@ -43,21 +51,9 @@ Image::Image(const char* const rawData, const uint width, const uint height, con
 }
 
 Image::Image(const char* const rawData, const Size<uint>& size, const GLenum format, const GLenum type)
-    : fRawData(rawData),
-      fSize(size),
+    : ImageBase(rawData, size),
       fFormat(format),
       fType(type),
-      fTextureId(0),
-      fIsReady(false)
-{
-    glGenTextures(1, &fTextureId);
-}
-
-Image::Image(const Image& image)
-    : fRawData(image.fRawData),
-      fSize(image.fSize),
-      fFormat(image.fFormat),
-      fType(image.fType),
       fTextureId(0),
       fIsReady(false)
 {
@@ -75,43 +71,25 @@ Image::~Image()
     }
 }
 
-void Image::loadFromMemory(const char* const rawData, const uint width, const uint height, const GLenum format, const GLenum type) noexcept
+void Image::loadFromMemory(const char* const rawData,
+                           const uint width,
+                           const uint height,
+                           const GLenum format,
+                           const GLenum type) noexcept
 {
     loadFromMemory(rawData, Size<uint>(width, height), format, type);
 }
 
-void Image::loadFromMemory(const char* const rawData, const Size<uint>& size, const GLenum format, const GLenum type) noexcept
+void Image::loadFromMemory(const char* const rawData,
+                           const Size<uint>& size,
+                           const GLenum format,
+                           const GLenum type) noexcept
 {
     fRawData = rawData;
     fSize    = size;
     fFormat  = format;
     fType    = type;
     fIsReady = false;
-}
-
-bool Image::isValid() const noexcept
-{
-    return (fRawData != nullptr && fSize.getWidth() > 0 && fSize.getHeight() > 0);
-}
-
-uint Image::getWidth() const noexcept
-{
-    return fSize.getWidth();
-}
-
-uint Image::getHeight() const noexcept
-{
-    return fSize.getHeight();
-}
-
-const Size<uint>& Image::getSize() const noexcept
-{
-    return fSize;
-}
-
-const char* Image::getRawData() const noexcept
-{
-    return fRawData;
 }
 
 GLenum Image::getFormat() const noexcept
@@ -124,17 +102,17 @@ GLenum Image::getType() const noexcept
     return fType;
 }
 
-void Image::draw()
+Image& Image::operator=(const Image& image) noexcept
 {
-    drawAt(0, 0);
+    fRawData = image.fRawData;
+    fSize    = image.fSize;
+    fFormat  = image.fFormat;
+    fType    = image.fType;
+    fIsReady = false;
+    return *this;
 }
 
-void Image::drawAt(const int x, const int y)
-{
-    drawAt(Point<int>(x, y));
-}
-
-void Image::drawAt(const Point<int>& pos)
+void Image::_drawAt(const Point<int>& pos)
 {
     if (fTextureId == 0 || ! isValid())
         return;
@@ -165,28 +143,6 @@ void Image::drawAt(const Point<int>& pos)
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
-}
-
-// -----------------------------------------------------------------------
-
-Image& Image::operator=(const Image& image) noexcept
-{
-    fRawData = image.fRawData;
-    fSize    = image.fSize;
-    fFormat  = image.fFormat;
-    fType    = image.fType;
-    fIsReady = false;
-    return *this;
-}
-
-bool Image::operator==(const Image& image) const noexcept
-{
-    return (fRawData == image.fRawData && fSize == image.fSize);
-}
-
-bool Image::operator!=(const Image& image) const noexcept
-{
-    return !operator==(image);
 }
 
 // -----------------------------------------------------------------------

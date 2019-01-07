@@ -21,11 +21,11 @@
 
 #include <stdlib.h>
 
-#import <Cocoa/Cocoa.h>
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 #import <cairo.h>
 #import <cairo-quartz.h>
 #endif
+#import <Cocoa/Cocoa.h>
 
 #include "pugl_internal.h"
 
@@ -290,7 +290,7 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 	}
 }
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 @interface PuglOpenGLView : NSOpenGLView<PuglGenericView>
 {
 @public
@@ -530,7 +530,7 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 @end
 #endif
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 @interface PuglCairoView : NSView<PuglGenericView>
 {
 	PuglView* puglview;
@@ -755,10 +755,10 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 struct PuglInternalsImpl {
 	union {
 		NSView<PuglGenericView>* view;
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 		PuglOpenGLView* glview;
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 		PuglCairoView* cairoview;
 #endif
 	};
@@ -774,7 +774,7 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	[[view->impl->glview openGLContext] makeCurrentContext];
 #endif
 }
@@ -783,7 +783,7 @@ void
 puglLeaveContext(PuglView* view, bool flush)
 {
 	if (flush) {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 		if (view->impl->glview->doubleBuffered) {
 			[[view->impl->glview openGLContext] flushBuffer];
 		} else {
@@ -802,10 +802,10 @@ puglCreateWindow(PuglView* view, const char* title)
 	[NSAutoreleasePool new];
 	[NSApplication sharedApplication];
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	impl->glview = [PuglOpenGLView new];
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	impl->cairoview = [PuglCairoView new];
 #endif
 
@@ -919,7 +919,7 @@ puglGetNativeWindow(PuglView* view)
 void*
 puglGetContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	return [view->impl->cairoview cairoContext];
 #endif
 	return NULL;

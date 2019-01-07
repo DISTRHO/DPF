@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,9 +19,7 @@
 
 #include "Base.hpp"
 
-#ifndef HAVE_DCAIRO
 struct NVGcolor;
-#endif
 
 START_NAMESPACE_DGL
 
@@ -97,14 +95,12 @@ struct Color {
     */
     void fixBounds() noexcept;
 
-#ifndef HAVE_DCAIRO
    /**
       @internal
       Needed for NanoVG compatibility.
     */
     Color(const NVGcolor&) noexcept;
     operator NVGcolor() const noexcept;
-#endif
 };
 
 // -----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -123,6 +123,25 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 // -----------------------------------------------------------------------
 
 START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+// DGL Color class conversion
+
+Color::Color(const NVGcolor& c) noexcept
+    : red(c.r), green(c.g), blue(c.b), alpha(c.a)
+{
+    fixBounds();
+}
+
+Color::operator NVGcolor() const noexcept
+{
+    NVGcolor nc;
+    nc.r = red;
+    nc.g = green;
+    nc.b = blue;
+    nc.a = alpha;
+    return nc;
+}
 
 // -----------------------------------------------------------------------
 // NanoImage

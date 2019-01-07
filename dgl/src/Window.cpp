@@ -19,14 +19,13 @@
 
 #include "../Base.hpp"
 
-#undef PUGL_HAVE_CAIRO
-#undef PUGL_HAVE_GL
-
-#ifdef HAVE_DGL
-#define PUGL_HAVE_GL 1
+#ifdef DGL_CAIRO
+# define PUGL_CAIRO
+# include "../Cairo.hpp"
 #endif
-#ifdef HAVE_DCAIRO
-#define PUGL_HAVE_CAIRO 1
+#ifdef DGL_OPENGL
+# define PUGL_OPENGL
+# include "../OpenGL.hpp"
 #endif
 
 #include "pugl/pugl.h"
@@ -1049,10 +1048,10 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
-    Application& fApp;
-    Window*      fSelf;
-    Context      fContext;
-    PuglView*    fView;
+    Application&    fApp;
+    Window*         fSelf;
+    GraphicsContext fContext;
+    PuglView*       fView;
 
     bool fFirstInit;
     bool fVisible;
@@ -1377,12 +1376,11 @@ intptr_t Window::getWindowId() const noexcept
     return puglGetNativeWindow(pData->fView);
 }
 
-const Context& Window::getContext() const noexcept
+const GraphicsContext& Window::getGraphicsContext() const noexcept
 {
-    Context& context = pData->fContext;
-#ifdef HAVE_DCAIRO
-    if (context.type == kContextCairo)
-        context.cairo.graphics = (cairo_t*)puglGetContext(pData->fView);
+    GraphicsContext& context = pData->fContext;
+#ifdef DGL_CAIRO
+    context.cairo = (cairo_t*)puglGetContext(pData->fView);
 #endif
     return context;
 }
@@ -1422,7 +1420,7 @@ void Window::removeIdleCallback(IdleCallback* const callback)
 
 void Window::onDisplayBefore()
 {
-#ifdef HAVE_DGL
+#ifdef DGL_OPENGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 #endif
@@ -1434,7 +1432,7 @@ void Window::onDisplayAfter()
 
 void Window::onReshape(uint width, uint height)
 {
-#ifdef HAVE_DGL
+#ifdef DGL_OPENGL
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glMatrixMode(GL_PROJECTION);

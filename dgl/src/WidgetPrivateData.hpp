@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -63,65 +63,8 @@ struct Widget::PrivateData {
         subWidgets.clear();
     }
 
-    void display(const uint width, const uint height, const double scaling, const bool renderingSubWidget)
-    {
-        if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
-            return;
-
-#ifdef HAVE_DGL
-        bool needsDisableScissor = false;
-
-        // reset color
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-        if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
-        {
-            // full viewport size
-            glViewport(0,
-                       -(height * scaling - height),
-                       width * scaling,
-                       height * scaling);
-        }
-        else if (needsScaling)
-        {
-            // limit viewport to widget bounds
-            glViewport(absolutePos.getX(),
-                       height - self->getHeight() - absolutePos.getY(),
-                       self->getWidth(),
-                       self->getHeight());
-        }
-        else
-        {
-            // only set viewport pos
-            glViewport(absolutePos.getX() * scaling,
-                       -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
-                       std::round(width * scaling),
-                       std::round(height * scaling));
-
-            // then cut the outer bounds
-            glScissor(absolutePos.getX() * scaling,
-                      height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
-                      std::round(self->getWidth() * scaling),
-                      std::round(self->getHeight() * scaling));
-
-            glEnable(GL_SCISSOR_TEST);
-            needsDisableScissor = true;
-        }
-#endif
-
-        // display widget
-        self->onDisplay();
-
-#ifdef HAVE_DGL
-        if (needsDisableScissor)
-        {
-            glDisable(GL_SCISSOR_TEST);
-            needsDisableScissor = false;
-        }
-#endif
-
-        displaySubWidgets(width, height, scaling);
-    }
+    // display function is different depending on build type
+    void display(const uint width, const uint height, const double scaling, const bool renderingSubWidget);
 
     void displaySubWidgets(const uint width, const uint height, const double scaling)
     {

@@ -19,22 +19,22 @@
    @file pugl_win.cpp Windows/WGL Pugl Implementation.
 */
 
-#include <winsock2.h>
-#include <windows.h>
-#include <windowsx.h>
-#ifdef PUGL_HAVE_GL
-#include <GL/gl.h>
-#endif
-#ifdef PUGL_HAVE_CAIRO
-#include <cairo/cairo.h>
-#include <cairo/cairo-win32.h>
-#endif
-
 #include <ctime>
 #include <cstdio>
 #include <cstdlib>
 
-#include "pugl/pugl_internal.h"
+#include <winsock2.h>
+#include <windows.h>
+#include <windowsx.h>
+#ifdef PUGL_CAIRO
+#include <cairo/cairo.h>
+#include <cairo/cairo-win32.h>
+#endif
+#ifdef PUGL_OPENGL
+#include <GL/gl.h>
+#endif
+
+#include "pugl_internal.h"
 
 #ifndef WM_MOUSEWHEEL
 #    define WM_MOUSEWHEEL 0x020A
@@ -55,11 +55,11 @@ HINSTANCE hInstance = NULL;
 
 struct PuglInternalsImpl {
 	HWND     hwnd;
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	HDC      hdc;
 	HGLRC    hglrc;
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_t*         buffer_cr;
 	cairo_surface_t* buffer_surface;
 #endif
@@ -90,7 +90,7 @@ puglInitInternals()
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	wglMakeCurrent(view->impl->hdc, view->impl->hglrc);
 #endif
 }
@@ -98,7 +98,7 @@ puglEnterContext(PuglView* view)
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	if (flush) {
 		glFlush();
 		SwapBuffers(view->impl->hdc);
@@ -177,7 +177,7 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	SetWindowLongPtr(impl->hwnd, GWLP_USERDATA, (LONG_PTR)view);
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	impl->hdc = GetDC(impl->hwnd);
 
 	PIXELFORMATDESCRIPTOR pfd;
@@ -228,12 +228,12 @@ puglDestroy(PuglView* view)
 
 	PuglInternals* const impl = view->impl;
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	wglMakeCurrent(NULL, NULL);
 	wglDeleteContext(impl->hglrc);
 	ReleaseDC(impl->hwnd, impl->hdc);
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_destroy(impl->buffer_cr);
 	cairo_surface_destroy(impl->buffer_surface);
 #endif
@@ -267,7 +267,7 @@ puglDisplay(PuglView* view)
 
 	puglEnterContext(view);
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_t *wc = NULL;
 	cairo_t *bc = NULL;
 	cairo_surface_t *ws = NULL;
@@ -298,7 +298,7 @@ puglDisplay(PuglView* view)
 		if (view->displayFunc) {
 			view->displayFunc(view);
 		}
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 		cairo_set_source_surface(wc, bs, 0, 0);
 		cairo_paint(wc);
 #endif
@@ -306,7 +306,7 @@ puglDisplay(PuglView* view)
 
 	puglLeaveContext(view, success);
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_destroy(wc);
 	cairo_surface_destroy(ws);
 #endif
@@ -545,7 +545,7 @@ puglGetNativeWindow(PuglView* view)
 void*
 puglGetContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	return view->impl->buffer_cr;
 #endif
 	return NULL;

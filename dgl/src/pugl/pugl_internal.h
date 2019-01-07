@@ -240,7 +240,7 @@ puglLeaveContext(PuglView* view, bool flush);
 static void
 puglDefaultReshape(int width, int height)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 #ifdef ROBTK_HERE
 	glViewport(0, 0, width, height);
 	glMatrixMode(GL_PROJECTION);
@@ -259,5 +259,5 @@ puglDefaultReshape(int width, int height)
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 #endif
-#endif
+#endif // PUGL_OPENGL
 }

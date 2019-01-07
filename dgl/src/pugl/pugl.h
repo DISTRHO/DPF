@@ -30,19 +30,13 @@
   platforms so they are included here to allow for pure portable programs.
 */
 #ifdef __APPLE__
-#    include "OpenGL/gl.h"
+#    include <OpenGL/gl.h>
 #else
 #    ifdef _WIN32
 #        include <winsock2.h>
 #        include <windows.h>  /* Broken Windows GL headers require this */
 #    endif
-#    include "GL/gl.h"
-#endif
-
-#ifdef _WIN32
-#    define PUGL_API
-#else
-#    define PUGL_API __attribute__((visibility("hidden")))
+#    include <GL/gl.h>
 #endif
 
 #ifdef __cplusplus
@@ -238,31 +232,31 @@ typedef void (*PuglFileSelectedFunc)(PuglView* view, const char* filename);
    To create a window, call the various puglInit* functions as necessary, then
    call puglCreateWindow().
 */
-PUGL_API PuglView*
+PuglView*
 puglInit(void);
 
 /**
    Set the parent window before creating a window (for embedding).
 */
-PUGL_API void
+void
 puglInitWindowParent(PuglView* view, PuglNativeWindow parent);
 
 /**
    Set the window size before creating a window.
 */
-PUGL_API void
+void
 puglInitWindowSize(PuglView* view, int width, int height);
 
 /**
    Set the minimum window size before creating a window.
 */
-PUGL_API void
+void
 puglInitWindowMinSize(PuglView* view, int width, int height);
 
 /**
    Enable or disable resizing before creating a window.
 */
-PUGL_API void
+void
 puglInitUserResizable(PuglView* view, bool resizable);
 
 /**
@@ -271,7 +265,7 @@ puglInitUserResizable(PuglView* view, bool resizable);
    On X11, parent_id must be a Window.
    On OSX, parent_id must be an NSView*.
 */
-PUGL_API void
+void
 puglInitTransientFor(PuglView* view, uintptr_t parent);
 
 /**
@@ -289,7 +283,7 @@ puglInitTransientFor(PuglView* view, uintptr_t parent);
 
    @return 1 (pugl does not currently support multiple windows).
 */
-PUGL_API int
+int
 puglCreateWindow(PuglView* view, const char* title);
 
 /**
@@ -300,7 +294,7 @@ puglCreateWindow(PuglView* view, const char* title);
    @param height Window height in pixels.
    @param resizable Whether window should be user resizable.
 */
-PUGL_API PuglView*
+PuglView*
 puglCreate(PuglNativeWindow parent,
            const char*      title,
            int              min_width,
@@ -313,19 +307,19 @@ puglCreate(PuglNativeWindow parent,
 /**
    Show Window (external ui)
 */
-PUGL_API void
+void
 puglShowWindow(PuglView* view);
 
 /**
    Hide Window (external ui)
 */
-PUGL_API void
+void
 puglHideWindow(PuglView* view);
 
 /**
    Return the native window handle.
 */
-PUGL_API PuglNativeWindow
+PuglNativeWindow
 puglGetNativeWindow(PuglView* view);
 
 /**
@@ -341,13 +335,13 @@ puglGetNativeWindow(PuglView* view);
    Note the lack of this facility makes GLUT unsuitable for plugins or
    non-trivial programs; this mistake is largely why Pugl exists.
 */
-PUGL_API void
+void
 puglSetHandle(PuglView* view, PuglHandle handle);
 
 /**
    Get the handle to be passed to all callbacks.
 */
-PUGL_API PuglHandle
+PuglHandle
 puglGetHandle(PuglView* view);
 
 /**
@@ -355,13 +349,13 @@ puglGetHandle(PuglView* view);
    For Cairo contexts, this returns a pointer to a cairo_t.
    For everything else, this is unused and returns NULL.
 */
-PUGL_API void*
+void*
 puglGetContext(PuglView* view);
 
 /**
    Return the timestamp (if any) of the currently-processing event.
 */
-PUGL_API uint32_t
+uint32_t
 puglGetEventTimestamp(PuglView* view);
 
 /**
@@ -369,13 +363,13 @@ puglGetEventTimestamp(PuglView* view);
 
    This should only be called from an event handler.
 */
-PUGL_API int
+int
 puglGetModifiers(PuglView* view);
 
 /**
    Ignore synthetic repeated key events.
 */
-PUGL_API void
+void
 puglIgnoreKeyRepeat(PuglView* view, bool ignore);
 
 /**
@@ -387,61 +381,61 @@ puglIgnoreKeyRepeat(PuglView* view, bool ignore);
 /**
    Set the function to call when the window is closed.
 */
-PUGL_API void
+void
 puglSetCloseFunc(PuglView* view, PuglCloseFunc closeFunc);
 
 /**
    Set the display function which should draw the UI using GL.
 */
-PUGL_API void
+void
 puglSetDisplayFunc(PuglView* view, PuglDisplayFunc displayFunc);
 
 /**
    Set the function to call on keyboard events.
 */
-PUGL_API void
+void
 puglSetKeyboardFunc(PuglView* view, PuglKeyboardFunc keyboardFunc);
 
 /**
    Set the function to call on mouse motion.
 */
-PUGL_API void
+void
 puglSetMotionFunc(PuglView* view, PuglMotionFunc motionFunc);
 
 /**
    Set the function to call on mouse button events.
 */
-PUGL_API void
+void
 puglSetMouseFunc(PuglView* view, PuglMouseFunc mouseFunc);
 
 /**
    Set the function to call on scroll events.
 */
-PUGL_API void
+void
 puglSetScrollFunc(PuglView* view, PuglScrollFunc scrollFunc);
 
 /**
    Set the function to call on special events.
 */
-PUGL_API void
+void
 puglSetSpecialFunc(PuglView* view, PuglSpecialFunc specialFunc);
 
 /**
    Set the function to call when the window size changes.
 */
-PUGL_API void
+void
 puglSetReshapeFunc(PuglView* view, PuglReshapeFunc reshapeFunc);
 
 /**
    Set callback function to change window size.
 */
-PUGL_API void
+void
 puglSetResizeFunc(PuglView* view, PuglResizeFunc resizeFunc);
 
 /**
    Set the function to call on file-browser selections.
 */
-PUGL_API void
+void
 puglSetFileSelectedFunc(PuglView* view, PuglFileSelectedFunc fileSelectedFunc);
 
 /**
@@ -451,13 +445,13 @@ puglSetFileSelectedFunc(PuglView* view, PuglFileSelectedFunc fileSelectedFunc);
 /**
    TODO document this.
  */
-PUGL_API int
+int
 puglUpdateGeometryConstraints(PuglView* view, int min_width, int min_height, bool aspect);
 
 /**
    Grab the input focus.
 */
-PUGL_API void
+void
 puglGrabFocus(PuglView* view);
 
 /**
@@ -466,25 +460,25 @@ puglGrabFocus(PuglView* view);
    This handles input events as well as rendering, so it should be called
    regularly and rapidly enough to keep the UI responsive.
 */
-PUGL_API PuglStatus
+PuglStatus
 puglProcessEvents(PuglView* view);
 
 /**
    Request a redisplay on the next call to puglProcessEvents().
 */
-PUGL_API void
+void
 puglPostRedisplay(PuglView* view);
 
 /**
    Request a resize on the next call to puglProcessEvents().
 */
-PUGL_API void
+void
 puglPostResize(PuglView* view);
 
 /**
    Destroy a GL window.
 */
-PUGL_API void
+void
 puglDestroy(PuglView* view);
 
 /**

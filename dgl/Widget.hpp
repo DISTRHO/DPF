@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -311,8 +311,6 @@ public:
       Get parent window, as passed in the constructor.
     */
     Window& getParentWindow() const noexcept;
-
-    const Context& getContext() const noexcept;
 
    /**
       Check if this widget contains the point defined by @a x and @a y.

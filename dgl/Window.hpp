@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -119,7 +119,7 @@ public:
     Application& getApp() const noexcept;
     intptr_t getWindowId() const noexcept;
 
-    const Context& getContext() const noexcept;
+    const GraphicsContext& getGraphicsContext() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);

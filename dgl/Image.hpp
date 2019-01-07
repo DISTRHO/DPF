@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,14 +17,15 @@
 #ifndef DGL_IMAGE_HPP_INCLUDED
 #define DGL_IMAGE_HPP_INCLUDED
 
-#include "Geometry.hpp"
+#include "ImageBase.hpp"
+#include "OpenGL.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
 /**
-   Base DGL Image class.
+   OpenGL Image class.
 
    This is an Image class that handles raw image data in pixels.
    You can init the image data on the contructor or later on by calling loadFromMemory().
@@ -35,7 +36,7 @@ START_NAMESPACE_DGL
 
    Images are drawn on screen via 2D textures.
  */
-class Image
+class Image : public ImageBase
 {
 public:
    /**
@@ -47,13 +48,20 @@ public:
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* const rawData, const uint width, const uint height, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE);
+    Image(const char* const rawData,
+          const uint width,
+          const uint height,
+          const GLenum format = GL_BGRA,
+          const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* const rawData, const Size<uint>& size, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE);
+    Image(const char* const rawData,
+          const Size<uint>& size,
+          const GLenum format = GL_BGRA,
+          const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using another image data.
@@ -63,44 +71,26 @@ public:
    /**
       Destructor.
     */
-    ~Image();
+    ~Image() override;
 
    /**
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* const rawData, const uint width, const uint height, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE) noexcept;
+    void loadFromMemory(const char* const rawData,
+                        const uint width,
+                        const uint height,
+                        const GLenum format = GL_BGRA,
+                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* const rawData, const Size<uint>& size, const GLenum format = GL_BGRA, const GLenum type = GL_UNSIGNED_BYTE) noexcept;
-
-   /**
-      Check if this image is valid.
-    */
-    bool isValid() const noexcept;
-
-   /**
-      Get width.
-    */
-    uint getWidth() const noexcept;
-
-   /**
-      Get height.
-    */
-    uint getHeight() const noexcept;
-
-   /**
-      Get size.
-    */
-    const Size<uint>& getSize() const noexcept;
-
-   /**
-      Get the raw image data.
-    */
-    const char* getRawData() const noexcept;
+    void loadFromMemory(const char* const rawData,
+                        const Size<uint>& size,
+                        const GLenum format = GL_BGRA,
+                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
       Get the image format.
@@ -113,27 +103,15 @@ public:
     GLenum getType() const noexcept;
 
    /**
-      Draw this image at (0, 0) point.
+      TODO document this.
     */
-    void draw();
-
-   /**
-      Draw this image at (x, y) point.
-    */
-    void drawAt(const int x, const int y);
-
-   /**
-      Draw this image at position @a pos.
-    */
-    void drawAt(const Point<int>& pos);
-
     Image& operator=(const Image& image) noexcept;
-    bool operator==(const Image& image) const noexcept;
-    bool operator!=(const Image& image) const noexcept;
+
+protected:
+   /** @internal */
+    void _drawAt(const Point<int>& pos) override;
 
 private:
-    const char* fRawData;
-    Size<uint> fSize;
     GLenum fFormat;
     GLenum fType;
     GLuint fTextureId;
@@ -144,4 +122,4 @@ private:
 
 END_NAMESPACE_DGL
 
-#endif // DGL_IMAGE_HPP_INCLUDED
+#endif

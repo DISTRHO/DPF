@@ -16,7 +16,7 @@ ifneq ($(HAIKU),true)
 ifneq ($(HURD),true)
 ifneq ($(LINUX),true)
 ifneq ($(MACOS),true)
-ifneq ($(WIN32),true)
+ifneq ($(WINDOWS),true)
 
 TARGET_MACHINE := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring bsd,$(TARGET_MACHINE)))
@@ -35,7 +35,7 @@ ifneq (,$(findstring apple,$(TARGET_MACHINE)))
 MACOS=true
 endif
 ifneq (,$(findstring mingw,$(TARGET_MACHINE)))
-WIN32=true
+WINDOWS=true
 endif
 
 endif
@@ -57,14 +57,20 @@ LINUX_OR_MACOS=true
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set MACOS_OR_WIN32
+# Set MACOS_OR_WINDOWS and HAIKU_OR_MACOS_OR_WINDOWS
 
-ifeq ($(MACOS),true)
-MACOS_OR_WIN32=true
+ifeq ($(HAIKU),true)
+HAIKU_OR_MACOS_OR_WINDOWS=true
 endif
 
-ifeq ($(WIN32),true)
-MACOS_OR_WIN32=true
+ifeq ($(MACOS),true)
+MACOS_OR_WINDOWS=true
+HAIKU_OR_MACOS_OR_WINDOWS=true
+endif
+
+ifeq ($(WINDOWS),true)
+MACOS_OR_WINDOWS=true
+HAIKU_OR_MACOS_OR_WINDOWS=true
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -108,7 +114,7 @@ ifeq ($(NOOPT),true)
 BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
-ifeq ($(WIN32),true)
+ifeq ($(WINDOWS),true)
 # mingw has issues with this specific optimization
 # See https://github.com/falkTX/Carla/issues/696
 BASE_OPTS  += -fno-rerun-cse-after-loop
@@ -141,7 +147,7 @@ ifeq ($(MACOS_OLD),true)
 BUILD_CXX_FLAGS = $(BASE_FLAGS) $(CXXFLAGS) -DHAVE_CPP11_SUPPORT=0
 endif
 
-ifeq ($(WIN32),true)
+ifeq ($(WINDOWS),true)
 # Always build statically on windows
 LINK_FLAGS     += -static
 endif
@@ -170,46 +176,81 @@ CXXFLAGS   += -Weffc++ -Wnon-virtual-dtor -Woverloaded-virtual
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Check for optional libs
+# Check for required libraries
 
-ifeq ($(MACOS_OR_WIN32),true)
-HAVE_DGL   = true
+HAVE_CAIRO  = $(shell pkg-config --exists cairo && echo true)
+
+ifeq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+HAVE_OPENGL = true
 else
-HAVE_DGL   = $(shell pkg-config --exists gl x11 && echo true)
-HAVE_JACK  = $(shell pkg-config --exists jack   && echo true)
-HAVE_LIBLO = $(shell pkg-config --exists liblo  && echo true)
-endif
-
-ifneq ($(HAVE_DGL),true)
-$(error DGL missing 22)
+HAVE_OPENGL = $(shell pkg-config --exists gl && echo true)
+HAVE_X11    = $(shell pkg-config --exists x11 && echo true)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set libs stuff
+# Check for optional libraries
 
-ifeq ($(HAVE_DGL),true)
+HAVE_JACK  = $(shell pkg-config --exists jack && echo true)
+HAVE_LIBLO = $(shell pkg-config --exists liblo && echo true)
 
-DGL_FLAGS += -DHAVE_DGL
+# ---------------------------------------------------------------------------------------------------------------------
+# Set Generic DGL stuff
 
 ifeq ($(MACOS),true)
-DGL_LIBS  = -framework OpenGL -framework Cocoa
+DGL_LIBS   += -framework Cocoa
 endif
 
-ifeq ($(WIN32),true)
-DGL_LIBS  = -lopengl32 -lgdi32
+ifeq ($(WINDOWS),true)
+DGL_LIBS   += -lgdi32
 endif
 
-ifneq ($(MACOS_OR_WIN32),true)
-DGL_FLAGS += $(shell pkg-config --cflags gl x11)
-DGL_LIBS  += $(shell pkg-config --libs gl x11)
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+DGL_FLAGS  += $(shell pkg-config --cflags x11)
+DGL_LIBS   += $(shell pkg-config --libs x11)
 endif
 
-endif # HAVE_DGL
+# ---------------------------------------------------------------------------------------------------------------------
+# Set Cairo specific stuff
+
+ifeq ($(HAVE_CAIRO),true)
+
+DGL_FLAGS   += -DHAVE_CAIRO
+
+CAIRO_FLAGS  = $(shell pkg-config --cflags cairo)
+CAIRO_LIBS   = $(shell pkg-config --libs cairo)
+
+HAVE_CAIRO_OR_OPENGL = true
+
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set OpenGL specific stuff
+
+ifeq ($(HAVE_OPENGL),true)
+
+DGL_FLAGS   += -DHAVE_OPENGL
+
+ifeq ($(MACOS),true)
+OPENGL_LIBS  = -framework OpenGL
+endif
+
+ifeq ($(WINDOWS),true)
+OPENGL_LIBS  = -lopengl32
+endif
+
+ifneq ($(MACOS_OR_WINDOWS),true)
+OPENGL_FLAGS = $(shell pkg-config --cflags gl x11)
+OPENGL_LIBS  = $(shell pkg-config --libs gl x11)
+endif
+
+HAVE_CAIRO_OR_OPENGL = true
+
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set app extension
 
-ifeq ($(WIN32),true)
+ifeq ($(WINDOWS),true)
 APP_EXT = .exe
 endif
 
@@ -222,17 +263,17 @@ ifeq ($(MACOS),true)
 LIB_EXT = .dylib
 endif
 
-ifeq ($(WIN32),true)
+ifeq ($(WINDOWS),true)
 LIB_EXT = .dll
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set shared library CLI arg
 
-SHARED = -shared
-
 ifeq ($(MACOS),true)
 SHARED = -dynamiclib
+else
+SHARED = -shared
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

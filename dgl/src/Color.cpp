@@ -24,6 +24,19 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+static float computeHue(float h, float m1, float m2)
+{
+    if (h < 0) h += 1;
+    if (h > 1) h -= 1;
+    if (h < 1.0f/6.0f)
+        return m1 + (m2 - m1) * h * 6.0f;
+    if (h < 3.0f/6.0f)
+        return m2;
+    if (h < 4.0f/6.0f)
+        return m1 + (m2 - m1) * (2.0f/3.0f - h) * 6.0f;
+    return m1;
+}
+
 static void fixRange(float& value)
 {
     /**/ if (value < 0.0f)
@@ -105,26 +118,8 @@ Color::Color(const Color& color1, const Color& color2, float u) noexcept
     interpolate(color2, u);
 }
 
-#ifndef HAVE_DGL
-static float computeHue(float h, float m1, float m2)
-{
-    if (h < 0) h += 1;
-    if (h > 1) h -= 1;
-    if (h < 1.0f/6.0f)
-        return m1 + (m2 - m1) * h * 6.0f;
-    else if (h < 3.0f/6.0f)
-        return m2;
-    else if (h < 4.0f/6.0f)
-        return m1 + (m2 - m1) * (2.0f/3.0f - h) * 6.0f;
-    return m1;
-}
-#endif
-
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
-#ifdef HAVE_DGL
-    return nvgHSLA(hue, saturation, lightness, static_cast<uchar>(getFixedRange(alpha)*255.0f));
-#else
     float m1, m2;
     Color col;
     hue = fmodf(hue, 1.0f);
@@ -139,7 +134,6 @@ Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
     col.alpha = alpha;
     col.fixBounds();
     return col;
-#endif
 }
 
 Color Color::fromHTML(const char* rgb, float alpha)
@@ -255,26 +249,6 @@ void Color::fixBounds() noexcept
     fixRange(blue);
     fixRange(alpha);
 }
-
-// -----------------------------------------------------------------------
-
-#ifndef HAVE_DCAIRO
-Color::Color(const NVGcolor& c) noexcept
-    : red(c.r), green(c.g), blue(c.b), alpha(c.a)
-{
-    fixBounds();
-}
-
-Color::operator NVGcolor() const noexcept
-{
-    NVGcolor nc;
-    nc.r = red;
-    nc.g = green;
-    nc.b = blue;
-    nc.a = alpha;
-    return nc;
-}
-#endif
 
 // -----------------------------------------------------------------------
 

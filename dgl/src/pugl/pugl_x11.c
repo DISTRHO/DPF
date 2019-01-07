@@ -25,13 +25,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef PUGL_HAVE_GL
-#include <GL/gl.h>
-#include <GL/glx.h>
-#endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 #include <cairo/cairo.h>
 #include <cairo/cairo-xlib.h>
+#endif
+#ifdef PUGL_OPENGL
+#include <GL/gl.h>
+#include <GL/glx.h>
 #endif
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -60,19 +60,19 @@ struct PuglInternalsImpl {
 	Display*   display;
 	int        screen;
 	Window     win;
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_t*         xlib_cr;
 	cairo_t*         buffer_cr;
 	cairo_surface_t* xlib_surface;
 	cairo_surface_t* buffer_surface;
 #endif
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	GLXContext ctx;
 	Bool       doubleBuffered;
 #endif
 };
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 /**
    Attributes for single-buffered RGBA with at least
    4 bits per color and a 16 bit depth buffer.
@@ -129,7 +129,7 @@ puglInitInternals(void)
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	glXMakeCurrent(view->impl->display, view->impl->win, view->impl->ctx);
 #endif
 }
@@ -137,7 +137,7 @@ puglEnterContext(PuglView* view)
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	if (flush) {
 		glFlush();
 		if (view->impl->doubleBuffered) {
@@ -166,7 +166,7 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	XVisualInfo*         vi   = NULL;
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	impl->doubleBuffered = True;
 	vi = glXChooseVisual(impl->display, impl->screen, attrListDblMS);
 
@@ -182,7 +182,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		impl->doubleBuffered = False;
 	}
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	XVisualInfo pat;
 	int         n;
 	pat.screen = impl->screen;
@@ -196,14 +196,14 @@ puglCreateWindow(PuglView* view, const char* title)
 	}
 
 #ifdef PUGL_VERBOSE
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	int glxMajor, glxMinor;
 	glXQueryVersion(impl->display, &glxMajor, &glxMinor);
 	printf("puGL: GLX-Version : %d.%d\n", glxMajor, glxMinor);
 #endif
 #endif
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	impl->ctx = glXCreateContext(impl->display, vi, 0, GL_TRUE);
 
 	if (!impl->ctx) {
@@ -237,7 +237,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		CWBorderPixel | CWColormap | CWEventMask, &attr);
 
 	if (!impl->win) {
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 		glXDestroyContext(impl->display, impl->ctx);
 #endif
 		XFree(vi);
@@ -246,7 +246,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		return 1;
 	}
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	impl->xlib_surface = cairo_xlib_surface_create(
 		impl->display, impl->win, vi->visual, view->width, view->height);
 	if (impl->xlib_surface == NULL || cairo_surface_status(impl->xlib_surface) != CAIRO_STATUS_SUCCESS) {
@@ -288,7 +288,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	}
 
 #ifdef PUGL_VERBOSE
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	if (glXIsDirect(impl->display, impl->ctx)) {
 		printf("puGL: DRI enabled (to disable, set LIBGL_ALWAYS_INDIRECT=1\n");
 	} else {
@@ -314,10 +314,10 @@ puglDestroy(PuglView* view)
 	x_fib_close(impl->display);
 #endif
 
-#ifdef PUGL_HAVE_GL
+#ifdef PUGL_OPENGL
 	glXDestroyContext(impl->display, impl->ctx);
 #endif
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_destroy(impl->xlib_cr);
 	cairo_destroy(impl->buffer_cr);
 	cairo_surface_destroy(impl->xlib_surface);
@@ -365,7 +365,7 @@ puglDisplay(PuglView* view)
 
 	puglEnterContext(view);
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_t* bc = impl->buffer_cr;
 	cairo_surface_t* xs = impl->xlib_surface;
 	cairo_surface_t* bs = impl->buffer_surface;
@@ -394,7 +394,7 @@ puglDisplay(PuglView* view)
 		view->displayFunc(view);
 	}
 
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	cairo_t* xc = impl->xlib_cr;
 	cairo_set_source_surface(xc, impl->buffer_surface, 0, 0);
 	cairo_paint(xc);
@@ -661,7 +661,7 @@ puglProcessEvents(PuglView* view)
 	}
 
 	if (conf_width != -1) {
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 		// Resize surfaces/contexts before dispatching
 		view->redisplay = true;
 		cairo_xlib_surface_set_size(view->impl->xlib_surface,
@@ -702,7 +702,7 @@ puglGetNativeWindow(PuglView* view)
 void*
 puglGetContext(PuglView* view)
 {
-#ifdef PUGL_HAVE_CAIRO
+#ifdef PUGL_CAIRO
 	return view->impl->buffer_cr;
 #endif
 	return NULL;

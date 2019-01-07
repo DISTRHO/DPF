@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -30,6 +30,13 @@ typedef DGL_NAMESPACE::NanoWidget UIWidget;
 #else
 # include "../dgl/Widget.hpp"
 typedef DGL_NAMESPACE::Widget UIWidget;
+#endif
+
+#ifdef DGL_CAIRO
+# include "Cairo.hpp"
+#endif
+#ifdef DGL_OPENGL
+# include "OpenGL.hpp"
 #endif
 
 START_NAMESPACE_DISTRHO

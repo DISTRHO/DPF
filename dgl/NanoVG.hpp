@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,7 @@
 #define DGL_NANO_WIDGET_HPP_INCLUDED
 
 #include "Color.hpp"
+#include "OpenGL.hpp"
 #include "Widget.hpp"
 
 #ifndef DGL_NO_SHARED_RESOURCES

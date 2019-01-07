@@ -31,104 +31,6 @@
 #define END_NAMESPACE_DGL }
 #define USE_NAMESPACE_DGL using namespace DGL_NAMESPACE;
 
-#ifdef DISTRHO_OS_WINDOWS
-// -----------------------------------------------------------------------
-// Fix OpenGL includes for Windows, based on glfw code
-
-#ifndef APIENTRY
-# define APIENTRY __stdcall
-#endif // APIENTRY
-
-/* We need WINGDIAPI defined */
-#ifndef WINGDIAPI
-# if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__POCC__)
-#  define WINGDIAPI __declspec(dllimport)
-# elif defined(__LCC__)
-#  define WINGDIAPI __stdcall
-# else
-#  define WINGDIAPI extern
-# endif
-# define DGL_WINGDIAPI_DEFINED
-#endif // WINGDIAPI
-
-/* Some <GL/glu.h> files also need CALLBACK defined */
-#ifndef CALLBACK
-# if defined(_MSC_VER)
-#  if (defined(_M_MRX000) || defined(_M_IX86) || defined(_M_ALPHA) || defined(_M_PPC)) && !defined(MIDL_PASS)
-#   define CALLBACK __stdcall
-#  else
-#   define CALLBACK
-#  endif
-# else
-#  define CALLBACK __stdcall
-# endif
-# define DGL_CALLBACK_DEFINED
-#endif // CALLBACK
-
-/* Most GL/glu.h variants on Windows need wchar_t */
-#include <cstddef>
-
-#endif // DISTRHO_OS_WINDOWS
-
-// -----------------------------------------------------------------------
-// OpenGL includes
-
-#ifdef HAVE_DGL
-
-#ifdef DISTRHO_OS_MAC
-# include <OpenGL/gl.h>
-#else
-# ifndef DISTRHO_OS_WINDOWS
-#  define GL_GLEXT_PROTOTYPES
-# endif
-# include <GL/gl.h>
-# include <GL/glext.h>
-#endif
-
-#endif
-
-// -----------------------------------------------------------------------
-// Cairo includes
-
-#ifdef HAVE_DCAIRO
-# include <cairo/cairo.h>
-#endif
-
-// -----------------------------------------------------------------------
-// Missing OpenGL defines
-
-#ifdef HAVE_DGL
-
-#if defined(GL_BGR_EXT) && ! defined(GL_BGR)
-# define GL_BGR GL_BGR_EXT
-#endif
-
-#if defined(GL_BGRA_EXT) && ! defined(GL_BGRA)
-# define GL_BGRA GL_BGRA_EXT
-#endif
-
-#ifndef GL_CLAMP_TO_BORDER
-# define GL_CLAMP_TO_BORDER 0x812D
-#endif
-
-#endif
-
-#ifdef DISTRHO_OS_WINDOWS
-// -----------------------------------------------------------------------
-// Fix OpenGL includes for Windows, based on glfw code
-
-#ifdef DGL_WINGDIAPI_DEFINED
-# undef WINGDIAPI
-# undef DGL_WINGDIAPI_DEFINED
-#endif
-
-#ifdef DGL_CALLBACK_DEFINED
-# undef CALLBACK
-# undef DGL_CALLBACK_DEFINED
-#endif
-
-#endif // DISTRHO_OS_WINDOWS
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -188,6 +90,11 @@ enum Key {
 // Base DGL classes
 
 /**
+   Graphics context, definition depends on build type.
+ */
+struct GraphicsContext;
+
+/**
    Idle callback.
  */
 class IdleCallback
@@ -195,16 +102,6 @@ class IdleCallback
 public:
     virtual ~IdleCallback() {}
     virtual void idleCallback() = 0;
-};
-
-/**
-   Graphics context.
- */
-struct Context
-{
-#ifdef HAVE_DCAIRO
-    cairo_t* cairo;
-#endif
 };
 
 // -----------------------------------------------------------------------

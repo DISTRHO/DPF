@@ -2,7 +2,7 @@
 
 all: build
 
-ifeq ($(WIN32),true)
+ifeq ($(WINDOWS),true)
 build: ../lv2_ttl_generator.exe
 else
 build: ../lv2_ttl_generator
