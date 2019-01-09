@@ -46,7 +46,7 @@ void ExampleUI::onDisplay()
     cairo_paint(cr);
 }
 
-void ExampleUI::parameterChanged(uint32_t index, float value)
+void ExampleUI::parameterChanged(uint32_t, float)
 {
 }
 

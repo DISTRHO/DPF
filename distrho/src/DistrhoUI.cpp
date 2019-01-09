@@ -161,6 +161,10 @@ void UI::uiReshape(uint width, uint height)
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#else
+    // unused
+    (void)width;
+    (void)height;
 #endif
 }
 

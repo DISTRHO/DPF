@@ -64,17 +64,12 @@ void DemoWidgetClickable::onDisplay()
 bool DemoWidgetClickable::onMouse(const MouseEvent &event)
 {
     if (event.press) {
-        Point<int> pos = getAbsolutePos();
-        Size<uint> size = getSize();
-
+        int w = getWidth();
+        int h = getHeight();
         int mx = event.pos.getX();
         int my = event.pos.getY();
-        int px = pos.getX();
-        int py = pos.getY();
 
-        bool inside = mx >= 0 && my >= 0 &&
-            mx < size.getWidth() && my < size.getHeight();
-
+        bool inside = mx >= 0 && my >= 0 && mx < w && my < h;
         if (inside) {
             colorid_ = (colorid_ + 1) % 3;
             repaint();
