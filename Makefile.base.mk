@@ -216,8 +216,15 @@ ifeq ($(HAVE_CAIRO),true)
 
 DGL_FLAGS   += -DHAVE_CAIRO
 
+ifneq ($(WINDOWS),true)
 CAIRO_FLAGS  = $(shell pkg-config --cflags cairo)
 CAIRO_LIBS   = $(shell pkg-config --libs cairo)
+else
+# Always build statically on windows
+CAIRO_FLAGS  = $(shell pkg-config --static --cflags cairo)
+CAIRO_LIBS   = $(shell pkg-config --static --libs cairo)
+CAIRO_LIBS   += -lgdi32
+endif
 
 HAVE_CAIRO_OR_OPENGL = true
 
