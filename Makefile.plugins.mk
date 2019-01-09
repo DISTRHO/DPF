@@ -6,11 +6,12 @@
 
 # NOTE: NAME, FILES_DSP and FILES_UI must have been defined before including this file!
 
+ROOT_DIR ?= ../..
 
-ifeq (,$(wildcard ../../Makefile.base.mk))
-DPF_PATH=../../dpf
+ifeq (,$(wildcard $(ROOT_DIR)/Makefile.base.mk))
+DPF_PATH ?= $(ROOT_DIR)/dpf
 else
-DPF_PATH=../..
+DPF_PATH ?= $(ROOT_DIR)
 endif
 
 include $(DPF_PATH)/Makefile.base.mk
@@ -18,8 +19,8 @@ include $(DPF_PATH)/Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 # Basic setup
 
-TARGET_DIR = ../../bin
-BUILD_DIR = ../../build/$(NAME)
+TARGET_DIR ?= $(ROOT_DIR)/bin
+BUILD_DIR  ?= $(ROOT_DIR)/build/$(NAME)
 
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
