@@ -25,7 +25,7 @@ ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
 
-ifneq ($(MACOS_OR_WIN32),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
 	# ExternalUI is WIP
 	$(MAKE) all -C examples/ExternalUI
 	install -d bin/d_extui-dssi
