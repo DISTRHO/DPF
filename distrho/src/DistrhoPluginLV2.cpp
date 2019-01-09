@@ -169,7 +169,7 @@ public:
     void lv2_activate()
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        std::memset(&fTimePosition, 0, sizeof(TimePosition));
+        fTimePosition.clear();
 
         // hosts may not send all values, resulting on some invalid data
         fTimePosition.bbt.bar   = 1;

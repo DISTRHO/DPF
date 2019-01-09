@@ -93,7 +93,7 @@ protected:
       A state has changed on the plugin side.
       This is called by the host to inform the UI about state changes.
     */
-    void stateChanged(const char*, const char*)
+    void stateChanged(const char*, const char*) override
     {
         // nothing here
     }
