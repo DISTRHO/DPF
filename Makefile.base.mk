@@ -4,9 +4,10 @@
 # Created by falkTX
 #
 
-AR  ?= ar
-CC  ?= gcc
-CXX ?= g++
+AR         ?= ar
+CC         ?= gcc
+CXX        ?= g++
+PKG_CONFIG ?= pkg-config
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Auto-detect OS if not defined
@@ -178,20 +179,20 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for required libraries
 
-HAVE_CAIRO  = $(shell pkg-config --exists cairo && echo true)
+HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
 
 ifeq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
 HAVE_OPENGL = true
 else
-HAVE_OPENGL = $(shell pkg-config --exists gl && echo true)
-HAVE_X11    = $(shell pkg-config --exists x11 && echo true)
+HAVE_OPENGL = $(shell $(PKG_CONFIG) --exists gl && echo true)
+HAVE_X11    = $(shell $(PKG_CONFIG) --exists x11 && echo true)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for optional libraries
 
-HAVE_JACK  = $(shell pkg-config --exists jack && echo true)
-HAVE_LIBLO = $(shell pkg-config --exists liblo && echo true)
+HAVE_JACK  = $(shell $(PKG_CONFIG) --exists jack && echo true)
+HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Generic DGL stuff
@@ -205,8 +206,8 @@ DGL_LIBS   += -lgdi32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
-DGL_FLAGS  += $(shell pkg-config --cflags x11)
-DGL_LIBS   += $(shell pkg-config --libs x11)
+DGL_FLAGS  += $(shell $(PKG_CONFIG) --cflags x11)
+DGL_LIBS   += $(shell $(PKG_CONFIG) --libs x11)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -216,8 +217,8 @@ ifeq ($(HAVE_CAIRO),true)
 
 DGL_FLAGS   += -DHAVE_CAIRO
 
-CAIRO_FLAGS  = $(shell pkg-config --cflags cairo)
-CAIRO_LIBS   = $(shell pkg-config --libs cairo)
+CAIRO_FLAGS  = $(shell $(PKG_CONFIG) --cflags cairo)
+CAIRO_LIBS   = $(shell $(PKG_CONFIG) --libs cairo)
 
 HAVE_CAIRO_OR_OPENGL = true
 
@@ -239,8 +240,8 @@ OPENGL_LIBS  = -lopengl32
 endif
 
 ifneq ($(MACOS_OR_WINDOWS),true)
-OPENGL_FLAGS = $(shell pkg-config --cflags gl x11)
-OPENGL_LIBS  = $(shell pkg-config --libs gl x11)
+OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl x11)
+OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl x11)
 endif
 
 HAVE_CAIRO_OR_OPENGL = true

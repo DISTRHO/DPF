@@ -6,6 +6,8 @@
 
 # NOTE: NAME, FILES_DSP and FILES_UI must have been defined before including this file!
 
+PKG_CONFIG ?= pkg-config
+
 ROOT_DIR ?= ../..
 
 ifeq (,$(wildcard $(ROOT_DIR)/Makefile.base.mk))
@@ -144,12 +146,12 @@ $(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
 
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
@@ -163,7 +165,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs jack) -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
@@ -190,7 +192,7 @@ $(dssi_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.o
 $(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI UI for $(NAME)"
-	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell pkg-config --libs liblo) -o $@
+	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs liblo) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LV2
