@@ -286,9 +286,9 @@ public:
 # if DISTRHO_PLUGIN_WANT_STATE
     char* dssi_configure(const char* const key, const char* const value)
     {
-        if (std::strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX, std::strlen(DSSI_RESERVED_CONFIGURE_PREFIX) == 0))
+        if (std::strncmp(key, DSSI_RESERVED_CONFIGURE_PREFIX, std::strlen(DSSI_RESERVED_CONFIGURE_PREFIX)) == 0)
             return nullptr;
-        if (std::strncmp(key, DSSI_GLOBAL_CONFIGURE_PREFIX, std::strlen(DSSI_GLOBAL_CONFIGURE_PREFIX) == 0))
+        if (std::strncmp(key, DSSI_GLOBAL_CONFIGURE_PREFIX, std::strlen(DSSI_GLOBAL_CONFIGURE_PREFIX)) == 0)
             return nullptr;
 
         fPlugin.setState(key, value);
