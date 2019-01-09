@@ -47,16 +47,16 @@ int64_t ExamplePlugin::getUniqueId() const
     return 0;
 }
 
-void ExamplePlugin::initParameter(uint32_t index, Parameter &parameter)
+void ExamplePlugin::initParameter(uint32_t, Parameter &)
 {
 }
 
-float ExamplePlugin::getParameterValue(uint32_t index) const
+float ExamplePlugin::getParameterValue(uint32_t) const
 {
     return 0;
 }
 
-void ExamplePlugin::setParameterValue(uint32_t index, float value)
+void ExamplePlugin::setParameterValue(uint32_t, float)
 {
 }
 
