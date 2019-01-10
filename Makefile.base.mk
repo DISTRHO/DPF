@@ -197,16 +197,16 @@ HAVE_LIBLO = $(shell pkg-config --exists liblo && echo true)
 # Set Generic DGL stuff
 
 ifeq ($(MACOS),true)
-DGL_LIBS   += -framework Cocoa
+DGL_SYSTEM_LIBS   += -framework Cocoa
 endif
 
 ifeq ($(WINDOWS),true)
-DGL_LIBS   += -lgdi32
+DGL_SYSTEM_LIBS   += -lgdi32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
-DGL_FLAGS  += $(shell pkg-config --cflags x11)
-DGL_LIBS   += $(shell pkg-config --libs x11)
+DGL_FLAGS         += $(shell pkg-config --cflags x11)
+DGL_SYSTEM_LIBS   += $(shell pkg-config --libs x11)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -223,7 +223,6 @@ else
 # Always build statically on windows
 CAIRO_FLAGS  = $(shell pkg-config --static --cflags cairo)
 CAIRO_LIBS   = $(shell pkg-config --static --libs cairo)
-CAIRO_LIBS   += -lgdi32
 endif
 
 HAVE_CAIRO_OR_OPENGL = true
