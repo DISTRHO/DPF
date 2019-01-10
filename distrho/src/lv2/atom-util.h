@@ -270,13 +270,13 @@ lv2_atom_object_next(const LV2_Atom_Property_Body* i)
    @endcode
 */
 #define LV2_ATOM_OBJECT_FOREACH(obj, iter) \
-	for (const LV2_Atom_Property_Body* (iter) = lv2_atom_object_begin(&(obj)->body); \
+	for (const LV2_Atom_Property_Body* iter = lv2_atom_object_begin(&(obj)->body); \
 	     !lv2_atom_object_is_end(&(obj)->body, (obj)->atom.size, (iter)); \
 	     (iter) = lv2_atom_object_next(iter))
 
 /** Like LV2_ATOM_OBJECT_FOREACH but for a headerless object body. */
 #define LV2_ATOM_OBJECT_BODY_FOREACH(body, size, iter) \
-	for (const LV2_Atom_Property_Body* (iter) = lv2_atom_object_begin(body); \
+	for (const LV2_Atom_Property_Body* iter = lv2_atom_object_begin(body); \
 	     !lv2_atom_object_is_end(body, size, (iter)); \
 	     (iter) = lv2_atom_object_next(iter))
 
