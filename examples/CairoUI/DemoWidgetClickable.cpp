@@ -14,19 +14,19 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DemoWidgetClickable.h"
+#include "DemoWidgetClickable.hpp"
 
 #include "Cairo.hpp"
 #include "Window.hpp"
 
-DemoWidgetClickable::DemoWidgetClickable(Widget *group)
+DemoWidgetClickable::DemoWidgetClickable(Widget* group)
     : Widget(group)
 {
 }
 
 void DemoWidgetClickable::onDisplay()
 {
-    cairo_t *cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
 
     Point<int> pt = getAbsolutePos();
     Size<uint> sz = getSize();
@@ -36,7 +36,8 @@ void DemoWidgetClickable::onDisplay()
     int w = sz.getWidth();
     int h = sz.getHeight();
 
-    switch (colorid_) {
+    switch (fColorId)
+    {
     case 0:
         cairo_set_source_rgb(cr, 0.75, 0.0, 0.0);
         break;
@@ -61,17 +62,19 @@ void DemoWidgetClickable::onDisplay()
     cairo_stroke(cr);
 }
 
-bool DemoWidgetClickable::onMouse(const MouseEvent &event)
+bool DemoWidgetClickable::onMouse(const MouseEvent& event)
 {
-    if (event.press) {
+    if (event.press)
+    {
         int w = getWidth();
         int h = getHeight();
         int mx = event.pos.getX();
         int my = event.pos.getY();
 
         bool inside = mx >= 0 && my >= 0 && mx < w && my < h;
-        if (inside) {
-            colorid_ = (colorid_ + 1) % 3;
+        if (inside)
+        {
+            fColorId = (fColorId + 1) % 3;
             repaint();
         }
     }
