@@ -91,6 +91,8 @@ HAVE_DGL   = false
 endif
 endif
 
+DGL_LIBS += $(DGL_SYSTEM_LIBS)
+
 ifneq ($(HAVE_DGL),true)
 dssi_ui =
 lv2_ui =

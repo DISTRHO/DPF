@@ -4,10 +4,9 @@
 # Created by falkTX
 #
 
-AR         ?= ar
-CC         ?= gcc
-CXX        ?= g++
-PKG_CONFIG ?= pkg-config
+AR  ?= ar
+CC  ?= gcc
+CXX ?= g++
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Auto-detect OS if not defined
@@ -44,6 +43,16 @@ endif
 endif
 endif
 endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set PKG_CONFIG (can be overridden by environment variable)
+
+ifeq ($(WINDOWS),true)
+# Build statically on Windows by default
+PKG_CONFIG ?= pkg-config --static
+else
+PKG_CONFIG ?= pkg-config
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -198,16 +207,16 @@ HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 # Set Generic DGL stuff
 
 ifeq ($(MACOS),true)
-DGL_LIBS   += -framework Cocoa
+DGL_SYSTEM_LIBS  += -framework Cocoa
 endif
 
 ifeq ($(WINDOWS),true)
-DGL_LIBS   += -lgdi32
+DGL_SYSTEM_LIBS  += -lgdi32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
-DGL_FLAGS  += $(shell $(PKG_CONFIG) --cflags x11)
-DGL_LIBS   += $(shell $(PKG_CONFIG) --libs x11)
+DGL_FLAGS        += $(shell $(PKG_CONFIG) --cflags x11)
+DGL_SYSTEM_LIBS  += $(shell $(PKG_CONFIG) --libs x11)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

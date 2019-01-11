@@ -9,7 +9,7 @@ include ../Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 
 BUILD_C_FLAGS   += $(DGL_FLAGS) -I. -Isrc
-BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -Wno-unused-parameter
+BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
 LINK_FLAGS      += $(DGL_LIBS)
 
 # ifneq ($(MACOS_OLD),true)
