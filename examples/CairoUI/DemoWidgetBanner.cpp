@@ -14,12 +14,12 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DemoWidgetBanner.h"
+#include "DemoWidgetBanner.hpp"
 
 #include "Cairo.hpp"
 #include "Window.hpp"
 
-static const char *banner =
+static const char* banner =
 "                                                                        "
 "  *     *               *                                 *     *       "
 "  **   **               *                           *     *     *       "
@@ -44,19 +44,20 @@ static const char *banner =
 "                          *****   *      *                              "
 "                                                                        ";
 
-enum {
+enum
+{
     rows = 23,
     columns = 72,
 };
 
-DemoWidgetBanner::DemoWidgetBanner(Widget *group)
+DemoWidgetBanner::DemoWidgetBanner(Widget* group)
     : Widget(group)
 {
 }
 
 void DemoWidgetBanner::onDisplay()
 {
-    cairo_t *cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
 
     Point<int> pt = getAbsolutePos();
     Size<uint> sz = getSize();
@@ -70,8 +71,10 @@ void DemoWidgetBanner::onDisplay()
     double radius = 0.5 * diameter;
     double xoff = 0;
     double yoff = 0.5 * (h - rows * diameter);
-    for (int r = 0; r < rows; ++r) {
-        for (int c = 0; c < columns; ++c) {
+    for (int r = 0; r < rows; ++r)
+    {
+        for (int c = 0; c < columns; ++c)
+        {
             double cx = x + xoff + radius + c * diameter;
             double cy = y + yoff + radius + r * diameter;
 

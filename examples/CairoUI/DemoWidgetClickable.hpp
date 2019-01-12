@@ -16,12 +16,13 @@
 
 #include "Widget.hpp"
 
-class DemoWidgetClickable : public Widget {
+class DemoWidgetClickable : public Widget
+{
 public:
-    explicit DemoWidgetClickable(Widget *group);
+    explicit DemoWidgetClickable(Widget* group);
     void onDisplay() override;
-    bool onMouse(const MouseEvent &event) override;
+    bool onMouse(const MouseEvent& event) override;
 
 private:
-    unsigned colorid_ = 0;
+    unsigned fColorId = 0;
 };

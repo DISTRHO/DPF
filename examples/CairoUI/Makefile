@@ -13,12 +13,12 @@ NAME = d_cairoui
 # Files to build
 
 FILES_DSP = \
-	PluginMain.cc
+	CairoExamplePlugin.cpp
 
 FILES_UI  = \
-	DemoWidgetBanner.cc \
-	DemoWidgetClickable.cc \
-	PluginUI.cc
+	DemoWidgetBanner.cpp \
+	DemoWidgetClickable.cpp \
+	CairoExampleUI.cpp
 
 # --------------------------------------------------------------
 # Do some magic
