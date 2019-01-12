@@ -237,7 +237,7 @@ bool Size<T>::isNotNull() const noexcept
 template<typename T>
 bool Size<T>::isValid() const noexcept
 {
-    return fWidth > 1 && fHeight > 1;
+    return fWidth > 0 && fHeight > 0;
 }
 
 template<typename T>
