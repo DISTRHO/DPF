@@ -19,8 +19,6 @@
 #include "DemoWidgetClickable.hpp"
 #include "Window.hpp"
 
-#include <memory>
-
 START_NAMESPACE_DISTRHO
 
 class CairoExampleUI : public UI
@@ -30,14 +28,14 @@ public:
         : UI(200, 200)
     {
         DemoWidgetClickable* widgetClickable = new DemoWidgetClickable(this);
-        fWidgetClickable.reset(widgetClickable);
-        fWidgetClickable->setSize(50, 50);
-        fWidgetClickable->setAbsolutePos(100, 100);
+        fWidgetClickable = widgetClickable;
+        widgetClickable->setSize(50, 50);
+        widgetClickable->setAbsolutePos(100, 100);
 
-        DemoWidgetBanner* widget_banner = new DemoWidgetBanner(this);
-        fWidgetBanner.reset(widget_banner);
-        fWidgetBanner->setSize(180, 80);
-        fWidgetBanner->setAbsolutePos(10, 10);
+        DemoWidgetBanner* widgetBanner = new DemoWidgetBanner(this);
+        fWidgetBanner = widgetBanner;
+        widgetBanner->setSize(180, 80);
+        widgetBanner->setAbsolutePos(10, 10);
     }
 
     ~CairoExampleUI()
@@ -60,8 +58,8 @@ public:
     }
 
 private:
-    std::unique_ptr<DemoWidgetClickable> fWidgetClickable;
-    std::unique_ptr<DemoWidgetBanner> fWidgetBanner;
+    ScopedPointer<DemoWidgetClickable> fWidgetClickable;
+    ScopedPointer<DemoWidgetBanner> fWidgetBanner;
 };
 
 UI* createUI()
