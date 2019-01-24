@@ -57,7 +57,10 @@ lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
-au         = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/plugin
+au_plugin  = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/dpfplugin
+au_pkginfo = $(TARGET_DIR)/$(NAME).component/Contents/PkgInfo
+au_plist   = $(TARGET_DIR)/$(NAME).component/Contents/Info.plist
+au_rsrc    = $(TARGET_DIR)/$(NAME).component/Contents/Resources/dpfplugin.rsrc
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set stuff needed for AU
@@ -72,10 +75,10 @@ AU_BUILD_FLAGS = \
     -Wno-unused-parameter
 
 AU_LINK_FLAGS = \
-     -bundle \
+     -bundle -arch x86_64 -arch i386 \
 	 -framework AudioToolbox \
 	 -framework AudioUnit \
-     -Wl,-exported_symbol,_PluginAUEntry
+     -exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
 
 # not needed yet
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUCarbonViewBase
@@ -265,16 +268,48 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # AU
 
-au: $(au)
+au: $(au_plugin) $(au_pkginfo) $(au_plist) $(au_rsrc)
 
 ifeq ($(HAVE_DGL),true)
-$(au): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
+$(au_plugin): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
 else
-$(au): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
+$(au_plugin): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU plugin for $(NAME)"
 	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_LINK_FLAGS) $(DGL_LIBS) -o $@
+
+$(au_pkginfo): $(OBJS_DSP)
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU PkgInfo for $(NAME)"
+	cp $(DPF_PATH)/distrho/src/CoreAudio106/PkgInfo $@
+
+$(au_plist): $(OBJS_DSP)
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU Info.plist for $(NAME)"
+	cp $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist $@
+
+$(au_rsrc): $(BUILD_DIR)/step2.rsrc
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU rsrc for $(NAME)"
+	ResMerger $< -dstIs DF -o $@
+
+$(BUILD_DIR)/step2.rsrc: $(BUILD_DIR)/step1.rsrc
+	ResMerger -dstIs DF $< -o $@
+
+$(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(OBJS_DSP) $(au_pkginfo) $(au_plist)
+	Rez $< \
+		-d SystemSevenOrLater=1 \
+		-useDF -script Roman \
+        -d x86_64_YES -d i386_YES -arch x86_64 -arch i386 \
+		-i . \
+		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic \
+        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
+        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases \
+        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
+        -i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
+        -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
+		-o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
