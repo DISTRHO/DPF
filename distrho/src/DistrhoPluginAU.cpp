@@ -89,10 +89,10 @@ public:
 
         // Name
         {
-            // FIXME
-            // const String& name = fPlugin.getParameterUnit(inParameterID);
+            const String& name = fPlugin.getParameterName(inParameterID);
+            CFStringRef cfname = CFStringCreateWithCString(kCFAllocatorDefault, name.buffer(), kCFStringEncodingUTF8);
 
-            // AUBase::FillInParameterName(outParameterInfo, name.buffer(), true);
+            AUBase::FillInParameterName(outParameterInfo, cfname, true); // FIXME true or false??
         }
 
         // Hints
@@ -147,9 +147,8 @@ public:
             }
             else
             {
-                // FIXME
-                // outParameterInfo.unit = kAudioUnitParameterUnit_CustomUnit;
-                // outParameterInfo.unitName = unit.buffer();
+                outParameterInfo.unit = kAudioUnitParameterUnit_CustomUnit;
+                outParameterInfo.unitName = CFStringCreateWithCString(kCFAllocatorDefault, unit.buffer(), kCFStringEncodingUTF8);
             }
         }
 
