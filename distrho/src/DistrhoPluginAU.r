@@ -26,6 +26,6 @@
 #define VERSION         kdpfplugVersion
 #define NAME            "__MyCompanyName__: dpfplugin"
 #define DESCRIPTION     "dpfplugin AU"
-#define ENTRY_POINT     "dpfplugEntry"
+#define ENTRY_POINT     "PluginAUEntry"
 
 #include "AUResources.r"

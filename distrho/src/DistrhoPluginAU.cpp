@@ -213,8 +213,7 @@ END_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 
-using dpfplug = DISTRHO_NAMESPACE::PluginAU;
-COMPONENT_ENTRY(dpfplug)
+COMPONENT_ENTRY(PluginAU)
 
 // -----------------------------------------------------------------------
 
