@@ -17,7 +17,11 @@ PLUGINS=`ls | grep vst.dylib`
 
 for i in $PLUGINS; do
   FILE=`echo $i | awk 'sub("-vst.dylib","")'`
-  cp -r ../dpf/utils/plugin.vst/ $FILE.vst
+  if [ -e ../dpf ]; then
+    cp -r ../dpf/utils/plugin.vst/ $FILE.vst
+  else
+    cp -r ../utils/plugin.vst/ $FILE.vst
+  fi
   mv $i $FILE.vst/Contents/MacOS/$FILE
   rm -f $FILE.vst/Contents/MacOS/deleteme
   sed -i -e "s/X-PROJECTNAME-X/$FILE/" $FILE.vst/Contents/Info.plist
