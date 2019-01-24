@@ -188,6 +188,11 @@ $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
 
+$(BUILD_DIR)/DistrhoPluginAUexport.cpp.o: $(DPF_PATH)/distrho/src/DistrhoPluginAUexport.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginAUexport.cpp"
+	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
+
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
 
@@ -299,7 +304,7 @@ $(BUILD_DIR)/step2.rsrc: $(BUILD_DIR)/step1.rsrc
 	@echo "Creating AU rsrc for $(NAME) (part 2/3)"
 	ResMerger -dstIs DF $< -o $@
 
-$(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(OBJS_DSP) $(au_pkginfo) $(au_plist)
+$(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(BUILD_DIR)/DistrhoPluginInfo.r $(OBJS_DSP)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU rsrc for $(NAME) (part 1/3)"
 	Rez $< \
@@ -307,6 +312,7 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(OBJS_DSP) $
 		-useDF -script Roman \
         -d x86_64_YES -d i386_YES -arch x86_64 -arch i386 \
 		-i . \
+		-i $(BUILD_DIR) \
 		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic \
         -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
         -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases \
@@ -314,6 +320,13 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(OBJS_DSP) $
         -i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
         -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
 		-o $@
+
+$(BUILD_DIR)/DistrhoPluginInfo.r: $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginAUexport.cpp.o
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating DistrhoPluginInfo.r for $(NAME)"
+	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $(BUILD_DIR)/DistrhoPluginInfoGenerator && \
+		$(BUILD_DIR)/DistrhoPluginInfoGenerator "$(BUILD_DIR)" && \
+		rm $(BUILD_DIR)/DistrhoPluginInfoGenerator
 
 # ---------------------------------------------------------------------------------------------------------------------
 
