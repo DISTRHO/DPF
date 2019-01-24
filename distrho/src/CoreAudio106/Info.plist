@@ -5,13 +5,13 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleExecutable</key>
-	<string>dpfplugin</string>
+	<string>X-DPF-EXECUTABLE-DPF-X</string>
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
 	<string>com.yourcompany.dpfplugin</string>
 	<key>CFBundleName</key>
-	<string>dpfplugin</string>
+	<string>X-DPF-EXECUTABLE-DPF-X</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>

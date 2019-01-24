@@ -57,10 +57,10 @@ lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
-au_plugin  = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/dpfplugin
+au_plugin  = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/$(NAME)
 au_pkginfo = $(TARGET_DIR)/$(NAME).component/Contents/PkgInfo
 au_plist   = $(TARGET_DIR)/$(NAME).component/Contents/Info.plist
-au_rsrc    = $(TARGET_DIR)/$(NAME).component/Contents/Resources/dpfplugin.rsrc
+au_rsrc    = $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(NAME).rsrc
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set stuff needed for AU
@@ -287,7 +287,7 @@ $(au_pkginfo): $(OBJS_DSP)
 $(au_plist): $(OBJS_DSP)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU Info.plist for $(NAME)"
-	cp $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist $@
+	sed -e "s/X-DPF-EXECUTABLE-DPF-X/$(NAME)/g" $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist > $@
 
 $(au_rsrc): $(BUILD_DIR)/step2.rsrc
 	-@mkdir -p $(shell dirname $@)
