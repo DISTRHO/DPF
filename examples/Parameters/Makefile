@@ -49,6 +49,10 @@ endif
 
 TARGETS += vst
 
+ifeq ($(MACOS),true)
+TARGETS += au
+endif
+
 all: $(TARGETS)
 
 # --------------------------------------------------------------

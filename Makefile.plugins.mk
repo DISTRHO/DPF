@@ -57,6 +57,34 @@ lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
+au         = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/plugin
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set stuff needed for AU
+
+AU_BUILD_FLAGS = \
+	-I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
+	-I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
+	-I$(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility\
+    -Wno-deprecated-declarations \
+    -Wno-four-char-constants \
+    -Wno-overloaded-virtual \
+    -Wno-unused-parameter
+
+AU_LINK_FLAGS = \
+     -bundle \
+	 -framework AudioToolbox \
+	 -framework AudioUnit \
+     -Wl,-exported_symbol,_PluginAUEntry
+
+# not needed yet
+#	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUCarbonViewBase
+#  	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUInstrumentBase
+#	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUViewBase
+#	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases
+
+#	 -framework CoreAudio
+#	 -framework CoreServices
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
@@ -147,6 +175,11 @@ $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
 
+$(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginMain.cpp (AU)"
+	$(CXX) $< $(BUILD_CXX_FLAGS) $(AU_BUILD_FLAGS) -DDISTRHO_PLUGIN_TARGET_AU -c -o $@
+
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
@@ -230,6 +263,20 @@ endif
 	@$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# AU
+
+au: $(au)
+
+ifeq ($(HAVE_DGL),true)
+$(au): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
+else
+$(au): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
+endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU plugin for $(NAME)"
+	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_LINK_FLAGS) $(DGL_LIBS) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 
 -include $(OBJS_DSP:%.o=%.d)
 ifeq ($(HAVE_DGL),true)
@@ -241,10 +288,12 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.d
 
 -include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_AU.cpp.d
 
 # ---------------------------------------------------------------------------------------------------------------------

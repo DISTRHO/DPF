@@ -154,8 +154,8 @@ public:
 #if TARGET_OS_MAC && TARGET_CPU_PPC && !TARGET_RT_MAC_MACHO
 	// for OS 9, a PPC native component's entry point must be a routine descriptor
 	#define COMPONENT_ENTRY(Class) \
-		extern "C" OSStatus Class##Entry(ComponentParameters *params, Class *obj); \
-		extern "C" OSStatus Class##Entry(ComponentParameters *params, Class *obj) { \
+		extern "C" __attribute__ ((visibility("default"))) OSStatus Class##Entry(ComponentParameters *params, Class *obj); \
+		extern "C" __attribute__ ((visibility("default"))) OSStatus Class##Entry(ComponentParameters *params, Class *obj) { \
 			return ComponentEntryPoint<Class>::Dispatch(params, obj); \
 		} \
 	\
@@ -165,8 +165,8 @@ public:
 								STACK_ROUTINE_PARAMETER (2, kFourByteCode)), Class##Entry);
 #else
 	#define COMPONENT_ENTRY(Class) \
-		extern "C" OSStatus Class##Entry(ComponentParameters *params, Class *obj); \
-		extern "C" OSStatus Class##Entry(ComponentParameters *params, Class *obj) { \
+		extern "C" __attribute__ ((visibility("default"))) OSStatus Class##Entry(ComponentParameters *params, Class *obj); \
+		extern "C" __attribute__ ((visibility("default"))) OSStatus Class##Entry(ComponentParameters *params, Class *obj) { \
 			return ComponentEntryPoint<Class>::Dispatch(params, obj); \
 		}
 #endif

@@ -56,7 +56,7 @@ public:
 
     AUKernelBase* NewKernel() override
     {
-        return new dpfplugKernel(this);
+        return new PluginKernel(this, fPlugin);
     }
 
     OSStatus GetParameterValueStrings(AudioUnitScope inScope,
@@ -75,9 +75,10 @@ public:
 
         // Name
         {
-            const String& name = fPlugin.getParameterUnit(inParameterID);
+            // FIXME
+            // const String& name = fPlugin.getParameterUnit(inParameterID);
 
-            AUBase::FillInParameterName(outParameterInfo, name.buffer(), true);
+            // AUBase::FillInParameterName(outParameterInfo, name.buffer(), true);
         }
 
         // Hints
@@ -132,8 +133,9 @@ public:
             }
             else
             {
-                outParameterInfo.unit = kAudioUnitParameterUnit_CustomUnit;
-                outParameterInfo.unitName = unit.buffer();
+                // FIXME
+                // outParameterInfo.unit = kAudioUnitParameterUnit_CustomUnit;
+                // outParameterInfo.unitName = unit.buffer();
             }
         }
 
@@ -190,7 +192,8 @@ private:
         {
             DISTRHO_SAFE_ASSERT_RETURN(inNumChannels == DISTRHO_PLUGIN_NUM_INPUTS,);
 
-            fPlugin.run(inSourceP, inDestP, inFramesToProcess);
+            // FIXME
+            // fPlugin.run(inSourceP, inDestP, inFramesToProcess);
         }
 
         void Reset() override
@@ -210,6 +213,24 @@ END_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 
-COMPONENT_ENTRY(DISTRHO_NAMESPACE::PluginAU)
+using DISTRHO_NAMESPACE::PluginAU;
+COMPONENT_ENTRY(PluginAU)
+
+// -----------------------------------------------------------------------
+
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/AUBase.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/AUDispatch.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/AUInputElement.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/AUOutputElement.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/AUScopeElement.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/AUBase/ComponentBase.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/OtherBases/AUEffectBase.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/Utility/AUBaseHelper.cpp"
+#include "CoreAudio106/AudioUnits/AUPublic/Utility/AUBuffer.cpp"
+#include "CoreAudio106/PublicUtility/CAAudioChannelLayout.cpp"
+#include "CoreAudio106/PublicUtility/CAAUParameter.cpp"
+#include "CoreAudio106/PublicUtility/CAMutex.cpp"
+#include "CoreAudio106/PublicUtility/CAStreamBasicDescription.cpp"
+#include "CoreAudio106/PublicUtility/CAVectorUnit.cpp"
 
 // -----------------------------------------------------------------------
