@@ -279,25 +279,29 @@ endif
 	@echo "Creating AU plugin for $(NAME)"
 	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_LINK_FLAGS) $(DGL_LIBS) -o $@
 
-$(au_pkginfo): $(OBJS_DSP)
+$(au_pkginfo):
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU PkgInfo for $(NAME)"
 	cp $(DPF_PATH)/distrho/src/CoreAudio106/PkgInfo $@
 
-$(au_plist): $(OBJS_DSP)
+$(au_plist):
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU Info.plist for $(NAME)"
 	sed -e "s/X-DPF-EXECUTABLE-DPF-X/$(NAME)/g" $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist > $@
 
 $(au_rsrc): $(BUILD_DIR)/step2.rsrc
 	-@mkdir -p $(shell dirname $@)
-	@echo "Creating AU rsrc for $(NAME)"
+	@echo "Creating AU rsrc for $(NAME) (part 3/3)"
 	ResMerger $< -dstIs DF -o $@
 
 $(BUILD_DIR)/step2.rsrc: $(BUILD_DIR)/step1.rsrc
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU rsrc for $(NAME) (part 2/3)"
 	ResMerger -dstIs DF $< -o $@
 
 $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(OBJS_DSP) $(au_pkginfo) $(au_plist)
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU rsrc for $(NAME) (part 1/3)"
 	Rez $< \
 		-d SystemSevenOrLater=1 \
 		-useDF -script Roman \
