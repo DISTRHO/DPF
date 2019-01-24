@@ -15,11 +15,11 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundlePackageType</key>
-	<string>????</string>
+	<string>BNDL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.1</string>
 	<key>CFBundleSignature</key>
-	<string>ShIt</string>
+	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>1.1</string>
 	<key>CSResourcesFileMapped</key>
