@@ -27,6 +27,19 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 // #endif
 
 // -----------------------------------------------------------------------
+
+struct LastValuesInit {
+    LastValuesInit()
+    {
+        if (d_lastBufferSize == 0)
+            d_lastBufferSize = kAUDefaultMaxFramesPerSlice;
+
+        if (d_isZero(d_lastSampleRate))
+            d_lastSampleRate = kAUDefaultSampleRate;
+    };
+};
+
+// -----------------------------------------------------------------------
 // AU Plugin
 
 class PluginAU : public AUEffectBase
@@ -34,6 +47,7 @@ class PluginAU : public AUEffectBase
 public:
     PluginAU(AudioUnit component)
         : AUEffectBase(component),
+          fLastValuesInit(),
           fPlugin(this, writeMidiCallback)
     {
         CreateElements();
@@ -172,6 +186,7 @@ public:
     // -------------------------------------------------------------------
 
 private:
+    LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
 
     // most of the real work happens here
