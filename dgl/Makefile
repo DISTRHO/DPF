@@ -108,34 +108,34 @@ all: $(TARGETS)
 ../build/dgl/%.cpp.cairo.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_CAIRO -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
 ../build/dgl/Window.cpp.cairo.o: src/Window.cpp src/sofd/* src/pugl/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_CAIRO -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
 ../build/dgl/Window.mm.cairo.o: src/Window.cpp src/sofd/* src/pugl/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_CAIRO -ObjC++ -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -ObjC++ -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/dgl/%.cpp.opengl.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_OPENGL -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
 ../build/dgl/Window.cpp.opengl.o: src/Window.cpp src/sofd/* src/pugl/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_OPENGL -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
 ../build/dgl/Window.mm.opengl.o: src/Window.cpp src/sofd/* src/pugl/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
-	@$(CXX) $< $(BUILD_CXX_FLAGS) -DDGL_OPENGL -ObjC++ -c -o $@
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -ObjC++ -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
