@@ -76,7 +76,7 @@ AU_BUILD_FLAGS = \
     -DTARGET_OS_MAC
 
 AU_LINK_FLAGS = \
-     -bundle -arch x86_64 -arch i386 \
+     -bundle \
 	 -framework AudioToolbox \
 	 -framework AudioUnit \
 	 -framework CoreAudio \
