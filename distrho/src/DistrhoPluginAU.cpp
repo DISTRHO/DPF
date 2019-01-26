@@ -52,6 +52,8 @@ public:
     {
         CreateElements();
 
+        maxch = GetNumberOfChannels();
+
         AUElement* const globals = Globals();
         DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
 
@@ -68,11 +70,6 @@ public:
     {
     }
 
-    AUKernelBase* NewKernel() override
-    {
-        return new PluginKernel(this, fPlugin);
-    }
-
     OSStatus GetParameterValueStrings(AudioUnitScope inScope,
                                       AudioUnitParameterID inParameterID,
                                       CFArrayRef* outStrings) override
@@ -87,30 +84,25 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(inScope == kAudioUnitScope_Global, kAudioUnitErr_InvalidParameter);
 
+        outParameterInfo.flags = kAudioUnitParameterFlag_IsReadable | kAudioUnitParameterFlag_IsWritable;
+
         // Name
         {
             const String& name = fPlugin.getParameterName(inParameterID);
             CFStringRef cfname = CFStringCreateWithCString(kCFAllocatorDefault, name.buffer(), kCFStringEncodingUTF8);
 
-            AUBase::FillInParameterName(outParameterInfo, cfname, true); // FIXME true or false??
+            AUBase::FillInParameterName(outParameterInfo, cfname, false);
         }
 
         // Hints
         {
             const uint32_t hints(fPlugin.getParameterHints(inParameterID));
 
-            outParameterInfo.flags = 0x0;
-
             // other interesting bits:
             // kAudioUnitParameterFlag_OmitFromPresets for outputs?
             // kAudioUnitParameterFlag_MeterReadOnly for outputs?
             // kAudioUnitParameterFlag_CanRamp for log?
             // kAudioUnitParameterFlag_IsHighResolution ??
-
-            if (hints & kParameterIsOutput)
-                outParameterInfo.flags = kAudioUnitParameterFlag_IsReadable;
-            else
-                outParameterInfo.flags = kAudioUnitParameterFlag_IsWritable;
 
             if ((hints & kParameterIsAutomable) == 0x0)
                 outParameterInfo.flags |= kAudioUnitParameterFlag_NonRealTime;
@@ -172,6 +164,12 @@ public:
         return AUEffectBase::GetProperty (inID, inScope, inElement, outData);
     }
 
+    void SetParameter(AudioUnitParameterID paramID,
+                      AudioUnitParameterValue value) override
+    {
+        fPlugin.setParameterValue(paramID, (float)value);
+    }
+
     bool SupportsTail() override
     {
         return false;
@@ -182,43 +180,33 @@ public:
         return fPlugin.getVersion();
     }
 
+    OSStatus ProcessBufferLists(AudioUnitRenderActionFlags &ioActionFlags,
+                                const AudioBufferList &inBuffer,
+                                AudioBufferList &outBuffer,
+                                UInt32 inFramesToProcess) override
+    {
+        UInt32 i;
+        float *srcBuffer[maxch];
+        float *destBuffer[maxch];
+
+        for (i = 0; i < maxch; i++) {
+            srcBuffer[i] = (Float32 *)inBuffer.mBuffers[i].mData;
+            destBuffer[i] = (Float32 *)outBuffer.mBuffers[i].mData;
+        }
+
+        fPlugin.run((const float **)srcBuffer, (float **)destBuffer, inFramesToProcess);
+
+        ioActionFlags &= ~kAudioUnitRenderAction_OutputIsSilence;
+
+        return noErr;
+    }
+
     // -------------------------------------------------------------------
 
 private:
     LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
-
-    // most of the real work happens here
-    class PluginKernel : public AUKernelBase
-    {
-    public:
-        PluginKernel(AUEffectBase* const inAudioUnit, PluginExporter& plugin)
-            : AUKernelBase(inAudioUnit),
-              fPlugin(plugin) {}
-
-        // *Required* overides for the process method for this effect
-        // processes one channel of interleaved samples
-        void Process(const Float32* const inSourceP,
-                     Float32* const inDestP,
-                     UInt32 inFramesToProcess,
-                     UInt32 inNumChannels,
-                     bool& ioSilence)
-        {
-            DISTRHO_SAFE_ASSERT_RETURN(inNumChannels == DISTRHO_PLUGIN_NUM_INPUTS,);
-
-            // FIXME
-            // fPlugin.run(inSourceP, inDestP, inFramesToProcess);
-        }
-
-        void Reset() override
-        {
-        }
-
-    private:
-        PluginExporter& fPlugin;
-
-        DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginKernel)
-    };
+    UInt32 maxch;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
 };
