@@ -72,12 +72,15 @@ AU_BUILD_FLAGS = \
     -Wno-deprecated-declarations \
     -Wno-four-char-constants \
     -Wno-overloaded-virtual \
-    -Wno-unused-parameter
+    -Wno-unused-parameter \
+    -DTARGET_OS_MAC
 
 AU_LINK_FLAGS = \
-     -bundle -arch x86_64 -arch i386 \
+     -bundle \
 	 -framework AudioToolbox \
 	 -framework AudioUnit \
+	 -framework CoreAudio \
+	 -framework CoreServices \
      -exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
 
 # not needed yet
@@ -86,8 +89,6 @@ AU_LINK_FLAGS = \
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUViewBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases
 
-#	 -framework CoreAudio
-#	 -framework CoreServices
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
