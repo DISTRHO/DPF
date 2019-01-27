@@ -164,10 +164,31 @@ public:
         return AUEffectBase::GetProperty (inID, inScope, inElement, outData);
     }
 
-    void SetParameter(AudioUnitParameterID paramID,
+    void SetParameter(AudioUnitParameterID index,
                       AudioUnitParameterValue value) override
     {
-        fPlugin.setParameterValue(paramID, (float)value);
+        const uint32_t hints(fPlugin.getParameterHints(index));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+        if (hints & kParameterIsBoolean)
+        {
+            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+            value = value > midRange ? ranges.max : ranges.min;
+        }
+        else if (hints & kParameterIsInteger)
+        {
+            value = std::round(value);
+        }
+
+        fPlugin.setParameterValue(index, value);
+        //printf("SET: id=%d val=%f\n", index, value);
+    }
+
+    AudioUnitParameterValue GetParameter(AudioUnitParameterID index) override
+    {
+        AudioUnitParameterValue value = AUEffectBase::GetParameter(index);
+        //printf("GET: id=%d val=%f\n", index, value);
+        return value;
     }
 
     bool SupportsTail() override
@@ -192,6 +213,10 @@ public:
         for (i = 0; i < maxch; i++) {
             srcBuffer[i] = (Float32 *)inBuffer.mBuffers[i].mData;
             destBuffer[i] = (Float32 *)outBuffer.mBuffers[i].mData;
+        }
+
+        for (i = 0; i < fPlugin.getParameterCount(); i++) {
+            SetParameter(i, GetParameter(i));
         }
 
         fPlugin.run((const float **)srcBuffer, (float **)destBuffer, inFramesToProcess);

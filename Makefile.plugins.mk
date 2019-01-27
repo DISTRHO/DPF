@@ -79,8 +79,6 @@ AU_LINK_FLAGS = \
      -bundle \
 	 -framework AudioToolbox \
 	 -framework AudioUnit \
-	 -framework CoreAudio \
-	 -framework CoreServices \
      -exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
 
 # not needed yet
@@ -88,7 +86,8 @@ AU_LINK_FLAGS = \
 #  	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUInstrumentBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUViewBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases
-
+#	 -framework CoreAudio \
+#	 -framework CoreServices \
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
@@ -319,6 +318,7 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(BUILD_DIR)/
         -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases \
         -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
         -i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
+        ${REZFLAGS} \
         -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
 		-o $@
 
