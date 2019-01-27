@@ -170,6 +170,11 @@ public:
         fPlugin.setParameterValue(paramID, (float)value);
     }
 
+    AudioUnitParameterValue GetParameter(AudioUnitParameterID paramID) override
+    {
+        return fPlugin.getParameterValue(paramID);
+    }
+
     bool SupportsTail() override
     {
         return false;
