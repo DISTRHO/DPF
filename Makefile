@@ -14,6 +14,7 @@ dgl:
 	$(MAKE) -C dgl
 
 examples: dgl
+	$(MAKE) all -C examples/Gain
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
