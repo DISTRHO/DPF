@@ -24,5 +24,5 @@ public:
     bool onMouse(const MouseEvent& event) override;
 
 private:
-    unsigned fColorId = 0;
+    unsigned fColorId;
 };

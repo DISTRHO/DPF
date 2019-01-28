@@ -20,7 +20,8 @@
 #include "Window.hpp"
 
 DemoWidgetClickable::DemoWidgetClickable(Widget* group)
-    : Widget(group)
+    : Widget(group),
+      fColorId(0)
 {
 }
 

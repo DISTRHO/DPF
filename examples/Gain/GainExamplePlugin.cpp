@@ -114,28 +114,9 @@ protected:
         parameter.hints  = kParameterIsAutomable;
         parameter.name   = "Gain";
         parameter.symbol = "gain";
-        parameter.unit   = "dB";
         parameter.ranges.def = 1.0f;
         parameter.ranges.min = 0.0f;
-        parameter.ranges.max = 1.0f;
-    }
-
-    void initProgramName(uint32_t index, String& programName) override
-    {
-        if (index != 0) {
-            programName = "";
-            return;
-	}
-
-        programName = "Default";
-    }
-
-    void loadProgram(uint32_t index) override
-    {
-        if (index != 0)
-            return;
-
-        fGain = 1.0;
+        parameter.ranges.max = 2.0f;
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -178,9 +159,8 @@ protected:
     {
         const float* const in  = inputs[0];
         /* */ float* const out = outputs[0];
-        uint32_t i;
 
-        for (i = 0; i < frames; i++) {
+        for (uint32_t i = 0; i < frames; i++) {
             out[i] = in[i] * fGain;
         }
     }

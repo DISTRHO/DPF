@@ -80,6 +80,8 @@ AU_LINK_FLAGS = \
 	-bundle \
 	-framework AudioToolbox \
 	-framework AudioUnit \
+	-framework CoreFoundation \
+	-framework CoreServices \
 	-exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
 
 # not needed yet
@@ -88,7 +90,6 @@ AU_LINK_FLAGS = \
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUViewBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases
 #	 -framework CoreAudio \
-#	 -framework CoreServices \
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically

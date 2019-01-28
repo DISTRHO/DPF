@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -25,6 +25,5 @@
 #define DISTRHO_PLUGIN_IS_RT_SAFE   1
 #define DISTRHO_PLUGIN_NUM_INPUTS   1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS  1
-#define DISTRHO_PLUGIN_WANT_LATENCY 0
 
 #endif // DISTRHO_PLUGIN_INFO_H_INCLUDED
