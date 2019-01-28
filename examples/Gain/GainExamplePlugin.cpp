@@ -120,6 +120,24 @@ protected:
         parameter.ranges.max = 1.0f;
     }
 
+    void initProgramName(uint32_t index, String& programName) override
+    {
+        if (index != 0) {
+            programName = "";
+            return;
+	}
+
+        programName = "Default";
+    }
+
+    void loadProgram(uint32_t index) override
+    {
+        if (index != 0)
+            return;
+
+        fGain = 1.0;
+    }
+
    /* --------------------------------------------------------------------------------------------------------
     * Internal data */
 
