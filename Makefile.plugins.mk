@@ -69,21 +69,22 @@ AU_BUILD_FLAGS = \
 	-I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
 	-I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
 	-I$(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility\
-    -Wno-deprecated-declarations \
-    -Wno-four-char-constants \
-    -Wno-overloaded-virtual \
-    -Wno-unused-parameter \
-    -DTARGET_OS_MAC
+	-Wno-deprecated-declarations \
+	-Wno-four-char-constants \
+	-Wno-overloaded-virtual \
+	-Wno-unused-parameter
+
+# FIXME no-overloaded-virtual should be fixed!
 
 AU_LINK_FLAGS = \
-     -bundle \
-	 -framework AudioToolbox \
-	 -framework AudioUnit \
-     -exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
+	-bundle \
+	-framework AudioToolbox \
+	-framework AudioUnit \
+	-exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
 
 # not needed yet
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUCarbonViewBase
-#  	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUInstrumentBase
+#	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUInstrumentBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUViewBase
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases
 #	 -framework CoreAudio \
@@ -273,7 +274,11 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # AU
 
+ifneq ($(CROSS_COMPILING),true)
 au: $(au_plugin) $(au_pkginfo) $(au_plist) $(au_rsrc)
+else
+au: $(au_plugin) $(au_pkginfo) $(au_plist)
+endif
 
 ifeq ($(HAVE_DGL),true)
 $(au_plugin): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
@@ -310,16 +315,16 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(BUILD_DIR)/
 	Rez $< \
 		-d SystemSevenOrLater=1 \
 		-useDF -script Roman \
-        -d x86_64_YES -d i386_YES -arch x86_64 -arch i386 \
+		-d x86_64_YES -d i386_YES -arch x86_64 -arch i386 \
 		-i . \
 		-i $(BUILD_DIR) \
 		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic \
-        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
-        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases \
-        -i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
-        -i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
-        ${REZFLAGS} \
-        -I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
+		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUBase \
+		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/OtherBases \
+		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/Utility \
+		-i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
+		-I /Developer/SDKs/MacOSX10.6.sdk \
+		-I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
 		-o $@
 
 $(BUILD_DIR)/DistrhoPluginInfo.r: $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginAUexport.cpp.o
