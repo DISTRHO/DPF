@@ -54,11 +54,6 @@ public:
     {
         CreateElements();
 
-        // FIXME this does not seem right
-        fNumChannels = GetNumberOfChannels();
-        d_stdout("fNumChannels %u", fNumChannels);
-        DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
-
         AUElement* const globals = Globals();
         DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
 
@@ -84,6 +79,7 @@ public:
         }
     }
 
+protected:
     OSStatus GetParameterValueStrings(AudioUnitScope inScope,
                                       AudioUnitParameterID inParameterID,
                                       CFArrayRef* outStrings) override
@@ -212,9 +208,9 @@ public:
         return fPlugin.getVersion();
     }
 
-    OSStatus ProcessBufferLists(AudioUnitRenderActionFlags &ioActionFlags,
-                                const AudioBufferList &inBuffer,
-                                AudioBufferList &outBuffer,
+    OSStatus ProcessBufferLists(AudioUnitRenderActionFlags& ioActionFlags,
+                                const AudioBufferList& inBuffer,
+                                AudioBufferList& outBuffer,
                                 UInt32 inFramesToProcess) override
     {
         const float* srcBuffer[fNumChannels];
@@ -234,6 +230,31 @@ public:
         ioActionFlags &= ~kAudioUnitRenderAction_OutputIsSilence;
 
         return noErr;
+    }
+
+    // -------------------------------------------------------------------
+
+    ComponentResult Initialize() override
+    {
+        ComponentResult err;
+
+        if ((err = AUEffectBase::Initialize()) != noErr)
+            return err;
+
+        fPlugin.activate();
+
+        // FIXME this does not seem right
+        fNumChannels = GetNumberOfChannels();
+        d_stdout("fNumChannels %u", fNumChannels);
+        DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
+
+        return noErr;
+    }
+
+    void Cleanup() override
+    {
+        AUEffectBase::Cleanup();
+        fPlugin.deactivate();
     }
 
     // -------------------------------------------------------------------
