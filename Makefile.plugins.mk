@@ -92,6 +92,35 @@ AU_LINK_FLAGS = \
 #	 -framework CoreAudio \
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set flags for 'Rez', needed for AU
+
+ifneq ($(CROSS_COMPILING),true)
+
+# Use environment to find arch
+ifeq ($(shell echo ${CXXFLAGS} | grep -q -- -arch && echo true),true)
+
+ifeq ($(shell echo ${CXXFLAGS} | grep -q -- x86_64 && echo true),true)
+REZ_FLAGS += -arch x86_64 -d x86_64_YES
+endif
+
+ifeq ($(shell echo ${CXXFLAGS} | grep -q -- i386 && echo true),true)
+REZ_FLAGS += -arch i386 -d i386_YES
+endif
+
+else # No "-arch" in environment, automatically detect arch
+
+ifeq ($(shell gcc -dM -E - < /dev/null | grep -q -- __x86_64__ && echo true),true)
+REZ_FLAGS += -arch x86_64 -d x86_64_YES
+endif
+
+ifeq ($(shell gcc -dM -E - < /dev/null | grep -q -- __i386__ && echo true),true)
+REZ_FLAGS += -arch i386 -d i386_YES
+endif
+
+endif # CXXFLAGS
+endif # CROSS_COMPILING
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
 
 ifeq ($(FILES_UI),)
@@ -316,7 +345,6 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(BUILD_DIR)/
 	Rez $< \
 		-d SystemSevenOrLater=1 \
 		-useDF -script Roman \
-		-d x86_64_YES -d i386_YES -arch x86_64 -arch i386 \
 		-i . \
 		-i $(BUILD_DIR) \
 		-i $(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic \
@@ -326,6 +354,7 @@ $(BUILD_DIR)/step1.rsrc: $(DPF_PATH)/distrho/src/DistrhoPluginAU.r $(BUILD_DIR)/
 		-i $(DPF_PATH)/distrho/src/CoreAudio106/PublicUtility \
 		-I /Developer/SDKs/MacOSX10.6.sdk \
 		-I /System/Library/Frameworks/CoreServices.framework/Frameworks/CarbonCore.framework/Versions/A/Headers \
+		$(REZ_FLAGS) \
 		-o $@
 
 $(BUILD_DIR)/DistrhoPluginInfo.r: $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginAUexport.cpp.o

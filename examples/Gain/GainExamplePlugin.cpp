@@ -117,6 +117,8 @@ protected:
         parameter.ranges.def = 1.0f;
         parameter.ranges.min = 0.0f;
         parameter.ranges.max = 2.0f;
+
+        d_stdout("initParameter %u", index);
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -128,6 +130,7 @@ protected:
     */
     float getParameterValue(uint32_t index) const override
     {
+        d_stdout("getParameterValue %u %f", index, fGain);
         if (index != 0)
             return 0.0f;
 
@@ -142,6 +145,7 @@ protected:
     */
     void setParameterValue(uint32_t index, float value) override
     {
+        d_stdout("setParameterValue %u %f", index, value);
         if (index != 0)
             return;
 

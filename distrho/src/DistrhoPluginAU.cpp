@@ -48,11 +48,14 @@ public:
     PluginAU(AudioUnit component)
         : AUEffectBase(component),
           fLastValuesInit(),
-          fPlugin(this, writeMidiCallback)
+          fPlugin(this, writeMidiCallback),
+          fNumChannels(0)
     {
         CreateElements();
 
-        maxch = GetNumberOfChannels();
+        // FIXME this does not seem right
+        fNumChannels = GetNumberOfChannels();
+        DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
 
         AUElement* const globals = Globals();
         DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
@@ -206,16 +209,15 @@ public:
                                 AudioBufferList &outBuffer,
                                 UInt32 inFramesToProcess) override
     {
-        UInt32 i;
-        float *srcBuffer[maxch];
-        float *destBuffer[maxch];
+        float* srcBuffer[fNumChannels];
+        float* destBuffer[fNumChannels];
 
-        for (i = 0; i < maxch; i++) {
+        for (uint32_t i = 0; i < fNumChannels; ++i) {
             srcBuffer[i] = (Float32 *)inBuffer.mBuffers[i].mData;
             destBuffer[i] = (Float32 *)outBuffer.mBuffers[i].mData;
         }
 
-        for (i = 0; i < fPlugin.getParameterCount(); i++) {
+        for (uint32_t i = 0; i < fPlugin.getParameterCount(); ++i) {
             SetParameter(i, GetParameter(i));
         }
 
@@ -231,7 +233,7 @@ public:
 private:
     LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
-    UInt32 maxch;
+    uint32_t fNumChannels;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
 };
