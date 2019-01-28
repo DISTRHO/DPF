@@ -49,12 +49,14 @@ public:
         : AUEffectBase(component),
           fLastValuesInit(),
           fPlugin(this, writeMidiCallback),
-          fNumChannels(0)
+          fNumChannels(0),
+          fLastParameterValues(nullptr)
     {
         CreateElements();
 
         // FIXME this does not seem right
         fNumChannels = GetNumberOfChannels();
+        d_stdout("fNumChannels %u", fNumChannels);
         DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
 
         AUElement* const globals = Globals();
@@ -62,15 +64,24 @@ public:
 
         if (const uint32_t paramCount = fPlugin.getParameterCount())
         {
+            fLastParameterValues = new float[paramCount];
             globals->UseIndexedParameters(paramCount);
 
             for (uint32_t i=0; i < paramCount; ++i)
-                globals->SetParameter(i, fPlugin.getParameterValue(i));
+            {
+                fLastParameterValues[i] = fPlugin.getParameterValue(i);
+                globals->SetParameter(i, fLastParameterValues[i]);
+            }
         }
     }
 
     ~PluginAU() override
     {
+        if (fLastParameterValues)
+        {
+            delete[] fLastParameterValues;
+            fLastParameterValues = nullptr;
+        }
     }
 
     OSStatus GetParameterValueStrings(AudioUnitScope inScope,
@@ -167,9 +178,12 @@ public:
         return AUEffectBase::GetProperty (inID, inScope, inElement, outData);
     }
 
+#if 0
     void SetParameter(AudioUnitParameterID index,
                       AudioUnitParameterValue value) override
     {
+        d_stdout("SetParameter %u %f", index, value);
+
         const uint32_t hints(fPlugin.getParameterHints(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
@@ -186,13 +200,7 @@ public:
         fPlugin.setParameterValue(index, value);
         //printf("SET: id=%d val=%f\n", index, value);
     }
-
-    AudioUnitParameterValue GetParameter(AudioUnitParameterID index) override
-    {
-        AudioUnitParameterValue value = AUEffectBase::GetParameter(index);
-        //printf("GET: id=%d val=%f\n", index, value);
-        return value;
-    }
+#endif
 
     bool SupportsTail() override
     {
@@ -209,19 +217,19 @@ public:
                                 AudioBufferList &outBuffer,
                                 UInt32 inFramesToProcess) override
     {
-        float* srcBuffer[fNumChannels];
-        float* destBuffer[fNumChannels];
+        const float* srcBuffer[fNumChannels];
+        /* */ float* destBuffer[fNumChannels];
 
         for (uint32_t i = 0; i < fNumChannels; ++i) {
-            srcBuffer[i] = (Float32 *)inBuffer.mBuffers[i].mData;
-            destBuffer[i] = (Float32 *)outBuffer.mBuffers[i].mData;
+            srcBuffer[i] = (const float*)inBuffer.mBuffers[i].mData;
+            destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
         }
 
-        for (uint32_t i = 0; i < fPlugin.getParameterCount(); ++i) {
-            SetParameter(i, GetParameter(i));
-        }
+        updateParameterInputs();
 
-        fPlugin.run((const float **)srcBuffer, (float **)destBuffer, inFramesToProcess);
+        fPlugin.run(srcBuffer, destBuffer, inFramesToProcess);
+
+        updateParameterOutputsAndTriggers();
 
         ioActionFlags &= ~kAudioUnitRenderAction_OutputIsSilence;
 
@@ -234,6 +242,54 @@ private:
     LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
     uint32_t fNumChannels;
+
+    // Temporary data
+    float* fLastParameterValues;
+
+    void updateParameterInputs()
+    {
+        float value;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (! fPlugin.isParameterInput(i))
+                continue;
+
+            value = GetParameter(i);
+
+            if (d_isEqual(fLastParameterValues[i], value))
+                continue;
+
+            fLastParameterValues[i] = value;
+            fPlugin.setParameterValue(i, value);
+        }
+    }
+
+    void updateParameterOutputsAndTriggers()
+    {
+        float value;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (fPlugin.isParameterOutput(i))
+            {
+                value = fLastParameterValues[i] = fPlugin.getParameterValue(i);
+                SetParameter(i, value);
+            }
+            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            {
+                // NOTE: no trigger support in AU, simulate it here
+                value = fPlugin.getParameterRanges(i).def;
+
+                if (d_isEqual(value, fPlugin.getParameterValue(i)))
+                    continue;
+
+                fLastParameterValues[i] = value;
+                fPlugin.setParameterValue(i, value);
+                SetParameter(i, value);
+            }
+        }
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
 };
