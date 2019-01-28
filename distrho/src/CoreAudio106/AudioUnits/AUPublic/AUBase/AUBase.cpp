@@ -186,7 +186,7 @@ void	AUBase::SetMaxFramesPerSlice(UInt32 nFrames)
 //
 OSStatus			AUBase::CanSetMaxFrames() const
 {
-	return IsInitialized() ? kAudioUnitErr_Initialized : OSStatus(noErr);
+	return IsInitialized() ? static_cast<OSStatus>(kAudioUnitErr_Initialized) : OSStatus(noErr);
 }
 
 //_____________________________________________________________________________

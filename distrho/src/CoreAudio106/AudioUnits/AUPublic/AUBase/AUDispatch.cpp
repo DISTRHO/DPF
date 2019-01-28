@@ -332,7 +332,7 @@ OSStatus		AUBase::ComponentEntryDispatch(ComponentParameters *params, AUBase *Th
 			PARAM(AudioUnitScope, pinScope, 1, 4);
 			PARAM(AudioUnitElement, pinElement, 2, 4);
 			PARAM(AudioUnitParameterValue *, poutValue, 3, 4);
-			result = (poutValue == NULL ? paramErr : This->GetParameter(pinID, pinScope, pinElement, *poutValue));
+			result = (poutValue == NULL ? static_cast<OSStatus>(paramErr) : This->GetParameter(pinID, pinScope, pinElement, *poutValue));
 		}
 		break;
 
