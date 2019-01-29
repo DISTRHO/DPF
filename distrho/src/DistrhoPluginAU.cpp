@@ -221,6 +221,8 @@ protected:
             destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
         }
 
+        updateSampleRate();
+
         updateParameterInputs();
 
         fPlugin.run(srcBuffer, destBuffer, inFramesToProcess);
@@ -240,6 +242,8 @@ protected:
 
         if ((err = AUEffectBase::Initialize()) != noErr)
             return err;
+
+        updateSampleRate();
 
         fPlugin.activate();
 
@@ -310,6 +314,11 @@ private:
                 SetParameter(i, value);
             }
         }
+    }
+
+    void updateSampleRate()
+    {
+        d_lastSampleRate = GetSampleRate();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
