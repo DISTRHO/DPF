@@ -92,6 +92,8 @@ public:
     bool openFileBrowser(const FileBrowserOptions& options);
 #endif
 
+    bool isEmbed() const noexcept;
+
     bool isVisible() const noexcept;
     void setVisible(bool yesNo);
 
