@@ -80,13 +80,12 @@ int au_generate_r(const char* const basename)
             d_stderr2("AU plugin Id cannot be negative");
             return 1;
         }
-        if (uniqueId >= UINT32_MAX)
+        if (uniqueId >= UINT16_MAX)
         {
-            d_stderr2("AU plugin Id cannot be higher than uint32");
-            return 1;
+            d_stderr2("AU plugin Id cannot be higher than uint16");
         }
 
-        rFile << "#define DISTRHO_PLUGIN_AU_RES_ID \"" + String(uniqueId) + "\"\n";
+        rFile << "#define DISTRHO_PLUGIN_AU_RES_ID " + String(uniqueId % UINT16_MAX) + "\n";
     }
 
 #ifndef DEBUG
