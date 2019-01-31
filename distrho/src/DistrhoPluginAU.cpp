@@ -49,7 +49,6 @@ public:
         : AUEffectBase(component),
           fLastValuesInit(),
           fPlugin(this, writeMidiCallback),
-          fNumChannels(0),
           fLastParameterValues(nullptr)
     {
         CreateElements();
@@ -213,13 +212,14 @@ protected:
                                 AudioBufferList& outBuffer,
                                 UInt32 inFramesToProcess) override
     {
-        const float* srcBuffer[fNumChannels];
-        /* */ float* destBuffer[fNumChannels];
+        const float* srcBuffer[DISTRHO_PLUGIN_NUM_INPUTS];
+        /* */ float* destBuffer[DISTRHO_PLUGIN_NUM_OUTPUTS];
 
-        for (uint32_t i = 0; i < fNumChannels; ++i) {
+        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
             srcBuffer[i] = (const float*)inBuffer.mBuffers[i].mData;
+
+        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
-        }
 
         updateParameterInputs();
 
@@ -243,18 +243,23 @@ protected:
 
         fPlugin.activate();
 
-        // FIXME this does not seem right
-        fNumChannels = GetNumberOfChannels();
-        d_stdout("fNumChannels %u", fNumChannels);
-        DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
-
         return noErr;
     }
 
     void Cleanup() override
     {
-        AUEffectBase::Cleanup();
         fPlugin.deactivate();
+        AUEffectBase::Cleanup();
+    }
+
+    UInt32 SupportedNumChannels(const AUChannelInfo** outInfo) override
+    {
+        static const AUChannelInfo sChannels[1] = {{ DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
+
+        if (outInfo != nullptr)
+            *outInfo = sChannels;
+
+        return 1;
     }
 
     // -------------------------------------------------------------------
@@ -262,7 +267,6 @@ protected:
 private:
     LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
-    uint32_t fNumChannels;
 
     // Temporary data
     float* fLastParameterValues;
