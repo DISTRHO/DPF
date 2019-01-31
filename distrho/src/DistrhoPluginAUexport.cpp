@@ -21,7 +21,7 @@
 
 // -----------------------------------------------------------------------
 
-void au_generate_r(const char* const basename)
+int au_generate_r(const char* const basename)
 {
     USE_NAMESPACE_DISTRHO
 
@@ -72,6 +72,22 @@ void au_generate_r(const char* const basename)
         rFile << "#define DISTRHO_PLUGIN_DESCRIPTION \"" + description + "\"\n";
     }
 
+    // res id
+    if (const int64_t uniqueId = plugin.getUniqueId())
+    {
+        if (uniqueId < 0)
+        {
+            d_stderr2("AU plugin Id cannot be negative");
+            return 1;
+        }
+        if (uniqueId >= UINT16_MAX)
+        {
+            d_stderr2("AU plugin Id cannot be higher than uint16");
+        }
+
+        rFile << "#define DISTRHO_PLUGIN_AU_RES_ID " + String(uniqueId % UINT16_MAX) + "\n";
+    }
+
 #ifndef DEBUG
     // version
     {
@@ -88,6 +104,8 @@ void au_generate_r(const char* const basename)
 
     rFile.close();
     std::cout << " done!" << std::endl;
+
+    return 0;
 }
 
 // -----------------------------------------------------------------------
@@ -100,8 +118,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    au_generate_r(argv[1]);
-    return 0;
+    return au_generate_r(argv[1]);
 }
 
 // -----------------------------------------------------------------------

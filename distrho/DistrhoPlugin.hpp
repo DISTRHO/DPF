@@ -771,7 +771,7 @@ protected:
 
    /**
       Get the plugin unique Id.@n
-      This value is used by LADSPA, DSSI and VST plugin formats.
+      This value is used by LADSPA, DSSI, VST and AU plugin formats.
       @see d_cconst()
     */
     virtual int64_t getUniqueId() const = 0;
