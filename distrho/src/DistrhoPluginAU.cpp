@@ -221,8 +221,6 @@ protected:
         for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
 
-        updateSampleRate();
-
         updateParameterInputs();
 
         fPlugin.run(srcBuffer, destBuffer, inFramesToProcess);
@@ -243,8 +241,7 @@ protected:
         if ((err = AUEffectBase::Initialize()) != noErr)
             return err;
 
-        updateSampleRate();
-
+        fPlugin.setSampleRate(GetSampleRate());
         fPlugin.activate();
 
         return noErr;
@@ -256,6 +253,8 @@ protected:
         AUEffectBase::Cleanup();
     }
 
+    // -------------------------------------------------------------------
+
     UInt32 SupportedNumChannels(const AUChannelInfo** outInfo) override
     {
         static const AUChannelInfo sChannels[1] = {{ DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
@@ -264,6 +263,12 @@ protected:
             *outInfo = sChannels;
 
         return 1;
+    }
+
+    void SetMaxFramesPerSlice(UInt32 nFrames) override
+    {
+        fPlugin.setBufferSize(nFrames, true);
+        AUEffectBase::SetMaxFramesPerSlice(nFrames);
     }
 
     // -------------------------------------------------------------------
@@ -318,11 +323,6 @@ private:
                 SetParameter(i, value);
             }
         }
-    }
-
-    void updateSampleRate()
-    {
-        d_lastSampleRate = GetSampleRate();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
