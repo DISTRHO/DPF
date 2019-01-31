@@ -49,7 +49,6 @@ public:
         : AUEffectBase(component),
           fLastValuesInit(),
           fPlugin(this, writeMidiCallback),
-          fNumChannels(0),
           fLastParameterValues(nullptr)
     {
         CreateElements();
@@ -79,6 +78,8 @@ public:
         }
     }
 
+    AUChannelInfo chanInfo[1];
+
 protected:
     OSStatus GetParameterValueStrings(AudioUnitScope inScope,
                                       AudioUnitParameterID inParameterID,
@@ -101,7 +102,7 @@ protected:
             const String& name = fPlugin.getParameterName(inParameterID);
             CFStringRef cfname = CFStringCreateWithCString(kCFAllocatorDefault, name.buffer(), kCFStringEncodingUTF8);
 
-            AUBase::FillInParameterName(outParameterInfo, cfname, false);
+            AUEffectBase::FillInParameterName(outParameterInfo, cfname, false);
         }
 
         // Hints
@@ -171,7 +172,30 @@ protected:
                          AudioUnitElement inElement,
                          void* outData) override
     {
+        if (inScope == kAudioUnitScope_Global) {
+            switch (inID) {
+            case kAudioUnitProperty_SupportedNumChannels:
+                *((AUChannelInfo **)outData) = chanInfo;
+                return noErr;
+            }
+        }
         return AUEffectBase::GetProperty (inID, inScope, inElement, outData);
+    }
+
+    OSStatus SetProperty(AudioUnitPropertyID inID,
+                         AudioUnitScope inScope,
+                         AudioUnitElement inElement,
+                         const void *inData,
+                         UInt32 inDataSize) override
+    {
+        if (inScope == kAudioUnitScope_Global) {
+            switch (inID) {
+            case kAudioUnitProperty_SupportedNumChannels:
+                //chanInfo[0] = (*((AUChannelInfo **)inData))[0];
+                return noErr;
+            }
+        }
+        return AUEffectBase::SetProperty(inID, inScope, inElement, inData, inDataSize);
     }
 
 #if 0
@@ -213,11 +237,14 @@ protected:
                                 AudioBufferList& outBuffer,
                                 UInt32 inFramesToProcess) override
     {
-        const float* srcBuffer[fNumChannels];
-        /* */ float* destBuffer[fNumChannels];
+        const float* srcBuffer[DISTRHO_PLUGIN_NUM_INPUTS];
+        /* */ float* destBuffer[DISTRHO_PLUGIN_NUM_OUTPUTS];
 
-        for (uint32_t i = 0; i < fNumChannels; ++i) {
+        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i) {
             srcBuffer[i] = (const float*)inBuffer.mBuffers[i].mData;
+        }
+
+        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i) {
             destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
         }
 
@@ -234,30 +261,42 @@ protected:
         return noErr;
     }
 
+/* FIXME: This should force the channel count to DPF_IN/DPF_OUT
+ *        but it crashes auval (why?)
+
+    UInt32 SupportedNumChannels(const AUChannelInfo** outInfo) override
+    {
+        chanInfo[0].inChannels = DISTRHO_PLUGIN_NUM_INPUTS;
+        chanInfo[0].outChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+        *outInfo = chanInfo;
+        //printf("XXX in=%d out=%d\n", (*outInfo)[0].inChannels, (*outInfo)[0].outChannels);
+        return 1; // one config
+    }
+*/
     // -------------------------------------------------------------------
 
     ComponentResult Initialize() override
     {
-        ComponentResult err;
-
-        if ((err = AUEffectBase::Initialize()) != noErr)
-            return err;
-
         updateSampleRate();
 
-        fPlugin.activate();
+        uint16_t auIns = GetInput(0)->GetStreamFormat().mChannelsPerFrame;
+        uint16_t auOuts = GetOutput(0)->GetStreamFormat().mChannelsPerFrame; 
+        chanInfo[0].inChannels = DISTRHO_PLUGIN_NUM_INPUTS;
+        chanInfo[0].outChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
 
-        // FIXME this does not seem right
-        fNumChannels = GetNumberOfChannels();
-        d_stdout("fNumChannels %u", fNumChannels);
-        DISTRHO_SAFE_ASSERT(fNumChannels == DISTRHO_PLUGIN_NUM_INPUTS);
+        // FIXME: Hardcoded 2/2 as allowed because it is the default in auval
+        if (!((auIns == 2) && (auOuts == 2)) || ((auIns == chanInfo[0].inChannels) && (auOuts == chanInfo[0].outChannels)))
+        {
+            return kAudioUnitErr_FormatNotSupported;
+        }
+
+        fPlugin.activate();
 
         return noErr;
     }
 
     void Cleanup() override
     {
-        AUEffectBase::Cleanup();
         fPlugin.deactivate();
     }
 
@@ -266,7 +305,6 @@ protected:
 private:
     LastValuesInit fLastValuesInit;
     PluginExporter fPlugin;
-    uint32_t fNumChannels;
 
     // Temporary data
     float* fLastParameterValues;
