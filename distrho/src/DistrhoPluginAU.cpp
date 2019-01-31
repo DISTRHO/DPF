@@ -162,6 +162,16 @@ protected:
                              UInt32& outDataSize,
                              Boolean& outWritable) override
     {
+#if DISTRHO_PLUGIN_HAS_UI
+        if (inID == kAudioUnitProperty_CocoaUI && inScope == kAudioUnitScope_Global)
+        {
+            d_stdout("GetPropertyInfo asked for CocoaUI");
+            outDataSize = sizeof(AudioUnitCocoaViewInfo);
+            outWritable = false;
+            return noErr;
+        }
+#endif
+
         return AUEffectBase::GetPropertyInfo(inID, inScope, inElement, outDataSize, outWritable);
     }
 
@@ -170,6 +180,17 @@ protected:
                          AudioUnitElement inElement,
                          void* outData) override
     {
+#if DISTRHO_PLUGIN_HAS_UI
+        if (inID == kAudioUnitProperty_CocoaUI && inScope == kAudioUnitScope_Global && outData != nullptr)
+        {
+            d_stdout("GetProperty asked for CocoaUI");
+            AudioUnitCocoaViewInfo* const info = (AudioUnitCocoaViewInfo*)outData;
+            info->mCocoaAUViewBundleLocation = nullptr; // NSURL, CFURLRef
+            info->mCocoaAUViewClass[0] = nullptr; // NSString, CFStringRef
+            // return noErr;
+        }
+#endif
+
         return AUEffectBase::GetProperty (inID, inScope, inElement, outData);
     }
 
@@ -241,7 +262,10 @@ protected:
         if ((err = AUEffectBase::Initialize()) != noErr)
             return err;
 
+        // make sure things are in sync
+        fPlugin.setBufferSize(GetMaxFramesPerSlice(), true);
         fPlugin.setSampleRate(GetSampleRate(), true);
+
         fPlugin.activate();
 
         return noErr;
