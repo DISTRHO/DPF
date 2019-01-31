@@ -241,7 +241,7 @@ protected:
         if ((err = AUEffectBase::Initialize()) != noErr)
             return err;
 
-        fPlugin.setSampleRate(GetSampleRate());
+        fPlugin.setSampleRate(GetSampleRate(), true);
         fPlugin.activate();
 
         return noErr;
