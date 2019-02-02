@@ -9,6 +9,9 @@
 
 NAME = d_parameters
 
+# Matches DISTRHO_PLUGIN_NAME
+PLUGIN_NAME = Parameters
+
 # --------------------------------------------------------------
 # Files to build
 

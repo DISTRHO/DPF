@@ -57,10 +57,12 @@ lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
-au_plugin  = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/$(NAME)
+au_plugin  = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/$(PLUGIN_NAME)
 au_pkginfo = $(TARGET_DIR)/$(NAME).component/Contents/PkgInfo
 au_plist   = $(TARGET_DIR)/$(NAME).component/Contents/Info.plist
-au_rsrc    = $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(NAME).rsrc
+au_rsrc    = $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(PLUGIN_NAME).rsrc
+au_ui      = $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(PLUGIN_NAME)-CocoaUI.bundle/Contents/MacOS/$(PLUGIN_NAME)-CocoaUI
+au_uiplist = $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(PLUGIN_NAME)-CocoaUI.bundle/Contents/Info.plist
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set stuff needed for AU
@@ -76,13 +78,19 @@ AU_BUILD_FLAGS = \
 
 # FIXME no-overloaded-virtual should be fixed!
 
-AU_LINK_FLAGS = \
+AU_DSP_LINK_FLAGS = \
 	-bundle \
 	-framework AudioToolbox \
 	-framework AudioUnit \
 	-framework CoreFoundation \
 	-framework CoreServices \
 	-exported_symbols_list $(DPF_PATH)/distrho/src/DistrhoPluginAU.exp
+
+AU_UI_LINK_FLAGS = \
+	-bundle \
+	-framework AudioToolbox \
+	-framework AudioUnit \
+	-framework Cocoa
 
 # not needed yet
 #	 -I$(DPF_PATH)/distrho/src/CoreAudio106/AudioUnits/AUPublic/AUCarbonViewBase
@@ -158,6 +166,7 @@ DGL_LIBS += $(DGL_SYSTEM_LIBS)
 ifneq ($(HAVE_DGL),true)
 dssi_ui =
 lv2_ui =
+au_ui =
 DGL_LIBS =
 OBJS_UI =
 endif
@@ -223,6 +232,11 @@ $(BUILD_DIR)/DistrhoPluginAUexport.cpp.o: $(DPF_PATH)/distrho/src/DistrhoPluginA
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginAUexport.cpp"
 	$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
+
+$(BUILD_DIR)/DistrhoUIMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUIMain.cpp (AU)"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) -Wno-unused-parameter -DDISTRHO_PLUGIN_TARGET_AU -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
@@ -305,19 +319,20 @@ endif
 # AU
 
 ifneq ($(CROSS_COMPILING),true)
-au: $(au_plugin) $(au_pkginfo) $(au_plist) $(au_rsrc)
+au: $(au_plugin) $(au_pkginfo) $(au_plist) $(au_ui) $(au_uiplist) $(au_rsrc)
 else
-au: $(au_plugin) $(au_pkginfo) $(au_plist)
+au: $(au_plugin) $(au_pkginfo) $(au_plist) $(au_ui) $(au_uiplist)
 endif
 
-ifeq ($(HAVE_DGL),true)
-$(au_plugin): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
-else
 $(au_plugin): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
-endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU plugin for $(NAME)"
-	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_LINK_FLAGS) $(DGL_LIBS) -o $@
+	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_DSP_LINK_FLAGS) -o $@
+
+$(au_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(BUILD_DIR)/PluginAU_CocoaUI.mm.o $(DGL_LIB)
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU plugin for $(NAME)"
+	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(AU_UI_LINK_FLAGS) $(DGL_LIBS) -o $@
 
 $(au_pkginfo):
 	-@mkdir -p $(shell dirname $@)
@@ -326,8 +341,13 @@ $(au_pkginfo):
 
 $(au_plist):
 	-@mkdir -p $(shell dirname $@)
-	@echo "Creating AU Info.plist for $(NAME)"
-	sed -e "s/X-DPF-EXECUTABLE-DPF-X/$(NAME)/g" $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist > $@
+	@echo "Creating AU DSP Info.plist for $(NAME)"
+	sed -e "s/X-DPF-EXECUTABLE-DPF-X/$(PLUGIN_NAME)/g" $(DPF_PATH)/distrho/src/CoreAudio106/Info.plist > $@
+
+$(au_uiplist):
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU UI Info.plist for $(NAME)"
+	sed -e "s/X-DPF-EXECUTABLE-DPF-X/$(PLUGIN_NAME)/g" $(DPF_PATH)/distrho/src/CocoaUI/Info.plist > $@
 
 $(au_rsrc): $(BUILD_DIR)/step2.rsrc
 	-@mkdir -p $(shell dirname $@)
@@ -363,6 +383,11 @@ $(BUILD_DIR)/DistrhoPluginInfo.r: $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginAUexport
 	$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) -o $(BUILD_DIR)/DistrhoPluginInfoGenerator && \
 		$(BUILD_DIR)/DistrhoPluginInfoGenerator "$(BUILD_DIR)" && \
 		rm $(BUILD_DIR)/DistrhoPluginInfoGenerator
+
+$(BUILD_DIR)/PluginAU_CocoaUI.mm.o: $(DPF_PATH)/distrho/src/CocoaUI/PluginAU_CocoaUI.m
+	-@mkdir -p $(shell dirname $@)
+	@echo "Compiling Cocoa UI for $(NAME)"
+	$(CXX) $< $(BUILD_CXX_FLAGS) -Wno-unused-parameter -ObjC++ -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
