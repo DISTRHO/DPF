@@ -26,6 +26,12 @@ START_NAMESPACE_DISTRHO
 static const writeMidiFunc writeMidiCallback = nullptr;
 // #endif
 
+#if ((DISTRHO_PLUGIN_NUM_INPUTS == 1) && (DISTRHO_PLUGIN_NUM_OUTPUTS == 1))
+# define CLONE_MONO(x, y) x
+#else
+# define CLONE_MONO(x, y) y
+#endif
+
 // -----------------------------------------------------------------------
 
 struct LastValuesInit {
@@ -48,22 +54,26 @@ public:
     PluginAU(AudioUnit component)
         : AUEffectBase(component),
           fLastValuesInit(),
-          fPlugin(this, writeMidiCallback),
+          fPluginA(this, writeMidiCallback),
+#if CLONE_MONO(1,0)
+          fPluginB(this, writeMidiCallback),
+#endif
           fLastParameterValues(nullptr)
     {
+
         CreateElements();
 
         AUElement* const globals = Globals();
         DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
 
-        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        if (const uint32_t paramCount = fPluginA.getParameterCount())
         {
             fLastParameterValues = new float[paramCount];
             globals->UseIndexedParameters(paramCount);
 
             for (uint32_t i=0; i < paramCount; ++i)
             {
-                fLastParameterValues[i] = fPlugin.getParameterValue(i);
+                fLastParameterValues[i] = fPluginA.getParameterValue(i);
                 globals->SetParameter(i, fLastParameterValues[i]);
             }
         }
@@ -97,7 +107,7 @@ protected:
 
         // Name
         {
-            const String& name = fPlugin.getParameterName(inParameterID);
+            const String& name = fPluginA.getParameterName(inParameterID);
             CFStringRef cfname = CFStringCreateWithCString(kCFAllocatorDefault, name.buffer(), kCFStringEncodingUTF8);
 
             AUBase::FillInParameterName(outParameterInfo, cfname, false);
@@ -105,7 +115,7 @@ protected:
 
         // Hints
         {
-            const uint32_t hints(fPlugin.getParameterHints(inParameterID));
+            const uint32_t hints(fPluginA.getParameterHints(inParameterID));
 
             // other interesting bits:
             // kAudioUnitParameterFlag_OmitFromPresets for outputs?
@@ -129,7 +139,7 @@ protected:
 
         // Ranges
         {
-            const ParameterRanges& ranges(fPlugin.getParameterRanges(inParameterID));
+            const ParameterRanges& ranges(fPluginA.getParameterRanges(inParameterID));
 
             outParameterInfo.defaultValue = ranges.def;
             outParameterInfo.minValue = ranges.min;
@@ -138,7 +148,7 @@ protected:
 
         // Unit
         {
-            const String& unit = fPlugin.getParameterUnit(inParameterID);
+            const String& unit = fPluginA.getParameterUnit(inParameterID);
 
             // TODO: map all AU unit types
 
@@ -200,8 +210,8 @@ protected:
     {
         d_stdout("SetParameter %u %f", index, value);
 
-        const uint32_t hints(fPlugin.getParameterHints(index));
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        const uint32_t hints(fPluginA.getParameterHints(index));
+        const ParameterRanges& ranges(fPluginA.getParameterRanges(index));
 
         if (hints & kParameterIsBoolean)
         {
@@ -213,7 +223,8 @@ protected:
             value = std::round(value);
         }
 
-        fPlugin.setParameterValue(index, value);
+        fPluginA.setParameterValue(index, value);
+        CLONE_MONO(fPluginB.setParameterValue(index, value),);
         //printf("SET: id=%d val=%f\n", index, value);
     }
 #endif
@@ -225,7 +236,7 @@ protected:
 
     OSStatus Version() override
     {
-        return fPlugin.getVersion();
+        return fPluginA.getVersion();
     }
 
     OSStatus ProcessBufferLists(AudioUnitRenderActionFlags& ioActionFlags,
@@ -233,18 +244,20 @@ protected:
                                 AudioBufferList& outBuffer,
                                 UInt32 inFramesToProcess) override
     {
-        const float* srcBuffer[DISTRHO_PLUGIN_NUM_INPUTS];
-        /* */ float* destBuffer[DISTRHO_PLUGIN_NUM_OUTPUTS];
+        const float* srcBuffer[numCh];
+        /* */ float* destBuffer[numCh];
 
-        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+        for (uint32_t i = 0; i < numCh; ++i) {
             srcBuffer[i] = (const float*)inBuffer.mBuffers[i].mData;
-
-        for (uint32_t i = 0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             destBuffer[i] = (float *)outBuffer.mBuffers[i].mData;
+        }
 
         updateParameterInputs();
 
-        fPlugin.run(srcBuffer, destBuffer, inFramesToProcess);
+        fPluginA.run(&srcBuffer[0], &destBuffer[0], inFramesToProcess);
+        if (numCh == 2) {
+	    CLONE_MONO(fPluginB.run(&srcBuffer[1], &destBuffer[1], inFramesToProcess),);
+        }
 
         updateParameterOutputsAndTriggers();
 
@@ -262,18 +275,24 @@ protected:
         if ((err = AUEffectBase::Initialize()) != noErr)
             return err;
 
-        // make sure things are in sync
-        fPlugin.setBufferSize(GetMaxFramesPerSlice(), true);
-        fPlugin.setSampleRate(GetSampleRate(), true);
+        numCh = GetNumberOfChannels();
 
-        fPlugin.activate();
+        // make sure things are in sync
+        fPluginA.setBufferSize(GetMaxFramesPerSlice(), true);
+        CLONE_MONO(fPluginB.setBufferSize(GetMaxFramesPerSlice(), true),);
+        fPluginA.setSampleRate(GetSampleRate(), true);
+        CLONE_MONO(fPluginB.setSampleRate(GetSampleRate(), true),);
+
+        fPluginA.activate();
+        CLONE_MONO(fPluginB.activate(),);
 
         return noErr;
     }
 
     void Cleanup() override
     {
-        fPlugin.deactivate();
+        fPluginA.deactivate();
+        CLONE_MONO(fPluginB.deactivate(),);
         AUEffectBase::Cleanup();
     }
 
@@ -281,25 +300,37 @@ protected:
 
     UInt32 SupportedNumChannels(const AUChannelInfo** outInfo) override
     {
-        static const AUChannelInfo sChannels[1] = {{ DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
+#if CLONE_MONO(1,0) 
+        static const AUChannelInfo sChannels[2] = {{2,2}, { DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
+        if (outInfo != nullptr)
+            *outInfo = sChannels;
 
+        return 2;
+#else
+        static const AUChannelInfo sChannels[1] = {{2,2}};
         if (outInfo != nullptr)
             *outInfo = sChannels;
 
         return 1;
+#endif
     }
 
     void SetMaxFramesPerSlice(UInt32 nFrames) override
     {
-        fPlugin.setBufferSize(nFrames, true);
+        fPluginA.setBufferSize(nFrames, true);
+        CLONE_MONO(fPluginB.setBufferSize(nFrames, true),);
         AUEffectBase::SetMaxFramesPerSlice(nFrames);
     }
 
     // -------------------------------------------------------------------
 
 private:
+    uint16_t numCh;
     LastValuesInit fLastValuesInit;
-    PluginExporter fPlugin;
+    PluginExporter fPluginA;
+#if CLONE_MONO(1,0)
+    PluginExporter fPluginB;
+#endif 
 
     // Temporary data
     float* fLastParameterValues;
@@ -308,9 +339,9 @@ private:
     {
         float value;
 
-        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        for (uint32_t i=0, count=fPluginA.getParameterCount(); i < count; ++i)
         {
-            if (! fPlugin.isParameterInput(i))
+            if (! fPluginA.isParameterInput(i))
                 continue;
 
             value = GetParameter(i);
@@ -319,7 +350,8 @@ private:
                 continue;
 
             fLastParameterValues[i] = value;
-            fPlugin.setParameterValue(i, value);
+            fPluginA.setParameterValue(i, value);
+            CLONE_MONO(fPluginB.setParameterValue(i, value),);
         }
     }
 
@@ -327,23 +359,24 @@ private:
     {
         float value;
 
-        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        for (uint32_t i=0, count=fPluginA.getParameterCount(); i < count; ++i)
         {
-            if (fPlugin.isParameterOutput(i))
+            if (fPluginA.isParameterOutput(i))
             {
-                value = fLastParameterValues[i] = fPlugin.getParameterValue(i);
+                value = fLastParameterValues[i] = fPluginA.getParameterValue(i);
                 SetParameter(i, value);
             }
-            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            else if ((fPluginA.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
             {
                 // NOTE: no trigger support in AU, simulate it here
-                value = fPlugin.getParameterRanges(i).def;
+                value = fPluginA.getParameterRanges(i).def;
 
-                if (d_isEqual(value, fPlugin.getParameterValue(i)))
+                if (d_isEqual(value, fPluginA.getParameterValue(i)))
                     continue;
 
                 fLastParameterValues[i] = value;
-                fPlugin.setParameterValue(i, value);
+                fPluginA.setParameterValue(i, value);
+                CLONE_MONO(fPluginB.setParameterValue(i, value),);
                 SetParameter(i, value);
             }
         }
