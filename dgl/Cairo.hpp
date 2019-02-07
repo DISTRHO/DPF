@@ -33,6 +33,12 @@ struct GraphicsContext
     cairo_t* cairo; // FIXME proper name..
 };
 
+/**
+   Image.
+ */
+class ImageCairo;
+typedef ImageCairo Image;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

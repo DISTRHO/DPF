@@ -18,12 +18,18 @@
 #define DGL_IMAGE_HPP_INCLUDED
 
 #include "ImageBase.hpp"
-#include "OpenGL.hpp"
+#ifdef DGL_OPENGL
+# include "OpenGL.hpp"
+#endif
+#ifdef DGL_CAIRO
+# include "Cairo.hpp"
+#endif
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+#ifdef DGL_OPENGL
 /**
    OpenGL Image class.
 
@@ -36,42 +42,42 @@ START_NAMESPACE_DGL
 
    Images are drawn on screen via 2D textures.
  */
-class Image : public ImageBase
+class ImageOpenGL : public ImageBase
 {
 public:
    /**
       Constructor for a null Image.
     */
-    Image();
+    ImageOpenGL();
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* const rawData,
-          const uint width,
-          const uint height,
-          const GLenum format = GL_BGRA,
-          const GLenum type = GL_UNSIGNED_BYTE);
+    ImageOpenGL(const char* const rawData,
+                const uint width,
+                const uint height,
+                const GLenum format = GL_BGRA,
+                const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    Image(const char* const rawData,
-          const Size<uint>& size,
-          const GLenum format = GL_BGRA,
-          const GLenum type = GL_UNSIGNED_BYTE);
+    ImageOpenGL(const char* const rawData,
+                const Size<uint>& size,
+                const GLenum format = GL_BGRA,
+                const GLenum type = GL_UNSIGNED_BYTE);
 
    /**
       Constructor using another image data.
     */
-    Image(const Image& image);
+    ImageOpenGL(const ImageOpenGL& image);
 
    /**
       Destructor.
     */
-    ~Image() override;
+    ~ImageOpenGL() override;
 
    /**
       Load image data from memory.
@@ -105,11 +111,11 @@ public:
    /**
       TODO document this.
     */
-    Image& operator=(const Image& image) noexcept;
+    ImageOpenGL& operator=(const ImageOpenGL& image) noexcept;
 
 protected:
    /** @internal */
-    void _drawAt(const Point<int>& pos) override;
+    void _drawAt(const Point<int>& pos, const GraphicsContext& gc) override;
 
 private:
     GLenum fFormat;
@@ -117,6 +123,80 @@ private:
     GLuint fTextureId;
     bool fIsReady;
 };
+#endif // DGL_OPENGL
+
+// -----------------------------------------------------------------------
+
+#ifdef DGL_CAIRO
+/**
+   Cairo Image class.
+ */
+class ImageCairo : public ImageBase
+{
+public:
+   /**
+      Constructor for a null Image.
+    */
+    ImageCairo() noexcept;
+
+   /**
+      Constructor for a cairo surface.
+      @note If @takeReference is true, this increments the reference counter
+      of the cairo surface.
+    */
+    ImageCairo(cairo_surface_t* surface, bool takeReference) noexcept;
+
+   /**
+      Constructor using another image data.
+    */
+    ImageCairo(const ImageCairo& image) noexcept;
+
+   /**
+      Destructor.
+      @note Decrements the reference counter of the cairo surface.
+    */
+    ~ImageCairo() override;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromPng(const char* const pngData, const uint pngSize) noexcept;
+
+   /**
+      Extract a part of the image bounded by the given rectangle.
+      @note @a rawData must remain valid for the lifetime of the new Image.
+    */
+    Image getRegion(uint x, uint y, uint width, uint height) const noexcept;
+
+   /**
+      Get the surface.
+    */
+    cairo_surface_t* getSurface() const noexcept;
+
+   /**
+      Get the format.
+    */
+    cairo_format_t getFormat() const noexcept;
+
+   /**
+      Get the stride.
+    */
+    uint getStride() const noexcept;
+
+   /**
+      TODO document this.
+    */
+    ImageCairo& operator=(const ImageCairo& image) noexcept;
+
+protected:
+   /** @internal */
+    void _drawAt(const Point<int>& pos, const GraphicsContext& gc) override;
+
+private:
+    cairo_surface_t* fSurface;
+};
+#endif // DGL_CAIRO
 
 // -----------------------------------------------------------------------
 

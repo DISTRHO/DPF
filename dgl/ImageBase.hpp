@@ -91,17 +91,34 @@ public:
    /**
       Draw this image at (0, 0) point.
     */
-    void draw();
+    void draw(const GraphicsContext& gc);
 
    /**
       Draw this image at (x, y) point.
     */
-    void drawAt(const int x, const int y);
+    void drawAt(const int x, const int y, const GraphicsContext& gc);
 
    /**
       Draw this image at position @a pos.
     */
-    void drawAt(const Point<int>& pos);
+    void drawAt(const Point<int>& pos, const GraphicsContext& gc);
+
+#ifdef DGL_OPENGL
+   /**
+      Draw this image at (0, 0) point.
+    */
+    DISTRHO_DEPRECATED void draw();
+
+   /**
+      Draw this image at (x, y) point.
+    */
+    DISTRHO_DEPRECATED void drawAt(const int x, const int y);
+
+   /**
+      Draw this image at position @a pos.
+    */
+    DISTRHO_DEPRECATED void drawAt(const Point<int>& pos);
+#endif
 
    /**
       TODO document this.
@@ -112,7 +129,7 @@ public:
 
 protected:
    /** @internal */
-    virtual void _drawAt(const Point<int>& pos) = 0;
+    virtual void _drawAt(const Point<int>& pos, const GraphicsContext& gc) = 0;
 
     const char* fRawData;
     Size<uint> fSize;

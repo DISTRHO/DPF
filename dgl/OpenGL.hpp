@@ -114,6 +114,12 @@ struct GraphicsContext
 {
 };
 
+/**
+   Image.
+ */
+class ImageOpenGL;
+typedef ImageOpenGL Image;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

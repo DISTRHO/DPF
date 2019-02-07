@@ -33,6 +33,7 @@ OBJS_common = \
 
 OBJS_cairo = $(OBJS_common) \
 	../build/dgl/Cairo.cpp.cairo.o \
+	../build/dgl/Image.cpp.cairo.o \
 	../build/dgl/WidgetPrivateData.cpp.cairo.o
 
 ifeq ($(MACOS),true)
