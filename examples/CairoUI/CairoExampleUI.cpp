@@ -17,7 +17,9 @@
 #include "DistrhoUI.hpp"
 #include "DemoWidgetBanner.hpp"
 #include "DemoWidgetClickable.hpp"
+#include "ImageWidgets.hpp"
 #include "Window.hpp"
+#include "Artwork.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -36,6 +38,24 @@ public:
         fWidgetBanner = widgetBanner;
         widgetBanner->setSize(180, 80);
         widgetBanner->setAbsolutePos(10, 10);
+
+        Image knobSkin;
+        knobSkin.loadFromPng(Artwork::knobData, Artwork::knobDataSize);
+
+        ImageKnob* knob = new ImageKnob(this, knobSkin);
+        fKnob = knob;
+        knob->setSize(80, 80);
+        knob->setAbsolutePos(10, 100);
+        // knob->setRotationAngle(270);
+
+        Image buttonOn, buttonOff;
+        buttonOn.loadFromPng(Artwork::buttonOnData, Artwork::buttonOnDataSize);
+        buttonOff.loadFromPng(Artwork::buttonOffData, Artwork::buttonOffDataSize);
+
+        ImageButton* button = new ImageButton(this, buttonOff, buttonOn);
+        fButton = button;
+        button->setSize(60, 35);
+        button->setAbsolutePos(100, 160);
     }
 
     ~CairoExampleUI()
@@ -48,6 +68,16 @@ public:
 
         cairo_set_source_rgb(cr, 1.0, 0.8, 0.5);
         cairo_paint(cr);
+
+        ImageKnob* knob = fKnob;
+        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.1);
+        cairo_rectangle(cr, knob->getAbsoluteX(), knob->getAbsoluteY(), knob->getWidth(), knob->getHeight());
+        cairo_fill(cr);
+
+        ImageButton* button = fButton;
+        cairo_set_source_rgba(cr, 1.0, 0.0, 0.0, 0.1);
+        cairo_rectangle(cr, button->getAbsoluteX(), button->getAbsoluteY(), button->getWidth(), button->getHeight());
+        cairo_fill(cr);
     }
 
     void parameterChanged(uint32_t index, float value)
@@ -60,6 +90,8 @@ public:
 private:
     ScopedPointer<DemoWidgetClickable> fWidgetClickable;
     ScopedPointer<DemoWidgetBanner> fWidgetBanner;
+    ScopedPointer<ImageKnob> fKnob;
+    ScopedPointer<ImageButton> fButton;
 };
 
 UI* createUI()
