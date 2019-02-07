@@ -66,6 +66,15 @@
 # define nullptr NULL
 #endif
 
+/* Define DISTRHO_DEPRECATED */
+#if defined(__GNUC__)
+# define DISTRHO_DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+# define DISTRHO_DEPRECATED __declspec(deprecated)
+#else
+# define DISTRHO_DEPRECATED
+#endif
+
 /* Define DISTRHO_SAFE_ASSERT* */
 #define DISTRHO_SAFE_ASSERT(cond)               if (! (cond))   d_safe_assert(#cond, __FILE__, __LINE__);
 #define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
