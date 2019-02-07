@@ -28,11 +28,7 @@ void DemoWidgetClickable::onDisplay()
 {
     cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
 
-    Point<int> pt = getAbsolutePos();
     Size<uint> sz = getSize();
-
-    int x = pt.getX();
-    int y = pt.getY();
     int w = sz.getWidth();
     int h = sz.getHeight();
 
@@ -48,17 +44,17 @@ void DemoWidgetClickable::onDisplay()
         cairo_set_source_rgb(cr, 0.0, 0.0, 0.75);
         break;
     }
-    cairo_rectangle(cr, x, y, w, h);
+    cairo_rectangle(cr, 0, 0, w, h);
     cairo_fill(cr);
 
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
     cairo_new_path(cr);
-    cairo_move_to(cr, x + 0.25 * w, y + 0.25 * h);
-    cairo_line_to(cr, x + 0.75 * w, y + 0.75 * h);
+    cairo_move_to(cr, 0.25 * w, 0.25 * h);
+    cairo_line_to(cr, 0.75 * w, 0.75 * h);
     cairo_stroke(cr);
     cairo_new_path(cr);
-    cairo_move_to(cr, x + 0.75 * w, y + 0.25 * h);
-    cairo_line_to(cr, x + 0.25 * w, y + 0.75 * h);
+    cairo_move_to(cr, 0.75 * w, 0.25 * h);
+    cairo_line_to(cr, 0.25 * w, 0.75 * h);
     cairo_stroke(cr);
 }
 
