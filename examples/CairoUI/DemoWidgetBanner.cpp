@@ -59,11 +59,7 @@ void DemoWidgetBanner::onDisplay()
 {
     cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
 
-    Point<int> pt = getAbsolutePos();
     Size<uint> sz = getSize();
-
-    int x = pt.getX();
-    int y = pt.getY();
     int w = sz.getWidth();
     int h = sz.getHeight();
 
@@ -75,8 +71,8 @@ void DemoWidgetBanner::onDisplay()
     {
         for (int c = 0; c < columns; ++c)
         {
-            double cx = x + xoff + radius + c * diameter;
-            double cy = y + yoff + radius + r * diameter;
+            double cx = xoff + radius + c * diameter;
+            double cy = yoff + radius + r * diameter;
 
             char ch = banner[c + r * columns];
             if (ch != ' ')
