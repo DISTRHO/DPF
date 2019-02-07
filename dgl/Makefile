@@ -27,13 +27,12 @@ OBJS_common = \
 	../build/dgl/Resources.cpp.o \
 	../build/dgl/Widget.cpp.o
 
-# TODO: ImageWidgets.cpp
-
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_cairo = $(OBJS_common) \
 	../build/dgl/Cairo.cpp.cairo.o \
 	../build/dgl/Image.cpp.cairo.o \
+	../build/dgl/ImageWidgets.cpp.cairo.o \
 	../build/dgl/WidgetPrivateData.cpp.cairo.o
 
 ifeq ($(MACOS),true)

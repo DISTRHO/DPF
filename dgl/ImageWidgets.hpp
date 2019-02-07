@@ -151,7 +151,12 @@ private:
     uint fImgLayerHeight;
     uint fImgLayerCount;
     bool fIsReady;
+#ifdef DGL_OPENGL
     GLuint fTextureId;
+#endif
+#ifdef DGL_CAIRO
+    Image fDisplayImage;
+#endif
 
     float _logscale(float value) const;
     float _invlogscale(float value) const;

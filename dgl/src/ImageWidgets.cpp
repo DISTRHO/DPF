@@ -19,7 +19,12 @@
 #include "WidgetPrivateData.hpp"
 
 // FIXME make this code more generic and move GL specific bits to OpenGL.cpp
-#include "../OpenGL.hpp"
+#ifdef DGL_OPENGL
+# include "../OpenGL.hpp"
+#endif
+#ifdef DGL_CAIRO
+# include "../Cairo.hpp"
+#endif
 
 START_NAMESPACE_DGL
 
@@ -56,7 +61,9 @@ void ImageAboutWindow::setImage(const Image& image)
 
 void ImageAboutWindow::onDisplay()
 {
-    fImgBackground.draw();
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+
+    fImgBackground.draw(gc);
 }
 
 bool ImageAboutWindow::onKeyboard(const KeyboardEvent& ev)
@@ -168,16 +175,18 @@ void ImageButton::setCallback(Callback* callback) noexcept
 
 void ImageButton::onDisplay()
 {
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+
     switch (pData->impl.state)
     {
     case ButtonImpl::kStateDown:
-        pData->imageDown.draw();
+        pData->imageDown.draw(gc);
         break;
     case ButtonImpl::kStateHover:
-        pData->imageHover.draw();
+        pData->imageHover.draw(gc);
         break;
     default:
-        pData->imageNormal.draw();
+        pData->imageNormal.draw(gc);
         break;
     }
 }
@@ -215,10 +224,14 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
       fImgLayerHeight(fImgLayerWidth),
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
-      fIsReady(false),
-      fTextureId(0)
+      fIsReady(false)
+#ifdef DGL_OPENGL
+    , fTextureId(0)
+#endif
 {
+#ifdef DGL_OPENGL
     glGenTextures(1, &fTextureId);
+#endif
     setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
@@ -243,10 +256,14 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
       fImgLayerHeight(fImgLayerWidth),
       fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
-      fIsReady(false),
-      fTextureId(0)
+      fIsReady(false)
+#ifdef DGL_OPENGL
+    , fTextureId(0)
+#endif
 {
+#ifdef DGL_OPENGL
     glGenTextures(1, &fTextureId);
+#endif
     setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
@@ -271,10 +288,14 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fImgLayerWidth(imageKnob.fImgLayerWidth),
       fImgLayerHeight(imageKnob.fImgLayerHeight),
       fImgLayerCount(imageKnob.fImgLayerCount),
-      fIsReady(false),
-      fTextureId(0)
+      fIsReady(false)
+#ifdef DGL_OPENGL
+    , fTextureId(0)
+#endif
 {
+#ifdef DGL_OPENGL
     glGenTextures(1, &fTextureId);
+#endif
     setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
@@ -301,6 +322,7 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     fImgLayerCount  = imageKnob.fImgLayerCount;
     fIsReady  = false;
 
+#ifdef DGL_OPENGL
     if (fTextureId != 0)
     {
         glDeleteTextures(1, &fTextureId);
@@ -308,6 +330,8 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     }
 
     glGenTextures(1, &fTextureId);
+#endif
+
     setSize(fImgLayerWidth, fImgLayerHeight);
 
     return *this;
@@ -315,11 +339,13 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
 
 ImageKnob::~ImageKnob()
 {
+#ifdef DGL_OPENGL
     if (fTextureId != 0)
     {
         glDeleteTextures(1, &fTextureId);
         fTextureId = 0;
     }
+#endif
 }
 
 float ImageKnob::getValue() const noexcept
@@ -383,8 +409,12 @@ void ImageKnob::setValue(float value, bool sendCallback) noexcept
     if (d_isZero(fStep))
         fValueTmp = value;
 
+#ifdef DGL_OPENGL
     if (fRotationAngle == 0)
         fIsReady = false;
+#else
+    fIsReady = false;
+#endif
 
     repaint();
 
@@ -437,6 +467,7 @@ void ImageKnob::setImageLayerCount(uint count) noexcept
     setSize(fImgLayerWidth, fImgLayerHeight);
 }
 
+#ifdef DGL_OPENGL
 void ImageKnob::onDisplay()
 {
     const float normValue = ((fUsingLog ? _invlogscale(fValue) : fValue) - fMinimum) / (fMaximum - fMinimum);
@@ -503,6 +534,48 @@ void ImageKnob::onDisplay()
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
 }
+#endif // DGL_OPENGL
+
+#ifdef DGL_CAIRO
+void ImageKnob::onDisplay()
+{
+    Image& displayImage = fDisplayImage;
+    const int angle = fRotationAngle;
+    const float normValue = ((fUsingLog ? _invlogscale(fValue) : fValue) - fMinimum) / (fMaximum - fMinimum);
+
+    if (! fIsReady)
+    {
+        uint layerNum = 0;
+        uint layerCount = fImgLayerCount;
+        uint layerW = fImgLayerWidth;
+        uint layerH = fImgLayerHeight;
+
+        if (angle == 0)
+            layerNum = uint(normValue * float(layerCount-1));
+
+        uint layerX = fIsImgVertical ? 0 : layerNum * layerW;
+        uint layerY = !fIsImgVertical ? 0 : layerNum * layerH;
+        displayImage = fImage.getRegion(layerX, layerY, layerW, layerH);
+
+        if (angle != 0)
+        {
+            Image rotated(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH), false);
+            cairo_t* cr = cairo_create(rotated.getSurface());
+            cairo_translate(cr, 0.5 * layerW, 0.5 * layerH);
+            cairo_rotate(cr, normValue * angle * (float)(M_PI / 180));
+            cairo_set_source_surface(cr, displayImage.getSurface(), -0.5f * layerW, -0.5f * layerH);
+            cairo_paint(cr);
+            cairo_destroy(cr);
+            displayImage = rotated;
+        }
+
+        fIsReady = true;
+    }
+
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+    displayImage.draw(gc);
+}
+#endif // DGL_CAIRO
 
 bool ImageKnob::onMouse(const MouseEvent& ev)
 {
@@ -800,6 +873,8 @@ void ImageSlider::setCallback(Callback* callback) noexcept
 
 void ImageSlider::onDisplay()
 {
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+
 #if 0 // DEBUG, paints slider area
     glColor3f(0.4f, 0.5f, 0.1f);
     glRecti(fSliderArea.getX(), fSliderArea.getY(), fSliderArea.getX()+fSliderArea.getWidth(), fSliderArea.getY()+fSliderArea.getHeight());
@@ -831,7 +906,7 @@ void ImageSlider::onDisplay()
             y = fStartPos.getY() + static_cast<int>(normValue*static_cast<float>(fEndPos.getY()-fStartPos.getY()));
     }
 
-    fImage.drawAt(x, y);
+    fImage.drawAt(x, y, gc);
 }
 
 bool ImageSlider::onMouse(const MouseEvent& ev)
@@ -1070,10 +1145,12 @@ void ImageSwitch::setCallback(Callback* callback) noexcept
 
 void ImageSwitch::onDisplay()
 {
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+
     if (fIsDown)
-        fImageDown.draw();
+        fImageDown.draw(gc);
     else
-        fImageNormal.draw();
+        fImageNormal.draw(gc);
 }
 
 bool ImageSwitch::onMouse(const MouseEvent& ev)
