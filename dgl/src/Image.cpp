@@ -290,9 +290,9 @@ uint ImageCairo::getStride() const noexcept
 
 ImageCairo& ImageCairo::operator=(const ImageCairo& image) noexcept
 {
-    cairo_surface_t* surface = image.fSurface;
+    cairo_surface_t* surface = cairo_surface_reference(image.fSurface);
     cairo_surface_destroy(fSurface);
-    fSurface = cairo_surface_reference(surface);
+    fSurface = surface;
 
     fRawData = (const char*)cairo_image_surface_get_data(surface);
     fSize.setWidth(cairo_image_surface_get_width(surface));
