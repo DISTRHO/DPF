@@ -52,7 +52,10 @@ def png2rgba(namespace, filenames):
         shortFilename = filename.rsplit(os.sep, 1)[-1].split(".", 1)[0]
         shortFilename = shortFilename.replace("-", "_")
 
-        png      = Image.open(filename)
+        png = Image.open(filename)
+        if png.getpalette():
+            png = png.convert()
+
         pngNumpy = numpy.array(png)
         pngData  = pngNumpy.tolist()
         #pngData.reverse()
