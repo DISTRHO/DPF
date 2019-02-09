@@ -3,6 +3,7 @@
 #include <AudioToolbox/AudioToolbox.h>
 #include <AudioUnit/AUCocoaUIView.h>
 #include "DistrhoUIInternal.hpp"
+#include "DistrhoPluginInternal.hpp" // Direct access
 
 #define MAX_PARAMS 100
 
@@ -13,6 +14,7 @@ class UIAu
 public:
     UIAu(const char* const uiTitle)
         : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback),
+          fPlugin((PluginExporter *)fUI.getDirectAccess()),
           fHostClosed(false)
     {
         fUI.setWindowTitle(uiTitle);
@@ -22,15 +24,24 @@ public:
     {
     }
 
+    uint32_t getParameterCountFromDSP()
+    {
+        return fPlugin->getParameterCount();
+    }
+
     void auui_showhide(bool show)
     {
         fUI.setWindowVisible(show);
     }
 
+    void parameterChanged(const uint32_t rindex, const float value)
+    {
+        fUI.parameterChanged(rindex, value);
+    }
+
 protected:
     void setParameterValue(const uint32_t rindex, const float value)
     {
-        //FIXME fUI.setParameterValue(rindex, value);
     }
 
     void setState(const char* const key, const char* const value)
@@ -44,6 +55,7 @@ protected:
 
 private:
     UIExporter fUI;
+    PluginExporter *fPlugin;
     bool fHostClosed;
 
     // -------------------------------------------------------------------
@@ -117,8 +129,9 @@ END_NAMESPACE_DISTRHO
     // remove previous listeners
     if (mAU) [self _removeListeners];
     mAU = inAU;
+    fUIAu = new UIAu(DISTRHO_PLUGIN_NAME);
 
-    paramCount = 1; //globalUI->dspPtr.getParameterCount();
+    paramCount = fUIAu->getParameterCountFromDSP();
 
     UInt32 i;
     for (i = 0; i < paramCount; ++i) {
@@ -128,7 +141,6 @@ END_NAMESPACE_DISTRHO
         mParameter[i].mElement = 0;
     }
 
-    fUIAu = new UIAu(DISTRHO_PLUGIN_NAME);
 
     // add new listeners
     [self _addListeners];
@@ -199,7 +211,7 @@ void ParameterListenerDispatcher (void *inRefCon, void *inObject,
          parameter: (const AudioUnitParameter *)inParameter
          value: (Float32)inValue
 {
-    //DPF: setUIParameter(inParameter->mParameterID, inValue);
+    fUIAu->parameterChanged(inParameter->mParameterID, inValue);
 }
 
 @end
