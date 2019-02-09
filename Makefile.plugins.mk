@@ -387,7 +387,7 @@ $(BUILD_DIR)/DistrhoPluginInfo.r: $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginAUexport
 $(BUILD_DIR)/PluginAU_CocoaUI.mm.o: $(DPF_PATH)/distrho/src/CocoaUI/PluginAU_CocoaUI.m
 	-@mkdir -p $(shell dirname $@)
 	@echo "Compiling Cocoa UI for $(NAME)"
-	$(CXX) $< $(BUILD_CXX_FLAGS) -Wno-unused-parameter -ObjC++ -c -o $@
+	$(CXX) $< $(BUILD_CXX_FLAGS) -I$(DPF_PATH)/distrho/src -Wno-unused-parameter -ObjC++ -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

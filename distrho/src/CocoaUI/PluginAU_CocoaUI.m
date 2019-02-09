@@ -2,8 +2,80 @@
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioToolbox.h>
 #include <AudioUnit/AUCocoaUIView.h>
+#include "DistrhoUIInternal.hpp"
 
 #define MAX_PARAMS 100
+
+START_NAMESPACE_DISTRHO
+
+class UIAu
+{
+public:
+    UIAu(const char* const uiTitle)
+        : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback),
+          fHostClosed(false)
+    {
+        fUI.setWindowTitle(uiTitle);
+    }
+
+    ~UIAu()
+    {
+    }
+
+    void auui_showhide(bool show)
+    {
+        fUI.setWindowVisible(show);
+    }
+
+protected:
+    void setParameterValue(const uint32_t rindex, const float value)
+    {
+        //FIXME fUI.setParameterValue(rindex, value);
+    }
+
+    void setState(const char* const key, const char* const value)
+    {
+    }
+
+    void setSize(const uint width, const uint height)
+    {
+        fUI.setWindowSize(width, height);
+    }
+
+private:
+    UIExporter fUI;
+    bool fHostClosed;
+
+    // -------------------------------------------------------------------
+    // Callbacks
+
+    #define uiPtr ((UIAu*)ptr)
+
+    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
+    {
+        uiPtr->setParameterValue(rindex, value);
+    }
+
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        uiPtr->setState(key, value);
+    }
+
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+    }
+
+    static void setSizeCallback(void* ptr, uint width, uint height)
+    {
+        uiPtr->setSize(width, height);
+    }
+
+    #undef uiPtr
+};
+
+END_NAMESPACE_DISTRHO
+
+// -----------------------------------------------------------------------
 
 @interface PluginAU_CocoaUI : NSView
 {
@@ -11,6 +83,7 @@
     AudioUnitParameter mParameter[MAX_PARAMS];
     AUParameterListenerRef mParameterListener;
     UInt32 paramCount;
+    UIAu* fUIAu;
 }
 
 #pragma mark ____ PUBLIC FUNCTIONS ____
@@ -34,6 +107,8 @@
 #pragma mark ____ (INIT /) DEALLOC ____
 - (void)dealloc {
     [self _removeListeners];
+    fUIAu->auui_showhide(false);
+    delete fUIAu;
     [super dealloc];
 }
 
@@ -53,7 +128,7 @@
         mParameter[i].mElement = 0;
     }
 
-    //auUI* dspUI = [self dspUI];
+    fUIAu = new UIAu(DISTRHO_PLUGIN_NAME);
 
     // add new listeners
     [self _addListeners];
@@ -61,6 +136,7 @@
     // initial setup
     [self _synchronizeUIWithParameterValues];
 
+    fUIAu->auui_showhide(true);
 }
 
 #pragma mark ____ LISTENER CALLBACK DISPATCHER ____
@@ -148,9 +224,11 @@ void ParameterListenerDispatcher (void *inRefCon, void *inObject,
 }
 
 - (NSView *)uiViewForAudioUnit:(AudioUnit)inAU withSize:(NSSize)inPreferredSize {
-    PluginAU_CocoaUI *view = [[PluginAU_CocoaUI alloc] init];
-    [view setAU:inAU];
-    return [view autorelease];
+    uiFreshlyLoadedView = [[PluginAU_CocoaUI alloc] init];
+    [uiFreshlyLoadedView setAU:inAU];
+    NSView *returnView = uiFreshlyLoadedView;
+    uiFreshlyLoadedView = nil;
+    return [returnView autorelease];
 }
 
 @end

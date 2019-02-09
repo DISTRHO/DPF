@@ -17,7 +17,7 @@
 #include "src/DistrhoUI.cpp"
 
 #if defined(DISTRHO_PLUGIN_TARGET_AU)
-# include "src/DistrhoUIAU.cpp"
+// nothing
 #elif defined(DISTRHO_PLUGIN_TARGET_CARLA)
 // nothing
 #elif defined(DISTRHO_PLUGIN_TARGET_JACK)
