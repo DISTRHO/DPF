@@ -341,6 +341,15 @@ public:
 
     // -------------------------------------------------------------------
 
+#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+    void* getDirectAccess() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        return fData->dspPtr;
+    }
+#endif
+
     uint32_t getParameterOffset() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);

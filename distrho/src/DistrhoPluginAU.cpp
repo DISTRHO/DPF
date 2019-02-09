@@ -184,10 +184,37 @@ protected:
         if (inID == kAudioUnitProperty_CocoaUI && inScope == kAudioUnitScope_Global && outData != nullptr)
         {
             d_stdout("GetProperty asked for CocoaUI");
-            AudioUnitCocoaViewInfo* const info = (AudioUnitCocoaViewInfo*)outData;
-            info->mCocoaAUViewBundleLocation = nullptr; // NSURL, CFURLRef
-            info->mCocoaAUViewClass[0] = nullptr; // NSString, CFStringRef
-            // return noErr;
+
+            // Need to do a special dance just to get the path to the UI binary
+
+            // Get the main DSP bundle
+            CFBundleRef bundle = CFBundleGetBundleWithIdentifier(
+                                 CFSTR("com.example.audiounit." DISTRHO_PLUGIN_NAME));
+            if (bundle == NULL) {
+                d_stdout("XXX bundle=NULL");
+                return fnfErr;
+            }
+
+            CFURLRef auuiURL = CFBundleCopyResourceURL(bundle, 
+                               CFSTR(DISTRHO_PLUGIN_NAME "-CocoaUI"),
+                               CFSTR("bundle"), 
+                               NULL);
+
+            if (auuiURL == NULL) {
+                d_stdout("XXX auuiURL=NULL");
+                return fnfErr;
+            }
+
+            // Use hardcoded UI entrypoint
+            CFStringRef className = CFSTR("PluginAU_CocoaUIFactory");
+
+            AudioUnitCocoaViewInfo info;
+            info.mCocoaAUViewBundleLocation = auuiURL;
+            info.mCocoaAUViewClass[0] = className;
+
+            *((AudioUnitCocoaViewInfo *)outData) = info;
+
+            return noErr;
         }
 #endif
 

@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string></string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.dpfplugin</string>
+	<string>com.example.audiounit.X-DPF-EXECUTABLE-DPF-X</string>
 	<key>CFBundleName</key>
 	<string>X-DPF-EXECUTABLE-DPF-X</string>
 	<key>CFBundleInfoDictionaryVersion</key>
