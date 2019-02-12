@@ -90,10 +90,6 @@ void Widget::PrivateData::display(const uint width,
     // display widget
     self->onDisplay();
 
-#ifdef DGL_CAIRO
-    cairo_set_matrix(cr, &matrix);
-#endif
-
 #ifdef DGL_OPENGL
     if (needsDisableScissor)
     {
