@@ -82,9 +82,15 @@ void Widget::PrivateData::display(const uint width,
 #ifdef DGL_CAIRO
     cairo_t* cr = parent.getGraphicsContext().cairo;
     cairo_matrix_t matrix;
+    cairo_rectangle(cr, absolutePos.getX(), absolutePos.getY(),
+                    self->getWidth(),   // * scaling
+                    self->getHeight()); // * scaling
+    cairo_clip(cr);
     cairo_get_matrix(cr, &matrix);
+    // cairo_scale(cr, scaling, scaling);
     cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: scaling and cropping
+
+    // TODO: scaling (no idea if commented parts above work, try it)
 #endif
 
     // display widget
@@ -100,6 +106,7 @@ void Widget::PrivateData::display(const uint width,
 
 #ifdef DGL_CAIRO
     cairo_set_matrix(cr, &matrix);
+    cairo_reset_clip(cr);
 #endif
 
     displaySubWidgets(width, height, scaling);
