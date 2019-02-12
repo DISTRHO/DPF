@@ -67,40 +67,20 @@ const char* ImageBase::getRawData() const noexcept
 
 // -----------------------------------------------------------------------
 
-void ImageBase::draw(const GraphicsContext& gc)
-{
-    _drawAt(Point<int>(), gc);
-}
-
-void ImageBase::drawAt(const int x, const int y, const GraphicsContext& gc)
-{
-    _drawAt(Point<int>(x, y), gc);
-}
-
-void ImageBase::drawAt(const Point<int>& pos, const GraphicsContext& gc)
-{
-    _drawAt(pos, gc);
-}
-
-#ifdef DGL_OPENGL
 void ImageBase::draw()
 {
-    GraphicsContext gc;
-    _drawAt(Point<int>(), gc);
+    _drawAt(Point<int>());
 }
 
 void ImageBase::drawAt(const int x, const int y)
 {
-    GraphicsContext gc;
-    _drawAt(Point<int>(x, y), gc);
+    _drawAt(Point<int>(x, y));
 }
 
 void ImageBase::drawAt(const Point<int>& pos)
 {
-    GraphicsContext gc;
-    _drawAt(pos, gc);
+    _drawAt(pos);
 }
-#endif
 
 // -----------------------------------------------------------------------
 

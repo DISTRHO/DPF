@@ -115,7 +115,7 @@ public:
 
 protected:
    /** @internal */
-    void _drawAt(const Point<int>& pos, const GraphicsContext& gc) override;
+    void _drawAt(const Point<int>& pos) override;
 
 private:
     GLenum fFormat;
@@ -144,12 +144,17 @@ public:
       @note If @takeReference is true, this increments the reference counter
       of the cairo surface.
     */
-    ImageCairo(cairo_surface_t* surface, bool takeReference) noexcept;
+    ImageCairo(cairo_surface_t* surface, bool takeReference, const GraphicsContext* gc) noexcept;
 
    /**
       Constructor using another image data.
     */
     ImageCairo(const ImageCairo& image) noexcept;
+
+   /**
+      Constructor using another image data, transferring to a different graphics context.
+    */
+    ImageCairo(const ImageCairo& image, const GraphicsContext* gc) noexcept;
 
    /**
       Destructor.
@@ -161,7 +166,7 @@ public:
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromPng(const char* const pngData, const uint pngSize) noexcept;
+    void loadFromPng(const char* const pngData, const uint pngSize, const GraphicsContext* gc) noexcept;
 
    /**
       Extract a part of the image bounded by the given rectangle.
@@ -191,10 +196,11 @@ public:
 
 protected:
    /** @internal */
-    void _drawAt(const Point<int>& pos, const GraphicsContext& gc) override;
+    void _drawAt(const Point<int>& pos) override;
 
 private:
     cairo_surface_t* fSurface;
+    const GraphicsContext* fGc;
 };
 #endif // DGL_CAIRO
 

@@ -29,6 +29,8 @@ public:
     CairoExampleUI()
         : UI(200, 200)
     {
+        const GraphicsContext& gc = getParentWindow().getGraphicsContext();
+
         DemoWidgetClickable* widgetClickable = new DemoWidgetClickable(this);
         fWidgetClickable = widgetClickable;
         widgetClickable->setSize(50, 50);
@@ -40,7 +42,7 @@ public:
         widgetBanner->setAbsolutePos(10, 10);
 
         Image knobSkin;
-        knobSkin.loadFromPng(Artwork::knobData, Artwork::knobDataSize);
+        knobSkin.loadFromPng(Artwork::knobData, Artwork::knobDataSize, &gc);
 
         ImageKnob* knob = new ImageKnob(this, knobSkin);
         fKnob = knob;
@@ -49,8 +51,8 @@ public:
         // knob->setRotationAngle(270);
 
         Image buttonOn, buttonOff;
-        buttonOn.loadFromPng(Artwork::buttonOnData, Artwork::buttonOnDataSize);
-        buttonOff.loadFromPng(Artwork::buttonOffData, Artwork::buttonOffDataSize);
+        buttonOn.loadFromPng(Artwork::buttonOnData, Artwork::buttonOnDataSize, &gc);
+        buttonOff.loadFromPng(Artwork::buttonOffData, Artwork::buttonOffDataSize, &gc);
 
         ImageButton* button = new ImageButton(this, buttonOff, buttonOn);
         fButton = button;

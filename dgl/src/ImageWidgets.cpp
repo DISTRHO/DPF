@@ -61,9 +61,7 @@ void ImageAboutWindow::setImage(const Image& image)
 
 void ImageAboutWindow::onDisplay()
 {
-    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
-
-    fImgBackground.draw(gc);
+    fImgBackground.draw();
 }
 
 bool ImageAboutWindow::onKeyboard(const KeyboardEvent& ev)
@@ -175,18 +173,16 @@ void ImageButton::setCallback(Callback* callback) noexcept
 
 void ImageButton::onDisplay()
 {
-    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
-
     switch (pData->impl.state)
     {
     case ButtonImpl::kStateDown:
-        pData->imageDown.draw(gc);
+        pData->imageDown.draw();
         break;
     case ButtonImpl::kStateHover:
-        pData->imageHover.draw(gc);
+        pData->imageHover.draw();
         break;
     default:
-        pData->imageNormal.draw(gc);
+        pData->imageNormal.draw();
         break;
     }
 }
@@ -539,6 +535,7 @@ void ImageKnob::onDisplay()
 #ifdef DGL_CAIRO
 void ImageKnob::onDisplay()
 {
+    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
     Image& displayImage = fDisplayImage;
     const int angle = fRotationAngle;
     const float normValue = ((fUsingLog ? _invlogscale(fValue) : fValue) - fMinimum) / (fMaximum - fMinimum);
@@ -559,7 +556,7 @@ void ImageKnob::onDisplay()
 
         if (angle != 0)
         {
-            Image rotated(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH), false);
+            Image rotated(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH), false, &gc);
             cairo_t* cr = cairo_create(rotated.getSurface());
             cairo_translate(cr, 0.5 * layerW, 0.5 * layerH);
             cairo_rotate(cr, normValue * angle * (float)(M_PI / 180));
@@ -572,8 +569,7 @@ void ImageKnob::onDisplay()
         fIsReady = true;
     }
 
-    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
-    displayImage.draw(gc);
+    displayImage.draw();
 }
 #endif // DGL_CAIRO
 
@@ -873,8 +869,6 @@ void ImageSlider::setCallback(Callback* callback) noexcept
 
 void ImageSlider::onDisplay()
 {
-    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
-
 #if 0 // DEBUG, paints slider area
     glColor3f(0.4f, 0.5f, 0.1f);
     glRecti(fSliderArea.getX(), fSliderArea.getY(), fSliderArea.getX()+fSliderArea.getWidth(), fSliderArea.getY()+fSliderArea.getHeight());
@@ -906,7 +900,7 @@ void ImageSlider::onDisplay()
             y = fStartPos.getY() + static_cast<int>(normValue*static_cast<float>(fEndPos.getY()-fStartPos.getY()));
     }
 
-    fImage.drawAt(x, y, gc);
+    fImage.drawAt(x, y);
 }
 
 bool ImageSlider::onMouse(const MouseEvent& ev)
@@ -1145,12 +1139,10 @@ void ImageSwitch::setCallback(Callback* callback) noexcept
 
 void ImageSwitch::onDisplay()
 {
-    const GraphicsContext& gc = getParentWindow().getGraphicsContext();
-
     if (fIsDown)
-        fImageDown.draw(gc);
+        fImageDown.draw();
     else
-        fImageNormal.draw(gc);
+        fImageNormal.draw();
 }
 
 bool ImageSwitch::onMouse(const MouseEvent& ev)

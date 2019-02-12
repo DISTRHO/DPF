@@ -115,7 +115,7 @@ ImageOpenGL& ImageOpenGL::operator=(const Image& image) noexcept
     return *this;
 }
 
-void ImageOpenGL::_drawAt(const Point<int>& pos, const GraphicsContext& gc)
+void ImageOpenGL::_drawAt(const Point<int>& pos)
 {
     if (fTextureId == 0 || ! isValid())
         return;
@@ -146,9 +146,6 @@ void ImageOpenGL::_drawAt(const Point<int>& pos, const GraphicsContext& gc)
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
-
-    // unused
-    (void)gc;
 }
 #endif // DGL_OPENGL
 
@@ -159,12 +156,14 @@ void ImageOpenGL::_drawAt(const Point<int>& pos, const GraphicsContext& gc)
 
 ImageCairo::ImageCairo() noexcept
     : ImageBase(),
-      fSurface(nullptr)
+      fSurface(nullptr),
+      fGc(nullptr)
 {
 }
 
-ImageCairo::ImageCairo(cairo_surface_t* surface, bool takeReference) noexcept
-    : fSurface(surface)
+ImageCairo::ImageCairo(cairo_surface_t* surface, bool takeReference, const GraphicsContext* gc) noexcept
+    : fSurface(surface),
+      fGc(gc)
 {
     if (takeReference)
         cairo_surface_reference(surface);
@@ -176,7 +175,19 @@ ImageCairo::ImageCairo(cairo_surface_t* surface, bool takeReference) noexcept
 
 ImageCairo::ImageCairo(const ImageCairo& image) noexcept
     : ImageBase(*this),
-      fSurface(cairo_surface_reference(image.fSurface))
+      fSurface(cairo_surface_reference(image.fSurface)),
+      fGc(image.fGc)
+{
+    cairo_surface_t* surface = fSurface;
+    fRawData = (const char*)cairo_image_surface_get_data(surface);
+    fSize.setWidth(cairo_image_surface_get_width(surface));
+    fSize.setHeight(cairo_image_surface_get_height(surface));
+}
+
+ImageCairo::ImageCairo(const ImageCairo& image, const GraphicsContext* gc) noexcept
+    : ImageBase(*this),
+      fSurface(cairo_surface_reference(image.fSurface)),
+      fGc(gc)
 {
     cairo_surface_t* surface = fSurface;
     fRawData = (const char*)cairo_image_surface_get_data(surface);
@@ -210,7 +221,7 @@ static cairo_status_t readSomePngData(void *closure,
     return CAIRO_STATUS_SUCCESS;
 }
 
-void ImageCairo::loadFromPng(const char* const pngData, const uint pngSize) noexcept
+void ImageCairo::loadFromPng(const char* const pngData, const uint pngSize, const GraphicsContext* gc) noexcept
 {
     PngReaderData readerData;
     readerData.dataPtr = pngData;
@@ -219,6 +230,7 @@ void ImageCairo::loadFromPng(const char* const pngData, const uint pngSize) noex
     cairo_surface_t* surface = cairo_image_surface_create_from_png_stream(&readSomePngData, &readerData);
     cairo_surface_destroy(fSurface);
     fSurface = surface;
+    fGc = gc;
 
     fRawData = (const char*)cairo_image_surface_get_data(surface);
     fSize.setWidth(cairo_image_surface_get_width(surface));
@@ -270,7 +282,7 @@ Image ImageCairo::getRegion(uint x, uint y, uint width, uint height) const noexc
     const uint stride = cairo_image_surface_get_stride(surface);
 
     unsigned char* data = fullData + x * bpp + y * stride;
-    return Image(cairo_image_surface_create_for_data(data, format, width, height, stride), false);
+    return Image(cairo_image_surface_create_for_data(data, format, width, height, stride), false, fGc);
 }
 
 cairo_surface_t* ImageCairo::getSurface() const noexcept
@@ -293,6 +305,7 @@ ImageCairo& ImageCairo::operator=(const ImageCairo& image) noexcept
     cairo_surface_t* surface = cairo_surface_reference(image.fSurface);
     cairo_surface_destroy(fSurface);
     fSurface = surface;
+    fGc = image.fGc;
 
     fRawData = (const char*)cairo_image_surface_get_data(surface);
     fSize.setWidth(cairo_image_surface_get_width(surface));
@@ -300,9 +313,12 @@ ImageCairo& ImageCairo::operator=(const ImageCairo& image) noexcept
     return *this;
 }
 
-void ImageCairo::_drawAt(const Point<int>& pos, const GraphicsContext& gc)
+void ImageCairo::_drawAt(const Point<int>& pos)
 {
-    cairo_t* cr = gc.cairo;
+    const GraphicsContext* gc = fGc;
+    DISTRHO_SAFE_ASSERT_RETURN(gc,)
+
+    cairo_t* cr = gc->cairo;
     cairo_surface_t* surface = fSurface;
 
     if (!fSurface)
