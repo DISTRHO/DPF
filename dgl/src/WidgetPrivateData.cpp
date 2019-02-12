@@ -16,11 +16,11 @@
 
 #include "WidgetPrivateData.hpp"
 
-#ifdef DGL_OPENGL
-# include "../OpenGL.hpp"
-#endif
 #ifdef DGL_CAIRO
 # include "../Cairo.hpp"
+#endif
+#ifdef DGL_OPENGL
+# include "../OpenGL.hpp"
 #endif
 
 START_NAMESPACE_DGL
@@ -81,11 +81,15 @@ void Widget::PrivateData::display(const uint width,
     cairo_matrix_t matrix;
     cairo_get_matrix(cr, &matrix);
     cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: scaling with cairo
+    // TODO: scaling and cropping
 #endif
 
     // display widget
     self->onDisplay();
+
+#ifdef DGL_CAIRO
+    cairo_set_matrix(cr, &matrix);
+#endif
 
 #ifdef DGL_OPENGL
     if (needsDisableScissor)
@@ -93,10 +97,6 @@ void Widget::PrivateData::display(const uint width,
         glDisable(GL_SCISSOR_TEST);
         needsDisableScissor = false;
     }
-#endif
-
-#ifdef DGL_CAIRO
-    cairo_set_matrix(cr, &matrix);
 #endif
 
     displaySubWidgets(width, height, scaling);
