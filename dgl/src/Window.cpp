@@ -1281,6 +1281,11 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 }
 #endif
 
+bool Window::isEmbed() const noexcept
+{
+    return pData->fUsingEmbed;
+}
+
 bool Window::isVisible() const noexcept
 {
     return pData->fVisible;

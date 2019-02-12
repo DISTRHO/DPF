@@ -89,7 +89,7 @@ all: $(TARGETS)
 # Compat name, to be removed soon
 ../build/libdgl.a: ../build/libdgl-opengl.a
 	@echo "Symlinking libdgl.a"
-	@ln -s $< $@
+	@ln -sf $< $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
