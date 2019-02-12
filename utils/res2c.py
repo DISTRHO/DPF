@@ -19,7 +19,7 @@ import os, sys
 
 # -----------------------------------------------------
 
-def png2c(namespace, filenames):
+def res2c(namespace, filenames):
 
     fdH = open("%s.hpp" % namespace, "w")
     fdH.write("/* (Auto-generated binary data file). */\n")
@@ -42,12 +42,12 @@ def png2c(namespace, filenames):
         shortFilename = filename.rsplit(os.sep, 1)[-1].split(".", 1)[0]
         shortFilename = shortFilename.replace("-", "_")
 
-        pngData = open(filename, 'rb').read()
+        resData = open(filename, 'rb').read()
 
         print("Generating data for \"%s\"" % (filename))
 
         fdH.write("    extern const char* %sData;\n" % shortFilename)
-        fdH.write("    const unsigned int %sDataSize = %i;\n" % (shortFilename, len(pngData)))
+        fdH.write("    const unsigned int %sDataSize = %i;\n" % (shortFilename, len(resData)))
 
         if tempIndex != len(filenames):
             fdH.write("\n")
@@ -57,7 +57,7 @@ def png2c(namespace, filenames):
         curColumn = 1
         fdC.write(" ")
 
-        for data in pngData:
+        for data in resData:
             if curColumn == 0:
                 fdC.write(" ")
 
@@ -90,24 +90,24 @@ def png2c(namespace, filenames):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print("Usage: %s <namespace> <artwork-folder>" % sys.argv[0])
+        print("Usage: %s <namespace> <resource-folder>" % sys.argv[0])
         quit()
 
     namespace = sys.argv[1].replace("-","_")
-    artFolder = sys.argv[2]
+    resFolder = sys.argv[2]
 
-    if not os.path.exists(artFolder):
-        print("Folder '%s' does not exist" % artFolder)
+    if not os.path.exists(resFolder):
+        print("Folder '%s' does not exist" % resFolder)
         quit()
 
-    # find png files
-    pngFiles = []
+    # find resource files
+    resFiles = []
 
-    for root, dirs, files in os.walk(artFolder):
-        for name in [name for name in files if name.lower().endswith(".png")]:
-            pngFiles.append(os.path.join(root, name))
+    for root, dirs, files in os.walk(resFolder):
+        for name in files:
+            resFiles.append(os.path.join(root, name))
 
-    pngFiles.sort()
+    resFiles.sort()
 
     # create code now
-    png2c(namespace, pngFiles)
+    res2c(namespace, resFiles)
