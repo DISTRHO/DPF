@@ -973,7 +973,7 @@ public:
             if (vstTimeInfo->flags & (kVstPpqPosValid|kVstTimeSigValid))
             {
                 const int    ppqPerBar = vstTimeInfo->timeSigNumerator * 4 / vstTimeInfo->timeSigDenominator;
-                const double barBeats  = (std::fmod(vstTimeInfo->ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigDenominator;
+                const double barBeats  = (std::fmod(vstTimeInfo->ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigNumerator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
                 fTimePosition.bbt.bar         = int(vstTimeInfo->ppqPos)/ppqPerBar + 1;
