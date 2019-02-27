@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -37,13 +37,13 @@ Window*     d_lastUiWindow     = nullptr;
  * UI */
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI::UI(uint width, uint height, bool userResizable)
+UI::UI(uint width, uint height)
     : UIWidget(width, height),
-      pData(new PrivateData(userResizable)) {}
+      pData(new PrivateData()) {}
 #else
-UI::UI(uint width, uint height, bool userResizable)
+UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
-      pData(new PrivateData(userResizable))
+      pData(new PrivateData())
 {
     ((UIWidget*)this)->pData->needsFullViewport = false;
 
@@ -55,11 +55,6 @@ UI::UI(uint width, uint height, bool userResizable)
 UI::~UI()
 {
     delete pData;
-}
-
-bool UI::isUserResizable() const noexcept
-{
-    return pData->userResizable;
 }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

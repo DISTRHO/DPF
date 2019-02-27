@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -64,7 +64,6 @@ struct UI::PrivateData {
 #endif
 
     // UI
-    const bool userResizable;
     bool automaticallyScale;
     bool resizeInProgress;
     uint minWidth;
@@ -78,13 +77,12 @@ struct UI::PrivateData {
     sendNoteFunc  sendNoteCallbackFunc;
     setSizeFunc   setSizeCallbackFunc;
 
-    PrivateData(const bool resizable) noexcept
+    PrivateData() noexcept
         : sampleRate(d_lastUiSampleRate),
           parameterOffset(0),
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
           dspPtr(d_lastUiDspPtr),
 #endif
-          userResizable(resizable),
           automaticallyScale(false),
           resizeInProgress(false),
           minWidth(0),
@@ -178,14 +176,13 @@ class UIExporterWindow : public Window
 {
 public:
     UIExporterWindow(Application& app, const intptr_t winId, void* const dspPtr)
-        : Window(app, winId),
+        : Window(app, winId, DISTRHO_UI_USER_RESIZABLE),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
 
-        setResizable(fUI->pData->userResizable);
         setSize(fUI->getWidth(), fUI->getHeight());
     }
 

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -139,12 +139,17 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         manifestString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        // TODO: pluginUI.isUserResizable()
+#   if DISTRHO_UI_USER_RESIZABLE
+        manifestString += "    lv2:optionalFeature ui:resize ,\n";
+        manifestString += "                        ui:touch ;\n";
+        manifestString += "\n";
+#   else // DISTRHO_UI_USER_RESIZABLE
         manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
         manifestString += "                        ui:resize ,\n";
         manifestString += "                        ui:touch ;\n";
         manifestString += "\n";
-#  endif
+#   endif // DISTRHO_UI_USER_RESIZABLE
+#  endif // DISTRHO_PLUGIN_HAS_EMBED_UI
         manifestString += "    lv2:requiredFeature <" LV2_DATA_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_INSTANCE_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_OPTIONS__options "> ,\n";
@@ -630,12 +635,17 @@ void lv2_generate_ttl(const char* const basename)
 #  endif
         uiString += "\n";
 #  if DISTRHO_PLUGIN_HAS_EMBED_UI
-        // TODO: pluginUI.isUserResizable()
+#   if DISTRHO_UI_USER_RESIZABLE
+        uiString += "    lv2:optionalFeature ui:resize ,\n";
+        uiString += "                        ui:touch ;\n";
+        uiString += "\n";
+#   else // DISTRHO_UI_USER_RESIZABLE
         uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
         uiString += "                        ui:resize ,\n";
         uiString += "                        ui:touch ;\n";
         uiString += "\n";
-#  endif
+#   endif // DISTRHO_UI_USER_RESIZABLE
+#  endif // DISTRHO_PLUGIN_HAS_EMBED_UI
         uiString += "    lv2:requiredFeature <" LV2_OPTIONS__options "> ,\n";
         uiString += "                        <" LV2_URID__map "> ;\n";
 

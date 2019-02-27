@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -147,13 +147,13 @@ struct Window::PrivateData {
 #endif
     }
 
-    PrivateData(Application& app, Window* const self, const intptr_t parentId)
+    PrivateData(Application& app, Window* const self, const intptr_t parentId, const bool resizable)
         : fApp(app),
           fSelf(self),
           fView(puglInit()),
           fFirstInit(true),
           fVisible(parentId != 0),
-          fResizable(parentId == 0),
+          fResizable(resizable),
           fUsingEmbed(parentId != 0),
           fWidth(1),
           fHeight(1),
@@ -1155,8 +1155,8 @@ Window::Window(Application& app)
 Window::Window(Application& app, Window& parent)
     : pData(new PrivateData(app, this, parent)) {}
 
-Window::Window(Application& app, intptr_t parentId)
-    : pData(new PrivateData(app, this, parentId)) {}
+Window::Window(Application& app, intptr_t parentId, bool resizable)
+    : pData(new PrivateData(app, this, parentId, resizable)) {}
 
 Window::~Window()
 {

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -55,18 +55,12 @@ public:
       UI class constructor.
       The UI should be initialized to a default state that matches the plugin side.
     */
-    UI(uint width = 0, uint height = 0, bool userResizable = false);
+    UI(uint width = 0, uint height = 0);
 
    /**
       Destructor.
     */
     virtual ~UI();
-
-   /**
-      Wherever this UI is resizable by the user.
-      This simply returns the value passed in the constructor.
-    */
-    bool isUserResizable() const noexcept;
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**

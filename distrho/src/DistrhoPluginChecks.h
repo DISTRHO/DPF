@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -83,6 +83,10 @@
 
 #ifndef DISTRHO_PLUGIN_WANT_TIMEPOS
 # define DISTRHO_PLUGIN_WANT_TIMEPOS 0
+#endif
+
+#ifndef DISTRHO_UI_USER_RESIZABLE
+# define DISTRHO_UI_USER_RESIZABLE 0
 #endif
 
 #ifndef DISTRHO_UI_USE_NANOVG
