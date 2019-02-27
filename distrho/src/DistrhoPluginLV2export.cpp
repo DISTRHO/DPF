@@ -153,8 +153,8 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    lv2:requiredFeature <" LV2_DATA_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_INSTANCE_ACCESS_URI "> ,\n";
         manifestString += "                        <" LV2_OPTIONS__options "> ,\n";
-        manifestString += "                        <" LV2_URID__map "> .\n";
-        manifestString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .\n";
+        manifestString += "                        <" LV2_URID__map "> ;\n";
+        manifestString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> ;\n";
 # else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
 # endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
