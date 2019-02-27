@@ -62,18 +62,12 @@ public:
       UI class constructor.
       The UI should be initialized to a default state that matches the plugin side.
     */
-    UI(uint width = 0, uint height = 0, bool userResizable = false);
+    UI(uint width = 0, uint height = 0);
 
    /**
       Destructor.
     */
     virtual ~UI();
-
-   /**
-      Wherever this UI is resizable by the user.
-      This simply returns the value passed in the constructor.
-    */
-    bool isUserResizable() const noexcept;
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**

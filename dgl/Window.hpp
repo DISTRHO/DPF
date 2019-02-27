@@ -77,7 +77,7 @@ public:
 
     explicit Window(Application& app);
     explicit Window(Application& app, Window& parent);
-    explicit Window(Application& app, intptr_t parentId);
+    explicit Window(Application& app, intptr_t parentId, bool resizable);
     virtual ~Window();
 
     void show();

@@ -37,13 +37,13 @@ Window*     d_lastUiWindow     = nullptr;
  * UI */
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI::UI(uint width, uint height, bool userResizable)
+UI::UI(uint width, uint height)
     : UIWidget(width, height),
-      pData(new PrivateData(userResizable)) {}
+      pData(new PrivateData()) {}
 #else
-UI::UI(uint width, uint height, bool userResizable)
+UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
-      pData(new PrivateData(userResizable))
+      pData(new PrivateData())
 {
     ((UIWidget*)this)->pData->needsFullViewport = false;
 
@@ -55,11 +55,6 @@ UI::UI(uint width, uint height, bool userResizable)
 UI::~UI()
 {
     delete pData;
-}
-
-bool UI::isUserResizable() const noexcept
-{
-    return pData->userResizable;
 }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
