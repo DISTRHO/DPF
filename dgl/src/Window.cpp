@@ -1224,6 +1224,7 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 
     String startDir(options.startDir);
 
+#  ifdef DISTRHO_OS_LINUX
     if (startDir.isEmpty())
     {
         if (char* const dir_name = get_current_dir_name())
@@ -1232,6 +1233,7 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
             std::free(dir_name);
         }
     }
+#  endif
 
     DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
 
