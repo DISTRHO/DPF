@@ -105,6 +105,9 @@ void lv2_generate_ttl(const char* const basename)
         String manifestString;
         manifestString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
         manifestString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+        manifestString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
+#endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         manifestString += "@prefix pset: <" LV2_PRESETS_PREFIX "> .\n";
 #endif
