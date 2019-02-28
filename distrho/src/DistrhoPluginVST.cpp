@@ -973,12 +973,12 @@ public:
             if (vstTimeInfo->flags & (kVstPpqPosValid|kVstTimeSigValid))
             {
                 const double ppqPos    = std::abs(vstTimeInfo->ppqPos);
-                const double ppqPerBar = static_cast<double>(vstTimeInfo->timeSigNumerator * 4) / vstTimeInfo->timeSigDenominator;
+                const int    ppqPerBar = vstTimeInfo->timeSigNumerator * 4 / vstTimeInfo->timeSigDenominator;
                 const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigNumerator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
-                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos / ppqPerBar + 0.5) + 1;
-                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats + 0.5) + 1;
+                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
+                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
                 fTimePosition.bbt.tick        = static_cast<int32_t>(rest * fTimePosition.bbt.ticksPerBeat + 0.5);
                 fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
                 fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
