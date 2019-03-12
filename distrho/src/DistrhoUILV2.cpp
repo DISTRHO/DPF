@@ -388,6 +388,8 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
             uiResize = (const LV2UI_Resize*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_UI__parent) == 0)
             parentId = features[i]->data;
+        else if (std::strcmp(features[i]->URI, LV2_UI__touch) == 0)
+            uiTouch = (const LV2UI_Touch*)features[i]->data;
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         else if (std::strcmp(features[i]->URI, LV2_DATA_ACCESS_URI) == 0)
             extData = (const LV2_Extension_Data_Feature*)features[i]->data;
