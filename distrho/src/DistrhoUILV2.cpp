@@ -441,7 +441,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*, const char* uri, 
     {
         const LV2_URID uridAtomFloat(uridMap->map(uridMap->handle, LV2_ATOM__Float));
         const LV2_URID uridSampleRate(uridMap->map(uridMap->handle, LV2_PARAMETERS__sampleRate));
-        const LV2_URID uridScaleFactor(uridMap->map(uridMap->handle, "urn:carla:scale"));
+        const LV2_URID uridScaleFactor(uridMap->map(uridMap->handle, LV2_UI__scaleFactor));
 
         for (int i=0; options[i].key != 0; ++i)
         {

@@ -718,7 +718,6 @@ struct Window::PrivateData {
     void setAutoScaling(const double scaling) noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0,);
-        d_stdout("setAutoScaling called with %f", scaling);
 
         fAutoScaling = scaling;
     }

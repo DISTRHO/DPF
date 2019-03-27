@@ -52,6 +52,7 @@
 #define LV2_UI__portNotification LV2_UI_PREFIX "portNotification"
 #define LV2_UI__portSubscribe    LV2_UI_PREFIX "portSubscribe"
 #define LV2_UI__resize           LV2_UI_PREFIX "resize"
+#define LV2_UI__scaleFactor      LV2_UI_PREFIX "scaleFactor"
 #define LV2_UI__showInterface    LV2_UI_PREFIX "showInterface"
 #define LV2_UI__touch            LV2_UI_PREFIX "touch"
 #define LV2_UI__ui               LV2_UI_PREFIX "ui"

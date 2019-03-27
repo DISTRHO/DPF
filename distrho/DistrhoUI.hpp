@@ -141,7 +141,7 @@ public:
    /**
       Get the scale factor that will be used for the next UI.
       @note: This function is only valid during createUI(),
-             it will return null when called from anywhere else.
+             it will return 1.0 when called from anywhere else.
     */
     static double getNextScaleFactor() noexcept;
 
