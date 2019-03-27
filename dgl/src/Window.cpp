@@ -93,6 +93,7 @@ struct Window::PrivateData {
           fWidth(1),
           fHeight(1),
           fScaling(1.0),
+          fAutoScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(),
@@ -124,6 +125,7 @@ struct Window::PrivateData {
           fWidth(1),
           fHeight(1),
           fScaling(1.0),
+          fAutoScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(parent.pData),
@@ -156,7 +158,7 @@ struct Window::PrivateData {
 #endif
     }
 
-    PrivateData(Application& app, Window* const self, const intptr_t parentId, const bool resizable)
+    PrivateData(Application& app, Window* const self, const intptr_t parentId, const double scaling, const bool resizable)
         : fApp(app),
           fSelf(self),
           fView(puglInit()),
@@ -166,7 +168,8 @@ struct Window::PrivateData {
           fUsingEmbed(parentId != 0),
           fWidth(1),
           fHeight(1),
-          fScaling(1.0),
+          fScaling(scaling),
+          fAutoScaling(1.0),
           fTitle(nullptr),
           fWidgets(),
           fModal(),
@@ -565,6 +568,7 @@ struct Window::PrivateData {
 
     void setGeometryConstraints(uint width, uint height, bool aspect)
     {
+        // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
         DISTRHO_SAFE_ASSERT_RETURN(fResizable,);
 
         fView->min_width  = width;
@@ -711,11 +715,12 @@ struct Window::PrivateData {
         return fScaling;
     }
 
-    void setScaling(double scaling) noexcept
+    void setAutoScaling(const double scaling) noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0,);
+        d_stdout("setAutoScaling called with %f", scaling);
 
-        fScaling = scaling;
+        fAutoScaling = scaling;
     }
 
     // -------------------------------------------------------------------
@@ -783,7 +788,7 @@ struct Window::PrivateData {
         FOR_EACH_WIDGET(it)
         {
             Widget* const widget(*it);
-            widget->pData->display(fWidth, fHeight, fScaling, false);
+            widget->pData->display(fWidth, fHeight, fAutoScaling, false);
         }
 
         fSelf->onDisplayAfter();
@@ -853,8 +858,8 @@ struct Window::PrivateData {
         if (fModal.childFocus != nullptr)
             return fModal.childFocus->focus();
 
-        x /= fScaling;
-        y /= fScaling;
+        x /= fAutoScaling;
+        y /= fAutoScaling;
 
         Widget::MouseEvent ev;
         ev.button = button;
@@ -880,8 +885,8 @@ struct Window::PrivateData {
         if (fModal.childFocus != nullptr)
             return;
 
-        x /= fScaling;
-        y /= fScaling;
+        x /= fAutoScaling;
+        y /= fAutoScaling;
 
         Widget::MotionEvent ev;
         ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
@@ -905,10 +910,10 @@ struct Window::PrivateData {
         if (fModal.childFocus != nullptr)
             return;
 
-        x /= fScaling;
-        y /= fScaling;
-        dx /= fScaling;
-        dy /= fScaling;
+        x /= fAutoScaling;
+        y /= fAutoScaling;
+        dx /= fAutoScaling;
+        dy /= fAutoScaling;
 
         Widget::ScrollEvent ev;
         ev.delta = Point<float>(dx, dy);
@@ -1060,6 +1065,7 @@ struct Window::PrivateData {
     uint fWidth;
     uint fHeight;
     double fScaling;
+    double fAutoScaling;
     char* fTitle;
     std::list<Widget*> fWidgets;
 
@@ -1166,8 +1172,8 @@ Window::Window(Application& app)
 Window::Window(Application& app, Window& parent)
     : pData(new PrivateData(app, this, parent)) {}
 
-Window::Window(Application& app, intptr_t parentId, bool resizable)
-    : pData(new PrivateData(app, this, parentId, resizable)) {}
+Window::Window(Application& app, intptr_t parentId, double scaling, bool resizable)
+    : pData(new PrivateData(app, this, parentId, scaling, resizable)) {}
 
 Window::~Window()
 {
@@ -1358,11 +1364,6 @@ double Window::getScaling() const noexcept
     return pData->getScaling();
 }
 
-void Window::setScaling(double scaling) noexcept
-{
-    pData->setScaling(scaling);
-}
-
 bool Window::getIgnoringKeyRepeat() const noexcept
 {
     return pData->getIgnoringKeyRepeat();
@@ -1390,6 +1391,11 @@ const GraphicsContext& Window::getGraphicsContext() const noexcept
     context.cairo = (cairo_t*)puglGetContext(pData->fView);
 #endif
     return context;
+}
+
+void Window::_setAutoScaling(double scaling) noexcept
+{
+    pData->setAutoScaling(scaling);
 }
 
 void Window::_addWidget(Widget* const widget)

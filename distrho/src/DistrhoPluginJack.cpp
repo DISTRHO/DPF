@@ -82,6 +82,16 @@ static void initSignalHandler()
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_UI
+// TODO
+static double getDesktopScaleFactor() noexcept
+{
+    return 1.0;
+}
+#endif
+
+// -----------------------------------------------------------------------
+
+#if DISTRHO_PLUGIN_HAS_UI
 class PluginJack : public IdleCallback
 #else
 class PluginJack
@@ -91,7 +101,7 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(this, writeMidiCallback),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
 #endif
           fClient(client)
     {

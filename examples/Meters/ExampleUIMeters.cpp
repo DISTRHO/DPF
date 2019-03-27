@@ -43,6 +43,7 @@ public:
           fOutLeft(0.0f),
           fOutRight(0.0f)
     {
+        setGeometryConstraints(32, 128, false);
     }
 
 protected:

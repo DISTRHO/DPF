@@ -37,11 +37,13 @@ START_NAMESPACE_DISTRHO
 
 extern double      d_lastUiSampleRate;
 extern void*       d_lastUiDspPtr;
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+extern const char* g_nextBundlePath;
+extern double      g_nextScaleFactor;
+extern uintptr_t   g_nextWindowId;
+#else
 extern Window*     d_lastUiWindow;
 #endif
-extern uintptr_t   g_nextWindowId;
-extern const char* g_nextBundlePath;
 
 // -----------------------------------------------------------------------
 // UI callbacks
@@ -149,15 +151,17 @@ struct UI::PrivateData {
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 static inline
-UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const char* const bundlePath)
+UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath)
 {
-    d_lastUiDspPtr   = dspPtr;
-    g_nextWindowId   = winId;
-    g_nextBundlePath = bundlePath;
-    UI* const ret    = createUI();
-    d_lastUiDspPtr   = nullptr;
-    g_nextWindowId   = 0;
-    g_nextBundlePath = nullptr;
+    d_lastUiDspPtr    = dspPtr;
+    g_nextWindowId    = winId;
+    g_nextScaleFactor = scaleFactor;
+    g_nextBundlePath  = bundlePath;
+    UI* const ret     = createUI();
+    d_lastUiDspPtr    = nullptr;
+    g_nextWindowId    = 0;
+    g_nextScaleFactor = 1.0;
+    g_nextBundlePath  = nullptr;
     return ret;
 }
 #else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -175,8 +179,8 @@ UI* createUiWrapper(void* const dspPtr, Window* const window)
 class UIExporterWindow : public Window
 {
 public:
-    UIExporterWindow(Application& app, const intptr_t winId, void* const dspPtr)
-        : Window(app, winId, DISTRHO_UI_USER_RESIZABLE),
+    UIExporterWindow(Application& app, const intptr_t winId, const double scaleFactor, void* const dspPtr)
+        : Window(app, winId, scaleFactor, DISTRHO_UI_USER_RESIZABLE),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
     {
@@ -214,7 +218,7 @@ protected:
         {
             const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(pData->minWidth);
             const double scaleVertical   = static_cast<double>(height) / static_cast<double>(pData->minHeight);
-            setScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
+            _setAutoScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
         }
 
         pData->resizeInProgress = true;
@@ -254,13 +258,14 @@ public:
                const setStateFunc setStateCall,
                const sendNoteFunc sendNoteCall,
                const setSizeFunc setSizeCall,
+               const float scaleFactor = 1.0f,
                void* const dspPtr = nullptr,
                const char* const bundlePath = nullptr)
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        : fUI(createUiWrapper(dspPtr, winId, bundlePath)),
+        : fUI(createUiWrapper(dspPtr, winId, scaleFactor, bundlePath)),
 #else
         : glApp(),
-          glWindow(glApp, winId, dspPtr),
+          glWindow(glApp, winId, scaleFactor, dspPtr),
           fChangingSize(false),
           fUI(glWindow.getUI()),
 #endif

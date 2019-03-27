@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2014 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -28,21 +28,18 @@ using DGL::Rectangle;
 class ExampleUIParameters : public UI
 {
 public:
-    /**
-      For simplicity this UI will be of constant size.
-    */
-    static const int kUIWidth  = 512;
-    static const int kUIHeight = 512;
-
     /* constructor */
     ExampleUIParameters()
-        : UI(kUIWidth, kUIHeight)
+        : UI(512, 512)
     {
        /**
           Initialize all our parameters to their defaults.
           In this example all default values are false, so we can simply zero them.
         */
         std::memset(fParamGrid, 0, sizeof(bool)*9);
+
+        // TODO explain why this is here
+        setGeometryConstraints(128, 128, true);
     }
 
 protected:
@@ -105,15 +102,18 @@ protected:
     */
     void onDisplay() override
     {
+        const uint width = getWidth();
+        const uint height = getHeight();
+
         Rectangle<int> r;
 
-        r.setWidth(kUIWidth/3 - 6);
-        r.setHeight(kUIHeight/3 - 6);
+        r.setWidth(width/3 - 6);
+        r.setHeight(height/3 - 6);
 
         // draw left, center and right columns
         for (int i=0; i<3; ++i)
         {
-            r.setX(3 + i*kUIWidth/3);
+            r.setX(3 + i*width/3);
 
             // top
             r.setY(3);
@@ -126,7 +126,7 @@ protected:
             r.draw();
 
             // middle
-            r.setY(3 + kUIHeight/3);
+            r.setY(3 + height/3);
 
             if (fParamGrid[3+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
@@ -136,7 +136,7 @@ protected:
             r.draw();
 
             // bottom
-            r.setY(3 + kUIHeight*2/3);
+            r.setY(3 + height*2/3);
 
             if (fParamGrid[6+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
@@ -157,15 +157,18 @@ protected:
         if (ev.button != 1 || ! ev.press)
             return false;
 
+        const uint width = getWidth();
+        const uint height = getHeight();
+
         Rectangle<int> r;
 
-        r.setWidth(kUIWidth/3 - 6);
-        r.setHeight(kUIHeight/3 - 6);
+        r.setWidth(width/3 - 6);
+        r.setHeight(height/3 - 6);
 
         // handle left, center and right columns
         for (int i=0; i<3; ++i)
         {
-            r.setX(3 + i*kUIWidth/3);
+            r.setX(3 + i*width/3);
 
             // top
             r.setY(3);
@@ -187,7 +190,7 @@ protected:
             }
 
             // middle
-            r.setY(3 + kUIHeight/3);
+            r.setY(3 + height/3);
 
             if (r.contains(ev.pos))
             {
@@ -200,7 +203,7 @@ protected:
             }
 
             // bottom
-            r.setY(3 + kUIHeight*2/3);
+            r.setY(3 + height*2/3);
 
             if (r.contains(ev.pos))
             {

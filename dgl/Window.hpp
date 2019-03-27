@@ -77,7 +77,7 @@ public:
 
     explicit Window(Application& app);
     explicit Window(Application& app, Window& parent);
-    explicit Window(Application& app, intptr_t parentId, bool resizable);
+    explicit Window(Application& app, intptr_t parentId, double scaling, bool resizable);
     virtual ~Window();
 
     void show();
@@ -113,7 +113,6 @@ public:
     void setTransientWinId(uintptr_t winId);
 
     double getScaling() const noexcept;
-    void setScaling(double scaling) noexcept;
 
     bool getIgnoringKeyRepeat() const noexcept;
     void setIgnoringKeyRepeat(bool ignore) noexcept;
@@ -135,6 +134,9 @@ protected:
 #ifndef DGL_FILE_BROWSER_DISABLED
     virtual void fileBrowserSelected(const char* filename);
 #endif
+
+    // internal
+    void _setAutoScaling(double scaling) noexcept;
 
 private:
     struct PrivateData;

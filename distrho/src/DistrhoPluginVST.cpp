@@ -161,12 +161,12 @@ public:
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId)
+    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
         : fAudioMaster(audioMaster),
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer()),
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
           fShouldCaptureVstKeys(false)
     {
         // FIXME only needed for windows?
@@ -575,8 +575,11 @@ public:
             else
             {
                 d_lastUiSampleRate = fPlugin.getSampleRate();
+                
+                // TODO
+                const float scaleFactor = 1.0f;
 
-                UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, fPlugin.getInstancePointer());
+                UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, scaleFactor, fPlugin.getInstancePointer());
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 tmpUI.quit();
@@ -595,8 +598,11 @@ public:
                 }
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
+                
+                // TODO
+                const float scaleFactor = 1.0f;
 
-                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr);
+                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, scaleFactor);
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
                 // Update current state from plugin side

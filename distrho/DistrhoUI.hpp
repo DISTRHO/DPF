@@ -69,7 +69,7 @@ public:
     */
     virtual ~UI();
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_UI_USER_RESIZABLE && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
       @see Window::setGeometryConstraints(uint,uint,bool)
@@ -137,6 +137,13 @@ public:
              it will return null when called from anywhere else.
     */
     static const char* getNextBundlePath() noexcept;
+
+   /**
+      Get the scale factor that will be used for the next UI.
+      @note: This function is only valid during createUI(),
+             it will return null when called from anywhere else.
+    */
+    static double getNextScaleFactor() noexcept;
 
 # if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
