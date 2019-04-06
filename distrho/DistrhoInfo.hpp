@@ -545,7 +545,10 @@ START_NAMESPACE_DISTRHO
 
 /**
    Wherever the plugin implements the full state API.
-   Plugins that implement the full state API may set custom state values on the DSP side, without having to pass a message from UI to DSP.
+   When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project.
+   This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters.
+   Most simple effects and synths will not need this.
+   @note this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes.
    @see Plugin::getState(const char*)
  */
 #define DISTRHO_PLUGIN_WANT_FULL_STATE 1
