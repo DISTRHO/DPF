@@ -77,6 +77,8 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:abff8c9586a4e82694e7d6bac3e8da1ef"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTimePosition_1_1BarBeatTick.html#abff8c9586a4e82694e7d6bac3e8da1ef">BarBeatTick</a> () noexcept</td></tr>
 <tr class="separator:abff8c9586a4e82694e7d6bac3e8da1ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6ea776260b58800bff63f515351bd3a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTimePosition_1_1BarBeatTick.html#ae6ea776260b58800bff63f515351bd3a">clear</a> () noexcept</td></tr>
+<tr class="separator:ae6ea776260b58800bff63f515351bd3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -125,6 +127,33 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Default constructor for a null BBT time position. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae6ea776260b58800bff63f515351bd3a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae6ea776260b58800bff63f515351bd3a">&#9670;&nbsp;</a></span>clear()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TimePosition::BarBeatTick::clear </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Reinitialize this position using the default null initialization. </p>
 
 </div>
 </div>
@@ -191,7 +220,7 @@ The first beat is beat '1'. </p>
       </table>
 </div><div class="memdoc">
 <p>Current tick within beat.<br />
-Should always be &gt; 0 and &lt;= <em>ticksPerBeat</em>.<br />
+Should always be &gt;= 0 and &lt; <em>ticksPerBeat</em>.<br />
 The first tick is tick '0'. </p>
 
 </div>
@@ -252,7 +281,7 @@ The first tick is tick '0'. </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Number of ticks within a bar.<br />
+<p>Number of ticks within a beat.<br />
 Usually a moderately large integer with many denominators, such as 1920.0. </p>
 
 </div>
@@ -278,7 +307,7 @@ Usually a moderately large integer with many denominators, such as 1920.0. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 13 2018 06:29:25 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 7 2019 05:47:58 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

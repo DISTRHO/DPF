@@ -82,18 +82,36 @@ uint&#160;</td><td class="memItemRight" valign="bottom"><b>getHeight</b> () cons
 <tr class="memitem:acd0c7cbaa50aab700bebe633309f6778"><td class="memItemLeft" align="right" valign="top"><a id="acd0c7cbaa50aab700bebe633309f6778"></a>
 const char *&#160;</td><td class="memItemRight" valign="bottom"><b>getTitle</b> () const noexcept</td></tr>
 <tr class="separator:acd0c7cbaa50aab700bebe633309f6778"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a18845f09340f21cb7f7f70a8fd544b7d"><td class="memItemLeft" align="right" valign="top"><a id="a18845f09340f21cb7f7f70a8fd544b7d"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setTitle</b> (const char *const t) noexcept</td></tr>
-<tr class="separator:a18845f09340f21cb7f7f70a8fd544b7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4997cc8aba1f13355f5d765ca98fca9a"><td class="memItemLeft" align="right" valign="top"><a id="a4997cc8aba1f13355f5d765ca98fca9a"></a>
+uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><b>getTransientWinId</b> () const noexcept</td></tr>
+<tr class="separator:a4997cc8aba1f13355f5d765ca98fca9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e76b734d72a0766d7ddbf62d3e9f2b5"><td class="memItemLeft" align="right" valign="top"><a id="a2e76b734d72a0766d7ddbf62d3e9f2b5"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isVisible</b> () const noexcept</td></tr>
+<tr class="separator:a2e76b734d72a0766d7ddbf62d3e9f2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb93c64ec56aec433ff6cda8b60a857f"><td class="memItemLeft" align="right" valign="top"><a id="adb93c64ec56aec433ff6cda8b60a857f"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isRunning</b> () noexcept</td></tr>
 <tr class="separator:adb93c64ec56aec433ff6cda8b60a857f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae6f3830b3998fc79d8711a82fb38cd2b"><td class="memItemLeft" align="right" valign="top"><a id="ae6f3830b3998fc79d8711a82fb38cd2b"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setSize</b> (uint w, uint h)</td></tr>
+<tr class="separator:ae6f3830b3998fc79d8711a82fb38cd2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1282750b8e09fd383499d75a68e3ab3"><td class="memItemLeft" align="right" valign="top"><a id="af1282750b8e09fd383499d75a68e3ab3"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setTitle</b> (const char *const t)</td></tr>
+<tr class="separator:af1282750b8e09fd383499d75a68e3ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1d41affb04e7c3dcbe3e4ecd0d852e9d"><td class="memItemLeft" align="right" valign="top"><a id="a1d41affb04e7c3dcbe3e4ecd0d852e9d"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setTransientWinId</b> (const uintptr_t winId)</td></tr>
+<tr class="separator:a1d41affb04e7c3dcbe3e4ecd0d852e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa66fa32f63a1a88577cd7f9bd42e80ac"><td class="memItemLeft" align="right" valign="top"><a id="aa66fa32f63a1a88577cd7f9bd42e80ac"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setVisible</b> (const bool yesNo)</td></tr>
+<tr class="separator:aa66fa32f63a1a88577cd7f9bd42e80ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a6cbd34f4457f88749bb7d03b764f023c"><td class="memItemLeft" align="right" valign="top"><a id="a6cbd34f4457f88749bb7d03b764f023c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>startExternalProcess</b> (const char *args[])</td></tr>
 <tr class="separator:a6cbd34f4457f88749bb7d03b764f023c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6c5d06114a5606ef06c6ca2fc433a7c5"><td class="memItemLeft" align="right" valign="top"><a id="a6c5d06114a5606ef06c6ca2fc433a7c5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>terminateAndWaitForProcess</b> ()</td></tr>
+<tr class="separator:a6c5d06114a5606ef06c6ca2fc433a7c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -107,7 +125,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 13 2018 06:29:25 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 7 2019 05:47:58 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

@@ -35,7 +35,7 @@ var searchData=
   ['show',['show',['../classWidget.html#a25ff178539e226b5f30ef0335d060f2b',1,'Widget']]],
   ['shrinkby',['shrinkBy',['../classSize.html#abbcf98f504b23679162cab3b6f818949',1,'Size::shrinkBy()'],['../classRectangle.html#a22e5029d09c7eac8ebee0e079dab075f',1,'Rectangle::shrinkBy()']]],
   ['signal',['Signal',['../classSignal.html',1,'']]],
-  ['size',['Size',['../classSize.html',1,'Size&lt; T &gt;'],['../classSize.html#ada0c1f75029742b2514ede5466993776',1,'Size::Size() noexcept'],['../classSize.html#ac3096253937df7e318a02838c48bf941',1,'Size::Size(const T &amp;width, const T &amp;height) noexcept'],['../classSize.html#a90ab9513f96f3642def121d2fbd92593',1,'Size::Size(const Size&lt; T &gt; &amp;size) noexcept'],['../structMidiEvent.html#a48b420a6dbca6502113b92c336a3041e',1,'MidiEvent::size()']]],
+  ['size',['Size',['../classSize.html',1,'Size&lt; T &gt;'],['../structMidiEvent.html#a48b420a6dbca6502113b92c336a3041e',1,'MidiEvent::size()'],['../classSize.html#ada0c1f75029742b2514ede5466993776',1,'Size::Size() noexcept'],['../classSize.html#ac3096253937df7e318a02838c48bf941',1,'Size::Size(const T &amp;width, const T &amp;height) noexcept'],['../classSize.html#a90ab9513f96f3642def121d2fbd92593',1,'Size::Size(const Size&lt; T &gt; &amp;size) noexcept']]],
   ['size_3c_20int_20_3e',['Size&lt; int &gt;',['../classSize.html',1,'']]],
   ['size_3c_20uint_20_3e',['Size&lt; uint &gt;',['../classSize.html',1,'']]],
   ['skewx',['skewX',['../classNanoVG.html#a4f45e3cf465060491e73427e5868573f',1,'NanoVG']]],

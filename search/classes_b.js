@@ -8,5 +8,6 @@ var searchData=
   ['plugin',['Plugin',['../classPlugin.html',1,'']]],
   ['point',['Point',['../classPoint.html',1,'']]],
   ['point_3c_20float_20_3e',['Point&lt; float &gt;',['../classPoint.html',1,'']]],
-  ['point_3c_20int_20_3e',['Point&lt; int &gt;',['../classPoint.html',1,'']]]
+  ['point_3c_20int_20_3e',['Point&lt; int &gt;',['../classPoint.html',1,'']]],
+  ['positionchangedevent',['PositionChangedEvent',['../structWidget_1_1PositionChangedEvent.html',1,'Widget']]]
 ];

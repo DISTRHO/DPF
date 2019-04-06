@@ -15,5 +15,6 @@ var searchData=
   ['point',['Point',['../classPoint.html',1,'Point&lt; T &gt;'],['../classPoint.html#ada3e3f5f840cf70db3c7f884843a3d01',1,'Point::Point() noexcept'],['../classPoint.html#a273b90bf5380bacd6e58582ef9ce35f7',1,'Point::Point(const T &amp;x, const T &amp;y) noexcept'],['../classPoint.html#a31393ac57c0140243e8723f9cd9106bb',1,'Point::Point(const Point&lt; T &gt; &amp;pos) noexcept']]],
   ['point_3c_20float_20_3e',['Point&lt; float &gt;',['../classPoint.html',1,'']]],
   ['point_3c_20int_20_3e',['Point&lt; int &gt;',['../classPoint.html',1,'']]],
+  ['positionchangedevent',['PositionChangedEvent',['../structWidget_1_1PositionChangedEvent.html',1,'Widget::PositionChangedEvent'],['../structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c',1,'Widget::PositionChangedEvent::PositionChangedEvent()']]],
   ['programloaded',['programLoaded',['../classUI.html#a2f043dd1b2e179248a19918c5483cfae',1,'UI']]]
 ];

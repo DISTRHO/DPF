@@ -93,10 +93,14 @@ Macros</h2></td></tr>
 <tr class="separator:gad95e24b17f196260cee15255fdb5b677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga255f43cc0997af8b56abcca260c875e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">DISTRHO_PLUGIN_WANT_STATE</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ga255f43cc0997af8b56abcca260c875e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gac022d3d0a8782d632d7a801bc9cf721e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gac022d3d0a8782d632d7a801bc9cf721e">DISTRHO_PLUGIN_WANT_FULL_STATE</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:gac022d3d0a8782d632d7a801bc9cf721e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga496610b956d931b1940d07da48d123f2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2">DISTRHO_PLUGIN_WANT_TIMEPOS</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ga496610b956d931b1940d07da48d123f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad49e79936a2aa5afa089cbc051426ccd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">DISTRHO_UI_USE_NANOVG</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:gad49e79936a2aa5afa089cbc051426ccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gabadb9d9ba7f479df39b3963ee60b7a4b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gabadb9d9ba7f479df39b3963ee60b7a4b">DISTRHO_UI_USER_RESIZABLE</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:gabadb9d9ba7f479df39b3963ee60b7a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga420a88022da249b9f38a6046998dbd7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">DISTRHO_UI_URI</a>&#160;&#160;&#160;<a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a> &quot;#UI&quot;</td></tr>
 <tr class="separator:ga420a88022da249b9f38a6046998dbd7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -321,6 +325,22 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
 
 </div>
 </div>
+<a id="gac022d3d0a8782d632d7a801bc9cf721e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gac022d3d0a8782d632d7a801bc9cf721e">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_WANT_FULL_STATE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_WANT_FULL_STATE&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wherever the plugin implements the full state API. When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project. This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters. Most simple effects and synths will not need this. </p><dl class="section note"><dt>Note</dt><dd>this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes. </dd></dl>
+<dl class="section see"><dt>See also</dt><dd>Plugin::getState(const char*) </dd></dl>
+
+</div>
+</div>
 <a id="ga496610b956d931b1940d07da48d123f2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga496610b956d931b1940d07da48d123f2">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_WANT_TIMEPOS</h2>
 
@@ -352,6 +372,23 @@ When enabled your UI instance will subclass <a class="el" href="classNanoWidget.
 
 </div>
 </div>
+<a id="gabadb9d9ba7f479df39b3963ee60b7a4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gabadb9d9ba7f479df39b3963ee60b7a4b">&#9670;&nbsp;</a></span>DISTRHO_UI_USER_RESIZABLE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_UI_USER_RESIZABLE&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wherever the UI is resizable to any size by the user.<br />
+By default this is false, and resizing is only allowed under the plugin <a class="el" href="classUI.html">UI</a> control,<br />
+Enabling this options makes it possible for the user to resize the plugin <a class="el" href="classUI.html">UI</a> at anytime. </p><dl class="section see"><dt>See also</dt><dd>UI::setGeometryConstraints(uint, uint, bool, bool) </dd></dl>
+
+</div>
+</div>
 <a id="ga420a88022da249b9f38a6046998dbd7c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga420a88022da249b9f38a6046998dbd7c">&#9670;&nbsp;</a></span>DISTRHO_UI_URI</h2>
 
@@ -371,7 +408,7 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 13 2018 06:29:25 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 7 2019 05:47:58 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

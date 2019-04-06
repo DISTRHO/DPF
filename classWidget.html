@@ -95,6 +95,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1PositionChangedEvent.html">PositionChangedEvent</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a></td></tr>
@@ -177,6 +179,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a883b70a0d434534e4179b916320dd87f"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a883b70a0d434534e4179b916320dd87f">onPositionChanged</a> (const <a class="el" href="structWidget_1_1PositionChangedEvent.html">PositionChangedEvent</a> &amp;)</td></tr>
+<tr class="separator:a883b70a0d434534e4179b916320dd87f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -192,9 +196,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 <tr class="memitem:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memItemLeft" align="right" valign="top"><a id="a46d8d52b6ee3f8a662192a4b4775cb3e"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b></td></tr>
 <tr class="separator:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4678008eb5ff101fdefcab3090b98468"><td class="memItemLeft" align="right" valign="top"><a id="a4678008eb5ff101fdefcab3090b98468"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>DISTRHO_NAMESPACE::UI</b></td></tr>
-<tr class="separator:a4678008eb5ff101fdefcab3090b98468"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base DGL <a class="el" href="classWidget.html">Widget</a> class.</p>
@@ -1151,13 +1152,40 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>DISTRHO_NAMESPACE::U
 
 </div>
 </div>
+<a id="a883b70a0d434534e4179b916320dd87f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a883b70a0d434534e4179b916320dd87f">&#9670;&nbsp;</a></span>onPositionChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void Widget::onPositionChanged </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1PositionChangedEvent.html">PositionChangedEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when the widget's absolute position is changed. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>dgl/<a class="el" href="Widget_8hpp_source.html">Widget.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 13 2018 06:29:25 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 7 2019 05:47:58 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>

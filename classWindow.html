@@ -92,9 +92,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af0f0784ad6118e6886627b354bd43726"><td class="memItemLeft" align="right" valign="top"><a id="af0f0784ad6118e6886627b354bd43726"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Window</b> (<a class="el" href="classApplication.html">Application</a> &amp;app, <a class="el" href="classWindow.html">Window</a> &amp;parent)</td></tr>
 <tr class="separator:af0f0784ad6118e6886627b354bd43726"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a45c3bad1f58d0632560c127bc050696e"><td class="memItemLeft" align="right" valign="top"><a id="a45c3bad1f58d0632560c127bc050696e"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b> (<a class="el" href="classApplication.html">Application</a> &amp;app, intptr_t parentId)</td></tr>
-<tr class="separator:a45c3bad1f58d0632560c127bc050696e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70bc6b13499f04e4877e624db2b05450"><td class="memItemLeft" align="right" valign="top"><a id="a70bc6b13499f04e4877e624db2b05450"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b> (<a class="el" href="classApplication.html">Application</a> &amp;app, intptr_t parentId, bool resizable)</td></tr>
+<tr class="separator:a70bc6b13499f04e4877e624db2b05450"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f986e19a11c4c97ed8e6ad3d0e648b7"><td class="memItemLeft" align="right" valign="top"><a id="a8f986e19a11c4c97ed8e6ad3d0e648b7"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>show</b> ()</td></tr>
 <tr class="separator:a8f986e19a11c4c97ed8e6ad3d0e648b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -116,6 +116,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>repaint</b> () noexce
 <tr class="memitem:aa0d7a058ff1194def1a07edb21c30f4c"><td class="memItemLeft" align="right" valign="top"><a id="aa0d7a058ff1194def1a07edb21c30f4c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>openFileBrowser</b> (const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;options)</td></tr>
 <tr class="separator:aa0d7a058ff1194def1a07edb21c30f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afb840ed25c1fe17bed66d80adfc420ab"><td class="memItemLeft" align="right" valign="top"><a id="afb840ed25c1fe17bed66d80adfc420ab"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmbed</b> () const noexcept</td></tr>
+<tr class="separator:afb840ed25c1fe17bed66d80adfc420ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6be53a737e7dfcc74167962437e93b8f"><td class="memItemLeft" align="right" valign="top"><a id="a6be53a737e7dfcc74167962437e93b8f"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isVisible</b> () const noexcept</td></tr>
 <tr class="separator:a6be53a737e7dfcc74167962437e93b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -149,9 +152,24 @@ const char *&#160;</td><td class="memItemRight" valign="bottom"><b>getTitle</b> 
 <tr class="memitem:ab2f1b80c5dfcafd2cbdf6b85b756fdbd"><td class="memItemLeft" align="right" valign="top"><a id="ab2f1b80c5dfcafd2cbdf6b85b756fdbd"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setTitle</b> (const char *title)</td></tr>
 <tr class="separator:ab2f1b80c5dfcafd2cbdf6b85b756fdbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf9eb0de0cc200b56e7babf5d342f611"><td class="memItemLeft" align="right" valign="top"><a id="aaf9eb0de0cc200b56e7babf5d342f611"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraints</b> (uint width, uint height, bool aspect)</td></tr>
+<tr class="separator:aaf9eb0de0cc200b56e7babf5d342f611"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa00fb01e200451c925b7750bf2710010"><td class="memItemLeft" align="right" valign="top"><a id="aa00fb01e200451c925b7750bf2710010"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setTransientWinId</b> (uintptr_t winId)</td></tr>
 <tr class="separator:aa00fb01e200451c925b7750bf2710010"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b94fea3236d1d49e3fbd53a8d9cc70b"><td class="memItemLeft" align="right" valign="top"><a id="a9b94fea3236d1d49e3fbd53a8d9cc70b"></a>
+double&#160;</td><td class="memItemRight" valign="bottom"><b>getScaling</b> () const noexcept</td></tr>
+<tr class="separator:a9b94fea3236d1d49e3fbd53a8d9cc70b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad124f103b0a3d1427fad5d7a7aed0542"><td class="memItemLeft" align="right" valign="top"><a id="ad124f103b0a3d1427fad5d7a7aed0542"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setScaling</b> (double scaling) noexcept</td></tr>
+<tr class="separator:ad124f103b0a3d1427fad5d7a7aed0542"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e1895a4e93ee0d7c34a9b10953c968e"><td class="memItemLeft" align="right" valign="top"><a id="a0e1895a4e93ee0d7c34a9b10953c968e"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>getIgnoringKeyRepeat</b> () const noexcept</td></tr>
+<tr class="separator:a0e1895a4e93ee0d7c34a9b10953c968e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36a04e5f5ecc6ee5228f9da6df43e865"><td class="memItemLeft" align="right" valign="top"><a id="a36a04e5f5ecc6ee5228f9da6df43e865"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setIgnoringKeyRepeat</b> (bool ignore) noexcept</td></tr>
+<tr class="separator:a36a04e5f5ecc6ee5228f9da6df43e865"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92600b2e0715646b80474fccbcadf336"><td class="memItemLeft" align="right" valign="top"><a id="a92600b2e0715646b80474fccbcadf336"></a>
 <a class="el" href="classApplication.html">Application</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getApp</b> () const noexcept</td></tr>
 <tr class="separator:a92600b2e0715646b80474fccbcadf336"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -194,9 +212,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Widget</b></td></tr>
 <tr class="memitem:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memItemLeft" align="right" valign="top"><a id="a46d8d52b6ee3f8a662192a4b4775cb3e"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>StandaloneWindow</b></td></tr>
 <tr class="separator:a46d8d52b6ee3f8a662192a4b4775cb3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3d78819c9907e6f73778c2966e20b190"><td class="memItemLeft" align="right" valign="top"><a id="a3d78819c9907e6f73778c2966e20b190"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>DISTRHO_NAMESPACE::UIExporter</b></td></tr>
-<tr class="separator:a3d78819c9907e6f73778c2966e20b190"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>dgl/<a class="el" href="Window_8hpp_source.html">Window.hpp</a></li>
@@ -204,7 +219,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>DISTRHO_NAMESPACE::U
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Aug 13 2018 06:29:25 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Apr 7 2019 05:47:58 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.13
 </small></address>
