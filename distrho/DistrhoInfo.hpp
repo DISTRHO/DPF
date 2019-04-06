@@ -544,6 +544,13 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_STATE 1
 
 /**
+   Wherever the plugin implements the full state API.
+   Plugins that implement the full state API may set custom state values on the DSP side, without having to pass a message from UI to DSP.
+   @see Plugin::getState(const char*)
+ */
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 1
+
+/**
    Wherever the plugin wants time position information from the host.
    @see Plugin::getTimePosition()
  */
