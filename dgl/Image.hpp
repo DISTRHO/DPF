@@ -93,6 +93,12 @@ public:
                         const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
+    * Load image data from an SVG.
+    * @note The SVG instance must remain valid during the lifetime of this image.
+    */
+   void loadFromSVG(const SVG& svg) noexcept;
+
+   /**
       Get the image format.
     */
     GLenum getFormat() const noexcept;

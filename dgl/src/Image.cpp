@@ -92,6 +92,11 @@ void Image::loadFromMemory(const char* const rawData,
     fIsReady = false;
 }
 
+void Image::loadFromSVG(const SVG& svg) noexcept
+{
+    loadFromMemory((const char*)svg.getRGBAData(), svg.getSize(), GL_RGBA);
+}
+
 GLenum Image::getFormat() const noexcept
 {
     return fFormat;

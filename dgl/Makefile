@@ -25,6 +25,7 @@ OBJS_common = \
 	../build/dgl/Geometry.cpp.o \
 	../build/dgl/ImageBase.cpp.o \
 	../build/dgl/Resources.cpp.o \
+	../build/dgl/SVG.cpp.o \
 	../build/dgl/Widget.cpp.o
 
 # TODO: ImageWidgets.cpp
