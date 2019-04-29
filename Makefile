@@ -22,9 +22,9 @@ examples: dgl
 	$(MAKE) all -C examples/States
 	$(MAKE) all -C examples/MidiKeyboard
 
-#ifeq ($(HAVE_CAIRO),true)
-#	$(MAKE) all -C examples/CairoUI
-#endif
+ifeq ($(HAVE_CAIRO),true)
+	$(MAKE) all -C examples/CairoUI
+endif
 
 ifneq ($(MACOS_OR_WINDOWS),true)
 	# ExternalUI is WIP

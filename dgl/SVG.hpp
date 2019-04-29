@@ -37,15 +37,18 @@ public:
     SVG();
 
    /**
-      Constructor using raw SVG data.
-    */
-    SVG(const char* const data, const uint width, const uint height, const float scaling = 1.0f);
-
-   /**
       Destructor.
     */
     ~SVG();
     
+   /**
+      Load SVG data from memory.
+      @note @a rawData must remain valid for the lifetime of this SVG.
+    */
+    void loadFromMemory(const char* const rawData,
+                        const uint dataSize,
+                        const float scaling = 1.0f) noexcept;
+
     /**
        Check if this SVG is valid.
     */
@@ -63,9 +66,9 @@ public:
 
 private:
     Size<uint> fSize;
-    NSVGrasterizer* fRasterizer;
-    NSVGimage* fImage;
     unsigned char* fRGBAData;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SVG)
 };
 
 END_NAMESPACE_DGL

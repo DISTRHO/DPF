@@ -20,21 +20,24 @@
 
 START_NAMESPACE_DISTRHO
 
-/**
-  We need the rectangle class from DGL.
- */
-using DGL::Rectangle;
 
 // -----------------------------------------------------------------------------------------------------------
 
-class MidiKeyboardExampleUI : public UI
+class MidiKeyboardExampleUI : public UI,
+                              public KeyboardWidget::Callback
 {
   public:
     /* constructor */
     MidiKeyboardExampleUI()
-        : UI(512, 512)
+        : UI(800, 132),
+          fKeyboardWidget(getParentWindow())
     {
-        //getParentWindow().focus();
+        const uint keyboardDeltaWidth = getWidth() - fKeyboardWidget.getWidth();
+
+        fKeyboardWidget.setAbsoluteX(keyboardDeltaWidth / 2);
+        fKeyboardWidget.setAbsoluteY(getHeight() - fKeyboardWidget.getHeight());
+        fKeyboardWidget.setCallback(this);
+
         // Add a min-size constraint to the window, to make sure that it can't become too small
         setGeometryConstraints(getWidth(), getHeight(), true, true);
     }
@@ -46,8 +49,9 @@ class MidiKeyboardExampleUI : public UI
     /**
       A parameter has changed on the plugin side.
       This is called by the host to inform the UI about parameter changes.
+      This plugin does not have any parameters, so we can leave this blank.
     */
-    void parameterChanged(uint32_t index, float value) override
+    void parameterChanged(uint32_t, float) override
     {
     }
 
@@ -56,33 +60,41 @@ class MidiKeyboardExampleUI : public UI
 
     /**
       The OpenGL drawing function.
+      Here, we set a custom background color.
     */
-    void onNanoDisplay() override
+    void onDisplay() override
     {
-        const uint width = getWidth();
-        const uint height = getHeight();
+      glClearColor(17.f / 255.f,
+                   17.f / 255.f,
+                   17.f / 255.f,
+                   17.f / 255.f);
 
-        //KeyboardRenderer().draw(getContext());
+      glClear(GL_COLOR_BUFFER_BIT);
     }
 
     /**
-      Mouse press event.
-    */
-    bool onMouse(const MouseEvent &ev) override
+       Called when a note is pressed on the piano.
+     */
+    void keyboardKeyPressed(const uint keyIndex) override
     {
-        return false;
+      const uint C4 = 60;
+      sendNote(0, C4 + keyIndex, 127);
     }
 
-    bool onKeyboard(const KeyboardEvent &ev) override
+    /**
+       Called when a note is released on the piano.
+     */
+    void keyboardKeyReleased(const uint keyIndex) override
     {
-        fprintf(stderr, "%u\n", ev.key);
-        repaint();
-        return false;
+      const uint C4 = 60;
+      sendNote(0, C4 + keyIndex, 0);
     }
 
     // -------------------------------------------------------------------------------------------------------
 
   private:
+    KeyboardWidget fKeyboardWidget;
+
     /**
       Set our UI class as non-copyable and add a leak detector just in case.
     */

@@ -27,45 +27,46 @@ START_NAMESPACE_DGL
 
 SVG::SVG()
     : fSize(),
-      fRasterizer(nullptr),
-      fImage(nullptr),
       fRGBAData(nullptr)
 {
-
 }
 
-SVG::SVG(const char* const data, const uint width, const uint height, const float scaling) 
-    : fSize(width * scaling, height * scaling)
+void SVG::loadFromMemory(const char* const rawData, const uint dataSize, const float scaling) noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,)
-    DISTRHO_SAFE_ASSERT_RETURN(fSize.isValid(),)
+    DISTRHO_SAFE_ASSERT_RETURN(rawData != nullptr, )
+    DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0f, )
 
-    fRasterizer = nsvgCreateRasterizer();
-
-    const size_t bufferSize = width * height * 4;
+    NSVGrasterizer* rasterizer = nsvgCreateRasterizer();
 
     // nsvgParse modifies the input data, so we must use a temporary buffer
-    char tmpBuffer[bufferSize];
-    strncpy(tmpBuffer, data, bufferSize);
+    const size_t bufferSize = dataSize * 4;
     
-    const float dpi = 96 * scaling;
-    fImage = nsvgParse(tmpBuffer, "px", dpi);
+    char tmpBuffer[bufferSize];
+    strncpy(tmpBuffer, rawData, bufferSize);
+    
+    const float dpi = 96;
 
-    DISTRHO_SAFE_ASSERT_RETURN(fImage != nullptr,)
+    NSVGimage* image = nsvgParse(tmpBuffer, "px", dpi);
 
-    const uint scaledWidth = width * scaling;
-    const uint scaledHeight = height * scaling;
+    DISTRHO_SAFE_ASSERT_RETURN(image != nullptr, )
 
-    fRGBAData = (unsigned char *)malloc(scaledWidth * scaledHeight * 4);
+    const uint scaledWidth = image->width * scaling;
+    const uint scaledHeight = image->height * scaling;
 
-    nsvgRasterize(fRasterizer, fImage, 0, 0, 1, fRGBAData, scaledWidth, scaledHeight, scaledWidth * 4);
+    DISTRHO_SAFE_ASSERT_RETURN(scaledWidth > 0 && scaledHeight > 0, )
+
+    fRGBAData = (unsigned char*)malloc(scaledWidth * scaledHeight * 4);
+
+    nsvgRasterize(rasterizer, image, 0, 0, scaling, fRGBAData, scaledWidth, scaledHeight, scaledWidth * 4);
+
+    fSize.setSize(scaledWidth, scaledHeight);
+
+    nsvgDelete(image);
+    nsvgDeleteRasterizer(rasterizer);
 }
 
 SVG::~SVG()
 {
-    nsvgDelete(fImage);
-    nsvgDeleteRasterizer(fRasterizer);
-
     free(fRGBAData);
 }
         

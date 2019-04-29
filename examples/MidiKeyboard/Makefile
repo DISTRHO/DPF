@@ -33,11 +33,18 @@ BASE_FLAGS += -I../../dgl/src/nanovg
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(LINUX),true)
+ifeq ($(HAVE_JACK),true)
+ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
 endif
+endif
 
+ifeq ($(HAVE_OPENGL),true)
+TARGETS += lv2_sep
+else
 TARGETS += lv2_dsp
+endif
+
 TARGETS += vst
 
 all: $(TARGETS)
