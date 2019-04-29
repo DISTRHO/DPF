@@ -478,7 +478,8 @@ private:
 
    /**
        The piano key that is currently pressed with the mouse.
-     */
+       It is a nullptr if no key is currently being held.
+    */
     PianoKey* fHeldKey;
 };
 
