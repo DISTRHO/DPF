@@ -286,7 +286,7 @@ protected:
         atomMidiEvent.data[2] = velocity;
 
         // send to DSP side
-        fWriteFunction(fController, eventInPortIndex, sizeof(LV2_Atom_MidiEvent), fEventTransferURID, &atomMidiEvent);
+        fWriteFunction(fController, eventInPortIndex, lv2_atom_total_size(&atomMidiEvent.atom), fEventTransferURID, &atomMidiEvent);
     }
 #endif
 
