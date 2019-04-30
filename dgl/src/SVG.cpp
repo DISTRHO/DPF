@@ -36,6 +36,12 @@ void SVG::loadFromMemory(const char* const rawData, const uint dataSize, const f
     DISTRHO_SAFE_ASSERT_RETURN(rawData != nullptr, )
     DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0f, )
 
+    if (fRGBAData != nullptr)
+    {
+        free(fRGBAData);
+        fRGBAData = nullptr;
+    }
+
     NSVGrasterizer* rasterizer = nsvgCreateRasterizer();
 
     // nsvgParse modifies the input data, so we must use a temporary buffer
