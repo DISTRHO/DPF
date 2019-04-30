@@ -190,9 +190,9 @@ public:
     /**
        Set the 'pressed' state of a key in the keyboard.
      */
-    void setKeyPressed(const uint keyIndex, const bool pressed, const bool sendCallback = false)
+    void setKeyPressed(const int keyIndex, const bool pressed, const bool sendCallback = false)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(keyIndex < kKeyCount, )
+        DISTRHO_SAFE_ASSERT_RETURN(keyIndex >= 0 && keyIndex < kKeyCount, )
 
         PianoKey& key = *fKeysLookup[keyIndex];
 
