@@ -111,6 +111,32 @@ private:
     int fIndex;
 };
 
+/**
+   The number of octaves displayed in the keyboard.
+ */
+ static const int kOctaves = 2;
+
+/**
+   The number of white keys displayed in the keyboard.
+ */
+ static const int kWhiteKeysCount = 7 * kOctaves + 1;
+
+/**
+   The spacing in pixels between the white keys.
+ */
+ static const int kWhiteKeySpacing = 1;
+
+/**
+   The number of black keys in the keyboard.
+ */
+ static const int kBlackKeysCount = 5 * kOctaves;
+
+/**
+   The number of keys in the keyboard.
+ */
+ static const int kKeyCount = kWhiteKeysCount + kBlackKeysCount;
+
+
 class KeyboardWidget : public Widget
 {
 public:
@@ -413,36 +439,11 @@ private:
     enum Resources
     {
         kWhiteKeyResourceIndex = 0,
-        kWhiteKeyPressedResourceIndex = 1,
-        kBlackKeyResourceIndex = 2,
-        kBlackKeyPressedResourceIndex = 3,
+        kWhiteKeyPressedResourceIndex,
+        kBlackKeyResourceIndex,
+        kBlackKeyPressedResourceIndex,
         kResourcesCount
     };
-
-   /**
-      The number of octaves displayed in the keyboard.
-    */
-    static constexpr int kOctaves = 2;
-
-   /**
-      The number of white keys displayed in the keyboard.
-    */
-    static constexpr int kWhiteKeysCount = 7 * kOctaves + 1;
-
-   /**
-      The spacing in pixels between the white keys.
-    */
-    static constexpr int kWhiteKeySpacing = 1;
-
-   /**
-      The number of black keys in the keyboard.
-    */
-    static constexpr int kBlackKeysCount = 5 * kOctaves;
-
-   /**
-      The number of keys in the keyboard.
-    */
-    static constexpr int kKeyCount = kWhiteKeysCount + kBlackKeysCount;
 
    /**
       The keyboard's white keys.
@@ -481,6 +482,8 @@ private:
        It is a nullptr if no key is currently being held.
     */
     PianoKey* fHeldKey;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(KeyboardWidget)
 };
 
 END_NAMESPACE_DISTRHO
