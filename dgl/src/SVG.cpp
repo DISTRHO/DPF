@@ -43,16 +43,19 @@ void SVG::loadFromMemory(const char* const rawData, const uint dataSize, const f
     }
 
     NSVGrasterizer* rasterizer = nsvgCreateRasterizer();
+    
+    char* tmpBuffer = (char*)malloc(dataSize);
 
-    // nsvgParse modifies the input data, so we must use a temporary buffer
-    const size_t bufferSize = dataSize * 4;
-    
-    char tmpBuffer[bufferSize];
-    strncpy(tmpBuffer, rawData, bufferSize);
-    
+    DISTRHO_SAFE_ASSERT_RETURN(tmpBuffer != nullptr, )
+
+    strncpy(tmpBuffer, rawData, dataSize);
+    tmpBuffer[dataSize - 1] = '\0';
+
     const float dpi = 96;
 
     NSVGimage* image = nsvgParse(tmpBuffer, "px", dpi);
+
+    free(tmpBuffer);
 
     DISTRHO_SAFE_ASSERT_RETURN(image != nullptr, )
 
