@@ -32,7 +32,7 @@ public:
         : UI(kUIWidth, kUIHeight),
           fKeyboardWidget(getParentWindow())
     {
-        const uint keyboardDeltaWidth = kUIWidth - fKeyboardWidget.getWidth();
+        const int keyboardDeltaWidth = kUIWidth - fKeyboardWidget.getWidth();
 
         fKeyboardWidget.setAbsoluteX(keyboardDeltaWidth / 2);
         fKeyboardWidget.setAbsoluteY(kUIHeight - fKeyboardWidget.getHeight() - 4);
