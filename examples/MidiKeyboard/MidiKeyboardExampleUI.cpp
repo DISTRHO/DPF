@@ -26,7 +26,7 @@ START_NAMESPACE_DISTRHO
 class MidiKeyboardExampleUI : public UI,
                               public KeyboardWidget::Callback
 {
-  public:
+public:
     /* constructor */
     MidiKeyboardExampleUI()
         : UI(kUIWidth, kUIHeight),
@@ -35,14 +35,14 @@ class MidiKeyboardExampleUI : public UI,
         const uint keyboardDeltaWidth = kUIWidth - fKeyboardWidget.getWidth();
 
         fKeyboardWidget.setAbsoluteX(keyboardDeltaWidth / 2);
-        fKeyboardWidget.setAbsoluteY(kUIHeight - fKeyboardWidget.getHeight());
+        fKeyboardWidget.setAbsoluteY(kUIHeight - fKeyboardWidget.getHeight() - 4);
         fKeyboardWidget.setCallback(this);
 
         // Add a min-size constraint to the window, to make sure that it can't become too small
         setGeometryConstraints(kUIWidth, kUIHeight, true, true);
     }
 
-  protected:
+protected:
     /* --------------------------------------------------------------------------------------------------------
     * DSP/Plugin Callbacks */
 
@@ -92,9 +92,9 @@ class MidiKeyboardExampleUI : public UI,
 
     // -------------------------------------------------------------------------------------------------------
 
-  private:
-    static const int kUIWidth = 800;
-    static const int kUIHeight = 132;
+private:
+    static const int kUIWidth = 750;
+    static const int kUIHeight = 124;
 
     KeyboardWidget fKeyboardWidget;
 

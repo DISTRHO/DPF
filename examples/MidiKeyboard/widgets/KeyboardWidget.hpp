@@ -98,7 +98,7 @@ private:
    /**
       The spacing in pixels between the white keys.
      */
-    static const int kWhiteKeySpacing = 1;
+    static const int kWhiteKeySpacing = 3;
 
    /**
       The number of black keys in the keyboard.

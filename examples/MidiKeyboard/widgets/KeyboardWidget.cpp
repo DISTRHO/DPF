@@ -224,11 +224,13 @@ void KeyboardWidget::positionKeys()
 
         PianoKey* key;
         int xPos;
+        int yPos;
 
         if (isBlackKey(i))
         {
             key = &fBlackKeys[blackKeysCounter];
             xPos = whiteKeysCounter * whiteKeyWidth + totalSpacing - blackKeyWidth / 2;
+            yPos = -2;
 
             blackKeysCounter++;
         }
@@ -236,11 +238,12 @@ void KeyboardWidget::positionKeys()
         {
             key = &fWhiteKeys[whiteKeysCounter];
             xPos = whiteKeysCounter * whiteKeyWidth + totalSpacing;
+            yPos = 0;
 
             whiteKeysCounter++;
         }
 
-        key->setPosition(xPos, 0);
+        key->setPosition(xPos, yPos);
         key->setIndex(i);
     }
 }
