@@ -40,6 +40,9 @@ public:
 
         // Add a min-size constraint to the window, to make sure that it can't become too small
         setGeometryConstraints(kUIWidth, kUIHeight, true, true);
+
+        // Avoid key repeat when playing notes using the computer keyboard
+        getParentWindow().setIgnoringKeyRepeat(true);
     }
 
 protected:
@@ -70,6 +73,43 @@ protected:
                    17.f / 255.f);
 
       glClear(GL_COLOR_BUFFER_BIT);
+    }
+
+    /**
+       Allow playing notes using the bottom and top rows of the computer keyboard.
+    */
+    bool onKeyboard(const KeyboardEvent& ev) override
+    {
+      // Offset from C4
+      int offset = -1;
+
+      const int keyjazzKeyCount = 26;
+      const uint keyjazzKeysQwerty[keyjazzKeyCount] = {'z', 's', 'x', 'd', 'c', 'v', 'g', 'b', 'h', 'n', 'j', 'm', ',', 'q', '2', 'w', '3', 'e', 'r', '5', 't', '6', 'y', '7', 'u', 'i'};
+
+      for (int i = 0; i < keyjazzKeyCount; ++i)
+      {
+        if (ev.key == keyjazzKeysQwerty[i])
+        {
+          offset = i;
+
+          // acknowledge duplicate C5
+          if (i > 12)
+          {
+            offset -= 1;
+          }
+
+          break;
+        }
+      }
+
+      if (offset == -1)
+      {
+        return false;
+      }
+
+      fKeyboardWidget.setKeyPressed(offset, ev.press, true);
+
+      return true;
     }
 
     /**
