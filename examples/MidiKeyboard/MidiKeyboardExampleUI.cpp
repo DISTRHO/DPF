@@ -29,17 +29,17 @@ class MidiKeyboardExampleUI : public UI,
   public:
     /* constructor */
     MidiKeyboardExampleUI()
-        : UI(800, 132),
+        : UI(kUIWidth, kUIHeight),
           fKeyboardWidget(getParentWindow())
     {
-        const uint keyboardDeltaWidth = getWidth() - fKeyboardWidget.getWidth();
+        const uint keyboardDeltaWidth = kUIWidth - fKeyboardWidget.getWidth();
 
         fKeyboardWidget.setAbsoluteX(keyboardDeltaWidth / 2);
-        fKeyboardWidget.setAbsoluteY(getHeight() - fKeyboardWidget.getHeight());
+        fKeyboardWidget.setAbsoluteY(kUIHeight - fKeyboardWidget.getHeight());
         fKeyboardWidget.setCallback(this);
 
         // Add a min-size constraint to the window, to make sure that it can't become too small
-        setGeometryConstraints(getWidth(), getHeight(), true, true);
+        setGeometryConstraints(kUIWidth, kUIHeight, true, true);
     }
 
   protected:
@@ -93,6 +93,9 @@ class MidiKeyboardExampleUI : public UI,
     // -------------------------------------------------------------------------------------------------------
 
   private:
+    static const int kUIWidth = 800;
+    static const int kUIHeight = 132;
+
     KeyboardWidget fKeyboardWidget;
 
     /**

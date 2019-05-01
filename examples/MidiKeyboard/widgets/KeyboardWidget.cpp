@@ -22,8 +22,8 @@ KeyboardWidget::KeyboardWidget(Window& parent)
                                                  1.0f);
 
     fSVGs[kBlackKeyPressedResourceIndex].loadFromMemory(MidiKeyboardResources::black_key_pressedData,
-                                                MidiKeyboardResources::black_key_pressedDataSize,
-                                                1.0f);
+                                                        MidiKeyboardResources::black_key_pressedDataSize,
+                                                        1.0f);
 
     for (int i = 0; i < kResourcesCount; ++i)
     {
