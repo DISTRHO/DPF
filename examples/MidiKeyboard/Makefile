@@ -17,6 +17,8 @@ FILES_DSP = \
 
 FILES_UI = \
 	resources/MidiKeyboardResources.cpp \
+	widgets/PianoKey.cpp \
+	widgets/KeyboardWidget.cpp \
 	MidiKeyboardExampleUI.cpp
 
 
@@ -28,7 +30,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 #  Additional flags
 
-BASE_FLAGS += -I../../dgl/src/nanovg 
+BASE_FLAGS += -I./widgets/
 
 # --------------------------------------------------------------
 # Enable all possible plugin types

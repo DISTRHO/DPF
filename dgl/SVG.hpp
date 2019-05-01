@@ -17,7 +17,6 @@
 #ifndef DGL_SVG_HPP_INCLUDED
 #define DGL_SVG_HPP_INCLUDED
 
-#include "src/nanosvg/nanosvg.h"
 #include "Geometry.hpp"
 
 struct NSVGrasterizer;
