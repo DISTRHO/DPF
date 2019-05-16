@@ -182,10 +182,6 @@ HAVE_JACK  = $(shell pkg-config --exists jack   && echo true)
 HAVE_LIBLO = $(shell pkg-config --exists liblo  && echo true)
 endif
 
-ifneq ($(HAVE_DGL),true)
-$(error DGL missing 22)
-endif
-
 # ---------------------------------------------------------------------------------------------------------------------
 # Set libs stuff
 
