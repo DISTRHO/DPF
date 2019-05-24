@@ -82,13 +82,17 @@ public:
 
    /**
       editParameter.
-      @TODO Document this.
+
+      Touch/pressed-down event.
+      Lets the host know the user is tweaking a parameter.
+      Required in some hosts to record automation.      
     */
     void editParameter(uint32_t index, bool started);
 
    /**
       setParameterValue.
-      @TODO Document this.
+      
+      Change a parameter value in the Plugin.
     */
     void setParameterValue(uint32_t index, float value);
 
