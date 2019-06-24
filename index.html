@@ -79,20 +79,20 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><p>DISTRHO Plugin Framework (or <b>DPF</b> for short) is a plugin framework designed to make development of new plugins an easy and enjoyable task.<br/>
- It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
- The framework facilitates exporting various different plugin formats from the same code-base.</p>
+It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
+The framework facilitates exporting various different plugin formats from the same code-base.</p>
 <p>DPF can build for LADSPA, DSSI, LV2 and VST2 formats.<br/>
- A JACK/Standalone mode is also available, allowing you to quickly test plugins.</p>
+A JACK/Standalone mode is also available, allowing you to quickly test plugins.</p>
 <h1><a class="anchor" id="Macros"></a>
 Macros</h1>
 <p>You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see <a class="el" href="group__PluginMacros.html">Plugin Macros</a>.<br/>
- This file is included in the main DPF code to select which features to activate for each plugin format.</p>
+This file is included in the main DPF code to select which features to activate for each plugin format.</p>
 <p>For example, a plugin (with UI) that use states will require LV2 hosts to support Atom and Worker extensions for message passing from the UI to the plugin.<br/>
- If your plugin does not make use of states, the Worker extension is not set as a required feature.</p>
+If your plugin does not make use of states, the Worker extension is not set as a required feature.</p>
 <h1><a class="anchor" id="Plugin"></a>
 Plugin</h1>
 <p>The next step is to create your plugin code by subclassing DPF's <a class="el" href="classPlugin.html">Plugin</a> class.<br/>
- You need to pass the number of parameters in the constructor and also the number of programs and states, if any.</p>
+You need to pass the number of parameters in the constructor and also the number of programs and states, if any.</p>
 <p>Here's an example of an audio plugin that simply mutes the host output: </p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>MutePlugin : <span class="keyword">public</span> <a class="code" href="classPlugin.html">Plugin</a></div>
 <div class="line">{</div>
@@ -182,13 +182,13 @@ Plugin</h1>
 <h1><a class="anchor" id="Parameters"></a>
 Parameters</h1>
 <p>A plugin is nothing without parameters.<br/>
- In DPF parameters can be inputs or outputs.<br/>
- They have hints to describe how they behave plus a name and a symbol identifying them.<br/>
- Parameters also have 'ranges' – a minimum, maximum and default value.</p>
+In DPF parameters can be inputs or outputs.<br/>
+They have hints to describe how they behave plus a name and a symbol identifying them.<br/>
+Parameters also have 'ranges' – a minimum, maximum and default value.</p>
 <p>Input parameters are "read-only": the plugin can read them but not change them. (the exception being when changing programs, more on that below)<br/>
- It's the host responsibility to save, restore and set input parameters.</p>
+It's the host responsibility to save, restore and set input parameters.</p>
 <p>Output parameters can be changed at anytime by the plugin.<br/>
- The host will simply read their values and not change them.</p>
+The host will simply read their values and not change them.</p>
 <p>Here's an example of an audio plugin that has 1 input parameter: </p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>GainPlugin : <span class="keyword">public</span> <a class="code" href="classPlugin.html">Plugin</a></div>
 <div class="line">{</div>
@@ -296,7 +296,7 @@ Parameters</h1>
 Programs</h1>
 <p>Programs in DPF refer to plugin-side presets (usually called "factory presets"), an initial set of presets provided by plugin authors included in the actual plugin.</p>
 <p>To use programs you must first enable them by setting <a class="el" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a> to 1 in your DistrhoPluginInfo.h file.<br/>
- When enabled you'll need to override 2 new function in your plugin code, <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> and <a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram(uint32_t)</a>.</p>
+When enabled you'll need to override 2 new function in your plugin code, <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> and <a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram(uint32_t)</a>.</p>
 <p>Here's an example of a plugin with a "default" program: </p>
 <div class="fragment"><div class="line"><span class="keyword">class </span>PluginWithPresets : <span class="keyword">public</span> <a class="code" href="classPlugin.html">Plugin</a></div>
 <div class="line">{</div>
@@ -447,27 +447,11 @@ Programs</h1>
 <div class="line"><span class="keyword">private</span>:</div>
 <div class="line">   <span class="keywordtype">float</span> fGainL, fGainR;</div>
 <div class="line">};</div>
-</div><!-- fragment --><p>This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and <a class="el" href="classUI.html">UI</a> are still TODO.</p>
-<p>#if 0 </p>
-<h1><a class="anchor" id="States"></a>
-States</h1>
-<p>describe them</p>
-<h1><a class="anchor" id="MIDI"></a>
-MIDI</h1>
-<p>describe them</p>
-<h1><a class="anchor" id="Latency"></a>
-Latency</h1>
-<p>describe it</p>
-<h1><a class="anchor" id="Time-Position"></a>
-Time-Position</h1>
-<p>describe it</p>
-<h1><a class="anchor" id="UI"></a>
-UI</h1>
-<p>describe them #endif </p>
+</div><!-- fragment --><p>This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and <a class="el" href="classUI.html">UI</a> are still TODO. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jun 24 2019 11:54:44 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 24 2019 11:56:27 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
