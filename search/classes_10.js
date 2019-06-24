@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['widget',['Widget',['../classWidget.html',1,'']]],
-  ['window',['Window',['../classWindow.html',1,'']]]
+  ['vstguiwidget',['VstGuiWidget',['../classVstGuiWidget.html',1,'']]]
 ];

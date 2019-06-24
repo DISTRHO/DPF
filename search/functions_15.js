@@ -2,7 +2,8 @@ var searchData=
 [
   ['_7eapplication',['~Application',['../classApplication.html#a20573928a0d53fb96d929513bc5acde6',1,'Application']]],
   ['_7ebaseevent',['~BaseEvent',['../structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a',1,'Widget::BaseEvent']]],
-  ['_7eimage',['~Image',['../classImage.html#a0294f63700543e11c0f0da85601c7ae5',1,'Image']]],
+  ['_7eimage',['~Image',['../classImage.html#a7b0235b2b5784ae92262dc7fd6c84c84',1,'Image']]],
+  ['_7eimagebase',['~ImageBase',['../classImageBase.html#a247e1c3259d5943a5766c99f61da9309',1,'ImageBase']]],
   ['_7eleakedobjectdetector',['~LeakedObjectDetector',['../classLeakedObjectDetector.html#af4fd575fa5361ce5b01f65a635b1d6b3',1,'LeakedObjectDetector']]],
   ['_7enanoimage',['~NanoImage',['../classNanoImage.html#a8915fb5eae1a0180edd3f5babf6a0091',1,'NanoImage']]],
   ['_7enanovg',['~NanoVG',['../classNanoVG.html#a3e05169f4e66e811537adaea17e4bb3f',1,'NanoVG']]],

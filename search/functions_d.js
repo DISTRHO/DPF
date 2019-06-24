@@ -12,5 +12,5 @@ var searchData=
   ['operator_20objecttype_20_2a',['operator ObjectType *',['../classScopedPointer.html#af7c241c736d79754fd6f8d305cce8bc3',1,'ScopedPointer']]],
   ['operator_2a',['operator*',['../classScopedPointer.html#a2f48458a1656a6ef1bd35cb8452eed35',1,'ScopedPointer']]],
   ['operator_2d_3e',['operator-&gt;',['../classScopedPointer.html#a6eedc84349cbe629cc1abb79ffa74e87',1,'ScopedPointer']]],
-  ['operator_3d',['operator=',['../classScopedPointer.html#afefc7940828d72c056e03804cd6bea9f',1,'ScopedPointer::operator=(ScopedPointer &amp;objectToTransferFrom)'],['../classScopedPointer.html#a88ee7f038e57471539d3181141c0390e',1,'ScopedPointer::operator=(ObjectType *const newObjectToTakePossessionOf)'],['../classNanoImage.html#a50e5456835e48157abc365a1e095f591',1,'NanoImage::operator=()']]]
+  ['operator_3d',['operator=',['../classScopedPointer.html#afefc7940828d72c056e03804cd6bea9f',1,'ScopedPointer::operator=(ScopedPointer &amp;objectToTransferFrom)'],['../classScopedPointer.html#a88ee7f038e57471539d3181141c0390e',1,'ScopedPointer::operator=(ObjectType *const newObjectToTakePossessionOf)'],['../classImage.html#ab23271a6bf92330d04c84146bfa81641',1,'Image::operator=()'],['../classImageBase.html#ac352a5a4291cd0945c663b17631598dc',1,'ImageBase::operator=()'],['../classNanoImage.html#a50e5456835e48157abc365a1e095f591',1,'NanoImage::operator=()']]]
 ];

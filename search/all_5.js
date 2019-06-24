@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['filebrowseroptions',['FileBrowserOptions',['../structWindow_1_1FileBrowserOptions.html',1,'Window::FileBrowserOptions'],['../structWindow_1_1FileBrowserOptions.html#ad34fe0200a1bd00028f7753aeba9b2fc',1,'Window::FileBrowserOptions::FileBrowserOptions()']]],
+  ['filebrowseroptions',['FileBrowserOptions',['../structWindow_1_1FileBrowserOptions.html',1,'Window']]],
+  ['filebrowseroptions',['FileBrowserOptions',['../structWindow_1_1FileBrowserOptions.html#ad34fe0200a1bd00028f7753aeba9b2fc',1,'Window::FileBrowserOptions']]],
   ['fill',['fill',['../classNanoVG.html#ae6e189b2c0b5a67c8c227d89b9bdb56e',1,'NanoVG']]],
   ['fillcolor',['fillColor',['../classNanoVG.html#a9a802d6e276195d13bc33d0f4b39cff9',1,'NanoVG::fillColor(const Color &amp;color)'],['../classNanoVG.html#a9b88f568b952402bbcfec289095734a7',1,'NanoVG::fillColor(const int red, const int green, const int blue, const int alpha=255)'],['../classNanoVG.html#a364794e2641625310aab9b7755b1e3d5',1,'NanoVG::fillColor(const float red, const float green, const float blue, const float alpha=1.0f)']]],
   ['fillpaint',['fillPaint',['../classNanoVG.html#aca56cc6d1c2455fc9f750cce4dc132d0',1,'NanoVG']]],
