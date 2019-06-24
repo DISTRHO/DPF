@@ -11,7 +11,7 @@ var searchData=
   ['getendx',['getEndX',['../classLine.html#ae1833817e0dce1b9eb3e1d38bb311a68',1,'Line']]],
   ['getendy',['getEndY',['../classLine.html#a99a74df756539663541b17032b3e6d56',1,'Line']]],
   ['getfixedandnormalizedvalue',['getFixedAndNormalizedValue',['../structParameterRanges.html#a82698a1e07b1b04ccb5df0de4db0d0be',1,'ParameterRanges']]],
-  ['getfixedvalue',['getFixedValue',['../structParameterRanges.html#acd3d977c154ddb3138f36c0b6d2b7626',1,'ParameterRanges']]],
+  ['getfixedvalue',['getFixedValue',['../structParameterRanges.html#a983383b2b3ce5d049802a7f0a12cee0c',1,'ParameterRanges']]],
   ['getformat',['getFormat',['../classImage.html#ac02e8bb7bfcc4adefc1f00557cc40e86',1,'Image']]],
   ['getheight',['getHeight',['../classSize.html#a562e9d68738d1873a6aa0615af80505b',1,'Size::getHeight()'],['../classRectangle.html#a779c1b0c89c0e1770730c4213753bf7d',1,'Rectangle::getHeight()'],['../classImageBase.html#aff56029a17822f19b518560e82aba878',1,'ImageBase::getHeight()'],['../classWidget.html#aa20f6dc096a8836706173f31324c4db8',1,'Widget::getHeight()']]],
   ['gethomepage',['getHomePage',['../classPlugin.html#a4d6e04304ad98f6086f9ce7c8c6c8759',1,'Plugin']]],
