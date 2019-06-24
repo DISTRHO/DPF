@@ -417,6 +417,9 @@ START_NAMESPACE_DISTRHO
    };
    @endcode
 
+   This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and UI are still TODO.
+
+#if 0
    @section States
    describe them
 
@@ -431,6 +434,7 @@ START_NAMESPACE_DISTRHO
 
    @section UI
    describe them
+#endif
 */
 
 /* ------------------------------------------------------------------------------------------------------------
