@@ -687,6 +687,9 @@ struct Window::PrivateData {
         }
 #else
         XStoreName(xDisplay, xWindow, title);
+        Atom netWmName = XInternAtom(xDisplay, "_NET_WM_NAME", False);
+        Atom utf8String = XInternAtom(xDisplay, "UTF8_STRING", False);
+        XChangeProperty(xDisplay, xWindow, netWmName, utf8String, 8, PropModeReplace, (unsigned char *)title, strlen(title));
 #endif
     }
 
