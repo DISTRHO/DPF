@@ -217,8 +217,10 @@ DGL_SYSTEM_LIBS  += -lgdi32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifeq ($(HAVE_X11),true)
 DGL_FLAGS        += $(shell $(PKG_CONFIG) --cflags x11)
 DGL_SYSTEM_LIBS  += $(shell $(PKG_CONFIG) --libs x11)
+endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
