@@ -157,6 +157,46 @@ void d_safe_assert(const char* const assertion, const char* const file, const in
 }
 
 /*
+ * Print a safe assertion error message, with 1 extra signed integer value.
+ */
+static inline
+void d_safe_assert_int(const char* const assertion, const char* const file,
+                       const int line, const int value) noexcept
+{
+    d_stderr2("assertion failure: \"%s\" in file %s, line %i, value %i", assertion, file, line, value);
+}
+
+/*
+ * Print a safe assertion error message, with 1 extra unsigned integer value.
+ */
+static inline
+void d_safe_assert_uint(const char* const assertion, const char* const file,
+                        const int line, const uint value) noexcept
+{
+    d_stderr2("assertion failure: \"%s\" in file %s, line %i, value %u", assertion, file, line, value);
+}
+
+/*
+ * Print a safe assertion error message, with 2 extra signed integer values.
+ */
+static inline
+void d_safe_assert_int2(const char* const assertion, const char* const file,
+                        const int line, const int v1, const int v2) noexcept
+{
+    d_stderr2("assertion failure: \"%s\" in file %s, line %i, v1 %i, v2 %i", assertion, file, line, v1, v2);
+}
+
+/*
+ * Print a safe assertion error message, with 2 extra unsigned integer values.
+ */
+static inline
+void d_safe_assert_uint2(const char* const assertion, const char* const file,
+                         const int line, const uint v1, const uint v2) noexcept
+{
+    d_stderr2("assertion failure: \"%s\" in file %s, line %i, v1 %u, v2 %u", assertion, file, line, v1, v2);
+}
+
+/*
  * Print a safe exception error message.
  */
 static inline
