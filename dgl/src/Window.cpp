@@ -1281,6 +1281,48 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     // show
 
     return (x_fib_show(pData->xDisplay, pData->xWindow, /*options.width*/0, /*options.height*/0) == 0);
+# elif defined(DISTRHO_OS_WINDOWS)
+    // the old and compatible dialog API
+    OPENFILENAMEW ofn;
+    memset(&ofn, 0, sizeof(ofn));
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = pData->hwnd;
+
+    // set initial directory in UTF-16 coding
+    std::vector<WCHAR> startDirW;
+    if (options.startDir)
+    {
+        startDirW.resize(strlen(options.startDir) + 1);
+        if (MultiByteToWideChar(CP_UTF8, 0, options.startDir, -1, startDirW.data(), startDirW.size()))
+            ofn.lpstrInitialDir = startDirW.data();
+    }
+
+    // set title in UTF-16 coding
+    std::vector<WCHAR> titleW;
+    if (options.title)
+    {
+        titleW.resize(strlen(options.title) + 1);
+        if (MultiByteToWideChar(CP_UTF8, 0, options.title, -1, titleW.data(), titleW.size()))
+            ofn.lpstrTitle = titleW.data();
+    }
+
+    // prepare a buffer to receive the result
+    std::vector<WCHAR> fileNameW(32768); // the Unicode maximum
+    ofn.lpstrFile = fileNameW.data();
+    ofn.nMaxFile = (DWORD)fileNameW.size();
+
+    // TODO synchronous only, can't do better with WinAPI native dialogs.
+    // threading might work, if someone is motivated to risk it.
+    if (GetOpenFileNameW(&ofn))
+    {
+        // back to UTF-8
+        std::vector<char> fileNameA(4 * 32768);
+        if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1, fileNameA.data(), (int)fileNameA.size(), nullptr, nullptr))
+            pData->fView->fileSelectedFunc(pData->fView, fileNameA.data());
+    }
+
+    return true;
 # else
     // not implemented
     return false;
