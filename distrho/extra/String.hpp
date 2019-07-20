@@ -568,6 +568,18 @@ public:
         return fBuffer;
     }
 
+    /*
+     * Get and release the string buffer, while also clearing this string.
+     * Result must be freed.
+     */
+    char* getAndReleaseBuffer() noexcept
+    {
+        char* const ret = fBuffer;
+        fBuffer = _null();
+        fBufferLen = 0;
+        return ret;
+    }
+
     // -------------------------------------------------------------------
     // base64 stuff, based on http://www.adp-gmbh.ch/cpp/common/base64.html
     // Copyright (C) 2004-2008 René Nyffenegger

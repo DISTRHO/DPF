@@ -780,8 +780,9 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
         if (fSelectedFile.isNotEmpty())
         {
-            fView->fileSelectedFunc(fView, fSelectedFile.buffer());
-            fSelectedFile.clear();
+            char* const buffer = fSelectedFile.getAndReleaseBuffer();
+            fView->fileSelectedFunc(fView, buffer);
+            std::free(buffer);
         }
 #endif
 
