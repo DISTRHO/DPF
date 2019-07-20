@@ -777,6 +777,14 @@ struct Window::PrivateData {
         }
 #endif
 
+#if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
+        if (fSelectedFile.isNotEmpty())
+        {
+            fView->fileSelectedFunc(fView, fSelectedFile.buffer());
+            fSelectedFile.clear();
+        }
+#endif
+
         if (fModal.enabled && fModal.parent != nullptr)
             fModal.parent->idle();
     }
@@ -1098,6 +1106,9 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_WINDOWS)
     HWND hwnd;
     HWND hwndParent;
+# ifndef DGL_FILE_BROWSER_DISABLED
+    String fSelectedFile;
+# endif
 #elif defined(DISTRHO_OS_MAC)
     bool            fNeedsIdle;
     NSView<PuglGenericView>* mView;
@@ -1319,7 +1330,10 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
         // back to UTF-8
         std::vector<char> fileNameA(4 * 32768);
         if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1, fileNameA.data(), (int)fileNameA.size(), nullptr, nullptr))
-            pData->fView->fileSelectedFunc(pData->fView, fileNameA.data());
+        {
+            // handle it during the next idle cycle (fake async)
+            pData->fSelectedFile = fileNameA.data();
+        }
     }
 
     return true;
