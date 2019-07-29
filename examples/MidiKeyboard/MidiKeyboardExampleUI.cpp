@@ -17,6 +17,7 @@
 #include "DistrhoUI.hpp"
 #include "Window.hpp"
 #include "KeyboardWidget.hpp"
+#include "src/pugl/pugl.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -83,28 +84,67 @@ protected:
       // Offset from C4
       int offset = -1;
 
-      const int keyjazzKeyCount = 26;
-      const uint keyjazzKeysQwerty[keyjazzKeyCount] = {'z', 's', 'x', 'd', 'c', 'v', 'g', 'b', 'h', 'n', 'j', 'm', ',', 'q', '2', 'w', '3', 'e', 'r', '5', 't', '6', 'y', '7', 'u', 'i'};
+      const int keyjazzKeyCount = 37;
 
-      for (int i = 0; i < keyjazzKeyCount; ++i)
-      {
-        if (ev.key == keyjazzKeysQwerty[i])
+      const PuglKeyCodes keyjazzKeys[keyjazzKeyCount] = {
+        PUGL_KC_Z, // C-0
+        PUGL_KC_S, // C#0
+        PUGL_KC_X, // D-0
+        PUGL_KC_D, // D#0
+        PUGL_KC_C, // E-0
+        PUGL_KC_V, // F-0
+        PUGL_KC_G, // F#0
+        PUGL_KC_B, // G-0
+        PUGL_KC_H, // G#0
+        PUGL_KC_N, // A-0
+        PUGL_KC_J, // A#0
+        PUGL_KC_M, // B-0
+        PUGL_KC_Comma, // C-1
+        PUGL_KC_L, // C#1
+        PUGL_KC_Period, // D-1
+        PUGL_KC_Semicolon, // D#1
+        PUGL_KC_Slash, // E-1
+        PUGL_KC_Q, // C-1
+        PUGL_KC_2, // C#1
+        PUGL_KC_W, // D-1
+        PUGL_KC_3, // D#1
+        PUGL_KC_E, // E-1
+        PUGL_KC_R, // F-1
+        PUGL_KC_5, // F#1
+        PUGL_KC_T, // G-1
+        PUGL_KC_6, // G#1
+        PUGL_KC_Y, // A-1
+        PUGL_KC_7, // A#1
+        PUGL_KC_U, // B-1
+        PUGL_KC_I, // C-2
+        PUGL_KC_9, // C#2
+        PUGL_KC_O, // D-2
+        PUGL_KC_0, // D#2
+        PUGL_KC_P, // E-2
+        PUGL_KC_LeftBracket, // F-2
+        PUGL_KC_Equals, // F#2
+        PUGL_KC_RightBracket // G-2
+      };
+
+        for (int i = 0; i < keyjazzKeyCount; ++i)
         {
-          offset = i;
-
-          // acknowledge duplicate C5
-          if (i > 12)
+          if (ev.keycode == keyjazzKeys[i])
           {
-            offset -= 1;
-          }
+              offset = i;
 
-          break;
-        }
+              // acknowledge 5 duplicate notes
+              if (i > 16)
+              {
+                  offset -= 5;
+              }
+
+              break;
+          }
       }
 
       if (offset == -1)
       {
-        return false;
+          return false;
       }
 
       fKeyboardWidget.setKeyPressed(offset, ev.press, true);
