@@ -545,7 +545,7 @@ public:
 
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
             for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-                mod_license_run_noise(fRunCount, fPortAudioOuts[i], sampleCount, i);
+                mod_license_run_silence(fRunCount, fPortAudioOuts[i], sampleCount, i);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

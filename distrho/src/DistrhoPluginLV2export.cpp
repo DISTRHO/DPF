@@ -719,7 +719,7 @@ void lv2_generate_ttl(const char* const basename)
                 if (value.length() < 10)
                     presetString += " \"" + value + "\" ;\n";
                 else
-                    presetString += "\n\"\"\"\n" + value + "\n\"\"\" ;\n";
+                    presetString += "\n\"\"\"" + value + "\"\"\" ;\n";
             }
 
             if (numParameters > 0)

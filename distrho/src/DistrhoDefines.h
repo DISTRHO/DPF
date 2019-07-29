@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -80,6 +80,22 @@
 #define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
 #define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
 #define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
+
+#define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value); break; }
+#define DISTRHO_SAFE_ASSERT_INT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); continue; }
+#define DISTRHO_SAFE_ASSERT_INT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); return ret; }
+
+#define DISTRHO_SAFE_ASSERT_INT2_BREAK(cond, v1, v2)        if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); break; }
+#define DISTRHO_SAFE_ASSERT_INT2_CONTINUE(cond, v1, v2)     if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); continue; }
+#define DISTRHO_SAFE_ASSERT_INT2_RETURN(cond, v1, v2, ret)  if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); return ret; }
+
+#define DISTRHO_SAFE_ASSERT_UINT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value); break; }
+#define DISTRHO_SAFE_ASSERT_UINT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); continue; }
+#define DISTRHO_SAFE_ASSERT_UINT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); return ret; }
+
+#define DISTRHO_SAFE_ASSERT_UINT2_BREAK(cond, v1, v2)       if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); break; }
+#define DISTRHO_SAFE_ASSERT_UINT2_CONTINUE(cond, v1, v2)    if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); continue; }
+#define DISTRHO_SAFE_ASSERT_UINT2_RETURN(cond, v1, v2, ret) if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); return ret; }
 
 /* Define DISTRHO_SAFE_EXCEPTION */
 #define DISTRHO_SAFE_EXCEPTION(msg)             catch(...) { d_safe_exception(msg, __FILE__, __LINE__); }

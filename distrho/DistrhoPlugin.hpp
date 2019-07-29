@@ -226,7 +226,7 @@ struct ParameterRanges {
    /**
       Get a fixed value within range.
     */
-    const float& getFixedValue(const float& value) const noexcept
+    float getFixedValue(const float& value) const noexcept
     {
         if (value <= min)
             return min;
