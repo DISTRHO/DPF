@@ -84,55 +84,48 @@ protected:
       // Offset from C4
       int offset = -1;
 
-      const int keyjazzKeyCount = 37;
+      const int keyjazzKeyCount = 30;
 
       const PuglKeyCodes keyjazzKeys[keyjazzKeyCount] = {
-        PUGL_KC_Z, // C-0
-        PUGL_KC_S, // C#0
-        PUGL_KC_X, // D-0
-        PUGL_KC_D, // D#0
-        PUGL_KC_C, // E-0
-        PUGL_KC_V, // F-0
-        PUGL_KC_G, // F#0
-        PUGL_KC_B, // G-0
-        PUGL_KC_H, // G#0
-        PUGL_KC_N, // A-0
-        PUGL_KC_J, // A#0
-        PUGL_KC_M, // B-0
-        PUGL_KC_Comma, // C-1
-        PUGL_KC_L, // C#1
-        PUGL_KC_Period, // D-1
-        PUGL_KC_Semicolon, // D#1
-        PUGL_KC_Slash, // E-1
-        PUGL_KC_Q, // C-1
-        PUGL_KC_2, // C#1
-        PUGL_KC_W, // D-1
-        PUGL_KC_3, // D#1
-        PUGL_KC_E, // E-1
-        PUGL_KC_R, // F-1
-        PUGL_KC_5, // F#1
-        PUGL_KC_T, // G-1
-        PUGL_KC_6, // G#1
-        PUGL_KC_Y, // A-1
-        PUGL_KC_7, // A#1
-        PUGL_KC_U, // B-1
-        PUGL_KC_I, // C-2
-        PUGL_KC_9, // C#2
-        PUGL_KC_O, // D-2
-        PUGL_KC_0, // D#2
-        PUGL_KC_P, // E-2
-        PUGL_KC_LeftBracket, // F-2
-        PUGL_KC_Equals, // F#2
-        PUGL_KC_RightBracket // G-2
+        PUGL_KC_Z, // C-4
+        PUGL_KC_S, // C#4
+        PUGL_KC_X, // D-4
+        PUGL_KC_D, // D#4
+        PUGL_KC_C, // E-4
+        PUGL_KC_V, // F-4
+        PUGL_KC_G, // F#4
+        PUGL_KC_B, // G-4
+        PUGL_KC_H, // G#4
+        PUGL_KC_N, // A-4
+        PUGL_KC_J, // A#4
+        PUGL_KC_M, // B-4
+        PUGL_KC_Comma, // C-5
+        PUGL_KC_L, // C#5
+        PUGL_KC_Period, // D-5
+        PUGL_KC_Semicolon, // D#5
+        PUGL_KC_Slash, // E-5
+        PUGL_KC_Q, // C-5
+        PUGL_KC_2, // C#5
+        PUGL_KC_W, // D-5
+        PUGL_KC_3, // D#5
+        PUGL_KC_E, // E-5
+        PUGL_KC_R, // F-5
+        PUGL_KC_5, // F#5
+        PUGL_KC_T, // G-5
+        PUGL_KC_6, // G#5
+        PUGL_KC_Y, // A-5
+        PUGL_KC_7, // A#5
+        PUGL_KC_U, // B-5
+        PUGL_KC_I, // C-6
       };
 
         for (int i = 0; i < keyjazzKeyCount; ++i)
         {
-          if (ev.keycode == keyjazzKeys[i])
+          if (ev.keycode == (uint)keyjazzKeys[i])
           {
               offset = i;
 
-              // acknowledge 5 duplicate notes
+              // acknowledge the 5 duplicate notes (Comma key to Slash key)
               if (i > 16)
               {
                   offset -= 5;
