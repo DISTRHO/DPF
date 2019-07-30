@@ -486,6 +486,9 @@ setModifiers(PuglView* view, unsigned xstate, unsigned xtime)
 	view->mods |= (xstate & Mod4Mask)    ? PUGL_MOD_SUPER  : 0;
 }
 
+/**
+   convert system specific keycodes into system independent ones (PuglKeyCodes)
+ */
 static unsigned 
 scancodeToHID(unsigned scancode) 
 {

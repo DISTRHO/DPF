@@ -121,6 +121,9 @@ getModifiers(PuglView* view, NSEvent* ev)
 	return mods;
 }
 
+/**
+   Convert system specific keycodes into system independent ones (PuglKeyCodes)
+*/
 static unsigned 
 scancodeToHID(unsigned scancode)
 {

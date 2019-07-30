@@ -377,6 +377,9 @@ setModifiers(PuglView* view)
 	view->mods |= (GetKeyState(VK_RWIN)    < 0) ? PUGL_MOD_SUPER  : 0;
 }
 
+/**
+   Convert system specific keycodes into system independent ones (PuglKeyCodes)
+*/
 static unsigned 
 keycodeToHID(unsigned keycode)
 {
