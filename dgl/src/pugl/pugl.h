@@ -125,7 +125,7 @@ typedef enum {
 /**
    Layout-independent keycodes.
    These keycodes are relative to an US QWERTY keyboard. 
-   Therefore, the keycode for the letter 'A' on an AZERTY keyboard will be equal to PUGL_VK_Q.
+   Therefore, the keycode for the letter 'A' on an AZERTY keyboard will be equal to PUGL_KC_Q.
  */
 typedef enum {
     /* Zero, does not correspond to any key. */
