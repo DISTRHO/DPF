@@ -1387,18 +1387,24 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     {
         if (result == NSFileHandlingPanelOKButton)
         {
-            for (NSURL* url in [panel URLs])
-            {
-                if (![url isFileURL])
-                    continue;
+            NSArray *urls = [panel URLs];
+            NSURL *fileUrl = nullptr;
 
+            for (NSUInteger i = 0, n = [urls count]; i < n && !fileUrl; ++i)
+            {
+                NSURL *url = (NSURL *)[urls objectAtIndex:i];
+                if ([url isFileURL])
+                    fileUrl = url;
+            }
+
+            if (fileUrl)
+            {
                 PuglView *view = pData->fView;
                 if (view->fileSelectedFunc)
                 {
-                    const char* fileName = [url.path UTF8String];
+                    const char* fileName = [fileUrl.path UTF8String];
                     view->fileSelectedFunc(view, fileName);
                 }
-                break;
             }
         }
 
