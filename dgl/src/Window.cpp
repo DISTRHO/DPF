@@ -1372,12 +1372,7 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     [panel setAllowsMultipleSelection:NO];
 
     if (options.startDir)
-    {
-        NSString *startDirString = [NSString stringWithUTF8String:options.startDir];
-        NSURL *startDirURL = [NSURL fileURLWithPath:startDirString
-                                        isDirectory:YES];
-        [panel setDirectoryURL:startDirURL];
-    }
+        [panel setDirectory:[NSString stringWithUTF8String:options.startDir]];
 
     if (options.title)
     {
