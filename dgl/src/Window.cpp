@@ -105,6 +105,9 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -137,6 +140,9 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -181,6 +187,9 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -318,6 +327,13 @@ struct Window::PrivateData {
 #elif defined(DISTRHO_OS_MAC)
         mView   = nullptr;
         mWindow = nullptr;
+# ifndef DGL_FILE_BROWSER_DISABLED
+        if (NSOpenPanel* panel = fOpenFilePanel)
+        {
+            [panel release];
+            fOpenFilePanel = nullptr;
+        }
+# endif
 #else
         xDisplay = nullptr;
         xWindow  = 0;
@@ -1115,6 +1131,9 @@ struct Window::PrivateData {
     NSView<PuglGenericView>* mView;
     id              mWindow;
     id              mParentWindow;
+# ifndef DGL_FILE_BROWSER_DISABLED
+    NSOpenPanel*    fOpenFilePanel;
+# endif
 #else
     Display* xDisplay;
     ::Window xWindow;
@@ -1336,6 +1355,61 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
             pData->fSelectedFile = fileNameA.data();
         }
     }
+
+    return true;
+# elif defined(DISTRHO_OS_MAC)
+    if (pData->fOpenFilePanel) // permit one dialog at most
+    {
+        [pData->fOpenFilePanel makeKeyAndOrderFront:nil];
+        return false;
+    }
+
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    pData->fOpenFilePanel = [panel retain];
+
+    [panel setCanChooseFiles:YES];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:NO];
+
+    if (options.startDir)
+    {
+        NSString *startDirString = [NSString stringWithUTF8String:options.startDir];
+        NSURL *startDirURL = [NSURL fileURLWithPath:startDirString
+                                        isDirectory:YES];
+        [panel setDirectoryURL:startDirURL];
+    }
+
+    if (options.title)
+    {
+        NSString* titleString = [[NSString alloc]
+            initWithBytes:options.title
+                   length:strlen(options.title)
+                 encoding:NSUTF8StringEncoding];
+        [panel setTitle:titleString];
+    }
+
+    [panel beginWithCompletionHandler:^(NSInteger result)
+    {
+        if (result == NSFileHandlingPanelOKButton)
+        {
+            for (NSURL* url in [panel URLs])
+            {
+                if (![url isFileURL])
+                    continue;
+
+                PuglView *view = pData->fView;
+                if (view->fileSelectedFunc)
+                {
+                    const char* fileName = [url.path UTF8String];
+                    view->fileSelectedFunc(view, fileName);
+                }
+                break;
+            }
+        }
+
+        [pData->fOpenFilePanel release];
+        pData->fOpenFilePanel = nullptr;
+    }];
 
     return true;
 # else
