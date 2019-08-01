@@ -1,6 +1,8 @@
 /*
  * DISTRHO Plugin Framework (DPF)
  * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019 Jean Pierre Cimalando <jp-dev@inbox.ru>
+ * Copyright (C) 2019 Robin Gareus <robin@gareus.org>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -105,6 +107,10 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr),
+          fFilePanelDelegate(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -137,6 +143,10 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr),
+          fFilePanelDelegate(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -181,6 +191,10 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
+# ifndef DGL_FILE_BROWSER_DISABLED
+        , fOpenFilePanel(nullptr),
+          fFilePanelDelegate(nullptr)
+# endif
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -321,6 +335,19 @@ struct Window::PrivateData {
 #else
         xDisplay = nullptr;
         xWindow  = 0;
+#endif
+
+#if defined(DISTRHO_OS_MAC) && !defined(DGL_FILE_BROWSER_DISABLED)
+        if (fOpenFilePanel)
+        {
+            [fOpenFilePanel release];
+            fOpenFilePanel = nullptr;
+        }
+        if (fFilePanelDelegate)
+        {
+            [fFilePanelDelegate release];
+            fFilePanelDelegate = nullptr;
+        }
 #endif
 
         DBG("Success!\n");
@@ -1062,6 +1089,39 @@ struct Window::PrivateData {
         return false;
     }
 
+#if defined(DISTRHO_OS_MAC) && !defined(DGL_FILE_BROWSER_DISABLED)
+    static void openPanelDidEnd(NSOpenPanel* panel, int returnCode, void *userData)
+    {
+        PrivateData* pData = (PrivateData*)userData;
+
+        if (returnCode == NSOKButton)
+        {
+            NSArray* urls = [panel URLs];
+            NSURL* fileUrl = nullptr;
+
+            for (NSUInteger i = 0, n = [urls count]; i < n && !fileUrl; ++i)
+            {
+                NSURL* url = (NSURL*)[urls objectAtIndex:i];
+                if ([url isFileURL])
+                    fileUrl = url;
+            }
+
+            if (fileUrl)
+            {
+                PuglView* view = pData->fView;
+                if (view->fileSelectedFunc)
+                {
+                    const char* fileName = [fileUrl.path UTF8String];
+                    view->fileSelectedFunc(view, fileName);
+                }
+            }
+        }
+
+        [pData->fOpenFilePanel release];
+        pData->fOpenFilePanel = nullptr;
+    }
+#endif
+
     // -------------------------------------------------------------------
 
     Application&    fApp;
@@ -1115,6 +1175,10 @@ struct Window::PrivateData {
     NSView<PuglGenericView>* mView;
     id              mWindow;
     id              mParentWindow;
+# ifndef DGL_FILE_BROWSER_DISABLED
+    NSOpenPanel*    fOpenFilePanel;
+    id              fFilePanelDelegate;
+# endif
 #else
     Display* xDisplay;
     ::Window xWindow;
@@ -1231,6 +1295,20 @@ void Window::repaint() noexcept
 // }
 
 #ifndef DGL_FILE_BROWSER_DISABLED
+
+#ifdef DISTRHO_OS_MAC
+END_NAMESPACE_DGL
+@interface FilePanelDelegate : NSObject
+{
+    void (*fCallback)(NSOpenPanel*, int, void*);
+    void* fUserData;
+}
+-(id)initWithCallback:(void(*)(NSOpenPanel*, int, void*))callback userData:(void*)userData;
+-(void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
+@end
+START_NAMESPACE_DGL
+#endif
+
 bool Window::openFileBrowser(const FileBrowserOptions& options)
 {
 # ifdef SOFD_HAVE_X11
@@ -1338,6 +1416,48 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     }
 
     return true;
+# elif defined(DISTRHO_OS_MAC)
+    if (pData->fOpenFilePanel) // permit one dialog at most
+    {
+        [pData->fOpenFilePanel makeKeyAndOrderFront:nil];
+        return false;
+    }
+
+    NSOpenPanel* panel = [NSOpenPanel openPanel];
+    pData->fOpenFilePanel = [panel retain];
+
+    [panel setCanChooseFiles:YES];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:NO];
+
+    if (options.startDir)
+        [panel setDirectory:[NSString stringWithUTF8String:options.startDir]];
+
+    if (options.title)
+    {
+        NSString* titleString = [[NSString alloc]
+            initWithBytes:options.title
+                   length:strlen(options.title)
+                 encoding:NSUTF8StringEncoding];
+        [panel setTitle:titleString];
+    }
+
+    id delegate = pData->fFilePanelDelegate;
+    if (!delegate)
+    {
+        delegate = [[FilePanelDelegate alloc] initWithCallback:&PrivateData::openPanelDidEnd
+                                                      userData:pData];
+        pData->fFilePanelDelegate = [delegate retain];
+    }
+
+    [panel beginSheetForDirectory:nullptr
+                             file:nullptr
+                   modalForWindow:nullptr
+                    modalDelegate:delegate
+                   didEndSelector:@selector(openPanelDidEnd:returnCode:contextInfo:)
+                      contextInfo:nullptr];
+
+    return true;
 # else
     // not implemented
     return false;
@@ -1346,7 +1466,28 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
     (void)options;
 # endif
 }
+
+#ifdef DISTRHO_OS_MAC
+END_NAMESPACE_DGL
+@implementation FilePanelDelegate
+-(id)initWithCallback:(void(*)(NSOpenPanel*, int, void*))callback userData:(void *)userData
+{
+    [super init];
+    self->fCallback = callback;
+    self->fUserData = userData;
+    return self;
+}
+
+-(void)openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo
+{
+    self->fCallback(sheet, returnCode, self->fUserData);
+    (void)contextInfo;
+}
+@end
+START_NAMESPACE_DGL
 #endif
+
+#endif // !defined(DGL_FILE_BROWSER_DISABLED)
 
 bool Window::isEmbed() const noexcept
 {
