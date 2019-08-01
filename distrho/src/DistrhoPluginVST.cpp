@@ -590,7 +590,8 @@ public:
             return 1;
 
         case effEditOpen:
-            if (fVstUI == nullptr)
+            delete fVstUI; // hosts which don't pair effEditOpen/effEditClose calls (Minihost Modular)
+            fVstUI = nullptr;
             {
 # if DISTRHO_OS_MAC
                 if (! fUsingNsView)
