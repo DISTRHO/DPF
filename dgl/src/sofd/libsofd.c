@@ -1257,7 +1257,8 @@ static int fib_opendir (Display *dpy, const char* path, const char *sel) {
 	} else {
 		int i;
 		struct dirent *de;
-		strcpy (_cur_path, path);
+		if (path != _cur_path)
+			strcpy (_cur_path, path);
 
 		if (_cur_path[strlen (_cur_path) -1] != '/')
 			strcat (_cur_path, "/");

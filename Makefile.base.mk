@@ -213,7 +213,7 @@ DGL_SYSTEM_LIBS  += -framework Cocoa
 endif
 
 ifeq ($(WINDOWS),true)
-DGL_SYSTEM_LIBS  += -lgdi32
+DGL_SYSTEM_LIBS  += -lgdi32 -lcomdlg32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
