@@ -385,6 +385,13 @@ struct Parameter {
     String name;
 
    /**
+      The short name of this parameter.@n
+      Used when displaying the parameter name in a very limited space.
+      @note This value is optional, the full name is used when the short one is missing.
+    */
+    String shortName;
+
+   /**
       The symbol of this parameter.@n
       A parameter symbol is a short restricted name used as a machine and human readable identifier.@n
       The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
@@ -430,6 +437,7 @@ struct Parameter {
     Parameter() noexcept
         : hints(0x0),
           name(),
+          shortName(),
           symbol(),
           unit(),
           ranges(),
@@ -443,6 +451,7 @@ struct Parameter {
     Parameter(uint32_t h, const char* n, const char* s, const char* u, float def, float min, float max) noexcept
         : hints(h),
           name(n),
+          shortName(),
           symbol(s),
           unit(u),
           ranges(def, min, max),
@@ -462,11 +471,12 @@ struct Parameter {
         case kParameterDesignationNull:
             break;
         case kParameterDesignationBypass:
-            hints  = kParameterIsAutomable|kParameterIsBoolean|kParameterIsInteger;
-            name   = "Bypass";
-            symbol = "dpf_bypass";
-            unit   = "";
-            midiCC = 0;
+            hints      = kParameterIsAutomable|kParameterIsBoolean|kParameterIsInteger;
+            name       = "Bypass";
+            shortName  = "Bypass";
+            symbol     = "dpf_bypass";
+            unit       = "";
+            midiCC     = 0;
             ranges.def = 0.0f;
             ranges.min = 0.0f;
             ranges.max = 1.0f;
