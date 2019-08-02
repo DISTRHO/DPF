@@ -444,7 +444,7 @@ void lv2_generate_ttl(const char* const basename)
                     const String& shortName(plugin.getParameterShortName(i));
 
                     if (shortName.isNotEmpty())
-                        pluginString += "        lv2:shortName \"" + shortName + "\" ;\n";
+                        pluginString += "        lv2:shortName \"\"\"" + shortName + "\"\"\" ;\n";
 
                     // ranges
                     const ParameterRanges& ranges(plugin.getParameterRanges(i));
