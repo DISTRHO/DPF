@@ -73,9 +73,9 @@
 // -----------------------------------------------------------------------
 static const char *const lv2ManifestPluginExtensionData[] =
 {
-    LV2_STATE__interface,
-#if DISTRHO_PLUGIN_WANT_STATE
     LV2_OPTIONS__interface,
+#if DISTRHO_PLUGIN_WANT_STATE
+    LV2_STATE__interface,
     LV2_WORKER__interface,
 #endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -120,10 +120,12 @@ static const char *const lv2ManifestPluginSupportedOptions[] =
 #if DISTRHO_PLUGIN_HAS_UI
 static const char *const lv2ManifestUiExtensionData[] =
 {
+    LV2_OPTIONS__interface,
     "ui:idleInterface",
     "ui:showInterface",
+    "ui:resize",
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-    LV2_PROGRAMS__Interface,
+    LV2_PROGRAMS__UIInterface,
 #endif
     nullptr
 };
