@@ -81,11 +81,8 @@ static NVGcontext* nvgCreateGL_helper(int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
     static bool needsInit = true;
-    if (needsInit)
-    {
-        needsInit = false;
 # define DGL_EXT(PROC, func) \
-      func = (PROC) wglGetProcAddress ( #func ); \
+      if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
       DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, nullptr);
 DGL_EXT(PFNGLACTIVETEXTUREPROC,            glActiveTexture)
 DGL_EXT(PFNGLATTACHSHADERPROC,             glAttachShader)
@@ -115,7 +112,7 @@ DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 # undef DGL_EXT
-    }
+    needsInit = false;
 #endif
     return nvgCreateGL(flags);
 }
