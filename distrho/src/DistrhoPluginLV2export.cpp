@@ -71,6 +71,123 @@
 #define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 // -----------------------------------------------------------------------
+static const char *const lv2ManifestPluginExtensionData[] =
+{
+#if DISTRHO_PLUGIN_WANT_STATE
+    LV2_STATE__interface,
+    LV2_OPTIONS__interface,
+    LV2_WORKER__interface,
+#endif
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    LV2_PROGRAMS__Interface,
+#endif
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+    MOD_LICENSE__interface,
+#endif
+    nullptr
+};
+
+static const char *const lv2ManifestPluginOptionalFeatures[] =
+{
+#if DISTRHO_PLUGIN_IS_RT_SAFE
+    LV2_CORE__hardRTCapable,
+#endif
+    LV2_BUF_SIZE__boundedBlockLength,
+    nullptr
+};
+
+static const char *const lv2ManifestPluginRequiredFeatures[] =
+{
+    LV2_OPTIONS__options,
+    LV2_URID__map,
+#if DISTRHO_PLUGIN_WANT_STATE
+    LV2_WORKER__schedule,
+#endif
+#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+    MOD_LICENSE__feature,
+#endif
+    nullptr
+};
+
+static const char *const lv2ManifestPluginSupportedOptions[] =
+{
+    LV2_BUF_SIZE__nominalBlockLength,
+    LV2_BUF_SIZE__maxBlockLength,
+    LV2_PARAMETERS__sampleRate,
+    nullptr
+};
+
+#if DISTRHO_PLUGIN_HAS_UI
+static const char *const lv2ManifestUiExtensionData[] =
+{
+    LV2_OPTIONS__interface,
+    "ui:idleInterface",
+    "ui:showInterface",
+    "ui:resize",
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    LV2_PROGRAMS__UIInterface,
+#endif
+    nullptr
+};
+
+static const char *const lv2ManifestUiOptionalFeatures[] =
+{
+#if DISTRHO_PLUGIN_HAS_EMBED_UI
+# if !DISTRHO_UI_USER_RESIZABLE
+    "ui:noUserResize",
+# endif
+    "ui:resize",
+    "ui:touch",
+#endif
+    nullptr
+};
+
+static const char *const lv2ManifestUiRequiredFeatures[] =
+{
+#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+    LV2_DATA_ACCESS_URI,
+    LV2_INSTANCE_ACCESS_URI,
+#endif
+    LV2_OPTIONS__options,
+    LV2_URID__map,
+    nullptr
+};
+
+static const char *lv2ManifestUiSupportedOptions[] =
+{
+    LV2_PARAMETERS__sampleRate,
+    nullptr
+};
+#endif // DISTRHO_PLUGIN_HAS_UI
+
+static void addAttribute(String &text, unsigned indent, const char *attribute, const char* const values[])
+{
+    if (!values[0])
+        return;
+
+    size_t attributeLength = strlen(attribute);
+
+    for (unsigned i = 0; values[i]; ++i)
+    {
+        for (unsigned l = 0; l < indent; ++l)
+            text += " ";
+
+        if (i == 0)
+            text += attribute;
+        else
+            for (unsigned l = 0; l < attributeLength; ++l)
+                text += " ";
+        text += " ";
+
+        bool isUrl = strstr(values[i], "://") != nullptr;
+        if (isUrl) text += "<";
+        text += values[i];
+        if (isUrl) text += ">";
+        text += values[i + 1] ? " ,\n" : " ;\n\n";
+    }
+}
+
+// -----------------------------------------------------------------------
 
 DISTRHO_PLUGIN_EXPORT
 void lv2_generate_ttl(const char* const basename)
@@ -132,32 +249,11 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    a ui:" DISTRHO_LV2_UI_TYPE " ;\n";
         manifestString += "    ui:binary <" + pluginUI + "." DISTRHO_DLL_EXTENSION "> ;\n";
 # if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-        manifestString += "\n";
-        manifestString += "    lv2:extensionData ui:idleInterface ,\n";
-#  if DISTRHO_PLUGIN_WANT_PROGRAMS
-        manifestString += "                      ui:showInterface ,\n";
-        manifestString += "                      <" LV2_PROGRAMS__Interface "> ;\n";
-#  else
-        manifestString += "                      ui:showInterface ;\n";
-#  endif
-        manifestString += "\n";
-#  if DISTRHO_PLUGIN_HAS_EMBED_UI
-#   if DISTRHO_UI_USER_RESIZABLE
-        manifestString += "    lv2:optionalFeature ui:resize ,\n";
-        manifestString += "                        ui:touch ;\n";
-        manifestString += "\n";
-#   else // DISTRHO_UI_USER_RESIZABLE
-        manifestString += "    lv2:optionalFeature ui:noUserResize ,\n";
-        manifestString += "                        ui:resize ,\n";
-        manifestString += "                        ui:touch ;\n";
-        manifestString += "\n";
-#   endif // DISTRHO_UI_USER_RESIZABLE
-#  endif // DISTRHO_PLUGIN_HAS_EMBED_UI
-        manifestString += "    lv2:requiredFeature <" LV2_DATA_ACCESS_URI "> ,\n";
-        manifestString += "                        <" LV2_INSTANCE_ACCESS_URI "> ,\n";
-        manifestString += "                        <" LV2_OPTIONS__options "> ,\n";
-        manifestString += "                        <" LV2_URID__map "> ;\n";
-        manifestString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .\n";
+        addAttribute(manifestString, 4, "lv2:extensionData", lv2ManifestUiExtensionData);
+        addAttribute(manifestString, 4, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures);
+        addAttribute(manifestString, 4, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures);
+        addAttribute(manifestString, 4, "opts:supportedOption", lv2ManifestUiSupportedOptions);
+        manifestString[manifestString.rfind(';')] = '.';
 # else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
 # endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
@@ -232,45 +328,10 @@ void lv2_generate_ttl(const char* const basename)
 #endif
         pluginString += "\n";
 
-        // extensionData
-        pluginString += "    lv2:extensionData <" LV2_STATE__interface "> ";
-#if DISTRHO_PLUGIN_WANT_STATE
-        pluginString += ",\n                      <" LV2_OPTIONS__interface "> ";
-        pluginString += ",\n                      <" LV2_WORKER__interface "> ";
-#endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        pluginString += ",\n                      <" LV2_PROGRAMS__Interface "> ";
-#endif
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-        pluginString += ",\n                      <" MOD_LICENSE__interface "> ";
-#endif
-        pluginString += ";\n\n";
-
-        // optionalFeatures
-#if DISTRHO_PLUGIN_IS_RT_SAFE
-        pluginString += "    lv2:optionalFeature <" LV2_CORE__hardRTCapable "> ,\n";
-        pluginString += "                        <" LV2_BUF_SIZE__boundedBlockLength "> ;\n";
-#else
-        pluginString += "    lv2:optionalFeature <" LV2_BUF_SIZE__boundedBlockLength "> ;\n";
-#endif
-        pluginString += "\n";
-
-        // requiredFeatures
-        pluginString += "    lv2:requiredFeature <" LV2_OPTIONS__options "> ";
-        pluginString += ",\n                        <" LV2_URID__map "> ";
-#if DISTRHO_PLUGIN_WANT_STATE
-        pluginString += ",\n                        <" LV2_WORKER__schedule "> ";
-#endif
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
-        pluginString += ",\n                        <" MOD_LICENSE__feature "> ";
-#endif
-        pluginString += ";\n\n";
-
-        // supportedOptions
-        pluginString += "    opts:supportedOption <" LV2_BUF_SIZE__nominalBlockLength "> ,\n";
-        pluginString += "                         <" LV2_BUF_SIZE__maxBlockLength "> ,\n";
-        pluginString += "                         <" LV2_PARAMETERS__sampleRate "> ;\n";
-        pluginString += "\n";
+        addAttribute(pluginString, 4, "lv2:extensionData", lv2ManifestPluginExtensionData);
+        addAttribute(pluginString, 4, "lv2:optionalFeature", lv2ManifestPluginOptionalFeatures);
+        addAttribute(pluginString, 4, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures);
+        addAttribute(pluginString, 4, "opts:supportedOption", lv2ManifestPluginSupportedOptions);
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI
@@ -635,30 +696,12 @@ void lv2_generate_ttl(const char* const basename)
         uiString += "\n";
 
         uiString += "<" DISTRHO_UI_URI ">\n";
-        uiString += "    lv2:extensionData ui:idleInterface ,\n";
-#  if DISTRHO_PLUGIN_WANT_PROGRAMS
-        uiString += "                      ui:showInterface ,\n";
-        uiString += "                      <" LV2_PROGRAMS__Interface "> ;\n";
-#  else
-        uiString += "                      ui:showInterface ;\n";
-#  endif
-        uiString += "\n";
-#  if DISTRHO_PLUGIN_HAS_EMBED_UI
-#   if DISTRHO_UI_USER_RESIZABLE
-        uiString += "    lv2:optionalFeature ui:resize ,\n";
-        uiString += "                        ui:touch ;\n";
-        uiString += "\n";
-#   else // DISTRHO_UI_USER_RESIZABLE
-        uiString += "    lv2:optionalFeature ui:noUserResize ,\n";
-        uiString += "                        ui:resize ,\n";
-        uiString += "                        ui:touch ;\n";
-        uiString += "\n";
-#   endif // DISTRHO_UI_USER_RESIZABLE
-#  endif // DISTRHO_PLUGIN_HAS_EMBED_UI
-        uiString += "    lv2:requiredFeature <" LV2_OPTIONS__options "> ,\n";
-        uiString += "                        <" LV2_URID__map "> ;\n";
 
-        uiString += "    opts:supportedOption <" LV2_PARAMETERS__sampleRate "> .\n";
+        addAttribute(uiString, 4, "lv2:extensionData", lv2ManifestUiExtensionData);
+        addAttribute(uiString, 4, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures);
+        addAttribute(uiString, 4, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures);
+        addAttribute(uiString, 4, "opts:supportedOption", lv2ManifestUiSupportedOptions);
+        uiString[uiString.rfind(';')] = '.';
 
         uiFile << uiString << std::endl;
         uiFile.close();
