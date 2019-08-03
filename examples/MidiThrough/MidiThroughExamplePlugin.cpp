@@ -72,7 +72,7 @@ protected:
     */
     const char* getLicense() const override
     {
-        return "ISC";
+        return "http://opensource.org/licenses/isc";
     }
 
    /**

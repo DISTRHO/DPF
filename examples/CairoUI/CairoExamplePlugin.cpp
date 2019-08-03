@@ -40,7 +40,7 @@ public:
 
     const char* getLicense() const
     {
-        return "ISC";
+        return "http://opensource.org/licenses/isc";
     }
 
     uint32_t getVersion() const

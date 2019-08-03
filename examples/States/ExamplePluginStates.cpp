@@ -81,7 +81,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
     */
     const char* getLicense() const override
     {
-        return "ISC";
+        return "http://opensource.org/licenses/isc";
     }
 
    /**
