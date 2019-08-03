@@ -918,6 +918,8 @@ int NanoVG::textBreakLines(const char* string, const char* end, float breakRowWi
 #ifndef DGL_NO_SHARED_RESOURCES
 void NanoVG::loadSharedResources()
 {
+    if (fContext == nullptr) return;
+
     if (nvgFindFont(fContext, NANOVG_DEJAVU_SANS_TTF) >= 0)
         return;
 
