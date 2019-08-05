@@ -71,7 +71,7 @@
 #define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
 // -----------------------------------------------------------------------
-static const char *const lv2ManifestPluginExtensionData[] =
+static const char* const lv2ManifestPluginExtensionData[] =
 {
 #if DISTRHO_PLUGIN_WANT_STATE
     LV2_STATE__interface,
@@ -87,7 +87,7 @@ static const char *const lv2ManifestPluginExtensionData[] =
     nullptr
 };
 
-static const char *const lv2ManifestPluginOptionalFeatures[] =
+static const char* const lv2ManifestPluginOptionalFeatures[] =
 {
 #if DISTRHO_PLUGIN_IS_RT_SAFE
     LV2_CORE__hardRTCapable,
@@ -96,7 +96,7 @@ static const char *const lv2ManifestPluginOptionalFeatures[] =
     nullptr
 };
 
-static const char *const lv2ManifestPluginRequiredFeatures[] =
+static const char* const lv2ManifestPluginRequiredFeatures[] =
 {
     LV2_OPTIONS__options,
     LV2_URID__map,
@@ -109,7 +109,7 @@ static const char *const lv2ManifestPluginRequiredFeatures[] =
     nullptr
 };
 
-static const char *const lv2ManifestPluginSupportedOptions[] =
+static const char* const lv2ManifestPluginSupportedOptions[] =
 {
     LV2_BUF_SIZE__nominalBlockLength,
     LV2_BUF_SIZE__maxBlockLength,
@@ -118,7 +118,7 @@ static const char *const lv2ManifestPluginSupportedOptions[] =
 };
 
 #if DISTRHO_PLUGIN_HAS_UI
-static const char *const lv2ManifestUiExtensionData[] =
+static const char* const lv2ManifestUiExtensionData[] =
 {
     LV2_OPTIONS__interface,
     "ui:idleInterface",
@@ -130,7 +130,7 @@ static const char *const lv2ManifestUiExtensionData[] =
     nullptr
 };
 
-static const char *const lv2ManifestUiOptionalFeatures[] =
+static const char* const lv2ManifestUiOptionalFeatures[] =
 {
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
 # if !DISTRHO_UI_USER_RESIZABLE
@@ -142,7 +142,7 @@ static const char *const lv2ManifestUiOptionalFeatures[] =
     nullptr
 };
 
-static const char *const lv2ManifestUiRequiredFeatures[] =
+static const char* const lv2ManifestUiRequiredFeatures[] =
 {
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     LV2_DATA_ACCESS_URI,
@@ -153,37 +153,46 @@ static const char *const lv2ManifestUiRequiredFeatures[] =
     nullptr
 };
 
-static const char *lv2ManifestUiSupportedOptions[] =
+static const char* const lv2ManifestUiSupportedOptions[] =
 {
     LV2_PARAMETERS__sampleRate,
     nullptr
 };
 #endif // DISTRHO_PLUGIN_HAS_UI
 
-static void addAttribute(String &text, unsigned indent, const char *attribute, const char* const values[])
+static void addAttribute(String& text,
+                         const char* const attribute,
+                         const char* const values[],
+                         const uint indent,
+                         const bool endInDot = false)
 {
-    if (!values[0])
+    if (values[0] == nullptr)
         return;
 
-    size_t attributeLength = strlen(attribute);
+    const size_t attributeLength = std::strlen(attribute);
 
-    for (unsigned i = 0; values[i]; ++i)
+    for (uint i = 0; values[i] != nullptr; ++i)
     {
-        for (unsigned l = 0; l < indent; ++l)
+        for (uint j = 0; j < indent; ++j)
             text += " ";
 
         if (i == 0)
+        {
             text += attribute;
+        }
         else
-            for (unsigned l = 0; l < attributeLength; ++l)
+        {
+            for (uint j = 0; j < attributeLength; ++j)
                 text += " ";
+        }
+
         text += " ";
 
-        bool isUrl = strstr(values[i], "://") != nullptr;
+        const bool isUrl = std::strstr(values[i], "://") != nullptr || std::strncmp(values[i], "urn:", 4) == 0;
         if (isUrl) text += "<";
         text += values[i];
         if (isUrl) text += ">";
-        text += values[i + 1] ? " ,\n" : " ;\n\n";
+        text += values[i + 1] ? " ,\n" : (endInDot ? " .\n\n" : " ;\n\n");
     }
 }
 
@@ -249,11 +258,10 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "    a ui:" DISTRHO_LV2_UI_TYPE " ;\n";
         manifestString += "    ui:binary <" + pluginUI + "." DISTRHO_DLL_EXTENSION "> ;\n";
 # if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-        addAttribute(manifestString, 4, "lv2:extensionData", lv2ManifestUiExtensionData);
-        addAttribute(manifestString, 4, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures);
-        addAttribute(manifestString, 4, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures);
-        addAttribute(manifestString, 4, "opts:supportedOption", lv2ManifestUiSupportedOptions);
-        manifestString[manifestString.rfind(';')] = '.';
+        addAttribute(manifestString, "lv2:extensionData", lv2ManifestUiExtensionData, 4);
+        addAttribute(manifestString, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures, 4);
+        addAttribute(manifestString, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures, 4);
+        addAttribute(manifestString, "opts:supportedOption", lv2ManifestUiSupportedOptions, 4, true);
 # else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
 # endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
@@ -328,10 +336,10 @@ void lv2_generate_ttl(const char* const basename)
 #endif
         pluginString += "\n";
 
-        addAttribute(pluginString, 4, "lv2:extensionData", lv2ManifestPluginExtensionData);
-        addAttribute(pluginString, 4, "lv2:optionalFeature", lv2ManifestPluginOptionalFeatures);
-        addAttribute(pluginString, 4, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures);
-        addAttribute(pluginString, 4, "opts:supportedOption", lv2ManifestPluginSupportedOptions);
+        addAttribute(pluginString, "lv2:extensionData", lv2ManifestPluginExtensionData, 4);
+        addAttribute(pluginString, "lv2:optionalFeature", lv2ManifestPluginOptionalFeatures, 4);
+        addAttribute(pluginString, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures, 4);
+        addAttribute(pluginString, "opts:supportedOption", lv2ManifestPluginSupportedOptions, 4);
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI
@@ -697,11 +705,10 @@ void lv2_generate_ttl(const char* const basename)
 
         uiString += "<" DISTRHO_UI_URI ">\n";
 
-        addAttribute(uiString, 4, "lv2:extensionData", lv2ManifestUiExtensionData);
-        addAttribute(uiString, 4, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures);
-        addAttribute(uiString, 4, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures);
-        addAttribute(uiString, 4, "opts:supportedOption", lv2ManifestUiSupportedOptions);
-        uiString[uiString.rfind(';')] = '.';
+        addAttribute(uiString, "lv2:extensionData", lv2ManifestUiExtensionData, 4);
+        addAttribute(uiString, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures, 4);
+        addAttribute(uiString, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures, 4);
+        addAttribute(uiString, "opts:supportedOption", lv2ManifestUiSupportedOptions, 4, true);
 
         uiFile << uiString << std::endl;
         uiFile.close();
