@@ -167,7 +167,15 @@ static void addAttribute(String& text,
                          const bool endInDot = false)
 {
     if (values[0] == nullptr)
+    {
+        if (endInDot)
+        {
+            bool found;
+            const size_t index = text.rfind(';', &found);
+            if (found) text[index] = '.';
+        }
         return;
+    }
 
     const size_t attributeLength = std::strlen(attribute);
 
