@@ -318,7 +318,9 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
         pluginString += "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
         pluginString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
+#if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
         pluginString += "@prefix rsz:  <" LV2_RESIZE_PORT_PREFIX "> .\n";
+#endif
 #if DISTRHO_PLUGIN_HAS_UI
         pluginString += "@prefix ui:   <" LV2_UI_PREFIX "> .\n";
 #endif
