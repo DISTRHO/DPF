@@ -74,8 +74,8 @@
 static const char* const lv2ManifestPluginExtensionData[] =
 {
 #if DISTRHO_PLUGIN_WANT_STATE
+    "opts:interface",
     LV2_STATE__interface,
-    LV2_OPTIONS__interface,
     LV2_WORKER__interface,
 #endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -98,7 +98,7 @@ static const char* const lv2ManifestPluginOptionalFeatures[] =
 
 static const char* const lv2ManifestPluginRequiredFeatures[] =
 {
-    LV2_OPTIONS__options,
+    "opts:options",
     LV2_URID__map,
 #if DISTRHO_PLUGIN_WANT_STATE
     LV2_WORKER__schedule,
@@ -120,7 +120,7 @@ static const char* const lv2ManifestPluginSupportedOptions[] =
 #if DISTRHO_PLUGIN_HAS_UI
 static const char* const lv2ManifestUiExtensionData[] =
 {
-    LV2_OPTIONS__interface,
+    "opts:interface",
     "ui:idleInterface",
     "ui:showInterface",
     "ui:resize",
@@ -144,11 +144,11 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
 
 static const char* const lv2ManifestUiRequiredFeatures[] =
 {
+    "opts:options",
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     LV2_DATA_ACCESS_URI,
     LV2_INSTANCE_ACCESS_URI,
 #endif
-    LV2_OPTIONS__options,
     LV2_URID__map,
     nullptr
 };
