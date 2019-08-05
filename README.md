@@ -29,6 +29,7 @@ List of plugins made with DPF:<br/>
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
  - [DragonFly-Reverb](https://github.com/michaelwillis/dragonfly-reverb)
  - [Wolf-Shaper](https://github.com/pdesaulniers/wolf-shaper) and [Wolf-Spectrum](https://github.com/pdesaulniers/wolf-spectrum)
+ - [YK Chorus](https://github.com/SpotlightKid/ykchorus)
  - [Ninjas2](https://github.com/rghvdberg/ninjas2)
  - [String-machine](https://github.com/jpcima/string-machine)
  - [Rezonateur](https://github.com/jpcima/rezonateur)
