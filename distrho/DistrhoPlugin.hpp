@@ -407,8 +407,8 @@ struct Parameter {
     String unit;
 
    /**
-      An extensive comment/description about the parameter.
-      @note This value is optional.
+      An extensive description/comment about the parameter.
+      @note This value is optional and only used for LV2.
     */
     String description;
 
