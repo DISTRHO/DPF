@@ -407,6 +407,12 @@ struct Parameter {
     String unit;
 
    /**
+      An extensive comment/description about the parameter.
+      @note This value is optional.
+    */
+    String description;
+
+   /**
       Ranges of this parameter.@n
       The ranges describe the default, minimum and maximum values.
     */

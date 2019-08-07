@@ -613,6 +613,12 @@ void lv2_generate_ttl(const char* const basename)
                         }
                     }
 
+                    // comment
+                    const String& comment(plugin.getParameterDescription(i));
+
+                    if (comment.isNotEmpty())
+                        pluginString += "        rdfs:comment \"\"\"" + comment + "\"\"\" ;\n";
+
                     // hints
                     const uint32_t hints(plugin.getParameterHints(i));
 
@@ -645,7 +651,7 @@ void lv2_generate_ttl(const char* const basename)
             const String comment(plugin.getDescription());
 
             if (comment.isNotEmpty())
-                pluginString += "    rdfs:comment \"\"\"\n" + comment + "\n\"\"\" ;\n\n";
+                pluginString += "    rdfs:comment \"\"\"" + comment + "\"\"\" ;\n\n";
         }
 
 #ifdef DISTRHO_PLUGIN_BRAND

@@ -396,6 +396,13 @@ public:
         return fData->parameters[index].unit;
     }
 
+    const String& getParameterDescription(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackString);
+
+        return fData->parameters[index].description;
+    }
+
     const ParameterEnumerationValues& getParameterEnumValues(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackEnumValues);
