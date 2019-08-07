@@ -73,8 +73,8 @@
 // -----------------------------------------------------------------------
 static const char* const lv2ManifestPluginExtensionData[] =
 {
-#if DISTRHO_PLUGIN_WANT_STATE
     "opts:interface",
+#if DISTRHO_PLUGIN_WANT_STATE
     LV2_STATE__interface,
     LV2_WORKER__interface,
 #endif
