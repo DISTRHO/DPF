@@ -92,9 +92,11 @@ public:
             // render audio until first midi event, if needed
             if (const uint32_t firstEventFrame = midiEvents[0].frame)
             {
-                frames = midiEvents[0].frame;
-                remainingFrames -= frames;
-                totalFramesUsed += frames;
+                DISTRHO_SAFE_ASSERT_UINT2_RETURN(firstEventFrame < remainingFrames,
+                                                 firstEventFrame, remainingFrames, false);
+                frames = firstEventFrame;
+                remainingFrames -= firstEventFrame;
+                totalFramesUsed += firstEventFrame;
                 return true;
             }
         }
@@ -120,7 +122,8 @@ public:
             midiEvents += midiEventCount;
 
         const uint32_t firstEventFrame = midiEvents[0].frame;
-        DISTRHO_SAFE_ASSERT_RETURN((firstEventFrame - frames) < remainingFrames, false);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(firstEventFrame >= totalFramesUsed,
+                                         firstEventFrame, totalFramesUsed, false);
 
         midiEventCount = 1;
         while (midiEventCount < remainingMidiEventCount)
@@ -131,16 +134,7 @@ public:
                 break;
         }
 
-        if (totalFramesUsed != 0)
-        {
-            for (uint32_t i=0; i < midiEventCount; ++i)
-            {
-                DISTRHO_SAFE_ASSERT_UINT2_BREAK(midiEvents[i].frame - totalFramesUsed == 0,
-                                                midiEvents[i].frame, totalFramesUsed);
-            }
-        }
-
-        frames = remainingFrames - firstEventFrame;
+        frames = firstEventFrame - totalFramesUsed;
         remainingFrames -= frames;
         remainingMidiEventCount -= midiEventCount;
         totalFramesUsed += frames;
