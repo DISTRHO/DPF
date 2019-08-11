@@ -846,6 +846,11 @@ public:
 
         return LV2_WORKER_SUCCESS;
     }
+
+    LV2_Worker_Status lv2_work_response(uint32_t, const void*)
+    {
+        return LV2_WORKER_SUCCESS;
+    }
 #endif
 
     // -------------------------------------------------------------------
@@ -1243,6 +1248,11 @@ LV2_Worker_Status lv2_work(LV2_Handle instance, LV2_Worker_Respond_Function, LV2
 {
     return instancePtr->lv2_work(data);
 }
+
+LV2_Worker_Status lv2_work_response(LV2_Handle instance, uint32_t size, const void* body)
+{
+    return instancePtr->lv2_work_response(size, body);
+}
 #endif
 
 // -----------------------------------------------------------------------
@@ -1272,7 +1282,7 @@ static const void* lv2_extension_data(const char* uri)
 
 #if DISTRHO_PLUGIN_WANT_STATE
     static const LV2_State_Interface state = { lv2_save, lv2_restore };
-    static const LV2_Worker_Interface worker = { lv2_work, nullptr, nullptr };
+    static const LV2_Worker_Interface worker = { lv2_work, lv2_work_response, nullptr };
 
     if (std::strcmp(uri, LV2_STATE__interface) == 0)
         return &state;

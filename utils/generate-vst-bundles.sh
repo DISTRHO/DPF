@@ -9,19 +9,18 @@ else
   exit
 fi
 
-PWD=`pwd`
+DPF_DIR=$(dirname $0)/..
+PLUGINS=$(ls | grep vst.dylib)
 
 rm -rf *.vst/
 
-PLUGINS=`ls | grep vst.dylib`
-
 for i in $PLUGINS; do
-  FILE=`echo $i | awk 'sub("-vst.dylib","")'`
-  cp -r ../dpf/utils/plugin.vst/ $FILE.vst
-  mv $i $FILE.vst/Contents/MacOS/$FILE
-  rm -f $FILE.vst/Contents/MacOS/deleteme
-  sed -i -e "s/X-PROJECTNAME-X/$FILE/" $FILE.vst/Contents/Info.plist
-  rm -f $FILE.vst/Contents/Info.plist-e
+  BUNDLE=$(echo ${i} | awk 'sub("-vst.dylib","")')
+  cp -r ${DPF_DIR}/utils/plugin.vst/ ${BUNDLE}.vst
+  mv ${i} ${BUNDLE}.vst/Contents/MacOS/${BUNDLE}
+  rm -f ${BUNDLE}.vst/Contents/MacOS/deleteme
+  sed -i -e "s/X-PROJECTNAME-X/${BUNDLE}/" ${BUNDLE}.vst/Contents/Info.plist
+  rm -f ${BUNDLE}.vst/Contents/Info.plist-e
 done
 
 cd ..

@@ -274,6 +274,9 @@ puglCreateWindow(PuglView* view, const char* title)
 
 	if (title) {
 		XStoreName(impl->display, impl->win, title);
+		Atom netWmName = XInternAtom(impl->display, "_NET_WM_NAME", False);
+		Atom utf8String = XInternAtom(impl->display, "UTF8_STRING", False);
+		XChangeProperty(impl->display, impl->win, netWmName, utf8String, 8, PropModeReplace, (unsigned char *)title, strlen(title));
 	}
 
 	if (view->transient_parent > 0) {

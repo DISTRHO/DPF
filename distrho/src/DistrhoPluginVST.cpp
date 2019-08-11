@@ -1294,7 +1294,11 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParamName:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterName(index), 16);
+            const String& shortName(plugin.getParameterShortName(index));
+            if (shortName.isNotEmpty())
+                DISTRHO_NAMESPACE::strncpy((char*)ptr, shortName, 16);
+            else
+                DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterName(index), 16);
             return 1;
         }
         return 0;

@@ -53,7 +53,6 @@ endif
 clean:
 	$(MAKE) clean -C dgl
 	$(MAKE) clean -C examples/CairoUI
-	$(MAKE) clean -C examples/ExternalUI
 	$(MAKE) clean -C examples/Info
 	$(MAKE) clean -C examples/Latency
 	$(MAKE) clean -C examples/Meters
@@ -61,6 +60,9 @@ clean:
 	$(MAKE) clean -C examples/Parameters
 	$(MAKE) clean -C examples/States
 	$(MAKE) clean -C utils/lv2-ttl-generator
+ifneq ($(MACOS_OR_WINDOWS),true)
+	$(MAKE) clean -C examples/ExternalUI
+endif
 	rm -rf bin build
 
 # --------------------------------------------------------------
