@@ -925,14 +925,13 @@ public:
         const uint32_t hints(fPlugin.getParameterHints(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
+        value = ranges.getUnnormalizedValue(value);
+
         if (hints & kParameterIsBoolean)
         {
             const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-
             value = value > midRange ? ranges.max : ranges.min;
         }
-
-        value = ranges.getUnnormalizedValue(value);
 
         if (hints & kParameterIsInteger)
         {
