@@ -27,7 +27,7 @@ List of plugins made with DPF:<br/>
  - [DISTRHO ndc Plugs](https://github.com/DISTRHO/ndc-Plugs)
  - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins) (work in progress)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
- - [DragonFly-Reverb](https://github.com/michaelwillis/dragonfly-reverb)
+ - [Dragonfly Reverb](https://michaelwillis.github.io/dragonfly-reverb)
  - [Wolf-Shaper](https://github.com/pdesaulniers/wolf-shaper)
  - [Wolf-Spectrum](https://github.com/pdesaulniers/wolf-spectrum)
  - [Wolf-LFO](https://github.com/pdesaulniers/wolf-lfo) (work in progress)
