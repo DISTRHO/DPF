@@ -28,7 +28,9 @@ List of plugins made with DPF:<br/>
  - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins) (work in progress)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
  - [DragonFly-Reverb](https://github.com/michaelwillis/dragonfly-reverb)
- - [Wolf-Shaper](https://github.com/pdesaulniers/wolf-shaper) and [Wolf-Spectrum](https://github.com/pdesaulniers/wolf-spectrum)
+ - [Wolf-Shaper](https://github.com/pdesaulniers/wolf-shaper)
+ - [Wolf-Spectrum](https://github.com/pdesaulniers/wolf-spectrum)
+ - [Wolf-LFO](https://github.com/pdesaulniers/wolf-lfo)
  - [YK Chorus](https://github.com/SpotlightKid/ykchorus)
  - [Ninjas2](https://github.com/rghvdberg/ninjas2)
  - [String-machine](https://github.com/jpcima/string-machine)
@@ -36,6 +38,7 @@ List of plugins made with DPF:<br/>
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins)
  - [midiomatic](https://github.com/SpotlightKid/midiomatic)
+ - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop)
 
 
 Plugin examples are available in the `example/` folder inside this repo.<br/>
