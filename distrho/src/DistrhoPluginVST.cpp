@@ -575,7 +575,7 @@ public:
             else
             {
                 d_lastUiSampleRate = fPlugin.getSampleRate();
-                
+
                 // TODO
                 const float scaleFactor = 1.0f;
 
@@ -598,7 +598,7 @@ public:
                 }
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
-                
+
                 // TODO
                 const float scaleFactor = 1.0f;
 
@@ -925,18 +925,20 @@ public:
         const uint32_t hints(fPlugin.getParameterHints(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
+        value = ranges.getUnnormalizedValue(value);
+
         if (hints & kParameterIsBoolean)
         {
             const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-
             value = value > midRange ? ranges.max : ranges.min;
         }
-        else if (hints & kParameterIsInteger)
+
+        if (hints & kParameterIsInteger)
         {
             value = std::round(value);
         }
 
-        const float realValue(ranges.getUnnormalizedValue(value));
+        const float realValue(value);
         fPlugin.setParameterValue(index, realValue);
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -1306,7 +1308,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParameterProperties:
         if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
         {
-            if (VstParameterProperties* const properties = (VstParameterProperties*)ptr) 
+            if (VstParameterProperties* const properties = (VstParameterProperties*)ptr)
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
 
