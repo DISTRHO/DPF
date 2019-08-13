@@ -35,6 +35,7 @@ List of plugins made with DPF:<br/>
  - [Rezonateur](https://github.com/jpcima/rezonateur)
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins)
+ - [midiomatic](https://github.com/SpotlightKid/midiomatic)
 
 
 Plugin examples are available in the `example/` folder inside this repo.<br/>
