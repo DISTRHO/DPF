@@ -920,25 +920,25 @@ public:
         return ranges.getNormalizedValue(fPlugin.getParameterValue(index));
     }
 
-    void vst_setParameter(const int32_t index, float value)
+    void vst_setParameter(const int32_t index, const float value)
     {
         const uint32_t hints(fPlugin.getParameterHints(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
-        value = ranges.getUnnormalizedValue(value);
+        // TODO figure out how to detect kVstParameterUsesIntegerMinMax host support, and skip normalization
+        float realValue = ranges.getUnnormalizedValue(value);
 
         if (hints & kParameterIsBoolean)
         {
             const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-            value = value > midRange ? ranges.max : ranges.min;
+            realValue = realValue > midRange ? ranges.max : ranges.min;
         }
 
         if (hints & kParameterIsInteger)
         {
-            value = std::round(value);
+            realValue = std::round(realValue);
         }
 
-        const float realValue(value);
         fPlugin.setParameterValue(index, realValue);
 
 #if DISTRHO_PLUGIN_HAS_UI
