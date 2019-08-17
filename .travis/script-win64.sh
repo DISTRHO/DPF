@@ -17,4 +17,4 @@ export CROSS_COMPILING=true
 make clean >/dev/null
 
 # Build now
-make
+make HAVE_CAIRO=false HAVE_JACK=false

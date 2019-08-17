@@ -108,13 +108,13 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
-#elif defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
 # ifndef DGL_FILE_BROWSER_DISABLED
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -146,13 +146,13 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
-#elif defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
 # ifndef DGL_FILE_BROWSER_DISABLED
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -198,13 +198,13 @@ struct Window::PrivateData {
           mView(nullptr),
           mWindow(nullptr),
           mParentWindow(nullptr)
-#elif defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
 # ifndef DGL_FILE_BROWSER_DISABLED
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
