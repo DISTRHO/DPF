@@ -32,7 +32,7 @@ TARGETS += jack
 endif
 endif
 
-ifeq ($(LINUX),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_LIBLO),true)
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += ladspa

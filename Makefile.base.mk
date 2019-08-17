@@ -208,18 +208,22 @@ HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Generic DGL stuff
 
+ifeq ($(HAIKU),true)
+DGL_SYSTEM_LIBS += -lbe
+endif
+
 ifeq ($(MACOS),true)
-DGL_SYSTEM_LIBS  += -framework Cocoa
+DGL_SYSTEM_LIBS += -framework Cocoa
 endif
 
 ifeq ($(WINDOWS),true)
-DGL_SYSTEM_LIBS  += -lgdi32 -lcomdlg32
+DGL_SYSTEM_LIBS += -lgdi32 -lcomdlg32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_X11),true)
-DGL_FLAGS        += $(shell $(PKG_CONFIG) --cflags x11)
-DGL_SYSTEM_LIBS  += $(shell $(PKG_CONFIG) --libs x11)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags x11)
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs x11)
 endif
 endif
 
@@ -244,6 +248,11 @@ ifeq ($(HAVE_OPENGL),true)
 
 DGL_FLAGS   += -DHAVE_OPENGL
 
+ifeq ($(HAIKU),true)
+OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl)
+OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
+endif
+
 ifeq ($(MACOS),true)
 OPENGL_LIBS  = -framework OpenGL
 endif
@@ -252,7 +261,7 @@ ifeq ($(WINDOWS),true)
 OPENGL_LIBS  = -lopengl32
 endif
 
-ifneq ($(MACOS_OR_WINDOWS),true)
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
 OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl x11)
 OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl x11)
 endif
