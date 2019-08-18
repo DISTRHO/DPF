@@ -365,6 +365,8 @@ struct ParameterEnumerationValues {
             values = nullptr;
         }
     }
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(ParameterEnumerationValues)
 };
 
 /**
