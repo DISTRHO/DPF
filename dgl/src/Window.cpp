@@ -38,6 +38,7 @@
 #endif
 
 #if defined(DISTRHO_OS_HAIKU)
+# define DGL_DEBUG_EVENTS
 # include "pugl/pugl_haiku.cpp"
 #elif defined(DISTRHO_OS_MAC)
 # define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
@@ -102,6 +103,8 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(),
 #if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
           bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(true),
@@ -140,6 +143,8 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(parent.pData),
 #if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
           bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
@@ -192,6 +197,8 @@ struct Window::PrivateData {
           fWidgets(),
           fModal(),
 #if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
           bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(parentId == 0),
@@ -260,7 +267,9 @@ struct Window::PrivateData {
         PuglInternals* impl = fView->impl;
 
 #if defined(DISTRHO_OS_HAIKU)
-        bWindow = impl->window;
+        bApplication = impl->app;
+        bView        = impl->view;
+        bWindow      = impl->window;
 #elif defined(DISTRHO_OS_MAC)
         mView   = impl->view;
         mWindow = impl->window;
@@ -293,7 +302,6 @@ struct Window::PrivateData {
                 XInternAtom(xDisplay, "_NET_WM_WINDOW_TYPE_NORMAL", False)
             };
             XChangeProperty(xDisplay, xWindow, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, 2);
-
         }
 #endif
         puglEnterContext(fView);
@@ -340,6 +348,9 @@ struct Window::PrivateData {
         }
 
 #if defined(DISTRHO_OS_HAIKU)
+        bApplication = nullptr;
+        bView        = nullptr;
+        bWindow      = nullptr;
 #elif defined(DISTRHO_OS_MAC)
         mView   = nullptr;
         mWindow = nullptr;
@@ -456,6 +467,10 @@ struct Window::PrivateData {
     {
         DBG("Window focus\n");
 #if defined(DISTRHO_OS_HAIKU)
+        if (bWindow != nullptr)
+            bWindow->Activate(true);
+        else
+            bView->MakeFocus(true);
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
             [mWindow makeKeyWindow];
@@ -493,7 +508,27 @@ struct Window::PrivateData {
             setSize(fWidth, fHeight, true);
 
 #if defined(DISTRHO_OS_HAIKU)
-        // TODO
+        if (bWindow != nullptr)
+        {
+            if (yesNo)
+            {
+
+        bView->Show();
+                bWindow->Show();
+            }
+            else
+                bWindow->Hide();
+
+            // TODO use flush?
+            bWindow->Sync();
+        }
+        else
+        {
+            if (yesNo)
+                bView->Show();
+            else
+                bView->Hide();
+        }
 #elif defined(DISTRHO_OS_MAC)
         if (yesNo)
         {
@@ -599,8 +634,11 @@ struct Window::PrivateData {
 
 #if defined(DISTRHO_OS_HAIKU)
         // TODO
+        // B_NO_BORDER
+        // B_TITLED_WINDOW_LOOK
+        // bWindow->SetFlags();
 #elif defined(DISTRHO_OS_MAC)
-        const uint flags(yesNo ? (NSViewWidthSizable|NSViewHeightSizable) : 0x0);
+        const uint flags = yesNo ? (NSViewWidthSizable|NSViewHeightSizable) : 0x0;
         [mView setAutoresizingMask:flags];
 #elif defined(DISTRHO_OS_WINDOWS)
         const int winFlags = fResizable ? GetWindowLong(hwnd, GWL_STYLE) |  WS_SIZEBOX
@@ -645,7 +683,16 @@ struct Window::PrivateData {
         DBGp("Window setSize called %s, size %i %i, resizable %s\n", forced ? "(forced)" : "(not forced)", width, height, fResizable?"true":"false");
 
 #if defined(DISTRHO_OS_HAIKU)
-        // TODO
+        bView->ResizeTo(width, height);
+
+        if (bWindow != nullptr)
+        {
+            bWindow->ResizeTo(width, height);
+
+            if (! forced)
+                bWindow->Flush();
+        }
+        // TODO resizable
 #elif defined(DISTRHO_OS_MAC)
         [mView setFrame:NSMakeRect(0, 0, width, height)];
 
@@ -806,6 +853,15 @@ struct Window::PrivateData {
     void idle()
     {
         puglProcessEvents(fView);
+
+#ifdef DISTRHO_OS_HAIKU
+        if (bApplication != nullptr)
+        {
+            bApplication->Lock();
+            // bApplication->Loop();
+            bApplication->Unlock();
+        }
+#endif
 
 #ifdef DISTRHO_OS_MAC
         if (fNeedsIdle)
@@ -1192,7 +1248,9 @@ struct Window::PrivateData {
     } fModal;
 
 #if defined(DISTRHO_OS_HAIKU)
-    BWindow* bWindow;
+    BApplication* bApplication;
+    BView*        bView;
+    BWindow*      bWindow;
 #elif defined(DISTRHO_OS_MAC)
     bool            fNeedsIdle;
     NSView<PuglGenericView>* mView;

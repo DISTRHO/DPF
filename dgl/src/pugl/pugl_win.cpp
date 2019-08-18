@@ -392,8 +392,6 @@ handleMessage(PuglView* view, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_SIZE:
 		GetClientRect(view->impl->hwnd, &rect);
 		puglReshape(view, rect.right, rect.bottom);
-		view->width = rect.right;
-		view->height = rect.bottom;
 		break;
 	case WM_GETMINMAXINFO:
 		mmi = (MINMAXINFO*)lParam;
