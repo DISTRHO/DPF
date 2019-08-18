@@ -468,9 +468,17 @@ struct Window::PrivateData {
         DBG("Window focus\n");
 #if defined(DISTRHO_OS_HAIKU)
         if (bWindow != nullptr)
-            bWindow->Activate(true);
+        {
+            if (bWindow->LockLooper())
+            {
+                bWindow->Activate(true);
+                bWindow->UnlockLooper();
+            }
+        }
         else
+        {
             bView->MakeFocus(true);
+        }
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
             [mWindow makeKeyWindow];
@@ -510,17 +518,17 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_HAIKU)
         if (bWindow != nullptr)
         {
-            if (yesNo)
+            if (bWindow->LockLooper())
             {
+                if (yesNo)
+                    bWindow->Show();
+                else
+                    bWindow->Hide();
 
-        bView->Show();
-                bWindow->Show();
+                // TODO use flush?
+                bWindow->Sync();
+                bWindow->UnlockLooper();
             }
-            else
-                bWindow->Hide();
-
-            // TODO use flush?
-            bWindow->Sync();
         }
         else
         {
@@ -685,12 +693,15 @@ struct Window::PrivateData {
 #if defined(DISTRHO_OS_HAIKU)
         bView->ResizeTo(width, height);
 
-        if (bWindow != nullptr)
+        if (bWindow != nullptr && bWindow->LockLooper())
         {
+            bWindow->MoveTo(50, 50);
             bWindow->ResizeTo(width, height);
 
             if (! forced)
                 bWindow->Flush();
+
+            bWindow->UnlockLooper();
         }
         // TODO resizable
 #elif defined(DISTRHO_OS_MAC)
@@ -770,8 +781,11 @@ struct Window::PrivateData {
         fTitle = strdup(title);
 
 #if defined(DISTRHO_OS_HAIKU)
-        if (bWindow != nullptr)
+        if (bWindow != nullptr&& bWindow->LockLooper())
+        {
             bWindow->SetTitle(title);
+            bWindow->UnlockLooper();
+        }
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
         {
@@ -857,9 +871,9 @@ struct Window::PrivateData {
 #ifdef DISTRHO_OS_HAIKU
         if (bApplication != nullptr)
         {
-            bApplication->Lock();
+            // bApplication->Lock();
             // bApplication->Loop();
-            bApplication->Unlock();
+            // bApplication->Unlock();
         }
 #endif
 

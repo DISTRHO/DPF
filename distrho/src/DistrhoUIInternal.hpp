@@ -406,6 +406,10 @@ public:
         return true;
     }
 
+    void focus()
+    {
+    }
+
     void quit()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
@@ -428,6 +432,11 @@ public:
     {
         if (glWindow.isReady())
             fUI->uiIdle();
+    }
+
+    void focus()
+    {
+        glWindow.focus();
     }
 
     bool idle()

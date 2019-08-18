@@ -25,8 +25,13 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_HAIKU
 class ImageAboutWindow : public Window,
                          public Widget
+#else
+// crash when creating or opening 2nd window
+class ImageAboutWindow
+#endif
 {
 public:
     explicit ImageAboutWindow(Window& parent, const Image& image = Image());
@@ -34,11 +39,15 @@ public:
 
     void setImage(const Image& image);
 
+#ifndef DISTRHO_OS_HAIKU
 protected:
     void onDisplay() override;
     bool onKeyboard(const KeyboardEvent&) override;
     bool onMouse(const MouseEvent&) override;
     void onReshape(uint width, uint height) override;
+#else
+    void exec() {}
+#endif
 
 private:
     Image fImgBackground;

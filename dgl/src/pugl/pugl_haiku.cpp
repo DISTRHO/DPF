@@ -71,18 +71,12 @@ puglDisplay(PuglView* view)
 	puglLeaveContext(view, true);
 }
 
-PuglInternals*
-puglInitInternals()
-{
-	return (PuglInternals*)calloc(1, sizeof(PuglInternals));
-}
-
 void
 puglEnterContext(PuglView* view)
 {
-#ifdef PUGL_OPENGL
 	PuglInternals* impl = view->impl;
 
+#ifdef PUGL_OPENGL
     // FIXME without the first unlock we freeze
     impl->view->UnlockGL();
     impl->view->LockGL();
@@ -92,14 +86,20 @@ puglEnterContext(PuglView* view)
 void
 puglLeaveContext(PuglView* view, bool flush)
 {
-#ifdef PUGL_OPENGL
 	PuglInternals* impl = view->impl;
 
+#ifdef PUGL_OPENGL
     if (flush)
-       impl->view->SwapBuffers(true);
+       impl->view->SwapBuffers();
 
     impl->view->UnlockGL();
 #endif
+}
+
+PuglInternals*
+puglInitInternals()
+{
+	return (PuglInternals*)calloc(1, sizeof(PuglInternals));
 }
 
 class DView : public BViewType
@@ -114,41 +114,62 @@ public:
 
 #ifdef PUGL_OPENGL
     DView(PuglView* const v)
-        : BGLView(BRect(512.0f),
+        : BGLView(BRect(), // causes "bitmap bounds is much too large: BRect(0.0, 0.0, 4294967296.0, 4294967296.0)"
                   "DPF-GLView",
                   0x0, // resize mode
-                  B_FULL_UPDATE_ON_RESIZE|B_WILL_DRAW|B_FRAME_EVENTS|B_NAVIGABLE|B_INPUT_METHOD_AWARE,
-                  BGL_RGB /*|BGL_DOUBLE|BGL_ALPHA|BGL_DEPTH|BGL_STENCIL*/),
-          puglView(v) {}
+                  B_FULL_UPDATE_ON_RESIZE|B_WILL_DRAW|B_NAVIGABLE_JUMP|B_FRAME_EVENTS|B_NAVIGABLE|B_INPUT_METHOD_AWARE,
+                  BGL_RGB|BGL_DOUBLE|BGL_ALPHA|BGL_DEPTH|BGL_STENCIL),
+          puglView(v)
+    {
+    }
 #endif
 
 protected:
+    void GetPreferredSize(float* width, float* height) override
+    {
+        d_stdout("%s %i", __func__, __LINE__);
+        if (width != nullptr)
+            *width = puglView->width;
+        if (height != nullptr)
+            *height = puglView->height;
+        d_stdout("%s %i", __func__, __LINE__);
+    }
+    
     void Draw(BRect updateRect) override
     {
         d_stdout("%s %i", __func__, __LINE__);
         puglDisplay(puglView);
-        d_stdout("%s %i", __func__, __LINE__);
-        
 #ifdef PUGL_OPENGL
         BGLView::Draw(updateRect);
-#endif
         d_stdout("%s %i", __func__, __LINE__);
+#endif
+    }
+
+    void MessageReceived(BMessage* message)
+    {
+        d_stdout("MessageReceived %p", message);
+        BViewType::MessageReceived(message);
     }
 
     void MouseDown(BPoint where) override
     {
         if (puglView->mouseFunc) {
 			// puglView->event_timestamp_ms = GetMessageTime();
+            d_stdout("MouseDown mask %u", EventMask());
             puglView->mouseFunc(puglView, 1, true, where.x, where.y);
+            SetMouseEventMask(B_POINTER_EVENTS, B_LOCK_WINDOW_FOCUS);
         }
+        //BViewType::MouseDown(where);
     }
 
     void MouseUp(BPoint where) override
     {
         if (puglView->mouseFunc) {
+            d_stdout("MouseUp mask %u", EventMask());
 			// puglView->event_timestamp_ms = GetMessageTime();
             puglView->mouseFunc(puglView, 1, false, where.x, where.y);
         }
+        //BViewType::MouseUp(where);
     }
 
     void MouseMoved(BPoint where, uint32, const BMessage*) override
@@ -161,7 +182,7 @@ protected:
 
     void KeyDown(const char* bytes, int32 numBytes) override
     {
-        d_stdout("KeyDown %s %i", bytes, numBytes);
+        d_stdout("KeyDown %i", numBytes);
         if (numBytes != 1)
             return; // TODO
         
@@ -172,6 +193,7 @@ protected:
 
     void KeyUp(const char* bytes, int32 numBytes) override
     {
+        d_stdout("KeyUp %i", numBytes);
         if (numBytes != 1)
             return; // TODO
         
@@ -179,18 +201,17 @@ protected:
             puglView->keyboardFunc(puglView, false, bytes[0]);
         }
     }
+    
+    void ScrollTo(BPoint where) override
+    {
+            d_stdout("ScrollTo mask %u", EventMask());
+        BViewType::ScrollTo(where);
+    }
 
     void FrameResized(float newWidth, float newHeight) override
     {
         d_stdout("%s %i", __func__, __LINE__);
-        const int width  = static_cast<int>(newWidth);
-        const int height = static_cast<int>(newHeight);
-
-		puglReshape(puglView, width, height);
-        d_stdout("%s %i", __func__, __LINE__);
-		puglView->width = width;
-		puglView->height = height;
-        d_stdout("%s %i", __func__, __LINE__);
+		puglReshape(puglView, static_cast<int>(newWidth), static_cast<int>(newHeight));
 #ifdef PUGL_OPENGL
         BGLView::FrameResized(newWidth, newHeight);
 #endif
@@ -241,6 +262,7 @@ puglCreateWindow(PuglView* view, const char* title)
 
     if (be_app == nullptr)
     {
+        d_stdout("creating app");
         status_t status;
         BApplication* const app = new BApplication("application/x-vnd.dpf-application", &status);
 
@@ -252,6 +274,10 @@ puglCreateWindow(PuglView* view, const char* title)
         }
 
         impl->app = app;
+    }
+    else
+    {
+        d_stdout("using existing app");
     }
     
 	if (view->parent == 0) {
@@ -273,7 +299,8 @@ puglCreateWindow(PuglView* view, const char* title)
     }
     
     impl->window->AddChild(impl->view);
-    puglEnterContext(view);
+    impl->view->LockGL();
+    //puglEnterContext(view);
     impl->window->Unlock();
     return 0;
 }
@@ -284,9 +311,17 @@ puglShowWindow(PuglView* view)
 	PuglInternals* impl = view->impl;
 
     if (impl->window != nullptr)
-        impl->window->Show();
+    {
+        if (impl->window->LockLooper())
+        {
+            impl->window->Show();
+            impl->window->UnlockLooper();
+        }
+    }
     else
+    {
         impl->view->Show();
+    }
 }
 
 void
@@ -295,9 +330,17 @@ puglHideWindow(PuglView* view)
 	PuglInternals* impl = view->impl;
 
     if (impl->window != nullptr)
-        impl->window->Hide();
+    {
+        if (impl->window->LockLooper())
+        {
+            impl->window->Hide();
+            impl->window->UnlockLooper();
+        }
+    }
     else
+    {
         impl->view->Show();
+    }
 }
 
 void
@@ -338,8 +381,22 @@ puglProcessEvents(PuglView* view)
 void
 puglPostRedisplay(PuglView* view)
 {
+	PuglInternals* impl = view->impl;
+
 	view->redisplay = true;
-    view->impl->view->Invalidate();
+
+    if (impl->window != nullptr)
+    {
+        if (impl->window->LockLooper())
+        {
+            impl->view->Invalidate();
+            impl->window->UnlockLooper();
+        }
+    }
+    else
+    {
+        impl->view->Invalidate();
+    }
 }
 
 PuglNativeWindow
@@ -351,7 +408,7 @@ puglGetNativeWindow(PuglView* view)
     // return (PuglNativeWindow)impl->view->EmbeddedView();
 #endif
 
-	return (PuglNativeWindow)impl->view;
+	return (PuglNativeWindow)(BView*)impl->view;
 }
 
 void*
@@ -366,11 +423,18 @@ puglUpdateGeometryConstraints(PuglView* view, int min_width, int min_height, boo
 	PuglInternals* impl = view->impl;
 
     d_stdout("puglUpdateGeometryConstraints %i %i %i %i", min_width, min_height, view->width, view->height);
-    impl->window->SetSizeLimits(min_width,
-                                view->user_resizable ? 4096 : min_width,
-                                min_height,
-                                view->user_resizable ? 4096 : min_height);
-	return 0;
+    if (impl->window->LockLooper())
+    {
+        impl->window->SetSizeLimits(min_width,
+                                    view->user_resizable ? 4096 : min_width,
+                                    min_height,
+                                    view->user_resizable ? 4096 : min_height);
+
+        impl->window->UnlockLooper();
+        return 0;
+    }
+
+    return 1;
 
     // TODO
 	(void)aspect;
