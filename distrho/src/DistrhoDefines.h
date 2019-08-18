@@ -128,7 +128,12 @@ private:                                           \
     StructName& operator=(StructName&) = delete;     \
     StructName& operator=(const StructName&) = delete;
 #else
-# define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName)
+# define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) \
+private:                                             \
+    StructName(StructName&);                         \
+    StructName(const StructName&);                   \
+    StructName& operator=(StructName&);              \
+    StructName& operator=(const StructName&);
 #endif
 
 /* Define DISTRHO_PREVENT_HEAP_ALLOCATION */
