@@ -606,6 +606,7 @@ void lv2_generate_ttl(const char* const basename)
                         else
                         {
                             pluginString += "        unit:unit [\n";
+                            pluginString += "            a unit:Unit ;\n";
                             pluginString += "            rdfs:label  \"" + unit + "\" ;\n";
                             pluginString += "            unit:symbol \"" + unit + "\" ;\n";
                             pluginString += "            unit:render \"%f " + unit + "\" ;\n";
