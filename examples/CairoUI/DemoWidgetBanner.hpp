@@ -16,9 +16,19 @@
 
 #include "Widget.hpp"
 
+START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+
 class DemoWidgetBanner : public Widget
 {
 public:
     explicit DemoWidgetBanner(Widget* group);
     void onDisplay() override;
 };
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL
+
+using DGL_NAMESPACE::DemoWidgetBanner;

@@ -231,6 +231,8 @@ public:
 
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
+        using namespace DGL_NAMESPACE;
+
         int special = 0;
         switch (value)
         {

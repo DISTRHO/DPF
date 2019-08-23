@@ -19,6 +19,11 @@
 START_NAMESPACE_DISTRHO
 
 /**
+  We need the Color class from DGL.
+ */
+using DGL_NAMESPACE::Color;
+
+/**
   Smooth meters a bit.
  */
 static const float kSmoothMultiplier = 3.0f;

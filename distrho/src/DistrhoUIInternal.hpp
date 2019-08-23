@@ -528,7 +528,7 @@ public:
         return glWindow.handlePluginKeyboard(press, key);
     }
 
-    bool handlePluginSpecial(const bool press, const Key key)
+    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key)
     {
         return glWindow.handlePluginSpecial(press, key);
     }

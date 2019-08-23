@@ -19,6 +19,10 @@
 #include "Cairo.hpp"
 #include "Window.hpp"
 
+START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+
 DemoWidgetClickable::DemoWidgetClickable(Widget* group)
     : Widget(group)
 {
@@ -77,3 +81,7 @@ bool DemoWidgetClickable::onMouse(const MouseEvent& event)
 
     return Widget::onMouse(event);
 }
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL

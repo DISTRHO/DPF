@@ -18,6 +18,11 @@
 
 START_NAMESPACE_DISTRHO
 
+/**
+  We need the rectangle class from DGL.
+ */
+using DGL_NAMESPACE::Rectangle;
+
 // -----------------------------------------------------------------------------------------------------------
 
 class ExampleUIParameters : public UI

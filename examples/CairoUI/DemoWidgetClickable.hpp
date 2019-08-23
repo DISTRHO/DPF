@@ -16,6 +16,10 @@
 
 #include "Widget.hpp"
 
+START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+
 class DemoWidgetClickable : public Widget
 {
 public:
@@ -26,3 +30,9 @@ public:
 private:
     unsigned fColorId = 0;
 };
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL
+
+using DGL_NAMESPACE::DemoWidgetClickable;

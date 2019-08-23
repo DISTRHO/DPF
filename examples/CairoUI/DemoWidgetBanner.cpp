@@ -19,6 +19,10 @@
 #include "Cairo.hpp"
 #include "Window.hpp"
 
+START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+
 static const char* banner =
 "                                                                        "
 "  *     *               *                                 *     *       "
@@ -90,3 +94,7 @@ void DemoWidgetBanner::onDisplay()
         }
     }
 }
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL
