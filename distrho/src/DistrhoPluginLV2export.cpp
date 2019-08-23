@@ -160,7 +160,7 @@ static const char* const lv2ManifestUiSupportedOptions[] =
 };
 #endif // DISTRHO_PLUGIN_HAS_UI
 
-static void addAttribute(String& text,
+static void addAttribute(DISTRHO::String& text,
                          const char* const attribute,
                          const char* const values[],
                          const uint indent,
