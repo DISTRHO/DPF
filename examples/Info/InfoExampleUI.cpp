@@ -106,7 +106,6 @@ protected:
 
         drawLeft(x, y, "Time:");
         drawRight(x, y, getTextBufTime(fParameters[kParameterTimeFrame]));
-        y+=lineHeight;
 
         // BBT
         x = 200.0f * fScale;
@@ -150,7 +149,6 @@ protected:
 
         drawLeft(x, y, "BPM:");
         drawRight(x, y, getTextBufFloat(fParameters[kParameterTimeBeatsPerMinute]));
-        y+=lineHeight;
     }
 
 
