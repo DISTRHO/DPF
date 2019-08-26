@@ -86,37 +86,37 @@ protected:
 
       const int keyjazzKeyCount = 30;
 
-      const PuglKeyCodes keyjazzKeys[keyjazzKeyCount] = {
-        PUGL_KC_Z, // C-4
-        PUGL_KC_S, // C#4
-        PUGL_KC_X, // D-4
-        PUGL_KC_D, // D#4
-        PUGL_KC_C, // E-4
-        PUGL_KC_V, // F-4
-        PUGL_KC_G, // F#4
-        PUGL_KC_B, // G-4
-        PUGL_KC_H, // G#4
-        PUGL_KC_N, // A-4
-        PUGL_KC_J, // A#4
-        PUGL_KC_M, // B-4
-        PUGL_KC_Comma, // C-5
-        PUGL_KC_L, // C#5
-        PUGL_KC_Period, // D-5
-        PUGL_KC_Semicolon, // D#5
-        PUGL_KC_Slash, // E-5
-        PUGL_KC_Q, // C-5
-        PUGL_KC_2, // C#5
-        PUGL_KC_W, // D-5
-        PUGL_KC_3, // D#5
-        PUGL_KC_E, // E-5
-        PUGL_KC_R, // F-5
-        PUGL_KC_5, // F#5
-        PUGL_KC_T, // G-5
-        PUGL_KC_6, // G#5
-        PUGL_KC_Y, // A-5
-        PUGL_KC_7, // A#5
-        PUGL_KC_U, // B-5
-        PUGL_KC_I, // C-6
+      const KeyCode keyjazzKeys[keyjazzKeyCount] = {
+        kKeyCodeZ, // C-4
+        kKeyCodeS, // C#4
+        kKeyCodeX, // D-4
+        kKeyCodeD, // D#4
+        kKeyCodeC, // E-4
+        kKeyCodeV, // F-4
+        kKeyCodeG, // F#4
+        kKeyCodeB, // G-4
+        kKeyCodeH, // G#4
+        kKeyCodeN, // A-4
+        kKeyCodeJ, // A#4
+        kKeyCodeM, // B-4
+        kKeyCodeComma, // C-5
+        kKeyCodeL, // C#5
+        kKeyCodePeriod, // D-5
+        kKeyCodeSemicolon, // D#5
+        kKeyCodeSlash, // E-5
+        kKeyCodeQ, // C-5
+        kKeyCode2, // C#5
+        kKeyCodeW, // D-5
+        kKeyCode3, // D#5
+        kKeyCodeE, // E-5
+        kKeyCodeR, // F-5
+        kKeyCode5, // F#5
+        kKeyCodeT, // G-5
+        kKeyCode6, // G#5
+        kKeyCodeY, // A-5
+        kKeyCode7, // A#5
+        kKeyCodeU, // B-5
+        kKeyCodeI, // C-6
       };
 
         for (int i = 0; i < keyjazzKeyCount; ++i)
