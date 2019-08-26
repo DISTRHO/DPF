@@ -127,7 +127,7 @@ getModifiers(PuglView* view, NSEvent* ev)
 static unsigned 
 scancodeToHID(unsigned scancode)
 {
-	const unsigned char KEYCODE_MACOS_TO_HID[128] = {
+	static const unsigned char KEYCODE_MACOS_TO_HID[128] = {
     	4,22,7,9,11,10,29,27,6,25,0,5,20,26,8,21,28,23,30,31,32,33,35,34,46,38,36,
     	45,37,39,48,18,24,47,12,19,158,15,13,52,14,51,49,54,56,17,16,55,43,44,53,42,
     	0,41,231,227,225,57,226,224,229,230,228,0,108,220,0,85,0,87,0,216,0,0,127,
