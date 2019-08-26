@@ -17,7 +17,6 @@
 #include "DistrhoUI.hpp"
 #include "Window.hpp"
 #include "KeyboardWidget.hpp"
-#include "src/pugl/pugl.h"
 
 START_NAMESPACE_DISTRHO
 
