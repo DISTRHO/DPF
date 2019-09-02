@@ -20,7 +20,10 @@
 #include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_UI_USE_VSTGUI
+# include "../dgl/VstGuiWidget.hpp"
+typedef DGL_NAMESPACE::VstGuiWidget UIWidget;
+#elif DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "../dgl/Base.hpp"
 # include "extra/ExternalWindow.hpp"
 typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;

@@ -27,7 +27,8 @@ OBJS = \
 	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/NanoVG.cpp.o \
 	../build/dgl/Resources.cpp.o \
-	../build/dgl/Widget.cpp.o
+	../build/dgl/Widget.cpp.o \
+	../build/dgl/VstGui.cpp.o
 
 ifeq ($(MACOS),true)
 OBJS += ../build/dgl/Window.mm.o
@@ -70,6 +71,11 @@ all: $(TARGET)
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $<"
 	@$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
+
+../build/dgl/VstGui.cpp.o: src/VstGui.cpp
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $<"
+	@$(CXX) $< $(BUILD_CXX_FLAGS) $(shell pkg-config --cflags cairo freetype2) -w -DDebugPrint={} -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
