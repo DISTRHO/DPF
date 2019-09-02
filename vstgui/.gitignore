@@ -1,0 +1,42 @@
+vstgui/ide/xcode4/build
+vstgui/ide/xcode4/DerivedData
+vstgui/ide/xcode4/vstgui.xcodeproj/xcuserdata
+vstgui/tests/uidescription vst3/mac/build
+vstgui/tests/uidescription vst3/mac/DerivedData
+vstgui/tests/uidescription vst3/mac/uidescription test.xcodeproj/xcuserdata
+vstgui/tests/unittest/lcov/out
+vstgui-coverage.info
+vstgui/tests/uidescription vst3/mac/uidescription test.xcodeproj/project.xcworkspace
+vstgui/tests/ios standalone/build
+vstgui/tests/ios standalone/DerivedData
+vstgui/tests/ios standalone/iOS Standalone.xcodeproj/project.xcworkspace
+vstgui/tests/ios standalone/iOS Standalone.xcodeproj/xcuserdata
+vstgui/ide/visualstudio/vs2015/build
+*.VC.opendb
+vstgui/tests/uidescription vst3/win/x64
+vstgui/tests/uidescription vst3/win/Win32
+vstgui/ide/xcode4/vstgui.xcodeproj/project.xcworkspace
+vstgui/ide/visualstudio/vs2013/build
+vstgui.opensdf
+vstgui/tests/standalone/mac/build
+vstgui/tests/standalone/mac/DerivedData
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/project.xcworkspace
+vstgui/tests/standalone/mac/VSTGUIStandalone.xcodeproj/xcuserdata
+vstgui/tests/standalone/win/vs2015/x64
+*.vcxproj.user
+vstgui/tests/standalone/win/vs2015/.vs
+vstgui/CMakeFiles
+CMakeCache.txt
+compile_commands.json
+vstgui.sdf
+vstgui.v12.suo
+vstgui/ide/visualstudio/vs2015/.vs
+vstgui/build
+vstgui/tests/uidescription vst3/win/.vs
+vstgui/Documentation/html
+/vstgui/uidescription/editing/editoruidesc.h
+CMakeLists.txt.user
+build
+vstgui/gdk
+vstgui/gdkmm
+vstgui/gtk
