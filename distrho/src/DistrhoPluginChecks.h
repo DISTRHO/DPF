@@ -139,7 +139,12 @@
 // -----------------------------------------------------------------------
 // Disable UI if DGL or External UI is not available
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI && ! defined(HAVE_CAIRO) && ! defined(HAVE_OPENGL)
+#if (defined(DGL_CAIRO) && ! defined(HAVE_CAIRO)) || (defined(DGL_OPENGL) && ! defined(HAVE_OPENGL))
+# undef DISTRHO_PLUGIN_HAS_EMBED_UI
+# define DISTRHO_PLUGIN_HAS_EMBED_UI 0
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif

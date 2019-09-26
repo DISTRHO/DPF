@@ -70,8 +70,9 @@ UI_TYPE = opengl
 endif
 
 ifeq ($(UI_TYPE),cairo)
+DGL_FLAGS += -DDGL_CAIRO
 ifeq ($(HAVE_CAIRO),true)
-DGL_FLAGS += $(CAIRO_FLAGS) -DDGL_CAIRO
+DGL_FLAGS += $(CAIRO_FLAGS)
 DGL_LIBS  += $(CAIRO_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-cairo.a
 HAVE_DGL   = true
@@ -81,14 +82,20 @@ endif
 endif
 
 ifeq ($(UI_TYPE),opengl)
+DGL_FLAGS += -DDGL_OPENGL
 ifeq ($(HAVE_OPENGL),true)
-DGL_FLAGS += $(OPENGL_FLAGS) -DDGL_OPENGL
+DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
 endif
+endif
+
+ifeq ($(UI_TYPE),external)
+DGL_FLAGS += -DDGL_EXTERNAL
+HAVE_DGL   = true
 endif
 
 DGL_LIBS += $(DGL_SYSTEM_LIBS)

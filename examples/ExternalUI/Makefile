@@ -21,6 +21,7 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
+UI_TYPE = external
 include ../../Makefile.plugins.mk
 
 ifneq ($(HAIKU),true)
