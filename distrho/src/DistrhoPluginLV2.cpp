@@ -166,44 +166,40 @@ public:
 
     // -------------------------------------------------------------------
 
-    bool getPortControlValue(uint32_t index, float *value) const
+    bool getPortControlValue(uint32_t index, float& value) const
     {
-        const float* control = fPortControls[index];
-
-        if (control == nullptr)
-            return false;
-
-        switch (fPlugin.getParameterDesignation(index))
+        if (const float* control = fPortControls[index])
         {
-        default:
-            *value = *control;
-            break;
-        case kParameterDesignationBypass:
-            *value = 1.0f - *control;
-            break;
+            switch (fPlugin.getParameterDesignation(index))
+            {
+            default:
+                value = *control;
+                break;
+            case kParameterDesignationBypass:
+                value = 1.0f - *control;
+                break;
+            }
+
+            return true;
         }
 
-        return true;
+        return false;
     }
 
-    bool setPortControlValue(uint32_t index, float value)
+    void setPortControlValue(uint32_t index, float value)
     {
-        float* control = fPortControls[index];
-
-        if (control == nullptr)
-            return false;
-
-        switch (fPlugin.getParameterDesignation(index))
+        if (float* control = fPortControls[index])
         {
-        default:
-            *control = value;
-            break;
-        case kParameterDesignationBypass:
-            *control = 1.0f - value;
-            break;
+            switch (fPlugin.getParameterDesignation(index))
+            {
+            default:
+                *control = value;
+                break;
+            case kParameterDesignationBypass:
+                *control = 1.0f - value;
+                break;
+            }
         }
-
-        return true;
     }
 
     // -------------------------------------------------------------------
@@ -556,7 +552,7 @@ public:
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (!getPortControlValue(i, &curValue))
+            if (!getPortControlValue(i, curValue))
                 continue;
 
             if (fPlugin.isParameterInput(i) && d_isNotEqual(fLastControlValues[i], curValue))
