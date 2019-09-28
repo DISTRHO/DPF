@@ -166,6 +166,44 @@ public:
 
     // -------------------------------------------------------------------
 
+    bool getPortControlValue(uint32_t index, float& value) const
+    {
+        if (const float* control = fPortControls[index])
+        {
+            switch (fPlugin.getParameterDesignation(index))
+            {
+            default:
+                value = *control;
+                break;
+            case kParameterDesignationBypass:
+                value = 1.0f - *control;
+                break;
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    void setPortControlValue(uint32_t index, float value)
+    {
+        if (float* control = fPortControls[index])
+        {
+            switch (fPlugin.getParameterDesignation(index))
+            {
+            default:
+                *control = value;
+                break;
+            case kParameterDesignationBypass:
+                *control = 1.0f - value;
+                break;
+            }
+        }
+    }
+
+    // -------------------------------------------------------------------
+
     void lv2_activate()
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -514,17 +552,12 @@ public:
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (fPortControls[i] == nullptr)
+            if (!getPortControlValue(i, curValue))
                 continue;
-
-            curValue = *fPortControls[i];
 
             if (fPlugin.isParameterInput(i) && d_isNotEqual(fLastControlValues[i], curValue))
             {
                 fLastControlValues[i] = curValue;
-
-                if (fPlugin.getParameterDesignation(i) == kParameterDesignationBypass)
-                    curValue = 1.0f - curValue;
 
                 fPlugin.setParameterValue(i, curValue);
             }
@@ -757,8 +790,7 @@ public:
 
             fLastControlValues[i] = fPlugin.getParameterValue(i);
 
-            if (fPortControls[i] != nullptr)
-                *fPortControls[i] = fLastControlValues[i];
+            setPortControlValue(i, fLastControlValues[i]);
         }
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
@@ -1047,8 +1079,7 @@ private:
             {
                 curValue = fLastControlValues[i] = fPlugin.getParameterValue(i);
 
-                if (fPortControls[i] != nullptr)
-                    *fPortControls[i] = curValue;
+                setPortControlValue(i, curValue);
             }
             else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
             {
