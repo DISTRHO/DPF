@@ -26,9 +26,12 @@
 #define DISTRHO_PLUGIN_NUM_INPUTS   2
 #define DISTRHO_PLUGIN_NUM_OUTPUTS  2
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
-#define DISTRHO_PLUGIN_USES_MODGUI  1
 #define DISTRHO_UI_USER_RESIZABLE   1
 #define DISTRHO_UI_USE_NANOVG       1
+
+#ifdef __MOD_DEVICES__
+#define DISTRHO_PLUGIN_USES_MODGUI  1
+#endif
 
 enum Parameters {
     kParameterBufferSize = 0,
