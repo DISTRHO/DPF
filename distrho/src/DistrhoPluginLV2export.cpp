@@ -70,6 +70,8 @@
 #define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 #define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
 
+#define DISTRHO_BYPASS_PARAMETER_NAME "lv2_enabled"
+
 // -----------------------------------------------------------------------
 static const char* const lv2ManifestPluginExtensionData[] =
 {
@@ -497,7 +499,7 @@ void lv2_generate_ttl(const char* const basename)
                     case kParameterDesignationBypass:
                         designated = true;
                         pluginString += "        lv2:name \"Enabled\" ;\n";
-                        pluginString += "        lv2:symbol \"lv2_enabled\" ;\n";
+                        pluginString += "        lv2:symbol \"" DISTRHO_BYPASS_PARAMETER_NAME "\" ;\n";
                         pluginString += "        lv2:default 1 ;\n";
                         pluginString += "        lv2:minimum 0 ;\n";
                         pluginString += "        lv2:maximum 1 ;\n";
@@ -818,12 +820,21 @@ void lv2_generate_ttl(const char* const basename)
                     presetString += "    [\n";
                 }
 
-                presetString += "        lv2:symbol \"" + plugin.getParameterSymbol(j) + "\" ;\n";
+                String parameterSymbol = plugin.getParameterSymbol(j);
+                float parameterValue = plugin.getParameterValue(j);
+
+                if (plugin.getParameterDesignation(j) == kParameterDesignationBypass)
+                {
+                    parameterSymbol = DISTRHO_BYPASS_PARAMETER_NAME;
+                    parameterValue = 1.0f - parameterValue;
+                }
+
+                presetString += "        lv2:symbol \"" + parameterSymbol + "\" ;\n";
 
                 if (plugin.getParameterHints(j) & kParameterIsInteger)
-                    presetString += "        pset:value " + String(int(plugin.getParameterValue(j))) + " ;\n";
+                    presetString += "        pset:value " + String(int(parameterValue)) + " ;\n";
                 else
-                    presetString += "        pset:value " + String(plugin.getParameterValue(j)) + " ;\n";
+                    presetString += "        pset:value " + String(parameterValue) + " ;\n";
 
                 if (j+1 == numParameters || plugin.isParameterOutput(j+1))
                     presetString += "    ] .\n\n";
