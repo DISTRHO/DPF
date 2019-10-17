@@ -28,13 +28,14 @@ class ExamplePluginParameters : public Plugin
 {
 public:
     ExamplePluginParameters()
-        : Plugin(9, 2, 0) // 9 parameters, 2 programs, 0 states
+        : Plugin(10, 2, 0) // 9 parameters, 2 programs, 0 states
     {
        /**
           Initialize all our parameters to their defaults.
           In this example all parameters have 0 as default, so we can simply zero them.
         */
         std::memset(fParamGrid, 0, sizeof(float)*9);
+        fBypass = 0;
     }
 
 protected:
@@ -162,6 +163,9 @@ The plugin will be treated as an effect, but it will not change the host audio."
         case 8:
             parameter.name = "bottom-right";
             break;
+        case 9:
+            parameter.initDesignation(kParameterDesignationBypass);
+            break;
         }
 
        /**
@@ -196,6 +200,14 @@ The plugin will be treated as an effect, but it will not change the host audio."
     */
     float getParameterValue(uint32_t index) const override
     {
+        switch (index)
+        {
+        case 9:
+            return fBypass;
+        }
+
+        DISTRHO_SAFE_ASSERT_RETURN(index < 9, 0);
+
         return fParamGrid[index];
     }
 
@@ -204,6 +216,15 @@ The plugin will be treated as an effect, but it will not change the host audio."
     */
     void setParameterValue(uint32_t index, float value) override
     {
+        switch (index)
+        {
+        case 9:
+            fBypass = value;
+            return;
+        }
+
+        DISTRHO_SAFE_ASSERT_RETURN(index < 9,);
+
         fParamGrid[index] = value;
     }
 
@@ -225,6 +246,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
             fParamGrid[6] = 0.0f;
             fParamGrid[7] = 0.0f;
             fParamGrid[8] = 0.0f;
+            fBypass = 0.0f;
             break;
         case 1:
             fParamGrid[0] = 1.0f;
@@ -236,6 +258,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
             fParamGrid[6] = 1.0f;
             fParamGrid[7] = 0.0f;
             fParamGrid[8] = 1.0f;
+            fBypass = 0.0f;
             break;
         }
     }
@@ -272,6 +295,12 @@ private:
       The index matches its grid position.
     */
     float fParamGrid[9];
+
+   /**
+      This special parameter indicates the bypassed state of the plugin.
+      A plugin turns its effect off under the condition fBypass > 0.5.
+    */
+    float fBypass;
 
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.
