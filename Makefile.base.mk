@@ -135,6 +135,10 @@ ifeq ($(CPU_I386_OR_X86_64),true)
 BASE_OPTS += -msse -msse2
 endif
 
+ifeq ($(CPU_ARM),true)
+BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
+endif
+
 ifeq ($(MACOS),true)
 # MacOS linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip -Wl,-dead_strip_dylibs
