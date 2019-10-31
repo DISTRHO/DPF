@@ -11,6 +11,8 @@ CXX ?= g++
 # ---------------------------------------------------------------------------------------------------------------------
 # Auto-detect OS if not defined
 
+TARGET_MACHINE := $(shell $(CC) -dumpmachine)
+
 ifneq ($(BSD),true)
 ifneq ($(HAIKU),true)
 ifneq ($(HURD),true)
@@ -18,7 +20,6 @@ ifneq ($(LINUX),true)
 ifneq ($(MACOS),true)
 ifneq ($(WINDOWS),true)
 
-TARGET_MACHINE := $(shell $(CC) -dumpmachine)
 ifneq (,$(findstring bsd,$(TARGET_MACHINE)))
 BSD=true
 endif
@@ -43,6 +44,28 @@ endif
 endif
 endif
 endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Auto-detect the processor
+
+TARGET_PROCESSOR := $(firstword $(subst -, ,$(TARGET_MACHINE)))
+
+ifneq (,$(filter i%86,$(TARGET_PROCESSOR)))
+CPU_I386=true
+CPU_I386_OR_X86_64=true
+endif
+ifneq (,$(filter x86_64,$(TARGET_PROCESSOR)))
+CPU_X86_64=true
+CPU_I386_OR_X86_64=true
+endif
+ifneq (,$(filter arm%,$(TARGET_PROCESSOR)))
+CPU_ARM=true
+CPU_ARM_OR_AARCH64=true
+endif
+ifneq (,$(filter aarch64%,$(TARGET_PROCESSOR)))
+CPU_AARCH64=true
+CPU_ARM_OR_AARCH64=true
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -106,7 +129,15 @@ endif
 # Set build and link flags
 
 BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
-BASE_OPTS  = -O3 -ffast-math -mtune=generic -msse -msse2 -fdata-sections -ffunction-sections
+BASE_OPTS  = -O3 -ffast-math -mtune=generic -fdata-sections -ffunction-sections
+
+ifeq ($(CPU_I386_OR_X86_64),true)
+BASE_OPTS += -msse -msse2
+endif
+
+ifeq ($(CPU_ARM),true)
+BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
+endif
 
 ifeq ($(MACOS),true)
 # MacOS linker flags
