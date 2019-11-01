@@ -32,6 +32,10 @@ const AudioPort                  PluginExporter::sFallbackAudioPort;
 const ParameterRanges            PluginExporter::sFallbackRanges;
 const ParameterEnumerationValues PluginExporter::sFallbackEnumValues;
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+const PortGroup                  PluginExporter::sFallbackPortGroup;
+#endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * Plugin */
 

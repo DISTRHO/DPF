@@ -23,6 +23,7 @@
 #include "lv2/midi.h"
 #include "lv2/options.h"
 #include "lv2/patch.h"
+#include "lv2/port-groups.h"
 #include "lv2/port-props.h"
 #include "lv2/presets.h"
 #include "lv2/resize-port.h"
@@ -337,6 +338,9 @@ void lv2_generate_ttl(const char* const basename)
 #endif
         pluginString += "@prefix opts:  <" LV2_OPTIONS_PREFIX "> .\n";
         pluginString += "@prefix patch: <" LV2_PATCH_PREFIX "> .\n";
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+        pluginString += "@prefix pg:    <" LV2_PORT_GROUPS_PREFIX "> .\n";
+#endif
         pluginString += "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
         pluginString += "@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n";
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
@@ -428,6 +432,14 @@ void lv2_generate_ttl(const char* const basename)
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+                if (port.group != kPortGroupDefault)
+                {
+                    const PortGroup &pgroup = plugin.getPortGroup(port.group);
+                    pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_" + pgroup.symbol + "> ;\n";
+                }
+#endif
+
                 if (i+1 == DISTRHO_PLUGIN_NUM_INPUTS)
                     pluginString += "    ] ;\n";
                 else
@@ -457,6 +469,14 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+                if (port.group != kPortGroupDefault)
+                {
+                    const PortGroup &pgroup = plugin.getPortGroup(port.group);
+                    pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_" + pgroup.symbol + "> ;\n";
+                }
+#endif
 
                 if (i+1 == DISTRHO_PLUGIN_NUM_OUTPUTS)
                     pluginString += "    ] ;\n";
@@ -694,6 +714,16 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__expensive "> ,\n";
                         pluginString += "                         <" LV2_KXSTUDIO_PROPERTIES__NonAutomable "> ;\n";
                     }
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+                    // group
+                    int32_t pgroupIndex = plugin.getParameterGroupIndex(i);
+                    if (pgroupIndex != kPortGroupDefault)
+                    {
+                        const PortGroup &pgroup = plugin.getPortGroup(pgroupIndex);
+                        pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_" + pgroup.symbol + "> ;\n";
+                    }
+#endif
                 } // ! designated
 
                 if (i+1 == count)
@@ -757,6 +787,56 @@ void lv2_generate_ttl(const char* const basename)
             pluginString += "    lv2:microVersion " + String(microVersion) + " ;\n";
             pluginString += "    lv2:minorVersion " + String(minorVersion) + " .\n";
         }
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+        // port groups
+        {
+            uint32_t count = plugin.getPortGroupCount();
+
+            for (int32_t pgroupIndex = 0; (uint32_t)pgroupIndex < count; ++pgroupIndex)
+            {
+                const PortGroup& pgroup = plugin.getPortGroup(pgroupIndex);
+
+                DISTRHO_SAFE_ASSERT_CONTINUE(!pgroup.symbol.isEmpty());
+
+                pluginString += "\n<" DISTRHO_PLUGIN_URI "#portGroup_" + pgroup.symbol + ">\n";
+
+                bool isInput = false;
+                bool isOutput = false;
+
+                for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS && !isInput; ++i)
+                    isInput = plugin.getAudioPort(true, i).group == pgroupIndex;
+
+                for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS && !isOutput; ++i)
+                    isOutput = plugin.getAudioPort(false, i).group == pgroupIndex;
+
+                for (uint32_t i=0, count=plugin.getParameterCount(); i < count && (!isInput || !isOutput); ++i)
+                {
+                    if (plugin.getParameterGroupIndex(i) == pgroupIndex)
+                    {
+                        isInput = isInput || plugin.isParameterInput(i);
+                        isOutput = isOutput || plugin.isParameterOutput(i);
+                    }
+                }
+
+                pluginString += "    a ";
+                if (isInput && !isOutput)
+                    pluginString += "pg:InputGroup";
+                else if (isOutput && !isInput)
+                    pluginString += "pg:OutputGroup";
+                else
+                    pluginString += "pg:Group";
+                pluginString += " ;\n";
+
+#if 0
+                pluginString += "    rdfs:label \"" + pgroup.name + "\" ;\n";
+#else
+                pluginString += "    lv2:name \"" + pgroup.name + "\" ;\n";
+#endif
+                pluginString += "    lv2:symbol \"" + pgroup.symbol + "\" .\n";
+            }
+        }
+#endif
 
         pluginFile << pluginString << std::endl;
         pluginFile.close();

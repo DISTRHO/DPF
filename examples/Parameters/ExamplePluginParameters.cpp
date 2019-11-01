@@ -104,6 +104,13 @@ The plugin will be treated as an effect, but it will not change the host audio."
    /* --------------------------------------------------------------------------------------------------------
     * Init */
 
+    enum
+    {
+        kPortGroupTop,
+        kPortGroupMiddle,
+        kPortGroupBottom,
+    };
+
    /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
@@ -137,30 +144,39 @@ The plugin will be treated as an effect, but it will not change the host audio."
         {
         case 0:
             parameter.name = "top-left";
+            parameter.group = kPortGroupTop;
             break;
         case 1:
             parameter.name = "top-center";
+            parameter.group = kPortGroupTop;
             break;
         case 2:
             parameter.name = "top-right";
+            parameter.group = kPortGroupTop;
             break;
         case 3:
             parameter.name = "middle-left";
+            parameter.group = kPortGroupMiddle;
             break;
         case 4:
             parameter.name = "middle-center";
+            parameter.group = kPortGroupMiddle;
             break;
         case 5:
             parameter.name = "middle-right";
+            parameter.group = kPortGroupMiddle;
             break;
         case 6:
             parameter.name = "bottom-left";
+            parameter.group = kPortGroupBottom;
             break;
         case 7:
             parameter.name = "bottom-center";
+            parameter.group = kPortGroupBottom;
             break;
         case 8:
             parameter.name = "bottom-right";
+            parameter.group = kPortGroupBottom;
             break;
         }
 
@@ -169,6 +185,24 @@ The plugin will be treated as an effect, but it will not change the host audio."
         */
         parameter.symbol = parameter.name;
         parameter.symbol.replace('-', '_');
+    }
+
+    void initPortGroup(uint32_t index, PortGroup& pgroup) override
+    {
+        switch (index) {
+        case kPortGroupTop:
+            pgroup.name = "Top";
+            pgroup.symbol = "top";
+            break;
+        case kPortGroupMiddle:
+            pgroup.name = "Middle";
+            pgroup.symbol = "middle";
+            break;
+        case kPortGroupBottom:
+            pgroup.name = "Bottom";
+            pgroup.symbol = "bottom";
+            break;
+        }
     }
 
    /**

@@ -100,6 +100,10 @@ static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
 
 /** @} */
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+static const int32_t kPortGroupDefault = -1;
+#endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * Base Plugin structs */
 
@@ -136,13 +140,21 @@ struct AudioPort {
     */
     String symbol;
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    int32_t group;
+#endif
+
    /**
       Default constructor for a regular audio port.
     */
     AudioPort() noexcept
         : hints(0x0),
           name(),
-          symbol() {}
+          symbol()
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+        , group(kPortGroupDefault)
+#endif
+        {}
 };
 
 /**
@@ -404,6 +416,10 @@ struct Parameter {
     */
     String symbol;
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    uint32_t group;
+#endif
+
    /**
       The unit of this parameter.@n
       This means something like "dB", "kHz" and "ms".@n
@@ -450,6 +466,9 @@ struct Parameter {
           name(),
           shortName(),
           symbol(),
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+          group(kPortGroupDefault),
+#endif
           unit(),
           ranges(),
           enumValues(),
@@ -464,6 +483,9 @@ struct Parameter {
           name(n),
           shortName(),
           symbol(s),
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+          group(kPortGroupDefault),
+#endif
           unit(u),
           ranges(def, min, max),
           enumValues(),
@@ -486,6 +508,9 @@ struct Parameter {
             name       = "Bypass";
             shortName  = "Bypass";
             symbol     = "dpf_bypass";
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+            group      = kPortGroupDefault;
+#endif
             unit       = "";
             midiCC     = 0;
             ranges.def = 0.0f;
@@ -495,6 +520,16 @@ struct Parameter {
         }
     }
 };
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+/**
+   Port group.
+ */
+struct PortGroup {
+    String name;
+    String symbol;
+};
+#endif
 
 /**
    MIDI event.
@@ -811,6 +846,10 @@ protected:
       This function will be called once, shortly after the plugin is created.
     */
     virtual void initParameter(uint32_t index, Parameter& parameter) = 0;
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    virtual void initPortGroup(uint32_t index, PortGroup& pgroup) = 0;
+#endif
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
    /**

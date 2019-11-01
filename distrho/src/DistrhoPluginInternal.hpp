@@ -19,6 +19,8 @@
 
 #include "../DistrhoPlugin.hpp"
 
+#include <set>
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -50,6 +52,11 @@ struct Plugin::PrivateData {
     uint32_t   parameterCount;
     uint32_t   parameterOffset;
     Parameter* parameters;
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    PortGroup* portGroups;
+    uint32_t portGroupCount;
+#endif
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     uint32_t programCount;
@@ -85,6 +92,10 @@ struct Plugin::PrivateData {
           parameterCount(0),
           parameterOffset(0),
           parameters(nullptr),
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+          portGroups(nullptr),
+          portGroupCount(0),
+#endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
           programCount(0),
           programNames(nullptr),
@@ -137,6 +148,14 @@ struct Plugin::PrivateData {
             delete[] parameters;
             parameters = nullptr;
         }
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+        if (portGroups != nullptr)
+        {
+            delete[] portGroups;
+            portGroups = nullptr;
+        }
+#endif
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (programNames != nullptr)
@@ -202,6 +221,36 @@ public:
 
         for (uint32_t i=0, count=fData->parameterCount; i < count; ++i)
             fPlugin->initParameter(i, fData->parameters[i]);
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+        std::set<int32_t> portGroupIndices;
+
+        for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            portGroupIndices.insert(fData->audioPorts[i].group);
+
+        for (uint32_t i=0, count=fData->parameterCount; i < count; ++i)
+            portGroupIndices.insert(fData->parameters[i].group);
+
+        int32_t upperPortGroupIndex = kPortGroupDefault;
+        if (!portGroupIndices.empty())
+            upperPortGroupIndex = *portGroupIndices.rbegin();
+
+        if (upperPortGroupIndex != kPortGroupDefault)
+        {
+            uint32_t portGroupCount = upperPortGroupIndex + 1;
+
+            fData->portGroups = new PortGroup[portGroupCount];
+            fData->portGroupCount = portGroupCount;
+
+            for (std::set<int32_t>::iterator pos = portGroupIndices.begin();
+                 pos != portGroupIndices.end(); ++pos)
+            {
+                int32_t index = *pos;
+                if (index != kPortGroupDefault)
+                    fPlugin->initPortGroup(index, fData->portGroups[index]);
+            }
+        }
+#endif
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         for (uint32_t i=0, count=fData->programCount; i < count; ++i)
@@ -440,6 +489,30 @@ public:
         fPlugin->setParameterValue(index, value);
     }
 
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    int32_t getParameterGroupIndex(uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, kPortGroupDefault);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, kPortGroupDefault);
+
+        return fData->parameters[index].group;
+    }
+
+    const PortGroup& getPortGroup(uint32_t groupIndex) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && groupIndex < fData->portGroupCount, sFallbackPortGroup);
+
+        return fData->portGroups[groupIndex];
+    }
+
+    uint32_t getPortGroupCount() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        return fData->portGroupCount;
+    }
+#endif
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     uint32_t getProgramCount() const noexcept
     {
@@ -676,6 +749,10 @@ private:
     static const AudioPort                  sFallbackAudioPort;
     static const ParameterRanges            sFallbackRanges;
     static const ParameterEnumerationValues sFallbackEnumValues;
+
+#if DISTRHO_PLUGIN_WANT_PORT_GROUPS
+    static const PortGroup                  sFallbackPortGroup;
+#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
     DISTRHO_PREVENT_HEAP_ALLOCATION
