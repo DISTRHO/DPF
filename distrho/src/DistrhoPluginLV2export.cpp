@@ -563,8 +563,8 @@ void lv2_generate_ttl(const char* const basename)
                             pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
 
                             if (plugin.getParameterHints(i) & kParameterIsInteger) {
-                                int roundedvalue = (int)(enumValue.value + 0.5f);
-                                pluginString += "            rdf:value " + String(roundedvalue) + " ;\n";
+                                const int roundedValue = (int)(enumValue.value + 0.5f);
+                                pluginString += "            rdf:value " + String(roundedValue) + " ;\n";
                             }
                             else {
                                 pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
