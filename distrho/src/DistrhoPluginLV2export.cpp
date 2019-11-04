@@ -561,7 +561,11 @@ void lv2_generate_ttl(const char* const basename)
                                 pluginString += "        [\n";
 
                             pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
-                            pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
+
+                            if (plugin.getParameterHints(i) & kParameterIsInteger)
+                                pluginString += "            rdf:value " + String((int) enumValue.value) + " ;\n";
+                            else
+                                pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
 
                             if (j+1 == enumValues.count)
                                 pluginString += "        ] ;\n\n";
