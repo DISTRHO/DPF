@@ -94,6 +94,7 @@ struct Window::PrivateData {
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
+          fDecorated(true),
           fUsingEmbed(false),
           fWidth(1),
           fHeight(1),
@@ -134,6 +135,7 @@ struct Window::PrivateData {
           fFirstInit(true),
           fVisible(false),
           fResizable(true),
+          fDecorated(true),
           fUsingEmbed(false),
           fWidth(1),
           fHeight(1),
@@ -188,6 +190,7 @@ struct Window::PrivateData {
           fFirstInit(true),
           fVisible(parentId != 0),
           fResizable(resizable),
+          fDecorated(true),
           fUsingEmbed(parentId != 0),
           fWidth(1),
           fHeight(1),
@@ -659,6 +662,43 @@ struct Window::PrivateData {
 
     // -------------------------------------------------------------------
 
+    void setDecorated(const bool yesNo)
+    {
+        if (fDecorated == yesNo)
+        {
+            DBG("Window setDecorated matches current state, ignoring request\n");
+            return;
+        }
+
+        fDecorated = yesNo;
+
+#if defined(DISTRHO_OS_HAIKU)
+        // TODO
+#elif defined(DISTRHO_OS_MAC)
+        // TODO
+#elif defined(DISTRHO_OS_WINDOWS)
+        const int winFlags = fDecorated ? GetWindowLong(hwnd, GWL_STYLE) |  WS_CAPTION
+                                        : GetWindowLong(hwnd, GWL_STYLE) & ~WS_CAPTION;
+
+        RECT rect = {0, 0, 0, 0};
+        GetWindowRect(hwnd, &rect);
+        rect.right = rect.left + fWidth;
+        rect.bottom = rect.top + fHeight;
+        AdjustWindowRectEx(&rect, fUsingEmbed ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
+
+        SetWindowLong(hwnd, GWL_STYLE, winFlags);
+        MoveWindow(hwnd, rect.left, rect.top, rect.right-rect.left, rect.bottom-rect.top, TRUE);
+#else
+        Atom motifWmHints = XInternAtom(xDisplay, "_MOTIF_WM_HINTS", True);
+        long hints[5] = {2, 0, fDecorated ? 1 : 0, 0, 0}; // see MotifWmHints in LessTif MwmUtil.h
+        XChangeProperty(xDisplay, xWindow,
+                        motifWmHints, motifWmHints, 32, PropModeReplace,
+                        (unsigned char*)&hints, 5);
+#endif
+    }
+
+    // -------------------------------------------------------------------
+
     void setGeometryConstraints(uint width, uint height, bool aspect)
     {
         // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
@@ -726,7 +766,7 @@ struct Window::PrivateData {
             }
         }
 #elif defined(DISTRHO_OS_WINDOWS)
-        const int winFlags = WS_POPUPWINDOW | WS_CAPTION | (fResizable ? WS_SIZEBOX : 0x0);
+        const int winFlags = WS_POPUPWINDOW | (fDecorated ? WS_CAPTION : 0x00) | (fResizable ? WS_SIZEBOX : 0x0);
         RECT wr = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
         AdjustWindowRectEx(&wr, fUsingEmbed ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
 
@@ -751,6 +791,14 @@ struct Window::PrivateData {
             sizeHints.max_height = static_cast<int>(height);
 
             XSetWMNormalHints(xDisplay, xWindow, &sizeHints);
+        }
+
+        {
+            Atom motifWmHints = XInternAtom(xDisplay, "_MOTIF_WM_HINTS", True);
+            long hints[5] = {2, 0, fDecorated ? 1 : 0, 0, 0};
+            XChangeProperty(xDisplay, xWindow,
+                            motifWmHints, motifWmHints, 32, PropModeReplace,
+                            (unsigned char*)&hints, 5);
         }
 
         XResizeWindow(xDisplay, xWindow, width, height);
@@ -1229,6 +1277,7 @@ struct Window::PrivateData {
     bool fFirstInit;
     bool fVisible;
     bool fResizable;
+    bool fDecorated;
     bool fUsingEmbed;
     uint fWidth;
     uint fHeight;
@@ -1613,6 +1662,16 @@ bool Window::isResizable() const noexcept
 void Window::setResizable(bool yesNo)
 {
     pData->setResizable(yesNo);
+}
+
+bool Window::isDecorated() const noexcept
+{
+    return pData->fDecorated;
+}
+
+void Window::setDecorated(bool yesNo)
+{
+    pData->setDecorated(yesNo);
 }
 
 void Window::setGeometryConstraints(uint width, uint height, bool aspect)
