@@ -23,7 +23,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(LINUX),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
 TARGETS += ladspa
 TARGETS += dssi
 endif

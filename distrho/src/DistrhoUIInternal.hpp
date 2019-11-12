@@ -406,6 +406,10 @@ public:
         return true;
     }
 
+    void focus()
+    {
+    }
+
     void quit()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
@@ -428,6 +432,11 @@ public:
     {
         if (glWindow.isReady())
             fUI->uiIdle();
+    }
+
+    void focus()
+    {
+        glWindow.focus();
     }
 
     bool idle()
@@ -519,7 +528,7 @@ public:
         return glWindow.handlePluginKeyboard(press, key);
     }
 
-    bool handlePluginSpecial(const bool press, const Key key)
+    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key)
     {
         return glWindow.handlePluginSpecial(press, key);
     }

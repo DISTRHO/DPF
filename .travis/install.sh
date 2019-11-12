@@ -5,6 +5,7 @@ set -e
 sudo apt-get install -y \
     g++ \
     pkg-config \
+    libcairo2-dev \
     libjack-jackd2-dev \
     liblo-dev \
     libgl1-mesa-dev \

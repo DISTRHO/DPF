@@ -37,14 +37,17 @@
 # pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
 #endif
 
-#if defined(DISTRHO_OS_WINDOWS)
-# include "pugl/pugl_win.cpp"
-# undef max
-# undef min
+#if defined(DISTRHO_OS_HAIKU)
+# define DGL_DEBUG_EVENTS
+# include "pugl/pugl_haiku.cpp"
 #elif defined(DISTRHO_OS_MAC)
 # define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
 # define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
 # include "pugl/pugl_osx.m"
+#elif defined(DISTRHO_OS_WINDOWS)
+# include "pugl/pugl_win.cpp"
+# undef max
+# undef min
 #else
 # include <sys/types.h>
 # include <unistd.h>
@@ -99,9 +102,10 @@ struct Window::PrivateData {
           fTitle(nullptr),
           fWidgets(),
           fModal(),
-#if defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
+#if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
+          bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(true),
           mView(nullptr),
@@ -111,6 +115,9 @@ struct Window::PrivateData {
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -135,9 +142,10 @@ struct Window::PrivateData {
           fTitle(nullptr),
           fWidgets(),
           fModal(parent.pData),
-#if defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
+#if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
+          bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(false),
           mView(nullptr),
@@ -147,6 +155,9 @@ struct Window::PrivateData {
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -158,11 +169,13 @@ struct Window::PrivateData {
         const PuglInternals* const parentImpl(parent.pData->fView->impl);
 
         // NOTE: almost a 1:1 copy of setTransientWinId()
-#if defined(DISTRHO_OS_WINDOWS)
-        hwndParent = parentImpl->hwnd;
-        SetWindowLongPtr(hwnd, GWLP_HWNDPARENT, (LONG_PTR)hwndParent);
+#if defined(DISTRHO_OS_HAIKU)
+        // TODO
 #elif defined(DISTRHO_OS_MAC)
         mParentWindow = parentImpl->window;
+#elif defined(DISTRHO_OS_WINDOWS)
+        hwndParent = parentImpl->hwnd;
+        SetWindowLongPtr(hwnd, GWLP_HWNDPARENT, (LONG_PTR)hwndParent);
 #else
         XSetTransientForHint(xDisplay, xWindow, parentImpl->win);
 #endif
@@ -183,9 +196,10 @@ struct Window::PrivateData {
           fTitle(nullptr),
           fWidgets(),
           fModal(),
-#if defined(DISTRHO_OS_WINDOWS)
-          hwnd(nullptr),
-          hwndParent(nullptr)
+#if defined(DISTRHO_OS_HAIKU)
+          bApplication(nullptr),
+          bView(nullptr),
+          bWindow(nullptr)
 #elif defined(DISTRHO_OS_MAC)
           fNeedsIdle(parentId == 0),
           mView(nullptr),
@@ -195,6 +209,9 @@ struct Window::PrivateData {
         , fOpenFilePanel(nullptr),
           fFilePanelDelegate(nullptr)
 # endif
+#elif defined(DISTRHO_OS_WINDOWS)
+          hwnd(nullptr),
+          hwndParent(nullptr)
 #else
           xDisplay(nullptr),
           xWindow(0)
@@ -249,9 +266,10 @@ struct Window::PrivateData {
 
         PuglInternals* impl = fView->impl;
 
-#if defined(DISTRHO_OS_WINDOWS)
-        hwnd = impl->hwnd;
-        DISTRHO_SAFE_ASSERT(hwnd != 0);
+#if defined(DISTRHO_OS_HAIKU)
+        bApplication = impl->app;
+        bView        = impl->view;
+        bWindow      = impl->window;
 #elif defined(DISTRHO_OS_MAC)
         mView   = impl->view;
         mWindow = impl->window;
@@ -261,6 +279,9 @@ struct Window::PrivateData {
         } else {
             DISTRHO_SAFE_ASSERT(mWindow != nullptr);
         }
+#elif defined(DISTRHO_OS_WINDOWS)
+        hwnd = impl->hwnd;
+        DISTRHO_SAFE_ASSERT(hwnd != 0);
 #else
         xDisplay = impl->display;
         xWindow  = impl->win;
@@ -281,7 +302,6 @@ struct Window::PrivateData {
                 XInternAtom(xDisplay, "_NET_WM_WINDOW_TYPE_NORMAL", False)
             };
             XChangeProperty(xDisplay, xWindow, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, 2);
-
         }
 #endif
         puglEnterContext(fView);
@@ -327,11 +347,15 @@ struct Window::PrivateData {
             fTitle = nullptr;
         }
 
-#if defined(DISTRHO_OS_WINDOWS)
-        hwnd = 0;
+#if defined(DISTRHO_OS_HAIKU)
+        bApplication = nullptr;
+        bView        = nullptr;
+        bWindow      = nullptr;
 #elif defined(DISTRHO_OS_MAC)
         mView   = nullptr;
         mWindow = nullptr;
+#elif defined(DISTRHO_OS_WINDOWS)
+        hwnd = 0;
 #else
         xDisplay = nullptr;
         xWindow  = 0;
@@ -419,9 +443,11 @@ struct Window::PrivateData {
 
             // the mouse position probably changed since the modal appeared,
             // so send a mouse motion event to the modal's parent window
-#if defined(DISTRHO_OS_WINDOWS)
+#if defined(DISTRHO_OS_HAIKU)
             // TODO
 #elif defined(DISTRHO_OS_MAC)
+            // TODO
+#elif defined(DISTRHO_OS_WINDOWS)
             // TODO
 #else
             int i, wx, wy;
@@ -440,13 +466,26 @@ struct Window::PrivateData {
     void focus()
     {
         DBG("Window focus\n");
-#if defined(DISTRHO_OS_WINDOWS)
-        SetForegroundWindow(hwnd);
-        SetActiveWindow(hwnd);
-        SetFocus(hwnd);
+#if defined(DISTRHO_OS_HAIKU)
+        if (bWindow != nullptr)
+        {
+            if (bWindow->LockLooper())
+            {
+                bWindow->Activate(true);
+                bWindow->UnlockLooper();
+            }
+        }
+        else
+        {
+            bView->MakeFocus(true);
+        }
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
             [mWindow makeKeyWindow];
+#elif defined(DISTRHO_OS_WINDOWS)
+        SetForegroundWindow(hwnd);
+        SetActiveWindow(hwnd);
+        SetFocus(hwnd);
 #else
         XRaiseWindow(xDisplay, xWindow);
         XSetInputFocus(xDisplay, xWindow, RevertToPointerRoot, CurrentTime);
@@ -476,7 +515,59 @@ struct Window::PrivateData {
         if (yesNo && fFirstInit)
             setSize(fWidth, fHeight, true);
 
-#if defined(DISTRHO_OS_WINDOWS)
+#if defined(DISTRHO_OS_HAIKU)
+        if (bWindow != nullptr)
+        {
+            if (bWindow->LockLooper())
+            {
+                if (yesNo)
+                    bWindow->Show();
+                else
+                    bWindow->Hide();
+
+                // TODO use flush?
+                bWindow->Sync();
+                bWindow->UnlockLooper();
+            }
+        }
+        else
+        {
+            if (yesNo)
+                bView->Show();
+            else
+                bView->Hide();
+        }
+#elif defined(DISTRHO_OS_MAC)
+        if (yesNo)
+        {
+            if (mWindow != nullptr)
+            {
+                if (mParentWindow != nullptr)
+                    [mParentWindow addChildWindow:mWindow
+                                          ordered:NSWindowAbove];
+
+                [mWindow setIsVisible:YES];
+            }
+            else
+            {
+                [mView setHidden:NO];
+            }
+        }
+        else
+        {
+            if (mWindow != nullptr)
+            {
+                if (mParentWindow != nullptr)
+                    [mParentWindow removeChildWindow:mWindow];
+
+                [mWindow setIsVisible:NO];
+            }
+            else
+            {
+                [mView setHidden:YES];
+            }
+        }
+#elif defined(DISTRHO_OS_WINDOWS)
         if (yesNo)
         {
             if (fFirstInit)
@@ -508,36 +599,6 @@ struct Window::PrivateData {
         }
 
         UpdateWindow(hwnd);
-#elif defined(DISTRHO_OS_MAC)
-        if (yesNo)
-        {
-            if (mWindow != nullptr)
-            {
-                if (mParentWindow != nullptr)
-                    [mParentWindow addChildWindow:mWindow
-                                          ordered:NSWindowAbove];
-
-                [mWindow setIsVisible:YES];
-            }
-            else
-            {
-                [mView setHidden:NO];
-            }
-        }
-        else
-        {
-            if (mWindow != nullptr)
-            {
-                if (mParentWindow != nullptr)
-                    [mParentWindow removeChildWindow:mWindow];
-
-                [mWindow setIsVisible:NO];
-            }
-            else
-            {
-                [mView setHidden:YES];
-            }
-        }
 #else
         if (yesNo)
             XMapRaised(xDisplay, xWindow);
@@ -579,13 +640,18 @@ struct Window::PrivateData {
         fResizable = yesNo;
         fView->user_resizable = yesNo;
 
-#if defined(DISTRHO_OS_WINDOWS)
+#if defined(DISTRHO_OS_HAIKU)
+        // TODO
+        // B_NO_BORDER
+        // B_TITLED_WINDOW_LOOK
+        // bWindow->SetFlags();
+#elif defined(DISTRHO_OS_MAC)
+        const uint flags = yesNo ? (NSViewWidthSizable|NSViewHeightSizable) : 0x0;
+        [mView setAutoresizingMask:flags];
+#elif defined(DISTRHO_OS_WINDOWS)
         const int winFlags = fResizable ? GetWindowLong(hwnd, GWL_STYLE) |  WS_SIZEBOX
                                         : GetWindowLong(hwnd, GWL_STYLE) & ~WS_SIZEBOX;
         SetWindowLong(hwnd, GWL_STYLE, winFlags);
-#elif defined(DISTRHO_OS_MAC)
-        const uint flags(yesNo ? (NSViewWidthSizable|NSViewHeightSizable) : 0x0);
-        [mView setAutoresizingMask:flags];
 #endif
 
         setSize(fWidth, fHeight, true);
@@ -624,16 +690,20 @@ struct Window::PrivateData {
 
         DBGp("Window setSize called %s, size %i %i, resizable %s\n", forced ? "(forced)" : "(not forced)", width, height, fResizable?"true":"false");
 
-#if defined(DISTRHO_OS_WINDOWS)
-        const int winFlags = WS_POPUPWINDOW | WS_CAPTION | (fResizable ? WS_SIZEBOX : 0x0);
-        RECT wr = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
-        AdjustWindowRectEx(&wr, fUsingEmbed ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
+#if defined(DISTRHO_OS_HAIKU)
+        bView->ResizeTo(width, height);
 
-        SetWindowPos(hwnd, 0, 0, 0, wr.right-wr.left, wr.bottom-wr.top,
-                     SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+        if (bWindow != nullptr && bWindow->LockLooper())
+        {
+            bWindow->MoveTo(50, 50);
+            bWindow->ResizeTo(width, height);
 
-        if (! forced)
-            UpdateWindow(hwnd);
+            if (! forced)
+                bWindow->Flush();
+
+            bWindow->UnlockLooper();
+        }
+        // TODO resizable
 #elif defined(DISTRHO_OS_MAC)
         [mView setFrame:NSMakeRect(0, 0, width, height)];
 
@@ -655,6 +725,16 @@ struct Window::PrivateData {
                 [[mWindow standardWindowButton:NSWindowZoomButton] setHidden:YES];
             }
         }
+#elif defined(DISTRHO_OS_WINDOWS)
+        const int winFlags = WS_POPUPWINDOW | WS_CAPTION | (fResizable ? WS_SIZEBOX : 0x0);
+        RECT wr = { 0, 0, static_cast<LONG>(width), static_cast<LONG>(height) };
+        AdjustWindowRectEx(&wr, fUsingEmbed ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
+
+        SetWindowPos(hwnd, 0, 0, 0, wr.right-wr.left, wr.bottom-wr.top,
+                     SWP_NOACTIVATE|SWP_NOMOVE|SWP_NOOWNERZORDER|SWP_NOZORDER);
+
+        if (! forced)
+            UpdateWindow(hwnd);
 #else
 
         if (! fResizable)
@@ -700,8 +780,12 @@ struct Window::PrivateData {
 
         fTitle = strdup(title);
 
-#if defined(DISTRHO_OS_WINDOWS)
-        SetWindowTextA(hwnd, title);
+#if defined(DISTRHO_OS_HAIKU)
+        if (bWindow != nullptr&& bWindow->LockLooper())
+        {
+            bWindow->SetTitle(title);
+            bWindow->UnlockLooper();
+        }
 #elif defined(DISTRHO_OS_MAC)
         if (mWindow != nullptr)
         {
@@ -712,6 +796,8 @@ struct Window::PrivateData {
 
             [mWindow setTitle:titleString];
         }
+#elif defined(DISTRHO_OS_WINDOWS)
+        SetWindowTextA(hwnd, title);
 #else
         XStoreName(xDisplay, xWindow, title);
         Atom netWmName = XInternAtom(xDisplay, "_NET_WM_NAME", False);
@@ -724,15 +810,17 @@ struct Window::PrivateData {
     {
         DISTRHO_SAFE_ASSERT_RETURN(winId != 0,);
 
-#if defined(DISTRHO_OS_WINDOWS)
-        hwndParent = (HWND)winId;
-        SetWindowLongPtr(hwnd, GWLP_HWNDPARENT, (LONG_PTR)winId);
+#if defined(DISTRHO_OS_HAIKU)
+        // TODO
 #elif defined(DISTRHO_OS_MAC)
         NSWindow* const parentWindow = [NSApp windowWithWindowNumber:winId];
         DISTRHO_SAFE_ASSERT_RETURN(parentWindow != nullptr,);
 
         [parentWindow addChildWindow:mWindow
                              ordered:NSWindowAbove];
+#elif defined(DISTRHO_OS_WINDOWS)
+        hwndParent = (HWND)winId;
+        SetWindowLongPtr(hwnd, GWLP_HWNDPARENT, (LONG_PTR)winId);
 #else
         XSetTransientForHint(xDisplay, xWindow, static_cast< ::Window>(winId));
 #endif
@@ -779,6 +867,15 @@ struct Window::PrivateData {
     void idle()
     {
         puglProcessEvents(fView);
+
+#ifdef DISTRHO_OS_HAIKU
+        if (bApplication != nullptr)
+        {
+            // bApplication->Lock();
+            // bApplication->Loop();
+            // bApplication->Unlock();
+        }
+#endif
 
 #ifdef DISTRHO_OS_MAC
         if (fNeedsIdle)
@@ -1164,12 +1261,10 @@ struct Window::PrivateData {
         DISTRHO_DECLARE_NON_COPY_STRUCT(Modal)
     } fModal;
 
-#if defined(DISTRHO_OS_WINDOWS)
-    HWND hwnd;
-    HWND hwndParent;
-# ifndef DGL_FILE_BROWSER_DISABLED
-    String fSelectedFile;
-# endif
+#if defined(DISTRHO_OS_HAIKU)
+    BApplication* bApplication;
+    BView*        bView;
+    BWindow*      bWindow;
 #elif defined(DISTRHO_OS_MAC)
     bool            fNeedsIdle;
     NSView<PuglGenericView>* mView;
@@ -1178,6 +1273,12 @@ struct Window::PrivateData {
 # ifndef DGL_FILE_BROWSER_DISABLED
     NSOpenPanel*    fOpenFilePanel;
     id              fFilePanelDelegate;
+# endif
+#elif defined(DISTRHO_OS_WINDOWS)
+    HWND hwnd;
+    HWND hwndParent;
+# ifndef DGL_FILE_BROWSER_DISABLED
+    String fSelectedFile;
 # endif
 #else
     Display* xDisplay;

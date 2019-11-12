@@ -160,7 +160,7 @@ static const char* const lv2ManifestUiSupportedOptions[] =
 };
 #endif // DISTRHO_PLUGIN_HAS_UI
 
-static void addAttribute(String& text,
+static void addAttribute(DISTRHO_NAMESPACE::String& text,
                          const char* const attribute,
                          const char* const values[],
                          const uint indent,
@@ -561,7 +561,14 @@ void lv2_generate_ttl(const char* const basename)
                                 pluginString += "        [\n";
 
                             pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
-                            pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
+
+                            if (plugin.getParameterHints(i) & kParameterIsInteger) {
+                                const int roundedValue = (int)(enumValue.value + 0.5f);
+                                pluginString += "            rdf:value " + String(roundedValue) + " ;\n";
+                            }
+                            else {
+                                pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
+                            }
 
                             if (j+1 == enumValues.count)
                                 pluginString += "        ] ;\n\n";
@@ -606,6 +613,7 @@ void lv2_generate_ttl(const char* const basename)
                         else
                         {
                             pluginString += "        unit:unit [\n";
+                            pluginString += "            a unit:Unit ;\n";
                             pluginString += "            rdfs:label  \"" + unit + "\" ;\n";
                             pluginString += "            unit:symbol \"" + unit + "\" ;\n";
                             pluginString += "            unit:render \"%f " + unit + "\" ;\n";

@@ -149,9 +149,12 @@ public:
         fUI.setSampleRate(sampleRate, true);
     }
 
-    void dssiui_show()
+    void dssiui_show(const bool focus = false)
     {
         fUI.setWindowVisible(true);
+
+        if (focus)
+            fUI.focus();
     }
 
     void dssiui_hide()
@@ -389,7 +392,7 @@ int main(int argc, char* argv[])
         gUiTitle = "DSSI UI Test";
 
         initUiIfNeeded();
-        globalUI->dssiui_show();
+        globalUI->dssiui_show(true);
         globalUI->exec();
 
         delete globalUI;

@@ -36,6 +36,7 @@ List of plugins made with DPF:<br/>
  - [Rezonateur](https://github.com/jpcima/rezonateur)
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
  - [Stone Phaser](https://github.com/jpcima/stone-phaser)
+ - [Uhhyou Plugins](https://github.com/ryukau/LV2Plugins)
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins) (work in progress)
  - [midiomatic](https://github.com/SpotlightKid/midiomatic) (work in progress)
  - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)

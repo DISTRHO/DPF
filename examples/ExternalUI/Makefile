@@ -21,9 +21,12 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
+UI_TYPE = external
 include ../../Makefile.plugins.mk
 
+ifneq ($(HAIKU),true)
 LINK_FLAGS += -ldl
+endif
 
 # --------------------------------------------------------------
 # Enable all possible plugin types

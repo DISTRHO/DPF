@@ -25,6 +25,7 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_HAIKU
 ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
     : Window(parent.getApp(), parent),
       Widget((Window&)*this),
@@ -44,6 +45,10 @@ ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
     Window::setSize(image.getSize());
     Window::setTitle("About");
 }
+#else
+ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image) : fImgBackground(image) {}
+ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image) : fImgBackground(image) {}
+#endif
 
 void ImageAboutWindow::setImage(const Image& image)
 {
@@ -51,9 +56,12 @@ void ImageAboutWindow::setImage(const Image& image)
         return;
 
     fImgBackground = image;
+#ifndef DISTRHO_OS_HAIKU
     Window::setSize(image.getSize());
+#endif
 }
 
+#ifndef DISTRHO_OS_HAIKU
 void ImageAboutWindow::onDisplay()
 {
     fImgBackground.draw();
@@ -86,6 +94,7 @@ void ImageAboutWindow::onReshape(uint width, uint height)
     Widget::setSize(width, height);
     Window::onReshape(width, height);
 }
+#endif
 
 // -----------------------------------------------------------------------
 

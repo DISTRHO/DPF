@@ -21,7 +21,7 @@ START_NAMESPACE_DISTRHO
 /**
   We need the Color class from DGL.
  */
-using DGL::Color;
+using DGL_NAMESPACE::Color;
 
 /**
   Smooth meters a bit.

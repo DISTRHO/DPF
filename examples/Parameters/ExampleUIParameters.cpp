@@ -21,7 +21,7 @@ START_NAMESPACE_DISTRHO
 /**
   We need the rectangle class from DGL.
  */
-using DGL::Rectangle;
+using DGL_NAMESPACE::Rectangle;
 
 // -----------------------------------------------------------------------------------------------------------
 
