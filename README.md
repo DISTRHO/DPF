@@ -17,30 +17,31 @@ Getting time information from the host is possible.<br/>
 It uses the same format as the JACK Transport API, making porting some code easier.<br/>
 
 
-List of plugins made with DPF:<br/>
+## List of plugins made with DPF:
  - [DISTRHO glBars](https://github.com/DISTRHO/glBars)
  - [DISTRHO Kars](https://github.com/DISTRHO/Kars)
  - [DISTRHO Mini-Series](https://github.com/DISTRHO/Mini-Series)
  - [DISTRHO MVerb](https://github.com/DISTRHO/MVerb)
+ - [DISTRHO ndc Plugs](https://github.com/DISTRHO/ndc-Plugs)
  - [DISTRHO Nekobi](https://github.com/DISTRHO/Nekobi)
  - [DISTRHO ProM](https://github.com/DISTRHO/ProM)
- - [DISTRHO ndc Plugs](https://github.com/DISTRHO/ndc-Plugs)
- - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins) (work in progress)
- - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
  - [Dragonfly Reverb](https://michaelwillis.github.io/dragonfly-reverb)
+ - [Ninjas2](https://github.com/rghvdberg/ninjas2)
+ - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
+ - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
+ - [Rezonateur](https://github.com/jpcima/rezonateur)
+ - [Stone Phaser](https://github.com/jpcima/stone-phaser)
+ - [String-machine](https://github.com/jpcima/string-machine)
+ - [Uhhyou Plugins](https://github.com/ryukau/LV2Plugins)
  - [Wolf Shaper](https://github.com/pdesaulniers/wolf-shaper)
  - [Wolf Spectrum](https://github.com/pdesaulniers/wolf-spectrum)
  - [YK Chorus](https://github.com/SpotlightKid/ykchorus)
- - [Ninjas2](https://github.com/rghvdberg/ninjas2)
- - [String-machine](https://github.com/jpcima/string-machine)
- - [Rezonateur](https://github.com/jpcima/rezonateur)
- - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
- - [Stone Phaser](https://github.com/jpcima/stone-phaser)
- - [Uhhyou Plugins](https://github.com/ryukau/LV2Plugins)
- - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins) (work in progress)
- - [midiomatic](https://github.com/SpotlightKid/midiomatic) (work in progress)
- - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
- - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/) (work in progress)
+ - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
+ ## Work in progress
+ - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins)
+ - [midiomatic](https://github.com/SpotlightKid/midiomatic)
+ - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/)
+ - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins)
 
 Checking the [github "DPF" tag](https://github.com/topics/dpf) can potentially brings up other DPF-made plugins.
 
