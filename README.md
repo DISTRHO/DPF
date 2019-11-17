@@ -40,6 +40,7 @@ List of plugins made with DPF:<br/>
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins) (work in progress)
  - [midiomatic](https://github.com/SpotlightKid/midiomatic) (work in progress)
  - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
+ - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/) (work in progress)
 
 Checking the [github "DPF" tag](https://github.com/topics/dpf) can potentially brings up other DPF-made plugins.
 
