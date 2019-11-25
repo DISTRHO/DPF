@@ -136,6 +136,7 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
 # if !DISTRHO_UI_USER_RESIZABLE
     "ui:noUserResize",
 # endif
+    "ui:parent",
     "ui:resize",
     "ui:touch",
 #endif
