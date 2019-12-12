@@ -35,7 +35,7 @@ public:
         std::memset(fStrBuf, 0, sizeof(char)*(0xff+1));
 
         fSampleRate = getSampleRate();
-        fFont       = createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
+        fFont       = createFontFromFile("sans", "/usr/share/fonts/TTF/DejaVuSans.ttf");
 
         setGeometryConstraints(405, 256, true);
     }
