@@ -4,7 +4,7 @@ project(dgl)
 
 find_package(OpenGL)
 find_package(Cairo)
-
+find_package(X11)
 #########GENERAL SOURCES###########
 set(DGL_COMMON_SRC
     src/Application.cpp
@@ -44,7 +44,7 @@ if(OpenGL_FOUND)
     target_compile_definitions(dgl-opengl PUBLIC DGL_OPENGL HAVE_OPENGL ${DGL_COMPILE_DEFINITION})
     target_include_directories(dgl-opengl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/ ${CMAKE_CURRENT_LIST_DIR}/)
     set_target_properties(dgl-opengl PROPERTIES POSITION_INDEPENDENT_CODE true)
-    target_link_libraries(dgl-opengl PUBLIC ${OPENGL_LIBRARIES})
+    target_link_libraries(dgl-opengl PUBLIC ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
 endif(OpenGL_FOUND)
 
 #######CAIRO DGL############

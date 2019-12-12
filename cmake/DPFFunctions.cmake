@@ -1,3 +1,4 @@
+
 # Sets GET_LIBS_AND_DEFINES_LIBS and GET_LIBS_AND_DEFINES_DEFINES variables in parentscope. Link to this !
 function(GET_LIBS_AND_DEFINES UI_BACKEND)
     if(NOT UI_BACKEND)
@@ -17,6 +18,25 @@ function(GET_LIBS_AND_DEFINES UI_BACKEND)
     endif(${UI_BACKEND} STREQUAL "NONE")
 endfunction(GET_LIBS_AND_DEFINES UI_BACKEND)
 
+
+function(ADD_JACK)
+    find_package(Jack)
+    if(JACK_FOUND)
+    set(oneValueArgs TARGET UI_BACKEND)
+    set(multiValueArgs SOURCES INCLUDE_DIRECTORIES DEFINES)
+    cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    GET_LIBS_AND_DEFINES(${PLUGIN_PARAM_UI_BACKEND} )
+
+    add_executable(${PLUGIN_PARAM_TARGET}  ${PLUGIN_PARAM_SOURCES})
+    SET_TARGET_PROPERTIES(${PLUGIN_PARAM_TARGET} PROPERTIES PREFIX "")
+    target_link_libraries(${PLUGIN_PARAM_TARGET} ${GET_LIBS_AND_DEFINES_LIBS} DPF ${JACK_LIBRARIES} )
+    target_include_directories(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_INCLUDE_DIRECTORIES})
+    target_compile_definitions(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_DEFINES} ${GET_LIBS_AND_DEFINES_DEFINES} DISTRHO_PLUGIN_TARGET_JACK)
+    elseif(JACK_FOUND)
+        message("Couldnt build Jack, because Jack not found.")
+    endif(JACK_FOUND)
+endfunction(ADD_JACK)
 
 # Parameter to use:
 #           TARGET: Name for the generated VST

@@ -11,14 +11,16 @@ ADD_VST2(TARGET InfoVst UI_BACKEND OPENGL
     SOURCES InfoExamplePlugin.cpp InfoExampleUI.cpp
     INCLUDE_DIRECTORIES "./")
 
-
+ADD_JACK(TARGET InfoJack UI_BACKEND OPENGL
+    SOURCES InfoExamplePlugin.cpp InfoExampleUI.cpp
+    INCLUDE_DIRECTORIES "./")
 #ADD_DSSI(TARGET CairoUI-DSSI UI_BACKEND CAIRO
 #    SOURCES CairoExamplePlugin.cpp
 #    UI_SOURCES  DemoWidgetBanner.cpp DemoWidgetClickable.cpp CairoExampleUI.cpp
 #    INCLUDE_DIRECTORIES "./")
 
 
-
+INSTALL(TARGETS InfoJack DESTINATION bin)
 INSTALL(TARGETS InfoVst DESTINATION lib/vst)
 INSTALL(TARGETS Info Info_ui DESTINATION lib/lv2/Info.lv2)
 #INSTALL(TARGETS CairoUI-DSSI CairoUI-DSSI_ui DESTINATION lib/dssi)
