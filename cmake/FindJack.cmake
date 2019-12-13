@@ -1,28 +1,21 @@
-# - Try to find JACK
-# Once done, this will define
-#
-#  JACK_FOUND - system has JACK
-#  JACK_INCLUDE_DIRS - the JACK include directories
-#  JACK_LIBRARIES - link these to use JACK
-
 # Use pkg-config to get hints about paths
 find_package(PkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
-	pkg_check_modules(JACK_PKGCONF jack)
+        pkg_check_modules(JACK_PKGCONF jack)
 endif(PKG_CONFIG_FOUND)
 
 # Include dir
 find_path(JACK_INCLUDE_DIR
 	NAMES jack/jack.h
 	PATH_SUFFIXES include includes
-	PATHS ${JACK_PKGCONF_INCLUDE_DIRS}
+        PATHS  ${JACK_PKGCONF_INCLUDEDIR}
 )
 
 # Library
 find_library(JACK_LIBRARY
 	NAMES jack jack64 libjack libjack64
 	PATH_SUFFIXES lib
-	PATHS ${JACK_PKGCONF_LIBRARY_DIRS}
+        PATHS ${JACK_PKGCONF_LIBDIR}
 )
 
 find_package(PackageHandleStandardArgs)
@@ -33,4 +26,6 @@ if(JACK_FOUND)
   set(JACK_INCLUDE_DIRS ${JACK_INCLUDE_DIR})
 endif(JACK_FOUND)
 
-mark_as_advanced(JACK_LIBRARY JACK_LIBRARIES JACK_INCLUDE_DIR JACK_INCLUDE_DIRS)
+mark_as_advanced(JACK_LIBRARY JACK_INCLUDE_DIR
+    #JACK_LIBRARIES JACK_INCLUDE_DIRS
+    )
