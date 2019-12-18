@@ -19,7 +19,7 @@ function(GET_LIBS_AND_DEFINES UI_BACKEND)
 endfunction(GET_LIBS_AND_DEFINES UI_BACKEND)
 
 
-function(ADD_JACK)
+function(BUILD_JACK)
     find_package(Jack)
     if(JACK_FOUND)
     set(oneValueArgs TARGET UI_BACKEND)
@@ -36,7 +36,7 @@ function(ADD_JACK)
     elseif(JACK_FOUND)
         message("Couldnt build Jack, because Jack not found.")
     endif(JACK_FOUND)
-endfunction(ADD_JACK)
+endfunction(BUILD_JACK)
 
 # Parameter to use:
 #           TARGET: Name for the generated VST
@@ -44,7 +44,7 @@ endfunction(ADD_JACK)
 #           SOURCES:  Plugin Sources, to compile in the vst
 #           INCLUDE_DIRECTORIES: Directories to include to the vst.
 #           DEFINE: Define Preprocessor defines
-function(ADD_VST2)
+function(BUILD_VST2)
     set(oneValueArgs TARGET UI_BACKEND)
     set(multiValueArgs SOURCES INCLUDE_DIRECTORIES DEFINES)
     cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -56,7 +56,7 @@ function(ADD_VST2)
     target_link_libraries(${PLUGIN_PARAM_TARGET} ${GET_LIBS_AND_DEFINES_LIBS} DPF)
     target_include_directories(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_INCLUDE_DIRECTORIES})
     target_compile_definitions(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_DEFINES} ${GET_LIBS_AND_DEFINES_DEFINES} DISTRHO_PLUGIN_TARGET_VST)
-endfunction(ADD_VST2)
+endfunction(BUILD_VST2)
 
 
 # Parameter to use:
@@ -65,7 +65,7 @@ endfunction(ADD_VST2)
 #           SOURCES:  Plugin Sources, to compile in the vst
 #           INCLUDE_DIRECTORIES: Directories to include to the vst.
 #           DEFINE: Define Preprocessor defines
-function(ADD_LADSPA  )
+function(BUILD_LADSPA  )
     set(oneValueArgs TARGET UI_BACKEND)
     set(multiValueArgs SOURCES INCLUDE_DIRECTORIES DEFINES)
     cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -76,7 +76,7 @@ function(ADD_LADSPA  )
     target_link_libraries(${PLUGIN_PARAM_TARGET} ${GET_LIBS_AND_DEFINES_LIBS} )
     target_include_directories(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_INCLUDE_DIRECTORIES})
     target_compile_definitions(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_DEFINES} ${GET_LIBS_AND_DEFINES_DEFINES} DISTRHO_PLUGIN_TARGET_LADSPA)
-endfunction(ADD_LADSPA)
+endfunction(BUILD_LADSPA)
 
 # Parameter to use:
 #           TARGET: Name for the generated VST
@@ -87,7 +87,7 @@ endfunction(ADD_LADSPA)
 #           DEFINE: Define Preprocessor defines
 # fills the Variable ${TARGET}_TTL_FILES with the generated files.
 # if a ui is specified(with UI_SOURCES) 2 targets are build the TARGET and {TARGET}_ui
-function(ADD_LV2 )
+function(BUILD_LV2 )
     set(oneValueArgs TARGET UI_BACKEND)
     set(multiValueArgs SOURCES UI_SOURCES INCLUDE_DIRECTORIES DEFINES)
     cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -122,9 +122,9 @@ function(ADD_LV2 )
     endif(PLUGIN_PARAM_UI_SOURCES)
     add_custom_command(TARGET ${PLUGIN_PARAM_TARGET} POST_BUILD COMMAND $<TARGET_FILE:lv2_ttl_generator> ARGS $<TARGET_FILE:${PLUGIN_PARAM_TARGET}>  )
    # file(GLOB TEMP_TTL_FILES RELATIVE  $<TARGET_FILE_DIR:${PLUGIN_PARAM_TARGET}> "*")
-endfunction(ADD_LV2)
+endfunction(BUILD_LV2)
 
-function(ADD_DSSI )
+function(BUILD_DSSI )
     set(oneValueArgs TARGET UI_BACKEND)
     set(multiValueArgs SOURCES  UI_SOURCES INCLUDE_DIRECTORIES DEFINES)
     cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
@@ -149,19 +149,19 @@ function(ADD_DSSI )
         target_include_directories(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_INCLUDE_DIRECTORIES})
         target_compile_definitions(${PLUGIN_PARAM_TARGET} PUBLIC ${PLUGIN_PARAM_DEFINES} ${GET_LIBS_AND_DEFINES_DEFINES} DISTRHO_PLUGIN_TARGET_DSSI)
     ENDIF(PLUGIN_PARAM_UI_SOURCES)
-endfunction(ADD_DSSI)
+endfunction(BUILD_DSSI)
 
 
 #Are u so lazy, u have to call all functions? okay.... but declare erverything...
-function(ADD_ALL_PLUGINS)
+function(BUILD_ALL_PLUGINS)
     set(oneValueArgs TARGET UI_BACKEND)
     set(multiValueArgs SOURCES INCLUDE_DIRECTORIES DEFINES)
     cmake_parse_arguments(PLUGIN_PARAM "" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-    ADD_LV2(TARGET ${PLUGIN_PARAM_TARGET}.lv2 UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
-    ADD_VST2(TARGET ${PLUGIN_PARAM_TARGET}.vst UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
-    ADD_DSSI(TARGET ${PLUGIN_PARAM_TARGET}.dssi UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
+    BUILD_LV2(TARGET ${PLUGIN_PARAM_TARGET}.lv2 UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
+    BUILD_VST2(TARGET ${PLUGIN_PARAM_TARGET}.vst UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
+    BUILD_DSSI(TARGET ${PLUGIN_PARAM_TARGET}.dssi UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
     IF(${PLUGIN_PARAM_UI_BACKEND} STREQUAL "NONE")
-        ADD_LADSPA(TARGET ${PLUGIN_PARAM_TARGET}.ladspa UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
+        BUILD_LADSPA(TARGET ${PLUGIN_PARAM_TARGET}.ladspa UI_BACKEND ${PLUGIN_PARAM_UI_BACKEND} SOURCES ${PLUGIN_PARAM_SOURCES} INCLUDE_DIRECTORIES ${PLUGIN_PARAM_INCLUDE_DIRECTORIES} DEFINES ${PLUGIN_PARAM_DEFINES})
     ENDIF(${PLUGIN_PARAM_UI_BACKEND} STREQUAL "NONE")
-endfunction(ADD_ALL_PLUGINS)
+endfunction(BUILD_ALL_PLUGINS)
 #TODO  JACK USW HIERHIN

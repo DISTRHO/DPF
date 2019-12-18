@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 2.8)
 project(dgl)
 
+set(OpenGL_GL_PREFERENCE LEGACY)
 find_package(OpenGL)
 find_package(Cairo)
 find_package(X11)
