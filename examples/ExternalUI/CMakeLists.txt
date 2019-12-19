@@ -2,17 +2,17 @@ cmake_minimum_required (VERSION 2.8)
 project(ExternalUI)
 
 if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows") #Just build on linux. Expected to have all Stuff installed, so no checking of deps.
-    BUILD_LV2(TARGET ExternalUI UI_BACKEND EXTERNAL
+    build_lv2(TARGET ExternalUI UI_BACKEND EXTERNAL
         SOURCES ExternalExamplePlugin.cpp
         UI_SOURCES  ExternalExampleUI.cpp
         INCLUDE_DIRECTORIES "./")
 
-    BUILD_VST2(TARGET ExternalUIVst UI_BACKEND EXTERNAL
+    build_vst2(TARGET ExternalUIVst UI_BACKEND EXTERNAL
         SOURCES ExternalExamplePlugin.cpp ExternalExampleUI.cpp
         INCLUDE_DIRECTORIES "./")
 
 
-    BUILD_DSSI(TARGET External-DSSI UI_BACKEND EXTERNAL
+    build_dssi(TARGET External-DSSI UI_BACKEND EXTERNAL
         SOURCES ExternalExamplePlugin.cpp
         UI_SOURCES  ExternalExampleUI.cpp
         INCLUDE_DIRECTORIES "./")

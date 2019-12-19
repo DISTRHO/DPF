@@ -2,14 +2,14 @@ cmake_minimum_required (VERSION 2.8)
 project(Info)
 
 if(LV2_SUPPORT)
-    BUILD_LV2(TARGET Info UI_BACKEND OPENGL
+    build_lv2(TARGET Info UI_BACKEND OPENGL
         SOURCES InfoExamplePlugin.cpp
         UI_SOURCES  InfoExampleUI.cpp
         INCLUDE_DIRECTORIES "./")
 endif(LV2_SUPPORT)
 
 if(VST2_SUPPORT)
-    BUILD_VST2(TARGET InfoVst UI_BACKEND OPENGL
+    build_vst2(TARGET InfoVst UI_BACKEND OPENGL
         SOURCES InfoExamplePlugin.cpp InfoExampleUI.cpp
         INCLUDE_DIRECTORIES "./")
 endif(VST2_SUPPORT)

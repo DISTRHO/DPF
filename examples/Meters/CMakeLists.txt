@@ -1,18 +1,18 @@
 cmake_minimum_required (VERSION 2.8)
 project(Meters)
 
-
-BUILD_LV2(TARGET Meters UI_BACKEND OPENGL
+## ADD LV2 Plugin wiht UI, but with just one Library
+build_lv2(TARGET Meters UI_BACKEND OPENGL
     SOURCES ExamplePluginMeters.cpp
      ExampleUIMeters.cpp
     INCLUDE_DIRECTORIES "./")
 
-BUILD_VST2(TARGET MetersVst UI_BACKEND OPENGL
+build_vst2(TARGET MetersVst UI_BACKEND OPENGL
     SOURCES ExamplePluginMeters.cpp ExampleUIMeters.cpp
     INCLUDE_DIRECTORIES "./")
 
 if(DSSI_SUPPORT)
-BUILD_DSSI(TARGET Meters-DSSI UI_BACKEND OPENGL
+build_dssi(TARGET Meters-DSSI UI_BACKEND OPENGL
     SOURCES ExamplePluginMeters.cpp
     UI_SOURCES ExampleUIMeters.cpp
     INCLUDE_DIRECTORIES "./")

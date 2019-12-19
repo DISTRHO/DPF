@@ -30,7 +30,7 @@ ELSEif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(DGL_COMMON_SRC ${DGL_COMMON_SRC}  src/pugl/pugl_win.cpp)
     set(DGL_COMPILE_DEFINITION ${DGL_COMPILE_DEFINITION} PLATFORM_WINDOWS)
     set(DGL_LIBS ${DGL_LIBS})
-ELSE()# As Fallback use Linux-X11
+else()# As Fallback use Linux-X11
     set(DGL_COMMON_SRC ${DGL_COMMON_SRC}  src/pugl/pugl_x11.c)
     set(DGL_COMPILE_DEFINITION ${DGL_COMPILE_DEFINITION} )
     set(DGL_LIBS ${DGL_LIBS})

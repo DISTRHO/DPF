@@ -2,17 +2,17 @@ cmake_minimum_required (VERSION 2.8)
 project(Parameters)
 
 
-BUILD_LV2(TARGET Parameters UI_BACKEND OPENGL
+build_lv2(TARGET Parameters UI_BACKEND OPENGL
     SOURCES ExamplePluginParameters.cpp
     UI_SOURCES ExampleUIParameters.cpp
     INCLUDE_DIRECTORIES "./")
 
-BUILD_VST2(TARGET ParametersVst UI_BACKEND OPENGL
+build_vst2(TARGET ParametersVst UI_BACKEND OPENGL
     SOURCES ExamplePluginParameters.cpp ExampleUIParameters.cpp
     INCLUDE_DIRECTORIES "./")
 
 if(DSSI_SUPPORT)
-BUILD_DSSI(TARGET Parameters-DSSI UI_BACKEND OPENGL
+build_dssi(TARGET Parameters-DSSI UI_BACKEND OPENGL
     SOURCES ExamplePluginParameters.cpp
     UI_SOURCES ExampleUIParameters.cpp
     INCLUDE_DIRECTORIES "./")

@@ -417,9 +417,12 @@ START_NAMESPACE_DISTRHO
    };
    @endcode
 
-   This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and UI are still TODO.
-*/
 
+   This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and UI are still TODO.
+   @section Build with CMake
+      Currently DPF supports the insource build with cmake. If you want to add DPF to your CMake Project, copy it into your SourcePath.
+   than include it via  add_subdirectory(PATH_TO_DPF)
+*/
 #if 0
    @section States
    describe them
@@ -582,6 +585,7 @@ START_NAMESPACE_DISTRHO
    By default this is set to @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
  */
 #define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+
 
 /** @} */
 

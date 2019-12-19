@@ -2,8 +2,8 @@ cmake_minimum_required (VERSION 2.8)
 project(MidiThrogh)
 
 
-BUILD_VST2(TARGET MidiThroughVST UI_BACKEND NONE SOURCES "MidiThroughExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
-BUILD_LV2(TARGET MidiThrough UI_BACKEND NONE SOURCES "MidiThroughExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+build_vst2(TARGET MidiThroughVST UI_BACKEND NONE SOURCES "MidiThroughExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+build_lv2(TARGET MidiThrough UI_BACKEND NONE SOURCES "MidiThroughExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
 
 
 
