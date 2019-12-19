@@ -20,7 +20,6 @@
 #define DISTRHO_PLUGIN_BRAND "DISTRHO"
 #define DISTRHO_PLUGIN_NAME  "Meters"
 #define DISTRHO_PLUGIN_URI   "http://distrho.sf.net/examples/Meters"
-
 #define DISTRHO_PLUGIN_HAS_UI      1
 #define DISTRHO_PLUGIN_IS_RT_SAFE  1
 #define DISTRHO_PLUGIN_NUM_INPUTS  2

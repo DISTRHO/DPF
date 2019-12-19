@@ -18,10 +18,10 @@ if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows") #Just build on linux. Expected t
         INCLUDE_DIRECTORIES "./")
 
     if(DPF_INSTALL)
-        INSTALL(TARGETS ExternalUIVst DESTINATION lib/vst)
-        INSTALL(TARGETS ExternalUI ExternalUI_ui DESTINATION lib/lv2/ExternalUI.lv2)
-        INSTALL(TARGETS External-DSSI External-DSSI_ui DESTINATION lib/dssi)
+        install(TARGETS ExternalUIVst DESTINATION lib/vst)
+        install(TARGETS ExternalUI ExternalUI_ui DESTINATION lib/lv2/ExternalUI.lv2)
+        install(TARGETS External-DSSI External-DSSI_ui DESTINATION lib/dssi)
         #When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
-        INSTALL(FILES ${ExternalUI_TTL_FILES} DESTINATION lib/lv2/ExternalUI.lv2)
+        install(FILES ${ExternalUI_TTL_FILES} DESTINATION lib/lv2/ExternalUI.lv2)
     endif(DPF_INSTALL)
 endif(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

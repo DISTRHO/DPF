@@ -19,11 +19,11 @@ BUILD_DSSI(TARGET Parameters-DSSI UI_BACKEND OPENGL
 endif(DSSI_SUPPORT)
 
 if(DPF_INSTALL)
-    INSTALL(TARGETS ParametersVst DESTINATION lib/vst)
-    INSTALL(TARGETS Parameters Parameters_ui DESTINATION lib/lv2/Parameters.lv2)
+    install(TARGETS ParametersVst DESTINATION lib/vst)
+    install(TARGETS Parameters Parameters_ui DESTINATION lib/lv2/Parameters.lv2)
     #When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
-    INSTALL(FILES ${Parameters_TTL_FILES} DESTINATION lib/lv2/Parameters.lv2)
+    install(FILES ${Parameters_TTL_FILES} DESTINATION lib/lv2/Parameters.lv2)
     if(DSSI_SUPPORT)
-        INSTALL(TARGETS Parameters-DSSI Parameters-DSSI_ui DESTINATION lib/dssi)
+        install(TARGETS Parameters-DSSI Parameters-DSSI_ui DESTINATION lib/dssi)
     endif(DSSI_SUPPORT)
 endif(DPF_INSTALL)

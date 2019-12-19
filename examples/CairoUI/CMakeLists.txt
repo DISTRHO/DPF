@@ -18,10 +18,10 @@ if(CAIRO_SUPPORT) #Just build when Cairo is Installed. Expected to have all Stuf
 
 
     if(DPF_INSTALL)
-        INSTALL(TARGETS CairoUIVst DESTINATION lib/vst)
-        INSTALL(TARGETS CairoUI CairoUI_ui DESTINATION lib/lv2/CairoUI.lv2)
-        INSTALL(TARGETS CairoUI-DSSI CairoUI-DSSI_ui DESTINATION lib/dssi)
+        install(TARGETS CairoUIVst DESTINATION lib/vst)
+        install(TARGETS CairoUI CairoUI_ui DESTINATION lib/lv2/CairoUI.lv2)
+        install(TARGETS CairoUI-DSSI CairoUI-DSSI_ui DESTINATION lib/dssi)
         #When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
-        INSTALL(FILES ${CairoUI_TTL_FILES} DESTINATION lib/lv2/CairoUI.lv2)
+        install(FILES ${CairoUI_TTL_FILES} DESTINATION lib/lv2/CairoUI.lv2)
     endif(DPF_INSTALL)
 endif(CAIRO_SUPPORT)

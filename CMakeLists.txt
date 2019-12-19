@@ -23,6 +23,10 @@ add_executable(lv2_ttl_generator utils/lv2-ttl-generator/lv2_ttl_generator.c)
 target_compile_definitions(lv2_ttl_generator PUBLIC FORCE_UNIX_STYLE_PATH)
 target_link_libraries(lv2_ttl_generator PUBLIC  ${CMAKE_DL_LIBS})
 
+
+###################DOC###################
+#find_package(Doxygen)
+
 #########################Set Supported Format Variables###########################
 find_package(LibLo)
 find_package(Jack)

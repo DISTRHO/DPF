@@ -19,11 +19,11 @@ BUILD_DSSI(TARGET States-DSSI UI_BACKEND OPENGL
 endif(DSSI_SUPPORT)
 
 if(DPF_INSTALL)
-    INSTALL(TARGETS StatesVst DESTINATION lib/vst)
-    INSTALL(TARGETS States States_ui DESTINATION lib/lv2/States.lv2)
+    install(TARGETS StatesVst DESTINATION lib/vst)
+    install(TARGETS States States_ui DESTINATION lib/lv2/States.lv2)
     #When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
-    INSTALL(FILES ${States_TTL_FILES} DESTINATION lib/lv2/States.lv2)
+    install(FILES ${States_TTL_FILES} DESTINATION lib/lv2/States.lv2)
     if(DSSI_SUPPORT)
-        INSTALL(TARGETS States-DSSI States-DSSI_ui DESTINATION lib/dssi)
+        install(TARGETS States-DSSI States-DSSI_ui DESTINATION lib/dssi)
     endif(DSSI_SUPPORT)
 endif(DPF_INSTALL)
