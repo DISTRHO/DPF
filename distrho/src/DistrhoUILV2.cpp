@@ -252,7 +252,12 @@ protected:
 
         // reserve atom space
         const size_t atomSize(sizeof(LV2_Atom) + msgSize);
-        char         atomBuf[atomSize];
+        
+#ifdef _MSC_VER
+        char* atomBuf = (char*)malloc(sizeof(char) * atomSize);
+#else
+        char atomBuf[atomSize];
+#endif
         std::memset(atomBuf, 0, atomSize);
 
         // set atom info
@@ -262,7 +267,9 @@ protected:
 
         // set atom data
         std::memcpy(atomBuf + sizeof(LV2_Atom), tmpStr.buffer(), msgSize);
-
+#ifdef _MSC_VER
+        free(atomBuf);
+#endif
         // send to DSP side
         fWriteFunction(fController, eventInPortIndex, atomSize, fEventTransferURID, atom);
     }

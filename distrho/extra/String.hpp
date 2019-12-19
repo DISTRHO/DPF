@@ -383,7 +383,7 @@ public:
 
         if (char* const subStrBuf = std::strstr(fBuffer, strBuf))
         {
-            const ssize_t ret(subStrBuf - fBuffer);
+            const size_t ret(subStrBuf - fBuffer);
 
             if (ret < 0)
             {
@@ -597,8 +597,11 @@ public:
 
         uint i=0, j=0;
         uint charArray3[3], charArray4[4];
-
-        char strBuf[kTmpBufSize+1];
+#ifdef _MSC_VER //TODO Evaluate if that works on MSC_VER
+        char* strBuf = (char*)malloc(sizeof(char) * (kTmpBufSize + 1));
+#else
+        char strBuf[kTmpBufSize + 1];
+#endif
         strBuf[kTmpBufSize] = '\0';
         std::size_t strBufIndex = 0;
 
@@ -651,8 +654,11 @@ public:
             strBuf[strBufIndex] = '\0';
             ret += strBuf;
         }
-
-        return ret;
+#ifdef _MSC_VER
+        //TODO: Changed 4 Iso c++ compat
+        free(strBuf);
+#endif
+        return ret; 
     }
 
     // -------------------------------------------------------------------
@@ -727,13 +733,19 @@ public:
             return *this;
 
         const std::size_t newBufSize = fBufferLen + std::strlen(strBuf) + 1;
-        char              newBuf[newBufSize];
-
+        
+#ifdef _MSC_VER // TODO: Changed 4 Iso c++ compat
+        char* newBuf = (char*)malloc(sizeof(char) * newBufSize);
+#else
+        char newBuf[newBufSize];
+#endif
         std::strcpy(newBuf, fBuffer);
         std::strcat(newBuf, strBuf);
 
         _dup(newBuf, newBufSize-1);
-
+#ifdef _MSC_VER 
+        free(newBuf);  // TODO: Changed 4 Iso c++ compat
+#endif
         return *this;
     }
 
@@ -745,13 +757,21 @@ public:
     String operator+(const char* const strBuf) noexcept
     {
         const std::size_t newBufSize = fBufferLen + ((strBuf != nullptr) ? std::strlen(strBuf) : 0) + 1;
-        char              newBuf[newBufSize];
+        
+#ifdef _MSC_VER // TODO: Changed 4 Iso c++ compat
+        char* newBuf = (char*)malloc(sizeof(char) * newBufSize);
+#else
+        char newBuf[newBufSize];
+#endif 
+
 
         std::strcpy(newBuf, fBuffer);
 
         if (strBuf != nullptr)
             std::strcat(newBuf, strBuf);
-
+#ifdef _MSC_VER
+        free(newBuf);  // TODO: Changed 4 Iso c++ compat
+#endif
         return String(newBuf);
     }
 
@@ -835,12 +855,22 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
 {
     const char* const strBufBefore = strBefore.buffer();
     const std::size_t newBufSize   = strBefore.length() + ((strBufAfter != nullptr) ? std::strlen(strBufAfter) : 0) + 1;
+   
+#ifdef _MSC_VER // TODO: Changed 4 Iso c++ compat
+    char* newBuf = (char*)malloc(sizeof(char) * newBufSize);
+#else
     char newBuf[newBufSize];
+#endif
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
-
+#ifdef _MSC_VER // TODO: Changed 4 Iso c++ compat
+    auto str = String(newBuf);
+    free(newBuf);
+    return str;
+#else
     return String(newBuf);
+#endif
 }
 
 static inline
@@ -848,12 +878,22 @@ String operator+(const char* const strBufBefore, const String& strAfter) noexcep
 {
     const char* const strBufAfter = strAfter.buffer();
     const std::size_t newBufSize  = ((strBufBefore != nullptr) ? std::strlen(strBufBefore) : 0) + strAfter.length() + 1;
+#ifdef _MSC_VER  // TODO: Changed 4 Iso c++ compat
+    char* newBuf = (char*)malloc(sizeof(char) * newBufSize);
+#else
     char newBuf[newBufSize];
+#endif
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
-
+   
+#ifdef _MSC_VER // TODO: Changed 4 Iso c++ compat
+    auto str = String(newBuf);
+    free(newBuf);
+    return str;
+#else
     return String(newBuf);
+#endif
 }
 
 // -----------------------------------------------------------------------

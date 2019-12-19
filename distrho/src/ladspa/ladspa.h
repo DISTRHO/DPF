@@ -585,8 +585,8 @@ typedef struct _LADSPA_Descriptor {
    upwards. Out of range indexes must result in this function
    returning NULL, so the plugin count can be determined by checking
    for the least index that results in NULL being returned. */
-
-const LADSPA_Descriptor * ladspa_descriptor(unsigned long Index);
+   DISTRHO_PLUGIN_EXPORT
+   const LADSPA_Descriptor * ladspa_descriptor(unsigned long Index);
 
 /* Datatype corresponding to the ladspa_descriptor() function. */
 typedef const LADSPA_Descriptor * 

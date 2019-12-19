@@ -28,7 +28,7 @@ ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     set(DGL_LIBS ${DGL_LIBS})
 ELSEIF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(DGL_COMMON_SRC ${DGL_COMMON_SRC}  src/pugl/pugl_win.cpp)
-    set(DGL_COMPILE_DEFINITION ${DGL_COMPILE_DEFINITION} )
+    set(DGL_COMPILE_DEFINITION ${DGL_COMPILE_DEFINITION} PLATFORM_WINDOWS)
     set(DGL_LIBS ${DGL_LIBS})
 ELSE()# As Fallback use Linux-X11
     set(DGL_COMMON_SRC ${DGL_COMMON_SRC}  src/pugl/pugl_x11.c)
@@ -41,14 +41,18 @@ set(DGL_COMPILE_DEFINITION ${DGL_COMPILE_DEFINITION} DONT_SET_USING_DGL_NAMESPAC
 #######OPENGL DGL############
 if(OpenGL_FOUND)
     message("OpenGL Found, Building libdgl-opengl")
+    set(OPENGL_SUPPORT ON CACHE INTERNAL "IS CAIRO SUPPORTED?")
     add_library(dgl-opengl ${DGL_COMMON_SRC}
         src/OpenGL.cpp
         src/Image.cpp
         src/ImageWidgets.cpp
         src/NanoVG.cpp)
     #HAVE_OPENGL is not needed to define(as far as i think) maybe test it without.
-    target_compile_definitions(dgl-opengl PUBLIC DGL_OPENGL HAVE_OPENGL ${DGL_COMPILE_DEFINITION})
+    target_compile_definitions(dgl-opengl PUBLIC DGL_OPENGL HAVE_OPENGL HAVE_CPP11_SUPPORT ${DGL_COMPILE_DEFINITION} )
     target_include_directories(dgl-opengl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/ ${CMAKE_CURRENT_LIST_DIR}/)
+    IF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+        target_include_directories(dgl-opengl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src/win_glext)
+    ENDIF(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set_target_properties(dgl-opengl PROPERTIES POSITION_INDEPENDENT_CODE true)
     target_link_libraries(dgl-opengl PUBLIC ${OPENGL_LIBRARIES} ${X11_LIBRARIES})
 endif(OpenGL_FOUND)
@@ -56,10 +60,11 @@ endif(OpenGL_FOUND)
 #######CAIRO DGL############
 if(CAIRO_FOUND)
     message("Cairo Found, Building libdgl-cairo")
+    set(CAIRO_SUPPORT ON CACHE INTERNAL "IS CAIRO SUPPORTED?")
     add_library(dgl-cairo  ${DGL_COMMON_SRC}
         src/Cairo.cpp)
     #HAVE_CAIRO is not needed to define(as far as i think) maybe test it without.
-    target_compile_definitions(dgl-cairo PUBLIC DGL_CAIRO HAVE_CAIRO ${DGL_COMPILE_DEFINITION})
+    target_compile_definitions(dgl-cairo PUBLIC DGL_CAIRO HAVE_CAIRO HAVE_CPP11_SUPPORT ${DGL_COMPILE_DEFINITION})
     target_include_directories(dgl-cairo PUBLIC §{CMAKE_CURRENT_LIST_DIR}/src/  ${CMAKE_CURRENT_LIST_DIR}/)
     set_target_properties(dgl-cairo PROPERTIES POSITION_INDEPENDENT_CODE true)
     target_link_libraries(dgl-cairo PUBLIC ${CAIRO_LIBRARY})

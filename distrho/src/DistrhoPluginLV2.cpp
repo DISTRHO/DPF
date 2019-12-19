@@ -673,9 +673,13 @@ public:
                     break;
                 }
 
+#ifdef _MSC_VER
+                char* msgBuf = (char*)malloc(sizeof(char) * msgSize);
+#else
                 // reserve msg space
                 // FIXME create a large enough buffer beforehand
                 char msgBuf[msgSize];
+#endif
                 std::memset(msgBuf, 0, msgSize);
 
                 // write key and value in atom bufer

@@ -8,8 +8,8 @@ BUILD_LV2(TARGET MidiThrough UI_BACKEND NONE SOURCES "MidiThroughExamplePlugin.c
 
 
 if(DPF_INSTALL)
-INSTALL(TARGETS MidiThroughVST DESTINATION lib/vst)
-INSTALL(TARGETS MidiThrough DESTINATION lib/lv2/MidiThrough.lv2)
-#When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
-INSTALL(FILES ${MidiThrough_TTL_FILES} DESTINATION lib/lv2/MidiThrough.lv2)
+    INSTALL(TARGETS MidiThroughVST DESTINATION lib/vst)
+    INSTALL(TARGETS MidiThrough DESTINATION lib/lv2/MidiThrough.lv2)
+    #When generating files for lv2 plugin, the generated files are saved as ${LV2PLUGINNAME}_TTL_FILES
+    INSTALL(FILES ${MidiThrough_TTL_FILES} DESTINATION lib/lv2/MidiThrough.lv2)
 endif(DPF_INSTALL)

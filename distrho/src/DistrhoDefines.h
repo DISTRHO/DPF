@@ -59,12 +59,7 @@
 # endif
 #endif
 
-#ifndef DISTRHO_PROPER_CPP11_SUPPORT
-# define noexcept throw()
-# define override
-# define final
-# define nullptr NULL
-#endif
+
 
 /* Define DISTRHO_DEPRECATED */
 #if defined(__GNUC__)

@@ -40,8 +40,13 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#ifdef _MSC_VER
+#define PATH_MAX 260
+#define R_OK 4
+#else
 #include <unistd.h>
 #include <libgen.h>
+#endif
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
