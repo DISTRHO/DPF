@@ -418,11 +418,65 @@ START_NAMESPACE_DISTRHO
    @endcode
 
 
+     @section BuildCmakeIntro Build with CMake
+      Currently DPF supports the insource build with cmake. If you want to add DPF to your CMake Project, copy it into your SourcePath and add it .
+      You can add it via  add_subdirectory(PATH_TO_DPF). The DPF CmakeList export Functions, to build Plugins easily.
+      An simple minimal CMakeLists.txt for use building an vst lib would look like:
+      @code
+        cmake_minimum_required (VERSION 2.8)
+        project(ExampleBuild)
+        add_subdirectory(deps/DPF)
+        build_vst2(TARGET ExampleVst
+                   SOURCES ExampleSource.hpp ExampleSource.cpp
+                   INCLUDE_DIRECTORIES ./ ./include)
+      @endcode
+      Thats all for building an VST Plugin with cmake. To see more details @see CMakeBuild*/
+
    This is a work-in-progress documentation page. States, MIDI, Latency, Time-Position and UI are still TODO.
-   @section Build with CMake
-      Currently DPF supports the insource build with cmake. If you want to add DPF to your CMake Project, copy it into your SourcePath.
-   than include it via  add_subdirectory(PATH_TO_DPF)
+/**
+ @defgroup CMakeBuild Building with Cmake
+                                                     Introduction to the CMake Build section, for Buildinstructions.
+  @section BasicCmake
+    Plugins are build, with build_PLUGINTYPE commands. All of them has the same basic callingconvetion. They have the following Parameter:
+        - TARGET: Name for the generated Plugin
+        - UI_BACKEND: Type of the Plugin UserInterface(Not used in LADSPA). It should be NONE,EXTERNAL,OPENGL or CAIRO
+        - SOURCES:  Plugin Sources, to compile in the Plugin
+        - UI_SOURCES: Just used in LV2 and DSSI. If specified 2dlls with sepereated DSP and UI are build.
+        - INCLUDE_DIRECTORIES: Directories to include to the Plugin.
+        - DEFINES: Define Preprocessor defines for the Plugin\n
+    Also this Plugins are supported:
+        - VST2
+        - LADSPA (ONLY UI_BACKEND=NONE)
+        - DSSI (must spec UI_SOURCE when building with UI)
+        - LV2
+        - JACK
+So you can build stuff like this LatencyExample,without UI:
+@code
+    build_vst2(TARGET LatencyVST UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+    build_dssi(TARGET LatencyDSSI UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+    build_ladspa(TARGET LatencyLADSPA UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+    build_lv2(TARGET Latency UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+@endcode
+    CMAKE supports also SUPPORTED Variables to check, weather the curren PLUGIN can be build. So if you want to check, if you can build the Plugin use it like this:
+@code
+if(VST2_SUPPORT)
+    build_vst2(TARGET LatencyVST UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+endif(VST2_SUPPORT)
+
+if(DSSI_SUPPORT)
+    build_dssi(TARGET LatencyDSSI UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+endif(DSSI_SUPPORT)
+
+if(LADSPA_SUPPORT)
+    build_ladspa(TARGET LatencyLADSPA UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+endif(LADSPA_SUPPORT)
+
+if(LV2_SUPPORT)
+    build_lv2(TARGET Latency UI_BACKEND NONE SOURCES "LatencyExamplePlugin.cpp" INCLUDE_DIRECTORIES "./")
+endif(LV2_SUPPORT)
+@endcode
 */
+
 #if 0
    @section States
    describe them
