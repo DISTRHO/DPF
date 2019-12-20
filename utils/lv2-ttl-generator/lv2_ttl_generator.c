@@ -32,7 +32,7 @@ typedef void (*TTL_Generator_Function)(const char* basename);
 
 int main(int argc, char* argv[])
 {
-
+    printf("path: %s \n", argv[1]);
     if (argc != 2)
     {
         printf("usage: %s /path/to/plugin-DLL\n", argv[0]);
@@ -63,20 +63,14 @@ int main(int argc, char* argv[])
 
     if (ttlFn != NULL)
     {
-#ifdef _MSC_VER  // TODO: Changed 4 Iso c++ compat
         char* basename = malloc(sizeof(char) * (strlen(argv[1]) + 1));
-#else
-        char basename[strlen(argv[1]) + 1];
-#endif
-#ifdef FORCE_UNIX_STYLE_PATH
+
+#if defined(FORCE_UNIX_STYLE_PATH) || !defined(TTL_GENERATOR_WINDOWS)
         char* base2 = strrchr(argv[1], '/');
-#else
-#ifdef TTL_GENERATOR_WINDOWS
+#else 
         char* base2 = strrchr(argv[1], '\\');
-#else
-        char* base2 = strrchr(argv[1], '/');
 #endif
-#endif
+
         if (base2 != NULL)
         {
             strcpy(basename, base2+1);
@@ -93,11 +87,9 @@ int main(int argc, char* argv[])
         }
 
         printf("Generate ttl data for '%s', basename: '%s'\n", argv[1], basename);
-
         ttlFn(basename);
-#ifdef _MSC_VER
-        free(basename);// TODO: Changed 4 Iso c++ compat
-#endif
+
+        free(basename);// Changed 4 Iso c++ compat
     }
     else
         printf("Failed to find 'lv2_generate_ttl' function\n");

@@ -220,7 +220,6 @@ void lv2_generate_ttl(const char* const basename)
 
     String pluginDLL(basename);
     String pluginTTL(pluginDLL + ".ttl");
-
 #if DISTRHO_PLUGIN_HAS_UI
     String pluginUI(pluginDLL);
 # if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
