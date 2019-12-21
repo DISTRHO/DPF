@@ -385,7 +385,7 @@ public:
         {
             const size_t ret(subStrBuf - fBuffer);
 
-            if (ret < 0)
+            if (subStrBuf - fBuffer < 0)
             {
                 // should never happen!
                 d_safe_assert("ret >= 0", __FILE__, __LINE__);
