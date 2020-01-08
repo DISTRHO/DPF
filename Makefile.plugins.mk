@@ -100,7 +100,7 @@ endif
 
 ifneq ($(UI_TYPE),none)
 ifneq ($(WINDOWS),true)
-VST_LIBS += -lpthread
+THREAD_LIBS += -lpthread
 endif
 endif
 
@@ -177,7 +177,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(THREAD_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
@@ -240,7 +240,7 @@ $(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(VST_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(THREAD_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
