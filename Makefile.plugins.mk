@@ -99,9 +99,7 @@ HAVE_DGL   = true
 endif
 
 ifneq ($(UI_TYPE),none)
-ifneq ($(WINDOWS),true)
 THREAD_LIBS += -lpthread
-endif
 endif
 
 DGL_LIBS += $(DGL_SYSTEM_LIBS)
