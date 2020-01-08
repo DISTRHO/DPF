@@ -180,13 +180,13 @@ public:
 
     void clearEditorMidi()
     {
-        MutexLocker locker(fMutex);
+        const MutexLocker locker(fMutex);
         fMidiCount = 0;
     }
 
     void sendEditorMidi(const uint8_t midiData[3])
     {
-        MutexLocker locker(fMutex);
+        const MutexLocker locker(fMutex);
 
         uint32_t count = fMidiCount;
         if (count == kMidiStorageCapacity)
@@ -205,7 +205,7 @@ public:
         if (fMidiCount == 0)
             return eventCount;
 
-        MutexTryLocker locker(fMutex);
+        const MutexTryLocker locker(fMutex);
         if (locker.wasNotLocked())
             return eventCount;
 
