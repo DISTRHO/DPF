@@ -596,7 +596,12 @@ private:
     {
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         thisPtr->sendNote(channel, note, velocity);
-#endif
+# else
+        (void)ptr;
+        (void)channel;
+        (void)note;
+        (void)velocity;
+# endif
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)
