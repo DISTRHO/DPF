@@ -19,6 +19,10 @@
 
 #include "../DistrhoPlugin.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# include "extra/Mutex.hpp"
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -671,6 +675,102 @@ private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
     DISTRHO_PREVENT_HEAP_ALLOCATION
 };
+
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+// -----------------------------------------------------------------------
+// Midi queue class
+
+/**
+   Single-consumer, single-producer FIFO queue of short MIDI messages, intended
+   for UI-to-DSP messaging in case of VST or similar plugin formats.
+   The access is guarded by mutex, using try-lock on the receiving side.
+ */
+class SimpleMidiQueue
+{
+public:
+    SimpleMidiQueue()
+        : fMidiStorage(nullptr),
+          fMidiCount(0),
+          fWriterIndex(0)
+    {
+        fMidiStorage = new ShortMessage[kMidiStorageCapacity];
+    }
+
+    virtual ~SimpleMidiQueue()
+    {
+        delete[] fMidiStorage;
+        fMidiStorage = nullptr;
+    }
+
+    void clear()
+    {
+        const MutexLocker locker(fMutex);
+        fMidiCount = 0;
+    }
+
+    void send(const uint8_t midiData[3])
+    {
+        const MutexLocker locker(fMutex);
+
+        uint32_t count = fMidiCount;
+        if (count == kMidiStorageCapacity)
+            return;
+
+        uint32_t index = fWriterIndex;
+        ShortMessage &msg = fMidiStorage[index];
+        std::memcpy(msg.data, midiData, 3);
+
+        fMidiCount   = count + 1;
+        fWriterIndex = (index + 1) % kMidiStorageCapacity;
+    }
+
+    uint32_t receive(MidiEvent *events, uint32_t eventCount)
+    {
+        if (fMidiCount == 0)
+            return eventCount;
+
+        const MutexTryLocker locker(fMutex);
+        if (locker.wasNotLocked())
+            return eventCount;
+
+        // preserve the ordering of frame times according to messages before us
+        uint32_t frame = 0;
+        if (eventCount > 0)
+            frame = events[eventCount - 1].frame;
+
+        uint32_t countAvailable = fMidiCount;
+        uint32_t readerIndex = (fWriterIndex + kMidiStorageCapacity - countAvailable) % kMidiStorageCapacity;
+        for (; countAvailable > 0 && eventCount < kMaxMidiEvents; --countAvailable)
+        {
+            ShortMessage msg = fMidiStorage[readerIndex];
+            MidiEvent &event = events[eventCount++];
+            event.frame = frame;
+            event.size  = 3;
+            std::memcpy(event.data, msg.data, sizeof(uint8_t)*3);
+            readerIndex = (readerIndex + 1) % kMaxMidiEvents;
+        }
+
+        fMidiCount = countAvailable;
+        return eventCount;
+    }
+
+protected:
+    enum
+    {
+        kMidiStorageCapacity = 256,
+    };
+
+    struct ShortMessage
+    {
+        uint8_t data[3];
+    };
+
+    ShortMessage *fMidiStorage;
+    volatile uint32_t fMidiCount;
+    uint32_t fWriterIndex;
+    Mutex fMutex;
+};
+#endif
 
 // -----------------------------------------------------------------------
 

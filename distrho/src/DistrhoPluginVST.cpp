@@ -23,9 +23,6 @@
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-#   include "extra/Mutex.hpp"
-# endif
 #endif
 
 #ifndef __cdecl
@@ -164,87 +161,25 @@ public:
 class MidiSendFromEditorHelper
 {
 public:
-    MidiSendFromEditorHelper()
-        : fMidiStorage(nullptr),
-          fMidiCount(0),
-          fWriterIndex(0)
-    {
-        fMidiStorage = new ShortMessage[kMidiStorageCapacity];
-    }
-
-    virtual ~MidiSendFromEditorHelper()
-    {
-        delete[] fMidiStorage;
-        fMidiStorage = nullptr;
-    }
+    virtual ~MidiSendFromEditorHelper() {}
 
     void clearEditorMidi()
     {
-        const MutexLocker locker(fMutex);
-        fMidiCount = 0;
+        fQueue.clear();
     }
 
     void sendEditorMidi(const uint8_t midiData[3])
     {
-        const MutexLocker locker(fMutex);
-
-        uint32_t count = fMidiCount;
-        if (count == kMidiStorageCapacity)
-            return;
-
-        uint32_t index = fWriterIndex;
-        ShortMessage &msg = fMidiStorage[index];
-        std::memcpy(msg.data, midiData, 3);
-
-        fMidiCount   = count + 1;
-        fWriterIndex = (index + 1) % kMidiStorageCapacity;
+        fQueue.send(midiData);
     }
 
     uint32_t receiveEditorMidi(MidiEvent *events, uint32_t eventCount)
     {
-        if (fMidiCount == 0)
-            return eventCount;
-
-        const MutexTryLocker locker(fMutex);
-        if (locker.wasNotLocked())
-            return eventCount;
-
-        // preserve the ordering of frame times according to messages before us
-        uint32_t frame = 0;
-        if (eventCount > 0)
-            frame = events[eventCount - 1].frame;
-
-        uint32_t countAvailable = fMidiCount;
-        uint32_t readerIndex = (fWriterIndex + kMidiStorageCapacity - countAvailable) % kMidiStorageCapacity;
-        for (; countAvailable > 0 && eventCount < kMaxMidiEvents; --countAvailable)
-        {
-            ShortMessage msg = fMidiStorage[readerIndex];
-            MidiEvent &event = events[eventCount++];
-            event.frame = frame;
-            event.size  = 3;
-            std::memcpy(event.data, msg.data, sizeof(uint8_t)*3);
-            readerIndex = (readerIndex + 1) % kMaxMidiEvents;
-        }
-
-        fMidiCount = countAvailable;
-        return eventCount;
+        return fQueue.receive(events, eventCount);
     }
 
-protected:
-    enum
-    {
-        kMidiStorageCapacity = 256,
-    };
-
-    struct ShortMessage
-    {
-        uint8_t data[3];
-    };
-
-    ShortMessage *fMidiStorage;
-    volatile uint32_t fMidiCount;
-    uint32_t fWriterIndex;
-    Mutex fMutex;
+private:
+    SimpleMidiQueue fQueue;
 };
 #endif
 
