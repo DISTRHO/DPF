@@ -24,6 +24,11 @@
 
 START_NAMESPACE_DISTRHO
 
+/**
+  We need the rectangle class from DGL.
+ */
+using DGL_NAMESPACE::Rectangle;
+
 // -----------------------------------------------------------------------------------------------------------
 
 class SendNoteExampleUI : public UI
@@ -61,7 +66,7 @@ protected:
         for (int key = 0; key < 12; ++key)
         {
             bool pressed = fKeyState[key];
-            DGL::Rectangle<int> bounds = getKeyBounds(key);
+            Rectangle<int> bounds = getKeyBounds(key);
 
             if (pressed)
                 glColor3f(0.8f, 0.5f, 0.3f);
@@ -86,7 +91,7 @@ protected:
         int whichKey = -1;
         for (int key = 0; key < 12 && whichKey == -1; ++key)
         {
-            DGL::Rectangle<int> bounds = getKeyBounds(key);
+            Rectangle<int> bounds = getKeyBounds(key);
 
             if (bounds.contains(ev.pos))
                 whichKey = key;
@@ -115,9 +120,9 @@ private:
     /**
        Get the bounds of a particular key of the virtual MIDI keyboard.
      */
-    DGL::Rectangle<int> getKeyBounds(unsigned index) const
+    Rectangle<int> getKeyBounds(unsigned index) const
     {
-        DGL::Rectangle<int> bounds;
+        Rectangle<int> bounds;
         int padding = 8;
         bounds.setX(64 * index + padding);
         bounds.setY(padding);
