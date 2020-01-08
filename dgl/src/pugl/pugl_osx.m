@@ -329,6 +329,7 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 - (void) keyDown:(NSEvent*)event;
 - (void) keyUp:(NSEvent*)event;
 - (void) flagsChanged:(NSEvent*)event;
+- (void) resizeWithOldSuperviewSize:(NSSize)oldSize;
 
 @end
 
@@ -527,6 +528,21 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 	flagsChanged(self, event);
 }
 
+- (void) resizeWithOldSuperviewSize:(NSSize)oldSize
+{
+	PuglView *pv = self->puglview;
+
+	if (pv->width <= 1 && pv->height <= 1)
+	{
+		/* NOTE: if the view size was not initialized yet, don't perform an
+		   autoresize; it fixes manual resizing in Reaper.
+		 */
+		return;
+	}
+
+	[super resizeWithOldSuperviewSize:oldSize];
+}
+
 @end
 #endif
 
@@ -570,6 +586,7 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 - (void) keyDown:(NSEvent*)event;
 - (void) keyUp:(NSEvent*)event;
 - (void) flagsChanged:(NSEvent*)event;
+- (void) resizeWithOldSuperviewSize:(NSSize)oldSize;
 @end
 
 @implementation PuglCairoView
@@ -749,6 +766,22 @@ flagsChanged(NSView<PuglGenericView> *self, NSEvent *event)
 {
 	flagsChanged(self, event);
 }
+
+- (void) resizeWithOldSuperviewSize:(NSSize)oldSize
+{
+	PuglView *pv = self->puglview;
+
+	if (pv->width <= 1 && pv->height <= 1)
+	{
+		/* NOTE: if the view size was not initialized yet, don't perform an
+		   autoresize; it fixes manual resizing in Reaper.
+		 */
+		return;
+	}
+
+	[super resizeWithOldSuperviewSize:oldSize];
+}
+
 @end
 #endif
 
