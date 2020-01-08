@@ -173,7 +173,7 @@ public:
         fQueue.send(midiData);
     }
 
-    uint32_t receiveEditorMidi(MidiEvent *events, uint32_t eventCount)
+    uint32_t receiveEditorMidi(MidiEvent* events, uint32_t eventCount)
     {
         return fQueue.receive(events, eventCount);
     }

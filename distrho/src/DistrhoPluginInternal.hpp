@@ -724,7 +724,7 @@ public:
         fWriterIndex = (index + 1) % kMidiStorageCapacity;
     }
 
-    uint32_t receive(MidiEvent *events, uint32_t eventCount)
+    uint32_t receive(MidiEvent* events, uint32_t eventCount)
     {
         if (fMidiCount == 0)
             return eventCount;
@@ -765,7 +765,7 @@ protected:
         uint8_t data[3];
     };
 
-    ShortMessage *fMidiStorage;
+    ShortMessage* fMidiStorage;
     volatile uint32_t fMidiCount;
     uint32_t fWriterIndex;
     Mutex fMutex;

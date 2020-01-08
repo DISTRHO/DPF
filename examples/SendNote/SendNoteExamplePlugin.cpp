@@ -141,8 +141,8 @@ protected:
             }
         }
 
-        float *outputLeft = outputs[0];
-        float *outputRight = outputs[1];
+        float* outputLeft = outputs[0];
+        float* outputRight = outputs[1];
 
         std::memset(outputLeft, 0, frames * sizeof(float));
 
