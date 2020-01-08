@@ -61,7 +61,7 @@ protected:
         for (int key = 0; key < 12; ++key)
         {
             bool pressed = fKeyState[key];
-            Rectangle<int> bounds = getKeyBounds(key);
+            DGL::Rectangle<int> bounds = getKeyBounds(key);
 
             if (pressed)
                 glColor3f(0.8f, 0.5f, 0.3f);
@@ -86,7 +86,7 @@ protected:
         int whichKey = -1;
         for (int key = 0; key < 12 && whichKey == -1; ++key)
         {
-            Rectangle<int> bounds = getKeyBounds(key);
+            DGL::Rectangle<int> bounds = getKeyBounds(key);
 
             if (bounds.contains(ev.pos))
                 whichKey = key;
@@ -115,9 +115,9 @@ private:
     /**
        Get the bounds of a particular key of the virtual MIDI keyboard.
      */
-    Rectangle<int> getKeyBounds(unsigned index) const
+    DGL::Rectangle<int> getKeyBounds(unsigned index) const
     {
-        Rectangle<int> bounds;
+        DGL::Rectangle<int> bounds;
         int padding = 8;
         bounds.setX(64 * index + padding);
         bounds.setY(padding);
