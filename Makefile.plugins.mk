@@ -98,6 +98,12 @@ DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
 endif
 
+ifneq ($(UI_TYPE),none)
+ifneq ($(WINDOWS),true)
+VST_LIBS += -lpthread
+endif
+endif
+
 DGL_LIBS += $(DGL_SYSTEM_LIBS)
 
 ifneq ($(HAVE_DGL),true)
@@ -234,7 +240,7 @@ $(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(VST_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

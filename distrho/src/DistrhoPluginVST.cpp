@@ -23,6 +23,9 @@
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+#   include "extra/Mutex.hpp"
+# endif
 #endif
 
 #ifndef __cdecl
@@ -155,13 +158,116 @@ public:
 #endif
 };
 
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+// -----------------------------------------------------------------------
+
+class MidiSendFromEditorHelper
+{
+public:
+    MidiSendFromEditorHelper()
+        : fMidiStorage(nullptr),
+          fMidiCount(0),
+          fWriterIndex(0)
+    {
+        fMidiStorage = new ShortMessage[kMidiStorageCapacity];
+    }
+
+    virtual ~MidiSendFromEditorHelper()
+    {
+        delete[] fMidiStorage;
+        fMidiStorage = nullptr;
+    }
+
+    void clearEditorMidi()
+    {
+        MutexLocker locker(fMutex);
+        fMidiCount = 0;
+    }
+
+    void sendEditorMidi(const uint8_t midiData[3])
+    {
+        MutexLocker locker(fMutex);
+
+        uint32_t count = fMidiCount;
+        if (count == kMidiStorageCapacity)
+            return;
+
+        uint32_t index = fWriterIndex;
+        ShortMessage &msg = fMidiStorage[index];
+        std::memcpy(msg.data, midiData, 3);
+
+        fMidiCount   = count + 1;
+        fWriterIndex = (index + 1) % kMidiStorageCapacity;
+    }
+
+    uint32_t receiveEditorMidi(MidiEvent *events, uint32_t eventCount)
+    {
+        if (fMidiCount == 0)
+            return eventCount;
+
+        MutexTryLocker locker(fMutex);
+        if (locker.wasNotLocked())
+            return eventCount;
+
+        // preserve the ordering of frame times according to messages before us
+        uint32_t frame = 0;
+        if (eventCount > 0)
+            frame = events[eventCount - 1].frame;
+
+        uint32_t countAvailable = fMidiCount;
+        uint32_t readerIndex = (fWriterIndex + kMidiStorageCapacity - countAvailable) % kMidiStorageCapacity;
+        for (; countAvailable > 0 && eventCount < kMaxMidiEvents; --countAvailable)
+        {
+            ShortMessage msg = fMidiStorage[readerIndex];
+            MidiEvent &event = events[eventCount++];
+            event.frame = frame;
+            event.size  = 3;
+            std::memcpy(event.data, msg.data, sizeof(uint8_t)*3);
+            readerIndex = (readerIndex + 1) % kMaxMidiEvents;
+        }
+
+        fMidiCount = countAvailable;
+        return eventCount;
+    }
+
+protected:
+    enum
+    {
+        kMidiStorageCapacity = 256,
+    };
+
+    struct ShortMessage
+    {
+        uint8_t data[3];
+    };
+
+    ShortMessage *fMidiStorage;
+    volatile uint32_t fMidiCount;
+    uint32_t fWriterIndex;
+    Mutex fMutex;
+};
+#endif
+
+// -----------------------------------------------------------------------
+
+class UIHelperVst : public ParameterCheckHelper
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                  , public MidiSendFromEditorHelper
+#endif
+{
+public:
+    virtual ~UIHelperVst()
+    {
+    }
+};
+
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
+    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, UIHelperVst* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
         : fAudioMaster(audioMaster),
           fEffect(effect),
           fUiHelper(uiHelper),
@@ -318,8 +424,12 @@ protected:
 
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-# if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        // TODO
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        uint8_t midiData[3];
+        midiData[0] = 0x90 | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fUiHelper->sendEditorMidi(midiData);
 # else
         return; // unused
         (void)channel;
@@ -338,7 +448,7 @@ private:
     // Vst stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
-    ParameterCheckHelper* const fUiHelper;
+    UIHelperVst* const fUiHelper;
     PluginExporter* const fPlugin;
 
     // Plugin UI
@@ -381,7 +491,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-class PluginVst : public ParameterCheckHelper
+class PluginVst : public UIHelperVst
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
@@ -541,6 +651,10 @@ public:
             {
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 fMidiEventCount = 0;
+
+#if DISTRHO_PLUGIN_HAS_UI
+                clearEditorMidi();
+#endif
 
                 // tell host we want MIDI events
                 hostCallback(audioMasterWantMidi);
@@ -1017,6 +1131,9 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+#if DISTRHO_PLUGIN_HAS_UI
+        fMidiEventCount = receiveEditorMidi(fMidiEvents, fMidiEventCount);
+#endif
         fPlugin.run(inputs, outputs, sampleFrames, fMidiEvents, fMidiEventCount);
         fMidiEventCount = 0;
 #else
