@@ -836,7 +836,7 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
     char* newBuf = (char*)malloc(sizeof(char) * newBufSize); // Changed 4 Iso c++ compat
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
-    auto str = String(newBuf);
+    String str = String(newBuf);
     free(newBuf);
     return str;
 
@@ -850,7 +850,7 @@ String operator+(const char* const strBufBefore, const String& strAfter) noexcep
     char* newBuf = (char*)malloc(sizeof(char) * newBufSize); // Changed 4 Iso c++ compat
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
-    auto str = String(newBuf);
+    String str = String(newBuf);
     free(newBuf);
     return str;
 }
