@@ -58,8 +58,14 @@
 #  define final    // gcc4.7+ only
 # endif
 #endif
-
-
+#ifndef _MSC_VER
+#ifndef DISTRHO_PROPER_CPP11_SUPPORT
+# define noexcept throw()
+# define override
+# define final
+# define nullptr NULL
+#endif
+#endif
 
 /* Define DISTRHO_DEPRECATED */
 #if defined(__GNUC__)
