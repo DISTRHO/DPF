@@ -136,6 +136,7 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
 # if !DISTRHO_UI_USER_RESIZABLE
     "ui:noUserResize",
 # endif
+    "ui:parent",
     "ui:resize",
     "ui:touch",
 #endif
@@ -145,6 +146,7 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
 static const char* const lv2ManifestUiRequiredFeatures[] =
 {
     "opts:options",
+    "ui:idleInterface",
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     LV2_DATA_ACCESS_URI,
     LV2_INSTANCE_ACCESS_URI,
