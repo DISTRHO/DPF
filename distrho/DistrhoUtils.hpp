@@ -92,11 +92,19 @@ void d_debug(const char* const fmt, ...) noexcept
 {
     try {
         ::va_list args;
+        #ifdef _MSC_VER
         va_start(args, fmt);
+        #else
+        ::va_start(args, fmt);
+        #endif
         std::fprintf(stdout, "\x1b[30;1m");
         std::vfprintf(stdout, fmt, args);
         std::fprintf(stdout, "\x1b[0m\n");
+        #ifdef _MSC_VER
         va_end(args);
+        #else
+        ::va_end(args);
+        #endif
     } catch (...) {}
 }
 #endif
@@ -109,10 +117,18 @@ void d_stdout(const char* const fmt, ...) noexcept
 {
     try {
         ::va_list args;
+        #ifdef _MSC_VER
         va_start(args, fmt);
+        #else
+        ::va_start(args, fmt);
+        #endif
         std::vfprintf(stdout, fmt, args);
         std::fprintf(stdout, "\n");
+        #ifdef _MSC_VER
         va_end(args);
+        #else
+        ::va_end(args);
+        #endif
     } catch (...) {}
 }
 
@@ -124,10 +140,18 @@ void d_stderr(const char* const fmt, ...) noexcept
 {
     try {
         ::va_list args;
+        #ifdef _MSC_VER
         va_start(args, fmt);
+        #else
+        ::va_start(args, fmt);
+        #endif
         std::vfprintf(stderr, fmt, args);
         std::fprintf(stderr, "\n");
+        #ifdef _MSC_VER
         va_end(args);
+        #else
+        ::va_end(args);
+        #endif
     } catch (...) {}
 }
 
@@ -139,11 +163,19 @@ void d_stderr2(const char* const fmt, ...) noexcept
 {
     try {
         ::va_list args;
+        #ifdef _MSC_VER
         va_start(args, fmt);
+        #else
+        ::va_start(args, fmt);
+        #endif
         std::fprintf(stderr, "\x1b[31m");
         std::vfprintf(stderr, fmt, args);
         std::fprintf(stderr, "\x1b[0m\n");
+        #ifdef _MSC_VER
         va_end(args);
+        #else
+        ::va_end(args);
+        #endif 
     } catch (...) {}
 }
 
