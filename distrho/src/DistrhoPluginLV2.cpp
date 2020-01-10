@@ -694,8 +694,10 @@ public:
                 std::memcpy(LV2_ATOM_BODY(&aev->body), msgBuf, msgSize);
 
                 fEventsOutData.growBy(lv2_atom_pad_size(sizeof(LV2_Atom_Event) + msgSize));
-
                 fNeededUiSends[i] = false;
+                #ifdef _MSC_VER
+                free(msgBuf);
+                #endif
                 break;
             }
         }
