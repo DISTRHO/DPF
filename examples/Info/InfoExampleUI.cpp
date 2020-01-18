@@ -36,7 +36,12 @@ public:
 
         fSampleRate = getSampleRate();
 
+#ifdef DGL_NO_SHARED_RESOURCES
+        createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
+#else
         loadSharedResources();
+#endif
+
         setGeometryConstraints(405, 256, true);
     }
 
