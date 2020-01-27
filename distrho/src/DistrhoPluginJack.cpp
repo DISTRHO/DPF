@@ -101,7 +101,7 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(this, writeMidiCallback),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, sendNoteCallback, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, sendMidiCallback, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
 #endif
           fClient(client)
     {
@@ -467,12 +467,14 @@ protected:
 
 #if DISTRHO_PLUGIN_HAS_UI
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidi(const uint8_t* const data, const uint32_t size)
     {
-        uint8_t midiData[3];
-        midiData[0] = 0x90 | channel;
-        midiData[1] = note;
-        midiData[2] = velocity;
+        if (size > 3)
+            return;
+
+        uint8_t midiData[3] = {0, 0, 0};
+        memcpy(midiData, data, size);
+
         fMidiQueue.send(midiData);
     }
 # endif
@@ -592,15 +594,14 @@ private:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        thisPtr->sendNote(channel, note, velocity);
+        thisPtr->sendMidi(data, size);
 # else
         (void)ptr;
-        (void)channel;
-        (void)note;
-        (void)velocity;
+        (void)data;
+        (void)size;
 # endif
     }
 

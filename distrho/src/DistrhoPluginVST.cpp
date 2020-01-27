@@ -207,7 +207,7 @@ public:
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendMidiCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
           fShouldCaptureVstKeys(false)
     {
         // FIXME only needed for windows?
@@ -357,19 +357,20 @@ protected:
 # endif
     }
 
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidi(const uint8_t* const data, const uint32_t size)
     {
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        uint8_t midiData[3];
-        midiData[0] = 0x90 | channel;
-        midiData[1] = note;
-        midiData[2] = velocity;
+        if (size > 3)
+            return;
+
+        uint8_t midiData[3] = {0, 0, 0};
+        memcpy(midiData, data, size);
+
         fUiHelper->sendEditorMidi(midiData);
 # else
         return; // unused
-        (void)channel;
-        (void)note;
-        (void)velocity;
+        (void)data;
+        (void)size;
 # endif
     }
 
@@ -410,9 +411,9 @@ private:
         handlePtr->setState(key, value);
     }
 
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
-        handlePtr->sendNote(channel, note, velocity);
+        handlePtr->sendMidi(data, size);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)

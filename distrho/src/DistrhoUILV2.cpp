@@ -42,7 +42,7 @@ typedef struct _LV2_Atom_MidiEvent {
 } LV2_Atom_MidiEvent;
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
+static const sendMidiFunc sendMidiCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -54,7 +54,7 @@ public:
           const LV2_Options_Option* options, const LV2_URID_Map* const uridMap, const LV2UI_Resize* const uiResz, const LV2UI_Touch* uiTouch,
           const LV2UI_Controller controller, const LV2UI_Write_Function writeFunc,
           const float scaleFactor, LV2UI_Widget* const widget, void* const dspPtr)
-        : fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, scaleFactor, dspPtr, bundlePath),
+        : fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendMidiCallback, setSizeCallback, scaleFactor, dspPtr, bundlePath),
           fUridMap(uridMap),
           fUiResize(uiResz),
           fUiTouch(uiTouch),
@@ -268,22 +268,19 @@ protected:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidi(const uint8_t* const data, const uint32_t size)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
 
-        if (channel > 0xF)
+        if (size > 3)
             return;
 
         const uint32_t eventInPortIndex(DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS);
 
         LV2_Atom_MidiEvent atomMidiEvent;
-        atomMidiEvent.atom.size = 3;
+        atomMidiEvent.atom.size = size;
         atomMidiEvent.atom.type = fMidiEventURID;
-
-        atomMidiEvent.data[0] = channel + (velocity != 0 ? 0x90 : 0x80);
-        atomMidiEvent.data[1] = note;
-        atomMidiEvent.data[2] = velocity;
+        memcpy(atomMidiEvent.data, data, size);
 
         // send to DSP side
         fWriteFunction(fController, eventInPortIndex, lv2_atom_total_size(&atomMidiEvent.atom), fEventTransferURID, &atomMidiEvent);
@@ -339,9 +336,9 @@ private:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
-        uiPtr->sendNote(channel, note, velocity);
+        uiPtr->sendMidi(data, size);
     }
 #endif
 
