@@ -27,7 +27,7 @@
 START_NAMESPACE_DISTRHO
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
+static const sendMidiFunc sendMidiCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -97,7 +97,7 @@ class UIDssi
 {
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle)
-        : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback),
+        : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendMidiCallback, setSizeCallback),
           fHostClosed(false),
           fOscData(oscData)
     {
@@ -188,20 +188,22 @@ protected:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidi(const uint8_t* const data, const uint32_t size)
     {
+        if (size > 3)
+            return;
         if (fOscData.server == nullptr)
             return;
-        if (channel > 0xF)
-            return;
 
-        uint8_t mdata[4] = {
-            0,
-            static_cast<uint8_t>(channel + (velocity != 0 ? 0x90 : 0x80)),
-            note,
-            velocity
-        };
-        fOscData.send_midi(mdata);
+        uint8_t midiBuf[4] = {0, 0, 0, 0};
+        memcpy(midiBuf + 1, data, size);
+
+        if ((midiBuf[1] & 0xf0) == 0x90 && midiBuf[3] == 0)
+        {
+            midiBuf[1] = 0x80 | (midiBuf[1] & 0x0f);
+        }
+
+        fOscData.send_midi(midiBuf);
     }
 #endif
 
@@ -232,9 +234,9 @@ private:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
-        uiPtr->sendNote(channel, note, velocity);
+        uiPtr->sendMidi(data, size);
     }
 #endif
 

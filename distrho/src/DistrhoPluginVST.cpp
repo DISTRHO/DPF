@@ -155,18 +155,59 @@ public:
 #endif
 };
 
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+// -----------------------------------------------------------------------
+
+class MidiSendFromEditorHelper
+{
+public:
+    virtual ~MidiSendFromEditorHelper() {}
+
+    void clearEditorMidi()
+    {
+        fQueue.clear();
+    }
+
+    void sendEditorMidi(const uint8_t midiData[3])
+    {
+        fQueue.send(midiData);
+    }
+
+    uint32_t receiveEditorMidi(MidiEvent* events, uint32_t eventCount)
+    {
+        return fQueue.receive(events, eventCount);
+    }
+
+private:
+    SimpleMidiQueue fQueue;
+};
+#endif
+
+// -----------------------------------------------------------------------
+
+class UIHelperVst : public ParameterCheckHelper
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                  , public MidiSendFromEditorHelper
+#endif
+{
+public:
+    virtual ~UIHelperVst()
+    {
+    }
+};
+
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
+    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, UIHelperVst* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
         : fAudioMaster(audioMaster),
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
+          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendMidiCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
           fShouldCaptureVstKeys(false)
     {
         // FIXME only needed for windows?
@@ -316,15 +357,20 @@ protected:
 # endif
     }
 
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidi(const uint8_t* const data, const uint32_t size)
     {
-# if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        // TODO
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (size > 3)
+            return;
+
+        uint8_t midiData[3] = {0, 0, 0};
+        memcpy(midiData, data, size);
+
+        fUiHelper->sendEditorMidi(midiData);
 # else
         return; // unused
-        (void)channel;
-        (void)note;
-        (void)velocity;
+        (void)data;
+        (void)size;
 # endif
     }
 
@@ -338,7 +384,7 @@ private:
     // Vst stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
-    ParameterCheckHelper* const fUiHelper;
+    UIHelperVst* const fUiHelper;
     PluginExporter* const fPlugin;
 
     // Plugin UI
@@ -365,9 +411,9 @@ private:
         handlePtr->setState(key, value);
     }
 
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
-        handlePtr->sendNote(channel, note, velocity);
+        handlePtr->sendMidi(data, size);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)
@@ -381,7 +427,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-class PluginVst : public ParameterCheckHelper
+class PluginVst : public UIHelperVst
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
@@ -541,6 +587,10 @@ public:
             {
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 fMidiEventCount = 0;
+
+#if DISTRHO_PLUGIN_HAS_UI
+                clearEditorMidi();
+#endif
 
                 // tell host we want MIDI events
                 hostCallback(audioMasterWantMidi);
@@ -1017,6 +1067,9 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+#if DISTRHO_PLUGIN_HAS_UI
+        fMidiEventCount = receiveEditorMidi(fMidiEvents, fMidiEventCount);
+#endif
         fPlugin.run(inputs, outputs, sampleFrames, fMidiEvents, fMidiEventCount);
         fMidiEventCount = 0;
 #else

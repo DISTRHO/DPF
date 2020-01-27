@@ -98,6 +98,10 @@ DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
 endif
 
+ifneq ($(UI_TYPE),none)
+THREAD_LIBS += -lpthread
+endif
+
 DGL_LIBS += $(DGL_SYSTEM_LIBS)
 
 ifneq ($(HAVE_DGL),true)
@@ -171,7 +175,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(THREAD_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
@@ -234,7 +238,7 @@ $(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(THREAD_LIBS) $(SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

@@ -101,7 +101,7 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(this, writeMidiCallback),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
+          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, sendMidiCallback, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
 #endif
           fClient(client)
     {
@@ -356,12 +356,13 @@ protected:
         jack_midi_clear_buffer(fPortMidiOutBuffer);
 #endif
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        uint32_t  midiEventCount = 0;
+        MidiEvent midiEvents[kMaxMidiEvents];
+#endif
+
         if (const uint32_t eventCount = jack_midi_get_event_count(midiBuf))
         {
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            uint32_t  midiEventCount = 0;
-            MidiEvent midiEvents[eventCount];
-#endif
             jack_midi_event_t jevent;
 
             for (uint32_t i=0; i < eventCount; ++i)
@@ -410,27 +411,26 @@ protected:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                MidiEvent& midiEvent(midiEvents[midiEventCount++]);
+                if (midiEventCount < kMaxMidiEvents)
+                {
+                    MidiEvent& midiEvent(midiEvents[midiEventCount++]);
 
-                midiEvent.frame = jevent.time;
-                midiEvent.size  = jevent.size;
+                    midiEvent.frame = jevent.time;
+                    midiEvent.size  = jevent.size;
 
-                if (midiEvent.size > MidiEvent::kDataSize)
-                    midiEvent.dataExt = jevent.buffer;
-                else
-                    std::memcpy(midiEvent.data, jevent.buffer, midiEvent.size);
+                    if (midiEvent.size > MidiEvent::kDataSize)
+                        midiEvent.dataExt = jevent.buffer;
+                    else
+                        std::memcpy(midiEvent.data, jevent.buffer, midiEvent.size);
+                }
 #endif
             }
-
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);
-#endif
         }
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        else
-        {
-            fPlugin.run(audioIns, audioOuts, nframes, nullptr, 0);
-        }
+# if DISTRHO_PLUGIN_HAS_UI
+        midiEventCount = fMidiQueue.receive(midiEvents, midiEventCount);
+# endif
+        fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);
 #else
         fPlugin.run(audioIns, audioOuts, nframes);
 #endif
@@ -466,6 +466,19 @@ protected:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendMidi(const uint8_t* const data, const uint32_t size)
+    {
+        if (size > 3)
+            return;
+
+        uint8_t midiData[3] = {0, 0, 0};
+        memcpy(midiData, data, size);
+
+        fMidiQueue.send(midiData);
+    }
+# endif
+
     void setSize(const uint width, const uint height)
     {
         fUI.setWindowSize(width, height);
@@ -535,6 +548,9 @@ private:
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
     int fProgramChanged;
 # endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    SimpleMidiQueue fMidiQueue;
+# endif
 #endif
 
     // -------------------------------------------------------------------
@@ -578,6 +594,17 @@ private:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
+    {
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        thisPtr->sendMidi(data, size);
+# else
+        (void)ptr;
+        (void)data;
+        (void)size;
+# endif
+    }
+
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
         thisPtr->setSize(width, height);

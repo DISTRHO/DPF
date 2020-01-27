@@ -51,7 +51,7 @@ extern Window*     d_lastUiWindow;
 typedef void (*editParamFunc) (void* ptr, uint32_t rindex, bool started);
 typedef void (*setParamFunc)  (void* ptr, uint32_t rindex, float value);
 typedef void (*setStateFunc)  (void* ptr, const char* key, const char* value);
-typedef void (*sendNoteFunc)  (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
+typedef void (*sendMidiFunc)  (void* ptr, const uint8_t* data, uint32_t size);
 typedef void (*setSizeFunc)   (void* ptr, uint width, uint height);
 
 // -----------------------------------------------------------------------
@@ -76,7 +76,7 @@ struct UI::PrivateData {
     editParamFunc editParamCallbackFunc;
     setParamFunc  setParamCallbackFunc;
     setStateFunc  setStateCallbackFunc;
-    sendNoteFunc  sendNoteCallbackFunc;
+    sendMidiFunc  sendMidiCallbackFunc;
     setSizeFunc   setSizeCallbackFunc;
 
     PrivateData() noexcept
@@ -93,7 +93,7 @@ struct UI::PrivateData {
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
-          sendNoteCallbackFunc(nullptr),
+          sendMidiCallbackFunc(nullptr),
           setSizeCallbackFunc(nullptr)
     {
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
@@ -133,10 +133,10 @@ struct UI::PrivateData {
             setStateCallbackFunc(callbacksPtr, key, value);
     }
 
-    void sendNoteCallback(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    void sendMidiCallback(const uint8_t* data, uint32_t size)
     {
-        if (sendNoteCallbackFunc != nullptr)
-            sendNoteCallbackFunc(callbacksPtr, channel, note, velocity);
+        if (sendMidiCallbackFunc != nullptr)
+            sendMidiCallbackFunc(callbacksPtr, data, size);
     }
 
     void setSizeCallback(const uint width, const uint height)
@@ -256,7 +256,7 @@ public:
                const editParamFunc editParamCall,
                const setParamFunc setParamCall,
                const setStateFunc setStateCall,
-               const sendNoteFunc sendNoteCall,
+               const sendMidiFunc sendMidiCall,
                const setSizeFunc setSizeCall,
                const float scaleFactor = 1.0f,
                void* const dspPtr = nullptr,
@@ -278,7 +278,7 @@ public:
         fData->editParamCallbackFunc = editParamCall;
         fData->setParamCallbackFunc  = setParamCall;
         fData->setStateCallbackFunc  = setStateCall;
-        fData->sendNoteCallbackFunc  = sendNoteCall;
+        fData->sendMidiCallbackFunc  = sendMidiCall;
         fData->setSizeCallbackFunc   = setSizeCall;
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

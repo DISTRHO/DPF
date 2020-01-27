@@ -118,6 +118,12 @@ public:
       @note Work in progress. Implemented for DSSI and LV2 formats.
     */
     void sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
+
+   /**
+      sendMidi.
+      @TODO Document this.
+    */
+    void sendMidi(const uint8_t* data, uint32_t size);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS

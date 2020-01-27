@@ -38,7 +38,7 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 static const setStateFunc setStateCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_IS_SYNTH
-static const sendNoteFunc sendNoteCallback = nullptr;
+static const sendMidiFunc sendMidiCallback = nullptr;
 #endif
 
 class UICarla
@@ -46,7 +46,7 @@ class UICarla
 public:
     UICarla(const NativeHostDescriptor* const host, PluginExporter* const plugin)
         : fHost(host),
-          fUI(this, 0, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer())
+          fUI(this, 0, editParameterCallback, setParameterCallback, setStateCallback, sendMidiCallback, setSizeCallback, plugin->getInstancePointer())
     {
         fUI.setWindowTitle(host->uiName);
 
@@ -116,7 +116,7 @@ protected:
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-    void handleSendNote(const uint8_t, const uint8_t, const uint8_t)
+    void handleSendMidi(const uint8_t* const, const uint32_t)
     {
         // TODO
     }
@@ -159,9 +159,9 @@ private:
 #endif
 
 #if DISTRHO_PLUGIN_IS_SYNTH
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendMidiCallback(void* ptr, const uint8_t* data, uint32_t size)
     {
-        handlePtr->handleSendNote(channel, note, velocity);
+        handlePtr->handleSendMidi(data, size);
     }
 #endif
 

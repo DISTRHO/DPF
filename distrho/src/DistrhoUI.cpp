@@ -106,7 +106,17 @@ void UI::setState(const char* key, const char* value)
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 {
-    pData->sendNoteCallback(channel, note, velocity);
+    uint8_t data[3];
+    data[0] = 0x90 | channel;
+    data[1] = note;
+    data[2] = velocity;
+
+    sendMidi(data, sizeof(data));
+}
+
+void UI::sendMidi(const uint8_t* data, uint32_t size)
+{
+    pData->sendMidiCallback(data, size);
 }
 #endif
 
