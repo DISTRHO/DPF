@@ -253,7 +253,7 @@ protected:
     * Callbacks (optional) */
 
    /**
-      Optional callback to inform the plugin about a buffer size change.@
+      Optional callback to inform the plugin about a buffer size change.
       This function will only be called when the plugin is deactivated.
       @note This value is only a hint!
             Hosts might call run() with a higher or lower number of frames.

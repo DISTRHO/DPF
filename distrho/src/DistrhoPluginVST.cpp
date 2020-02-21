@@ -952,16 +952,16 @@ public:
 
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
     {
-        if (sampleFrames <= 0)
-        {
-            updateParameterOutputsAndTriggers();
-            return;
-        }
-
         if (! fPlugin.isActive())
         {
             // host has not activated the plugin yet, nasty!
             vst_dispatcher(effMainsChanged, 0, 1, nullptr, 0.0f);
+        }
+
+        if (sampleFrames <= 0)
+        {
+            updateParameterOutputsAndTriggers();
+            return;
         }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
