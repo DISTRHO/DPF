@@ -533,14 +533,14 @@ void lv2_generate_ttl(const char* const basename)
                     if (plugin.getParameterHints(i) & kParameterIsInteger)
                     {
                         if (plugin.isParameterInput(i))
-                            pluginString += "        lv2:default " + String(int(plugin.getParameterValue(i))) + " ;\n";
+                            pluginString += "        lv2:default " + String(int(ranges.def)) + " ;\n";
                         pluginString += "        lv2:minimum " + String(int(ranges.min)) + " ;\n";
                         pluginString += "        lv2:maximum " + String(int(ranges.max)) + " ;\n";
                     }
                     else
                     {
                         if (plugin.isParameterInput(i))
-                            pluginString += "        lv2:default " + String(plugin.getParameterValue(i)) + " ;\n";
+                            pluginString += "        lv2:default " + String(ranges.def) + " ;\n";
                         pluginString += "        lv2:minimum " + String(ranges.min) + " ;\n";
                         pluginString += "        lv2:maximum " + String(ranges.max) + " ;\n";
                     }
