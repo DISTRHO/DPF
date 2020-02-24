@@ -189,7 +189,7 @@ struct ParameterRanges {
     float max;
 
    /**
-      Default constructor, using 0.0 as minimum, 1.0 as maximum and 0.0 as default.
+      Default constructor, using 0.0 as default, 0.0 as minimum, 1.0 as maximum.
     */
     ParameterRanges() noexcept
         : def(0.0f),
@@ -203,6 +203,20 @@ struct ParameterRanges {
         : def(df),
           min(mn),
           max(mx) {}
+
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+   /**
+      Constructor using an initializer list, like `{ 0.0f, 0.0f, 1.0f }`.
+      @note You MUST use 3 variables in the list!
+    */
+    ParameterRanges(const std::initializer_list<float>& il)
+    {
+        std::initializer_list<float>::iterator ilit = il.begin();
+        def = *(ilit++);
+        min = *(ilit++);
+        max = *(ilit++);
+    }
+#endif
 
    /**
       Fix the default value within range.
