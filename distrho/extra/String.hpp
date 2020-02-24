@@ -174,7 +174,7 @@ public:
           fBufferLen(0)
     {
         char strBuf[0xff+1];
-        std::snprintf(strBuf, 0xff, "%f", value);
+        std::snprintf(strBuf, 0xff, "%.12g", static_cast<double>(value));
         strBuf[0xff] = '\0';
 
         _dup(strBuf);
@@ -188,7 +188,7 @@ public:
           fBufferLen(0)
     {
         char strBuf[0xff+1];
-        std::snprintf(strBuf, 0xff, "%g", value);
+        std::snprintf(strBuf, 0xff, "%.24g", value);
         strBuf[0xff] = '\0';
 
         _dup(strBuf);
