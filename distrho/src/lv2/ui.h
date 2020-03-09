@@ -1,6 +1,6 @@
 /*
   LV2 UI Extension
-  Copyright 2009-2014 David Robillard <d@drobilla.net>
+  Copyright 2009-2016 David Robillard <d@drobilla.net>
   Copyright 2006-2011 Lars Luthman <lars.luthman@gmail.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
@@ -17,9 +17,12 @@
 */
 
 /**
-   @file ui.h User Interface API.
+   @defgroup ui User Interfaces
 
-   For high-level documentation, see <http://lv2plug.in/ns/extensions/ui>.
+   User interfaces of any type for plugins,
+   <http://lv2plug.in/ns/extensions/ui> for details.
+
+   @{
 */
 
 #ifndef LV2_UI_H
@@ -28,39 +31,48 @@
 #include <stdint.h>
 
 #include "lv2.h"
+#include "urid.h"
 
-#define LV2_UI_URI    "http://lv2plug.in/ns/extensions/ui"
-#define LV2_UI_PREFIX LV2_UI_URI "#"
+#define LV2_UI_URI    "http://lv2plug.in/ns/extensions/ui"  ///< http://lv2plug.in/ns/extensions/ui
+#define LV2_UI_PREFIX LV2_UI_URI "#"                        ///< http://lv2plug.in/ns/extensions/ui#
 
-#define LV2_UI__CocoaUI          LV2_UI_PREFIX "CocoaUI"
-#define LV2_UI__Gtk3UI           LV2_UI_PREFIX "Gtk3UI"
-#define LV2_UI__GtkUI            LV2_UI_PREFIX "GtkUI"
-#define LV2_UI__PortNotification LV2_UI_PREFIX "PortNotification"
-#define LV2_UI__Qt4UI            LV2_UI_PREFIX "Qt4UI"
-#define LV2_UI__UI               LV2_UI_PREFIX "UI"
-#define LV2_UI__WindowsUI        LV2_UI_PREFIX "WindowsUI"
-#define LV2_UI__X11UI            LV2_UI_PREFIX "X11UI"
-#define LV2_UI__binary           LV2_UI_PREFIX "binary"
-#define LV2_UI__fixedSize        LV2_UI_PREFIX "fixedSize"
-#define LV2_UI__idleInterface    LV2_UI_PREFIX "idleInterface"
-#define LV2_UI__noUserResize     LV2_UI_PREFIX "noUserResize"
-#define LV2_UI__notifyType       LV2_UI_PREFIX "notifyType"
-#define LV2_UI__parent           LV2_UI_PREFIX "parent"
-#define LV2_UI__plugin           LV2_UI_PREFIX "plugin"
-#define LV2_UI__portIndex        LV2_UI_PREFIX "portIndex"
-#define LV2_UI__portMap          LV2_UI_PREFIX "portMap"
-#define LV2_UI__portNotification LV2_UI_PREFIX "portNotification"
-#define LV2_UI__portSubscribe    LV2_UI_PREFIX "portSubscribe"
-#define LV2_UI__resize           LV2_UI_PREFIX "resize"
-#define LV2_UI__scaleFactor      LV2_UI_PREFIX "scaleFactor"
-#define LV2_UI__showInterface    LV2_UI_PREFIX "showInterface"
-#define LV2_UI__touch            LV2_UI_PREFIX "touch"
-#define LV2_UI__ui               LV2_UI_PREFIX "ui"
-#define LV2_UI__updateRate       LV2_UI_PREFIX "updateRate"
-#define LV2_UI__windowTitle      LV2_UI_PREFIX "windowTitle"
+#define LV2_UI__CocoaUI          LV2_UI_PREFIX "CocoaUI"           ///< http://lv2plug.in/ns/extensions/ui#CocoaUI
+#define LV2_UI__Gtk3UI           LV2_UI_PREFIX "Gtk3UI"            ///< http://lv2plug.in/ns/extensions/ui#Gtk3UI
+#define LV2_UI__GtkUI            LV2_UI_PREFIX "GtkUI"             ///< http://lv2plug.in/ns/extensions/ui#GtkUI
+#define LV2_UI__PortNotification LV2_UI_PREFIX "PortNotification"  ///< http://lv2plug.in/ns/extensions/ui#PortNotification
+#define LV2_UI__PortProtocol     LV2_UI_PREFIX "PortProtocol"      ///< http://lv2plug.in/ns/extensions/ui#PortProtocol
+#define LV2_UI__Qt4UI            LV2_UI_PREFIX "Qt4UI"             ///< http://lv2plug.in/ns/extensions/ui#Qt4UI
+#define LV2_UI__Qt5UI            LV2_UI_PREFIX "Qt5UI"             ///< http://lv2plug.in/ns/extensions/ui#Qt5UI
+#define LV2_UI__UI               LV2_UI_PREFIX "UI"                ///< http://lv2plug.in/ns/extensions/ui#UI
+#define LV2_UI__WindowsUI        LV2_UI_PREFIX "WindowsUI"         ///< http://lv2plug.in/ns/extensions/ui#WindowsUI
+#define LV2_UI__X11UI            LV2_UI_PREFIX "X11UI"             ///< http://lv2plug.in/ns/extensions/ui#X11UI
+#define LV2_UI__backgroundColor  LV2_UI_PREFIX "backgroundColor"   ///< http://lv2plug.in/ns/extensions/ui#backgroundColor
+#define LV2_UI__binary           LV2_UI_PREFIX "binary"            ///< http://lv2plug.in/ns/extensions/ui#binary
+#define LV2_UI__fixedSize        LV2_UI_PREFIX "fixedSize"         ///< http://lv2plug.in/ns/extensions/ui#fixedSize
+#define LV2_UI__foregroundColor  LV2_UI_PREFIX "foregroundColor"   ///< http://lv2plug.in/ns/extensions/ui#foregroundColor
+#define LV2_UI__idleInterface    LV2_UI_PREFIX "idleInterface"     ///< http://lv2plug.in/ns/extensions/ui#idleInterface
+#define LV2_UI__noUserResize     LV2_UI_PREFIX "noUserResize"      ///< http://lv2plug.in/ns/extensions/ui#noUserResize
+#define LV2_UI__notifyType       LV2_UI_PREFIX "notifyType"        ///< http://lv2plug.in/ns/extensions/ui#notifyType
+#define LV2_UI__parent           LV2_UI_PREFIX "parent"            ///< http://lv2plug.in/ns/extensions/ui#parent
+#define LV2_UI__plugin           LV2_UI_PREFIX "plugin"            ///< http://lv2plug.in/ns/extensions/ui#plugin
+#define LV2_UI__portIndex        LV2_UI_PREFIX "portIndex"         ///< http://lv2plug.in/ns/extensions/ui#portIndex
+#define LV2_UI__portMap          LV2_UI_PREFIX "portMap"           ///< http://lv2plug.in/ns/extensions/ui#portMap
+#define LV2_UI__portNotification LV2_UI_PREFIX "portNotification"  ///< http://lv2plug.in/ns/extensions/ui#portNotification
+#define LV2_UI__portSubscribe    LV2_UI_PREFIX "portSubscribe"     ///< http://lv2plug.in/ns/extensions/ui#portSubscribe
+#define LV2_UI__protocol         LV2_UI_PREFIX "protocol"          ///< http://lv2plug.in/ns/extensions/ui#protocol
+#define LV2_UI__floatProtocol    LV2_UI_PREFIX "floatProtocol"     ///< http://lv2plug.in/ns/extensions/ui#floatProtocol
+#define LV2_UI__peakProtocol     LV2_UI_PREFIX "peakProtocol"      ///< http://lv2plug.in/ns/extensions/ui#peakProtocol
+#define LV2_UI__requestValue     LV2_UI_PREFIX "requestValue"      ///< http://lv2plug.in/ns/extensions/ui#requestValue
+#define LV2_UI__resize           LV2_UI_PREFIX "resize"            ///< http://lv2plug.in/ns/extensions/ui#resize
+#define LV2_UI__scaleFactor      LV2_UI_PREFIX "scaleFactor"       ///< http://lv2plug.in/ns/extensions/ui#scaleFactor
+#define LV2_UI__showInterface    LV2_UI_PREFIX "showInterface"     ///< http://lv2plug.in/ns/extensions/ui#showInterface
+#define LV2_UI__touch            LV2_UI_PREFIX "touch"             ///< http://lv2plug.in/ns/extensions/ui#touch
+#define LV2_UI__ui               LV2_UI_PREFIX "ui"                ///< http://lv2plug.in/ns/extensions/ui#ui
+#define LV2_UI__updateRate       LV2_UI_PREFIX "updateRate"        ///< http://lv2plug.in/ns/extensions/ui#updateRate
+#define LV2_UI__windowTitle      LV2_UI_PREFIX "windowTitle"       ///< http://lv2plug.in/ns/extensions/ui#windowTitle
 
 /**
-   The index returned by LV2_UI_Port_Port::port_index() for unknown ports.
+   The index returned by LV2UI_Port_Map::port_index() for unknown ports.
 */
 #define LV2UI_INVALID_PORT_INDEX ((uint32_t)-1)
 
@@ -99,18 +111,21 @@ typedef void* LV2UI_Feature_Handle;
 /**
    A host-provided function that sends data to a plugin's input ports.
 
-   The @p buffer parameter must point to a block of data, @p buffer_size bytes
-   large.  The format of this data and how the host should use it is defined by
-   the @p port_protocol.  This buffer is owned by the UI and is only valid for
-   the duration of this call.
+   @param controller The opaque controller pointer passed to
+   LV2UI_Descriptor::instantiate().
 
-   The @p port_protocol parameter should either be 0 or the URID for a
-   ui:PortProtocol.  If it is 0, the protocol is implicitly ui:floatProtocol,
-   the port MUST be an lv2:ControlPort input, @p buffer MUST point to a single
-   float value, and @p buffer_size MUST be sizeof(float).
+   @param port_index Index of the port to update.
 
-   The UI SHOULD NOT use a protocol not supported by the host, but the host
-   MUST gracefully ignore any protocol it does not understand.
+   @param buffer Buffer containing `buffer_size` bytes of data.
+
+   @param buffer_size Size of `buffer` in bytes.
+
+   @param port_protocol Either 0 or the URID for a ui:PortProtocol.  If 0, the
+   protocol is implicitly ui:floatProtocol, the port MUST be an lv2:ControlPort
+   input, `buffer` MUST point to a single float value, and `buffer_size` MUST
+   be sizeof(float).  The UI SHOULD NOT use a protocol not supported by the
+   host, but the host MUST gracefully ignore any protocol it does not
+   understand.
 */
 typedef void (*LV2UI_Write_Function)(LV2UI_Controller controller,
                                      uint32_t         port_index,
@@ -144,7 +159,7 @@ typedef struct _LV2UI_Descriptor {
 	   @param write_function A function that the UI can use to send data to the
 	   plugin's input ports.
 
-	   @param controller A handle for the plugin instance to be passed as the
+	   @param controller A handle for the UI instance to be passed as the
 	   first parameter of UI methods.
 
 	   @param widget (output) widget pointer.  The UI points this at its main
@@ -174,18 +189,18 @@ typedef struct _LV2UI_Descriptor {
 	/**
 	   Tell the UI that something interesting has happened at a plugin port.
 
-	   What is "interesting" and how it is written to @p buffer is defined by
-	   @p format, which has the same meaning as in LV2UI_Write_Function().
+	   What is "interesting" and how it is written to `buffer` is defined by
+	   `format`, which has the same meaning as in LV2UI_Write_Function().
 	   Format 0 is a special case for lv2:ControlPort, where this function
 	   should be called when the port value changes (but not necessarily for
-	   every change), @p buffer_size must be sizeof(float), and @p buffer
+	   every change), `buffer_size` must be sizeof(float), and `buffer`
 	   points to a single IEEE-754 float.
 
 	   By default, the host should only call this function for lv2:ControlPort
 	   inputs.  However, the UI can request updates for other ports statically
 	   with ui:portNotification or dynamicaly with ui:portSubscribe.
 
-	   The UI MUST NOT retain any reference to @p buffer after this function
+	   The UI MUST NOT retain any reference to `buffer` after this function
 	   returns, it is only valid for the duration of the call.
 
 	   This member may be NULL if the UI is not interested in any port events.
@@ -202,7 +217,7 @@ typedef struct _LV2UI_Descriptor {
 
 	   This member may be set to NULL if the UI is not interested in supporting
 	   any extensions. This is similar to LV2_Descriptor::extension_data().
-	   
+
 	*/
 	const void* (*extension_data)(const char* uri);
 } LV2UI_Descriptor;
@@ -227,7 +242,8 @@ typedef struct _LV2UI_Resize {
 	   host about the size of the UI.
 
 	   When provided by the UI, the host may call this function to notify the
-	   UI that it should change its size accordingly.
+	   UI that it should change its size accordingly.  In this case, the host
+	   must pass the LV2UI_Handle to provide access to the UI instance.
 
 	   @return 0 on success.
 	*/
@@ -248,7 +264,7 @@ typedef struct _LV2UI_Port_Map {
 	LV2UI_Feature_Handle handle;
 
 	/**
-	   Get the index for the port with the given @p symbol.
+	   Get the index for the port with the given `symbol`.
 
 	   @return The index of the port, or LV2UI_INVALID_PORT_INDEX if no such
 	   port is found.
@@ -272,7 +288,7 @@ typedef struct _LV2UI_Port_Subscribe {
 	   This means that the host will call the UI's port_event() function when
 	   the port value changes (as defined by protocol).
 
-	   Calling this function with the same @p port_index and @p port_protocol
+	   Calling this function with the same `port_index` and `port_protocol`
 	   as an already active subscription has no effect.
 
 	   @param handle The handle field of this struct.
@@ -292,7 +308,7 @@ typedef struct _LV2UI_Port_Subscribe {
 	   This means that the host will cease calling calling port_event() when
 	   the port value changes.
 
-	   Calling this function with a @p port_index and @p port_protocol that
+	   Calling this function with a `port_index` and `port_protocol` that
 	   does not refer to an active port subscription has no effect.
 
 	   @param handle The handle field of this struct.
@@ -331,6 +347,94 @@ typedef struct _LV2UI_Touch {
 	              uint32_t             port_index,
 	              bool                 grabbed);
 } LV2UI_Touch;
+
+/**
+   A status code for LV2UI_Request_Value::request.
+*/
+typedef enum {
+	/**
+	   Completed successfully.
+
+	   The host will set the parameter later if the user choses a new value.
+	*/
+	LV2UI_REQUEST_VALUE_SUCCESS,
+
+	/**
+	   Parameter already being requested.
+
+	   The host is already requesting a parameter from the user (for example, a
+	   dialog is visible), or the UI is otherwise busy and can not make this
+	   request.
+	*/
+	LV2UI_REQUEST_VALUE_BUSY,
+
+	/**
+	   Unknown parameter.
+
+	   The host is not aware of this parameter, and is not able to set a new
+	   value for it.
+	*/
+	LV2UI_REQUEST_VALUE_ERR_UNKNOWN,
+
+	/**
+	   Unsupported parameter.
+
+	   The host knows about this parameter, but does not support requesting a
+	   new value for it from the user.  This is likely because the host does
+	   not have UI support for choosing a value with the appropriate type.
+	*/
+	LV2UI_REQUEST_VALUE_ERR_UNSUPPORTED
+} LV2UI_Request_Value_Status;
+
+/**
+   A feature to request a new parameter value from the host.
+*/
+typedef struct {
+	/**
+	   Pointer to opaque data which must be passed to request().
+	*/
+	LV2UI_Feature_Handle handle;
+
+	/**
+	   Request a value for a parameter from the host.
+
+	   This is mainly used by UIs to request values for complex parameters that
+	   don't change often, such as file paths, but it may be used to request
+	   any parameter value.
+
+	   This function returns immediately, and the return value indicates
+	   whether the host can fulfill the request.  The host may notify the
+	   plugin about the new parameter value, for example when a file is
+	   selected by the user, via the usual mechanism.  Typically, the host will
+	   send a message to the plugin that sets the new parameter value, and the
+	   plugin will notify the UI via a message as usual for any other parameter
+	   change.
+
+	   To provide an appropriate UI, the host can determine details about the
+	   parameter from the plugin data as usual.  The additional parameters of
+	   this function provide support for more advanced use cases, but in the
+	   simple common case, the plugin will simply pass the key of the desired
+	   parameter and zero for everything else.
+
+	   @param handle The handle field of this struct.
+
+	   @param key The URID of the parameter.
+
+	   @param type The optional type of the value to request.  This can be used
+	   to request a specific value type for parameters that support several.
+	   If non-zero, it must be the URID of an instance of rdfs:Class or
+	   rdfs:Datatype.
+
+	   @param features Additional features for this request, or NULL.
+
+	   @return A status code which is 0 on success.
+	*/
+	LV2UI_Request_Value_Status (*request)(LV2UI_Feature_Handle      handle,
+	                                      LV2_URID                  key,
+	                                      LV2_URID                  type,
+	                                      const LV2_Feature* const* features);
+
+} LV2UI_Request_Value;
 
 /**
    UI Idle Interface (LV2_UI__idleInterface)
@@ -429,3 +533,7 @@ typedef const LV2UI_Descriptor* (*LV2UI_DescriptorFunction)(uint32_t index);
 #endif
 
 #endif /* LV2_UI_H */
+
+/**
+   @}
+*/
