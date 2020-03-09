@@ -20,23 +20,20 @@
 # error Cannot use MIDI Output with LADSPA or DSSI
 #endif
 
+#if DISTRHO_PLUGIN_WANT_TIMEPOS && !defined(DISTRHO_NO_WARNINGS)
+# warning LADSPA/DSSI does not support TimePos
+#endif
+
 #ifdef DISTRHO_PLUGIN_TARGET_DSSI
 # include "dssi/dssi.h"
-# if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-#  error DSSI does not support MIDI output
-# endif
 #else
 # include "ladspa/ladspa.h"
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 #  error Cannot use MIDI with LADSPA
 # endif
 # if DISTRHO_PLUGIN_WANT_STATE && !defined(DISTRHO_NO_WARNINGS)
 #  warning LADSPA cannot handle states
 # endif
-#endif
-
-#if DISTRHO_PLUGIN_WANT_TIMEPOS && !defined(DISTRHO_NO_WARNINGS)
-# warning LADSPA/DSSI does not support TimePos
 #endif
 
 START_NAMESPACE_DISTRHO
