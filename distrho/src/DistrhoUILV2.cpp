@@ -19,7 +19,6 @@
 #include "../extra/String.hpp"
 
 #include "lv2/atom.h"
-#include "lv2/atom-forge.h"
 #include "lv2/atom-util.h"
 #include "lv2/data-access.h"
 #include "lv2/instance-access.h"
