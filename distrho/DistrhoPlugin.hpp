@@ -207,20 +207,6 @@ struct ParameterRanges {
           min(mn),
           max(mx) {}
 
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-   /**
-      Constructor using an initializer list, like `{ 0.0f, 0.0f, 1.0f }`.
-      @note You MUST use 3 variables in the list!
-    */
-    ParameterRanges(const std::initializer_list<float>& il)
-    {
-        std::initializer_list<float>::iterator ilit = il.begin();
-        def = *(ilit++);
-        min = *(ilit++);
-        max = *(ilit++);
-    }
-#endif
-
    /**
       Fix the default value within range.
     */
