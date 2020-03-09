@@ -77,6 +77,10 @@
 # define DISTRHO_PLUGIN_WANT_STATE 0
 #endif
 
+#ifndef DISTRHO_PLUGIN_WANT_STATEFILES
+# define DISTRHO_PLUGIN_WANT_STATEFILES 0
+#endif
+
 #ifndef DISTRHO_PLUGIN_WANT_FULL_STATE
 # define DISTRHO_PLUGIN_WANT_FULL_STATE 0
 #endif
@@ -108,7 +112,7 @@
 // Define DISTRHO_UI_URI if needed
 
 #ifndef DISTRHO_UI_URI
-# define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+# define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#DPF_UI"
 #endif
 
 // -----------------------------------------------------------------------
@@ -125,6 +129,14 @@
 # define DISTRHO_PLUGIN_WANT_MIDI_INPUT DISTRHO_PLUGIN_IS_SYNTH
 #elif DISTRHO_PLUGIN_IS_SYNTH && ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
 # error Synths need MIDI input to work!
+#endif
+
+// -----------------------------------------------------------------------
+// Enable state if plugin wants state files
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES && ! DISTRHO_PLUGIN_WANT_STATE
+# undef DISTRHO_PLUGIN_WANT_STATE
+# define DISTRHO_PLUGIN_WANT_STATE 1
 #endif
 
 // -----------------------------------------------------------------------

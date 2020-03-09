@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -48,11 +48,12 @@ extern Window*     d_lastUiWindow;
 // -----------------------------------------------------------------------
 // UI callbacks
 
-typedef void (*editParamFunc) (void* ptr, uint32_t rindex, bool started);
-typedef void (*setParamFunc)  (void* ptr, uint32_t rindex, float value);
-typedef void (*setStateFunc)  (void* ptr, const char* key, const char* value);
-typedef void (*sendNoteFunc)  (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
-typedef void (*setSizeFunc)   (void* ptr, uint width, uint height);
+typedef void (*editParamFunc)   (void* ptr, uint32_t rindex, bool started);
+typedef void (*setParamFunc)    (void* ptr, uint32_t rindex, float value);
+typedef void (*setStateFunc)    (void* ptr, const char* key, const char* value);
+typedef void (*sendNoteFunc)    (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
+typedef void (*setSizeFunc)     (void* ptr, uint width, uint height);
+typedef bool (*fileRequestFunc) (void* ptr, const char* key);
 
 // -----------------------------------------------------------------------
 // UI private data
@@ -72,12 +73,13 @@ struct UI::PrivateData {
     uint minHeight;
 
     // Callbacks
-    void*         callbacksPtr;
-    editParamFunc editParamCallbackFunc;
-    setParamFunc  setParamCallbackFunc;
-    setStateFunc  setStateCallbackFunc;
-    sendNoteFunc  sendNoteCallbackFunc;
-    setSizeFunc   setSizeCallbackFunc;
+    void*           callbacksPtr;
+    editParamFunc   editParamCallbackFunc;
+    setParamFunc    setParamCallbackFunc;
+    setStateFunc    setStateCallbackFunc;
+    sendNoteFunc    sendNoteCallbackFunc;
+    setSizeFunc     setSizeCallbackFunc;
+    fileRequestFunc fileRequestCallbackFunc;
 
     PrivateData() noexcept
         : sampleRate(d_lastUiSampleRate),
@@ -94,7 +96,8 @@ struct UI::PrivateData {
           setParamCallbackFunc(nullptr),
           setStateCallbackFunc(nullptr),
           sendNoteCallbackFunc(nullptr),
-          setSizeCallbackFunc(nullptr)
+          setSizeCallbackFunc(nullptr),
+          fileRequestCallbackFunc(nullptr)
     {
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
 
@@ -143,6 +146,16 @@ struct UI::PrivateData {
     {
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(callbacksPtr, width, height);
+    }
+
+    bool fileRequestCallback(const char* key)
+    {
+        if (fileRequestCallbackFunc != nullptr)
+            return fileRequestCallbackFunc(callbacksPtr, key);
+
+        // TODO use old style DPF dialog here
+
+        return false;
     }
 };
 
@@ -258,6 +271,7 @@ public:
                const setStateFunc setStateCall,
                const sendNoteFunc sendNoteCall,
                const setSizeFunc setSizeCall,
+               const fileRequestFunc fileRequestCall,
                const float scaleFactor = 1.0f,
                void* const dspPtr = nullptr,
                const char* const bundlePath = nullptr)
@@ -274,12 +288,13 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
 
-        fData->callbacksPtr          = callbacksPtr;
-        fData->editParamCallbackFunc = editParamCall;
-        fData->setParamCallbackFunc  = setParamCall;
-        fData->setStateCallbackFunc  = setStateCall;
-        fData->sendNoteCallbackFunc  = sendNoteCall;
-        fData->setSizeCallbackFunc   = setSizeCall;
+        fData->callbacksPtr            = callbacksPtr;
+        fData->editParamCallbackFunc   = editParamCall;
+        fData->setParamCallbackFunc    = setParamCall;
+        fData->setStateCallbackFunc    = setStateCall;
+        fData->sendNoteCallbackFunc    = sendNoteCall;
+        fData->setSizeCallbackFunc     = setSizeCall;
+        fData->fileRequestCallbackFunc = fileRequestCall;
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         // unused

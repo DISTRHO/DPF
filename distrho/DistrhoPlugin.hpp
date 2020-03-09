@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -828,6 +828,13 @@ protected:
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
     virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue) = 0;
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+   /**
+      TODO API under construction
+    */
+    virtual bool isStateFile(uint32_t index) = 0;
 #endif
 
    /* --------------------------------------------------------------------------------------------------------

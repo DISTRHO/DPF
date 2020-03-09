@@ -97,7 +97,7 @@ class UIDssi
 {
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle)
-        : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback),
+        : fUI(this, 0, nullptr, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, nullptr),
           fHostClosed(false),
           fOscData(oscData)
     {

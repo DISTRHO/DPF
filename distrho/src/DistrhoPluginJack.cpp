@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -101,7 +101,15 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(this, writeMidiCallback),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
+          fUI(this, 0,
+              nullptr, // edit param
+              setParameterValueCallback,
+              setStateCallback,
+              nullptr, // send note
+              setSizeCallback,
+              nullptr, // file request
+              getDesktopScaleFactor(),
+              fPlugin.getInstancePointer()),
 #endif
           fClient(client)
     {

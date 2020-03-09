@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -22,6 +22,7 @@
 #include "lv2/instance-access.h"
 #include "lv2/midi.h"
 #include "lv2/options.h"
+#include "lv2/patch.h"
 #include "lv2/port-props.h"
 #include "lv2/presets.h"
 #include "lv2/resize-port.h"
@@ -43,6 +44,10 @@
 
 #ifndef DISTRHO_PLUGIN_URI
 # error DISTRHO_PLUGIN_URI undefined!
+#endif
+
+#ifndef DISTRHO_PLUGIN_LV2_STATE_PREFIX
+# define DISTRHO_PLUGIN_LV2_STATE_PREFIX "urn:distrho:"
 #endif
 
 #ifndef DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE
@@ -140,6 +145,9 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
     "ui:resize",
     "ui:touch",
 #endif
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+    "ui:requestValue",
+#endif
     nullptr
 };
 
@@ -220,8 +228,8 @@ void lv2_generate_ttl(const char* const basename)
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 
-    String pluginDLL(basename);
-    String pluginTTL(pluginDLL + ".ttl");
+    const String pluginDLL(basename);
+    const String pluginTTL(pluginDLL + ".ttl");
 
 #if DISTRHO_PLUGIN_HAS_UI
     String pluginUI(pluginDLL);
@@ -317,25 +325,44 @@ void lv2_generate_ttl(const char* const basename)
 
         // header
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
-        pluginString += "@prefix atom: <" LV2_ATOM_PREFIX "> .\n";
+        pluginString += "@prefix atom:  <" LV2_ATOM_PREFIX "> .\n";
 #endif
-        pluginString += "@prefix doap: <http://usefulinc.com/ns/doap#> .\n";
-        pluginString += "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n";
-        pluginString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
+        pluginString += "@prefix doap:  <http://usefulinc.com/ns/doap#> .\n";
+        pluginString += "@prefix foaf:  <http://xmlns.com/foaf/0.1/> .\n";
+        pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
 #ifdef DISTRHO_PLUGIN_BRAND
-        pluginString += "@prefix mod:  <http://moddevices.com/ns/mod#> .\n";
+        pluginString += "@prefix mod:   <http://moddevices.com/ns/mod#> .\n";
 #endif
-        pluginString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
-        pluginString += "@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
-        pluginString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
+        pluginString += "@prefix opts:  <" LV2_OPTIONS_PREFIX "> .\n";
+        pluginString += "@prefix patch: <" LV2_PATCH_PREFIX "> .\n";
+        pluginString += "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
+        pluginString += "@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n";
 #if DISTRHO_LV2_USE_EVENTS_IN || DISTRHO_LV2_USE_EVENTS_OUT
-        pluginString += "@prefix rsz:  <" LV2_RESIZE_PORT_PREFIX "> .\n";
+        pluginString += "@prefix rsz:   <" LV2_RESIZE_PORT_PREFIX "> .\n";
 #endif
 #if DISTRHO_PLUGIN_HAS_UI
-        pluginString += "@prefix ui:   <" LV2_UI_PREFIX "> .\n";
+        pluginString += "@prefix ui:    <" LV2_UI_PREFIX "> .\n";
 #endif
-        pluginString += "@prefix unit: <" LV2_UNITS_PREFIX "> .\n";
+        pluginString += "@prefix unit:  <" LV2_UNITS_PREFIX "> .\n";
         pluginString += "\n";
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+        // define writable states as lv2 parameters
+        bool hasStateFiles = false;
+
+        for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
+        {
+            if (! plugin.isStateFile(i))
+                continue;
+
+            const String& key(plugin.getStateKey(i));
+            pluginString += "<" DISTRHO_PLUGIN_URI "#" + key + ">\n";
+            pluginString += "    a lv2:Parameter ;\n";
+            pluginString += "    rdfs:label \"" + key + "\" ;\n";
+            pluginString += "    rdfs:range atom:Path .\n\n";
+            hasStateFiles = true;
+        }
+#endif
 
         // plugin
         pluginString += "<" DISTRHO_PLUGIN_URI ">\n";
@@ -352,6 +379,21 @@ void lv2_generate_ttl(const char* const basename)
         addAttribute(pluginString, "lv2:optionalFeature", lv2ManifestPluginOptionalFeatures, 4);
         addAttribute(pluginString, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures, 4);
         addAttribute(pluginString, "opts:supportedOption", lv2ManifestPluginSupportedOptions, 4);
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+        if (hasStateFiles)
+        {
+            for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
+            {
+                if (! plugin.isStateFile(i))
+                    continue;
+
+                const String& key(plugin.getStateKey(i));
+                pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
+            }
+            pluginString += "\n";
+        }
+#endif
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI
@@ -582,33 +624,36 @@ void lv2_generate_ttl(const char* const basename)
                     // unit
                     const String& unit(plugin.getParameterUnit(i));
 
-                    if (! unit.isEmpty())
+                    if (unit.isNotEmpty() && ! unit.contains(" "))
                     {
-                        if (unit == "db" || unit == "dB")
+                        String lunit(unit);
+                        lunit.toLower();
+
+                        /**/ if (lunit == "db")
                         {
                             pluginString += "        unit:unit unit:db ;\n";
                         }
-                        else if (unit == "hz" || unit == "Hz")
+                        else if (lunit == "hz")
                         {
                             pluginString += "        unit:unit unit:hz ;\n";
                         }
-                        else if (unit == "khz" || unit == "kHz")
+                        else if (lunit == "khz")
                         {
                             pluginString += "        unit:unit unit:khz ;\n";
                         }
-                        else if (unit == "mhz" || unit == "mHz")
+                        else if (lunit == "mhz")
                         {
                             pluginString += "        unit:unit unit:mhz ;\n";
                         }
-                        else if (unit == "ms")
+                        else if (lunit == "ms")
                         {
                             pluginString += "        unit:unit unit:ms ;\n";
                         }
-                        else if (unit == "s")
+                        else if (lunit == "s")
                         {
                             pluginString += "        unit:unit unit:s ;\n";
                         }
-                        else if (unit == "%")
+                        else if (lunit == "%")
                         {
                             pluginString += "        unit:unit unit:pc ;\n";
                         }
@@ -796,7 +841,7 @@ void lv2_generate_ttl(const char* const basename)
                 const String key   = plugin.getStateKey(j);
                 const String value = plugin.getState(key);
 
-                presetString += "        <urn:distrho:" + key + ">";
+                presetString += "        <" DISTRHO_PLUGIN_LV2_STATE_PREFIX + key + ">";
 
                 if (value.length() < 10)
                     presetString += " \"" + value + "\" ;\n";

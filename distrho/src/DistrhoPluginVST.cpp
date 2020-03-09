@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -161,12 +161,24 @@ public:
 class UIVst
 {
 public:
-    UIVst(const audioMasterCallback audioMaster, AEffect* const effect, ParameterCheckHelper* const uiHelper, PluginExporter* const plugin, const intptr_t winId, const float scaleFactor)
+    UIVst(const audioMasterCallback audioMaster,
+          AEffect* const effect,
+          ParameterCheckHelper* const uiHelper,
+          PluginExporter* const plugin,
+          const intptr_t winId, const float scaleFactor)
         : fAudioMaster(audioMaster),
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, scaleFactor, plugin->getInstancePointer()),
+          fUI(this, winId,
+              editParameterCallback,
+              setParameterCallback,
+              setStateCallback,
+              sendNoteCallback,
+              setSizeCallback,
+              nullptr, // TODO file request
+              scaleFactor,
+              plugin->getInstancePointer()),
           fShouldCaptureVstKeys(false)
     {
         // FIXME only needed for windows?
@@ -581,7 +593,9 @@ public:
                 // TODO
                 const float scaleFactor = 1.0f;
 
-                UIExporter tmpUI(nullptr, 0, nullptr, nullptr, nullptr, nullptr, nullptr, scaleFactor, fPlugin.getInstancePointer());
+                UIExporter tmpUI(nullptr, 0,
+                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                 scaleFactor, fPlugin.getInstancePointer());
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 tmpUI.quit();

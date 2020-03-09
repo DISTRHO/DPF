@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -98,7 +98,7 @@ public:
 
    /**
       setParameterValue.
-      
+
       Change a parameter value in the Plugin.
     */
     void setParameterValue(uint32_t index, float value);
@@ -109,6 +109,19 @@ public:
       @TODO Document this.
     */
     void setState(const char* key, const char* value);
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+   /**
+      Request a new file from the host, matching the properties of a state key.@n
+      This will use the native host file browser if available, otherwise a DPF built-in file browser is used.@n
+      Response will be sent asynchronously to stateChanged, with the matching key and the new file as the value.@n
+      It is not possible to know if the action was cancelled by the user.
+
+      @return Success if a file-browser was opened, otherwise false.
+      @note You cannot request more than one file at a time.
+    */
+    bool requestStateFile(const char* key);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
