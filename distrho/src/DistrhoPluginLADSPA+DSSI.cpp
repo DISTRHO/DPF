@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,9 @@
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 # error Cannot use MIDI Output with LADSPA or DSSI
+#endif
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
+# error Cannot use full state with LADSPA or DSSI
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS && !defined(DISTRHO_NO_WARNINGS)
