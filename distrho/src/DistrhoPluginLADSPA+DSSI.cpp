@@ -543,15 +543,14 @@ static DSSI_Descriptor sDssiDescriptor = {
 
 // -----------------------------------------------------------------------
 
-class DescriptorInitializer
+static const struct DescriptorInitializer
 {
-public:
     DescriptorInitializer()
     {
         // Create dummy plugin to get data from
         d_lastBufferSize = 512;
         d_lastSampleRate = 44100.0;
-        PluginExporter plugin(nullptr, nullptr);
+        const PluginExporter plugin(nullptr, nullptr);
         d_lastBufferSize = 0;
         d_lastSampleRate = 0.0;
 
@@ -616,23 +615,23 @@ public:
 
             {
                 const ParameterRanges& ranges(plugin.getParameterRanges(i));
-                const float defValue(ranges.def);
+                const float defValue = ranges.def;
 
                 portRangeHints[port].HintDescriptor = LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
                 portRangeHints[port].LowerBound     = ranges.min;
                 portRangeHints[port].UpperBound     = ranges.max;
 
-                if (defValue == 0.0f)
+                /**/ if (d_isZero(defValue))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_0;
-                else if (defValue == 1.0f)
+                else if (d_isEqual(defValue, 1.0f))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_1;
-                else if (defValue == 100.0f)
+                else if (d_isEqual(defValue, 100.0f))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_100;
-                else if (defValue == 440.0f)
+                else if (d_isEqual(defValue, 440.0f))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_440;
-                else if (ranges.min == defValue)
+                else if (d_isEqual(ranges.min, defValue))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_MINIMUM;
-                else if (ranges.max == defValue)
+                else if (d_isEqual(ranges.max, defValue))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_MAXIMUM;
                 else
                 {
@@ -640,7 +639,7 @@ public:
                     const float middleLow   = (ranges.min/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
                     const float middleHigh  = (ranges.max/2.0f + middleValue/2.0f)/2.0f + middleValue/2.0f;
 
-                    if (defValue < middleLow)
+                    /**/ if (defValue < middleLow)
                         portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_LOW;
                     else if (defValue > middleHigh)
                         portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_HIGH;
@@ -650,7 +649,7 @@ public:
             }
 
             {
-                const uint32_t hints(plugin.getParameterHints(i));
+                const uint32_t hints = plugin.getParameterHints(i);
 
                 if (hints & kParameterIsBoolean)
                 {
@@ -728,9 +727,7 @@ public:
             sLadspaDescriptor.PortNames = nullptr;
         }
     }
-};
-
-static DescriptorInitializer sDescInit;
+} sDescInit;
 
 // -----------------------------------------------------------------------
 
