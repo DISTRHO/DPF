@@ -35,7 +35,7 @@ START_NAMESPACE_DISTRHO
  */
 
 /**
-   Audio port can be used as control voltage (LV2 only).
+   Audio port can be used as control voltage (LV2 and JACK standalone only).
  */
 static const uint32_t kAudioPortIsCV = 0x1;
 
@@ -110,6 +110,9 @@ static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
 
 /**
    Audio Port.
+
+   Can be used as CV port by specifying kAudioPortIsCV in hints,@n
+   but this is only supported in LV2 and JACK standalone formats.
  */
 struct AudioPort {
    /**
