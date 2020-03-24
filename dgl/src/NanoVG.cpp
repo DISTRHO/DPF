@@ -981,7 +981,8 @@ void NanoWidget::onDisplay()
     for (std::vector<NanoWidget*>::iterator it = nData->subWidgets.begin(); it != nData->subWidgets.end(); ++it)
     {
         NanoWidget* const widget(*it);
-        widget->onNanoDisplay();
+        if (widget->isVisible())
+            widget->onNanoDisplay();
     }
 
     NanoVG::endFrame();
