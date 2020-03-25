@@ -21,14 +21,15 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------------------------------------------
 
 /**
-  Simple plugin to demonstrate parameter usage (including UI).
-  The plugin will be treated as an effect, but it will not change the host audio.
+  Simple plugin to demonstrate how to modify input/output port type in DPF.
+  The plugin outputs sample & hold (S&H) value of input signal.
+  User can specify hold time via parameter and/or Hold Time CV port.
  */
-class ExamplePluginParameters : public Plugin
+class ExamplePluginCVPort : public Plugin
 {
 public:
-    ExamplePluginParameters()
-        : Plugin(0, 0, 0) {} // 0 parameters, 0 programs, 0 states
+    ExamplePluginCVPort()
+        : Plugin(1, 0, 0) {} // 1 parameters, 0 programs, 0 states
 
 protected:
    /* --------------------------------------------------------------------------------------------------------
@@ -49,7 +50,7 @@ protected:
     const char* getDescription() const override
     {
         return "Simple plugin with CVPort.\n\
-The plugin will be treated as an effect, signal will bypassed.";
+The plugin does sample & hold processing.";
     }
 
    /**
@@ -110,9 +111,15 @@ The plugin will be treated as an effect, signal will bypassed.";
         if (input)
         {
             if (index == 0) {
+                // Audio port doesn't need to specify port.hints.
+                port.name    = "Audio Input";
+                port.symbol  = "audio_in";
+                return;
+            }
+            else if (index == 1) {
                 port.hints   = kAudioPortIsCV;
-                port.name    = "CV Input";
-                port.symbol  = "cv_in";
+                port.name    = "Hold Time";
+                port.symbol  = "hold_time";
                 return;
             }
             // Add more condition here when increasing DISTRHO_PLUGIN_NUM_INPUTS.
@@ -133,13 +140,44 @@ The plugin will be treated as an effect, signal will bypassed.";
         */
         Plugin::initAudioPort(input, index, port);
     }
+    
+   /**
+      Initialize the parameter @a index.
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initParameter(uint32_t index, Parameter& parameter) override
+    {
+        if (index != 0) return;
+
+        parameter.name       = "Hold Time";
+        parameter.symbol     = "hold_time";
+        parameter.hints      = kParameterIsAutomable|kParameterIsLogarithmic;
+        parameter.ranges.min = 0.0f;
+        parameter.ranges.max = maxHoldTime;
+        parameter.ranges.def = 0.1f;
+    }
 
    /* --------------------------------------------------------------------------------------------------------
-    * Init and Internal data, unused in this plugin */
+    * Internal data */
 
-    void  initParameter(uint32_t, Parameter&) override {}
-    float getParameterValue(uint32_t) const   override { return 0.0f;}
-    void  setParameterValue(uint32_t, float)  override {}
+   /**
+      Get the current value of a parameter.
+    */
+    inline float getParameterValue(uint32_t index) const override
+    {
+        return index == 0 ? holdTime : 0.0f;
+    }
+
+   /**
+      Change a parameter value.
+    */
+    void setParameterValue(uint32_t index, float value) override
+    {
+        if (index != 0) return;
+
+        holdTime = value;
+        counter = uint32_t(holdTime * sampleRate);
+    }
 
    /* --------------------------------------------------------------------------------------------------------
     * Process */
@@ -150,21 +188,42 @@ The plugin will be treated as an effect, signal will bypassed.";
     void run(const float** inputs, float** outputs, uint32_t frames) override
     {
        /**
-          This plugin does nothing, it just demonstrates CVPort usage.
-          So here we directly copy inputs over outputs, leaving the audio untouched.
-          We need to be careful in case the host re-uses the same buffer for both ins and outs.
+        - inputs[0] is input audio port.
+        - inputs[1] is hold time CV port.
+        - outputs[0] is output CV port.
         */
-        if (outputs[0] != inputs[0])
-            std::memcpy(outputs[0], inputs[0], sizeof(float)*frames);
+        for (uint32_t i = 0; i < frames; ++i) {
+            if (counter == 0) {
+                float cv = inputs[1][i] > 0.0f ? inputs[1][i] : 0.0f;
+
+                float time = holdTime + cv;
+                if (time > maxHoldTime)
+                    time = maxHoldTime;
+
+                counter = uint32_t(time * sampleRate);
+
+                holdValue = inputs[0][i]; // Refresh hold value.
+            } else {
+                --counter;
+            }
+            outputs[0][i] = holdValue;
+        }
     }
 
     // -------------------------------------------------------------------------------------------------------
 
 private:
+    const float maxHoldTime = 1.0f;
+
+    float sampleRate = 44100.0f;
+    uint32_t counter = 0;  // Hold time in samples. Used to count hold time.
+    float holdTime = 0.0f; // Hold time in seconds.
+    float holdValue = 0.0f;
+
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.
     */
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExamplePluginParameters)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ExamplePluginCVPort)
 };
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -172,7 +231,7 @@ private:
 
 Plugin* createPlugin()
 {
-    return new ExamplePluginParameters();
+    return new ExamplePluginCVPort();
 }
 
 // -----------------------------------------------------------------------------------------------------------
