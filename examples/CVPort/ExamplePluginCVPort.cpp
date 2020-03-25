@@ -29,7 +29,12 @@ class ExamplePluginCVPort : public Plugin
 {
 public:
     ExamplePluginCVPort()
-        : Plugin(1, 0, 0) {} // 1 parameters, 0 programs, 0 states
+        : Plugin(1, 0, 0), // 1 parameters, 0 programs, 0 states
+          maxHoldTime(1.0f),
+          sampleRate(44100.0f),
+          counter(0),
+          holdTime(0.0f),
+          holdValue(0.0f) {} 
 
 protected:
    /* --------------------------------------------------------------------------------------------------------
@@ -213,12 +218,12 @@ The plugin does sample & hold processing.";
     // -------------------------------------------------------------------------------------------------------
 
 private:
-    const float maxHoldTime = 1.0f;
+    const float maxHoldTime;
 
-    float sampleRate = 44100.0f;
-    uint32_t counter = 0;  // Hold time in samples. Used to count hold time.
-    float holdTime = 0.0f; // Hold time in seconds.
-    float holdValue = 0.0f;
+    float sampleRate;
+    uint32_t counter; // Hold time in samples. Used to count hold time.
+    float holdTime;  // Hold time in seconds.
+    float holdValue;
 
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.
