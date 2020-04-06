@@ -38,6 +38,7 @@ It uses the same format as the JACK Transport API, making porting some code easi
  - [YK Chorus](https://github.com/SpotlightKid/ykchorus)
  - [ZamAudio Suite](https://github.com/zamaudio/zam-plugins)
  ## Work in progress
+ - [CV-LFO-blender-LV2](https://github.com/BramGiesen/cv-lfo-blender-lv2)
  - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins)
  - [midiomatic](https://github.com/SpotlightKid/midiomatic)
  - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/)
