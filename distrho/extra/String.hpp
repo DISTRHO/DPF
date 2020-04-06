@@ -598,7 +598,10 @@ public:
         uint i=0, j=0;
         uint charArray3[3], charArray4[4];
 
-        char strBuf[kTmpBufSize+1];
+        char* strBuf = (char*)std::malloc(kTmpBufSize+1);
+        if (strBuf == nullptr)
+            return String();
+
         strBuf[kTmpBufSize] = '\0';
         std::size_t strBufIndex = 0;
 
@@ -652,6 +655,7 @@ public:
             ret += strBuf;
         }
 
+        std::free(strBuf);
         return ret;
     }
 
@@ -727,12 +731,20 @@ public:
             return *this;
 
         const std::size_t newBufSize = fBufferLen + std::strlen(strBuf) + 1;
-        char              newBuf[newBufSize];
+        char* newBuf = (char*)std::malloc(newBufSize);
+
+        if (newBuf == nullptr)
+        {
+            fBuffer    = _null();
+            fBufferLen = 0;
+            return *this;
+        }
 
         std::strcpy(newBuf, fBuffer);
         std::strcat(newBuf, strBuf);
 
         _dup(newBuf, newBufSize-1);
+        std::free(newBuf);
 
         return *this;
     }
@@ -745,14 +757,19 @@ public:
     String operator+(const char* const strBuf) noexcept
     {
         const std::size_t newBufSize = fBufferLen + ((strBuf != nullptr) ? std::strlen(strBuf) : 0) + 1;
-        char              newBuf[newBufSize];
+        char* newBuf = (char*)std::malloc(newBufSize);
+
+        if (newBuf == nullptr)
+            return String();
 
         std::strcpy(newBuf, fBuffer);
 
         if (strBuf != nullptr)
             std::strcat(newBuf, strBuf);
 
-        return String(newBuf);
+        String ret = String(newBuf);
+        std::free(newBuf);
+        return ret;
     }
 
     String operator+(const String& str) noexcept
@@ -835,12 +852,17 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
 {
     const char* const strBufBefore = strBefore.buffer();
     const std::size_t newBufSize   = strBefore.length() + ((strBufAfter != nullptr) ? std::strlen(strBufAfter) : 0) + 1;
-    char newBuf[newBufSize];
+    char* newBuf = (char*)std::malloc(newBufSize);
+
+    if (newBuf == nullptr)
+        return String();
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
 
-    return String(newBuf);
+    String ret = String(newBuf);
+    std::free(newBuf);
+    return ret;
 }
 
 static inline
@@ -848,12 +870,17 @@ String operator+(const char* const strBufBefore, const String& strAfter) noexcep
 {
     const char* const strBufAfter = strAfter.buffer();
     const std::size_t newBufSize  = ((strBufBefore != nullptr) ? std::strlen(strBufBefore) : 0) + strAfter.length() + 1;
-    char newBuf[newBufSize];
+    char* newBuf = (char*)std::malloc(newBufSize);
+
+    if (newBuf == nullptr)
+        return String();
 
     std::strcpy(newBuf, strBufBefore);
     std::strcat(newBuf, strBufAfter);
 
-    return String(newBuf);
+    String ret = String(newBuf);
+    std::free(newBuf);
+    return ret;
 }
 
 // -----------------------------------------------------------------------
