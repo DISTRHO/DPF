@@ -40,6 +40,7 @@ It uses the same format as the JACK Transport API, making porting some code easi
  ## Work in progress
  - [CV-LFO-blender-LV2](https://github.com/BramGiesen/cv-lfo-blender-lv2)
  - [Juice Plugins](https://github.com/DISTRHO/JuicePlugins)
+ - [gunshot](https://github.com/soerenbnoergaard/gunshot)
  - [midiomatic](https://github.com/SpotlightKid/midiomatic)
  - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/)
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins)
