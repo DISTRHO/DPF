@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -44,7 +44,8 @@ public:
    /**
       Constructor.
     */
-    Application();
+    // NOTE: the default value is not yet passed, so we catch where we use this
+    Application(bool isStandalone /* = true */);
 
    /**
       Destructor.
@@ -62,7 +63,7 @@ public:
       idle() is called at regular intervals.
       @note This function is meant for standalones only, *never* call this from plugins.
     */
-    void exec(int idleTime = 10);
+    void exec(uint idleTime = 10);
 
    /**
       Quit the application.
