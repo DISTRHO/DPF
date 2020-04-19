@@ -118,7 +118,7 @@ public:
     void setIgnoringKeyRepeat(bool ignore) noexcept;
 
     Application& getApp() const noexcept;
-    intptr_t getWindowId() const noexcept;
+    uintptr_t getWindowId() const noexcept;
 
     const GraphicsContext& getGraphicsContext() const noexcept;
 
