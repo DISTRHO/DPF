@@ -77,6 +77,9 @@ struct Window::PrivateData {
     {
     }
 
+#ifdef DISTRHO_DEFINES_H_INCLUDED
+    friend class DISTRHO_NAMESPACE::UI;
+#endif
     DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
 };
 

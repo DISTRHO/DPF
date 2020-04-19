@@ -76,6 +76,10 @@ void DGL::Window::PrivateData::Fallback::onReshape(const uint width, const uint 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 #endif
+
+    // may be unused
+    return;
+    (void)width; (void)height;
 }
 
 // -----------------------------------------------------------------------

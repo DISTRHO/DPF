@@ -14,7 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoUIInternal.hpp"
+#include "DistrhoUIPrivateData.hpp"
+#include "src/WindowPrivateData.hpp"
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "src/WidgetPrivateData.hpp"
 #endif
@@ -22,7 +23,7 @@
 START_NAMESPACE_DISTRHO
 
 /* ------------------------------------------------------------------------------------------------------------
- * Static data, see DistrhoUIInternal.hpp */
+ * Static data, see DistrhoUIInternal.hpp and DistrhoUIPrivateData */
 
 double      d_lastUiSampleRate = 0.0;
 void*       d_lastUiDspPtr     = nullptr;
@@ -33,6 +34,34 @@ uintptr_t   g_nextWindowId     = 0;
 #else
 Window*     d_lastUiWindow     = nullptr;
 #endif
+
+// -----------------------------------------------------------------------------------------------------------
+
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath)
+{
+    d_lastUiDspPtr    = dspPtr;
+    g_nextWindowId    = winId;
+    g_nextScaleFactor = scaleFactor;
+    g_nextBundlePath  = bundlePath;
+    UI* const ret     = createUI();
+    d_lastUiDspPtr    = nullptr;
+    g_nextWindowId    = 0;
+    g_nextScaleFactor = 1.0;
+    g_nextBundlePath  = nullptr;
+    return ret;
+}
+#else
+UI* createUiWrapper(void* const dspPtr, Window* const window)
+{
+    d_lastUiDspPtr = dspPtr;
+    d_lastUiWindow = window;
+    UI* const ret  = createUI();
+    d_lastUiDspPtr = nullptr;
+    d_lastUiWindow = nullptr;
+    return ret;
+}
+#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
@@ -147,7 +176,7 @@ uintptr_t UI::getNextWindowId() noexcept
     return g_nextWindowId;
 }
 # endif
-#endif
+#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks (optional) */
@@ -164,22 +193,9 @@ void UI::uiFileBrowserSelected(const char*)
 }
 # endif
 
-void UI::uiReshape(uint width, uint height)
+void UI::uiReshape(const uint width, const uint height)
 {
-#ifdef DGL_OPENGL
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0.0, 0.0, 1.0);
-    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-#else
-    // unused
-    (void)width;
-    (void)height;
-#endif
+    Window::PrivateData::Fallback::onReshape(width, height);
 }
 
 /* ------------------------------------------------------------------------------------------------------------

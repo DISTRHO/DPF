@@ -17,6 +17,7 @@
 #include "DistrhoPluginInternal.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_UI_IS_STANDALONE true
 # include "DistrhoUIInternal.hpp"
 #else
 # include "../extra/Sleep.hpp"
