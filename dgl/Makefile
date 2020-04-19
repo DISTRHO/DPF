@@ -9,8 +9,11 @@ include ../Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 
 BUILD_C_FLAGS   += $(DGL_FLAGS) -I. -Isrc
-BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
+BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -Isrc/pugl-upstream -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
 LINK_FLAGS      += $(DGL_LIBS)
+
+# TODO fix these after pugl-upstream is done
+BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra -Wno-narrowing
 
 # ifneq ($(MACOS_OLD),true)
 # needed by sofd right now, fix later
@@ -110,12 +113,12 @@ all: $(TARGETS)
 	@echo "Compiling $< (Cairo variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
-../build/dgl/Window.cpp.cairo.o: src/Window.cpp src/sofd/* src/pugl/*
+../build/dgl/Window.cpp.cairo.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
-../build/dgl/Window.mm.cairo.o: src/Window.cpp src/sofd/* src/pugl/*
+../build/dgl/Window.mm.cairo.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -ObjC++ -c -o $@
@@ -127,12 +130,12 @@ all: $(TARGETS)
 	@echo "Compiling $< (OpenGL variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
-../build/dgl/Window.cpp.opengl.o: src/Window.cpp src/sofd/* src/pugl/*
+../build/dgl/Window.cpp.opengl.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
-../build/dgl/Window.mm.opengl.o: src/Window.cpp src/sofd/* src/pugl/*
+../build/dgl/Window.mm.opengl.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -ObjC++ -c -o $@
