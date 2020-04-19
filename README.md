@@ -26,6 +26,7 @@ It uses the same format as the JACK Transport API, making porting some code easi
  - [DISTRHO Nekobi](https://github.com/DISTRHO/Nekobi)
  - [DISTRHO ProM](https://github.com/DISTRHO/ProM)
  - [Dragonfly Reverb](https://michaelwillis.github.io/dragonfly-reverb)
+ - [Fogpad-port](https://github.com/linuxmao-org/fogpad-port)
  - [Ninjas2](https://github.com/rghvdberg/ninjas2)
  - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
