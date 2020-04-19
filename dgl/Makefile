@@ -27,8 +27,11 @@ OBJS_common = \
 	../build/dgl/Color.cpp.o \
 	../build/dgl/Geometry.cpp.o \
 	../build/dgl/ImageBase.cpp.o \
-	../build/dgl/Resources.cpp.o \
-	../build/dgl/Widget.cpp.o
+	../build/dgl/Resources.cpp.o\
+	../build/dgl/StandaloneWindow.cpp.o \
+	../build/dgl/Widget.cpp.o \
+	../build/dgl/Window.cpp.o\
+	../build/dgl/WindowFileBrowser.cpp.o
 
 # TODO: ImageWidgets.cpp
 
@@ -36,13 +39,14 @@ OBJS_common = \
 
 OBJS_cairo = $(OBJS_common) \
 	../build/dgl/Cairo.cpp.cairo.o \
-	../build/dgl/WidgetPrivateData.cpp.cairo.o
+	../build/dgl/WidgetPrivateData.cpp.cairo.o \
+	../build/dgl/WindowPrivateData.cpp.cairo.o
 
-ifeq ($(MACOS),true)
-OBJS_cairo += ../build/dgl/Window.mm.cairo.o
-else
-OBJS_cairo += ../build/dgl/Window.cpp.cairo.o
-endif
+# ifeq ($(MACOS),true)
+# OBJS_cairo += ../build/dgl/Window.mm.cairo.o
+# else
+# OBJS_cairo += ../build/dgl/Window.cpp.cairo.o
+# endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -51,13 +55,14 @@ OBJS_opengl = $(OBJS_common) \
 	../build/dgl/Image.cpp.opengl.o \
 	../build/dgl/ImageWidgets.cpp.opengl.o \
 	../build/dgl/NanoVG.cpp.opengl.o \
-	../build/dgl/WidgetPrivateData.cpp.opengl.o
+	../build/dgl/WidgetPrivateData.cpp.opengl.o \
+	../build/dgl/WindowPrivateData.cpp.opengl.o
 
-ifeq ($(MACOS),true)
-OBJS_opengl += ../build/dgl/Window.mm.opengl.o
-else
-OBJS_opengl += ../build/dgl/Window.cpp.opengl.o
-endif
+# ifeq ($(MACOS),true)
+# OBJS_opengl += ../build/dgl/Window.mm.opengl.o
+# else
+# OBJS_opengl += ../build/dgl/Window.cpp.opengl.o
+# endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
