@@ -30,6 +30,7 @@ It uses the same format as the JACK Transport API, making porting some code easi
  - [Ninjas2](https://github.com/rghvdberg/ninjas2)
  - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)
+ - [Regrader-Port](https://github.com/linuxmao-org/regrader-port)
  - [Rezonateur](https://github.com/jpcima/rezonateur)
  - [Spectacle-analyzer](https://github.com/jpcima/spectacle/)
  - [Stone Phaser](https://github.com/jpcima/stone-phaser)
