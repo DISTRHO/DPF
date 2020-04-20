@@ -179,10 +179,12 @@ void Widget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->parent.repaint();
 }
 
+#if 0
 Application& Widget::getParentApp() const noexcept
 {
     return pData->parent.getApp();
 }
+#endif
 
 Window& Widget::getParentWindow() const noexcept
 {

@@ -14,13 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// we need this for now
-//#define PUGL_GRAB_FOCUS 1
-
-// #include "../Base.hpp"
 #include "WindowPrivateData.hpp"
-
-// #include "../../distrho/extra/String.hpp"
 
 START_NAMESPACE_DGL
 
@@ -28,20 +22,19 @@ START_NAMESPACE_DGL
 // Window
 
 Window::Window(Application& app)
-    : pData(new PrivateData(app, this)) {}
+    : pData(new PrivateData(app.pData, this)) {}
 
-Window::Window(Application& app, Window& parent)
-    : pData(new PrivateData(app, this, parent)) {}
+Window::Window(Window& transientParentWindow)
+    : pData(new PrivateData(transientParentWindow.pData->fAppData, this, transientParentWindow)) {}
 
-Window::Window(Application& app, intptr_t parentId, double scaling, bool resizable)
-    : pData(new PrivateData(app, this, parentId, scaling, resizable)) {}
+Window::Window(Application& app, const uintptr_t parentWindowHandle, const double scaling, const bool resizable)
+    : pData(new PrivateData(app.pData, this, parentWindowHandle, scaling, resizable)) {}
 
 Window::~Window()
 {
     delete pData;
 }
 
-#if 0
 void Window::show()
 {
     pData->setVisible(true);
@@ -57,19 +50,35 @@ void Window::close()
     pData->close();
 }
 
+#if 0
 void Window::exec(bool lockWait)
 {
     pData->exec(lockWait);
 }
+#endif
 
 void Window::focus()
 {
-    pData->focus();
+    if (! pData->fUsingEmbed)
+        puglRaiseWindow(pData->fView);
+
+    puglGrabFocus(pData->fView);
 }
 
 void Window::repaint() noexcept
 {
     puglPostRedisplay(pData->fView);
+}
+
+void Window::repaint(const Rectangle<uint>& rect) noexcept
+{
+    const PuglRect prect = {
+        static_cast<double>(rect.getX()),
+        static_cast<double>(rect.getY()),
+        static_cast<double>(rect.getWidth()),
+        static_cast<double>(rect.getHeight()),
+    };
+    puglPostRedisplayRect(pData->fView, prect);
 }
 
 bool Window::isEmbed() const noexcept
@@ -82,88 +91,107 @@ bool Window::isVisible() const noexcept
     return pData->fVisible;
 }
 
-void Window::setVisible(bool yesNo)
+void Window::setVisible(const bool visible)
 {
-    pData->setVisible(yesNo);
+    pData->setVisible(visible);
 }
 
 bool Window::isResizable() const noexcept
 {
-    return pData->fResizable;
+    return puglGetViewHint(pData->fView, PUGL_RESIZABLE) == PUGL_TRUE;
 }
 
-void Window::setResizable(bool yesNo)
+void Window::setResizable(const bool resizable)
 {
-    pData->setResizable(yesNo);
-}
+    DISTRHO_SAFE_ASSERT_RETURN(pData->fUsingEmbed,);
+    if (pData->fUsingEmbed)
+    {
+        DGL_DBG("Window setResizable cannot be called when embedded\n");
+        return;
+    }
 
-void Window::setGeometryConstraints(uint width, uint height, bool aspect)
-{
-    pData->setGeometryConstraints(width, height, aspect);
-}
+    DGL_DBG("Window setResizable called\n");
 
-uint Window::getWidth() const noexcept
-{
-    return pData->fWidth;
-}
-
-uint Window::getHeight() const noexcept
-{
-    return pData->fHeight;
-}
-
-Size<uint> Window::getSize() const noexcept
-{
-    return Size<uint>(pData->fWidth, pData->fHeight);
-}
-
-void Window::setSize(uint width, uint height)
-{
-    pData->setSize(width, height);
-}
-
-void Window::setSize(Size<uint> size)
-{
-    pData->setSize(size.getWidth(), size.getHeight());
-}
-
-const char* Window::getTitle() const noexcept
-{
-    return pData->getTitle();
-}
-
-void Window::setTitle(const char* title)
-{
-    pData->setTitle(title);
-}
-
-void Window::setTransientWinId(uintptr_t winId)
-{
-    pData->setTransientWinId(winId);
-}
-
-double Window::getScaling() const noexcept
-{
-    return pData->getScaling();
+    puglSetViewHint(pData->fView, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
+#ifdef DISTRHO_OS_WINDOWS
+    puglWin32SetWindowResizable(pData->fView, resizable);
+#endif
 }
 
 bool Window::getIgnoringKeyRepeat() const noexcept
 {
-    return pData->getIgnoringKeyRepeat();
+    return puglGetViewHint(pData->fView, PUGL_IGNORE_KEY_REPEAT) == PUGL_TRUE;
 }
 
-void Window::setIgnoringKeyRepeat(bool ignore) noexcept
+void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
 {
-    pData->setIgnoringKeyRepeat(ignore);
+    puglSetViewHint(pData->fView, PUGL_IGNORE_KEY_REPEAT, ignore);
 }
-#endif
 
+void Window::setGeometryConstraints(const uint width, const uint height, bool aspect)
+{
+    // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
+    DISTRHO_SAFE_ASSERT_RETURN(isResizable(),);
+
+    puglUpdateGeometryConstraints(pData->fView, width, height, aspect);
+}
+
+uint Window::getWidth() const noexcept
+{
+    return puglGetFrame(pData->fView).width;
+}
+
+uint Window::getHeight() const noexcept
+{
+    return puglGetFrame(pData->fView).height;
+}
+
+Size<uint> Window::getSize() const noexcept
+{
+    const PuglRect rect = puglGetFrame(pData->fView);
+    return Size<uint>(rect.width, rect.height);
+}
+
+void Window::setSize(const uint width, const uint height)
+{
+    DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
+
+    puglSetWindowSize(pData->fView, width, height);
+}
+
+void Window::setSize(const Size<uint> size)
+{
+    setSize(size.getWidth(), size.getHeight());
+}
+
+const char* Window::getTitle() const noexcept
+{
+    return puglGetWindowTitle(pData->fView);
+}
+
+void Window::setTitle(const char* const title)
+{
+    puglSetWindowTitle(pData->fView, title);
+}
+
+void Window::setTransientWinId(const uintptr_t winId)
+{
+    puglSetTransientFor(pData->fView, winId);
+}
+
+double Window::getScaling() const noexcept
+{
+    return pData->fScaling;
+}
+
+#if 0
 Application& Window::getApp() const noexcept
 {
     return pData->fApp;
 }
+#endif
 
-uintptr_t Window::getWindowId() const noexcept
+uintptr_t Window::getNativeWindowHandle() const noexcept
 {
     return puglGetNativeWindow(pData->fView);
 }
@@ -177,10 +205,13 @@ const GraphicsContext& Window::getGraphicsContext() const noexcept
 #endif
     return context;
 }
+#endif
 
 void Window::_setAutoScaling(double scaling) noexcept
 {
-    pData->setAutoScaling(scaling);
+    DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0,);
+
+    pData->fAutoScaling = scaling;
 }
 
 void Window::_addWidget(Widget* const widget)
@@ -195,9 +226,8 @@ void Window::_removeWidget(Widget* const widget)
 
 void Window::_idle()
 {
-    pData->idle();
+    pData->windowSpecificIdle();
 }
-#endif
 
 // -----------------------------------------------------------------------
 
@@ -205,14 +235,14 @@ void Window::addIdleCallback(IdleCallback* const callback)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
 
-    pData->fApp.pData->idleCallbacks.push_back(callback);
+    pData->fAppData->idleCallbacks.push_back(callback);
 }
 
 void Window::removeIdleCallback(IdleCallback* const callback)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
 
-    pData->fApp.pData->idleCallbacks.remove(callback);
+    pData->fAppData->idleCallbacks.remove(callback);
 }
 
 // -----------------------------------------------------------------------
@@ -242,21 +272,20 @@ void Window::fileBrowserSelected(const char*)
 }
 #endif
 
-#if 0
 bool Window::handlePluginKeyboard(const bool press, const uint key)
 {
-    return pData->handlePluginKeyboard(press, key);
+    // TODO
+    return false;
+    // return pData->handlePluginKeyboard(press, key);
 }
 
 bool Window::handlePluginSpecial(const bool press, const Key key)
 {
-    return pData->handlePluginSpecial(press, key);
+    // TODO
+    return false;
+    // return pData->handlePluginSpecial(press, key);
 }
-#endif
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-#undef DBG
-#undef DBGF

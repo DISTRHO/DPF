@@ -27,9 +27,9 @@ examples: dgl
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
 
-ifeq ($(HAVE_CAIRO),true)
-	$(MAKE) all -C examples/CairoUI
-endif
+# ifeq ($(HAVE_CAIRO),true)
+# 	$(MAKE) all -C examples/CairoUI
+# endif
 
 ifneq ($(MACOS_OR_WINDOWS),true)
 	# ExternalUI is WIP

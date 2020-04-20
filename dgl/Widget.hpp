@@ -301,11 +301,14 @@ public:
     */
     void setAbsolutePos(const Point<int>& pos) noexcept;
 
+#if 0
+    // TODO: should we remove this?
    /**
       Get this widget's window application.
       Same as calling getParentWindow().getApp().
     */
     Application& getParentApp() const noexcept;
+#endif
 
    /**
       Get parent window, as passed in the constructor.

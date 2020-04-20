@@ -27,7 +27,7 @@ START_NAMESPACE_DGL
 
 #ifndef DISTRHO_OS_HAIKU
 ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
-    : Window(parent.getApp(), parent),
+    : Window(parent),
       Widget((Window&)*this),
       fImgBackground(image)
 {
@@ -37,7 +37,7 @@ ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
 }
 
 ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
-    : Window(widget->getParentApp(), widget->getParentWindow()),
+    : Window(widget->getParentWindow()),
       Widget((Window&)*this),
       fImgBackground(image)
 {

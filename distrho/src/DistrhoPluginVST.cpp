@@ -22,6 +22,7 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_UI_IS_STANDALONE 0
 # include "DistrhoUIInternal.hpp"
 #endif
 
