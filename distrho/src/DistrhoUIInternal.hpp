@@ -198,7 +198,7 @@ public:
         return fUI->isRunning();
     }
 
-    intptr_t getWindowId() const noexcept
+    uintptr_t getNativeWindowHandle() const noexcept
     {
         return 0;
     }
@@ -218,9 +218,9 @@ public:
         return glWindow.isVisible();
     }
 
-    intptr_t getWindowId() const noexcept
+    uintptr_t getNativeWindowHandle() const noexcept
     {
-        return glWindow.getWindowId();
+        return glWindow.getNativeWindowHandle();
     }
 #endif
 

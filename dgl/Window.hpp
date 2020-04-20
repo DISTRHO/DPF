@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -77,8 +77,8 @@ public:
 #endif // DGL_FILE_BROWSER_DISABLED
 
     explicit Window(Application& app);
-    explicit Window(Application& app, Window& parent);
-    explicit Window(Application& app, intptr_t parentId, double scaling, bool resizable);
+    explicit Window(Window& transientParentWindow);
+    explicit Window(Application& app, uintptr_t parentWindowHandle, double scaling, bool resizable);
     virtual ~Window();
 
     void show();
@@ -88,6 +88,7 @@ public:
 
     void focus();
     void repaint() noexcept;
+    void repaint(const Rectangle<uint>& rect) noexcept;
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     bool openFileBrowser(const FileBrowserOptions& options);
@@ -96,10 +97,13 @@ public:
     bool isEmbed() const noexcept;
 
     bool isVisible() const noexcept;
-    void setVisible(bool yesNo);
+    void setVisible(bool visible);
 
     bool isResizable() const noexcept;
-    void setResizable(bool yesNo);
+    void setResizable(bool resizable);
+
+    bool getIgnoringKeyRepeat() const noexcept;
+    void setIgnoringKeyRepeat(bool ignore) noexcept;
 
     uint getWidth() const noexcept;
     uint getHeight() const noexcept;
@@ -115,11 +119,20 @@ public:
 
     double getScaling() const noexcept;
 
-    bool getIgnoringKeyRepeat() const noexcept;
-    void setIgnoringKeyRepeat(bool ignore) noexcept;
-
+#if 0
+    // should this be removed?
     Application& getApp() const noexcept;
-    uintptr_t getWindowId() const noexcept;
+#endif
+
+   /**
+      Get the "native" window handle.
+      Returned value depends on the platform:
+       - HaikuOS: This is a pointer to a `BView`.
+       - MacOS: This is a pointer to an `NSView*`.
+       - Windows: This is a `HWND`.
+       - Everything else: This is an [X11] `Window`.
+    */
+    uintptr_t getNativeWindowHandle() const noexcept;
 
     const GraphicsContext& getGraphicsContext() const noexcept;
 
@@ -157,7 +170,16 @@ private:
     bool handlePluginKeyboard(const bool press, const uint key);
     bool handlePluginSpecial(const bool press, const Key key);
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
+    // Prevent copies
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+    Window& operator=(Window&) = delete;
+    Window& operator=(const Window&) = delete;
+#else
+    Window& operator=(Window&);
+    Window& operator=(const Window&);
+#endif
+
+    DISTRHO_LEAK_DETECTOR(Window);
 };
 
 // -----------------------------------------------------------------------

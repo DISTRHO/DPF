@@ -35,7 +35,7 @@ void Application::idle()
 
 void Application::exec(const uint idleTime)
 {
-    while (!pData->isQuitting)
+    while (! pData->isQuitting)
         pData->idle(idleTime);
 }
 

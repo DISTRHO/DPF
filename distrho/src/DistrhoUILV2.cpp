@@ -14,6 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#define DISTRHO_UI_IS_STANDALONE 0
 #include "DistrhoUIInternal.hpp"
 
 #include "../extra/String.hpp"
@@ -94,7 +95,7 @@ public:
             fUiResize->ui_resize(fUiResize->handle, fUI.getWidth(), fUI.getHeight());
 
         if (widget != nullptr)
-            *widget = (LV2UI_Widget)fUI.getWindowId();
+            *widget = (LV2UI_Widget)fUI.getNativeWindowHandle();
 
 #if DISTRHO_PLUGIN_WANT_STATE
         // tell the DSP we're ready to receive msgs

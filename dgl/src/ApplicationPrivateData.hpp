@@ -47,6 +47,8 @@ struct Application::PrivateData {
     {
         puglSetWorldHandle(world, this);
 
+        puglSetLogLevel(world, PUGL_LOG_LEVEL_DEBUG);
+
         // TODO puglSetClassName
     }
 
@@ -58,6 +60,7 @@ struct Application::PrivateData {
         windows.clear();
         idleCallbacks.clear();
 
+        d_stdout("calling puglFreeWorld");
         puglFreeWorld(world);
     }
 
