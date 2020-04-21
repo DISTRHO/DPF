@@ -50,7 +50,7 @@ START_NAMESPACE_DISTRHO
 class AudioMidiSyncHelper {
 public:
     /** Parameters from the run function, adjusted for event sync */
-    float** outputs;
+    float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
     uint32_t frames;
     const MidiEvent* midiEvents;
     uint32_t midiEventCount;
@@ -59,13 +59,17 @@ public:
        Constructor, using values from the run function.
     */
     AudioMidiSyncHelper(float** const o, uint32_t f, const MidiEvent* m, uint32_t mc)
-        : outputs(o),
+        : outputs(),
           frames(0),
           midiEvents(m),
           midiEventCount(0),
           remainingFrames(f),
           remainingMidiEventCount(mc),
-          totalFramesUsed(0) {}
+          totalFramesUsed(0)
+    {
+        for (uint i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            outputs[i] = o[i];
+    }
 
     /**
        Process a batch of events untill no more are available.
