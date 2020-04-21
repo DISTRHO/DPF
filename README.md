@@ -19,11 +19,11 @@ It uses the same format as the JACK Transport API, making porting some code easi
 
 ## Help and documentation
 
-Bug reports happen on the [https://github.com/DISTRHO/DPF/issues](DPF github project).
+Bug reports happen on the [DPF github project](https://github.com/DISTRHO/DPF/issues).
 
 Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
 
-Online help and discussion about DPF happens in the [https://chat.kx.studio/channel/dpf](KXStudio chat DPF room).
+Online help and discussion about DPF happens in the [KXStudio chat DPF room](https://chat.kx.studio/channel/dpf).
 
 
 ## List of plugins made with DPF:
