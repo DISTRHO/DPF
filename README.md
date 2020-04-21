@@ -17,6 +17,15 @@ Getting time information from the host is possible.<br/>
 It uses the same format as the JACK Transport API, making porting some code easier.<br/>
 
 
+## Help and documentation
+
+Bug reports happen on the [https://github.com/DISTRHO/DPF/issues](DPF github project).
+
+Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
+
+Online help and discussion about DPF happens in the [https://chat.kx.studio/channel/dpf](KXStudio chat DPF room).
+
+
 ## List of plugins made with DPF:
  - [DISTRHO glBars](https://github.com/DISTRHO/glBars)
  - [DISTRHO Kars](https://github.com/DISTRHO/Kars)
@@ -52,6 +61,3 @@ Checking the [github "DPF" tag](https://github.com/topics/dpf) can potentially b
 
 Plugin examples are available in the `example/` folder inside this repo.<br/>
 Extra OpenGL UI examples are available [here](https://github.com/DISTRHO/gl-examples).
-
-
-Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
