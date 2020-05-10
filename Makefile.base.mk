@@ -239,6 +239,9 @@ HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Generic DGL stuff
 
+# needed because reasons (specifically, libc broke ABI)
+DGL_FLAGS = -fno-finite-math-only
+
 ifeq ($(HAIKU),true)
 DGL_SYSTEM_LIBS += -lbe
 endif
