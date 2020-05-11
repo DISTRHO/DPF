@@ -194,7 +194,12 @@ void fons__tt_getFontVMetrics(FONSttFontImpl *font, int *ascent, int *descent, i
 
 float fons__tt_getPixelHeightScale(FONSttFontImpl *font, float size)
 {
+#if 1
+	// Note(DPF) maintain pixel-based units for compat after nanovg update
+	return size / (font->font->ascender - font->font->descender);
+#else
 	return size / font->font->units_per_EM;
+#endif
 }
 
 int fons__tt_getGlyphIndex(FONSttFontImpl *font, int codepoint)
@@ -300,7 +305,12 @@ void fons__tt_getFontVMetrics(FONSttFontImpl *font, int *ascent, int *descent, i
 
 float fons__tt_getPixelHeightScale(FONSttFontImpl *font, float size)
 {
+#if 1
+	// Note(DPF) maintain pixel-based units for compat after nanovg update
+	return stbtt_ScaleForPixelHeight(&font->font, size);
+#else
 	return stbtt_ScaleForMappingEmToPixels(&font->font, size);
+#endif
 }
 
 int fons__tt_getGlyphIndex(FONSttFontImpl *font, int codepoint)
