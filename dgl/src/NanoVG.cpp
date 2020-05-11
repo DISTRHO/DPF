@@ -66,15 +66,23 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 #if defined(NANOVG_GL2)
 # define nvgCreateGL nvgCreateGL2
 # define nvgDeleteGL nvgDeleteGL2
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGL2
+# define nvglImageHandle nvglImageHandleGL2
 #elif defined(NANOVG_GL3)
 # define nvgCreateGL nvgCreateGL3
 # define nvgDeleteGL nvgDeleteGL3
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGL3
+# define nvglImageHandle nvglImageHandleGL3
 #elif defined(NANOVG_GLES2)
 # define nvgCreateGL nvgCreateGLES2
 # define nvgDeleteGL nvgDeleteGLES2
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES2
+# define nvglImageHandle nvglImageHandleGLES2
 #elif defined(NANOVG_GLES3)
 # define nvgCreateGL nvgCreateGLES3
 # define nvgDeleteGL nvgDeleteGLES3
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES3
+# define nvglImageHandle nvglImageHandleGLES3
 #endif
 
 static NVGcontext* nvgCreateGL_helper(int flags)
@@ -922,7 +930,7 @@ void NanoVG::loadSharedResources()
 
     using namespace dpf_resources;
 
-    nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (const uchar*)dejavusans_ttf, dejavusans_ttf_size, 0);
+    nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (uchar*)dejavusans_ttf, dejavusans_ttf_size, 0);
 }
 #endif
 
