@@ -47,6 +47,7 @@
 #define effCanBeAutomated 26
 #define effGetProgramNameIndexed 29
 #define effGetPlugCategory 35
+#define effVendorSpecific 50
 #define effEditKeyDown 59
 #define effEditKeyUp 60
 #define kVstVersion 2400
@@ -409,11 +410,12 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-        fVstUI          = nullptr;
-        fVstRect.top    = 0;
-        fVstRect.left   = 0;
-        fVstRect.bottom = 0;
-        fVstRect.right  = 0;
+        fVstUI           = nullptr;
+        fVstRect.top     = 0;
+        fVstRect.left    = 0;
+        fVstRect.bottom  = 0;
+        fVstRect.right   = 0;
+        fLastScaleFactor = 1.0f;
 
         if (const uint32_t paramCount = fPlugin.getParameterCount())
         {
@@ -590,12 +592,9 @@ public:
             {
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
-                // TODO
-                const float scaleFactor = 1.0f;
-
                 UIExporter tmpUI(nullptr, 0,
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                 scaleFactor, fPlugin.getInstancePointer());
+                                 fLastScaleFactor, fPlugin.getInstancePointer());
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 tmpUI.quit();
@@ -616,10 +615,7 @@ public:
 # endif
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
-                // TODO
-                const float scaleFactor = 1.0f;
-
-                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, scaleFactor);
+                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, fLastScaleFactor);
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
                 // Update current state from plugin side
@@ -922,6 +918,13 @@ public:
             }
             break;
 
+        case effVendorSpecific:
+#if DISTRHO_PLUGIN_HAS_UI
+            if (index == CCONST('P', 'r', 'e', 'S') && value == CCONST('A', 'e', 'C', 's'))
+                fLastScaleFactor = opt;
+#endif
+            break;
+
         //case effStartProcess:
         //case effStopProcess:
         // unused
@@ -1068,6 +1071,7 @@ private:
 #if DISTRHO_PLUGIN_HAS_UI
     UIVst* fVstUI;
     ERect  fVstRect;
+    float  fLastScaleFactor;
 # if DISTRHO_OS_MAC
     bool fUsingNsView;
 # endif
