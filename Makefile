@@ -18,6 +18,7 @@ examples: dgl
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
+	$(MAKE) all -C examples/Metronome
 	$(MAKE) all -C examples/MidiThrough
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States

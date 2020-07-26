@@ -579,7 +579,8 @@ struct TimePosition {
          barBeat is valid for LV2 and VST 2.@n
          barBeat is always 0 on JACK.@n
          @n
-         barBeat can be a fractional number, so to be used to calculate exact frame count to the next beat from the start of current audio buffer.
+         barBeat can be a fractional number, so to be used to calculate exact frame count to the next beat from the start of current audio buffer.@n
+         See `examples/Metronome` for the usage.
        */
         double barBeat;
 
