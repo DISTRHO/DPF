@@ -572,6 +572,17 @@ struct TimePosition {
         */
         int32_t tick;
 
+      /**
+         The beat number at the start of current audio buffer.@n
+         Should always be >= 0 and < beatsPerBar.@n
+         @n
+         barBeat is valid for LV2 and VST 2.@n
+         barBeat is always 0 on JACK.@n
+         @n
+         barBeat can be a fractional number, so to be used to calculate exact frame count to the next beat from the start of current audio buffer.
+       */
+        double barBeat;
+
        /**
           Number of ticks that have elapsed between frame 0 and the first beat of the current measure.
         */
