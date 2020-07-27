@@ -62,20 +62,11 @@ public:
   Plugin that demonstrates tempo sync in DPF.
   The tempo sync implementation is on the first if branch in run() method.
  */
-enum ParameterIndex : uint32_t {
-    pGain,
-    pDecayTime,
-    pSemitone,
-    pCent,
-
-    N_PARAMETERS,
-};
-
 class ExamplePluginMetronome : public Plugin
 {
 public:
     ExamplePluginMetronome()
-        : Plugin(N_PARAMETERS, 0, 0), // 4 parameters, 0 programs, 0 states
+        : Plugin(4, 0, 0), // 4 parameters, 0 programs, 0 states
           sampleRate(44100.0f),
           counter(0),
           phase(0.0f),
@@ -164,28 +155,28 @@ protected:
 
         switch (index)
         {
-        case pGain:
+        case 0:
             parameter.name = "Gain";
             parameter.hints |= kParameterIsLogarithmic;
             parameter.ranges.min = 0.0f;
             parameter.ranges.max = 1.0f;
             parameter.ranges.def = 0.5f;
             break;
-        case pDecayTime:
+        case 1:
             parameter.name = "DecayTime";
             parameter.hints |= kParameterIsLogarithmic;
             parameter.ranges.min = 0.001f;
             parameter.ranges.max = 1.0f;
             parameter.ranges.def = 0.2f;
             break;
-        case pSemitone:
+        case 2:
             parameter.name = "Semitone";
             parameter.hints |= kParameterIsInteger;
             parameter.ranges.min = 0;
             parameter.ranges.max = 127;
             parameter.ranges.def = 72;
             break;
-        case pCent:
+        case 3:
             parameter.name = "Cent";
             parameter.hints |= kParameterIsInteger;
             parameter.ranges.min = -100;
@@ -207,13 +198,13 @@ protected:
     {
         switch (index)
         {
-        case pGain:
+        case 0:
             return gain;
-        case pDecayTime:
+        case 1:
             return decayTime;
-        case pSemitone:
+        case 2:
             return semitone;
-        case pCent:
+        case 3:
             return cent;
         }
 
@@ -227,16 +218,16 @@ protected:
     {
         switch (index)
         {
-        case pGain:
+        case 0:
             gain = value;
             break;
-        case pDecayTime:
+        case 1:
             decayTime = value;
             break;
-        case pSemitone:
+        case 2:
             semitone = value;
             break;
-        case pCent:
+        case 3:
             cent = value;
             break;
         }
