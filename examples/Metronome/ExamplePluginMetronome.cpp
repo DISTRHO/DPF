@@ -62,18 +62,17 @@ public:
   Plugin that demonstrates tempo sync in DPF.
   The tempo sync implementation is on the first if branch in run() method.
  */
+enum ParameterIndex : uint32_t {
+    pGain,
+    pDecayTime,
+    pSemitone,
+    pCent,
+
+    N_PARAMETERS,
+};
+
 class ExamplePluginMetronome : public Plugin
 {
-private:
-    enum ParameterIndex : uint32_t {
-        pGain,
-        pDecayTime,
-        pSemitone,
-        pCent,
-
-        N_PARAMETERS,
-    };
-
 public:
     ExamplePluginMetronome()
         : Plugin(N_PARAMETERS, 0, 0), // 4 parameters, 0 programs, 0 states
