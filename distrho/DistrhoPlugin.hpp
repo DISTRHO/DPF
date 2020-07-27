@@ -570,6 +570,7 @@ struct TimePosition {
           Current tick within beat.@n
           Should always be >= 0 and < @a ticksPerBeat.@n
           The first tick is tick '0'.@n
+          Fraction part of tick is only available on LV2 and VST2.
         */
         double tick;
 
