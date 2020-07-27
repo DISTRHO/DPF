@@ -138,7 +138,7 @@ protected:
             // Better to use double when manipulating time.
             double secondsPerBeat = 60.0 / timePos.bbt.beatsPerMinute;
             double framesPerBeat  = sampleRate * secondsPerBeat;
-            double beatFraction = fmod(timePos.bbt.barBeat, 1.0);
+            double beatFraction   = timePos.bbt.tick / timePos.bbt.ticksPerBeat;
             
             // If beatFraction == 0.0, next beat is exactly at the start of currenct cycle.
             // Otherwise, reset counter to the frames to the next beat.

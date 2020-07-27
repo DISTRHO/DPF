@@ -227,7 +227,6 @@ public:
         fTimePosition.bbt.bar   = 1;
         fTimePosition.bbt.beat  = 1;
         fTimePosition.bbt.tick  = 0;
-        fTimePosition.bbt.barBeat  = 0;
         fTimePosition.bbt.barStartTick = 0;
         fTimePosition.bbt.beatsPerBar  = 4;
         fTimePosition.bbt.beatType     = 4;
@@ -443,8 +442,7 @@ public:
                     {
                         const double rest = std::fmod(fLastPositionData.barBeat, 1.0f);
                         fTimePosition.bbt.beat = std::round(fLastPositionData.barBeat-rest+1.0);
-                        fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
-                        fTimePosition.bbt.barBeat = fLastPositionData.barBeat;
+                        fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat;
                     }
                 }
 
@@ -646,8 +644,7 @@ public:
 
                         const double rest = std::fmod(fLastPositionData.barBeat, 1.0f);
                         fTimePosition.bbt.beat = std::round(fLastPositionData.barBeat-rest+1.0);
-                        fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat+0.5;
-                        fTimePosition.bbt.barBeat = fLastPositionData.barBeat;
+                        fTimePosition.bbt.tick = rest*fTimePosition.bbt.ticksPerBeat;
 
                         if (fLastPositionData.bar >= 0)
                         {

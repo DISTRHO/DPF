@@ -337,7 +337,6 @@ protected:
                 fTimePosition.bbt.bar  = pos.bar;
                 fTimePosition.bbt.beat = pos.beat;
                 fTimePosition.bbt.tick = pos.tick;
-                fTimePosition.bbt.barBeat = 0;
                 fTimePosition.bbt.barStartTick = pos.bar_start_tick;
 
                 fTimePosition.bbt.beatsPerBar = pos.beats_per_bar;
