@@ -12,7 +12,23 @@ The pitch of sine wave is 1 octave higher at the start of every bar.<br/>
 - Semitone
 - Cent
 
-To calculate exact frames to the next beat from the start of current audio buffer, `TimePosition::BarBeatTick.barBeat` is used.<br/>
+To calculate frames to the next beat from the start of current audio buffer, following implementation is used.<br/>
+
+```c++
+const TimePosition& timePos(getTimePosition());
+
+if (timePos.bbt.valid) {
+    double secondsPerBeat = 60.0 / timePos.bbt.beatsPerMinute;
+    double framesPerBeat  = sampleRate * secondsPerBeat;
+    double beatFraction   = timePos.bbt.tick / timePos.bbt.ticksPerBeat;
+
+    uint32_t framesToNextBeat = beatFraction == 0.0
+        ? 0
+        : static_cast<uint32_t>(framesPerBeat * (1.0 - beatFraction));
+
+    // ...
+}
+```
 
 Reference:
 - [DISTRHO Plugin Framework: TimePosition::BarBeatTick Struct Reference](https://distrho.github.io/DPF/structTimePosition_1_1BarBeatTick.html)
