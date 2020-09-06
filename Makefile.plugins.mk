@@ -107,6 +107,10 @@ DGL_LIBS =
 OBJS_UI =
 endif
 
+ifneq ($(HAVE_LIBLO),true)
+dssi_ui =
+endif
+
 # TODO split dsp and ui object build flags
 BASE_FLAGS += $(DGL_FLAGS)
 
