@@ -225,8 +225,10 @@ public:
 #if DISTRHO_PLUGIN_WANT_PORT_GROUPS
         std::set<int32_t> portGroupIndices;
 
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             portGroupIndices.insert(fData->audioPorts[i].group);
+#endif
 
         for (uint32_t i=0, count=fData->parameterCount; i < count; ++i)
             portGroupIndices.insert(fData->parameters[i].group);

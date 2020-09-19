@@ -804,11 +804,15 @@ void lv2_generate_ttl(const char* const basename)
                 bool isInput = false;
                 bool isOutput = false;
 
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0
                 for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS && !isInput; ++i)
                     isInput = plugin.getAudioPort(true, i).group == pgroupIndex;
+#endif
 
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
                 for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS && !isOutput; ++i)
                     isOutput = plugin.getAudioPort(false, i).group == pgroupIndex;
+#endif
 
                 for (uint32_t i=0, count=plugin.getParameterCount(); i < count && (!isInput || !isOutput); ++i)
                 {
