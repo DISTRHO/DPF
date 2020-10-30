@@ -20,6 +20,7 @@ examples: dgl
 	$(MAKE) all -C examples/MidiThrough
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
+	$(MAKE) all -C examples/MidiMetronome
 
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
@@ -59,6 +60,7 @@ clean:
 	$(MAKE) clean -C examples/MidiThrough
 	$(MAKE) clean -C examples/Parameters
 	$(MAKE) clean -C examples/States
+	$(MAKE) clean -C examples/MidiMetronome
 	$(MAKE) clean -C utils/lv2-ttl-generator
 ifneq ($(MACOS_OR_WINDOWS),true)
 	$(MAKE) clean -C examples/ExternalUI
