@@ -98,7 +98,7 @@ DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
 endif
 
-DGL_LIBS += $(DGL_SYSTEM_LIBS) -lm
+DGL_LIBS += $(DGL_SYSTEM_LIBS)
 
 ifneq ($(HAVE_DGL),true)
 dssi_ui =
