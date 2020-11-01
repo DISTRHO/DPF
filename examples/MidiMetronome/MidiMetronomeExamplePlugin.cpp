@@ -117,6 +117,7 @@ protected:
     }
 
     // get bpm from jack transport
+    sr = getSampleRate();
     bpm = pos.bbt.beatsPerMinute;
     wave_length = 60 * sr / bpm;
 
@@ -146,7 +147,7 @@ protected:
 private:
   long offset = 0;
   uint32_t tone_length = 0;
-  double sr = getSampleRate();
+  double sr;
   double bpm;
   uint32_t wave_length;
 
