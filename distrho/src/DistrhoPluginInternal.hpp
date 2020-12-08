@@ -36,6 +36,7 @@ extern double   d_lastSampleRate;
 // DSP callbacks
 
 typedef bool (*writeMidiFunc) (void* ptr, const MidiEvent& midiEvent);
+typedef bool (*requestParameterValueChangeFunc) (void* ptr, const uint32_t index, const float value);
 
 // -----------------------------------------------------------------------
 // Plugin private data
@@ -73,6 +74,7 @@ struct Plugin::PrivateData {
     // Callbacks
     void*         callbacksPtr;
     writeMidiFunc writeMidiCallbackFunc;
+    requestParameterValueChangeFunc requestParameterChangeFunc;
 
     uint32_t bufferSize;
     double   sampleRate;
@@ -99,6 +101,7 @@ struct Plugin::PrivateData {
 #endif
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
+          requestParameterChangeFunc(nullptr),
           bufferSize(d_lastBufferSize),
           sampleRate(d_lastSampleRate)
     {
@@ -170,6 +173,16 @@ struct Plugin::PrivateData {
         return false;
     }
 #endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+	bool requestParameterValueChange(const uint32_t index, const float value)
+    {
+        if (requestParameterChangeFunc != nullptr)
+            return requestParameterChangeFunc(callbacksPtr, index, value);
+
+        return false;
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -178,7 +191,7 @@ struct Plugin::PrivateData {
 class PluginExporter
 {
 public:
-    PluginExporter(void* const callbacksPtr, const writeMidiFunc writeMidiCall)
+    PluginExporter(void* const callbacksPtr, const writeMidiFunc writeMidiCall, const requestParameterValueChangeFunc parameterChangeCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
@@ -215,6 +228,7 @@ public:
 
         fData->callbacksPtr          = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
+        fData->requestParameterChangeFunc = parameterChangeCall;
     }
 
     ~PluginExporter()

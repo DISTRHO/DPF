@@ -67,6 +67,10 @@ static const int kVstMidiEventSize = static_cast<int>(sizeof(VstMidiEvent));
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+#endif
+
 // -----------------------------------------------------------------------
 
 void strncpy(char* const dst, const char* const src, const size_t size)
@@ -385,7 +389,7 @@ class PluginVst : public ParameterCheckHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fPlugin(this, writeMidiCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChange),
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
@@ -1168,6 +1172,18 @@ private:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool setParameterValueChange(const uint32_t index, const float value)
+    {
+		return 1; //needs implementation
+    }
+
+    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    {
+        return ((PluginVst*)ptr)->setParameterValueChange(index, value);
+    }
+#endif
+
 #if DISTRHO_PLUGIN_WANT_STATE
     // -------------------------------------------------------------------
     // functions called from the UI side, may block
@@ -1226,7 +1242,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     }
 
     // Create dummy plugin to get data from
-    static PluginExporter plugin(nullptr, nullptr);
+    static PluginExporter plugin(nullptr, nullptr, nullptr);
 
     if (doInternalInit)
     {

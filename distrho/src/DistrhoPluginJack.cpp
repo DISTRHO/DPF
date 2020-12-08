@@ -41,6 +41,10 @@ static const setStateFunc setStateCallback = nullptr;
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+#endif
+
 // -----------------------------------------------------------------------
 
 static volatile bool gCloseSignalReceived = false;
@@ -99,7 +103,7 @@ class PluginJack
 {
 public:
     PluginJack(jack_client_t* const client)
-        : fPlugin(this, writeMidiCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChange),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this, 0, nullptr, setParameterValueCallback, setStateCallback, nullptr, setSizeCallback, getDesktopScaleFactor(), fPlugin.getInstancePointer()),
 #endif
@@ -588,6 +592,18 @@ private:
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
     {
         return thisPtr->writeMidi(midiEvent);
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool setParameterValueChange(const uint32_t index, const float value)
+    {
+		return 1; //needs implementation
+    }
+
+    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    {
+        return thisPtr->setParameterValueChange(index, value);
     }
 #endif
 

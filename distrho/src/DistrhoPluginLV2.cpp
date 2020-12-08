@@ -30,6 +30,7 @@
 #include "lv2/worker.h"
 #include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
+#include "lv2/control-input-port-change-request.h"
 
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
 # include "libmodla.h"
@@ -60,13 +61,16 @@ typedef std::map<const String, String> StringMap;
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+#endif
 // -----------------------------------------------------------------------
 
 class PluginLv2
 {
 public:
-    PluginLv2(const double sampleRate, const LV2_URID_Map* const uridMap, const LV2_Worker_Schedule* const worker, const bool usingNominal)
-        : fPlugin(this, writeMidiCallback),
+    PluginLv2(const double sampleRate, const LV2_URID_Map* const uridMap, const LV2_Worker_Schedule* const worker, const LV2_ControlInputPort_Change_Request* const parameterRequest, const bool usingNominal)
+        : fPlugin(this, writeMidiCallback, requestParameterValueChange),
           fUsingNominal(usingNominal),
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
           fRunCount(0),
@@ -76,7 +80,8 @@ public:
           fSampleRate(sampleRate),
           fURIDs(uridMap),
           fUridMap(uridMap),
-          fWorker(worker)
+          fWorker(worker),
+          fParamRequest(parameterRequest)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -1040,6 +1045,7 @@ private:
     // LV2 features
     const LV2_URID_Map* const fUridMap;
     const LV2_Worker_Schedule* const fWorker;
+    const LV2_ControlInputPort_Change_Request* const fParamRequest;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     StringMap fStateMap;
@@ -1124,6 +1130,18 @@ private:
         return ((PluginLv2*)ptr)->writeMidi(midiEvent);
     }
 #endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool setParameterValueChange(const uint32_t index, const float value)
+    {
+		return fParamRequest->request_change(fParamRequest->handle, index, value);
+    }
+
+    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    {
+        return ((PluginLv2*)ptr)->setParameterValueChange(index, value);
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -1133,6 +1151,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     const LV2_Options_Option* options = nullptr;
     const LV2_URID_Map*       uridMap = nullptr;
     const LV2_Worker_Schedule* worker = nullptr;
+    const LV2_ControlInputPort_Change_Request* parameterRequest = nullptr;
 
     for (int i=0; features[i] != nullptr; ++i)
     {
@@ -1142,6 +1161,8 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
             uridMap = (const LV2_URID_Map*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_WORKER__schedule) == 0)
             worker = (const LV2_Worker_Schedule*)features[i]->data;
+        else if (std::strcmp(features[i]->URI, LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI) == 0)
+            parameterRequest = (const LV2_ControlInputPort_Change_Request*)features[i]->data;
     }
 
     if (options == nullptr)
@@ -1206,7 +1227,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 
     d_lastSampleRate = sampleRate;
 
-    return new PluginLv2(sampleRate, uridMap, worker, usingNominal);
+    return new PluginLv2(sampleRate, uridMap, worker, parameterRequest, usingNominal);
 }
 
 #define instancePtr ((PluginLv2*)instance)

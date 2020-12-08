@@ -30,6 +30,10 @@ START_NAMESPACE_DISTRHO
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 // Carla UI
@@ -509,6 +513,18 @@ private:
         };
 
         return ((PluginCarla*)ptr)->fPlugin.writeMidiEvent(midiEvent);
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool setParameterValueChange(const uint32_t index, const float value)
+    {
+		return 1; //TODO needs implementation
+    }
+
+    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    {
+        return ((PluginCarla*)ptr)->setParameterValueChange(index, value);
     }
 #endif
 
