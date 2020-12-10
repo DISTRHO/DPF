@@ -112,7 +112,7 @@ bool Plugin::writeMidiEvent(const MidiEvent& midiEvent) noexcept
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 bool Plugin::requestParameterValueChange(const uint32_t index, const float value) noexcept
 {
-    return pData->requestParameterValueChange(index, value);
+    return pData->requestParameterValueChangeCallback(index, value);
 }
 #endif
 

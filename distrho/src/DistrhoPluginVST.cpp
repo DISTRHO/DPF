@@ -68,7 +68,7 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -389,7 +389,7 @@ class PluginVst : public ParameterCheckHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChange),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
@@ -1178,7 +1178,7 @@ private:
 		return 1; //needs implementation
     }
 
-    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
     {
         return ((PluginVst*)ptr)->setParameterValueChange(index, value);
     }

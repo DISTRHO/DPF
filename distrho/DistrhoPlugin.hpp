@@ -744,6 +744,9 @@ public:
 
 
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+	/**
+	 TODO add description
+	*/
 	bool requestParameterValueChange(const uint32_t index, const float value) noexcept;
 #endif
 protected:

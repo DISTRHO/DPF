@@ -31,7 +31,7 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -522,7 +522,7 @@ private:
 		return 1; //TODO needs implementation
     }
 
-    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
     {
         return ((PluginCarla*)ptr)->setParameterValueChange(index, value);
     }

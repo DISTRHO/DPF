@@ -62,15 +62,19 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChange = nullptr;
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 // -----------------------------------------------------------------------
 
 class PluginLv2
 {
 public:
-    PluginLv2(const double sampleRate, const LV2_URID_Map* const uridMap, const LV2_Worker_Schedule* const worker, const LV2_ControlInputPort_Change_Request* const parameterRequest, const bool usingNominal)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChange),
+    PluginLv2(const double sampleRate,
+            const LV2_URID_Map* const uridMap,
+            const LV2_Worker_Schedule* const worker,
+            const LV2_ControlInputPort_Change_Request* const parameterRequest,
+            const bool usingNominal)
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fUsingNominal(usingNominal),
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
           fRunCount(0),
@@ -81,7 +85,7 @@ public:
           fURIDs(uridMap),
           fUridMap(uridMap),
           fWorker(worker),
-          fParamRequest(parameterRequest)
+          fCtrlInPortChangeReq(parameterRequest)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -1045,7 +1049,7 @@ private:
     // LV2 features
     const LV2_URID_Map* const fUridMap;
     const LV2_Worker_Schedule* const fWorker;
-    const LV2_ControlInputPort_Change_Request* const fParamRequest;
+    const LV2_ControlInputPort_Change_Request* const fCtrlInPortChangeReq;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     StringMap fStateMap;
@@ -1134,10 +1138,10 @@ private:
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool setParameterValueChange(const uint32_t index, const float value)
     {
-		return fParamRequest->request_change(fParamRequest->handle, index, value);
+		return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle, index, value);
     }
 
-    static bool requestParameterValueChange(void* ptr, const uint32_t index, const float value)
+    static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
     {
         return ((PluginLv2*)ptr)->setParameterValueChange(index, value);
     }

@@ -74,7 +74,7 @@ struct Plugin::PrivateData {
     // Callbacks
     void*         callbacksPtr;
     writeMidiFunc writeMidiCallbackFunc;
-    requestParameterValueChangeFunc requestParameterChangeFunc;
+    requestParameterValueChangeFunc requestParameterValueChangeCallbackFunc;
 
     uint32_t bufferSize;
     double   sampleRate;
@@ -101,7 +101,7 @@ struct Plugin::PrivateData {
 #endif
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
-          requestParameterChangeFunc(nullptr),
+          requestParameterValueChangeCallbackFunc(nullptr),
           bufferSize(d_lastBufferSize),
           sampleRate(d_lastSampleRate)
     {
@@ -175,10 +175,10 @@ struct Plugin::PrivateData {
 #endif
 
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-	bool requestParameterValueChange(const uint32_t index, const float value)
+	bool requestParameterValueChangeCallback(const uint32_t index, const float value)
     {
-        if (requestParameterChangeFunc != nullptr)
-            return requestParameterChangeFunc(callbacksPtr, index, value);
+        if (requestParameterValueChangeCallbackFunc != nullptr)
+            return requestParameterValueChangeCallbackFunc(callbacksPtr, index, value);
 
         return false;
     }
@@ -191,7 +191,9 @@ struct Plugin::PrivateData {
 class PluginExporter
 {
 public:
-    PluginExporter(void* const callbacksPtr, const writeMidiFunc writeMidiCall, const requestParameterValueChangeFunc parameterChangeCall)
+    PluginExporter(void* const callbacksPtr,
+            const writeMidiFunc writeMidiCall,
+            const requestParameterValueChangeFunc requestParameterValueChangeCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
@@ -228,7 +230,7 @@ public:
 
         fData->callbacksPtr          = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
-        fData->requestParameterChangeFunc = parameterChangeCall;
+        fData->requestParameterValueChangeCallbackFunc = requestParameterValueChangeCall;
     }
 
     ~PluginExporter()
