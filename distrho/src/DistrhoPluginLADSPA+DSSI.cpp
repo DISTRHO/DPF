@@ -20,6 +20,10 @@
 # error Cannot use MIDI Output with LADSPA or DSSI
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+# error LADSPA/DSSI does not support request parameter change functionality
+#endif
+
 #ifdef DISTRHO_PLUGIN_TARGET_DSSI
 # include "dssi/dssi.h"
 # if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
@@ -39,9 +43,6 @@
 # warning LADSPA/DSSI does not support TimePos
 #endif
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-# warning LADSPA/DSSI does not support request parameter change functionality
-#endif
 
 START_NAMESPACE_DISTRHO
 
