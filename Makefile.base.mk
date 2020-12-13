@@ -63,6 +63,10 @@ ifneq (,$(filter arm%,$(TARGET_PROCESSOR)))
 CPU_ARM=true
 CPU_ARM_OR_AARCH64=true
 endif
+ifneq (,$(filter arm64%,$(TARGET_PROCESSOR)))
+CPU_ARM64=true
+CPU_ARM_OR_AARCH64=true
+endif
 ifneq (,$(filter aarch64%,$(TARGET_PROCESSOR)))
 CPU_AARCH64=true
 CPU_ARM_OR_AARCH64=true
@@ -132,11 +136,13 @@ BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
 BASE_OPTS  = -O3 -ffast-math -fdata-sections -ffunction-sections
 
 ifeq ($(CPU_I386_OR_X86_64),true)
-BASE_OPTS += -mtune=generic -msse -msse2
+BASE_OPTS += -mtune=generic -msse -msse2 -mfpmath=sse
 endif
 
 ifeq ($(CPU_ARM),true)
+ifneq ($(CPU_ARM64),true)
 BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
+endif
 endif
 
 ifeq ($(MACOS),true)
@@ -285,6 +291,7 @@ OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
 endif
 
 ifeq ($(MACOS),true)
+OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1
 OPENGL_LIBS  = -framework OpenGL
 endif
 
