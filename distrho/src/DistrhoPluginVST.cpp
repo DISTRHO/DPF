@@ -225,7 +225,11 @@ public:
 
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        (void)down;
+        (void)index;
+        (void)value;
+# else
         if (! fShouldCaptureVstKeys)
             return 0;
 
