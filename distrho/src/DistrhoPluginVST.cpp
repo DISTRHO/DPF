@@ -287,9 +287,14 @@ public:
 
         if (index >= 0)
             return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
-# endif
 
         return 0;
+# else
+        return 0; // unused
+        (void)down;
+        (void)index;
+        (void)value;
+# endif
     }
 
     // -------------------------------------------------------------------
