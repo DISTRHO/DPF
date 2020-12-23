@@ -72,7 +72,7 @@ public:
     PluginLv2(const double sampleRate,
             const LV2_URID_Map* const uridMap,
             const LV2_Worker_Schedule* const worker,
-            const LV2_ControlInputPort_Change_Request* const parameterRequest,
+            const LV2_ControlInputPort_Change_Request* const ctrlInPortChangeReq,
             const bool usingNominal)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fUsingNominal(usingNominal),
@@ -85,7 +85,7 @@ public:
           fURIDs(uridMap),
           fUridMap(uridMap),
           fWorker(worker),
-          fCtrlInPortChangeReq(parameterRequest)
+          fCtrlInPortChangeReq(ctrlInPortChangeReq)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -1138,12 +1138,12 @@ private:
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool setParameterValueChange(const uint32_t index, const float value)
     {
-		return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle, index, value);
+        return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle, index, value);
     }
 
     static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
     {
-        return ((PluginLv2*)ptr)->setParameterValueChange(index, value);
+        return (((PluginLv2*)ptr)->setParameterValueChange(index, value) == 0);
     }
 #endif
 };
@@ -1155,7 +1155,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     const LV2_Options_Option* options = nullptr;
     const LV2_URID_Map*       uridMap = nullptr;
     const LV2_Worker_Schedule* worker = nullptr;
-    const LV2_ControlInputPort_Change_Request* parameterRequest = nullptr;
+    const LV2_ControlInputPort_Change_Request* ctrlInPortChangeReq = nullptr;
 
     for (int i=0; features[i] != nullptr; ++i)
     {
@@ -1166,7 +1166,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
         else if (std::strcmp(features[i]->URI, LV2_WORKER__schedule) == 0)
             worker = (const LV2_Worker_Schedule*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI) == 0)
-            parameterRequest = (const LV2_ControlInputPort_Change_Request*)features[i]->data;
+            ctrlInPortChangeReq = (const LV2_ControlInputPort_Change_Request*)features[i]->data;
     }
 
     if (options == nullptr)
@@ -1231,7 +1231,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 
     d_lastSampleRate = sampleRate;
 
-    return new PluginLv2(sampleRate, uridMap, worker, parameterRequest, usingNominal);
+    return new PluginLv2(sampleRate, uridMap, worker, ctrlInPortChangeReq, usingNominal);
 }
 
 #define instancePtr ((PluginLv2*)instance)

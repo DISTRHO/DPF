@@ -1175,7 +1175,7 @@ private:
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool setParameterValueChange(const uint32_t index, const float value)
     {
-		return 1; //needs implementation
+        return 1; //needs implementation
     }
 
     static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
