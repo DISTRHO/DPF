@@ -28,6 +28,6 @@ FOLDERS=`find . -type d -name \*.lv2`
 for i in ${FOLDERS}; do
   cd ${i}
   FILE="$(ls *.${EXT} | sort | head -n 1)"
-  "${EXE_WRAPPER}" "${GEN}" "./${FILE}"
+  ${EXE_WRAPPER} "${GEN}" "./${FILE}"
   cd ..
 done
