@@ -10,6 +10,12 @@ all: dgl examples gen
 
 # --------------------------------------------------------------
 
+ifneq ($(CROSS_COMPILING),true)
+CAN_GENERATE_TTL = true
+else ifeq ($(EXE_WRAPPER),)
+CAN_GENERATE_TTL = true
+endif
+
 dgl:
 	$(MAKE) -C dgl
 
@@ -35,7 +41,7 @@ ifneq ($(MACOS_OR_WINDOWS),true)
 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
 endif
 
-ifneq ($(CROSS_COMPILING),true)
+ifneq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator
 	@$(CURDIR)/utils/generate-ttl.sh
 ifeq ($(MACOS),true)
