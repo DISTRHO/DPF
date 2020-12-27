@@ -161,9 +161,6 @@ ifeq ($(WINDOWS),true)
 BASE_OPTS  += -fno-rerun-cse-after-loop
 # See https://github.com/falkTX/Carla/issues/855
 BASE_OPTS  += -mstackrealign
-ifeq ($(BUILDING_FOR_WINDOWS),true)
-BASE_FLAGS += -DBUILDING_CARLA_FOR_WINDOWS
-endif
 else
 # Not needed for Windows
 BASE_FLAGS += -fPIC -DPIC
