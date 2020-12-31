@@ -178,8 +178,9 @@ public:
               sendNoteCallback,
               setSizeCallback,
               nullptr, // TODO file request
-              scaleFactor,
-              plugin->getInstancePointer()),
+              nullptr,
+              plugin->getInstancePointer(),
+              scaleFactor),
           fShouldCaptureVstKeys(false)
     {
         // FIXME only needed for windows?
@@ -593,8 +594,8 @@ public:
                 d_lastUiSampleRate = fPlugin.getSampleRate();
 
                 UIExporter tmpUI(nullptr, 0,
-                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                 fLastScaleFactor, fPlugin.getInstancePointer());
+                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                 fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
                 tmpUI.quit();

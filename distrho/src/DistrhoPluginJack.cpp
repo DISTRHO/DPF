@@ -108,8 +108,9 @@ public:
               nullptr, // send note
               setSizeCallback,
               nullptr, // file request
-              getDesktopScaleFactor(),
-              fPlugin.getInstancePointer()),
+              nullptr, // bundle
+              fPlugin.getInstancePointer(),
+              getDesktopScaleFactor()),
 #endif
           fClient(client)
     {

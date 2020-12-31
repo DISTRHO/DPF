@@ -105,8 +105,31 @@ protected:
         const uint width = getWidth();
         const uint height = getHeight();
         const uint minwh = std::min(width, height);
+        const uint bgColor = getBackgroundColor();
 
         Rectangle<int> r;
+
+        // if host doesn't respect aspect-ratio but supports ui background, draw out-of-bounds color from it
+        if (width != height && bgColor != 0)
+        {
+            const GLubyte red   = (bgColor >> 24) & 0xff;
+            const GLubyte green = (bgColor >> 16) & 0xff;
+            const GLubyte blue  = (bgColor >>  8) & 0xff;
+            glColor3ub(red, green, blue);
+
+            if (width > height)
+            {
+                r.setPos(height, 0);
+                r.setSize(width-height, height);
+            }
+            else
+            {
+                r.setPos(0, width);
+                r.setSize(width, height-width);
+            }
+
+            r.draw();
+        }
 
         r.setWidth(minwh/3 - 6);
         r.setHeight(minwh/3 - 6);

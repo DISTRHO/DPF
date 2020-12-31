@@ -81,6 +81,16 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
 
+uint UI::getBackgroundColor() const noexcept
+{
+    return pData->bgColor;
+}
+
+uint UI::getForegroundColor() const noexcept
+{
+    return pData->fgColor;
+}
+
 double UI::getSampleRate() const noexcept
 {
     return pData->sampleRate;

@@ -82,6 +82,18 @@ public:
     * Host state */
 
    /**
+      Get the color used for UI background (i.e. window color) in RGBA format.
+      Returns 0 by default, in case of error or lack of host support.
+    */
+    uint getBackgroundColor() const noexcept;
+
+   /**
+      Get the color used for UI foreground (i.e. text color) in RGBA format.
+      Returns 0xffffffff by default, in case of error or lack of host support.
+    */
+    uint getForegroundColor() const noexcept;
+
+   /**
       Get the current sample rate used in plugin processing.
       @see sampleRateChanged(double)
     */
@@ -92,7 +104,7 @@ public:
 
       Touch/pressed-down event.
       Lets the host know the user is tweaking a parameter.
-      Required in some hosts to record automation.      
+      Required in some hosts to record automation.
     */
     void editParameter(uint32_t index, bool started);
 

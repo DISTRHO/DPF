@@ -71,6 +71,8 @@ struct UI::PrivateData {
     bool resizeInProgress;
     uint minWidth;
     uint minHeight;
+    uint bgColor;
+    uint fgColor;
 
     // Callbacks
     void*           callbacksPtr;
@@ -91,6 +93,8 @@ struct UI::PrivateData {
           resizeInProgress(false),
           minWidth(0),
           minHeight(0),
+          bgColor(0),
+          fgColor(0),
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
@@ -272,9 +276,11 @@ public:
                const sendNoteFunc sendNoteCall,
                const setSizeFunc setSizeCall,
                const fileRequestFunc fileRequestCall,
-               const float scaleFactor = 1.0f,
+               const char* const bundlePath = nullptr,
                void* const dspPtr = nullptr,
-               const char* const bundlePath = nullptr)
+               const float scaleFactor = 1.0f,
+               const uint32_t bgColor = 0,
+               const uint32_t fgColor = 0xffffffff)
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         : fUI(createUiWrapper(dspPtr, winId, scaleFactor, bundlePath)),
 #else
@@ -287,6 +293,9 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
+
+        fData->bgColor = bgColor;
+        fData->fgColor = fgColor;
 
         fData->callbacksPtr            = callbacksPtr;
         fData->editParamCallbackFunc   = editParamCall;
@@ -355,6 +364,20 @@ public:
         return glWindow.getWindowId();
     }
 #endif
+
+    uint getBackgroundColor() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        return fData->bgColor;
+    }
+
+    uint getForegroundColor() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0xffffffff);
+
+        return fData->fgColor;
+    }
 
     // -------------------------------------------------------------------
 

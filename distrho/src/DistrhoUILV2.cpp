@@ -70,9 +70,11 @@ public:
           const LV2_Feature* const* const features,
           const LV2UI_Controller controller,
           const LV2UI_Write_Function writeFunc,
-          const float scaleFactor,
           LV2UI_Widget* const widget,
-          void* const dspPtr)
+          void* const dspPtr,
+          const float scaleFactor,
+          const uint32_t bgColor,
+          const uint32_t fgColor)
         : fUI(this, winId,
               editParameterCallback,
               setParameterCallback,
@@ -80,7 +82,11 @@ public:
               sendNoteCallback,
               setSizeCallback,
               fileRequestCallback,
-              scaleFactor, dspPtr, bundlePath),
+              bundlePath,
+              dspPtr,
+              scaleFactor,
+              bgColor,
+              fgColor),
           fUridMap(uridMap),
           fUiRequestValue(getLv2Feature<LV2UI_Request_Value>(features, LV2_UI__requestValue)),
           fUiResize(getLv2Feature<LV2UI_Resize>(features, LV2_UI__resize)),
@@ -515,13 +521,18 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
     }
 #endif
 
+    const intptr_t winId = (intptr_t)parentId;
     float scaleFactor = 1.0f;
-    const intptr_t winId((intptr_t)parentId);
+    uint32_t bgColor = 0;
+    uint32_t fgColor = 0xffffffff;
 
     if (options != nullptr)
     {
+        const LV2_URID uridAtomInt     = uridMap->map(uridMap->handle, LV2_ATOM__Int);
         const LV2_URID uridAtomFloat   = uridMap->map(uridMap->handle, LV2_ATOM__Float);
         const LV2_URID uridSampleRate  = uridMap->map(uridMap->handle, LV2_PARAMETERS__sampleRate);
+        const LV2_URID uridBgColor     = uridMap->map(uridMap->handle, LV2_UI__backgroundColor);
+        const LV2_URID uridFgColor     = uridMap->map(uridMap->handle, LV2_UI__foregroundColor);
         const LV2_URID uridScaleFactor = uridMap->map(uridMap->handle, LV2_UI__scaleFactor);
 
         for (int i=0; options[i].key != 0; ++i)
@@ -540,6 +551,20 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
                 else
                     d_stderr("Host provides UI scale factor but has wrong value type");
             }
+            else if (options[i].key == uridBgColor)
+            {
+                if (options[i].type == uridAtomInt)
+                    bgColor = (uint32_t)*(const int32_t*)options[i].value;
+                else
+                    d_stderr("Host provides UI background color but has wrong value type");
+            }
+            else if (options[i].key == uridFgColor)
+            {
+                if (options[i].type == uridAtomInt)
+                    fgColor = (uint32_t)*(const int32_t*)options[i].value;
+                else
+                    d_stderr("Host provides UI foreground color but has wrong value type");
+            }
         }
     }
 
@@ -550,7 +575,8 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
     }
 
     return new UiLv2(bundlePath, winId, options, uridMap, features,
-                     controller, writeFunction, scaleFactor, widget, instance);
+                     controller, writeFunction, widget, instance,
+                     scaleFactor, bgColor, fgColor);
 }
 
 #define uiPtr ((UiLv2*)ui)
