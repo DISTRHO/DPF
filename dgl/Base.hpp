@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,7 +20,7 @@
 #include "../distrho/extra/LeakDetector.hpp"
 #include "../distrho/extra/ScopedPointer.hpp"
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Define namespace
 
 #ifndef DGL_NAMESPACE
@@ -33,33 +33,46 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Base DGL enums
-
-/**
-   Convenience symbols for ASCII control characters.
- */
-enum Char {
-    kCharBackspace = 0x08,
-    kCharEscape    = 0x1B,
-    kCharDelete    = 0x7F
-};
 
 /**
    Keyboard modifier flags.
  */
 enum Modifier {
-    kModifierShift   = 1 << 0, /**< Shift key */
-    kModifierControl = 1 << 1, /**< Control key */
-    kModifierAlt     = 1 << 2, /**< Alt/Option key */
-    kModifierSuper   = 1 << 3  /**< Mod4/Command/Windows key */
+    kModifierShift   = 1u << 0u, /**< Shift key */
+    kModifierControl = 1u << 1u, /**< Control key */
+    kModifierAlt     = 1u << 2u, /**< Alt/Option key */
+    kModifierSuper   = 1u << 3u  /**< Mod4/Command/Windows key */
 };
 
 /**
-   Special (non-Unicode) keyboard keys.
+   Keyboard key codepoints.
+
+   All keys are identified by a Unicode code point in PuglEventKey::key.  This
+   enumeration defines constants for special keys that do not have a standard
+   code point, and some convenience constants for control characters.  Note
+   that all keys are handled in the same way, this enumeration is just for
+   convenience when writing hard-coded key bindings.
+
+   Keys that do not have a standard code point use values in the Private Use
+   Area in the Basic Multilingual Plane (`U+E000` to `U+F8FF`).  Applications
+   must take care to not interpret these values beyond key detection, the
+   mapping used here is arbitrary and specific to DPF.
  */
 enum Key {
-    kKeyF1 = 1,
+    // Convenience symbols for ASCII control characters
+    kKeyBackspace = 0x08,
+    kKeyEscape    = 0x1B,
+    kKeyDelete    = 0x7F,
+
+    // Backwards compatibility with old DPF
+    kCharBackspace = kKeyBackspace,
+    kCharEscape    = kKeyEscape,
+    kCharDelete    = kKeyDelete,
+
+    // Unicode Private Use Area
+    kKeyF1 = 0xE000,
     kKeyF2,
     kKeyF3,
     kKeyF4,
@@ -81,12 +94,26 @@ enum Key {
     kKeyEnd,
     kKeyInsert,
     kKeyShift,
+    kKeyShiftL = kKeyShift,
+    kKeyShiftR,
     kKeyControl,
+    kKeyControlL = kKeyControl,
+    kKeyControlR,
     kKeyAlt,
-    kKeySuper
+    kKeyAltL = kKeyAlt,
+    kKeyAltR,
+    kKeySuper,
+    kKeySuperL = kKeySuper,
+    kKeySuperR,
+    kKeyMenu,
+    kKeyCapsLock,
+    kKeyScrollLock,
+    kKeyNumLock,
+    kKeyPrintScreen,
+    kKeyPause
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Base DGL classes
 
 /**
@@ -97,14 +124,13 @@ struct GraphicsContext {};
 /**
    Idle callback.
  */
-class IdleCallback
+struct IdleCallback
 {
-public:
     virtual ~IdleCallback() {}
     virtual void idleCallback() = 0;
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
@@ -114,6 +140,6 @@ END_NAMESPACE_DGL
   using namespace DGL_NAMESPACE;
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #endif // DGL_BASE_HPP_INCLUDED
