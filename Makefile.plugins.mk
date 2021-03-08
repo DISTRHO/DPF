@@ -41,14 +41,6 @@ endif
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
 
-ifeq ($(HAVE_CAIRO),true)
-DGL_FLAGS += -DHAVE_CAIRO
-endif
-
-ifeq ($(HAVE_OPENGL),true)
-DGL_FLAGS += -DHAVE_OPENGL
-endif
-
 ifeq ($(HAVE_JACK),true)
 BASE_FLAGS += -DHAVE_JACK
 endif
@@ -87,8 +79,8 @@ UI_TYPE = opengl
 endif
 
 ifeq ($(UI_TYPE),cairo)
-DGL_FLAGS += -DDGL_CAIRO
 ifeq ($(HAVE_CAIRO),true)
+DGL_FLAGS += -DDGL_CAIRO
 DGL_FLAGS += $(CAIRO_FLAGS)
 DGL_LIBS  += $(CAIRO_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-cairo.a
@@ -99,8 +91,8 @@ endif
 endif
 
 ifeq ($(UI_TYPE),opengl)
-DGL_FLAGS += -DDGL_OPENGL
 ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl.a
@@ -173,12 +165,12 @@ $(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags jack) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(JACK_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
 
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(shell $(PKG_CONFIG) --cflags liblo) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(LIBLO_FLAGS) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
@@ -192,7 +184,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs jack) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(JACK_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
@@ -219,7 +211,7 @@ $(dssi_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.o
 $(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI UI for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(shell $(PKG_CONFIG) --libs liblo) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(LIBLO_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LV2
@@ -260,7 +252,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 -include $(OBJS_DSP:%.o=%.d)
-ifeq ($(HAVE_DGL),true)
+ifneq ($(UI_TYPE),)
 -include $(OBJS_UI:%.o=%.d)
 endif
 
