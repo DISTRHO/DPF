@@ -240,10 +240,10 @@ NanoVG::NanoVG(int flags)
       fInFrame(false),
       fIsSubWidget(false) {}
 
-NanoVG::NanoVG(NanoWidget* groupWidget)
-    : fContext(groupWidget->fContext),
-      fInFrame(false),
-      fIsSubWidget(true) {}
+// NanoVG::NanoVG(NanoWidget* groupWidget)
+//     : fContext(groupWidget->fContext),
+//       fInFrame(false),
+//       fIsSubWidget(true) {}
 
 NanoVG::~NanoVG()
 {
@@ -257,20 +257,19 @@ NanoVG::~NanoVG()
 
 void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor)
 {
+    fInFrame = true;
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
 
-    fInFrame = true;
     nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor);
 }
 
 void NanoVG::beginFrame(Widget* const widget)
 {
+    fInFrame = true;
     DISTRHO_SAFE_ASSERT_RETURN(widget != nullptr,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
-
-    fInFrame = true;
 
     if (fContext == nullptr)
         return;
@@ -958,6 +957,7 @@ NanoWidget::NanoWidget(Widget* groupWidget, int flags)
     pData->needsScaling = true;
 }
 
+/*
 NanoWidget::NanoWidget(NanoWidget* groupWidget)
     : Widget(groupWidget, false),
       NanoVG(groupWidget),
@@ -967,6 +967,7 @@ NanoWidget::NanoWidget(NanoWidget* groupWidget)
     pData->skipDisplay = true;
     groupWidget->nData->subWidgets.push_back(this);
 }
+*/
 
 NanoWidget::~NanoWidget()
 {

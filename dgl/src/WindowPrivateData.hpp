@@ -340,6 +340,29 @@ struct Window::PrivateData {
         }
     }
 
+    void onPuglMouse(const Widget::MouseEvent& ev)
+    {
+        DGL_DBGp("PUGL: onMouse : %i %i %i %i\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+        Widget::MouseEvent rev = ev;
+        double x = ev.pos.getX() / fAutoScaling;
+        double y = ev.pos.getY() / fAutoScaling;
+
+        FOR_EACH_WIDGET_INV(rit)
+        {
+            Widget* const widget(*rit);
+
+            rev.pos = Point<double>(x - widget->getAbsoluteX(),
+                                    y - widget->getAbsoluteY());
+
+            if (widget->isVisible() && widget->onMouse(rev))
+                break;
+        }
+    }
+
     // -------------------------------------------------------------------
 
 #ifdef DISTRHO_DEFINES_H_INCLUDED
@@ -482,36 +505,6 @@ struct Window::PrivateData {
         }
 
         return 1;
-    }
-
-    void onPuglMouse(const int button, const bool press, int x, int y)
-    {
-        DBGp("PUGL: onMouse : %i %i %i %i\n", button, press, x, y);
-
-        // FIXME - pugl sends 2 of these for each window on init, don't ask me why. we'll ignore it
-        if (press && button == 0 && x == 0 && y == 0) return;
-
-        if (fModal.childFocus != nullptr)
-            return fModal.childFocus->focus();
-
-        x /= fAutoScaling;
-        y /= fAutoScaling;
-
-        Widget::MouseEvent ev;
-        ev.button = button;
-        ev.press  = press;
-        ev.mod    = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time   = puglGetEventTimestamp(fView);
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
-
-            if (widget->isVisible() && widget->onMouse(ev))
-                break;
-        }
     }
 
     void onPuglMotion(int x, int y)

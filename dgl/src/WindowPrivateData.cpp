@@ -129,7 +129,7 @@ void Window::PrivateData::setVisible(const bool visible)
 #ifdef DISTRHO_OS_WINDOWS
             puglShowWindowCentered(fView);
 #else
-            puglShowWindow(fView);
+            puglShow(fView);
 #endif
             fAppData->oneWindowShown();
             fFirstInit = false;
@@ -139,7 +139,7 @@ void Window::PrivateData::setVisible(const bool visible)
 #ifdef DISTRHO_OS_WINDOWS
             puglWin32RestoreWindow(fView);
 #else
-            puglShowWindow(fView);
+            puglShow(fView);
 #endif
         }
     }
@@ -153,7 +153,7 @@ void Window::PrivateData::setVisible(const bool visible)
         }
 #endif
 
-        puglHideWindow(fView);
+        puglHide(fView);
 
 //             if (fModal.enabled)
 //                 exec_fini();
@@ -270,7 +270,7 @@ printEvent(const PuglEvent* event, const char* prefix, const bool verbose)
 		case PUGL_UNMAP:
 			return fprintf(stderr, "%sUnmap\n", prefix);
 		case PUGL_UPDATE:
-			return fprintf(stderr, "%sUpdate\n", prefix);
+			return 0; // fprintf(stderr, "%sUpdate\n", prefix);
 		case PUGL_CONFIGURE:
 			return PRINT("%sConfigure " PFMT " " PFMT "\n",
 			             prefix,
@@ -350,6 +350,20 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         pData->onPuglClose();
         break;
 
+    case PUGL_BUTTON_PRESS:   ///< Mouse button pressed, a #PuglEventButton
+    case PUGL_BUTTON_RELEASE: ///< Mouse button released, a #PuglEventButton
+    {
+        Widget::MouseEvent ev;
+        ev.mod    = event->button.state;
+        ev.flags  = event->button.flags;
+        ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
+        ev.button = event->button.button;
+        ev.press  = event->type == PUGL_BUTTON_PRESS;
+        ev.pos    = Point<double>(event->button.x, event->button.y);
+        pData->onPuglMouse(ev);
+        break;
+    }
+
     case PUGL_FOCUS_IN:       ///< Keyboard focus entered view, a #PuglEventFocus
     case PUGL_FOCUS_OUT:      ///< Keyboard focus left view, a #PuglEventFocus
     case PUGL_KEY_PRESS:      ///< Key pressed, a #PuglEventKey
@@ -357,12 +371,12 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_TEXT:           ///< Character entered, a #PuglEventText
     case PUGL_POINTER_IN:     ///< Pointer entered view, a #PuglEventCrossing
     case PUGL_POINTER_OUT:    ///< Pointer left view, a #PuglEventCrossing
-    case PUGL_BUTTON_PRESS:   ///< Mouse button pressed, a #PuglEventButton
-    case PUGL_BUTTON_RELEASE: ///< Mouse button released, a #PuglEventButton
     case PUGL_MOTION:         ///< Pointer moved, a #PuglEventMotion
     case PUGL_SCROLL:         ///< Scrolled, a #PuglEventScroll
     case PUGL_CLIENT:         ///< Custom client message, a #PuglEventClient
     case PUGL_TIMER:          ///< Timer triggered, a #PuglEventTimer
+    case PUGL_LOOP_ENTER:     ///< Recursive loop entered, a #PuglEventLoopEnter
+    case PUGL_LOOP_LEAVE:     ///< Recursive loop left, a #PuglEventLoopLeave
         break;
     }
 

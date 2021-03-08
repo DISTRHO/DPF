@@ -305,7 +305,9 @@ public:
    /**
       Constructor reusing a NanoVG context, used for subwidgets.
     */
+   /*
     NanoVG(NanoWidget* groupWidget);
+    */
 
    /**
       Destructor.
