@@ -991,18 +991,18 @@ void ImageSlider::_recheckArea() noexcept
     if (fStartPos.getY() == fEndPos.getY())
     {
         // horizontal
-        fSliderArea = Rectangle<int>(fStartPos.getX(),
-                                     fStartPos.getY(),
-                                     fEndPos.getX() + static_cast<int>(fImage.getWidth()) - fStartPos.getX(),
-                                     static_cast<int>(fImage.getHeight()));
+        fSliderArea = Rectangle<double>(fStartPos.getX(),
+                                        fStartPos.getY(),
+                                        fEndPos.getX() + static_cast<int>(fImage.getWidth()) - fStartPos.getX(),
+                                        static_cast<int>(fImage.getHeight()));
     }
     else
     {
         // vertical
-        fSliderArea = Rectangle<int>(fStartPos.getX(),
-                                     fStartPos.getY(),
-                                     static_cast<int>(fImage.getWidth()),
-                                     fEndPos.getY() + static_cast<int>(fImage.getHeight()) - fStartPos.getY());
+        fSliderArea = Rectangle<double>(fStartPos.getX(),
+                                        fStartPos.getY(),
+                                        static_cast<int>(fImage.getWidth()),
+                                        fEndPos.getY() + static_cast<int>(fImage.getHeight()) - fStartPos.getY());
     }
 }
 

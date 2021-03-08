@@ -227,7 +227,7 @@ private:
 
     Point<int> fStartPos;
     Point<int> fEndPos;
-    Rectangle<int> fSliderArea;
+    Rectangle<double> fSliderArea;
 
     void _recheckArea() noexcept;
 

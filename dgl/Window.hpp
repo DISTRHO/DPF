@@ -34,6 +34,11 @@ class Application;
 class Widget;
 class StandaloneWindow;
 
+/* TODO
+ * add focusEvent with CrossingMode arg
+ * add eventcrossing/enter-leave event
+ */
+
 class Window
 {
 public:

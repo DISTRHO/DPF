@@ -40,10 +40,10 @@ START_NAMESPACE_DGL
    Keyboard modifier flags.
  */
 enum Modifier {
-    kModifierShift   = 1u << 0u, /**< Shift key */
-    kModifierControl = 1u << 1u, /**< Control key */
-    kModifierAlt     = 1u << 2u, /**< Alt/Option key */
-    kModifierSuper   = 1u << 3u  /**< Mod4/Command/Windows key */
+    kModifierShift   = 1u << 0u, ///< Shift key
+    kModifierControl = 1u << 1u, ///< Control key
+    kModifierAlt     = 1u << 2u, ///< Alt/Option key
+    kModifierSuper   = 1u << 3u  ///< Mod4/Command/Windows key
 };
 
 /**
@@ -111,6 +111,23 @@ enum Key {
     kKeyNumLock,
     kKeyPrintScreen,
     kKeyPause
+};
+
+/**
+   Common flags for all events.
+ */
+enum Flag {
+    kFlagSendEvent = 1, ///< Event is synthetic
+    kFlagIsHint    = 2  ///< Event is a hint (not direct user input)
+};
+
+/**
+   Reason for a crossing event.
+ */
+enum CrossingMode {
+    kCrossingNormal, ///< Crossing due to pointer motion
+    kCrossingGrab,   ///< Crossing due to a grab
+    kCrossingUngrab  ///< Crossing due to a grab release
 };
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -149,7 +149,7 @@ protected:
         const uint width = getWidth();
         const uint height = getHeight();
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         r.setWidth(width/3 - 6);
         r.setHeight(height/3 - 6);
@@ -204,7 +204,7 @@ protected:
         const uint width = getWidth();
         const uint height = getHeight();
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         r.setWidth(width/3 - 6);
         r.setHeight(height/3 - 6);

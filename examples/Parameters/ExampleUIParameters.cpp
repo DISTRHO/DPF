@@ -107,7 +107,7 @@ protected:
         const uint minwh = std::min(width, height);
         const uint bgColor = getBackgroundColor();
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         // if host doesn't respect aspect-ratio but supports ui background, draw out-of-bounds color from it
         if (width != height && bgColor != 0)
@@ -185,7 +185,7 @@ protected:
         const uint height = getHeight();
         const uint minwh = std::min(width, height);
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         r.setWidth(minwh/3 - 6);
         r.setHeight(minwh/3 - 6);

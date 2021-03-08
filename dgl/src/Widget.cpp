@@ -191,12 +191,14 @@ Window& Widget::getParentWindow() const noexcept
     return pData->parent;
 }
 
-bool Widget::contains(int x, int y) const noexcept
+template<typename T>
+bool Widget::contains(T x, T y) const noexcept
 {
     return (x >= 0 && y >= 0 && static_cast<uint>(x) < pData->size.getWidth() && static_cast<uint>(y) < pData->size.getHeight());
 }
 
-bool Widget::contains(const Point<int>& pos) const noexcept
+template<typename T>
+bool Widget::contains(const Point<T>& pos) const noexcept
 {
     return contains(pos.getX(), pos.getY());
 }
