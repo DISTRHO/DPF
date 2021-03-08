@@ -21,6 +21,7 @@
 
 #ifdef DISTRHO_DEFINES_H_INCLUDED
 START_NAMESPACE_DISTRHO
+class UI;
 class UIExporter;
 END_NAMESPACE_DISTRHO
 #endif
@@ -145,6 +146,7 @@ private:
     friend class Widget;
     friend class StandaloneWindow;
 #ifdef DISTRHO_DEFINES_H_INCLUDED
+    friend class DISTRHO_NAMESPACE::UI;
     friend class DISTRHO_NAMESPACE::UIExporter;
 #endif
 

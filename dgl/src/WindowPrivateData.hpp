@@ -20,7 +20,7 @@
 #include "../Window.hpp"
 #include "ApplicationPrivateData.hpp"
 
-#include "pugl-upstream/pugl/pugl.h"
+#include "pugl-upstream/include/pugl/pugl.h"
 
 #include <vector>
 
@@ -76,6 +76,10 @@ struct Window::PrivateData {
           fSelf(self)
     {
     }
+
+#ifdef DISTRHO_DEFINES_H_INCLUDED
+    friend class DISTRHO_NAMESPACE::UI;
+#endif
 
     DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
 };

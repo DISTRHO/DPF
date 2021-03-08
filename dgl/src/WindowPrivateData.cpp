@@ -26,25 +26,25 @@
 #endif
 
 extern "C" {
-#include "pugl-upstream/pugl/detail/implementation.c"
+#include "pugl-upstream/src/implementation.c"
 }
 
 #if defined(DISTRHO_OS_HAIKU)
 # define DGL_DEBUG_EVENTS
-# include "pugl-upstream/pugl/detail/haiku.cpp"
+# include "pugl-upstream/src/haiku.cpp"
 #elif defined(DISTRHO_OS_MAC)
 # define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
 # define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
-# include "pugl-upstream/pugl/detail/mac.m"
+# include "pugl-upstream/src/mac.m"
 #elif defined(DISTRHO_OS_WINDOWS)
-# include "ppugl-upstream/pugl/detail/win.c"
+# include "ppugl-upstream/src/win.c"
 # undef max
 # undef min
 #else
 # include <sys/types.h>
 # include <unistd.h>
 extern "C" {
-# include "pugl-upstream/pugl/detail/x11.c"
+# include "pugl-upstream/src/x11.c"
 }
 #endif
 
@@ -75,6 +75,10 @@ void DGL::Window::PrivateData::Fallback::onReshape(const uint width, const uint 
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#else
+    // unused
+    (void)width;
+    (void)height;
 #endif
 }
 

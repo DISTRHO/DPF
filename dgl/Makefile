@@ -9,7 +9,7 @@ include ../Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 
 BUILD_C_FLAGS   += $(DGL_FLAGS) -I. -Isrc
-BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -Isrc/pugl-upstream -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
+BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -Isrc/pugl-upstream/include -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
 LINK_FLAGS      += $(DGL_LIBS)
 
 # TODO fix these after pugl-upstream is done

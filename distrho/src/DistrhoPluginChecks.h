@@ -162,5 +162,13 @@
 #endif
 
 // -----------------------------------------------------------------------
+// Prevent users from messing about with DPF internals
+
+#ifdef DISTRHO_UI_IS_STANDALONE
+# error DISTRHO_UI_IS_STANDALONE must not be defined
+#endif
+
+
+// -----------------------------------------------------------------------
 
 #endif // DISTRHO_PLUGIN_CHECKS_H_INCLUDED
