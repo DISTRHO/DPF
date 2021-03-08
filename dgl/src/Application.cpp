@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,7 +18,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 Application::Application(const bool isStandalone)
     : pData(new PrivateData(isStandalone)) {}
@@ -33,14 +33,18 @@ void Application::idle()
     pData->idle(0);
 }
 
-void Application::exec(const uint idleTime)
+void Application::exec(const uint idleTimeInMs)
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->isStandalone,);
+
     while (! pData->isQuitting)
-        pData->idle(idleTime);
+        pData->idle(idleTimeInMs);
 }
 
 void Application::quit()
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->isStandalone,);
+
     pData->quit();
 }
 
@@ -49,6 +53,6 @@ bool Application::isQuiting() const noexcept
     return pData->isQuitting;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

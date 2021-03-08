@@ -77,7 +77,7 @@ void Widget::PrivateData::display(const uint width,
 #endif
 
 #ifdef DGL_CAIRO
-    cairo_t* cr = parent.getGraphicsContext().cairo;
+    cairo_t* cr = static_cast<const CairoGraphicsContext&>(parent.getGraphicsContext()).cairo;
     cairo_matrix_t matrix;
     cairo_get_matrix(cr, &matrix);
     cairo_translate(cr, absolutePos.getX(), absolutePos.getY());

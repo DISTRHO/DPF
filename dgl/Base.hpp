@@ -92,7 +92,7 @@ enum Key {
 /**
    Graphics context, definition depends on build type.
  */
-struct GraphicsContext;
+struct GraphicsContext {};
 
 /**
    Idle callback.

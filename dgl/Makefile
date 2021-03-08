@@ -24,6 +24,7 @@ BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra -Wno-narrowing
 
 OBJS_common = \
 	../build/dgl/Application.cpp.o \
+	../build/dgl/ApplicationPrivateData.cpp.o \
 	../build/dgl/Color.cpp.o \
 	../build/dgl/Geometry.cpp.o \
 	../build/dgl/ImageBase.cpp.o \

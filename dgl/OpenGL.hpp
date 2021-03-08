@@ -108,9 +108,9 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 
 /**
-   Graphics context.
+   OpenGL Graphics context.
  */
-struct GraphicsContext
+struct OpenGLGraphicsContext : GraphicsContext
 {
 };
 

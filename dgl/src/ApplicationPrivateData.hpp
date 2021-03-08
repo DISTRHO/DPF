@@ -18,101 +18,61 @@
 #define DGL_APP_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Application.hpp"
-#include "../Window.hpp"
-
-#include "pugl-upstream/include/pugl/pugl.h"
 
 #include <list>
 
+typedef struct PuglWorldImpl PuglWorld;
+
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+class Window;
+
+// --------------------------------------------------------------------------------------------------------------------
 
 struct Application::PrivateData {
-    bool isQuitting;
-    bool isStandalone;
-    uint visibleWindows;
-    std::list<Window*> windows;
-    std::list<IdleCallback*> idleCallbacks;
+    /** Pugl world instance. */
     PuglWorld* const world;
 
-    PrivateData(const bool standalone)
-        : isQuitting(false),
-          isStandalone(standalone),
-          visibleWindows(0),
-          windows(),
-          idleCallbacks(),
-          world(puglNewWorld(isStandalone ? PUGL_PROGRAM : PUGL_MODULE,
-                             isStandalone ? PUGL_WORLD_THREADS : 0x0))
-    {
-        puglSetWorldHandle(world, this);
+    /** Whether the application is running as standalone, otherwise it is part of a plugin. */
+    const bool isStandalone;
 
-        // puglSetLogLevel(world, PUGL_LOG_LEVEL_DEBUG);
+    /** Whether the applicating is starting up, not yet fully initialized. Defaults to true. */
+    bool isStarting;
 
-        // TODO puglSetClassName
-    }
+    /** Whether the applicating is about to quit, or already stopped. Defaults to false. */
+    bool isQuitting;
 
-    ~PrivateData()
-    {
-        DISTRHO_SAFE_ASSERT(isQuitting);
-        DISTRHO_SAFE_ASSERT(visibleWindows == 0);
+    /** Counter of visible windows, only used in standalone mode.
+        If 0->1, application is starting. If 1->0, application is quitting/stopping. */
+    uint visibleWindows;
 
-        windows.clear();
-        idleCallbacks.clear();
+    /** List of windows for this application. Used as a way to call each window `idle`. */
+    std::list<Window*> windows;
 
-        d_stdout("calling puglFreeWorld");
-        puglFreeWorld(world);
-    }
+    /** List of idle callbacks for this application. Run after all windows `idle`. */
+    std::list<IdleCallback*> idleCallbacks;
 
-    void oneWindowShown() noexcept
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
+    /** Constructor and destructor */
+    PrivateData(const bool standalone);
+    ~PrivateData();
 
-        if (++visibleWindows == 1)
-            isQuitting = false;
-    }
+    /** Flag one window shown or hidden status, which modifies @a visibleWindows.
+        For standalone mode only.
+        Modifies @a isStarting and @a isQuitting under certain conditions */
+    void oneWindowShown() noexcept;
+    void oneWindowHidden() noexcept;
 
-    void oneWindowHidden() noexcept
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
-        DISTRHO_SAFE_ASSERT_RETURN(visibleWindows > 0,);
+    /** Run Pugl world update for @a timeoutInMs, and then the idle functions for each window and idle callback,
+        in order of registration. */
+    void idle(const uint timeoutInMs);
 
-        if (--visibleWindows == 0)
-            isQuitting = true;
-    }
-
-    void idle(const uint timeout)
-    {
-        puglUpdate(world, timeout == 0 ? 0.0 : (1.0 / static_cast<double>(timeout)));
-
-        for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
-        {
-            Window* const window(*it);
-            window->_idle();
-        }
-
-        for (std::list<IdleCallback*>::iterator it = idleCallbacks.begin(), ite = idleCallbacks.end(); it != ite; ++it)
-        {
-            IdleCallback* const idleCallback(*it);
-            idleCallback->idleCallback();
-        }
-    }
-
-    void quit()
-    {
-        isQuitting = true;
-
-        for (std::list<Window*>::reverse_iterator rit = windows.rbegin(), rite = windows.rend(); rit != rite; ++rit)
-        {
-            Window* const window(*rit);
-            window->close();
-        }
-    }
+    /** Set flag indicating application is quitting, and closes all windows in reverse order of registration. */
+    void quit();
 
     DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

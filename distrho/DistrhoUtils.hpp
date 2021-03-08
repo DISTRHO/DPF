@@ -50,6 +50,8 @@ inline float round(float __x)
 # define M_PI 3.14159265358979323846
 #endif
 
+#define DISTRHO_MACRO_AS_STRING(MACRO) #MACRO
+
 // -----------------------------------------------------------------------
 // misc functions
 
