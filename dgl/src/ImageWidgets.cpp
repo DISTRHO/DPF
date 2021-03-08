@@ -675,7 +675,7 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fEndPos(),
       fSliderArea()
 {
-    pData->needsFullViewport = true;
+    setNeedsFullViewport();
 }
 
 ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
@@ -698,7 +698,7 @@ ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
       fEndPos(),
       fSliderArea()
 {
-    pData->needsFullViewport = true;
+    setNeedsFullViewport();
 }
 
 float ImageSlider::getValue() const noexcept

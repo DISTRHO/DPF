@@ -56,10 +56,13 @@ struct Widget::PrivateData {
             skipDisplay = true;
             groupWidget->pData->subWidgets.push_back(self);
         }
+
+        parent._addWidget(self);
     }
 
     ~PrivateData()
     {
+        parent._removeWidget(self);
         subWidgets.clear();
     }
 

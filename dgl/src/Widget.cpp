@@ -24,24 +24,20 @@ START_NAMESPACE_DGL
 Widget::Widget(Window& parent)
     : pData(new PrivateData(this, parent, nullptr, false))
 {
-    parent._addWidget(this);
 }
 
 Widget::Widget(Widget* groupWidget)
     : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true))
 {
-    pData->parent._addWidget(this);
 }
 
 Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
     : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets))
 {
-    pData->parent._addWidget(this);
 }
 
 Widget::~Widget()
 {
-    pData->parent._removeWidget(this);
     delete pData;
 }
 
@@ -228,6 +224,11 @@ bool Widget::onSpecial(const SpecialEvent&)
     return false;
 }
 
+bool Widget::onCharacterInput(const CharacterInputEvent&)
+{
+    return false;
+}
+
 bool Widget::onMouse(const MouseEvent&)
 {
     return false;
@@ -249,6 +250,11 @@ void Widget::onResize(const ResizeEvent&)
 
 void Widget::onPositionChanged(const PositionChangedEvent&)
 {
+}
+
+void Widget::setNeedsFullViewport()
+{
+    pData->needsFullViewport = true;
 }
 
 // -----------------------------------------------------------------------

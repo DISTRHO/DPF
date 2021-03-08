@@ -32,8 +32,7 @@ END_NAMESPACE_DISTRHO
 
 START_NAMESPACE_DGL
 
-class Application;
-class ImageSlider;
+// class Application;
 class NanoWidget;
 class Window;
 class StandaloneWindow;
@@ -423,6 +422,12 @@ protected:
     virtual bool onSpecial(const SpecialEvent&);
 
    /**
+      A function called when an UTF-8 character is received.
+      @return True to stop event propagation, false otherwise.
+    */
+    virtual bool onCharacterInput(const CharacterInputEvent&);
+
+   /**
       A function called when a mouse button is pressed or released.
       @return True to stop event propagation, false otherwise.
     */
@@ -450,6 +455,8 @@ protected:
     */
     virtual void onPositionChanged(const PositionChangedEvent&);
 
+    void setNeedsFullViewport();
+
 private:
     struct PrivateData;
     PrivateData* const pData;
@@ -457,7 +464,6 @@ private:
    /** @internal */
     explicit Widget(Widget* groupWidget, bool addToSubWidgets);
 
-    friend class ImageSlider;
     friend class NanoWidget;
     friend class Window;
     friend class StandaloneWindow;
