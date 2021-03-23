@@ -217,6 +217,7 @@ ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation
       fOrientation(orientation),
       fRotationAngle(0),
       fDragging(false),
+      fRightClicked(false),
       fLastX(0),
       fLastY(0),
       fCallback(nullptr),
@@ -245,6 +246,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
       fOrientation(orientation),
       fRotationAngle(0),
       fDragging(false),
+      fRightClicked(false),
       fLastX(0),
       fLastY(0),
       fCallback(nullptr),
@@ -273,6 +275,7 @@ ImageKnob::ImageKnob(const ImageKnob& imageKnob)
       fOrientation(imageKnob.fOrientation),
       fRotationAngle(imageKnob.fRotationAngle),
       fDragging(false),
+      fRightClicked(false),
       fLastX(0),
       fLastY(0),
       fCallback(imageKnob.fCallback),
@@ -300,7 +303,8 @@ ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
     fUsingLog      = imageKnob.fUsingLog;
     fOrientation   = imageKnob.fOrientation;
     fRotationAngle = imageKnob.fRotationAngle;
-    fDragging = false;
+    fDragging      = false;
+    fRightClicked  = false;
     fLastX    = 0;
     fLastY    = 0;
     fCallback = imageKnob.fCallback;
@@ -515,8 +519,12 @@ void ImageKnob::onDisplay()
 
 bool ImageKnob::onMouse(const MouseEvent& ev)
 {
-    if (ev.button != 1)
+    if (ev.button > 3 || ev.button < 1)
         return false;
+
+    if (ev.button == 3)
+        fRightClicked = true;
+    else fRightClicked = false;
 
     if (ev.press)
     {
@@ -530,7 +538,14 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
             return true;
         }
 
-        fDragging = true;
+        if ((ev.button == 2) && fUsingDefault)
+        {
+            setValue(fValueDef, true);
+            fValueTmp = fValue;
+            return true;
+        }
+
+	fDragging = true;
         fLastX = ev.pos.getX();
         fLastY = ev.pos.getY();
 
@@ -564,7 +579,9 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
         if (const int movX = ev.pos.getX() - fLastX)
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-            value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movX));
+            if (fRightClicked) d = 2000.0f;
+            if (fRightClicked && (ev.mod & kModifierControl)) d = 20000.0f;
+	    value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movX));
             doVal = true;
         }
     }
@@ -573,6 +590,8 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
         if (const int movY = fLastY - ev.pos.getY())
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+            if (fRightClicked) d = 2000.0f;
+            if (fRightClicked && (ev.mod & kModifierControl)) d = 20000.0f;
             value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movY));
             doVal = true;
         }
@@ -612,9 +631,8 @@ bool ImageKnob::onScroll(const ScrollEvent& ev)
     if (! contains(ev.pos))
         return false;
 
-    const float dir   = (ev.delta.getY() > 0.f) ? 1.f : -1.f;
     const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-    float       value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * dir);
+    float       value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
 
     if (fUsingLog)
         value = _logscale(value);
