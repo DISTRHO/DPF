@@ -545,7 +545,7 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
             return true;
         }
 
-	fDragging = true;
+        fDragging = true;
         fLastX = ev.pos.getX();
         fLastY = ev.pos.getY();
 
