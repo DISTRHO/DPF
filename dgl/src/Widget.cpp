@@ -21,20 +21,8 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 // Widget
 
-Widget::Widget(Window& parent)
-    : pData(new PrivateData(this, parent, nullptr, false))
-{
-}
-
-Widget::Widget(Widget* groupWidget)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true))
-{
-}
-
-Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets))
-{
-}
+Widget::Widget(TopLevelWidget& tlw)
+    : pData(new PrivateData(this, tlw)) {}
 
 Widget::~Widget()
 {
@@ -52,7 +40,7 @@ void Widget::setVisible(bool yesNo)
         return;
 
     pData->visible = yesNo;
-    pData->parent.repaint();
+    pData->topLevelWidget.repaint();
 }
 
 void Widget::show()
@@ -92,7 +80,7 @@ void Widget::setWidth(uint width) noexcept
     pData->size.setWidth(width);
     onResize(ev);
 
-    pData->parent.repaint();
+    pData->topLevelWidget.repaint();
 }
 
 void Widget::setHeight(uint height) noexcept
@@ -107,7 +95,7 @@ void Widget::setHeight(uint height) noexcept
     pData->size.setHeight(height);
     onResize(ev);
 
-    pData->parent.repaint();
+    pData->topLevelWidget.repaint();
 }
 
 void Widget::setSize(uint width, uint height) noexcept
@@ -127,52 +115,7 @@ void Widget::setSize(const Size<uint>& size) noexcept
     pData->size = size;
     onResize(ev);
 
-    pData->parent.repaint();
-}
-
-int Widget::getAbsoluteX() const noexcept
-{
-    return pData->absolutePos.getX();
-}
-
-int Widget::getAbsoluteY() const noexcept
-{
-    return pData->absolutePos.getY();
-}
-
-const Point<int>& Widget::getAbsolutePos() const noexcept
-{
-    return pData->absolutePos;
-}
-
-void Widget::setAbsoluteX(int x) noexcept
-{
-    setAbsolutePos(Point<int>(x, getAbsoluteY()));
-}
-
-void Widget::setAbsoluteY(int y) noexcept
-{
-    setAbsolutePos(Point<int>(getAbsoluteX(), y));
-}
-
-void Widget::setAbsolutePos(int x, int y) noexcept
-{
-    setAbsolutePos(Point<int>(x, y));
-}
-
-void Widget::setAbsolutePos(const Point<int>& pos) noexcept
-{
-    if (pData->absolutePos == pos)
-        return;
-
-    PositionChangedEvent ev;
-    ev.oldPos = pData->absolutePos;
-    ev.pos = pos;
-
-    pData->absolutePos = pos;
-    onPositionChanged(ev);
-
-    pData->parent.repaint();
+    pData->topLevelWidget.repaint();
 }
 
 #if 0
@@ -182,26 +125,15 @@ Application& Widget::getParentApp() const noexcept
 }
 #endif
 
-Window& Widget::getParentWindow() const noexcept
+TopLevelWidget& Widget::getTopLevelWidget() const noexcept
 {
-    return pData->parent;
-}
-
-template<typename T>
-bool Widget::contains(T x, T y) const noexcept
-{
-    return (x >= 0 && y >= 0 && static_cast<uint>(x) < pData->size.getWidth() && static_cast<uint>(y) < pData->size.getHeight());
-}
-
-template<typename T>
-bool Widget::contains(const Point<T>& pos) const noexcept
-{
-    return contains(pos.getX(), pos.getY());
+    return pData->topLevelWidget;
 }
 
 void Widget::repaint() noexcept
 {
-    pData->parent.repaint();
+    // FIXME partial repaint
+    // pData->topLevelWidget.repaint();
 }
 
 uint Widget::getId() const noexcept
@@ -248,14 +180,33 @@ void Widget::onResize(const ResizeEvent&)
 {
 }
 
-void Widget::onPositionChanged(const PositionChangedEvent&)
+// -----------------------------------------------------------------------
+
+// -----------------------------------------------------------------------
+
+// -----------------------------------------------------------------------
+
+#if 0
+Widget::Widget(Widget* groupWidget)
+    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true))
 {
+}
+
+Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
+    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets))
+{
+}
+
+Window& Widget::getParentWindow() const noexcept
+{
+    return pData->parent;
 }
 
 void Widget::setNeedsFullViewport()
 {
     pData->needsFullViewport = true;
 }
+#endif
 
 // -----------------------------------------------------------------------
 

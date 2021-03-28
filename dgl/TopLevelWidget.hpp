@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,50 +14,37 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_STANDALONE_WINDOW_HPP_INCLUDED
-#define DGL_STANDALONE_WINDOW_HPP_INCLUDED
+#ifndef DGL_TOP_LEVEL_WIDGET_HPP_INCLUDED
+#define DGL_TOP_LEVEL_WIDGET_HPP_INCLUDED
 
-#include "Application.hpp"
-#include "TopLevelWidget.hpp"
-#include "Window.hpp"
+#include "Widget.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class StandaloneWindow : public Application,
-                         public Window
+/**
+   Top-Level Widget class.
+
+   This is the only Widget class that is allowed to be used directly on a Window.
+
+   This widget takes the full size of the Window it is mapped to.
+   Sub-widgets can be added on top of this top-level widget, by creating them with this class as parent.
+   Doing so allows for custom position and sizes.
+ */
+class TopLevelWidget : public Widget
 {
 public:
-   /**
-      Constructor.
-    */
-    StandaloneWindow();
-
-   /**
-      Show window and execute application.
-    */
-    void exec();
+    explicit TopLevelWidget(Window& windowToMapTo);
 
 private:
-    TopLevelWidget* fWidget;
-
-   /** @internal */
-    void onReshape(uint width, uint height) override;
-
-#if 0
-   /** @internal */
-    void _addWidget(TopLevelWidget* widget) override;
-
-   /** @internal */
-    void _removeWidget(TopLevelWidget* widget) override;
-#endif
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
+    struct PrivateData;
+    PrivateData* const pData;
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopLevelWidget)
 };
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
-#endif // DGL_STANDALONE_WINDOW_HPP_INCLUDED
+#endif // DGL_TOP_LEVEL_WIDGET_HPP_INCLUDED

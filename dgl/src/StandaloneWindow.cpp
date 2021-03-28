@@ -39,7 +39,8 @@ void StandaloneWindow::onReshape(uint width, uint height)
     Window::onReshape(width, height);
 }
 
-void StandaloneWindow::_addWidget(Widget* widget)
+#if 0
+void StandaloneWindow::_addWidget(TopLevelWidget* widget)
 {
     if (fWidget == nullptr)
     {
@@ -49,7 +50,7 @@ void StandaloneWindow::_addWidget(Widget* widget)
     Window::_addWidget(widget);
 }
 
-void StandaloneWindow::_removeWidget(Widget* widget)
+void StandaloneWindow::_removeWidget(TopLevelWidget* widget)
 {
     if (fWidget == widget)
     {
@@ -58,6 +59,7 @@ void StandaloneWindow::_removeWidget(Widget* widget)
     }
     Window::_removeWidget(widget);
 }
+#endif
 
 // -----------------------------------------------------------------------
 

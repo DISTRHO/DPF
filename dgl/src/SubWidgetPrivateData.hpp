@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,50 +14,36 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_STANDALONE_WINDOW_HPP_INCLUDED
-#define DGL_STANDALONE_WINDOW_HPP_INCLUDED
+#ifndef DGL_SUBWIDGET_PRIVATE_DATA_HPP_INCLUDED
+#define DGL_SUBWIDGET_PRIVATE_DATA_HPP_INCLUDED
 
-#include "Application.hpp"
-#include "TopLevelWidget.hpp"
-#include "Window.hpp"
+#include "../SubWidget.hpp"
+#include "../WidgetPrivateData.hpp"
+
+#include <vector>
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class StandaloneWindow : public Application,
-                         public Window
-{
-public:
-   /**
-      Constructor.
-    */
-    StandaloneWindow();
+struct SubWidget::PrivateData {
+    SubWidget* const self;
+    Widget* const groupWidget;
+    Point<int> absolutePos;
 
-   /**
-      Show window and execute application.
-    */
-    void exec();
+    PrivateData(SubWidget* const s, Widget* const g)
+        : self(s),
+          groupWidget(g),
+          absolutePos()
+    {
+        groupWidget->pData->subWidgets.push_back(self);
+    }
 
-private:
-    TopLevelWidget* fWidget;
-
-   /** @internal */
-    void onReshape(uint width, uint height) override;
-
-#if 0
-   /** @internal */
-    void _addWidget(TopLevelWidget* widget) override;
-
-   /** @internal */
-    void _removeWidget(TopLevelWidget* widget) override;
-#endif
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
 };
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
-#endif // DGL_STANDALONE_WINDOW_HPP_INCLUDED
+#endif // DGL_SUBWIDGET_PRIVATE_DATA_HPP_INCLUDED

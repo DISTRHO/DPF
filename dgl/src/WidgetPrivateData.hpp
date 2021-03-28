@@ -17,7 +17,7 @@
 #ifndef DGL_WIDGET_PRIVATE_DATA_HPP_INCLUDED
 #define DGL_WIDGET_PRIVATE_DATA_HPP_INCLUDED
 
-#include "../Widget.hpp"
+#include "../TopLevelWidget.hpp"
 #include "../Window.hpp"
 
 #include <vector>
@@ -28,41 +28,29 @@ START_NAMESPACE_DGL
 
 struct Widget::PrivateData {
     Widget* const self;
-    Window& parent;
-    Point<int> absolutePos;
     Size<uint> size;
     std::vector<Widget*> subWidgets;
+    TopLevelWidget& topLevelWidget;
 
     uint id;
-    bool needsFullViewport;
     bool needsScaling;
-    bool skipDisplay;
     bool visible;
 
-    PrivateData(Widget* const s, Window& p, Widget* groupWidget, bool addToSubWidgets)
+    PrivateData(Widget* const s, TopLevelWidget& tlw)
         : self(s),
-          parent(p),
-          absolutePos(0, 0),
           size(0, 0),
           subWidgets(),
+          topLevelWidget(tlw),
           id(0),
-          needsFullViewport(false),
           needsScaling(false),
-          skipDisplay(false),
           visible(true)
     {
-        if (addToSubWidgets && groupWidget != nullptr)
-        {
-            skipDisplay = true;
-            groupWidget->pData->subWidgets.push_back(self);
-        }
-
-        parent._addWidget(self);
+//         parent._addWidget(self);
     }
 
     ~PrivateData()
     {
-        parent._removeWidget(self);
+//         parent._removeWidget(self);
         subWidgets.clear();
     }
 
