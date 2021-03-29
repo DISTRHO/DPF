@@ -15,3 +15,11 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
+
+TopLevelWidget::TopLevelWidget(Window& windowToMapTo)
+    : pData(new PrivateData(this, windowToMapTo)) {}
+
+TopLevelWidget::~TopLevelWidget()
+{
+    delete pData;
+}

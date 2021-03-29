@@ -35,7 +35,15 @@ START_NAMESPACE_DGL
 class TopLevelWidget : public Widget
 {
 public:
+   /**
+      Constructor.
+    */
     explicit TopLevelWidget(Window& windowToMapTo);
+
+   /**
+      Destructor.
+    */
+    virtual ~TopLevelWidget();
 
 private:
     struct PrivateData;

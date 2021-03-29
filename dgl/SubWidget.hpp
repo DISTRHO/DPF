@@ -23,6 +23,15 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+/**
+   Sub-Widget class.
+
+   This is a handy Widget class that can be freely positioned to be used directly on a Window.
+
+   This widget takes the full size of the Window it is mapped to.
+   Sub-widgets can be added on top of this top-level widget, by creating them with this class as parent.
+   Doing so allows for custom position and sizes.
+ */
 class SubWidget : public Widget
 {
 public:

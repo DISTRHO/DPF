@@ -16,6 +16,14 @@
 
 #include "SubWidgetPrivateData.hpp"
 
+SubWidget::SubWidget(Widget* const widgetToGroupTo)
+    : pData(new PrivateData(this, widgetToGroupTo)) {}
+
+SubWidget::~SubWidget()
+{
+    delete pData;
+}
+
 template<typename T>
 bool SubWidget::contains(T x, T y) const noexcept
 {
