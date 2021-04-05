@@ -150,6 +150,7 @@ private:
 
     int  fRotationAngle;
     bool fDragging;
+    bool fRightClicked;
     int  fLastX;
     int  fLastY;
 
