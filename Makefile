@@ -6,7 +6,8 @@
 
 include Makefile.base.mk
 
-all: dgl examples gen
+all: dgl
+# examples gen
 
 # --------------------------------------------------------------
 
