@@ -17,7 +17,7 @@
 #include "ApplicationPrivateData.hpp"
 #include "../Window.hpp"
 
-#include "pugl-upstream/include/pugl/pugl.h"
+#include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
@@ -27,10 +27,11 @@ Application::PrivateData::PrivateData(const bool standalone)
     : world(puglNewWorld(standalone ? PUGL_PROGRAM : PUGL_MODULE,
                          standalone ? PUGL_WORLD_THREADS : 0x0)),
       isStandalone(standalone),
-      isStarting(true),
       isQuitting(false),
       visibleWindows(0),
+#ifndef DPF_TEST_APPLICATION_CPP
       windows(),
+#endif
       idleCallbacks()
 {
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
@@ -44,11 +45,12 @@ Application::PrivateData::PrivateData(const bool standalone)
 
 Application::PrivateData::~PrivateData()
 {
-    DISTRHO_SAFE_ASSERT(!isStarting);
     DISTRHO_SAFE_ASSERT(isQuitting);
     DISTRHO_SAFE_ASSERT(visibleWindows == 0);
 
+#ifndef DPF_TEST_APPLICATION_CPP
     windows.clear();
+#endif
     idleCallbacks.clear();
 
     if (world != nullptr)
@@ -62,10 +64,7 @@ void Application::PrivateData::oneWindowShown() noexcept
     DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
 
     if (++visibleWindows == 1)
-    {
-        isStarting = false;
         isQuitting = false;
-    }
 }
 
 void Application::PrivateData::oneWindowHidden() noexcept
@@ -81,11 +80,13 @@ void Application::PrivateData::idle(const uint timeoutInMs)
 {
     puglUpdate(world, timeoutInMs == 0 ? 0.0 : static_cast<double>(timeoutInMs) / 1000.0);
 
+#ifndef DPF_TEST_APPLICATION_CPP
     for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
     {
         Window* const window(*it);
         window->_idle();
     }
+#endif
 
     for (std::list<IdleCallback*>::iterator it = idleCallbacks.begin(), ite = idleCallbacks.end(); it != ite; ++it)
     {
@@ -98,11 +99,13 @@ void Application::PrivateData::quit()
 {
     isQuitting = true;
 
+#ifndef DPF_TEST_APPLICATION_CPP
     for (std::list<Window*>::reverse_iterator rit = windows.rbegin(), rite = windows.rend(); rit != rite; ++rit)
     {
         Window* const window(*rit);
         window->close();
     }
+#endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------
