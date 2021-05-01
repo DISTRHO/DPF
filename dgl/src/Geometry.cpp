@@ -599,6 +599,7 @@ void Circle<T>::setNumSegments(const uint num)
     fSin = std::sin(fTheta);
 }
 
+#ifndef DPF_TEST_POINT_CPP
 template<typename T>
 void Circle<T>::draw()
 {
@@ -610,6 +611,7 @@ void Circle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 Circle<T>& Circle<T>::operator=(const Circle<T>& cir) noexcept
@@ -686,6 +688,7 @@ bool Triangle<T>::isInvalid() const noexcept
     return fPos1 == fPos2 || fPos1 == fPos3;
 }
 
+#ifndef DPF_TEST_POINT_CPP
 template<typename T>
 void Triangle<T>::draw()
 {
@@ -697,6 +700,7 @@ void Triangle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 Triangle<T>& Triangle<T>::operator=(const Triangle<T>& tri) noexcept
@@ -900,6 +904,7 @@ bool Rectangle<T>::containsY(const T& y) const noexcept
     return (y >= fPos.fY && y <= fPos.fY + fSize.fHeight);
 }
 
+#ifndef DPF_TEST_POINT_CPP
 template<typename T>
 void Rectangle<T>::draw()
 {
@@ -911,6 +916,7 @@ void Rectangle<T>::drawOutline()
 {
     _draw(true);
 }
+#endif
 
 template<typename T>
 Rectangle<T>& Rectangle<T>::operator=(const Rectangle<T>& rect) noexcept

@@ -20,7 +20,7 @@ BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-TESTS   = Application Color
+TESTS   = Application Color Point
 TARGETS = $(TESTS:%=../build/tests/%)
 OBJS    = $(TARGETS:%=%.cpp.o)
 

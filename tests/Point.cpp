@@ -14,11 +14,31 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "tests.hpp"
+
+#define DPF_TEST_POINT_CPP
+#include "dgl/src/Geometry.cpp"
+
 // --------------------------------------------------------------------------------------------------------------------
 
 int main()
 {
     USE_NAMESPACE_DGL;
+
+    // basic usage
+    {
+        Point<int> p;
+        DISTRHO_ASSERT_EQUAL(p.getX(), 0, "point start X value is 0");
+        DISTRHO_ASSERT_EQUAL(p.getY(), 0, "point start Y value is 0");
+
+        p.setX(5);
+        DISTRHO_ASSERT_EQUAL(p.getX(), 5, "point X value changed to 5");
+        DISTRHO_ASSERT_EQUAL(p.getY(), 0, "point start Y value remains 0");
+
+        p.setY(7);
+        DISTRHO_ASSERT_EQUAL(p.getX(), 5, "point X value remains 5");
+        DISTRHO_ASSERT_EQUAL(p.getY(), 7, "point Y value changed to 7");
+    }
 
     // TODO
 

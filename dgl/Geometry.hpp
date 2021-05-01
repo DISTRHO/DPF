@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,7 +21,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Forward class names
 
 template<typename> class Line;
@@ -29,7 +29,7 @@ template<typename> class Circle;
 template<typename> class Triangle;
 template<typename> class Rectangle;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    DGL Point class.
@@ -121,7 +121,7 @@ private:
     template<typename> friend class Rectangle;
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    DGL Size class.
@@ -346,10 +346,12 @@ public:
     */
     void moveBy(const Point<T>& pos) noexcept;
 
+#ifndef DPF_TEST_POINT_CPP
    /**
       Draw this line using the current OpenGL state.
     */
     void draw();
+#endif
 
    /**
       Return true if line is null (start and end pos are equal).
@@ -460,6 +462,7 @@ public:
     */
     void setNumSegments(const uint num);
 
+#ifndef DPF_TEST_POINT_CPP
    /**
       Draw this circle using the current OpenGL state.
     */
@@ -469,6 +472,7 @@ public:
       Draw lines (outline of this circle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
     Circle<T>& operator=(const Circle<T>& cir) noexcept;
     bool operator==(const Circle<T>& cir) const noexcept;
@@ -540,6 +544,7 @@ public:
     */
     bool isInvalid() const noexcept;
 
+#ifndef DPF_TEST_POINT_CPP
    /**
       Draw this triangle using the current OpenGL state.
     */
@@ -549,6 +554,7 @@ public:
       Draw lines (outline of this triangle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
     Triangle<T>& operator=(const Triangle<T>& tri) noexcept;
     bool operator==(const Triangle<T>& tri) const noexcept;
@@ -557,8 +563,10 @@ public:
 private:
     Point<T> fPos1, fPos2, fPos3;
 
+#ifndef DPF_TEST_POINT_CPP
    /** @internal */
     void _draw(const bool outline);
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -722,6 +730,7 @@ public:
     */
     bool containsY(const T& y) const noexcept;
 
+#ifndef DPF_TEST_POINT_CPP
    /**
       Draw this rectangle using the current OpenGL state.
     */
@@ -731,6 +740,7 @@ public:
       Draw lines (outline of this rectangle) using the current OpenGL state.
     */
     void drawOutline();
+#endif
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
     Rectangle<T>& operator*=(double m) noexcept;
@@ -742,8 +752,10 @@ private:
     Point<T> fPos;
     Size<T>  fSize;
 
+#ifndef DPF_TEST_POINT_CPP
    /** @internal */
     void _draw(const bool outline);
+#endif
 };
 
 // -----------------------------------------------------------------------
