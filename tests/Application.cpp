@@ -95,7 +95,7 @@ int main()
         app.addIdleCallback(&idleCounter);
         app.exec();
         DISTRHO_ASSERT_EQUAL(appQuitter.isThreadRunning(), false, "app quit triggered because we told it so");
-        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks not triggered");
+        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks MUST have been triggered");
     }
 
     // standalone exec, but with 0 as timeout
@@ -106,7 +106,7 @@ int main()
         app.addIdleCallback(&idleCounter);
         app.exec(0);
         DISTRHO_ASSERT_EQUAL(appQuitter.isThreadRunning(), false, "app quit triggered because we told it so");
-        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks not triggered");
+        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks MUST have been triggered");
     }
 
     return 0;

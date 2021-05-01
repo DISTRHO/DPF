@@ -14,5 +14,7 @@ if [ "${TARGET}" = "win32" ] || [ "${TARGET}" = "win64" ]; then
 fi
 
 sudo apt-get update -qq
-sudo apt-get install -y -o APT::Immediate-Configure=false libc6 libc6:i386 libgcc-s1:i386
+if [ "${TARGET}" = "win32" ] || [ "${TARGET}" = "win64" ]; then
+    sudo apt-get install -y -o APT::Immediate-Configure=false libc6 libc6:i386 libgcc-s1:i386
+fi
 sudo apt-get install -y -f
