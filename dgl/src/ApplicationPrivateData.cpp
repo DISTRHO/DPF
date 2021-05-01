@@ -78,11 +78,14 @@ void Application::PrivateData::oneWindowHidden() noexcept
 
 void Application::PrivateData::idle(const uint timeoutInMs)
 {
-    const double timeoutInSeconds = timeoutInMs != 0
-                                  ? static_cast<double>(timeoutInMs) / 1000.0
-                                  : 0.0;
+    if (world != nullptr)
+    {
+        const double timeoutInSeconds = timeoutInMs != 0
+                                      ? static_cast<double>(timeoutInMs) / 1000.0
+                                      : 0.0;
 
-    puglUpdate(world, timeoutInSeconds);
+        puglUpdate(world, timeoutInSeconds);
+    }
 
 #ifndef DPF_TEST_APPLICATION_CPP
     for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
