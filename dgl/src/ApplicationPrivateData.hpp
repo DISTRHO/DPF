@@ -57,7 +57,7 @@ struct Application::PrivateData {
 
     /** Flag one window shown or hidden status, which modifies @a visibleWindows.
         For standalone mode only.
-        Modifies @a isStarting and @a isQuitting under certain conditions */
+        Modifies @a isQuitting under certain conditions */
     void oneWindowShown() noexcept;
     void oneWindowHidden() noexcept;
 
