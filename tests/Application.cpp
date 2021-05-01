@@ -14,15 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "tests.hpp"
+
 #define DPF_TEST_APPLICATION_CPP
 #include "dgl/src/pugl.cpp"
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"
 
 #include "distrho/extra/Thread.hpp"
-
-#define DISTRHO_ASSERT_EQUAL(v1, v2, msg) \
-    if (v1 != v2) { d_stderr2("Test condition failed: %s; file:%s line:%i", msg, __FILE__, __LINE__); return 1; }
 
 START_NAMESPACE_DGL
 
@@ -43,8 +42,23 @@ public:
 private:
     void run() override
     {
-        d_sleep(5);
+        d_sleep(2);
         app.quit();
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+struct IdleCallbackCounter : IdleCallback
+{
+    int counter;
+
+    IdleCallbackCounter()
+        : counter(0) {}
+
+    void idleCallback() override
+    {
+        ++counter;
     }
 };
 
@@ -59,23 +73,41 @@ int main()
     // regular usage
     {
         Application app(true);
+        IdleCallbackCounter idleCounter;
+        app.addIdleCallback(&idleCounter);
         DISTRHO_ASSERT_EQUAL(app.isQuiting(), false, "app MUST NOT be set as quitting during init");
+        DISTRHO_ASSERT_EQUAL(idleCounter.counter, 0, "app MUST NOT have triggered idle callbacks yet");
         app.idle();
         DISTRHO_ASSERT_EQUAL(app.isQuiting(), false, "app MUST NOT be set as quitting after idle()");
+        DISTRHO_ASSERT_EQUAL(idleCounter.counter, 1, "app MUST have triggered 1 idle callback");
+        app.idle();
+        DISTRHO_ASSERT_EQUAL(idleCounter.counter, 2, "app MUST have triggered 2 idle callbacks");
         app.quit();
         DISTRHO_ASSERT_EQUAL(app.isQuiting(), true, "app MUST be set as quitting after quit()");
+        DISTRHO_ASSERT_EQUAL(idleCounter.counter, 2, "app MUST have triggered only 2 idle callbacks in its lifetime");
     }
 
     // standalone exec, must not block forever due to quit() called from another thread
     {
         Application app(true);
         ApplicationQuitter appQuitter(app);
+        IdleCallbackCounter idleCounter;
+        app.addIdleCallback(&idleCounter);
         app.exec();
         DISTRHO_ASSERT_EQUAL(appQuitter.isThreadRunning(), false, "app quit triggered because we told it so");
+        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks not triggered");
     }
 
-    // TODO test idle callback
-    // TODO test idle is called when exec(0) is used
+    // standalone exec, but with 0 as timeout
+    {
+        Application app(true);
+        ApplicationQuitter appQuitter(app);
+        IdleCallbackCounter idleCounter;
+        app.addIdleCallback(&idleCounter);
+        app.exec(0);
+        DISTRHO_ASSERT_EQUAL(appQuitter.isThreadRunning(), false, "app quit triggered because we told it so");
+        DISTRHO_ASSERT_NOT_EQUAL(idleCounter.counter, 0, "app idle callbacks not triggered");
+    }
 
     return 0;
 }

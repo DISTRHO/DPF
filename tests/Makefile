@@ -44,7 +44,7 @@ all: $(TESTS)
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) -o $@
 	$@
-	valgrind --leak-check=full $@
+# 	valgrind --leak-check=full $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
