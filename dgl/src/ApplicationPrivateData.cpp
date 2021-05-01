@@ -87,13 +87,13 @@ void Application::PrivateData::idle(const uint timeoutInMs)
         puglUpdate(world, timeoutInSeconds);
     }
 
-#ifndef DPF_TEST_APPLICATION_CPP
-    for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
-    {
-        Window* const window(*it);
-        window->_idle();
-    }
-#endif
+// #ifndef DPF_TEST_APPLICATION_CPP
+//     for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
+//     {
+//         Window* const window(*it);
+//         window->_idle();
+//     }
+// #endif
 
     for (std::list<IdleCallback*>::iterator it = idleCallbacks.begin(), ite = idleCallbacks.end(); it != ite; ++it)
     {

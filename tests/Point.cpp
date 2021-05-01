@@ -31,14 +31,22 @@ static int runTestsPerType()
         Point<T> p;
         DISTRHO_ASSERT_EQUAL(p.getX(), 0, "point start X value is 0");
         DISTRHO_ASSERT_EQUAL(p.getY(), 0, "point start Y value is 0");
+        DISTRHO_ASSERT_EQUAL(p.isZero(), true, "point start is zero");
+        DISTRHO_ASSERT_EQUAL(p.isNotZero(), false, "point start is for sure zero");
 
         p.setX(5);
         DISTRHO_ASSERT_EQUAL(p.getX(), 5, "point X value changed to 5");
         DISTRHO_ASSERT_EQUAL(p.getY(), 0, "point start Y value remains 0");
+        DISTRHO_ASSERT_EQUAL(p.isZero(), false, "point after custom X is not zero");
+        DISTRHO_ASSERT_EQUAL(p.isNotZero(), true, "point after custom X is for sure not zero");
 
         p.setY(7);
         DISTRHO_ASSERT_EQUAL(p.getX(), 5, "point X value remains 5");
         DISTRHO_ASSERT_EQUAL(p.getY(), 7, "point Y value changed to 7");
+        DISTRHO_ASSERT_EQUAL(p.isZero(), false, "point after custom X and Y is not zero");
+        DISTRHO_ASSERT_EQUAL(p.isNotZero(), true, "point after custom X and Y is for sure not zero");
+
+        // TODO everything else
     }
 
     return 0;

@@ -68,7 +68,7 @@ struct Application::PrivateData {
     /** Set flag indicating application is quitting, and closes all windows in reverse order of registration. */
     void quit();
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 
 // --------------------------------------------------------------------------------------------------------------------

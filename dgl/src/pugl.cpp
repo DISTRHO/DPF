@@ -27,6 +27,7 @@
 #elif defined(DISTRHO_OS_MAC)
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
+# include <dlfcn.h>
 # include <sys/select.h>
 # include <sys/time.h>
 # include <X11/X.h>
@@ -45,17 +46,39 @@
 #  include <X11/Xcursor/Xcursor.h>
 #  include <X11/cursorfont.h>
 # endif
+# ifdef DGL_CAIRO
+#  include <cairo.h>
+#  include <cairo-xlib.h>
+# endif
+# ifdef DGL_OPENGL
+#  include <GL/glx.h>
+# endif
+# ifdef DGL_VULKAN
+#  include <vulkan/vulkan_core.h>
+#  include <vulkan/vulkan_xlib.h>
+# endif
 #endif
 
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#define PUGL_DISABLE_DEPRECATED
+
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
 # include "pugl-upstream/src/x11.c"
+# ifdef DGL_CAIRO
+#  include "pugl-upstream/src/x11_cairo.c"
+# endif
+# ifdef DGL_OPENGL
+#  include "pugl-upstream/src/x11_gl.c"
+# endif
+# ifdef DGL_VULKAN
+#  include "pugl-upstream/src/x11_vulkan.c"
+# endif
 #endif
 
 #include "pugl-upstream/src/implementation.c"

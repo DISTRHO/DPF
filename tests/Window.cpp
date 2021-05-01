@@ -14,25 +14,36 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_PUGL_HPP_INCLUDED
-#define DGL_PUGL_HPP_INCLUDED
+#if !(defined(DGL_CAIRO) || defined(DGL_OPENGL) || defined(DGL_VULKAN))
+# error test setup failed, must be for cairo, opengl or vulkan
+#endif
 
-#include "../Base.hpp"
+#include "tests.hpp"
 
-/* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
-#include <cstdbool>
-#include <cstddef>
-#include <cstdint>
-
-START_NAMESPACE_DGL
-
-// --------------------------------------------------------------------------------------------------------------------
-
-#define PUGL_DISABLE_DEPRECATED
-#include "pugl-upstream/include/pugl/pugl.h"
+#define DPF_TEST_WINDOW_CPP
+#include "dgl/src/pugl.cpp"
+#include "dgl/src/Application.cpp"
+#include "dgl/src/ApplicationPrivateData.cpp"
+#include "dgl/src/Window.cpp"
+#include "dgl/src/WindowPrivateData.cpp"
 
 // --------------------------------------------------------------------------------------------------------------------
 
-END_NAMESPACE_DGL
+int main()
+{
+    USE_NAMESPACE_DGL;
 
-#endif // DGL_PUGL_HPP_INCLUDED
+    using DGL_NAMESPACE::Window;
+
+    // creating simple window
+    {
+        Application app(true);
+        Window win(app);
+    }
+
+    // TODO
+
+    return 0;
+}
+
+// --------------------------------------------------------------------------------------------------------------------

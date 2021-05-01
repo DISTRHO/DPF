@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,16 +16,18 @@
 
 #include "WindowPrivateData.hpp"
 
+#include "pugl.hpp"
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 // Window
 
+// Window::Window(Window& transientParentWindow)
+//     : pData(new PrivateData(transientParentWindow.pData->fAppData, this, transientParentWindow)) {}
+
 Window::Window(Application& app)
     : pData(new PrivateData(app.pData, this)) {}
-
-Window::Window(Window& transientParentWindow)
-    : pData(new PrivateData(transientParentWindow.pData->fAppData, this, transientParentWindow)) {}
 
 Window::Window(Application& app, const uintptr_t parentWindowHandle, const double scaling, const bool resizable)
     : pData(new PrivateData(app.pData, this, parentWindowHandle, scaling, resizable)) {}
@@ -35,6 +37,17 @@ Window::~Window()
     delete pData;
 }
 
+void Window::close()
+{
+    pData->close();
+}
+
+uintptr_t Window::getNativeWindowHandle() const noexcept
+{
+    return puglGetNativeWindow(pData->view);
+}
+
+#if 0
 void Window::show()
 {
     pData->setVisible(true);
@@ -43,11 +56,6 @@ void Window::show()
 void Window::hide()
 {
     pData->setVisible(false);
-}
-
-void Window::close()
-{
-    pData->close();
 }
 
 #if 0
@@ -191,11 +199,6 @@ Application& Window::getApp() const noexcept
 }
 #endif
 
-uintptr_t Window::getNativeWindowHandle() const noexcept
-{
-    return puglGetNativeWindow(pData->fView);
-}
-
 #if 0
 const GraphicsContext& Window::getGraphicsContext() const noexcept
 {
@@ -285,6 +288,7 @@ bool Window::handlePluginSpecial(const bool press, const Key key)
     return false;
     // return pData->handlePluginSpecial(press, key);
 }
+#endif
 
 // -----------------------------------------------------------------------
 

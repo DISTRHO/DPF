@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,29 +19,59 @@
 
 #include "Geometry.hpp"
 
-#ifdef DISTRHO_DEFINES_H_INCLUDED
-START_NAMESPACE_DISTRHO
-class UI;
-class UIExporter;
-END_NAMESPACE_DISTRHO
-#endif
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
 class Application;
-class Widget;
-class StandaloneWindow;
+
+class Window
+{
+public:
+    explicit Window(Application& app);
+    explicit Window(Application& app, uintptr_t parentWindowHandle, double scaling, bool resizable);
+    virtual ~Window();
+
+    void close();
+
+   /**
+      Get the "native" window handle.
+      Returned value depends on the platform:
+       - HaikuOS: This is a pointer to a `BView`.
+       - MacOS: This is a pointer to an `NSView*`.
+       - Windows: This is a `HWND`.
+       - Everything else: This is an [X11] `Window`.
+    */
+    uintptr_t getNativeWindowHandle() const noexcept;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+    friend class Application;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);
+};
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL
 
 /* TODO
  * add focusEvent with CrossingMode arg
  * add eventcrossing/enter-leave event
  */
 
-class Window
-{
-public:
+// class StandaloneWindow;
+// class Widget;
+
+// #ifdef DISTRHO_DEFINES_H_INCLUDED
+// START_NAMESPACE_DISTRHO
+// class UI;
+// class UIExporter;
+// END_NAMESPACE_DISTRHO
+// #endif
+
+#if 0
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
       File browser options.
@@ -81,14 +111,10 @@ public:
     };
 #endif // DGL_FILE_BROWSER_DISABLED
 
-    explicit Window(Application& app);
-    explicit Window(Window& transientParentWindow);
-    explicit Window(Application& app, uintptr_t parentWindowHandle, double scaling, bool resizable);
-    virtual ~Window();
+    static Window& withTransientParentWindow(Window& transientParentWindow);
 
     void show();
     void hide();
-    void close();
     void exec(bool lockWait = false);
 
     void focus();
@@ -129,20 +155,11 @@ public:
     Application& getApp() const noexcept;
 #endif
 
-   /**
-      Get the "native" window handle.
-      Returned value depends on the platform:
-       - HaikuOS: This is a pointer to a `BView`.
-       - MacOS: This is a pointer to an `NSView*`.
-       - Windows: This is a `HWND`.
-       - Everything else: This is an [X11] `Window`.
-    */
-    uintptr_t getNativeWindowHandle() const noexcept;
-
     const GraphicsContext& getGraphicsContext() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);
+
 
 protected:
     virtual void onDisplayBefore();
@@ -157,17 +174,6 @@ protected:
     // internal
     void _setAutoScaling(double scaling) noexcept;
 
-private:
-    struct PrivateData;
-    PrivateData* const pData;
-    friend class Application;
-    friend class Widget;
-    friend class StandaloneWindow;
-#ifdef DISTRHO_DEFINES_H_INCLUDED
-    friend class DISTRHO_NAMESPACE::UI;
-    friend class DISTRHO_NAMESPACE::UIExporter;
-#endif
-
     virtual void _addWidget(Widget* const widget);
     virtual void _removeWidget(Widget* const widget);
     void _idle();
@@ -175,20 +181,24 @@ private:
     bool handlePluginKeyboard(const bool press, const uint key);
     bool handlePluginSpecial(const bool press, const Key key);
 
+//     friend class Widget;
+//     friend class StandaloneWindow;
+// #ifdef DISTRHO_DEFINES_H_INCLUDED
+//     friend class DISTRHO_NAMESPACE::UI;
+//     friend class DISTRHO_NAMESPACE::UIExporter;
+// #endif
+
     // Prevent copies
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-    Window& operator=(Window&) = delete;
-    Window& operator=(const Window&) = delete;
-#else
-    Window& operator=(Window&);
-    Window& operator=(const Window&);
+// #ifdef DISTRHO_PROPER_CPP11_SUPPORT
+//     Window& operator=(Window&) = delete;
+//     Window& operator=(const Window&) = delete;
+// #else
+//     Window& operator=(Window&);
+//     Window& operator=(const Window&);
+// #endif
+
 #endif
 
-    DISTRHO_LEAK_DETECTOR(Window);
-};
-
 // -----------------------------------------------------------------------
-
-END_NAMESPACE_DGL
 
 #endif // DGL_WINDOW_HPP_INCLUDED
