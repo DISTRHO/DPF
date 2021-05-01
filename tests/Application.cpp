@@ -74,6 +74,9 @@ int main()
         DISTRHO_ASSERT_EQUAL(appQuitter.isThreadRunning(), false, "app quit triggered because we told it so");
     }
 
+    // TODO test idle callback
+    // TODO test idle is called when exec(0) is used
+
     return 0;
 }
 
