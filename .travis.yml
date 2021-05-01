@@ -5,14 +5,15 @@ cache:
     - ${HOME}/debs
 
 jobs:
-  include:
-    # linux native build
-    - name: "Linux native"
-      os: linux
-      compiler: gcc
-      dist: focal
-      env:
-        - TARGET="linux"
+  # linux native build
+  - name: "Linux native"
+    os: linux
+    compiler: gcc
+    dist: focal
+    env:
+      - TARGET="linux"
+    services:
+      - xvfb
 
 before_install:
   - bash ${TRAVIS_BUILD_DIR}/.travis/before_install.sh
