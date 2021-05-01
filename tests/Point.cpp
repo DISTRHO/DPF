@@ -21,13 +21,14 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 
-int main()
+template <typename T>
+static int runTestsPerType()
 {
     USE_NAMESPACE_DGL;
 
     // basic usage
     {
-        Point<int> p;
+        Point<T> p;
         DISTRHO_ASSERT_EQUAL(p.getX(), 0, "point start X value is 0");
         DISTRHO_ASSERT_EQUAL(p.getY(), 0, "point start Y value is 0");
 
@@ -40,7 +41,40 @@ int main()
         DISTRHO_ASSERT_EQUAL(p.getY(), 7, "point Y value changed to 7");
     }
 
-    // TODO
+    return 0;
+}
+
+int main()
+{
+    if (const int ret = runTestsPerType<double>())
+        return ret;
+
+    if (const int ret = runTestsPerType<float>())
+        return ret;
+
+    if (const int ret = runTestsPerType<int>())
+        return ret;
+
+    if (const int ret = runTestsPerType<uint>())
+        return ret;
+
+    if (const int ret = runTestsPerType<short>())
+        return ret;
+
+    if (const int ret = runTestsPerType<ushort>())
+        return ret;
+
+    if (const int ret = runTestsPerType<long>())
+        return ret;
+
+    if (const int ret = runTestsPerType<ulong>())
+        return ret;
+
+    if (const int ret = runTestsPerType<long long>())
+        return ret;
+
+    if (const int ret = runTestsPerType<unsigned long long>())
+        return ret;
 
     return 0;
 }
