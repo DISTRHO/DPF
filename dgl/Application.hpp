@@ -76,6 +76,19 @@ public:
     */
     bool isQuiting() const noexcept;
 
+   /**
+      Add a callback function to be triggered on every idle cycle.
+      You can add more than one, and remove them at anytime with removeIdleCallback().
+      Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).
+      There are no guarantees in terms of timing.
+    */
+    void addIdleCallback(IdleCallback* const callback);
+
+   /**
+      Remove an idle callback previously added via addIdleCallback().
+    */
+    void removeIdleCallback(IdleCallback* const callback);
+
 private:
     struct PrivateData;
     PrivateData* const pData;
