@@ -32,11 +32,9 @@ class Window;
    Base DGL Application class.
 
    One application instance is required for creating a window.
-   There's no single/global application instance in DGL, and multiple
-   windows can share the same app instance.
+   There's no single/global application instance in DGL, and multiple windows can share the same app instance.
 
-   In standalone mode an application will automatically quit its
-   event-loop when all its windows are closed.
+   In standalone mode an application will automatically quit its event-loop when all its windows are closed.
  */
 class Application
 {
