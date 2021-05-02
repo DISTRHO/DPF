@@ -18,7 +18,7 @@
 #define DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Window.hpp"
-#include "ApplicationPrivateData.hpp"
+// #include "ApplicationPrivateData.hpp"
 
 #include "pugl.hpp"
 
@@ -28,20 +28,44 @@ class Widget;
 
 // -----------------------------------------------------------------------
 
-struct Window::PrivateData {
+struct Window::PrivateData : IdleCallback {
+    /** Handy typedef for ... */
     typedef Application::PrivateData AppData;
 
-    AppData*  const appData;
-    Window*   const self;
+    /** Direct access to DGL Application private data where we registers ourselves in. */
+    AppData* const appData;
+
+    /** Pointer to the DGL Window class that this private data belongs to. */
+    Window* const self;
+
+    /** Pugl view instance. */
     PuglView* const view;
 
+    /** Constructor for a regular, standalone window. */
     PrivateData(AppData* appData, Window* self);
-    PrivateData(AppData* appData, Window* self, Window& transientWindow);
-    PrivateData(AppData* appData, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
-    ~PrivateData();
 
+    /** Constructor for a regular, standalone window with a transient parent. */
+    PrivateData(AppData* appData, Window* self, Window& transientWindow);
+
+    /** Constructor for an embed Window, with a few extra hints from the host side. */
+    PrivateData(AppData* appData, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
+
+    /** Destructor. */
+    ~PrivateData() override;
+
+    /** Helper initialization function called at the end of all this class constructors. */
     void init(bool resizable);
+
+    /** Hide window and notify application of a window close event.
+      * Does nothing if window is embed (that is, not standalone).
+      * The application event-loop will stop if all windows have been closed.
+      *
+      * @note It is possible to hide the window while not stopping event-loop.
+      *       A closed window is always hidden, but the reverse is not always true.
+      */
     void close();
+
+    void idleCallback() override;
 
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);
 

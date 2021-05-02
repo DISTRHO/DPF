@@ -21,15 +21,46 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
-
 class Application;
 
+// -----------------------------------------------------------------------
+
+/**
+   DGL Window class.
+
+   This is the where all OS-related events initially happen, before being propagated to any widgets.
+
+   A Window MUST have an Application instance tied to it.
+   It is not possible to swap Application instances from within the lifetime of a Window.
+   But it is possible to completely change the Widgets that a Window contains during its lifetime.
+
+   Typically the event handling functions as following:
+   Application -> Window -> Top-Level-Widget -> SubWidgets
+
+   ...
+
+   Please note that, unlike many other graphical toolkits out there,
+   DGL makes a clear distinction between a Window and a Widget.
+   You cannot directly draw in a Window, you need to create a Widget for that.
+
+   ...
+ */
 class Window
 {
 public:
+   /**
+      Constructor for a regular, standalone window.
+    */
     explicit Window(Application& app);
+
+   /**
+      Constructor for an embed Window, typically used in modules or plugins that run inside another host.
+    */
     explicit Window(Application& app, uintptr_t parentWindowHandle, double scaling, bool resizable);
+
+   /**
+      Destructor.
+    */
     virtual ~Window();
 
     void close();

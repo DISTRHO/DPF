@@ -30,9 +30,12 @@ endif
 ifeq ($(HAVE_VULKAN),true)
 WTESTS   = Window.vulkan
 endif
+
 TARGETS  = $(TESTS:%=../build/tests/%)
 TARGETS += $(WTESTS:Window.%=../build/tests/Window.%)
-OBJS     = $(TARGETS:%=%.cpp.o)
+
+OBJS     = $(TESTS:%=../build/tests/%.cpp.o)
+OBJS    += $(WTESTS:Window.%=../build/tests/Window.%.cpp.o)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -65,8 +68,9 @@ all: $(TARGETS)
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 	@echo "Running test for $*"
-	$(SILENT)
-	gdb -ex run $@
+# 	$(SILENT)
+	$@
+# 	gdb -ex run
 
 ../build/tests/%.vulkan: ../build/tests/%.cpp.vulkan.o
 	@echo "Linking $*"

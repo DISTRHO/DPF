@@ -52,8 +52,8 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
 
 Window::PrivateData::~PrivateData()
 {
-    if (self != nullptr)
-        appData->windows.remove(self);
+    appData->idleCallbacks.remove(this);
+    appData->windows.remove(self);
 
     if (view != nullptr)
         puglFreeView(view);
@@ -63,7 +63,10 @@ Window::PrivateData::~PrivateData()
 
 void Window::PrivateData::init(const bool resizable)
 {
-    if (self == nullptr || view == nullptr)
+    appData->windows.push_back(self);
+    appData->idleCallbacks.push_back(this);
+
+    if (view == nullptr)
     {
         /*
         DGL_DBG("Failed!\n");
@@ -89,8 +92,6 @@ void Window::PrivateData::init(const bool resizable)
 //     puglSetFileSelectedFunc(fView, fileBrowserSelectedCallback);
 // #endif
 
-    appData->windows.push_back(self);
-
     // DGL_DBG("Success!\n");
 }
 
@@ -110,6 +111,12 @@ void Window::PrivateData::close()
         fFirstInit = true;
     }
     */
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::idleCallback()
+{
 }
 
 // -----------------------------------------------------------------------

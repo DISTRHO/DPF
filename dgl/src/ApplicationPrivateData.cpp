@@ -29,9 +29,7 @@ Application::PrivateData::PrivateData(const bool standalone)
       isStandalone(standalone),
       isQuitting(false),
       visibleWindows(0),
-#ifndef DPF_TEST_APPLICATION_CPP
       windows(),
-#endif
       idleCallbacks()
 {
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
@@ -48,9 +46,7 @@ Application::PrivateData::~PrivateData()
     DISTRHO_SAFE_ASSERT(isQuitting);
     DISTRHO_SAFE_ASSERT(visibleWindows == 0);
 
-#ifndef DPF_TEST_APPLICATION_CPP
     windows.clear();
-#endif
     idleCallbacks.clear();
 
     if (world != nullptr)
@@ -86,14 +82,6 @@ void Application::PrivateData::idle(const uint timeoutInMs)
 
         puglUpdate(world, timeoutInSeconds);
     }
-
-// #ifndef DPF_TEST_APPLICATION_CPP
-//     for (std::list<Window*>::iterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
-//     {
-//         Window* const window(*it);
-//         window->_idle();
-//     }
-// #endif
 
     for (std::list<IdleCallback*>::iterator it = idleCallbacks.begin(), ite = idleCallbacks.end(); it != ite; ++it)
     {

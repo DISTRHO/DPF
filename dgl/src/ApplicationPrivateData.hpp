@@ -43,10 +43,8 @@ struct Application::PrivateData {
         If 0->1, application is starting. If 1->0, application is quitting/stopping. */
     uint visibleWindows;
 
-#ifndef DPF_TEST_APPLICATION_CPP
     /** List of windows for this application. Used as a way to call each window `idle`. */
     std::list<Window*> windows;
-#endif
 
     /** List of idle callbacks for this application. Run after all windows `idle`. */
     std::list<IdleCallback*> idleCallbacks;
