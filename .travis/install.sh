@@ -22,7 +22,7 @@ if [ "${TARGET}" = "win32" ]; then
 elif [ "${TARGET}" = "win64" ]; then
     sudo apt-get install -y binutils-mingw-w64-x86-64 g++-mingw-w64-x86-64 mingw-w64 winehq-stable
 else
-    sudo apt-get install -y libcairo2-dev libgl1-mesa-dev libjack-jackd2-dev liblo-dev libx11-dev
+    sudo apt-get install -y libcairo2-dev libgl1-mesa-dev libglu1-mesa-dev libjack-jackd2-dev liblo-dev libx11-dev
 fi
 
 # Special handling for caching deb archives
