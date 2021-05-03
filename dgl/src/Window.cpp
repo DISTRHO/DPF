@@ -128,24 +128,6 @@ uintptr_t Window::getNativeWindowHandle() const noexcept
     return puglGetNativeWindow(pData->view);
 }
 
-void Window::onDisplayBefore()
-{
-    const GraphicsContext& context(pData->getGraphicsContext());
-    PrivateData::Fallback::onDisplayBefore(context);
-}
-
-void Window::onDisplayAfter()
-{
-    const GraphicsContext& context(pData->getGraphicsContext());
-    PrivateData::Fallback::onDisplayAfter(context);
-}
-
-void Window::onReshape(const uint width, const uint height)
-{
-    const GraphicsContext& context(pData->getGraphicsContext());
-    PrivateData::Fallback::onReshape(context, width, height);
-}
-
 #if 0
 #if 0
 void Window::exec(bool lockWait)

@@ -37,11 +37,12 @@ class Application;
    Typically the event handling functions as following:
    Application -> Window -> Top-Level-Widget -> SubWidgets
 
-   ...
-
    Please note that, unlike many other graphical toolkits out there,
    DGL makes a clear distinction between a Window and a Widget.
    You cannot directly draw in a Window, you need to create a Widget for that.
+
+   Also, a Window MUST have a single top-level Widget.
+   The Window will take care of global screen positioning and resizing, everything else is sent for widgets to handle.
 
    ...
  */
@@ -159,11 +160,6 @@ public:
        - Everything else: This is an [X11] `Window`.
     */
     uintptr_t getNativeWindowHandle() const noexcept;
-
-protected:
-    virtual void onDisplayBefore();
-    virtual void onDisplayAfter();
-    virtual void onReshape(uint width, uint height);
 
 private:
     struct PrivateData;

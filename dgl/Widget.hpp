@@ -22,19 +22,19 @@
 // -----------------------------------------------------------------------
 // Forward class names
 
-#ifdef DISTRHO_DEFINES_H_INCLUDED
-START_NAMESPACE_DISTRHO
-class UI;
-END_NAMESPACE_DISTRHO
-#endif
+// #ifdef DISTRHO_DEFINES_H_INCLUDED
+// START_NAMESPACE_DISTRHO
+// class UI;
+// END_NAMESPACE_DISTRHO
+// #endif
 
 START_NAMESPACE_DGL
 
 // class Application;
 // class NanoWidget;
-class Window;
+// class Window;
 // class StandaloneWindow;
-class SubWidget;
+// class SubWidget;
 class TopLevelWidget;
 
 using namespace Events;
@@ -208,10 +208,10 @@ private:
 //     friend class NanoWidget;
 //     friend class Window;
 //     friend class StandaloneWindow;
-    friend class SubWidget;
-#ifdef DISTRHO_DEFINES_H_INCLUDED
-    friend class DISTRHO_NAMESPACE::UI;
-#endif
+    friend class TopLevelWidget;
+// #ifdef DISTRHO_DEFINES_H_INCLUDED
+//     friend class DISTRHO_NAMESPACE::UI;
+// #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Widget)
 };

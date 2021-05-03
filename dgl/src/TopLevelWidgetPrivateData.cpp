@@ -15,32 +15,52 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
-#include "pugl.hpp"
+#include "../Window.hpp"
+// #include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
+#define FOR_EACH_WIDGET(it) \
+  for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
+
+#define FOR_EACH_WIDGET_INV(rit) \
+  for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
+
 // -----------------------------------------------------------------------
 
-TopLevelWidget::TopLevelWidget(Window& windowToMapTo)
-    : Widget(*this),
-      pData(new PrivateData(this, windowToMapTo)) {}
+TopLevelWidget::PrivateData::PrivateData(TopLevelWidget* const s, Window& w)
+    : self(s),
+      window(w),
+      widgets() {}
 
-TopLevelWidget::~TopLevelWidget()
+void TopLevelWidget::PrivateData::display()
 {
-    delete pData;
+    if (widgets.size() == 0)
+        return;
+
+    const Size<uint> size(window.getSize());
+//     const int width  = rect.width;
+//     const int height = rect.height;
+
+    FOR_EACH_WIDGET(it)
+    {
+        Widget* const widget(*it);
+        widget->pData->display(width, height, fAutoScaling, false);
+    }
 }
 
-void TopLevelWidget::onDisplayBefore()
+void TopLevelWidget::PrivateData::resize(const uint width, const uint height)
 {
-}
+    if (widgets.size() == 0)
+        return;
 
-void TopLevelWidget::onDisplayAfter()
-{
-}
+    FOR_EACH_WIDGET(it)
+    {
+        Widget* const widget(*it);
 
-void TopLevelWidget::onResize(const ResizeEvent& ev)
-{
-    Widget::onResize(ev);
+        if (widget->pData->needsFullViewport)
+            widget->setSize(width, height);
+    }
 }
 
 // -----------------------------------------------------------------------

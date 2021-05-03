@@ -154,5 +154,70 @@ PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int he
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// set backend that matches current build
+
+void puglSetMatchingBackendForCurrentBuild(PuglView* view)
+{
+#ifdef DGL_CAIRO
+    puglSetBackend(view, puglCairoBackend());
+#endif
+#ifdef DGL_OPENGL
+    puglSetBackend(view, puglGlBackend());
+#endif
+#ifdef DGL_Vulkan
+    puglSetBackend(view, puglVulkanBackend());
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// DGL specific, build-specific fallback drawing
+void puglFallbackOnDisplay(PuglView*)
+{
+#ifdef DGL_OPENGL
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// DGL specific, build-specific fallback resize
+
+void puglFallbackOnResize(PuglView* view)
+{
+#ifdef DGL_OPENGL
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0, static_cast<GLdouble>(view->frame.width), static_cast<GLdouble>(view->frame.height), 0.0, 0.0, 1.0);
+    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+#endif
+}
 
 END_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------
+// extra, build-specific stuff
+
+#include "WindowPrivateData.hpp"
+
+#ifdef DGL_CAIRO
+# include "../Cairo.hpp"
+#endif
+
+START_NAMESPACE_DGL
+
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    GraphicsContext& context((GraphicsContext&)graphicsContext);
+#ifdef DGL_CAIRO
+    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
+#endif
+    return context;
+}
+
+END_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------

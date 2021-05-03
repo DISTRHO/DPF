@@ -18,7 +18,8 @@
 #define DGL_TOP_LEVEL_WIDGET_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../TopLevelWidget.hpp"
-// #include "../WidgetPrivateData.hpp"
+
+#include <list>
 
 START_NAMESPACE_DGL
 
@@ -27,12 +28,13 @@ START_NAMESPACE_DGL
 struct TopLevelWidget::PrivateData {
     TopLevelWidget* const self;
     Window& window;
+    std::list<Widget*> widgets;
 
-    PrivateData(TopLevelWidget* const s, Window& w)
-        : self(s),
-          window(w) {}
+    PrivateData(TopLevelWidget* const s, Window& w);
+    void display();
+    void resize(uint width, uint height);
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 
 // -----------------------------------------------------------------------

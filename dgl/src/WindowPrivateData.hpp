@@ -18,12 +18,13 @@
 #define DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Window.hpp"
+#include "ApplicationPrivateData.hpp"
 
 #include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
-class Widget;
+class TopLevelWidget;
 
 // -----------------------------------------------------------------------
 
@@ -42,6 +43,9 @@ struct Window::PrivateData : IdleCallback {
 
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(void*)];
+
+    /** The top-level widget associated with this Window. */
+    TopLevelWidget* topLevelWidget;
 
     /** Whether this Window is closed (not visible or counted in the Application it is tied to).
         Defaults to true unless embed (embed windows are never closed). */
@@ -92,12 +96,14 @@ struct Window::PrivateData : IdleCallback {
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);
 
+#if 0
     // Fallback build-specific Window functions
     struct Fallback {
         static void onDisplayBefore(const GraphicsContext& context);
         static void onDisplayAfter(const GraphicsContext& context);
         static void onReshape(const GraphicsContext& context, uint width, uint height);
     };
+#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
@@ -115,7 +121,6 @@ END_NAMESPACE_DGL
     bool fUsingEmbed;
     double fScaling;
     double fAutoScaling;
-    std::list<Widget*> fWidgets;
 
     struct Modal {
         bool enabled;

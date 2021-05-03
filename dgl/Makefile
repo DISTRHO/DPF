@@ -10,7 +10,7 @@ include ../Makefile.base.mk
 
 BUILD_C_FLAGS   += $(DGL_FLAGS) -I. -Isrc
 BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -DDONT_SET_USING_DGL_NAMESPACE -Wno-unused-parameter
-# -Isrc/pugl-upstream/include 
+BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
 # TODO fix these after pugl-upstream is done
@@ -27,22 +27,24 @@ OBJS_common = \
 	../build/dgl/Application.cpp.o \
 	../build/dgl/ApplicationPrivateData.cpp.o \
 	../build/dgl/Color.cpp.o \
-	../build/dgl/Geometry.cpp.o
+	../build/dgl/Geometry.cpp.o \
+	../build/dgl/TopLevelWidget.cpp.o \
+	../build/dgl/Window.cpp.o \
+	../build/dgl/WindowPrivateData.cpp.o
 # 	../build/dgl/ImageBase.cpp.o \
 # 	../build/dgl/Resources.cpp.o\
 # 	../build/dgl/StandaloneWindow.cpp.o \
 # 	../build/dgl/Widget.cpp.o \
-# 	../build/dgl/Window.cpp.o\
 # 	../build/dgl/WindowFileBrowser.cpp.o
 
 # TODO: ImageWidgets.cpp
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-OBJS_cairo = $(OBJS_common)
+OBJS_cairo = $(OBJS_common) \
+	../build/dgl/pugl.cpp.cairo.o
 # 	../build/dgl/Cairo.cpp.cairo.o \
-# 	../build/dgl/WidgetPrivateData.cpp.cairo.o \
-# 	../build/dgl/WindowPrivateData.cpp.cairo.o
+# 	../build/dgl/WidgetPrivateData.cpp.cairo.o
 
 # ifeq ($(MACOS),true)
 # OBJS_cairo += ../build/dgl/Window.mm.cairo.o
@@ -52,7 +54,8 @@ OBJS_cairo = $(OBJS_common)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-OBJS_opengl = $(OBJS_common)
+OBJS_opengl = $(OBJS_common) \
+	../build/dgl/pugl.cpp.opengl.o
 # 	../build/dgl/OpenGL.cpp.opengl.o \
 # 	../build/dgl/Image.cpp.opengl.o \
 # 	../build/dgl/ImageWidgets.cpp.opengl.o \
@@ -115,10 +118,10 @@ all: $(TARGETS)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-# ../build/dgl/%.cpp.cairo.o: src/%.cpp
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (Cairo variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
+../build/dgl/%.cpp.cairo.o: src/%.cpp
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (Cairo variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
 # ../build/dgl/Window.cpp.cairo.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 # 	-@mkdir -p ../build/dgl
@@ -132,10 +135,10 @@ all: $(TARGETS)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-# ../build/dgl/%.cpp.opengl.o: src/%.cpp
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (OpenGL variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
+../build/dgl/%.cpp.opengl.o: src/%.cpp
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (OpenGL variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
 # ../build/dgl/Window.cpp.opengl.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
 # 	-@mkdir -p ../build/dgl

@@ -21,6 +21,8 @@
 
 START_NAMESPACE_DGL
 
+class Window;
+
 // -----------------------------------------------------------------------
 
 /**
@@ -31,6 +33,9 @@ START_NAMESPACE_DGL
    This widget takes the full size of the Window it is mapped to.
    Sub-widgets can be added on top of this top-level widget, by creating them with this class as parent.
    Doing so allows for custom position and sizes.
+
+   This class is used as the type for DPF Plugin UIs.
+   So anything that a plugin UI might need that does not belong in a simple Widget will go here.
  */
 class TopLevelWidget : public Widget
 {
@@ -45,9 +50,32 @@ public:
     */
     virtual ~TopLevelWidget();
 
+protected:
+   /**
+      A function called before any draw operations begin (in the current event-loop cycle).
+      Can be used to setup any resources for needed drawing.
+      The default implementation simply paints the full Widget contents black.
+    */
+    virtual void onDisplayBefore();
+
+   /**
+      A function called after all draw operations have ended (in the current event-loop cycle).
+      Can be used to clear any resources setup during onDisplayBefore().
+      The default implementation does nothing.
+    */
+    virtual void onDisplayAfter();
+
+   /**
+      A function called when the widget is resized.
+      Reimplemented from Widget::onResize.
+    */
+    void onResize(const ResizeEvent&) override;
+
 private:
     struct PrivateData;
     PrivateData* const pData;
+    friend class Window;
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopLevelWidget)
 };
 

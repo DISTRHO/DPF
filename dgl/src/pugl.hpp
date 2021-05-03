@@ -41,6 +41,18 @@ puglGetWindowTitle(const PuglView* view);
 PUGL_API PuglStatus
 puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
 
+// DGL specific, assigns backend that matches current DGL build
+PUGL_API void
+puglSetMatchingBackendForCurrentBuild(PuglView* view);
+
+// DGL specific, build-specific fallback drawing
+PUGL_API void
+puglFallbackOnDisplay(PuglView* view);
+
+// DGL specific, build-specific fallback resize
+PUGL_API void
+puglFallbackOnResize(PuglView* view);
+
 PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------

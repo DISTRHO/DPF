@@ -15,9 +15,11 @@
  */
 
 #include "WindowPrivateData.hpp"
-#include "../Widget.hpp"
+#include "../TopLevelWidget.hpp"
 
 #include "pugl.hpp"
+
+#include <cinttypes>
 
 START_NAMESPACE_DGL
 
@@ -42,6 +44,7 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
     : appData(a),
       self(s),
       view(puglNewView(appData->world)),
+      topLevelWidget(nullptr),
       isClosed(true),
       isVisible(false),
       isEmbed(false)
@@ -53,6 +56,7 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
     : appData(a),
       self(s),
       view(puglNewView(appData->world)),
+      topLevelWidget(nullptr),
       isClosed(true),
       isVisible(false),
       isEmbed(false)
@@ -69,6 +73,7 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
     : appData(a),
       self(s),
       view(puglNewView(appData->world)),
+      topLevelWidget(nullptr),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0)
@@ -115,15 +120,7 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
         return;
     }
 
-#ifdef DGL_CAIRO
-    puglSetBackend(view, puglCairoBackend());
-#endif
-#ifdef DGL_OPENGL
-    puglSetBackend(view, puglGlBackend());
-#endif
-#ifdef DGL_Vulkan
-    puglSetBackend(view, puglVulkanBackend());
-#endif
+    puglSetMatchingBackendForCurrentBuild(view);
 
     puglSetHandle(view, this);
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
@@ -238,17 +235,6 @@ void Window::PrivateData::close()
 
 // -----------------------------------------------------------------------
 
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
-{
-    GraphicsContext& context((GraphicsContext&)graphicsContext);
-#ifdef DGL_CAIRO
-    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
-#endif
-    return context;
-}
-
-// -----------------------------------------------------------------------
-
 void Window::PrivateData::idleCallback()
 {
 // #if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
@@ -268,24 +254,18 @@ void Window::PrivateData::idleCallback()
 
 void Window::PrivateData::onPuglDisplay()
 {
-   self->onDisplayBefore();
-
-   /*
-    if (fWidgets.size() != 0)
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
     {
-        const PuglRect rect = puglGetFrame(fView);
-        const int width  = rect.width;
-        const int height = rect.height;
-
-        FOR_EACH_WIDGET(it)
-        {
-            Widget* const widget(*it);
-            widget->pData->display(width, height, fAutoScaling, false);
-        }
+        topLevelWidget->onDisplayBefore();
+        topLevelWidget->onDisplay();
+        topLevelWidget->onDisplayAfter();
     }
-    */
-
-    self->onDisplayAfter();
+    else
+#endif
+    {
+        puglFallbackOnDisplay(view);
+    }
 }
 
 void Window::PrivateData::onPuglReshape(const int width, const int height)
@@ -294,17 +274,12 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
 
     DGL_DBGp("PUGL: onReshape : %i %i\n", width, height);
 
-    self->onReshape(width, height);
-
-    /*
-    FOR_EACH_WIDGET(it)
-    {
-        Widget* const widget(*it);
-
-        if (widget->pData->needsFullViewport)
-            widget->setSize(width, height);
-    }
-    */
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->setSize(width, height);
+    else
+#endif
+        puglFallbackOnResize(view);
 }
 
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
@@ -467,38 +442,6 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::Fallback::onDisplayBefore(const GraphicsContext&)
-{
-#ifdef DGL_OPENGL
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-#endif
-}
-
-void Window::PrivateData::Fallback::onDisplayAfter(const GraphicsContext&)
-{
-}
-
-void Window::PrivateData::Fallback::onReshape(const GraphicsContext&, const uint width, const uint height)
-{
-#ifdef DGL_OPENGL
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0.0, 0.0, 1.0);
-    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-#else
-    // unused
-    (void)width;
-    (void)height;
-#endif
-}
-
-// -----------------------------------------------------------------------
-
 END_NAMESPACE_DGL
 
 #if 0
@@ -554,12 +497,6 @@ extern "C" {
 #include <string.h>
 
 START_NAMESPACE_DGL
-
-#define FOR_EACH_WIDGET(it) \
-  for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
-
-#define FOR_EACH_WIDGET_INV(rit) \
-  for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
 
 // -----------------------------------------------------------------------
 
