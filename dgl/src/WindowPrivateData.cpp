@@ -26,32 +26,56 @@ START_NAMESPACE_DGL
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s)
     : appData(a),
       self(s),
-      view(puglNewView(appData->world))
+      view(puglNewView(appData->world)),
+      isClosed(true),
+      isVisible(false),
+      isEmbed(false)
 {
-    init(true);
+    init(false);
 }
 
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s, Window& transientWindow)
     : appData(a),
       self(s),
-      view(puglNewView(appData->world))
+      view(puglNewView(appData->world)),
+      isClosed(true),
+      isVisible(false),
+      isEmbed(false)
 {
+    init(false);
+
     puglSetTransientFor(view, transientWindow.getNativeWindowHandle());
-    init(true);
 }
 
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s,
                                  const uintptr_t parentWindowHandle, const double scaling, const bool resizable)
     : appData(a),
       self(s),
-      view(puglNewView(appData->world))
+      view(puglNewView(appData->world)),
+      isClosed(parentWindowHandle == 0),
+      isVisible(parentWindowHandle != 0),
+      isEmbed(parentWindowHandle != 0)
 {
-    // TODO view parent
     init(resizable);
+
+    if (isEmbed)
+    {
+        appData->oneWindowShown();
+        puglSetParentWindow(view, parentWindowHandle);
+        puglShow(view);
+    }
 }
 
 Window::PrivateData::~PrivateData()
 {
+    if (isEmbed)
+    {
+        puglHide(view);
+        appData->oneWindowClosed();
+        isClosed = true;
+        isVisible = false;
+    }
+
     appData->idleCallbacks.remove(this);
     appData->windows.remove(self);
 
@@ -95,28 +119,102 @@ void Window::PrivateData::init(const bool resizable)
     // DGL_DBG("Success!\n");
 }
 
+// -----------------------------------------------------------------------
+
 void Window::PrivateData::close()
 {
-    /*
-    DGL_DBG("Window close\n");
+//     DGL_DBG("Window close\n");
 
-    if (fUsingEmbed)
+    if (isEmbed || isClosed)
         return;
 
+    isClosed = true;
     setVisible(false);
+    appData->oneWindowClosed();
+}
 
-    if (! fFirstInit)
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::setVisible(const bool visible)
+{
+    if (isVisible == visible)
     {
-        fAppData->oneWindowHidden();
-        fFirstInit = true;
+//         DGL_DBG("Window setVisible matches current state, ignoring request\n");
+        return;
     }
-    */
+    if (isEmbed)
+    {
+//         DGL_DBG("Window setVisible cannot be called when embedded\n");
+        return;
+    }
+
+//     DGL_DBG("Window setVisible called\n");
+
+    isVisible = visible;
+
+    if (visible)
+    {
+// #if 0 && defined(DISTRHO_OS_MAC)
+//         if (mWindow != nullptr)
+//         {
+//             if (mParentWindow != nullptr)
+//                 [mParentWindow addChildWindow:mWindow
+//                                       ordered:NSWindowAbove];
+//         }
+// #endif
+
+        if (isClosed)
+        {
+            puglRealize(view);
+#ifdef DISTRHO_OS_WINDOWS
+            puglWin32ShowWindowCentered(view);
+#else
+            puglShow(view);
+#endif
+            appData->oneWindowShown();
+            isClosed = false;
+        }
+        else
+        {
+#ifdef DISTRHO_OS_WINDOWS
+            puglWin32RestoreWindow(view);
+#else
+            puglShow(view);
+#endif
+        }
+    }
+    else
+    {
+// #if 0 && defined(DISTRHO_OS_MAC)
+//         if (mWindow != nullptr)
+//         {
+//             if (mParentWindow != nullptr)
+//                 [mParentWindow removeChildWindow:mWindow];
+//         }
+// #endif
+
+        puglHide(view);
+
+//             if (fModal.enabled)
+//                 exec_fini();
+    }
 }
 
 // -----------------------------------------------------------------------
 
 void Window::PrivateData::idleCallback()
 {
+// #if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
+//     if (fSelectedFile.isNotEmpty())
+//     {
+//         char* const buffer = fSelectedFile.getAndReleaseBuffer();
+//         fView->fileSelectedFunc(fView, buffer);
+//         std::free(buffer);
+//     }
+// #endif
+//
+//     if (fModal.enabled && fModal.parent != nullptr)
+//         fModal.parent->windowSpecificIdle();
 }
 
 // -----------------------------------------------------------------------
@@ -156,8 +254,6 @@ extern "C" {
 # define DGL_DEBUG_EVENTS
 # include "pugl-upstream/src/haiku.cpp"
 #elif defined(DISTRHO_OS_MAC)
-# define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
-# define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
 # include "pugl-upstream/src/mac.m"
 #elif defined(DISTRHO_OS_WINDOWS)
 # include "ppugl-upstream/src/win.c"
@@ -211,189 +307,6 @@ struct Fallback {
     static void onDisplayAfter();
     static void onReshape(uint width, uint height);
 };
-
-// -----------------------------------------------------------------------
-
-Window::PrivateData::PrivateData(Application::PrivateData* const appData, Window* const self)
-    : fAppData(appData),
-      fSelf(self),
-      fView(puglNewView(appData->world)),
-      fFirstInit(true),
-      fVisible(false),
-      fUsingEmbed(false),
-      fScaling(1.0),
-      fAutoScaling(1.0),
-      fWidgets(),
-      fModal()
-{
-    DGL_DBG("Creating window without parent..."); DGL_DBGF;
-    init();
-}
-
-#ifndef DPF_TEST_WINDOW_CPP
-Window::PrivateData::PrivateData(Application::PrivateData* const appData, Window* const self, Window& transientWindow)
-    : fAppData(appData),
-      fSelf(self),
-      fView(puglNewView(appData->world)),
-      fFirstInit(true),
-      fVisible(false),
-      fUsingEmbed(false),
-      fScaling(1.0),
-      fAutoScaling(1.0),
-      fWidgets(),
-      fModal(transientWindow.pData)
-{
-    DGL_DBG("Creating window with parent..."); DGL_DBGF;
-    init();
-
-    puglSetTransientFor(fView, transientWindow.getNativeWindowHandle());
-}
-#endif
-
-Window::PrivateData::PrivateData(Application::PrivateData* const appData, Window* const self,
-            const uintptr_t parentWindowHandle,
-            const double scaling,
-            const bool resizable)
-    : fAppData(appData),
-      fSelf(self),
-      fView(puglNewView(appData->world)),
-      fFirstInit(true),
-      fVisible(parentWindowHandle != 0),
-      fUsingEmbed(parentWindowHandle != 0),
-      fScaling(scaling),
-      fAutoScaling(1.0),
-      fWidgets(),
-      fModal()
-{
-    if (fUsingEmbed)
-    {
-        DGL_DBG("Creating embedded window..."); DGL_DBGF;
-        puglSetParentWindow(fView, parentWindowHandle);
-    }
-    else
-    {
-        DGL_DBG("Creating window without parent..."); DGL_DBGF;
-    }
-
-    init(resizable);
-
-    if (fUsingEmbed)
-    {
-        DGL_DBG("NOTE: Embed window is always visible and non-resizable\n");
-//             puglShowWindow(fView);
-//             fAppData->oneWindowShown();
-//             fFirstInit = false;
-    }
-}
-
-Window::PrivateData::~PrivateData()
-{
-    DGL_DBG("Destroying window..."); DGL_DBGF;
-
-#if 0
-    if (fModal.enabled)
-    {
-        exec_fini();
-        close();
-    }
-#endif
-
-    fWidgets.clear();
-
-    if (fUsingEmbed)
-    {
-//             puglHideWindow(fView);
-//             fAppData->oneWindowHidden();
-    }
-
-    if (fSelf != nullptr)
-        fAppData->windows.remove(fSelf);
-
-#if defined(DISTRHO_OS_MAC) && !defined(DGL_FILE_BROWSER_DISABLED)
-    if (fOpenFilePanel)
-    {
-        [fOpenFilePanel release];
-        fOpenFilePanel = nullptr;
-    }
-    if (fFilePanelDelegate)
-    {
-        [fFilePanelDelegate release];
-        fFilePanelDelegate = nullptr;
-    }
-#endif
-
-    if (fView != nullptr)
-        puglFreeView(fView);
-
-    DGL_DBG("Success!\n");
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::setVisible(const bool visible)
-{
-    if (fVisible == visible)
-    {
-        DGL_DBG("Window setVisible matches current state, ignoring request\n");
-        return;
-    }
-    if (fUsingEmbed)
-    {
-        DGL_DBG("Window setVisible cannot be called when embedded\n");
-        return;
-    }
-
-    DGL_DBG("Window setVisible called\n");
-
-    fVisible = visible;
-
-    if (visible)
-    {
-#if 0 && defined(DISTRHO_OS_MAC)
-        if (mWindow != nullptr)
-        {
-            if (mParentWindow != nullptr)
-                [mParentWindow addChildWindow:mWindow
-                                      ordered:NSWindowAbove];
-        }
-#endif
-
-        if (fFirstInit)
-        {
-            puglRealize(fView);
-#ifdef DISTRHO_OS_WINDOWS
-            puglShowWindowCentered(fView);
-#else
-            puglShow(fView);
-#endif
-            fAppData->oneWindowShown();
-            fFirstInit = false;
-        }
-        else
-        {
-#ifdef DISTRHO_OS_WINDOWS
-            puglWin32RestoreWindow(fView);
-#else
-            puglShow(fView);
-#endif
-        }
-    }
-    else
-    {
-#if 0 && defined(DISTRHO_OS_MAC)
-        if (mWindow != nullptr)
-        {
-            if (mParentWindow != nullptr)
-                [mParentWindow removeChildWindow:mWindow];
-        }
-#endif
-
-        puglHide(fView);
-
-//             if (fModal.enabled)
-//                 exec_fini();
-    }
-}
 
 // -----------------------------------------------------------------------
 
@@ -482,23 +395,6 @@ void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
         if (widget->isVisible() && widget->onMouse(rev))
             break;
     }
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::windowSpecificIdle()
-{
-#if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
-    if (fSelectedFile.isNotEmpty())
-    {
-        char* const buffer = fSelectedFile.getAndReleaseBuffer();
-        fView->fileSelectedFunc(fView, buffer);
-        std::free(buffer);
-    }
-#endif
-
-    if (fModal.enabled && fModal.parent != nullptr)
-        fModal.parent->windowSpecificIdle();
 }
 
 // -----------------------------------------------------------------------

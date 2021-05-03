@@ -37,6 +37,21 @@ Window::~Window()
     delete pData;
 }
 
+bool Window::isEmbed() const noexcept
+{
+    return pData->isEmbed;
+}
+
+bool Window::isVisible() const noexcept
+{
+    return pData->isVisible;
+}
+
+void Window::setVisible(const bool visible)
+{
+    pData->setVisible(visible);
+}
+
 void Window::close()
 {
     pData->close();
@@ -48,16 +63,6 @@ uintptr_t Window::getNativeWindowHandle() const noexcept
 }
 
 #if 0
-void Window::show()
-{
-    pData->setVisible(true);
-}
-
-void Window::hide()
-{
-    pData->setVisible(false);
-}
-
 #if 0
 void Window::exec(bool lockWait)
 {
@@ -87,21 +92,6 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
         static_cast<double>(rect.getHeight()),
     };
     puglPostRedisplayRect(pData->fView, prect);
-}
-
-bool Window::isEmbed() const noexcept
-{
-    return pData->fUsingEmbed;
-}
-
-bool Window::isVisible() const noexcept
-{
-    return pData->fVisible;
-}
-
-void Window::setVisible(const bool visible)
-{
-    pData->setVisible(visible);
 }
 
 bool Window::isResizable() const noexcept

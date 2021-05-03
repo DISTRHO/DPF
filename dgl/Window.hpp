@@ -63,6 +63,26 @@ public:
     */
     virtual ~Window();
 
+   /**
+      Whether this Window is embed into another (usually not DGL-controlled) Window.
+    */
+    bool isEmbed() const noexcept;
+
+    bool isVisible() const noexcept;
+    void setVisible(bool visible);
+
+    inline void show() { setVisible(true); }
+    inline void hide() { setVisible(true); }
+
+   /**
+      Hide window and notify application of a window close event.
+      The application event-loop will stop when all windows have been closed.
+      For standalone windows only, has no effect if window is embed.
+      @see isEmbed()
+
+      @note It is possible to hide the window while not stopping the event-loop.
+            A closed window is always hidden, but the reverse is not always true.
+    */
     void close();
 
    /**
@@ -144,8 +164,6 @@ END_NAMESPACE_DGL
 
     static Window& withTransientParentWindow(Window& transientParentWindow);
 
-    void show();
-    void hide();
     void exec(bool lockWait = false);
 
     void focus();
@@ -155,11 +173,6 @@ END_NAMESPACE_DGL
 #ifndef DGL_FILE_BROWSER_DISABLED
     bool openFileBrowser(const FileBrowserOptions& options);
 #endif
-
-    bool isEmbed() const noexcept;
-
-    bool isVisible() const noexcept;
-    void setVisible(bool visible);
 
     bool isResizable() const noexcept;
     void setResizable(bool resizable);

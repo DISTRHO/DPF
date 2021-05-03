@@ -18,7 +18,6 @@
 #define DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Window.hpp"
-// #include "ApplicationPrivateData.hpp"
 
 #include "pugl.hpp"
 
@@ -41,6 +40,16 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl view instance. */
     PuglView* const view;
 
+    /** Whether this Window is closed (not visible or counted in the Application it is tied to).
+        Defaults to true unless embed (embed windows are never closed). */
+    bool isClosed;
+
+    /** Whether this Window is currently visible/mapped. Defaults to false. */
+    bool isVisible;
+
+    /** Whether this Window is embed into another (usually not DGL-controlled) Window. */
+    const bool isEmbed;
+
     /** Constructor for a regular, standalone window. */
     PrivateData(AppData* appData, Window* self);
 
@@ -58,12 +67,14 @@ struct Window::PrivateData : IdleCallback {
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).
-      * The application event-loop will stop if all windows have been closed.
+      * The application event-loop will stop when all windows have been closed.
       *
-      * @note It is possible to hide the window while not stopping event-loop.
+      * @note It is possible to hide the window while not stopping the event-loop.
       *       A closed window is always hidden, but the reverse is not always true.
       */
     void close();
+
+    void setVisible(bool visible);
 
     void idleCallback() override;
 

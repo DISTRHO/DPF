@@ -67,6 +67,8 @@ START_NAMESPACE_DGL
 
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
+# define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
+# define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
 # include "pugl-upstream/src/x11.c"

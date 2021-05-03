@@ -28,6 +28,7 @@ Application::PrivateData::PrivateData(const bool standalone)
                          standalone ? PUGL_WORLD_THREADS : 0x0)),
       isStandalone(standalone),
       isQuitting(false),
+      isStarting(true),
       visibleWindows(0),
       windows(),
       idleCallbacks()
@@ -36,14 +37,11 @@ Application::PrivateData::PrivateData(const bool standalone)
 
     puglSetWorldHandle(world, this);
     puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
-
-    // puglSetLogLevel(world, PUGL_LOG_LEVEL_DEBUG);
-
 }
 
 Application::PrivateData::~PrivateData()
 {
-    DISTRHO_SAFE_ASSERT(isQuitting);
+    DISTRHO_SAFE_ASSERT(isStarting || isQuitting);
     DISTRHO_SAFE_ASSERT(visibleWindows == 0);
 
     windows.clear();
@@ -57,20 +55,22 @@ Application::PrivateData::~PrivateData()
 
 void Application::PrivateData::oneWindowShown() noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
-
     if (++visibleWindows == 1)
+    {
         isQuitting = false;
+        isStarting = false;
+    }
 }
 
-void Application::PrivateData::oneWindowHidden() noexcept
+void Application::PrivateData::oneWindowClosed() noexcept
 {
-    DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
     DISTRHO_SAFE_ASSERT_RETURN(visibleWindows != 0,);
 
     if (--visibleWindows == 0)
         isQuitting = true;
 }
+
+// --------------------------------------------------------------------------------------------------------------------
 
 void Application::PrivateData::idle(const uint timeoutInMs)
 {
@@ -92,6 +92,8 @@ void Application::PrivateData::idle(const uint timeoutInMs)
 
 void Application::PrivateData::quit()
 {
+    DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
+
     isQuitting = true;
 
 #ifndef DPF_TEST_APPLICATION_CPP

@@ -39,6 +39,7 @@ int main()
     {
         Application app(true);
         Window win(app);
+        app.idle();
     }
 
     // TODO

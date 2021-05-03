@@ -39,31 +39,38 @@ struct Application::PrivateData {
     /** Whether the applicating is about to quit, or already stopped. Defaults to false. */
     bool isQuitting;
 
+    /** Whether the applicating is starting up, that is, no windows have been made visible yet. Defaults to true. */
+    bool isStarting;
+
     /** Counter of visible windows, only used in standalone mode.
         If 0->1, application is starting. If 1->0, application is quitting/stopping. */
     uint visibleWindows;
 
-    /** List of windows for this application. Used as a way to call each window `idle`. */
+    /** List of windows for this application. Only used during `close`. */
     std::list<Window*> windows;
 
-    /** List of idle callbacks for this application. Run after all windows `idle`. */
+    /** List of idle callbacks for this application. */
     std::list<IdleCallback*> idleCallbacks;
 
     /** Constructor and destructor */
     PrivateData(const bool standalone);
     ~PrivateData();
 
-    /** Flag one window shown or hidden status, which modifies @a visibleWindows.
-        For standalone mode only.
-        Modifies @a isQuitting under certain conditions */
+    /** Flag one window as shown, which increments @a visibleWindows.
+        Sets @a isQuitting and @a isStarting as false if this is the first window.
+        For standalone mode only. */
     void oneWindowShown() noexcept;
-    void oneWindowHidden() noexcept;
 
-    /** Run Pugl world update for @a timeoutInMs, and then the idle functions for each window and idle callback,
-        in order of registration. */
+    /** Flag one window as closed, which decrements @a visibleWindows.
+        Sets @a isQuitting as true if this is the last window.
+        For standalone mode only. */
+    void oneWindowClosed() noexcept;
+
+    /** Run Pugl world update for @a timeoutInMs, and then each idle callback in order of registration. */
     void idle(const uint timeoutInMs);
 
-    /** Set flag indicating application is quitting, and closes all windows in reverse order of registration. */
+    /** Set flag indicating application is quitting, and close all windows in reverse order of registration.
+        For standalone mode only. */
     void quit();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
