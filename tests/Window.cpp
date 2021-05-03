@@ -21,9 +21,11 @@
 #include "tests.hpp"
 
 #define DPF_TEST_WINDOW_CPP
+#define DPF_TEST_POINT_CPP
 #include "dgl/src/pugl.cpp"
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"
+#include "dgl/src/Geometry.cpp"
 #include "dgl/src/Window.cpp"
 #include "dgl/src/WindowPrivateData.cpp"
 
@@ -35,11 +37,27 @@ int main()
 
     using DGL_NAMESPACE::Window;
 
-    // creating simple window
+    // creating and destroying simple window
     {
         Application app(true);
         Window win(app);
-        app.idle();
+    }
+
+    // creating and destroying simple window, with a delay
+    {
+        Application app(true);
+        ApplicationQuitter appQuitter(app);
+        Window win(app);
+        app.exec();
+    }
+
+    // showing and closing simple window, MUST be visible on screen
+    {
+        Application app(true);
+        ApplicationQuitter appQuitter(app);
+        Window win(app);
+        win.show();
+        app.exec();
     }
 
     // TODO

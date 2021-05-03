@@ -21,6 +21,8 @@
 
 START_NAMESPACE_DGL
 
+typedef std::list<DGL_NAMESPACE::Window*>::reverse_iterator WindowListReverseIterator;
+
 // --------------------------------------------------------------------------------------------------------------------
 
 Application::PrivateData::PrivateData(const bool standalone)
@@ -97,9 +99,9 @@ void Application::PrivateData::quit()
     isQuitting = true;
 
 #ifndef DPF_TEST_APPLICATION_CPP
-    for (std::list<Window*>::reverse_iterator rit = windows.rbegin(), rite = windows.rend(); rit != rite; ++rit)
+    for (WindowListReverseIterator rit = windows.rbegin(), rite = windows.rend(); rit != rite; ++rit)
     {
-        Window* const window(*rit);
+        DGL_NAMESPACE::Window* const window(*rit);
         window->close();
     }
 #endif

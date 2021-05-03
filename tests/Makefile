@@ -45,39 +45,32 @@ endif
 ifeq ($(HAVE_OPENGL),true)
 endif
 
+ifeq ($(HAVE_VULKAN),true)
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 all: $(TARGETS)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-../build/tests/%: ../build/tests/%.cpp.o
-	@echo "Linking $*"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) -o $@
-	@echo "Running test for $*"
-	$(SILENT)$@
+define RUN_TEST
+
+	${1}
+endef
+
 # 	valgrind --leak-check=full $@
 
-../build/tests/%.cairo: ../build/tests/%.cpp.cairo.o
-	@echo "Linking $*"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
-	@echo "Running test for $*"
-	$(SILENT)$@
-
-../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o
-	@echo "Linking $*"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
-	@echo "Running test for $*"
-	$(SILENT) $@
-# 	gdb -ex run
-
-../build/tests/%.vulkan: ../build/tests/%.cpp.vulkan.o
-	@echo "Linking $*"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
-	@echo "Running test for $*"
-	$(SILENT)$@
+run: $(TARGETS)
+	$(foreach TEST,$(TARGETS),$(call RUN_TEST,$(TEST)))
 
 # ---------------------------------------------------------------------------------------------------------------------
+
+clean:
+	rm -rf ../build/tests
+
+# ---------------------------------------------------------------------------------------------------------------------
+# building steps
 
 ../build/tests/%.c.o: %.c
 	-@mkdir -p ../build/tests
@@ -105,9 +98,23 @@ all: $(TARGETS)
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_VULKAN -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# linking steps
 
-clean:
-	rm -rf ../build/tests
+../build/tests/%: ../build/tests/%.cpp.o
+	@echo "Linking $*"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) -o $@
+
+../build/tests/%.cairo: ../build/tests/%.cpp.cairo.o
+	@echo "Linking $*"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
+
+../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o
+	@echo "Linking $*"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
+
+../build/tests/%.vulkan: ../build/tests/%.cpp.vulkan.o
+	@echo "Linking $*"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

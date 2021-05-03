@@ -30,7 +30,7 @@ START_NAMESPACE_DGL
  */
 struct CairoGraphicsContext : GraphicsContext
 {
-    cairo_t* cairo; // FIXME proper name..
+    cairo_t* handle;
 };
 
 // -----------------------------------------------------------------------

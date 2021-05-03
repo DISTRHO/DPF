@@ -31,6 +31,18 @@ START_NAMESPACE_DGL
 #define PUGL_DISABLE_DEPRECATED
 #include "pugl-upstream/include/pugl/pugl.h"
 
+PUGL_BEGIN_DECLS
+
+// missing in pugl, directly returns title char* pointer
+PUGL_API const char*
+puglGetWindowTitle(const PuglView* view);
+
+// set window size without changing frame x/y position
+PUGL_API PuglStatus
+puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
+
+PUGL_END_DECLS
+
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

@@ -21,31 +21,7 @@
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"
 
-#include "distrho/extra/Thread.hpp"
-
 START_NAMESPACE_DGL
-
-// --------------------------------------------------------------------------------------------------------------------
-
-class ApplicationQuitter : public Thread
-{
-    Application& app;
-
-public:
-    ApplicationQuitter(Application& a)
-        : Thread("ApplicationQuitter"),
-          app(a)
-    {
-        startThread();
-    }
-
-private:
-    void run() override
-    {
-        d_sleep(2);
-        app.quit();
-    }
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 

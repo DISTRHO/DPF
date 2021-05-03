@@ -21,6 +21,21 @@
 
 START_NAMESPACE_DGL
 
+#define DGL_DEBUG_EVENTS
+
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
+# define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
+# define DGL_DBGp(...) std::fprintf(stderr, __VA_ARGS__);
+# define DGL_DBGF      std::fflush(stderr);
+#else
+# define DGL_DBG(msg)
+# define DGL_DBGp(...)
+# define DGL_DBGF
+#endif
+
+#define DEFAULT_WIDTH 640
+#define DEFAULT_HEIGHT 480
+
 // -----------------------------------------------------------------------
 
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s)
@@ -31,7 +46,7 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
       isVisible(false),
       isEmbed(false)
 {
-    init(false);
+    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s, Window& transientWindow)
@@ -42,13 +57,15 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
       isVisible(false),
       isEmbed(false)
 {
-    init(false);
+    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
     puglSetTransientFor(view, transientWindow.getNativeWindowHandle());
 }
 
 Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s,
-                                 const uintptr_t parentWindowHandle, const double scaling, const bool resizable)
+                                 const uintptr_t parentWindowHandle,
+                                 const uint width, const uint height,
+                                 const double scaling, const bool resizable)
     : appData(a),
       self(s),
       view(puglNewView(appData->world)),
@@ -56,11 +73,12 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0)
 {
-    init(resizable);
+    init(width, height, resizable);
 
     if (isEmbed)
     {
         appData->oneWindowShown();
+        puglSetDefaultSize(view, width, height);
         puglSetParentWindow(view, parentWindowHandle);
         puglShow(view);
     }
@@ -85,16 +103,15 @@ Window::PrivateData::~PrivateData()
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::init(const bool resizable)
+void Window::PrivateData::init(const uint width, const uint height, const bool resizable)
 {
     appData->windows.push_back(self);
     appData->idleCallbacks.push_back(this);
+    memset(graphicsContext, 0, sizeof(graphicsContext));
 
     if (view == nullptr)
     {
-        /*
-        DGL_DBG("Failed!\n");
-        */
+        DGL_DBG("Failed to create Pugl view, everything will fail!\n");
         return;
     }
 
@@ -116,88 +133,118 @@ void Window::PrivateData::init(const bool resizable)
 //     puglSetFileSelectedFunc(fView, fileBrowserSelectedCallback);
 // #endif
 
-    // DGL_DBG("Success!\n");
+    PuglRect rect = puglGetFrame(view);
+    rect.width = width;
+    rect.height = height;
+    puglSetFrame(view, rect);
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::show()
+{
+    if (isVisible)
+    {
+        DGL_DBG("Window show matches current visible state, ignoring request\n");
+        return;
+    }
+    if (isEmbed)
+    {
+        DGL_DBG("Window show cannot be called when embedded\n");
+        return;
+    }
+
+    DGL_DBG("Window show called\n");
+
+#if 0 && defined(DISTRHO_OS_MAC)
+//     if (mWindow != nullptr)
+//     {
+//         if (mParentWindow != nullptr)
+//             [mParentWindow addChildWindow:mWindow
+//                                   ordered:NSWindowAbove];
+//     }
+#endif
+
+    if (isClosed)
+    {
+        isClosed = false;
+        appData->oneWindowShown();
+
+        const PuglStatus status = puglRealize(view);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(status == PUGL_SUCCESS, status, close());
+
+#ifdef DISTRHO_OS_WINDOWS
+        puglWin32ShowWindowCentered(view);
+#else
+        puglShow(view);
+#endif
+    }
+    else
+    {
+#ifdef DISTRHO_OS_WINDOWS
+        puglWin32RestoreWindow(view);
+#else
+        puglShow(view);
+#endif
+    }
+
+    isVisible = true;
+}
+
+void Window::PrivateData::hide()
+{
+    if (! isVisible)
+    {
+        DGL_DBG("Window hide matches current visible state, ignoring request\n");
+        return;
+    }
+    if (isEmbed)
+    {
+        DGL_DBG("Window hide cannot be called when embedded\n");
+        return;
+    }
+
+    DGL_DBG("Window hide called\n");
+
+#if 0 && defined(DISTRHO_OS_MAC)
+//     if (mWindow != nullptr)
+//     {
+//         if (mParentWindow != nullptr)
+//             [mParentWindow removeChildWindow:mWindow];
+//     }
+#endif
+
+    puglHide(view);
+
+//     if (fModal.enabled)
+//         exec_fini();
+
+    isVisible = false;
 }
 
 // -----------------------------------------------------------------------
 
 void Window::PrivateData::close()
 {
-//     DGL_DBG("Window close\n");
+    DGL_DBG("Window close\n");
 
     if (isEmbed || isClosed)
         return;
 
     isClosed = true;
-    setVisible(false);
+    hide();
     appData->oneWindowClosed();
 }
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::setVisible(const bool visible)
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
-    if (isVisible == visible)
-    {
-//         DGL_DBG("Window setVisible matches current state, ignoring request\n");
-        return;
-    }
-    if (isEmbed)
-    {
-//         DGL_DBG("Window setVisible cannot be called when embedded\n");
-        return;
-    }
-
-//     DGL_DBG("Window setVisible called\n");
-
-    isVisible = visible;
-
-    if (visible)
-    {
-// #if 0 && defined(DISTRHO_OS_MAC)
-//         if (mWindow != nullptr)
-//         {
-//             if (mParentWindow != nullptr)
-//                 [mParentWindow addChildWindow:mWindow
-//                                       ordered:NSWindowAbove];
-//         }
-// #endif
-
-        if (isClosed)
-        {
-            puglRealize(view);
-#ifdef DISTRHO_OS_WINDOWS
-            puglWin32ShowWindowCentered(view);
-#else
-            puglShow(view);
+    GraphicsContext& context((GraphicsContext&)graphicsContext);
+#ifdef DGL_CAIRO
+    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
 #endif
-            appData->oneWindowShown();
-            isClosed = false;
-        }
-        else
-        {
-#ifdef DISTRHO_OS_WINDOWS
-            puglWin32RestoreWindow(view);
-#else
-            puglShow(view);
-#endif
-        }
-    }
-    else
-    {
-// #if 0 && defined(DISTRHO_OS_MAC)
-//         if (mWindow != nullptr)
-//         {
-//             if (mParentWindow != nullptr)
-//                 [mParentWindow removeChildWindow:mWindow];
-//         }
-// #endif
-
-        puglHide(view);
-
-//             if (fModal.enabled)
-//                 exec_fini();
-    }
+    return context;
 }
 
 // -----------------------------------------------------------------------
@@ -219,128 +266,11 @@ void Window::PrivateData::idleCallback()
 
 // -----------------------------------------------------------------------
 
-PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
-{
-    Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
-    return PUGL_SUCCESS;
-}
-
-// -----------------------------------------------------------------------
-
-END_NAMESPACE_DGL
-
-#if 0
-#ifdef DGL_CAIRO
-# define PUGL_CAIRO
-# include "../Cairo.hpp"
-#endif
-#ifdef DGL_OPENGL
-# define PUGL_OPENGL
-# include "../OpenGL.hpp"
-#endif
-
-#ifndef DPF_TEST_WINDOW_CPP
-#include "WidgetPrivateData.hpp"
-#include "pugl-upstream/include/pugl/pugl.h"
-#include "pugl-extra/extras.h"
-#endif
-
-extern "C" {
-#include "pugl-upstream/src/implementation.c"
-#include "pugl-extra/extras.c"
-}
-
-#if defined(DISTRHO_OS_HAIKU)
-# define DGL_DEBUG_EVENTS
-# include "pugl-upstream/src/haiku.cpp"
-#elif defined(DISTRHO_OS_MAC)
-# include "pugl-upstream/src/mac.m"
-#elif defined(DISTRHO_OS_WINDOWS)
-# include "ppugl-upstream/src/win.c"
-# undef max
-# undef min
-#else
-# define DGL_PUGL_USING_X11
-extern "C" {
-# include "pugl-upstream/src/x11.c"
-// # ifdef DGL_CAIRO
-// #  include "pugl-upstream/src/x11_cairo.c"
-// # endif
-# ifdef DGL_OPENGL
-#  include "pugl-upstream/src/x11_gl.c"
-# endif
-# define PUGL_DETAIL_X11_H_INCLUDED
-# include "pugl-extra/x11.c"
-}
-#endif
-
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-
-#define FOR_EACH_WIDGET(it) \
-  for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
-
-#define FOR_EACH_WIDGET_INV(rit) \
-  for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
-
-#define DGL_DEBUG_EVENTS
-
-#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-# define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
-# define DGL_DBGp(...) std::fprintf(stderr, __VA_ARGS__);
-# define DGL_DBGF      std::fflush(stderr);
-#else
-# define DGL_DBG(msg)
-# define DGL_DBGp(...)
-# define DGL_DBGF
-#endif
-
-START_NAMESPACE_DGL
-
-// Fallback build-specific Window functions
-struct Fallback {
-    static void onDisplayBefore();
-    static void onDisplayAfter();
-    static void onReshape(uint width, uint height);
-};
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::addWidget(Widget* const widget)
-{
-    fWidgets.push_back(widget);
-}
-
-void Window::PrivateData::removeWidget(Widget* const widget)
-{
-    fWidgets.remove(widget);
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::onPuglClose()
-{
-    DGL_DBG("PUGL: onClose\n");
-
-//         if (fModal.enabled)
-//             exec_fini();
-
-    fSelf->onClose();
-
-    if (fModal.childFocus != nullptr)
-        fModal.childFocus->fSelf->onClose();
-
-    close();
-}
-
 void Window::PrivateData::onPuglDisplay()
 {
-    fSelf->onDisplayBefore();
+   self->onDisplayBefore();
 
+   /*
     if (fWidgets.size() != 0)
     {
         const PuglRect rect = puglGetFrame(fView);
@@ -353,8 +283,9 @@ void Window::PrivateData::onPuglDisplay()
             widget->pData->display(width, height, fAutoScaling, false);
         }
     }
+    */
 
-    fSelf->onDisplayAfter();
+    self->onDisplayAfter();
 }
 
 void Window::PrivateData::onPuglReshape(const int width, const int height)
@@ -363,8 +294,9 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
 
     DGL_DBGp("PUGL: onReshape : %i %i\n", width, height);
 
-    fSelf->onReshape(width, height);
+    self->onReshape(width, height);
 
+    /*
     FOR_EACH_WIDGET(it)
     {
         Widget* const widget(*it);
@@ -372,35 +304,43 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
         if (widget->pData->needsFullViewport)
             widget->setSize(width, height);
     }
+    */
 }
 
-void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
+static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
+
+PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
 {
-    DGL_DBGp("PUGL: onMouse : %i %i %i %i\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
+    printEvent(event, "pugl event: ", true);
+    Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
-
-    Widget::MouseEvent rev = ev;
-    double x = ev.pos.getX() / fAutoScaling;
-    double y = ev.pos.getY() / fAutoScaling;
-
-    FOR_EACH_WIDGET_INV(rit)
+    switch (event->type)
     {
-        Widget* const widget(*rit);
+    ///< No event
+    case PUGL_NOTHING:
+        break;
 
-        rev.pos = Point<double>(x - widget->getAbsoluteX(),
-                                y - widget->getAbsoluteY());
+    ///< View moved/resized, a #PuglEventConfigure
+    case PUGL_CONFIGURE:
+        pData->onPuglReshape(event->configure.width, event->configure.height);
+        break;
 
-        if (widget->isVisible() && widget->onMouse(rev))
-            break;
+    ///< View must be drawn, a #PuglEventExpose
+    case PUGL_EXPOSE:
+        pData->onPuglDisplay();
+        break;
+
+    // TODO
+    default:
+        break;
     }
+
+    return PUGL_SUCCESS;
 }
 
 // -----------------------------------------------------------------------
 
-static inline int
-printModifiers(const uint32_t mods)
+static int printModifiers(const uint32_t mods)
 {
 	return fprintf(stderr, "Modifiers:%s%s%s%s\n",
 	               (mods & PUGL_MOD_SHIFT) ? " Shift"   : "",
@@ -409,8 +349,7 @@ printModifiers(const uint32_t mods)
 	               (mods & PUGL_MOD_SUPER) ? " Super" : "");
 }
 
-static inline int
-printEvent(const PuglEvent* event, const char* prefix, const bool verbose)
+static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose)
 {
 #define FFMT            "%6.1f"
 #define PFMT            FFMT " " FFMT
@@ -526,9 +465,156 @@ printEvent(const PuglEvent* event, const char* prefix, const bool verbose)
 	return 0;
 }
 
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::Fallback::onDisplayBefore(const GraphicsContext&)
+{
+#ifdef DGL_OPENGL
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+#endif
+}
+
+void Window::PrivateData::Fallback::onDisplayAfter(const GraphicsContext&)
+{
+}
+
+void Window::PrivateData::Fallback::onReshape(const GraphicsContext&, const uint width, const uint height)
+{
+#ifdef DGL_OPENGL
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0.0, 0.0, 1.0);
+    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+#else
+    // unused
+    (void)width;
+    (void)height;
+#endif
+}
+
+// -----------------------------------------------------------------------
+
+END_NAMESPACE_DGL
+
+#if 0
+#ifdef DGL_CAIRO
+# define PUGL_CAIRO
+# include "../Cairo.hpp"
+#endif
+#ifdef DGL_OPENGL
+# define PUGL_OPENGL
+# include "../OpenGL.hpp"
+#endif
+
+#ifndef DPF_TEST_WINDOW_CPP
+#include "WidgetPrivateData.hpp"
+#include "pugl-upstream/include/pugl/pugl.h"
+#include "pugl-extra/extras.h"
+#endif
+
+extern "C" {
+#include "pugl-upstream/src/implementation.c"
+#include "pugl-extra/extras.c"
+}
+
+#if defined(DISTRHO_OS_HAIKU)
+# define DGL_DEBUG_EVENTS
+# include "pugl-upstream/src/haiku.cpp"
+#elif defined(DISTRHO_OS_MAC)
+# include "pugl-upstream/src/mac.m"
+#elif defined(DISTRHO_OS_WINDOWS)
+# include "ppugl-upstream/src/win.c"
+# undef max
+# undef min
+#else
+# define DGL_PUGL_USING_X11
+extern "C" {
+# include "pugl-upstream/src/x11.c"
+// # ifdef DGL_CAIRO
+// #  include "pugl-upstream/src/x11_cairo.c"
+// # endif
+# ifdef DGL_OPENGL
+#  include "pugl-upstream/src/x11_gl.c"
+# endif
+# define PUGL_DETAIL_X11_H_INCLUDED
+# include "pugl-extra/x11.c"
+}
+#endif
+
+#include <inttypes.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+
+START_NAMESPACE_DGL
+
+#define FOR_EACH_WIDGET(it) \
+  for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
+
+#define FOR_EACH_WIDGET_INV(rit) \
+  for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::addWidget(Widget* const widget)
+{
+    fWidgets.push_back(widget);
+}
+
+void Window::PrivateData::removeWidget(Widget* const widget)
+{
+    fWidgets.remove(widget);
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::onPuglClose()
+{
+    DGL_DBG("PUGL: onClose\n");
+
+//         if (fModal.enabled)
+//             exec_fini();
+
+    fSelf->onClose();
+
+    if (fModal.childFocus != nullptr)
+        fModal.childFocus->fSelf->onClose();
+
+    close();
+}
+
+void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
+{
+    DGL_DBGp("PUGL: onMouse : %i %i %i %i\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+    Widget::MouseEvent rev = ev;
+    double x = ev.pos.getX() / fAutoScaling;
+    double y = ev.pos.getY() / fAutoScaling;
+
+    FOR_EACH_WIDGET_INV(rit)
+    {
+        Widget* const widget(*rit);
+
+        rev.pos = Point<double>(x - widget->getAbsoluteX(),
+                                y - widget->getAbsoluteY());
+
+        if (widget->isVisible() && widget->onMouse(rev))
+            break;
+    }
+}
+
 PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
 {
-    printEvent(event, "", true);
     Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
 
     switch (event->type)
@@ -603,38 +689,6 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     }
 
     return PUGL_SUCCESS;
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::Fallback::onDisplayBefore()
-{
-#ifdef DGL_OPENGL
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-#endif
-}
-
-void Window::PrivateData::Fallback::onDisplayAfter()
-{
-}
-
-void Window::PrivateData::Fallback::onReshape(const uint width, const uint height)
-{
-#ifdef DGL_OPENGL
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0.0, 0.0, 1.0);
-    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-#else
-    // unused
-    (void)width;
-    (void)height;
-#endif
 }
 
 // -----------------------------------------------------------------------

@@ -40,6 +40,9 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl view instance. */
     PuglView* const view;
 
+    /** Reserved space for graphics context. */
+    mutable uint8_t graphicsContext[sizeof(void*)];
+
     /** Whether this Window is closed (not visible or counted in the Application it is tied to).
         Defaults to true unless embed (embed windows are never closed). */
     bool isClosed;
@@ -57,13 +60,17 @@ struct Window::PrivateData : IdleCallback {
     PrivateData(AppData* appData, Window* self, Window& transientWindow);
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
-    PrivateData(AppData* appData, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
+    PrivateData(AppData* appData, Window* self, uintptr_t parentWindowHandle,
+                uint width, uint height, double scaling, bool resizable);
 
     /** Destructor. */
     ~PrivateData() override;
 
     /** Helper initialization function called at the end of all this class constructors. */
-    void init(bool resizable);
+    void init(uint width, uint height, bool resizable);
+
+    void show();
+    void hide();
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).
@@ -74,11 +81,23 @@ struct Window::PrivateData : IdleCallback {
       */
     void close();
 
-    void setVisible(bool visible);
+    const GraphicsContext& getGraphicsContext() const noexcept;
 
     void idleCallback() override;
 
+    // pugl events
+    void onPuglDisplay();
+    void onPuglReshape(int width, int height);
+
+    // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);
+
+    // Fallback build-specific Window functions
+    struct Fallback {
+        static void onDisplayBefore(const GraphicsContext& context);
+        static void onDisplayAfter(const GraphicsContext& context);
+        static void onReshape(const GraphicsContext& context, uint width, uint height);
+    };
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
@@ -161,8 +180,6 @@ END_NAMESPACE_DGL
     // -------------------------------------------------------------------
 
     void onPuglClose();
-    void onPuglDisplay();
-    void onPuglReshape(const int width, const int height);
     void onPuglMouse(const Widget::MouseEvent& ev);
 
     // -------------------------------------------------------------------

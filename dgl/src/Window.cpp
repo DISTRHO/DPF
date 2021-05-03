@@ -29,8 +29,13 @@ START_NAMESPACE_DGL
 Window::Window(Application& app)
     : pData(new PrivateData(app.pData, this)) {}
 
-Window::Window(Application& app, const uintptr_t parentWindowHandle, const double scaling, const bool resizable)
-    : pData(new PrivateData(app.pData, this, parentWindowHandle, scaling, resizable)) {}
+Window::Window(Application& app,
+               const uintptr_t parentWindowHandle,
+               const uint width,
+               const uint height,
+               const double scaling,
+               const bool resizable)
+    : pData(new PrivateData(app.pData, this, parentWindowHandle, width, height, scaling, resizable)) {}
 
 Window::~Window()
 {
@@ -49,7 +54,20 @@ bool Window::isVisible() const noexcept
 
 void Window::setVisible(const bool visible)
 {
-    pData->setVisible(visible);
+    if (visible)
+        pData->show();
+    else
+        pData->hide();
+}
+
+void Window::show()
+{
+    pData->show();
+}
+
+void Window::hide()
+{
+    pData->hide();
 }
 
 void Window::close()
@@ -57,9 +75,75 @@ void Window::close()
     pData->close();
 }
 
+uint Window::getWidth() const noexcept
+{
+    return puglGetFrame(pData->view).width;
+}
+
+uint Window::getHeight() const noexcept
+{
+    return puglGetFrame(pData->view).height;
+}
+
+Size<uint> Window::getSize() const noexcept
+{
+    const PuglRect rect = puglGetFrame(pData->view);
+    return Size<uint>(rect.width, rect.height);
+}
+
+void Window::setWidth(const uint width)
+{
+    setSize(width, getHeight());
+}
+
+void Window::setHeight(const uint height)
+{
+    setSize(getWidth(), height);
+}
+
+void Window::setSize(const uint width, const uint height)
+{
+    DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
+
+    puglSetWindowSize(pData->view, width, height);
+}
+
+void Window::setSize(const Size<uint>& size)
+{
+    setSize(size.getWidth(), size.getHeight());
+}
+
+const char* Window::getTitle() const noexcept
+{
+    return puglGetWindowTitle(pData->view);
+}
+
+void Window::setTitle(const char* const title)
+{
+    puglSetWindowTitle(pData->view, title);
+}
+
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
     return puglGetNativeWindow(pData->view);
+}
+
+void Window::onDisplayBefore()
+{
+    const GraphicsContext& context(pData->getGraphicsContext());
+    PrivateData::Fallback::onDisplayBefore(context);
+}
+
+void Window::onDisplayAfter()
+{
+    const GraphicsContext& context(pData->getGraphicsContext());
+    PrivateData::Fallback::onDisplayAfter(context);
+}
+
+void Window::onReshape(const uint width, const uint height)
+{
+    const GraphicsContext& context(pData->getGraphicsContext());
+    PrivateData::Fallback::onReshape(context, width, height);
 }
 
 #if 0
@@ -134,44 +218,6 @@ void Window::setGeometryConstraints(const uint width, const uint height, bool as
     puglUpdateGeometryConstraints(pData->fView, width, height, aspect);
 }
 
-uint Window::getWidth() const noexcept
-{
-    return puglGetFrame(pData->fView).width;
-}
-
-uint Window::getHeight() const noexcept
-{
-    return puglGetFrame(pData->fView).height;
-}
-
-Size<uint> Window::getSize() const noexcept
-{
-    const PuglRect rect = puglGetFrame(pData->fView);
-    return Size<uint>(rect.width, rect.height);
-}
-
-void Window::setSize(const uint width, const uint height)
-{
-    DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
-
-    puglSetWindowSize(pData->fView, width, height);
-}
-
-void Window::setSize(const Size<uint> size)
-{
-    setSize(size.getWidth(), size.getHeight());
-}
-
-const char* Window::getTitle() const noexcept
-{
-    return puglGetWindowTitle(pData->fView);
-}
-
-void Window::setTitle(const char* const title)
-{
-    puglSetWindowTitle(pData->fView, title);
-}
-
 void Window::setTransientWinId(const uintptr_t winId)
 {
     puglSetTransientFor(pData->fView, winId);
@@ -186,17 +232,6 @@ double Window::getScaling() const noexcept
 Application& Window::getApp() const noexcept
 {
     return pData->fApp;
-}
-#endif
-
-#if 0
-const GraphicsContext& Window::getGraphicsContext() const noexcept
-{
-    GraphicsContext& context = pData->fContext;
-#ifdef DGL_CAIRO
-    context.cairo = (cairo_t*)puglGetContext(pData->fView);
-#endif
-    return context;
 }
 #endif
 
@@ -239,21 +274,6 @@ void Window::removeIdleCallback(IdleCallback* const callback)
 }
 
 // -----------------------------------------------------------------------
-
-void Window::onDisplayBefore()
-{
-    PrivateData::Fallback::onDisplayBefore();
-}
-
-void Window::onDisplayAfter()
-{
-    PrivateData::Fallback::onDisplayAfter();
-}
-
-void Window::onReshape(const uint width, const uint height)
-{
-    PrivateData::Fallback::onReshape(width, height);
-}
 
 void Window::onClose()
 {

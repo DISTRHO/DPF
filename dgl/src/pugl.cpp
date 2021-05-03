@@ -35,16 +35,16 @@
 # include <X11/Xlib.h>
 # include <X11/Xutil.h>
 # include <X11/keysym.h>
+# ifdef HAVE_XCURSOR
+#  include <X11/Xcursor/Xcursor.h>
+#  include <X11/cursorfont.h>
+# endif
 # ifdef HAVE_XRANDR
 #  include <X11/extensions/Xrandr.h>
 # endif
 # ifdef HAVE_XSYNC
 #  include <X11/extensions/sync.h>
 #  include <X11/extensions/syncconst.h>
-# endif
-# ifdef HAVE_XCURSOR
-#  include <X11/Xcursor/Xcursor.h>
-#  include <X11/cursorfont.h>
 # endif
 # ifdef DGL_CAIRO
 #  include <cairo.h>
@@ -84,6 +84,74 @@ START_NAMESPACE_DGL
 #endif
 
 #include "pugl-upstream/src/implementation.c"
+
+// --------------------------------------------------------------------------------------------------------------------
+// missing in pugl, directly returns title char* pointer
+
+const char* puglGetWindowTitle(const PuglView* view)
+{
+    return view->title;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// set window size without changing frame x/y position
+
+PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height)
+{
+#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
+    // TODO
+    const PuglRect frame = { 0.0, 0.0, (double)width, (double)height };
+    return puglSetFrame(view, frame);
+#elif defined(DISTRHO_OS_WINDOWS)
+    // matches upstream pugl, except we add SWP_NOMOVE flag
+    if (view->impl->hwnd)
+    {
+        RECT rect = { (long)frame.x,
+                      (long)frame.y,
+                      (long)frame.x + (long)frame.width,
+                      (long)frame.y + (long)frame.height };
+
+        AdjustWindowRectEx(&rect, puglWinGetWindowFlags(view), FALSE, puglWinGetWindowExFlags(view));
+
+        if (! SetWindowPos(view->impl->hwnd,
+                           HWND_TOP,
+                           rect.left,
+                           rect.top,
+                           rect.right - rect.left,
+                           rect.bottom - rect.top,
+                           SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER))
+            return PUGL_UNKNOWN_ERROR;
+    }
+#else
+    // matches upstream pugl, except we use XResizeWindow instead of XMoveResizeWindow
+    if (view->impl->win)
+    {
+        if (! XResizeWindow(view->world->impl->display, view->impl->win, width, height))
+            return PUGL_UNKNOWN_ERROR;
+#if 0
+        if (! fResizable)
+        {
+            XSizeHints sizeHints;
+            memset(&sizeHints, 0, sizeof(sizeHints));
+
+            sizeHints.flags      = PSize|PMinSize|PMaxSize;
+            sizeHints.width      = static_cast<int>(width);
+            sizeHints.height     = static_cast<int>(height);
+            sizeHints.min_width  = static_cast<int>(width);
+            sizeHints.min_height = static_cast<int>(height);
+            sizeHints.max_width  = static_cast<int>(width);
+            sizeHints.max_height = static_cast<int>(height);
+
+            XSetWMNormalHints(xDisplay, xWindow, &sizeHints);
+        }
+#endif
+    }
+#endif
+
+    view->frame.width = width;
+    view->frame.height = height;
+    return PUGL_SUCCESS;
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 

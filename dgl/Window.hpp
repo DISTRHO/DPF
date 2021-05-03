@@ -56,7 +56,12 @@ public:
    /**
       Constructor for an embed Window, typically used in modules or plugins that run inside another host.
     */
-    explicit Window(Application& app, uintptr_t parentWindowHandle, double scaling, bool resizable);
+    explicit Window(Application& app,
+                    uintptr_t parentWindowHandle,
+                    uint width,
+                    uint height,
+                    double scaling,
+                    bool resizable);
 
    /**
       Destructor.
@@ -68,11 +73,33 @@ public:
     */
     bool isEmbed() const noexcept;
 
+   /**
+      Check if this window is visible / mapped.
+      Invisible windows do not receive events except resize.
+      @see setVisible(bool)
+    */
     bool isVisible() const noexcept;
+
+   /**
+      Set windows visible (or not) according to @a visible.
+      Only valid for standalones, embed windows are always visible.
+      @see isVisible(), hide(), show()
+    */
     void setVisible(bool visible);
 
-    inline void show() { setVisible(true); }
-    inline void hide() { setVisible(true); }
+   /**
+      Show window.
+      This is the same as calling setVisible(true).
+      @see isVisible(), setVisible(bool)
+    */
+    void show();
+
+   /**
+      Hide window.
+      This is the same as calling setVisible(false).
+      @see isVisible(), setVisible(bool)
+    */
+    void hide();
 
    /**
       Hide window and notify application of a window close event.
@@ -86,6 +113,44 @@ public:
     void close();
 
    /**
+      Get width.
+    */
+    uint getWidth() const noexcept;
+
+   /**
+      Get height.
+    */
+    uint getHeight() const noexcept;
+
+   /**
+      Get size.
+    */
+    Size<uint> getSize() const noexcept;
+
+   /**
+      Set width.
+    */
+    void setWidth(uint width);
+
+   /**
+      Set height.
+    */
+    void setHeight(uint height);
+
+   /**
+      Set size using @a width and @a height values.
+    */
+    void setSize(uint width, uint height);
+
+   /**
+      Set size.
+    */
+    void setSize(const Size<uint>& size);
+
+    const char* getTitle() const noexcept;
+    void setTitle(const char* title);
+
+   /**
       Get the "native" window handle.
       Returned value depends on the platform:
        - HaikuOS: This is a pointer to a `BView`.
@@ -94,6 +159,11 @@ public:
        - Everything else: This is an [X11] `Window`.
     */
     uintptr_t getNativeWindowHandle() const noexcept;
+
+protected:
+    virtual void onDisplayBefore();
+    virtual void onDisplayAfter();
+    virtual void onReshape(uint width, uint height);
 
 private:
     struct PrivateData;
@@ -180,15 +250,6 @@ END_NAMESPACE_DGL
     bool getIgnoringKeyRepeat() const noexcept;
     void setIgnoringKeyRepeat(bool ignore) noexcept;
 
-    uint getWidth() const noexcept;
-    uint getHeight() const noexcept;
-    Size<uint> getSize() const noexcept;
-    void setSize(uint width, uint height);
-    void setSize(Size<uint> size);
-
-    const char* getTitle() const noexcept;
-    void setTitle(const char* title);
-
     void setGeometryConstraints(uint width, uint height, bool aspect);
     void setTransientWinId(uintptr_t winId);
 
@@ -206,9 +267,6 @@ END_NAMESPACE_DGL
 
 
 protected:
-    virtual void onDisplayBefore();
-    virtual void onDisplayAfter();
-    virtual void onReshape(uint width, uint height);
     virtual void onClose();
 
 #ifndef DGL_FILE_BROWSER_DISABLED

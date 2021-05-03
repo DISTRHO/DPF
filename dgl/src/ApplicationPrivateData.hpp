@@ -47,10 +47,10 @@ struct Application::PrivateData {
     uint visibleWindows;
 
     /** List of windows for this application. Only used during `close`. */
-    std::list<Window*> windows;
+    std::list<DGL_NAMESPACE::Window*> windows;
 
     /** List of idle callbacks for this application. */
-    std::list<IdleCallback*> idleCallbacks;
+    std::list<DGL_NAMESPACE::IdleCallback*> idleCallbacks;
 
     /** Constructor and destructor */
     PrivateData(const bool standalone);
