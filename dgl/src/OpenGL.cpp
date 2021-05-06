@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Geometry.hpp"
 #include "../OpenGL.hpp"
+#include "WidgetPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
@@ -108,49 +108,65 @@ void Rectangle<T>::_draw(const bool outline)
 }
 
 // -----------------------------------------------------------------------
-// Possible template data types
 
-template class Point<double>;
-template class Point<float>;
-template class Point<int>;
-template class Point<uint>;
-template class Point<short>;
-template class Point<ushort>;
+void Widget::PrivateData::display(const uint width,
+                                  const uint height,
+                                  const double scaling,
+                                  const bool renderingSubWidget)
+{
+    if (/*(skipDisplay && ! renderingSubWidget) ||*/ size.isInvalid() || ! visible)
+        return;
 
-template class Size<double>;
-template class Size<float>;
-template class Size<int>;
-template class Size<uint>;
-template class Size<short>;
-template class Size<ushort>;
+//     bool needsDisableScissor = false;
 
-template class Line<double>;
-template class Line<float>;
-template class Line<int>;
-template class Line<uint>;
-template class Line<short>;
-template class Line<ushort>;
+    // reset color
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-template class Circle<double>;
-template class Circle<float>;
-template class Circle<int>;
-template class Circle<uint>;
-template class Circle<short>;
-template class Circle<ushort>;
+//     if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
+    {
+        // full viewport size
+        glViewport(0,
+                    -(height * scaling - height),
+                    width * scaling,
+                    height * scaling);
+    }
+//     else if (needsScaling)
+//     {
+//         // limit viewport to widget bounds
+//         glViewport(absolutePos.getX(),
+//                     height - self->getHeight() - absolutePos.getY(),
+//                     self->getWidth(),
+//                     self->getHeight());
+//     }
+//     else
+//     {
+//         // only set viewport pos
+//         glViewport(absolutePos.getX() * scaling,
+//                     -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
+//                     std::round(width * scaling),
+//                     std::round(height * scaling));
+//
+//         // then cut the outer bounds
+//         glScissor(absolutePos.getX() * scaling,
+//                   height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
+//                   std::round(self->getWidth() * scaling),
+//                   std::round(self->getHeight() * scaling));
+//
+//         glEnable(GL_SCISSOR_TEST);
+//         needsDisableScissor = true;
+//     }
 
-template class Triangle<double>;
-template class Triangle<float>;
-template class Triangle<int>;
-template class Triangle<uint>;
-template class Triangle<short>;
-template class Triangle<ushort>;
+    // display widget
+    self->onDisplay();
 
-template class Rectangle<double>;
-template class Rectangle<float>;
-template class Rectangle<int>;
-template class Rectangle<uint>;
-template class Rectangle<short>;
-template class Rectangle<ushort>;
+//     if (needsDisableScissor)
+//     {
+//         glDisable(GL_SCISSOR_TEST);
+//         needsDisableScissor = false;
+//     }
+
+    displaySubWidgets(width, height, scaling);
+}
 
 // -----------------------------------------------------------------------
 

@@ -30,11 +30,11 @@
 
 START_NAMESPACE_DGL
 
-// class Application;
+class Application;
 // class NanoWidget;
 // class Window;
 // class StandaloneWindow;
-// class SubWidget;
+class SubWidget;
 class TopLevelWidget;
 
 using namespace Events;
@@ -46,26 +46,31 @@ using namespace Events;
 
    This is the base Widget class, from which all widgets are built.
 
-   All widgets have a parent Window where they'll be drawn.
-   This parent is never changed during the widget lifetime.
+   All widgets have a parent widget where they'll be drawn, this can be the top-level widget or a group widget.
+   This parent is never changed during a widget's lifetime.
 
-   Widgets receive events in relative coordinates.
-   (0, 0) means its top-left position.
+   Widgets receive events in relative coordinates. (0, 0) means its top-left position.
 
-   Windows paint widgets in the order they are constructed.
-   Early widgets are drawn first, at the bottom, then newer ones on top.
-   Events are sent in the inverse order so that the top-most widget gets
+   The top-level widget will draw subwidgets in the order they are constructed.
+   Early subwidgets are drawn first, at the bottom, then newer ones on top.
+   Events are sent in the inverse order so that the top-most widgets get
    a chance to catch the event and stop its propagation.
 
-   All widget event callbacks do nothing by default.
+   All widget event callbacks do nothing by default and onDisplay MUST be reimplemented by subclasses.
+
+   @note It is not possible to subclass this Widget class directly, you must use SubWidget or TopLevelWidget instead.
  */
 class Widget
 {
    /**
-      Constructor, reserved for DGL ..
-      use TopLevelWidget or SubWidget instead
+      Private constructor, reserved for SubWidget class.
     */
-    explicit Widget(TopLevelWidget& topLevelWidget);
+    explicit Widget(Widget* widgetToGroupTo);
+
+   /**
+      Private constructor, reserved for TopLevelWidget class.
+    */
+    explicit Widget(TopLevelWidget* topLevelWidget);
 
 public:
    /**
@@ -109,7 +114,7 @@ public:
    /**
       Get size.
     */
-    const Size<uint>& getSize() const noexcept;
+    const Size<uint> getSize() const noexcept;
 
    /**
       Set width.
@@ -132,17 +137,6 @@ public:
     void setSize(const Size<uint>& size) noexcept;
 
    /**
-      Get top-level widget, as passed in the constructor.
-    */
-    TopLevelWidget& getTopLevelWidget() const noexcept;
-
-   /**
-      Tell this widget's window to repaint itself.
-      FIXME better description, partial redraw
-    */
-    void repaint() noexcept;
-
-   /**
       Get the Id associated with this widget.
       @see setId
     */
@@ -154,9 +148,35 @@ public:
     */
     void setId(uint id) noexcept;
 
+   /**
+      Get the application associated with this widget's window.
+      This is the same as calling `getTopLevelWidget()->getApp()`.
+    */
+    Application& getApp() const noexcept;
+
+   /**
+      Get the graphics context associated with this widget.
+      GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,
+      for example GraphicsContext.
+      @see CairoSubWidget, CairoTopLevelWidget
+    */
+    const GraphicsContext& getGraphicsContext() const noexcept;
+
+   /**
+      Get top-level widget, as passed directly in the constructor
+      or going up the chain of group widgets until it finds the top-level widget.
+    */
+    TopLevelWidget* getTopLevelWidget() const noexcept;
+
+   /**
+      Tell this widget's window to repaint itself.
+      FIXME better description, partial redraw
+    */
+    void repaint() noexcept;
+
 protected:
    /**
-      A function called to draw the view contents with OpenGL.
+      A function called to draw the widget contents.
     */
     virtual void onDisplay() = 0;
 
@@ -208,6 +228,7 @@ private:
 //     friend class NanoWidget;
 //     friend class Window;
 //     friend class StandaloneWindow;
+    friend class SubWidget;
     friend class TopLevelWidget;
 // #ifdef DISTRHO_DEFINES_H_INCLUDED
 //     friend class DISTRHO_NAMESPACE::UI;

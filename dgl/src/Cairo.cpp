@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Geometry.hpp"
 #include "../Cairo.hpp"
+#include "WidgetPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
@@ -63,49 +63,28 @@ void Rectangle<T>::_draw(const bool outline)
 }
 
 // -----------------------------------------------------------------------
-// Possible template data types
 
-template class Point<double>;
-template class Point<float>;
-template class Point<int>;
-template class Point<uint>;
-template class Point<short>;
-template class Point<ushort>;
+void Widget::PrivateData::display(const uint width,
+                                  const uint height,
+                                  const double scaling,
+                                  const bool renderingSubWidget)
+{
+    if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
+        return;
 
-template class Size<double>;
-template class Size<float>;
-template class Size<int>;
-template class Size<uint>;
-template class Size<short>;
-template class Size<ushort>;
+    cairo_t* cr = static_cast<const CairoGraphicsContext&>(parent.getGraphicsContext()).cairo;
+    cairo_matrix_t matrix;
+    cairo_get_matrix(cr, &matrix);
+    cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
+    // TODO: scaling and cropping
 
-template class Line<double>;
-template class Line<float>;
-template class Line<int>;
-template class Line<uint>;
-template class Line<short>;
-template class Line<ushort>;
+    // display widget
+    self->onDisplay();
 
-template class Circle<double>;
-template class Circle<float>;
-template class Circle<int>;
-template class Circle<uint>;
-template class Circle<short>;
-template class Circle<ushort>;
+    cairo_set_matrix(cr, &matrix);
 
-template class Triangle<double>;
-template class Triangle<float>;
-template class Triangle<int>;
-template class Triangle<uint>;
-template class Triangle<short>;
-template class Triangle<ushort>;
-
-template class Rectangle<double>;
-template class Rectangle<float>;
-template class Rectangle<int>;
-template class Rectangle<uint>;
-template class Rectangle<short>;
-template class Rectangle<ushort>;
+    displaySubWidgets(width, height, scaling);
+}
 
 // -----------------------------------------------------------------------
 

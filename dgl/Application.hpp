@@ -38,7 +38,7 @@ public:
       Constructor.
     */
     // NOTE: the default value is not yet passed, so we catch where we use this
-    Application(bool isStandalone /* = true */);
+    Application(bool isStandalone = true);
 
    /**
       Destructor.

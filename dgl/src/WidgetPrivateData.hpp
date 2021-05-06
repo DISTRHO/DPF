@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,61 +17,41 @@
 #ifndef DGL_WIDGET_PRIVATE_DATA_HPP_INCLUDED
 #define DGL_WIDGET_PRIVATE_DATA_HPP_INCLUDED
 
-#include "../TopLevelWidget.hpp"
-#include "../Window.hpp"
+#include "../Widget.hpp"
 
-#include <vector>
+#include <list>
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 struct Widget::PrivateData {
     Widget* const self;
-    Size<uint> size;
-    std::vector<Widget*> subWidgets;
-    TopLevelWidget& topLevelWidget;
-
+    TopLevelWidget* const topLevelWidget;
+    Widget* const groupWidget;
     uint id;
     bool needsScaling;
     bool visible;
+    Size<uint> size;
+    std::list<Widget*> subWidgets;
 
-    PrivateData(Widget* const s, TopLevelWidget& tlw)
-        : self(s),
-          size(0, 0),
-          subWidgets(),
-          topLevelWidget(tlw),
-          id(0),
-          needsScaling(false),
-          visible(true)
-    {
-//         parent._addWidget(self);
-    }
+    PrivateData(Widget* const s, TopLevelWidget* const tlw);
+    PrivateData(Widget* const s, Widget* const g);
+    ~PrivateData();
 
-    ~PrivateData()
-    {
-//         parent._removeWidget(self);
-        subWidgets.clear();
-    }
-
-    // display function is different depending on build type
+    // NOTE display function is different depending on build type
     void display(const uint width, const uint height, const double scaling, const bool renderingSubWidget);
 
-    void displaySubWidgets(const uint width, const uint height, const double scaling)
-    {
-        for (std::vector<Widget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
-        {
-            Widget* const widget(*it);
-            DISTRHO_SAFE_ASSERT_CONTINUE(widget->pData != this);
+    void displaySubWidgets(const uint width, const uint height, const double scaling);
 
-            widget->pData->display(width, height, scaling, true);
-        }
-    }
+    void repaint();
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    static TopLevelWidget* findTopLevelWidget(Widget* const w);
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

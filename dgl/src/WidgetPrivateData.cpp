@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,6 +15,7 @@
  */
 
 #include "WidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 #ifdef DGL_CAIRO
 # include "../Cairo.hpp"
@@ -27,79 +28,67 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-void Widget::PrivateData::display(const uint width,
-                                  const uint height,
-                                  const double scaling,
-                                  const bool renderingSubWidget)
+Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
+    : self(s),
+      topLevelWidget(tlw),
+      groupWidget(nullptr),
+      id(0),
+      needsScaling(false),
+      visible(true),
+      size(0, 0),
+      subWidgets()
 {
-    if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
-        return;
+}
 
-#ifdef DGL_OPENGL
-    bool needsDisableScissor = false;
+Widget::PrivateData::PrivateData(Widget* const s, Widget* const g)
+    : self(s),
+      topLevelWidget(findTopLevelWidget(g)),
+      groupWidget(g),
+      id(0),
+      needsScaling(false),
+      visible(true),
+      size(0, 0),
+      subWidgets()
+{
+    groupWidget->pData->subWidgets.push_back(self);
+}
 
-    // reset color
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+Widget::PrivateData::~PrivateData()
+{
+    if (groupWidget != nullptr)
+        groupWidget->pData->subWidgets.remove(self);
 
-    if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
+    subWidgets.clear();
+}
+
+void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double scaling)
+{
+    for (std::list<Widget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
     {
-        // full viewport size
-        glViewport(0,
-                    -(height * scaling - height),
-                    width * scaling,
-                    height * scaling);
+        Widget* const widget(*it);
+        DISTRHO_SAFE_ASSERT_CONTINUE(widget->pData != this);
+
+        widget->pData->display(width, height, scaling, true);
     }
-    else if (needsScaling)
-    {
-        // limit viewport to widget bounds
-        glViewport(absolutePos.getX(),
-                    height - self->getHeight() - absolutePos.getY(),
-                    self->getWidth(),
-                    self->getHeight());
-    }
-    else
-    {
-        // only set viewport pos
-        glViewport(absolutePos.getX() * scaling,
-                    -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
-                    std::round(width * scaling),
-                    std::round(height * scaling));
+}
 
-        // then cut the outer bounds
-        glScissor(absolutePos.getX() * scaling,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
-                  std::round(self->getWidth() * scaling),
-                  std::round(self->getHeight() * scaling));
+void Widget::PrivateData::repaint()
+{
+    if (groupWidget != nullptr)
+        groupWidget->repaint();
+    else if (topLevelWidget != nullptr)
+        topLevelWidget->repaint();
+}
 
-        glEnable(GL_SCISSOR_TEST);
-        needsDisableScissor = true;
-    }
-#endif
+// -----------------------------------------------------------------------
 
-#ifdef DGL_CAIRO
-    cairo_t* cr = static_cast<const CairoGraphicsContext&>(parent.getGraphicsContext()).cairo;
-    cairo_matrix_t matrix;
-    cairo_get_matrix(cr, &matrix);
-    cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: scaling and cropping
-#endif
-
-    // display widget
-    self->onDisplay();
-
-#ifdef DGL_CAIRO
-    cairo_set_matrix(cr, &matrix);
-#endif
-
-#ifdef DGL_OPENGL
-    if (needsDisableScissor)
-    {
-        glDisable(GL_SCISSOR_TEST);
-        needsDisableScissor = false;
-    }
-#endif
-
-    displaySubWidgets(width, height, scaling);
+TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
+{
+    if (w->pData->topLevelWidget != nullptr)
+        return w->pData->topLevelWidget;
+    if (w->pData->groupWidget != nullptr)
+        return findTopLevelWidget(w->pData->groupWidget);
+    return nullptr;
 }
 
 // -----------------------------------------------------------------------

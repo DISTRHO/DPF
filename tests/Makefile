@@ -25,6 +25,7 @@ ifeq ($(HAVE_CAIRO),true)
 WTESTS   = Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
+TESTS   += Demo
 WTESTS   = Window.opengl
 endif
 ifeq ($(HAVE_VULKAN),true)
@@ -87,12 +88,17 @@ clean:
 	@echo "Compiling $< (Cairo)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
+../build/tests/Demo.cpp.o: Demo.cpp
+	-@mkdir -p ../build/tests
+	@echo "Compiling $< (OpenGL)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
+
 ../build/tests/%.cpp.opengl.o: %.cpp
 	-@mkdir -p ../build/tests
 	@echo "Compiling $< (OpenGL)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
-../build/tests/%.cpp.vulkan.o: Window.cpp
+../build/tests/%.cpp.vulkan.o: %.cpp
 	-@mkdir -p ../build/tests
 	@echo "Compiling $< (Vulkan)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_VULKAN -c -o $@
@@ -107,6 +113,10 @@ clean:
 ../build/tests/%.cairo: ../build/tests/%.cpp.cairo.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
+
+../build/tests/Demo: ../build/tests/Demo.cpp.o
+	@echo "Linking Demo"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 ../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o
 	@echo "Linking $*"

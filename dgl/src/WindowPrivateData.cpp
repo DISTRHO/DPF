@@ -40,8 +40,9 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s)
-    : appData(a),
+Window::PrivateData::PrivateData(Application& a, Window* const s)
+    : app(a),
+      appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
       topLevelWidget(nullptr),
@@ -52,31 +53,37 @@ Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* cons
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
-Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s, Window& transientWindow)
-    : appData(a),
+Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transientWindow)
+    : app(a),
+      appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
       topLevelWidget(nullptr),
       isClosed(true),
       isVisible(false),
-      isEmbed(false)
+      isEmbed(false),
+      scaling(1.0),
+      autoScaling(1.0)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
     puglSetTransientFor(view, transientWindow.getNativeWindowHandle());
 }
 
-Window::PrivateData::PrivateData(Application::PrivateData* const a, Window* const s,
+Window::PrivateData::PrivateData(Application& a, Window* const s,
                                  const uintptr_t parentWindowHandle,
                                  const uint width, const uint height,
-                                 const double scaling, const bool resizable)
-    : appData(a),
+                                 const double scale, const bool resizable)
+    : app(a),
+      appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
       topLevelWidget(nullptr),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
-      isEmbed(parentWindowHandle != 0)
+      isEmbed(parentWindowHandle != 0),
+      scaling(scale),
+      autoScaling(1.0)
 {
     init(width, height, resizable);
 
@@ -257,9 +264,7 @@ void Window::PrivateData::onPuglDisplay()
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
     {
-        topLevelWidget->onDisplayBefore();
         topLevelWidget->onDisplay();
-        topLevelWidget->onDisplayAfter();
     }
     else
 #endif
@@ -274,12 +279,12 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
 
     DGL_DBGp("PUGL: onReshape : %i %i\n", width, height);
 
+    self->onReshape(width, height);
+
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
         topLevelWidget->setSize(width, height);
-    else
 #endif
-        puglFallbackOnResize(view);
 }
 
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);

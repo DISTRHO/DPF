@@ -22,6 +22,7 @@
 START_NAMESPACE_DGL
 
 class Application;
+class TopLevelWidget;
 
 // -----------------------------------------------------------------------
 
@@ -152,6 +153,11 @@ public:
     void setTitle(const char* title);
 
    /**
+      Get the application associated with this window.
+    */
+    Application& getApp() const noexcept;
+
+   /**
       Get the "native" window handle.
       Returned value depends on the platform:
        - HaikuOS: This is a pointer to a `BView`.
@@ -161,10 +167,18 @@ public:
     */
     uintptr_t getNativeWindowHandle() const noexcept;
 
+protected:
+   /**
+      A function called when the window is resized.
+      If there is a top-level widget associated with this window, its size will be set right after this function.
+    */
+    virtual void onReshape(uint width, uint height);
+
 private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Application;
+    friend class TopLevelWidget;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);
 };
@@ -250,11 +264,6 @@ END_NAMESPACE_DGL
     void setTransientWinId(uintptr_t winId);
 
     double getScaling() const noexcept;
-
-#if 0
-    // should this be removed?
-    Application& getApp() const noexcept;
-#endif
 
     const GraphicsContext& getGraphicsContext() const noexcept;
 

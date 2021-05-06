@@ -52,18 +52,10 @@ public:
 
 protected:
    /**
-      A function called before any draw operations begin (in the current event-loop cycle).
-      Can be used to setup any resources for needed drawing.
-      The default implementation simply paints the full Widget contents black.
+      A function called to draw the widget contents.
+      Reimplemented from Widget::onDisplay.
     */
-    virtual void onDisplayBefore();
-
-   /**
-      A function called after all draw operations have ended (in the current event-loop cycle).
-      Can be used to clear any resources setup during onDisplayBefore().
-      The default implementation does nothing.
-    */
-    virtual void onDisplayAfter();
+    void onDisplay() override;
 
    /**
       A function called when the widget is resized.

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,8 +21,11 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 // Widget
 
-Widget::Widget(TopLevelWidget& tlw)
-    : pData(new PrivateData(this, tlw)) {}
+Widget::Widget(Widget* const widgetToGroupTo)
+    : pData(new PrivateData(this, widgetToGroupTo)) {}
+
+Widget::Widget(TopLevelWidget* const topLevelWidget)
+    : pData(new PrivateData(this, topLevelWidget)) {}
 
 Widget::~Widget()
 {
@@ -40,7 +43,7 @@ void Widget::setVisible(bool yesNo)
         return;
 
     pData->visible = yesNo;
-    pData->topLevelWidget.repaint();
+    repaint();
 }
 
 void Widget::show()
@@ -63,7 +66,7 @@ uint Widget::getHeight() const noexcept
     return pData->size.getHeight();
 }
 
-const Size<uint>& Widget::getSize() const noexcept
+const Size<uint> Widget::getSize() const noexcept
 {
     return pData->size;
 }
@@ -80,7 +83,7 @@ void Widget::setWidth(uint width) noexcept
     pData->size.setWidth(width);
     onResize(ev);
 
-    pData->topLevelWidget.repaint();
+    pData->repaint();
 }
 
 void Widget::setHeight(uint height) noexcept
@@ -95,7 +98,7 @@ void Widget::setHeight(uint height) noexcept
     pData->size.setHeight(height);
     onResize(ev);
 
-    pData->topLevelWidget.repaint();
+    pData->repaint();
 }
 
 void Widget::setSize(uint width, uint height) noexcept
@@ -115,17 +118,15 @@ void Widget::setSize(const Size<uint>& size) noexcept
     pData->size = size;
     onResize(ev);
 
-    pData->topLevelWidget.repaint();
+    pData->repaint();
 }
 
-#if 0
-Application& Widget::getParentApp() const noexcept
+Application& Widget::getApp() const noexcept
 {
-    return pData->parent.getApp();
+    return pData->topLevelWidget->getApp();
 }
-#endif
 
-TopLevelWidget& Widget::getTopLevelWidget() const noexcept
+TopLevelWidget* Widget::getTopLevelWidget() const noexcept
 {
     return pData->topLevelWidget;
 }

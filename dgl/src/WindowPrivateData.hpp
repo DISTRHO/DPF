@@ -29,13 +29,13 @@ class TopLevelWidget;
 // -----------------------------------------------------------------------
 
 struct Window::PrivateData : IdleCallback {
-    /** Handy typedef for ... */
-    typedef Application::PrivateData AppData;
+    /* Reference to the DGL Application class this (private data) window associates with. */
+    Application& app;
 
-    /** Direct access to DGL Application private data where we registers ourselves in. */
-    AppData* const appData;
+    /** Direct access to the DGL Application private data where we registers ourselves in. */
+    Application::PrivateData* const appData;
 
-    /** Pointer to the DGL Window class that this private data belongs to. */
+    /** Pointer to the the DGL Window class that this private data belongs to. */
     Window* const self;
 
     /** Pugl view instance. */
@@ -57,14 +57,20 @@ struct Window::PrivateData : IdleCallback {
     /** Whether this Window is embed into another (usually not DGL-controlled) Window. */
     const bool isEmbed;
 
+    /** Scaling to report to widgets on request, purely informational. */
+    double scaling;
+
+    /** Automatic scaling to apply on widgets, implemented internally. */
+    double autoScaling;
+
     /** Constructor for a regular, standalone window. */
-    PrivateData(AppData* appData, Window* self);
+    PrivateData(Application& app, Window* self);
 
     /** Constructor for a regular, standalone window with a transient parent. */
-    PrivateData(AppData* appData, Window* self, Window& transientWindow);
+    PrivateData(Application& app, Window* self, Window& transientWindow);
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
-    PrivateData(AppData* appData, Window* self, uintptr_t parentWindowHandle,
+    PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
                 uint width, uint height, double scaling, bool resizable);
 
     /** Destructor. */

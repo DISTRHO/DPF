@@ -15,9 +15,15 @@
  */
 
 #include "SubWidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
+
+START_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------
 
 SubWidget::SubWidget(Widget* const widgetToGroupTo)
-    : pData(new PrivateData(this, widgetToGroupTo)) {}
+    : Widget(widgetToGroupTo),
+      pData(new PrivateData(this, widgetToGroupTo)) {}
 
 SubWidget::~SubWidget()
 {
@@ -79,9 +85,14 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->absolutePos = pos;
     onPositionChanged(ev);
 
-    getTopLevelWidget().repaint();
+    // repaint the whole thing
+    pData->parent->repaint();
 }
 
 void SubWidget::onPositionChanged(const PositionChangedEvent&)
 {
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+
+END_NAMESPACE_DGL

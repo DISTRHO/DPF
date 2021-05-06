@@ -27,7 +27,7 @@ START_NAMESPACE_DGL
 //     : pData(new PrivateData(transientParentWindow.pData->fAppData, this, transientParentWindow)) {}
 
 Window::Window(Application& app)
-    : pData(new PrivateData(app.pData, this)) {}
+    : pData(new PrivateData(app, this)) {}
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
@@ -35,7 +35,7 @@ Window::Window(Application& app,
                const uint height,
                const double scaling,
                const bool resizable)
-    : pData(new PrivateData(app.pData, this, parentWindowHandle, width, height, scaling, resizable)) {}
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaling, resizable)) {}
 
 Window::~Window()
 {
@@ -123,9 +123,19 @@ void Window::setTitle(const char* const title)
     puglSetWindowTitle(pData->view, title);
 }
 
+Application& Window::getApp() const noexcept
+{
+    return pData->app;
+}
+
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
     return puglGetNativeWindow(pData->view);
+}
+
+void Window::onReshape(const uint width, const uint height)
+{
+    puglFallbackOnResize(pData->view);
 }
 
 #if 0

@@ -15,16 +15,15 @@
  */
 
 #include "../StandaloneWindow.hpp"
-#include "WidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-StandaloneWindow::StandaloneWindow()
-    : Application(true),
-      Window((Application&)*this),
-      fWidget(nullptr) {}
+StandaloneWindow::StandaloneWindow(Application& app)
+    : Window(app),
+      TopLevelWidget(this) {}
 
 void StandaloneWindow::exec()
 {

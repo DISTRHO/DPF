@@ -17,13 +17,14 @@
 #ifndef DGL_CAIRO_HPP_INCLUDED
 #define DGL_CAIRO_HPP_INCLUDED
 
-#include "Base.hpp"
+#include "SubWidget.hpp"
+#include "TopLevelWidget.hpp"
 
 #include <cairo/cairo.h>
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    Cairo Graphics context.
@@ -33,7 +34,49 @@ struct CairoGraphicsContext : GraphicsContext
     cairo_t* handle;
 };
 
-// -----------------------------------------------------------------------
+/**
+   Cairo SubWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
+ */
+class CairoSubWidget : public SubWidget
+{
+public:
+    CairoSubWidget(Widget* widgetToGroupTo)
+        : SubWidget(widgetToGroupTo) {}
+
+protected:
+    void onDisplay() override
+    {
+        const CairoGraphicsContext& context((const CairoGraphicsContext&)getGraphicsContext());
+        onCairoDisplay(context);
+    }
+
+    virtual void onCairoDisplay(const CairoGraphicsContext& context) = 0;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoSubWidget);
+};
+
+/**
+   Cairo TopLevelWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
+ */
+class CairoTopLevelWidget : public TopLevelWidget
+{
+public:
+    CairoTopLevelWidget(Window& windowToMapTo)
+        : TopLevelWidget(windowToMapTo) {}
+
+protected:
+    void onDisplay() override
+    {
+        const CairoGraphicsContext& context((const CairoGraphicsContext&)getGraphicsContext());
+        onCairoDisplay(context);
+    }
+
+    virtual void onCairoDisplay(const CairoGraphicsContext& context) = 0;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoTopLevelWidget);
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

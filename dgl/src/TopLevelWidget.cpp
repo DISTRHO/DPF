@@ -15,14 +15,14 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
-#include "pugl.hpp"
+// #include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
 TopLevelWidget::TopLevelWidget(Window& windowToMapTo)
-    : Widget(*this),
+    : Widget(this),
       pData(new PrivateData(this, windowToMapTo)) {}
 
 TopLevelWidget::~TopLevelWidget()
@@ -30,16 +30,14 @@ TopLevelWidget::~TopLevelWidget()
     delete pData;
 }
 
-void TopLevelWidget::onDisplayBefore()
+void TopLevelWidget::onDisplay()
 {
-}
-
-void TopLevelWidget::onDisplayAfter()
-{
+    pData->display();
 }
 
 void TopLevelWidget::onResize(const ResizeEvent& ev)
 {
+    pData->resize(ev.size.getWidth(), ev.size.getHeight());
     Widget::onResize(ev);
 }
 

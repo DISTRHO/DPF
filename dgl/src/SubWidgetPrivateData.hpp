@@ -18,31 +18,25 @@
 #define DGL_SUBWIDGET_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../SubWidget.hpp"
-#include "../WidgetPrivateData.hpp"
-
-#include <vector>
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 struct SubWidget::PrivateData {
     SubWidget* const self;
-    Widget* const groupWidget;
+    Widget* const parent;
     Point<int> absolutePos;
 
-    PrivateData(SubWidget* const s, Widget* const g)
+    PrivateData(SubWidget* const s, Widget* const p)
         : self(s),
-          groupWidget(g),
-          absolutePos()
-    {
-        groupWidget->pData->subWidgets.push_back(self);
-    }
+          parent(p),
+          absolutePos() {}
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

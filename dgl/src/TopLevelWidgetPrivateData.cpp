@@ -15,16 +15,17 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
-#include "../Window.hpp"
-// #include "pugl.hpp"
+#include "WidgetPrivateData.hpp"
+#include "WindowPrivateData.hpp"
+#include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
 #define FOR_EACH_WIDGET(it) \
-  for (std::list<Widget*>::iterator it = fWidgets.begin(); it != fWidgets.end(); ++it)
+  for (std::list<Widget*>::iterator it = widgets.begin(); it != widgets.end(); ++it)
 
 #define FOR_EACH_WIDGET_INV(rit) \
-  for (std::list<Widget*>::reverse_iterator rit = fWidgets.rbegin(); rit != fWidgets.rend(); ++rit)
+  for (std::list<Widget*>::reverse_iterator rit = widgets.rbegin(); rit != widgets.rend(); ++rit)
 
 // -----------------------------------------------------------------------
 
@@ -35,17 +36,20 @@ TopLevelWidget::PrivateData::PrivateData(TopLevelWidget* const s, Window& w)
 
 void TopLevelWidget::PrivateData::display()
 {
+    puglFallbackOnDisplay(window.pData->view);
+
     if (widgets.size() == 0)
         return;
 
     const Size<uint> size(window.getSize());
-//     const int width  = rect.width;
-//     const int height = rect.height;
+    const uint width     = size.getWidth();
+    const uint height    = size.getHeight();
+    const double scaling = window.pData->autoScaling;
 
     FOR_EACH_WIDGET(it)
     {
         Widget* const widget(*it);
-        widget->pData->display(width, height, fAutoScaling, false);
+        widget->pData->display(width, height, scaling, false);
     }
 }
 
@@ -53,14 +57,14 @@ void TopLevelWidget::PrivateData::resize(const uint width, const uint height)
 {
     if (widgets.size() == 0)
         return;
-
+/*
     FOR_EACH_WIDGET(it)
     {
         Widget* const widget(*it);
 
         if (widget->pData->needsFullViewport)
             widget->setSize(width, height);
-    }
+    }*/
 }
 
 // -----------------------------------------------------------------------

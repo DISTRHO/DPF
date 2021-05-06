@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,7 +17,6 @@
 #ifndef DGL_STANDALONE_WINDOW_HPP_INCLUDED
 #define DGL_STANDALONE_WINDOW_HPP_INCLUDED
 
-#include "Application.hpp"
 #include "TopLevelWidget.hpp"
 #include "Window.hpp"
 
@@ -25,33 +24,54 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class StandaloneWindow : public Application,
-                         public Window
+class StandaloneWindow : public Window,
+                         public TopLevelWidget
 {
 public:
    /**
       Constructor.
     */
-    StandaloneWindow();
+    StandaloneWindow(Application& app)
+      : Window(app),
+        TopLevelWidget((Window&)*this) {}
 
    /**
-      Show window and execute application.
+      Overloaded functions to ensure they apply to the Window class.
     */
-    void exec();
+    bool isVisible() const noexcept { return Window::isVisible(); }
+    void setVisible(bool yesNo) { Window::setVisible(yesNo); }
+    void hide() { Window::hide(); }
+    void show() { Window::show(); }
+    uint getWidth() const noexcept { return Window::getWidth(); }
+    uint getHeight() const noexcept { return Window::getHeight(); }
+    const Size<uint> getSize() const noexcept { return Window::getSize(); }
 
-private:
-    TopLevelWidget* fWidget;
+   /**
+      Overloaded functions to ensure size changes apply on both TopLevelWidget and Window classes.
+    */
+    void setWidth(uint width)
+    {
+        TopLevelWidget::setWidth(width);
+        Window::setWidth(width);
+    }
 
-   /** @internal */
-    void onReshape(uint width, uint height) override;
+    void setHeight(uint height)
+    {
+        TopLevelWidget::setHeight(height);
+        Window::setHeight(height);
+    }
 
-#if 0
-   /** @internal */
-    void _addWidget(TopLevelWidget* widget) override;
+    void setSize(uint width, uint height)
+    {
+        TopLevelWidget::setSize(width, height);
+        Window::setSize(width, height);
+    }
 
-   /** @internal */
-    void _removeWidget(TopLevelWidget* widget) override;
-#endif
+    void setSize(const Size<uint>& size)
+    {
+        TopLevelWidget::setSize(size);
+        Window::setSize(size);
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };
