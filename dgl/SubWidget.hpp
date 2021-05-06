@@ -21,16 +21,20 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    Sub-Widget class.
 
-   This is a handy Widget class that can be freely positioned to be used directly on a Window.
+   This class is the main entry point for creating any reusable widgets from within DGL.
+   It can be freely positioned from within a parent widget, thus being named subwidget.
 
-   This widget takes the full size of the Window it is mapped to.
-   Sub-widgets can be added on top of this top-level widget, by creating them with this class as parent.
-   Doing so allows for custom position and sizes.
+   Many subwidgets can share the same parent, and subwidgets themselves can also have its own subwidgets.
+   It is subwidgets all the way down.
+
+   TODO check absolute vs relative position and see what makes more sense.
+
+   @see CairoSubWidget
  */
 class SubWidget : public Widget
 {
@@ -70,7 +74,7 @@ public:
    /**
       Get absolute position.
     */
-    const Point<int>& getAbsolutePos() const noexcept;
+    Point<int> getAbsolutePos() const noexcept;
 
    /**
       Set absolute X.
@@ -104,7 +108,7 @@ private:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SubWidget)
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

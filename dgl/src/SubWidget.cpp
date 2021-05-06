@@ -33,8 +33,7 @@ SubWidget::~SubWidget()
 template<typename T>
 bool SubWidget::contains(T x, T y) const noexcept
 {
-    const Size<uint>& size(getSize());
-    return (x >= 0 && y >= 0 && static_cast<uint>(x) < size.getWidth() && static_cast<uint>(y) < size.getHeight());
+    return Rectangle<double>(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight()).contains(x, y);
 }
 
 template<typename T>
@@ -53,7 +52,7 @@ int SubWidget::getAbsoluteY() const noexcept
     return pData->absolutePos.getY();
 }
 
-const Point<int>& SubWidget::getAbsolutePos() const noexcept
+Point<int> SubWidget::getAbsolutePos() const noexcept
 {
     return pData->absolutePos;
 }

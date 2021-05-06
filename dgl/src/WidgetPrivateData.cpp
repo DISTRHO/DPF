@@ -31,7 +31,7 @@ START_NAMESPACE_DGL
 Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
     : self(s),
       topLevelWidget(tlw),
-      groupWidget(nullptr),
+      parentGroupWidget(nullptr),
       id(0),
       needsScaling(false),
       visible(true),
@@ -43,20 +43,20 @@ Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
 Widget::PrivateData::PrivateData(Widget* const s, Widget* const g)
     : self(s),
       topLevelWidget(findTopLevelWidget(g)),
-      groupWidget(g),
+      parentGroupWidget(g),
       id(0),
       needsScaling(false),
       visible(true),
       size(0, 0),
       subWidgets()
 {
-    groupWidget->pData->subWidgets.push_back(self);
+    parentGroupWidget->pData->subWidgets.push_back(self);
 }
 
 Widget::PrivateData::~PrivateData()
 {
-    if (groupWidget != nullptr)
-        groupWidget->pData->subWidgets.remove(self);
+    if (parentGroupWidget != nullptr)
+        parentGroupWidget->pData->subWidgets.remove(self);
 
     subWidgets.clear();
 }
@@ -74,8 +74,8 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
 
 void Widget::PrivateData::repaint()
 {
-    if (groupWidget != nullptr)
-        groupWidget->repaint();
+    if (parentGroupWidget != nullptr)
+        parentGroupWidget->repaint();
     else if (topLevelWidget != nullptr)
         topLevelWidget->repaint();
 }
@@ -84,10 +84,12 @@ void Widget::PrivateData::repaint()
 
 TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
 {
+    if (TopLevelWidget* const tlw = dynamic_cast<TopLevelWidget*>(w))
+        return tlw;
     if (w->pData->topLevelWidget != nullptr)
         return w->pData->topLevelWidget;
-    if (w->pData->groupWidget != nullptr)
-        return findTopLevelWidget(w->pData->groupWidget);
+    if (w->pData->parentGroupWidget != nullptr)
+        return findTopLevelWidget(w->pData->parentGroupWidget);
     return nullptr;
 }
 

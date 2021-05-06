@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,7 +21,6 @@
 // DGL Stuff
 
 #include "../../dgl/SubWidget.hpp"
-// #include "Window.hpp"
 
 START_NAMESPACE_DGL
 
@@ -31,6 +30,12 @@ START_NAMESPACE_DGL
 class ExampleColorWidget : public SubWidget,
                            public IdleCallback
 {
+    char cur;
+    bool reverse;
+    int r, g, b;
+
+    Rectangle<uint> bgFull, bgSmall;
+
 public:
     ExampleColorWidget(TopLevelWidget* const topWidget)
         : SubWidget(topWidget),
@@ -40,7 +45,7 @@ public:
     {
         setSize(300, 300);
 
-//         groupWidget->getApp().addIdleCallback(this);
+//         topWidget->getApp().addIdleCallback(this);
     }
 
 protected:
@@ -119,12 +124,6 @@ protected:
         // small bg, centered 2/3 size
         bgSmall = Rectangle<uint>(width/6, height/6, width*2/3, height*2/3);
     }
-
-    char cur;
-    bool reverse;
-    int r, g, b;
-
-    Rectangle<uint> bgFull, bgSmall;
 };
 
 // ------------------------------------------------------
