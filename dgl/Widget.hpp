@@ -164,7 +164,7 @@ public:
 
    /**
       Get top-level widget, as passed directly in the constructor
-      or going up the chain of group widgets until it finds the top-level widget.
+      or going up the chain of group widgets until it finds the top-level one.
     */
     TopLevelWidget* getTopLevelWidget() const noexcept;
 

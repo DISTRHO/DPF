@@ -171,6 +171,7 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* view)
 
 // --------------------------------------------------------------------------------------------------------------------
 // DGL specific, build-specific fallback drawing
+
 void puglFallbackOnDisplay(PuglView*)
 {
 #ifdef DGL_OPENGL
@@ -196,28 +197,6 @@ void puglFallbackOnResize(PuglView* view)
 #endif
 }
 
-END_NAMESPACE_DGL
-
 // --------------------------------------------------------------------------------------------------------------------
-// extra, build-specific stuff
-
-#include "WindowPrivateData.hpp"
-
-#ifdef DGL_CAIRO
-# include "../Cairo.hpp"
-#endif
-
-START_NAMESPACE_DGL
-
-const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
-{
-    GraphicsContext& context((GraphicsContext&)graphicsContext);
-#ifdef DGL_CAIRO
-    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
-#endif
-    return context;
-}
 
 END_NAMESPACE_DGL
-
-// --------------------------------------------------------------------------------------------------------------------

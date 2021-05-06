@@ -88,4 +88,15 @@ void Widget::PrivateData::display(const uint width,
 
 // -----------------------------------------------------------------------
 
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    GraphicsContext& context((GraphicsContext&)graphicsContext);
+#ifdef DGL_CAIRO
+    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
+#endif
+    return context;
+}
+
+// -----------------------------------------------------------------------
+
 END_NAMESPACE_DGL

@@ -16,6 +16,7 @@
 
 #include "../OpenGL.hpp"
 #include "WidgetPrivateData.hpp"
+#include "WindowPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
@@ -166,6 +167,13 @@ void Widget::PrivateData::display(const uint width,
 //     }
 
     displaySubWidgets(width, height, scaling);
+}
+
+// -----------------------------------------------------------------------
+
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    return (const GraphicsContext&)graphicsContext;
 }
 
 // -----------------------------------------------------------------------
