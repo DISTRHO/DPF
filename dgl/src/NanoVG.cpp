@@ -53,6 +53,7 @@ DGL_EXT(PFNGLUNIFORM2FVPROC,               glUniform2fv)
 DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 # undef DGL_EXT
 #endif
 
@@ -119,6 +120,7 @@ DGL_EXT(PFNGLUNIFORM2FVPROC,               glUniform2fv)
 DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 # undef DGL_EXT
     needsInit = false;
 #endif
