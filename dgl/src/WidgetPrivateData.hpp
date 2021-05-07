@@ -33,16 +33,18 @@ struct Widget::PrivateData {
     bool needsScaling;
     bool visible;
     Size<uint> size;
-    std::list<Widget*> subWidgets;
+    std::list<SubWidget*> subWidgets;
 
-    PrivateData(Widget* const s, TopLevelWidget* const tlw);
-    PrivateData(Widget* const s, Widget* const pgw);
+    // called via TopLevelWidget
+    explicit PrivateData(Widget* const s, TopLevelWidget* const tlw);
+    // called via SubWidget
+    explicit PrivateData(Widget* const s, Widget* const pgw);
     ~PrivateData();
 
-    // NOTE display function is different depending on build type
-    void display(const uint width, const uint height, const double scaling, const bool renderingSubWidget);
+    // NOTE display function is different depending on build type, must call displaySubWidgets at the end
+//     void display(uint width, uint height, double autoScaling, bool renderingSubWidget);
 
-    void displaySubWidgets(const uint width, const uint height, const double scaling);
+    void displaySubWidgets(uint width, uint height, double autoScaling);
 
     void repaint();
 

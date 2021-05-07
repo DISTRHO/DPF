@@ -50,19 +50,6 @@ public:
     */
     virtual ~TopLevelWidget();
 
-protected:
-   /**
-      A function called to draw the widget contents.
-      Reimplemented from Widget::onDisplay.
-    */
-    void onDisplay() override;
-
-   /**
-      A function called when the widget is resized.
-      Reimplemented from Widget::onResize.
-    */
-    void onResize(const ResizeEvent&) override;
-
 private:
     struct PrivateData;
     PrivateData* const pData;

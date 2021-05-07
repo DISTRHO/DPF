@@ -66,7 +66,7 @@ void Rectangle<T>::_draw(const bool outline)
 
 void Widget::PrivateData::display(const uint width,
                                   const uint height,
-                                  const double scaling,
+                                  const double autoScaling,
                                   const bool renderingSubWidget)
 {
     if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
@@ -76,14 +76,14 @@ void Widget::PrivateData::display(const uint width,
     cairo_matrix_t matrix;
     cairo_get_matrix(cr, &matrix);
     cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: scaling and cropping
+    // TODO: autoScaling and cropping
 
     // display widget
     self->onDisplay();
 
     cairo_set_matrix(cr, &matrix);
 
-    displaySubWidgets(width, height, scaling);
+    displaySubWidgets(width, height, autoScaling);
 }
 
 // -----------------------------------------------------------------------

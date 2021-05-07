@@ -28,10 +28,11 @@ struct SubWidget::PrivateData {
     Widget* const parent;
     Point<int> absolutePos;
 
-    PrivateData(SubWidget* const s, Widget* const p)
-        : self(s),
-          parent(p),
-          absolutePos() {}
+    explicit PrivateData(SubWidget* const s, Widget* const p);
+    ~PrivateData();
+
+    // NOTE display function is different depending on build type, must call displaySubWidgets at the end
+    void display(uint width, uint height, double autoScaling);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };

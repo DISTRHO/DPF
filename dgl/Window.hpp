@@ -167,12 +167,22 @@ public:
     */
     uintptr_t getNativeWindowHandle() const noexcept;
 
+    void repaint() noexcept;
+    void repaint(const Rectangle<uint>& rect) noexcept;
+
 protected:
    /**
       A function called when the window is resized.
       If there is a top-level widget associated with this window, its size will be set right after this function.
     */
     virtual void onReshape(uint width, uint height);
+
+   /**
+      A function called when the window is attempted to be closed.
+      Returning true closes the window, which is the default behaviour.
+      Override this method and return false to prevent the window from being closed by the user.
+    */
+    virtual bool onClose();
 
 private:
     struct PrivateData;
@@ -247,8 +257,6 @@ END_NAMESPACE_DGL
     void exec(bool lockWait = false);
 
     void focus();
-    void repaint() noexcept;
-    void repaint(const Rectangle<uint>& rect) noexcept;
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     bool openFileBrowser(const FileBrowserOptions& options);
@@ -272,8 +280,6 @@ END_NAMESPACE_DGL
 
 
 protected:
-    virtual void onClose();
-
 #ifndef DGL_FILE_BROWSER_DISABLED
     virtual void fileBrowserSelected(const char* filename);
 #endif

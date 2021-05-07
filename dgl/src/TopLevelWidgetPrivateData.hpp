@@ -27,12 +27,12 @@ START_NAMESPACE_DGL
 
 struct TopLevelWidget::PrivateData {
     TopLevelWidget* const self;
+    Widget* const selfw;
     Window& window;
-    std::list<Widget*> widgets;
 
-    PrivateData(TopLevelWidget* const s, Window& w);
+    explicit PrivateData(TopLevelWidget* const s, Window& w);
+    ~PrivateData();
     void display();
-    void resize(uint width, uint height);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };

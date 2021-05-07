@@ -53,7 +53,7 @@ struct Application::PrivateData {
     std::list<DGL_NAMESPACE::IdleCallback*> idleCallbacks;
 
     /** Constructor and destructor */
-    PrivateData(const bool standalone);
+    explicit PrivateData(bool standalone);
     ~PrivateData();
 
     /** Flag one window as shown, which increments @a visibleWindows.
@@ -67,7 +67,7 @@ struct Application::PrivateData {
     void oneWindowClosed() noexcept;
 
     /** Run Pugl world update for @a timeoutInMs, and then each idle callback in order of registration. */
-    void idle(const uint timeoutInMs);
+    void idle(uint timeoutInMs);
 
     /** Set flag indicating application is quitting, and close all windows in reverse order of registration.
         For standalone mode only. */

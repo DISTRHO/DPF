@@ -15,6 +15,7 @@
  */
 
 #include "../OpenGL.hpp"
+#include "SubWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
 #include "WindowPrivateData.hpp"
 
@@ -110,63 +111,123 @@ void Rectangle<T>::_draw(const bool outline)
 
 // -----------------------------------------------------------------------
 
+#if 0
 void Widget::PrivateData::display(const uint width,
                                   const uint height,
-                                  const double scaling,
+                                  const double autoScaling,
                                   const bool renderingSubWidget)
 {
+    printf("Widget::PrivateData::display INIT\n");
+
     if (/*(skipDisplay && ! renderingSubWidget) ||*/ size.isInvalid() || ! visible)
         return;
 
-//     bool needsDisableScissor = false;
+    bool needsDisableScissor = false;
 
     // reset color
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-//     if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
+#if 0
+    if (/*needsFullViewport ||*/ (absolutePos.isZero() && size == Size<uint>(width, height)))
+#endif
     {
         // full viewport size
         glViewport(0,
-                    -(height * scaling - height),
-                    width * scaling,
-                    height * scaling);
+                    -(height * autoScaling - height),
+                    width * autoScaling,
+                    height * autoScaling);
     }
-//     else if (needsScaling)
-//     {
-//         // limit viewport to widget bounds
-//         glViewport(absolutePos.getX(),
-//                     height - self->getHeight() - absolutePos.getY(),
-//                     self->getWidth(),
-//                     self->getHeight());
-//     }
-//     else
-//     {
-//         // only set viewport pos
-//         glViewport(absolutePos.getX() * scaling,
-//                     -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
-//                     std::round(width * scaling),
-//                     std::round(height * scaling));
-//
-//         // then cut the outer bounds
-//         glScissor(absolutePos.getX() * scaling,
-//                   height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
-//                   std::round(self->getWidth() * scaling),
-//                   std::round(self->getHeight() * scaling));
-//
-//         glEnable(GL_SCISSOR_TEST);
-//         needsDisableScissor = true;
-//     }
+#if 0
+    else if (needsScaling)
+    {
+        // limit viewport to widget bounds
+        glViewport(absolutePos.getX(),
+                   height - self->getHeight() - absolutePos.getY(),
+                   self->getWidth(),
+                   self->getHeight());
+    }
+    else
+    {
+        // only set viewport pos
+        glViewport(absolutePos.getX() * autoScaling,
+                    -std::round((height * autoScaling - height) + (absolutePos.getY() * autoScaling)),
+                    std::round(width * autoScaling),
+                    std::round(height * autoScaling));
+
+        // then cut the outer bounds
+        glScissor(absolutePos.getX() * autoScaling,
+                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaling),
+                  std::round(self->getWidth() * autoScaling),
+                  std::round(self->getHeight() * autoScaling));
+
+        glEnable(GL_SCISSOR_TEST);
+        needsDisableScissor = true;
+    }
+#endif
 
     // display widget
     self->onDisplay();
 
-//     if (needsDisableScissor)
-//     {
-//         glDisable(GL_SCISSOR_TEST);
-//         needsDisableScissor = false;
-//     }
+    if (needsDisableScissor)
+    {
+        glDisable(GL_SCISSOR_TEST);
+        needsDisableScissor = false;
+    }
 
-    displaySubWidgets(width, height, scaling);
+    displaySubWidgets(width, height, autoScaling);
+}
+#endif
+
+void SubWidget::PrivateData::display(uint width, uint height, double autoScaling)
+{
+    bool needsDisableScissor = false;
+
+    if (absolutePos.isZero() && self->getSize() == Size<uint>(width, height))
+    {
+        // full viewport size
+        glViewport(0,
+                    -(height * autoScaling - height),
+                    width * autoScaling,
+                    height * autoScaling);
+    }
+    /*
+    else if (needsScaling)
+    {
+        // limit viewport to widget bounds
+        glViewport(absolutePos.getX(),
+                   height - self->getHeight() - absolutePos.getY(),
+                   self->getWidth(),
+                   self->getHeight());
+    }
+    */
+    else
+    {
+        // only set viewport pos
+        glViewport(absolutePos.getX() * autoScaling,
+                    -std::round((height * autoScaling - height) + (absolutePos.getY() * autoScaling)),
+                    std::round(width * autoScaling),
+                    std::round(height * autoScaling));
+
+        // then cut the outer bounds
+        glScissor(absolutePos.getX() * autoScaling,
+                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaling),
+                  std::round(self->getWidth() * autoScaling),
+                  std::round(self->getHeight() * autoScaling));
+
+        glEnable(GL_SCISSOR_TEST);
+        needsDisableScissor = true;
+    }
+
+    // display widget
+    self->onDisplay();
+
+    if (needsDisableScissor)
+    {
+        glDisable(GL_SCISSOR_TEST);
+        needsDisableScissor = false;
+    }
+
+//     displaySubWidgets(width, height, autoScaling);
 }
 
 // -----------------------------------------------------------------------

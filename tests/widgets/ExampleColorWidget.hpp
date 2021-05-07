@@ -41,7 +41,7 @@ public:
         : SubWidget(topWidget),
           cur('r'),
           reverse(false),
-          r(0), g(0), b(0)
+          r(0), g(99), b(32)
     {
         setSize(300, 300);
 

@@ -15,7 +15,6 @@
  */
 
 #include "SubWidgetPrivateData.hpp"
-#include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 

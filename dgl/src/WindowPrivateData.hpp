@@ -64,14 +64,14 @@ struct Window::PrivateData : IdleCallback {
     double autoScaling;
 
     /** Constructor for a regular, standalone window. */
-    PrivateData(Application& app, Window* self);
+    explicit PrivateData(Application& app, Window* self);
 
     /** Constructor for a regular, standalone window with a transient parent. */
-    PrivateData(Application& app, Window* self, Window& transientWindow);
+    explicit PrivateData(Application& app, Window* self, Window& transientWindow);
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
-    PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
-                uint width, uint height, double scaling, bool resizable);
+    explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
+                         uint width, uint height, double scaling, bool resizable);
 
     /** Destructor. */
     ~PrivateData() override;
@@ -98,6 +98,7 @@ struct Window::PrivateData : IdleCallback {
     // pugl events
     void onPuglDisplay();
     void onPuglReshape(int width, int height);
+    void onPuglClose();
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);

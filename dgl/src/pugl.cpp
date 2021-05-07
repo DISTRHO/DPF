@@ -170,9 +170,9 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// DGL specific, build-specific fallback drawing
+// DGL specific, build-specific drawing prepare
 
-void puglFallbackOnDisplay(PuglView*)
+void puglOnDisplayPrepare(PuglView*)
 {
 #ifdef DGL_OPENGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

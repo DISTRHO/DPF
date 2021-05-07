@@ -17,13 +17,6 @@
 #include "WidgetPrivateData.hpp"
 #include "../TopLevelWidget.hpp"
 
-#ifdef DGL_CAIRO
-# include "../Cairo.hpp"
-#endif
-#ifdef DGL_OPENGL
-# include "../OpenGL.hpp"
-#endif
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -36,9 +29,7 @@ Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
       needsScaling(false),
       visible(true),
       size(0, 0),
-      subWidgets()
-{
-}
+      subWidgets() {}
 
 Widget::PrivateData::PrivateData(Widget* const s, Widget* const g)
     : self(s),
@@ -48,44 +39,43 @@ Widget::PrivateData::PrivateData(Widget* const s, Widget* const g)
       needsScaling(false),
       visible(true),
       size(0, 0),
-      subWidgets()
-{
-    parentGroupWidget->pData->subWidgets.push_back(self);
-}
+      subWidgets() {}
 
 Widget::PrivateData::~PrivateData()
 {
-    if (parentGroupWidget != nullptr)
-        parentGroupWidget->pData->subWidgets.remove(self);
-
     subWidgets.clear();
 }
 
 void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double scaling)
 {
-    for (std::list<Widget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
-    {
-        Widget* const widget(*it);
-        DISTRHO_SAFE_ASSERT_CONTINUE(widget->pData != this);
+    printf("Widget::PrivateData::displaySubWidgets INIT | %lu\n", subWidgets.size());
 
-        widget->pData->display(width, height, scaling, true);
+    if (subWidgets.size() == 0)
+        return;
+
+    for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
+    {
+        SubWidget* const subwidget(*it);
+        printf("Widget::PrivateData::displaySubWidgets %i %i -> %p\n", width, height, subwidget);
+
+        subwidget->pData->display(width, height, scaling);
     }
 }
 
 void Widget::PrivateData::repaint()
 {
-    if (parentGroupWidget != nullptr)
-        parentGroupWidget->repaint();
-    else if (topLevelWidget != nullptr)
-        topLevelWidget->repaint();
+//     if (parentGroupWidget != nullptr)
+//         parentGroupWidget->repaint();
+//     else if (topLevelWidget != nullptr)
+//         topLevelWidget->repaint();
 }
 
 // -----------------------------------------------------------------------
 
 TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
 {
-    if (TopLevelWidget* const tlw = dynamic_cast<TopLevelWidget*>(w))
-        return tlw;
+//     if (TopLevelWidget* const tlw = dynamic_cast<TopLevelWidget*>(w))
+//         return tlw;
     if (w->pData->topLevelWidget != nullptr)
         return w->pData->topLevelWidget;
     if (w->pData->parentGroupWidget != nullptr)

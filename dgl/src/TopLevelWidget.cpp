@@ -15,7 +15,6 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
-// #include "pugl.hpp"
 
 START_NAMESPACE_DGL
 
@@ -28,17 +27,6 @@ TopLevelWidget::TopLevelWidget(Window& windowToMapTo)
 TopLevelWidget::~TopLevelWidget()
 {
     delete pData;
-}
-
-void TopLevelWidget::onDisplay()
-{
-    pData->display();
-}
-
-void TopLevelWidget::onResize(const ResizeEvent& ev)
-{
-    pData->resize(ev.size.getWidth(), ev.size.getHeight());
-    Widget::onResize(ev);
 }
 
 // -----------------------------------------------------------------------

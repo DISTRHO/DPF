@@ -21,11 +21,11 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 // Widget
 
-Widget::Widget(Widget* const widgetToGroupTo)
-    : pData(new PrivateData(this, widgetToGroupTo)) {}
-
 Widget::Widget(TopLevelWidget* const topLevelWidget)
     : pData(new PrivateData(this, topLevelWidget)) {}
+
+Widget::Widget(Widget* const widgetToGroupTo)
+    : pData(new PrivateData(this, widgetToGroupTo)) {}
 
 Widget::~Widget()
 {

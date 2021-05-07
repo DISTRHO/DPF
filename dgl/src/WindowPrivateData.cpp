@@ -15,7 +15,7 @@
  */
 
 #include "WindowPrivateData.hpp"
-#include "../TopLevelWidget.hpp"
+#include "TopLevelWidgetPrivateData.hpp"
 
 #include "pugl.hpp"
 
@@ -255,22 +255,19 @@ void Window::PrivateData::idleCallback()
 //
 //     if (fModal.enabled && fModal.parent != nullptr)
 //         fModal.parent->windowSpecificIdle();
+//     self->repaint();
 }
 
 // -----------------------------------------------------------------------
 
 void Window::PrivateData::onPuglDisplay()
 {
+    puglOnDisplayPrepare(view);
+
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
-    {
-        topLevelWidget->onDisplay();
-    }
-    else
+        topLevelWidget->pData->display();
 #endif
-    {
-        puglFallbackOnDisplay(view);
-    }
 }
 
 void Window::PrivateData::onPuglReshape(const int width, const int height)
@@ -285,6 +282,22 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
     if (topLevelWidget != nullptr)
         topLevelWidget->setSize(width, height);
 #endif
+}
+
+void Window::PrivateData::onPuglClose()
+{
+    DGL_DBG("PUGL: onClose\n");
+
+//         if (fModal.enabled)
+//             exec_fini();
+
+    if (! self->onClose())
+        return;
+
+//     if (fModal.childFocus != nullptr)
+//         fModal.childFocus->fSelf->onClose();
+
+    close();
 }
 
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
@@ -308,6 +321,11 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< View must be drawn, a #PuglEventExpose
     case PUGL_EXPOSE:
         pData->onPuglDisplay();
+        break;
+
+    ///< View will be closed, a #PuglEventClose
+    case PUGL_CLOSE:
+        pData->onPuglClose();
         break;
 
     // TODO
@@ -516,21 +534,6 @@ void Window::PrivateData::removeWidget(Widget* const widget)
 }
 
 // -----------------------------------------------------------------------
-
-void Window::PrivateData::onPuglClose()
-{
-    DGL_DBG("PUGL: onClose\n");
-
-//         if (fModal.enabled)
-//             exec_fini();
-
-    fSelf->onClose();
-
-    if (fModal.childFocus != nullptr)
-        fModal.childFocus->fSelf->onClose();
-
-    close();
-}
 
 void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
 {

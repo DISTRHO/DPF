@@ -14,49 +14,26 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_PUGL_HPP_INCLUDED
-#define DGL_PUGL_HPP_INCLUDED
-
-#include "../Base.hpp"
-
-/* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
-#include <cstdbool>
-#include <cstddef>
-#include <cstdint>
+#include "SubWidgetPrivateData.hpp"
+#include "WidgetPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#define PUGL_DISABLE_DEPRECATED
-#include "pugl-upstream/include/pugl/pugl.h"
+SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const p)
+    : self(s),
+      parent(p),
+      absolutePos()
+{
+    parent->pData->subWidgets.push_back(self);
+}
 
-PUGL_BEGIN_DECLS
-
-// missing in pugl, directly returns title char* pointer
-PUGL_API const char*
-puglGetWindowTitle(const PuglView* view);
-
-// set window size without changing frame x/y position
-PUGL_API PuglStatus
-puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
-
-// DGL specific, assigns backend that matches current DGL build
-PUGL_API void
-puglSetMatchingBackendForCurrentBuild(PuglView* view);
-
-// DGL specific, build-specific drawing prepare
-PUGL_API void
-puglOnDisplayPrepare(PuglView* view);
-
-// DGL specific, build-specific fallback resize
-PUGL_API void
-puglFallbackOnResize(PuglView* view);
-
-PUGL_END_DECLS
+SubWidget::PrivateData::~PrivateData()
+{
+    parent->pData->subWidgets.remove(self);
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-#endif // DGL_PUGL_HPP_INCLUDED

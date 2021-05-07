@@ -133,9 +133,30 @@ uintptr_t Window::getNativeWindowHandle() const noexcept
     return puglGetNativeWindow(pData->view);
 }
 
+void Window::repaint() noexcept
+{
+    puglPostRedisplay(pData->view);
+}
+
+void Window::repaint(const Rectangle<uint>& rect) noexcept
+{
+    const PuglRect prect = {
+        static_cast<double>(rect.getX()),
+        static_cast<double>(rect.getY()),
+        static_cast<double>(rect.getWidth()),
+        static_cast<double>(rect.getHeight()),
+    };
+    puglPostRedisplayRect(pData->view, prect);
+}
+
 void Window::onReshape(const uint width, const uint height)
 {
     puglFallbackOnResize(pData->view);
+}
+
+bool Window::onClose()
+{
+    return true;
 }
 
 #if 0
@@ -152,22 +173,6 @@ void Window::focus()
         puglRaiseWindow(pData->fView);
 
     puglGrabFocus(pData->fView);
-}
-
-void Window::repaint() noexcept
-{
-    puglPostRedisplay(pData->fView);
-}
-
-void Window::repaint(const Rectangle<uint>& rect) noexcept
-{
-    const PuglRect prect = {
-        static_cast<double>(rect.getX()),
-        static_cast<double>(rect.getY()),
-        static_cast<double>(rect.getWidth()),
-        static_cast<double>(rect.getHeight()),
-    };
-    puglPostRedisplayRect(pData->fView, prect);
 }
 
 bool Window::isResizable() const noexcept
@@ -266,10 +271,6 @@ void Window::removeIdleCallback(IdleCallback* const callback)
 }
 
 // -----------------------------------------------------------------------
-
-void Window::onClose()
-{
-}
 
 #ifndef DGL_FILE_BROWSER_DISABLED
 void Window::fileBrowserSelected(const char*)

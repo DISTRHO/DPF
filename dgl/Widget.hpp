@@ -63,14 +63,14 @@ using namespace Events;
 class Widget
 {
    /**
-      Private constructor, reserved for SubWidget class.
-    */
-    explicit Widget(Widget* widgetToGroupTo);
-
-   /**
       Private constructor, reserved for TopLevelWidget class.
     */
     explicit Widget(TopLevelWidget* topLevelWidget);
+
+   /**
+      Private constructor, reserved for SubWidget class.
+    */
+    explicit Widget(Widget* widgetToGroupTo);
 
 public:
    /**

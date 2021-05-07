@@ -31,40 +31,36 @@ START_NAMESPACE_DGL
 
 TopLevelWidget::PrivateData::PrivateData(TopLevelWidget* const s, Window& w)
     : self(s),
-      window(w),
-      widgets() {}
+      selfw(s),
+      window(w)
+{
+    window.pData->topLevelWidget = self;
+}
+
+TopLevelWidget::PrivateData::~PrivateData()
+{
+    // FIXME?
+    window.pData->topLevelWidget = nullptr;
+}
 
 void TopLevelWidget::PrivateData::display()
 {
-    puglFallbackOnDisplay(window.pData->view);
-
-    if (widgets.size() == 0)
-        return;
+    printf("TopLevelWidget::PrivateData::display INIT\n");
 
     const Size<uint> size(window.getSize());
-    const uint width     = size.getWidth();
-    const uint height    = size.getHeight();
-    const double scaling = window.pData->autoScaling;
+    const uint width         = size.getWidth();
+    const uint height        = size.getHeight();
+    const double autoScaling = window.pData->autoScaling;
+    printf("TopLevelWidget::PrivateData::display %i %i\n", width, height);
 
-    FOR_EACH_WIDGET(it)
-    {
-        Widget* const widget(*it);
-        widget->pData->display(width, height, scaling, false);
-    }
-}
+    // full viewport size
+    glViewport(0, -(height * autoScaling - height), width * autoScaling, height * autoScaling);
 
-void TopLevelWidget::PrivateData::resize(const uint width, const uint height)
-{
-    if (widgets.size() == 0)
-        return;
-/*
-    FOR_EACH_WIDGET(it)
-    {
-        Widget* const widget(*it);
+    // main widget drawing
+    self->onDisplay();
 
-        if (widget->pData->needsFullViewport)
-            widget->setSize(width, height);
-    }*/
+    // now draw subwidgets if there are any
+    selfw->pData->displaySubWidgets(width, height, autoScaling);
 }
 
 // -----------------------------------------------------------------------
