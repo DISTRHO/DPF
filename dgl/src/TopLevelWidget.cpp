@@ -15,6 +15,7 @@
  */
 
 #include "TopLevelWidgetPrivateData.hpp"
+#include "../Window.hpp"
 
 START_NAMESPACE_DGL
 
