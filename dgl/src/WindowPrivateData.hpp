@@ -18,6 +18,7 @@
 #define DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Window.hpp"
+#include "../Events.hpp"
 #include "ApplicationPrivateData.hpp"
 
 #include "pugl.hpp"
@@ -107,6 +108,7 @@ struct Window::PrivateData : IdleCallback {
     void onPuglReshape(int width, int height);
     void onPuglCreate();
     void onPuglClose();
+    void onPuglMouse(const Events::MouseEvent& ev);
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);

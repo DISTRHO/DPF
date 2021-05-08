@@ -323,6 +323,19 @@ void Window::PrivateData::onPuglClose()
     close();
 }
 
+void Window::PrivateData::onPuglMouse(const Events::MouseEvent& ev)
+{
+    DGL_DBGp("PUGL: onMouse : %i %i %f %f\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->mouseEvent(ev);
+#endif
+}
+
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
 
 PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
@@ -354,6 +367,20 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_CREATE:
         pData->onPuglCreate();
         break;
+
+    case PUGL_BUTTON_PRESS:   ///< Mouse button pressed, a #PuglEventButton
+    case PUGL_BUTTON_RELEASE: ///< Mouse button released, a #PuglEventButton
+    {
+        Events::MouseEvent ev;
+        ev.mod    = event->button.state;
+        ev.flags  = event->button.flags;
+        ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
+        ev.button = event->button.button;
+        ev.press  = event->type == PUGL_BUTTON_PRESS;
+        ev.pos    = Point<double>(event->button.x, event->button.y);
+        pData->onPuglMouse(ev);
+        break;
+    }
 
     // TODO
     default:

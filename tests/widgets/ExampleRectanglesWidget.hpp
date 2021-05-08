@@ -56,7 +56,7 @@ public:
 
     void init()
     {
-        this->setSize(300, 300);
+        BaseWidget::setSize(300, 300);
 
         for (int i=0; i<9; ++i)
             clicked[i] = false;
@@ -65,8 +65,8 @@ public:
 protected:
     void onDisplay() override
     {
-        const uint width  = this->getWidth();
-        const uint height = this->getHeight();
+        const uint width  = BaseWidget::getWidth();
+        const uint height = BaseWidget::getHeight();
 
         Rectangle<double> r;
 
@@ -115,8 +115,8 @@ protected:
         if (ev.button != 1 || ! ev.press)
             return false;
 
-        const uint width  = this->getWidth();
-        const uint height = this->getHeight();
+        const uint width  = BaseWidget::getWidth();
+        const uint height = BaseWidget::getHeight();
 
         Rectangle<double> r;
 
@@ -134,7 +134,7 @@ protected:
             if (r.contains(ev.pos))
             {
                 clicked[0+i] = !clicked[0+i];
-                this->repaint();
+                BaseWidget::repaint();
                 break;
             }
 
@@ -144,7 +144,7 @@ protected:
             if (r.contains(ev.pos))
             {
                 clicked[3+i] = !clicked[3+i];
-                this->repaint();
+                BaseWidget::repaint();
                 break;
             }
 
@@ -154,7 +154,7 @@ protected:
             if (r.contains(ev.pos))
             {
                 clicked[6+i] = !clicked[6+i];
-                this->repaint();
+                BaseWidget::repaint();
                 break;
             }
         }

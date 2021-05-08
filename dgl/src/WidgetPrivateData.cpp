@@ -15,9 +15,16 @@
  */
 
 #include "WidgetPrivateData.hpp"
+#include "../SubWidget.hpp"
 #include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
+
+#define FOR_EACH_SUBWIDGET(it) \
+  for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
+
+#define FOR_EACH_SUBWIDGET_INV(rit) \
+  for (std::list<SubWidget*>::reverse_iterator rit = subWidgets.rbegin(); rit != subWidgets.rend(); ++rit)
 
 // -----------------------------------------------------------------------
 
@@ -48,17 +55,40 @@ Widget::PrivateData::~PrivateData()
 
 void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double scaling)
 {
-    printf("Widget::PrivateData::displaySubWidgets INIT | %lu\n", subWidgets.size());
-
     if (subWidgets.size() == 0)
         return;
 
     for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
     {
         SubWidget* const subwidget(*it);
-        printf("Widget::PrivateData::displaySubWidgets %i %i -> %p\n", width, height, subwidget);
 
-        subwidget->pData->display(width, height, scaling);
+        if (subwidget->isVisible())
+            subwidget->pData->display(width, height, scaling);
+    }
+}
+
+void Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
+{
+    if (! visible)
+        return;
+    if (subWidgets.size() == 0)
+        return;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onMouse(ev))
+            return;
     }
 }
 
@@ -66,8 +96,6 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
 
 TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
 {
-//     if (TopLevelWidget* const tlw = dynamic_cast<TopLevelWidget*>(w))
-//         return tlw;
     if (w->pData->topLevelWidget != nullptr)
         return w->pData->topLevelWidget;
     if (w->pData->parentWidget != nullptr)

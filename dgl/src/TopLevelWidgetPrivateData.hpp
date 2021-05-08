@@ -33,6 +33,7 @@ struct TopLevelWidget::PrivateData {
     explicit PrivateData(TopLevelWidget* const s, Window& w);
     ~PrivateData();
     void display();
+    void mouseEvent(const Events::MouseEvent& ev);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };

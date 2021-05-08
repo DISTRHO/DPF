@@ -100,9 +100,11 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->parentWidget->repaint();
 }
 
-
 void SubWidget::repaint() noexcept
 {
+    if (! isVisible())
+        return;
+
     if (TopLevelWidget* const topw = getTopLevelWidget())
         topw->repaint(getConstrainedAbsoluteArea());
 }

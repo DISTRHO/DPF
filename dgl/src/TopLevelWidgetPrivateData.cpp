@@ -21,12 +21,6 @@
 
 START_NAMESPACE_DGL
 
-#define FOR_EACH_WIDGET(it) \
-  for (std::list<Widget*>::iterator it = widgets.begin(); it != widgets.end(); ++it)
-
-#define FOR_EACH_WIDGET_INV(rit) \
-  for (std::list<Widget*>::reverse_iterator rit = widgets.rbegin(); rit != widgets.rend(); ++rit)
-
 // -----------------------------------------------------------------------
 
 TopLevelWidget::PrivateData::PrivateData(TopLevelWidget* const s, Window& w)
@@ -45,13 +39,10 @@ TopLevelWidget::PrivateData::~PrivateData()
 
 void TopLevelWidget::PrivateData::display()
 {
-    printf("TopLevelWidget::PrivateData::display INIT\n");
-
     const Size<uint> size(window.getSize());
     const uint width         = size.getWidth();
     const uint height        = size.getHeight();
     const double autoScaling = window.pData->autoScaling;
-    printf("TopLevelWidget::PrivateData::display %i %i\n", width, height);
 
     // full viewport size
     glViewport(0, -(height * autoScaling - height), width * autoScaling, height * autoScaling);
@@ -61,6 +52,26 @@ void TopLevelWidget::PrivateData::display()
 
     // now draw subwidgets if there are any
     selfw->pData->displaySubWidgets(width, height, autoScaling);
+}
+
+void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
+{
+    Events::MouseEvent rev = ev;
+
+    const double autoScaling = window.pData->autoScaling;
+
+    if (autoScaling != 1.0)
+    {
+        rev.pos.setX(ev.pos.getX() / autoScaling);
+        rev.pos.setY(ev.pos.getY() / autoScaling);
+    }
+
+    // give top-level widget chance to catch this event first
+    if (self->onMouse(ev))
+        return;
+
+    // propagate event to all subwidgets recursively
+    selfw->pData->giveMouseEventForSubWidgets(rev);
 }
 
 // -----------------------------------------------------------------------

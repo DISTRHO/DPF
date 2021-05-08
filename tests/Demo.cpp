@@ -80,7 +80,6 @@ protected:
     void onDisplay() override
     {
         const int iconSize = bgIcon.getWidth();
-        printf("LEFT SIDE WIDGET onDisplay %i\n", iconSize);
 
         glColor3f(0.027f, 0.027f, 0.027f);
         Rectangle<uint>(0, 0, getSize()).draw();
@@ -201,8 +200,8 @@ protected:
 
     void onResize(const ResizeEvent& ev) override
     {
-        const int width  = ev.size.getWidth();
-        const int height = ev.size.getHeight();
+        const uint width  = ev.size.getWidth();
+        const uint height = ev.size.getHeight();
 
         bgIcon.setWidth(width-4);
         bgIcon.setHeight(width-4);
@@ -299,11 +298,6 @@ protected:
 
     void onDisplay() override
     {
-        static int counter = 0;
-        printf("print %i\n", ++counter);
-
-        glColor3f(0.471f, 0.971f, 0.171f);
-        Rectangle<uint>(0, 0, getSize()).draw();
     }
 
     void onReshape(uint width, uint height) override
@@ -341,28 +335,6 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// Testing StandaloneWindow, for custom local widget drawing code
-
-class TestingWidgetStandaloneWindow : public StandaloneWindow
-{
-public:
-    static constexpr const char* kExampleWidgetName = "Testing";
-
-      TestingWidgetStandaloneWindow(Application& app)
-        : StandaloneWindow(app)
-      {
-      }
-
-protected:
-    void onDisplay() override
-    {
-        glColor3f(0.5f, 0.3f, 0.9f);
-        Rectangle<uint>(0, 0, 500, 500).draw();
-        // getWidth(), getHeight()
-    }
-};
-
-// --------------------------------------------------------------------------------------------------------------------
 // Special handy function that runs a StandaloneWindow inside the function scope
 
 template <class ExampleWidgetStandaloneWindow>
@@ -396,8 +368,6 @@ int main(int argc, char* argv[])
             createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "shapes") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleShapesStandaloneWindow>(app);
-        else if (std::strcmp(argv[1], "testing") == 0)
-            createAndShowExampleWidgetStandaloneWindow<TestingWidgetStandaloneWindow>(app);
         else
             d_stderr2("Invalid demo mode, must be one of: color, rectangles, shapes");
     }
