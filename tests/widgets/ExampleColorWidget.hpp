@@ -41,32 +41,37 @@ class ExampleColorWidget : public BaseWidget,
 public:
     static constexpr const char* kExampleWidgetName = "Color";
 
+    // SubWidget
     explicit ExampleColorWidget(Widget* const parent)
         : BaseWidget(parent),
           cur('r'),
           reverse(false),
-          r(0), g(99), b(32)
-    {
-        init();
-    }
-
-    explicit ExampleColorWidget(Window& windowToMapTo)
-        : BaseWidget(windowToMapTo)
-    {
-        init();
-    }
-
-    explicit ExampleColorWidget(Application& app)
-        : BaseWidget(app)
-    {
-        init();
-    }
-
-    void init()
+          r(0), g(0), b(0)
     {
         BaseWidget::setSize(300, 300);
+        parent->getApp().addIdleCallback(this);
+    }
 
-//         topWidget->getApp().addIdleCallback(this);
+    // TopLevelWidget
+    explicit ExampleColorWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo),
+          cur('r'),
+          reverse(false),
+          r(0), g(0), b(0)
+    {
+        BaseWidget::setSize(300, 300);
+        windowToMapTo.getApp().addIdleCallback(this);
+    }
+
+    // StandaloneWindow
+    explicit ExampleColorWidget(Application& app)
+        : BaseWidget(app),
+          cur('r'),
+          reverse(false),
+          r(0), g(0), b(0)
+    {
+        BaseWidget::setSize(300, 300);
+        app.addIdleCallback(this);
     }
 
 protected:
