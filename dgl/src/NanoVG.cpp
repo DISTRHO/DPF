@@ -89,6 +89,10 @@ DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 static NVGcontext* nvgCreateGL_helper(int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
+# ifdef __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
     static bool needsInit = true;
 # define DGL_EXT(PROC, func) \
       if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
@@ -123,6 +127,9 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 # undef DGL_EXT
     needsInit = false;
+# ifdef __GNUC__
+#  pragma GCC diagnostic pop
+# endif
 #endif
     return nvgCreateGL(flags);
 }
