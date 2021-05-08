@@ -21,13 +21,15 @@
 // DGL Stuff
 
 #include "../../dgl/SubWidget.hpp"
+#include "../../dgl/TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
 // ------------------------------------------------------
 // our widget
 
-class ExampleColorWidget : public SubWidget,
+template <class BaseWidget>
+class ExampleColorWidget : public BaseWidget,
                            public IdleCallback
 {
     char cur;
@@ -37,13 +39,32 @@ class ExampleColorWidget : public SubWidget,
     Rectangle<uint> bgFull, bgSmall;
 
 public:
-    ExampleColorWidget(TopLevelWidget* const topWidget)
-        : SubWidget(topWidget),
+    static constexpr const char* kExampleWidgetName = "Color";
+
+    explicit ExampleColorWidget(Widget* const parent)
+        : BaseWidget(parent),
           cur('r'),
           reverse(false),
           r(0), g(99), b(32)
     {
-        setSize(300, 300);
+        init();
+    }
+
+    explicit ExampleColorWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo)
+    {
+        init();
+    }
+
+    explicit ExampleColorWidget(Application& app)
+        : BaseWidget(app)
+    {
+        init();
+    }
+
+    void init()
+    {
+        BaseWidget::setSize(300, 300);
 
 //         topWidget->getApp().addIdleCallback(this);
     }
@@ -99,7 +120,7 @@ protected:
             break;
         }
 
-        repaint();
+        BaseWidget::repaint();
     }
 
     void onDisplay() override
@@ -125,6 +146,10 @@ protected:
         bgSmall = Rectangle<uint>(width/6, height/6, width*2/3, height*2/3);
     }
 };
+
+typedef ExampleColorWidget<SubWidget> ExampleColorSubWidget;
+typedef ExampleColorWidget<TopLevelWidget> ExampleColorTopLevelWidget;
+typedef ExampleColorWidget<StandaloneWindow> ExampleColorStandaloneWindow;
 
 // ------------------------------------------------------
 

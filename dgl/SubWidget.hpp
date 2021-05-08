@@ -42,7 +42,7 @@ public:
    /**
       Constructor.
     */
-    explicit SubWidget(Widget* widgetToGroupTo);
+    explicit SubWidget(Widget* parentWidget);
 
    /**
       Destructor.
@@ -77,6 +77,19 @@ public:
     Point<int> getAbsolutePos() const noexcept;
 
    /**
+      Get absolute area of this subwidget.
+      This is the same as `Rectangle<int>(getAbsolutePos(), getSize());`
+      @see getConstrainedAbsoluteArea()
+    */
+    Rectangle<int> getAbsoluteArea() const noexcept;
+
+   /**
+      Get absolute area of this subwidget, with special consideration for not allowing negative values.
+      @see getAbsoluteArea()
+    */
+    Rectangle<uint> getConstrainedAbsoluteArea() const noexcept;
+
+   /**
       Set absolute X.
     */
     void setAbsoluteX(int x) noexcept;
@@ -95,6 +108,11 @@ public:
       Set absolute position.
     */
     void setAbsolutePos(const Point<int>& pos) noexcept;
+
+   /**
+      Request repaint of this subwidget's area to the window this widget belongs to.
+    */
+    void repaint() noexcept override;
 
 protected:
    /**

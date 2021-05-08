@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,40 +20,55 @@
 // ------------------------------------------------------
 // DGL Stuff
 
-#include "Widget.hpp"
-#include "Window.hpp"
+#include "../../dgl/SubWidget.hpp"
+#include "../../dgl/TopLevelWidget.hpp"
+
+START_NAMESPACE_DGL
 
 // ------------------------------------------------------
 // our widget
 
-class ExampleRectanglesWidget : public Widget
+template <class BaseWidget>
+class ExampleRectanglesWidget : public BaseWidget
 {
-public:
-    ExampleRectanglesWidget(Window& parent)
-        : Widget(parent)
-    {
-        setSize(300, 300);
+    bool clicked[9];
 
-        for (int i=0; i<9; ++i)
-            fClicked[i] = false;
+public:
+    static constexpr const char* const kExampleWidgetName = "Rectangles";
+
+    explicit ExampleRectanglesWidget(Widget* const parentWidget)
+        : BaseWidget(parentWidget)
+    {
+        init();
     }
 
-    ExampleRectanglesWidget(Widget* groupWidget)
-        : Widget(groupWidget)
+    explicit ExampleRectanglesWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo)
     {
-        setSize(300, 300);
+        init();
+    }
+
+    explicit ExampleRectanglesWidget(Application& app)
+        : BaseWidget(app)
+    {
+        init();
+    }
+
+    void init()
+    {
+        this->setSize(300, 300);
 
         for (int i=0; i<9; ++i)
-            fClicked[i] = false;
+            clicked[i] = false;
     }
 
 protected:
     void onDisplay() override
     {
-        const int width  = getWidth();
-        const int height = getHeight();
+        const uint width  = this->getWidth();
+        const uint height = this->getHeight();
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         r.setWidth(width/3 - 6);
         r.setHeight(height/3 - 6);
@@ -66,7 +81,7 @@ protected:
             // 1st
             r.setY(3);
 
-            if (fClicked[0+i])
+            if (clicked[0+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
@@ -76,7 +91,7 @@ protected:
             // 2nd
             r.setY(3 + height/3);
 
-            if (fClicked[3+i])
+            if (clicked[3+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
@@ -86,7 +101,7 @@ protected:
             // 3rd
             r.setY(3 + height*2/3);
 
-            if (fClicked[6+i])
+            if (clicked[6+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
@@ -100,10 +115,10 @@ protected:
         if (ev.button != 1 || ! ev.press)
             return false;
 
-        const int width  = getWidth();
-        const int height = getHeight();
+        const uint width  = this->getWidth();
+        const uint height = this->getHeight();
 
-        Rectangle<int> r;
+        Rectangle<double> r;
 
         r.setWidth(width/3 - 6);
         r.setHeight(height/3 - 6);
@@ -118,8 +133,8 @@ protected:
 
             if (r.contains(ev.pos))
             {
-                fClicked[0+i] = !fClicked[0+i];
-                repaint();
+                clicked[0+i] = !clicked[0+i];
+                this->repaint();
                 break;
             }
 
@@ -128,8 +143,8 @@ protected:
 
             if (r.contains(ev.pos))
             {
-                fClicked[3+i] = !fClicked[3+i];
-                repaint();
+                clicked[3+i] = !clicked[3+i];
+                this->repaint();
                 break;
             }
 
@@ -138,19 +153,22 @@ protected:
 
             if (r.contains(ev.pos))
             {
-                fClicked[6+i] = !fClicked[6+i];
-                repaint();
+                clicked[6+i] = !clicked[6+i];
+                this->repaint();
                 break;
             }
         }
 
         return true;
     }
-
-private:
-    bool fClicked[9];
 };
 
+typedef ExampleRectanglesWidget<SubWidget> ExampleRectanglesSubWidget;
+typedef ExampleRectanglesWidget<TopLevelWidget> ExampleRectanglesTopLevelWidget;
+typedef ExampleRectanglesWidget<StandaloneWindow> ExampleRectanglesStandaloneWindow;
+
 // ------------------------------------------------------
+
+END_NAMESPACE_DGL
 
 #endif // EXAMPLE_RECTANGLES_WIDGET_HPP_INCLUDED

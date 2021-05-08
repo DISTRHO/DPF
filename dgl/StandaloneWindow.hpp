@@ -45,6 +45,7 @@ public:
     uint getWidth() const noexcept { return Window::getWidth(); }
     uint getHeight() const noexcept { return Window::getHeight(); }
     const Size<uint> getSize() const noexcept { return Window::getSize(); }
+    void repaint() noexcept { Window::repaint(); }
 
    /**
       Overloaded functions to ensure size changes apply on both TopLevelWidget and Window classes.

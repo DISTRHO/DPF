@@ -28,7 +28,7 @@ START_NAMESPACE_DGL
 struct Widget::PrivateData {
     Widget* const self;
     TopLevelWidget* const topLevelWidget;
-    Widget* const parentGroupWidget;
+    Widget* const parentWidget;
     uint id;
     bool needsScaling;
     bool visible;
@@ -38,15 +38,13 @@ struct Widget::PrivateData {
     // called via TopLevelWidget
     explicit PrivateData(Widget* const s, TopLevelWidget* const tlw);
     // called via SubWidget
-    explicit PrivateData(Widget* const s, Widget* const pgw);
+    explicit PrivateData(Widget* const s, Widget* const pw);
     ~PrivateData();
 
     // NOTE display function is different depending on build type, must call displaySubWidgets at the end
 //     void display(uint width, uint height, double autoScaling, bool renderingSubWidget);
 
     void displaySubWidgets(uint width, uint height, double autoScaling);
-
-    void repaint();
 
     static TopLevelWidget* findTopLevelWidget(Widget* const w);
 

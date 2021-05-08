@@ -247,6 +247,12 @@ bool Size<T>::isInvalid() const noexcept
 }
 
 template<typename T>
+Size<int> Size<T>::toInt() const noexcept
+{
+    return Size<int>(fWidth, fHeight);
+}
+
+template<typename T>
 Size<T> Size<T>::operator+(const Size<T>& size) noexcept
 {
     return Size<T>(fWidth+size.fWidth, fHeight+size.fHeight);

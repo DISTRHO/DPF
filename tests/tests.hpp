@@ -31,11 +31,13 @@ START_NAMESPACE_DGL
 class ApplicationQuitter : public Thread
 {
     Application& app;
+    const int numSecondsToWait;
 
 public:
-    ApplicationQuitter(Application& a)
+    ApplicationQuitter(Application& a, const int s = 2)
         : Thread("ApplicationQuitter"),
-          app(a)
+          app(a),
+          numSecondsToWait(s)
     {
         startThread();
     }
@@ -43,7 +45,7 @@ public:
 private:
     void run() override
     {
-        d_sleep(2);
+        d_sleep(numSecondsToWait);
         app.quit();
     }
 };

@@ -48,7 +48,10 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       topLevelWidget(nullptr),
       isClosed(true),
       isVisible(false),
-      isEmbed(false)
+      isEmbed(false),
+      scaling(1.0),
+      autoScaling(1.0),
+      pendingVisibility(kPendingVisibilityNone)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
@@ -63,7 +66,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
       isVisible(false),
       isEmbed(false),
       scaling(1.0),
-      autoScaling(1.0)
+      autoScaling(1.0),
+      pendingVisibility(kPendingVisibilityNone)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
@@ -83,7 +87,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
       scaling(scale),
-      autoScaling(1.0)
+      autoScaling(1.0),
+      pendingVisibility(kPendingVisibilityNone)
 {
     init(width, height, resizable);
 
@@ -132,6 +137,9 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     puglSetHandle(view, this);
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
+    puglSetViewHint(view, PUGL_DEPTH_BITS, 8);
+    puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
+    // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
 // #ifndef DGL_FILE_BROWSER_DISABLED
 //     puglSetFileSelectedFunc(fView, fileBrowserSelectedCallback);
@@ -174,14 +182,9 @@ void Window::PrivateData::show()
         isClosed = false;
         appData->oneWindowShown();
 
+        pendingVisibility = kPendingVisibilityShow;
         const PuglStatus status = puglRealize(view);
         DISTRHO_SAFE_ASSERT_INT_RETURN(status == PUGL_SUCCESS, status, close());
-
-#ifdef DISTRHO_OS_WINDOWS
-        puglWin32ShowWindowCentered(view);
-#else
-        puglShow(view);
-#endif
     }
     else
     {
@@ -197,14 +200,17 @@ void Window::PrivateData::show()
 
 void Window::PrivateData::hide()
 {
-    if (! isVisible)
-    {
-        DGL_DBG("Window hide matches current visible state, ignoring request\n");
-        return;
-    }
     if (isEmbed)
     {
         DGL_DBG("Window hide cannot be called when embedded\n");
+        return;
+    }
+
+    pendingVisibility = kPendingVisibilityHide;
+
+    if (! isVisible)
+    {
+        DGL_DBG("Window hide matches current visible state, ignoring request\n");
         return;
     }
 
@@ -262,6 +268,8 @@ void Window::PrivateData::idleCallback()
 
 void Window::PrivateData::onPuglDisplay()
 {
+    DGL_DBGp("PUGL: onPuglDisplay : %p\n", topLevelWidget);
+
     puglOnDisplayPrepare(view);
 
 #ifndef DPF_TEST_WINDOW_CPP
@@ -281,6 +289,21 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
         topLevelWidget->setSize(width, height);
+#endif
+}
+
+void Window::PrivateData::onPuglCreate()
+{
+    DGL_DBGp("PUGL: onPuglCreate %i\n", pendingVisibility);
+
+    if (pendingVisibility != kPendingVisibilityShow)
+        return;
+
+    pendingVisibility = kPendingVisibilityNone;
+#ifdef DISTRHO_OS_WINDOWS
+    puglWin32ShowWindowCentered(view);
+#else
+    puglShow(view);
 #endif
 }
 
@@ -326,6 +349,10 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< View will be closed, a #PuglEventClose
     case PUGL_CLOSE:
         pData->onPuglClose();
+        break;
+
+    case PUGL_CREATE:
+        pData->onPuglCreate();
         break;
 
     // TODO

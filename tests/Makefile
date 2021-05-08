@@ -93,6 +93,11 @@ clean:
 	@echo "Compiling $< (OpenGL)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
+../build/tests/Testing.cpp.o: Testing.cpp
+	-@mkdir -p ../build/tests
+	@echo "Compiling $< (OpenGL)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
+
 ../build/tests/%.cpp.opengl.o: %.cpp
 	-@mkdir -p ../build/tests
 	@echo "Compiling $< (OpenGL)"
@@ -116,6 +121,10 @@ clean:
 
 ../build/tests/Demo: ../build/tests/Demo.cpp.o
 	@echo "Linking Demo"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
+
+../build/tests/Testing: ../build/tests/Testing.cpp.o
+	@echo "Linking Testing"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 ../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o

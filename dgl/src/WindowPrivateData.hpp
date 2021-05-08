@@ -63,6 +63,13 @@ struct Window::PrivateData : IdleCallback {
     /** Automatic scaling to apply on widgets, implemented internally. */
     double autoScaling;
 
+    /** Pending state of visility, used for the action to be triggered during Pugl create events. */
+    enum PendingVisibility {
+        kPendingVisibilityNone,
+        kPendingVisibilityShow,
+        kPendingVisibilityHide
+    } pendingVisibility;
+
     /** Constructor for a regular, standalone window. */
     explicit PrivateData(Application& app, Window* self);
 
@@ -98,6 +105,7 @@ struct Window::PrivateData : IdleCallback {
     // pugl events
     void onPuglDisplay();
     void onPuglReshape(int width, int height);
+    void onPuglCreate();
     void onPuglClose();
 
     // Pugl event handling entry point

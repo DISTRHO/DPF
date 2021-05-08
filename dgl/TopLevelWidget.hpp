@@ -50,6 +50,14 @@ public:
     */
     virtual ~TopLevelWidget();
 
+   /**
+      Get the application associated with this top-level widget's window.
+    */
+    Application& getApp() const noexcept;
+
+    void repaint() noexcept;
+    void repaint(const Rectangle<uint>& rect) noexcept;
+
 private:
     struct PrivateData;
     PrivateData* const pData;

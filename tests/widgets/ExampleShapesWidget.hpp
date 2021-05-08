@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,25 +20,41 @@
 // ------------------------------------------------------
 // DGL Stuff
 
-#include "Widget.hpp"
-#include "Window.hpp"
+#include "../../dgl/SubWidget.hpp"
+#include "../../dgl/TopLevelWidget.hpp"
+
+START_NAMESPACE_DGL
 
 // ------------------------------------------------------
 // our widget
 
-class ExampleShapesWidget : public Widget
+template <class BaseWidget>
+class ExampleShapesWidget : public BaseWidget
 {
+    Rectangle<int> bg;
+    Rectangle<int> rect;
+    Triangle<int> tri;
+    Circle<int> cir;
+
 public:
-    ExampleShapesWidget(Window& parent)
-        : Widget(parent)
+    static constexpr const char* const kExampleWidgetName = "Shapes";
+
+    explicit ExampleShapesWidget(Widget* const parentWidget)
+        : BaseWidget(parentWidget)
     {
-        setSize(300, 300);
+        this->setSize(300, 300);
     }
 
-    ExampleShapesWidget(Widget* groupWidget)
-        : Widget(groupWidget)
+    explicit ExampleShapesWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo)
     {
-        setSize(300, 300);
+        this->setSize(300, 300);
+    }
+
+    explicit ExampleShapesWidget(Application& app)
+        : BaseWidget(app)
+    {
+        this->setSize(300, 300);
     }
 
 protected:
@@ -95,14 +111,14 @@ protected:
         // circle
         cir = Circle<int>(width/2, height*2/3, height/6, 300);
     }
-
-private:
-    Rectangle<int> bg;
-    Rectangle<int> rect;
-    Triangle<int> tri;
-    Circle<int> cir;
 };
 
+typedef ExampleShapesWidget<SubWidget> ExampleShapesSubWidget;
+typedef ExampleShapesWidget<TopLevelWidget> ExampleShapesTopLevelWidget;
+typedef ExampleShapesWidget<StandaloneWindow> ExampleShapesStandaloneWindow;
+
 // ------------------------------------------------------
+
+END_NAMESPACE_DGL
 
 #endif // EXAMPLE_SHAPES_WIDGET_HPP_INCLUDED

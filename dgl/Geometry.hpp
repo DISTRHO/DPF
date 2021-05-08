@@ -210,6 +210,8 @@ public:
     */
     bool isInvalid() const noexcept;
 
+    Size<int> toInt() const noexcept;
+
     Size<T> operator+(const Size<T>& size) noexcept;
     Size<T> operator-(const Size<T>& size) noexcept;
     Size<T>& operator=(const Size<T>& size) noexcept;

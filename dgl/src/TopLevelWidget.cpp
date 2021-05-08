@@ -29,6 +29,21 @@ TopLevelWidget::~TopLevelWidget()
     delete pData;
 }
 
+Application& TopLevelWidget::getApp() const noexcept
+{
+    return pData->window.getApp();
+}
+
+void TopLevelWidget::repaint() noexcept
+{
+    pData->window.repaint();
+}
+
+void TopLevelWidget::repaint(const Rectangle<uint>& rect) noexcept
+{
+    pData->window.repaint(rect);
+}
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

@@ -169,10 +169,10 @@ public:
     TopLevelWidget* getTopLevelWidget() const noexcept;
 
    /**
-      Tell this widget's window to repaint itself.
-      FIXME better description, partial redraw
+      Request repaint of this widget's area to the window this widget belongs to.
+      On the raw Widget class this function does nothing.
     */
-    void repaint() noexcept;
+    virtual void repaint() noexcept;
 
 protected:
    /**

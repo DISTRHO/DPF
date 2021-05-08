@@ -24,17 +24,17 @@ START_NAMESPACE_DGL
 Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
     : self(s),
       topLevelWidget(tlw),
-      parentGroupWidget(nullptr),
+      parentWidget(nullptr),
       id(0),
       needsScaling(false),
       visible(true),
       size(0, 0),
       subWidgets() {}
 
-Widget::PrivateData::PrivateData(Widget* const s, Widget* const g)
+Widget::PrivateData::PrivateData(Widget* const s, Widget* const pw)
     : self(s),
-      topLevelWidget(findTopLevelWidget(g)),
-      parentGroupWidget(g),
+      topLevelWidget(findTopLevelWidget(pw)),
+      parentWidget(pw),
       id(0),
       needsScaling(false),
       visible(true),
@@ -62,14 +62,6 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
     }
 }
 
-void Widget::PrivateData::repaint()
-{
-//     if (parentGroupWidget != nullptr)
-//         parentGroupWidget->repaint();
-//     else if (topLevelWidget != nullptr)
-//         topLevelWidget->repaint();
-}
-
 // -----------------------------------------------------------------------
 
 TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
@@ -78,8 +70,8 @@ TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
 //         return tlw;
     if (w->pData->topLevelWidget != nullptr)
         return w->pData->topLevelWidget;
-    if (w->pData->parentGroupWidget != nullptr)
-        return findTopLevelWidget(w->pData->parentGroupWidget);
+    if (w->pData->parentWidget != nullptr)
+        return findTopLevelWidget(w->pData->parentWidget);
     return nullptr;
 }
 

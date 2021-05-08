@@ -15,6 +15,7 @@
  */
 
 #include "WidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
@@ -24,8 +25,8 @@ START_NAMESPACE_DGL
 Widget::Widget(TopLevelWidget* const topLevelWidget)
     : pData(new PrivateData(this, topLevelWidget)) {}
 
-Widget::Widget(Widget* const widgetToGroupTo)
-    : pData(new PrivateData(this, widgetToGroupTo)) {}
+Widget::Widget(Widget* const parentWidget)
+    : pData(new PrivateData(this, parentWidget)) {}
 
 Widget::~Widget()
 {
@@ -83,7 +84,7 @@ void Widget::setWidth(uint width) noexcept
     pData->size.setWidth(width);
     onResize(ev);
 
-    pData->repaint();
+    repaint();
 }
 
 void Widget::setHeight(uint height) noexcept
@@ -98,7 +99,7 @@ void Widget::setHeight(uint height) noexcept
     pData->size.setHeight(height);
     onResize(ev);
 
-    pData->repaint();
+    repaint();
 }
 
 void Widget::setSize(uint width, uint height) noexcept
@@ -118,7 +119,7 @@ void Widget::setSize(const Size<uint>& size) noexcept
     pData->size = size;
     onResize(ev);
 
-    pData->repaint();
+    repaint();
 }
 
 Application& Widget::getApp() const noexcept
@@ -133,8 +134,6 @@ TopLevelWidget* Widget::getTopLevelWidget() const noexcept
 
 void Widget::repaint() noexcept
 {
-    // FIXME partial repaint
-    // pData->topLevelWidget.repaint();
 }
 
 uint Widget::getId() const noexcept

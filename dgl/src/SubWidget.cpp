@@ -15,14 +15,15 @@
  */
 
 #include "SubWidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
-SubWidget::SubWidget(Widget* const widgetToGroupTo)
-    : Widget(widgetToGroupTo),
-      pData(new PrivateData(this, widgetToGroupTo)) {}
+SubWidget::SubWidget(Widget* const parentWidget)
+    : Widget(parentWidget),
+      pData(new PrivateData(this, parentWidget)) {}
 
 SubWidget::~SubWidget()
 {
@@ -56,6 +57,18 @@ Point<int> SubWidget::getAbsolutePos() const noexcept
     return pData->absolutePos;
 }
 
+Rectangle<int> SubWidget::getAbsoluteArea() const noexcept
+{
+    return Rectangle<int>(getAbsolutePos(), getSize().toInt());
+}
+
+Rectangle<uint> SubWidget::getConstrainedAbsoluteArea() const noexcept
+{
+    return Rectangle<uint>(std::max(0, getAbsoluteX()),
+                           std::max(0, getAbsoluteY()),
+                           getSize());
+}
+
 void SubWidget::setAbsoluteX(int x) noexcept
 {
     setAbsolutePos(Point<int>(x, getAbsoluteY()));
@@ -83,8 +96,15 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->absolutePos = pos;
     onPositionChanged(ev);
 
-    // repaint the whole thing
-    pData->parent->repaint();
+    // repaint the bounds of parent
+    pData->parentWidget->repaint();
+}
+
+
+void SubWidget::repaint() noexcept
+{
+    if (TopLevelWidget* const topw = getTopLevelWidget())
+        topw->repaint(getConstrainedAbsoluteArea());
 }
 
 void SubWidget::onPositionChanged(const PositionChangedEvent&)

@@ -37,12 +37,12 @@
 #include "dgl/StandaloneWindow.hpp"
 
 #include "widgets/ExampleColorWidget.hpp"
+#include "widgets/ExampleRectanglesWidget.hpp"
+#include "widgets/ExampleShapesWidget.hpp"
 
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
-
-// ------------------------------------------------------
 // Left side tab-like widget
 
 class LeftSideWidget : public SubWidget
@@ -225,8 +225,8 @@ private:
 #endif
 };
 
-// ------------------------------------------------------
-// Our Demo Window
+// --------------------------------------------------------------------------------------------------------------------
+// Main Demo Window, having a left-side tab-like widget and main area for current widget
 
 class DemoWindow : public StandaloneWindow,
                    public LeftSideWidget::Callback
@@ -234,23 +234,27 @@ class DemoWindow : public StandaloneWindow,
     static const int kSidebarWidth = 81;
 
 public:
+    static constexpr const char* const kExampleWidgetName = "Demo";
+
     DemoWindow(Application& app)
         : StandaloneWindow(app),
           wColor(this),
+          wRects(this),
+          wShapes(this),
           wLeft(this, this),
           curWidget(nullptr)
     {
         wColor.hide();
 //         wImages.hide();
-//         wRects.hide();
-//         wShapes.hide();
+        wRects.hide();
+        wShapes.hide();
 //         wText.hide();
 //         //wPerf.hide();
 
         wColor.setAbsoluteX(kSidebarWidth);
 //         wImages.setAbsoluteX(kSidebarWidth);
-//         wRects.setAbsoluteX(kSidebarWidth);
-//         wShapes.setAbsoluteX(kSidebarWidth);
+        wRects.setAbsoluteX(kSidebarWidth);
+        wShapes.setAbsoluteX(kSidebarWidth);
 //         wText.setAbsoluteX(kSidebarWidth);
         wLeft.setAbsolutePos(2, 2);
 //         wPerf.setAbsoluteY(5);
@@ -265,10 +269,7 @@ protected:
     void curPageChanged(int curPage) override
     {
         if (curWidget != nullptr)
-        {
             curWidget->hide();
-            curWidget = nullptr;
-        }
 
         switch (curPage)
         {
@@ -278,15 +279,18 @@ protected:
 //         case 1:
 //             curWidget = &wImages;
 //             break;
-//         case 2:
-//             curWidget = &wRects;
-//             break;
-//         case 3:
-//             curWidget = &wShapes;
-//             break;
+        case 2:
+            curWidget = &wRects;
+            break;
+        case 3:
+            curWidget = &wShapes;
+            break;
 //         case 4:
 //             curWidget = &wText;
 //             break;
+        default:
+            curWidget = nullptr;
+            break;
         }
 
         if (curWidget != nullptr)
@@ -312,8 +316,8 @@ protected:
         Size<uint> size(width-kSidebarWidth, height);
         wColor.setSize(size);
 //         wImages.setSize(size);
-//         wRects.setSize(size);
-//         wShapes.setSize(size);
+        wRects.setSize(size);
+        wShapes.setSize(size);
 //         wText.setSize(size);
 
         wLeft.setSize(kSidebarWidth-4, height-4);
@@ -324,10 +328,10 @@ protected:
     }
 
 private:
-    ExampleColorWidget wColor;
+    ExampleColorSubWidget wColor;
 //     ExampleImagesWidget wImages;
-//     ExampleRectanglesWidget wRects;
-//     ExampleShapesWidget wShapes;
+    ExampleRectanglesSubWidget wRects;
+    ExampleShapesSubWidget wShapes;
 //     ExampleTextWidget wText;
     LeftSideWidget wLeft;
     //ResizeHandle wRezHandle;
@@ -337,18 +341,70 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// Testing StandaloneWindow, for custom local widget drawing code
+
+class TestingWidgetStandaloneWindow : public StandaloneWindow
+{
+public:
+    static constexpr const char* kExampleWidgetName = "Testing";
+
+      TestingWidgetStandaloneWindow(Application& app)
+        : StandaloneWindow(app)
+      {
+      }
+
+protected:
+    void onDisplay() override
+    {
+        glColor3f(0.5f, 0.3f, 0.9f);
+        Rectangle<uint>(0, 0, 500, 500).draw();
+        // getWidth(), getHeight()
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+// Special handy function that runs a StandaloneWindow inside the function scope
+
+template <class ExampleWidgetStandaloneWindow>
+void createAndShowExampleWidgetStandaloneWindow(Application& app)
+{
+    ExampleWidgetStandaloneWindow swin(app);
+    swin.setSize(600, 500);
+    swin.setTitle(ExampleWidgetStandaloneWindow::kExampleWidgetName);
+    swin.show();
+    app.exec();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
-int main()
+int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DGL;
+    using DGL_NAMESPACE::Window;
 
     Application app;
-    DemoWindow win(app);
 
-    win.show();
-    app.exec();
+    if (argc > 1)
+    {
+        // TODO images, text
+
+        /**/ if (std::strcmp(argv[1], "color") == 0)
+            createAndShowExampleWidgetStandaloneWindow<ExampleColorStandaloneWindow>(app);
+        else if (std::strcmp(argv[1], "rectangles") == 0)
+            createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
+        else if (std::strcmp(argv[1], "shapes") == 0)
+            createAndShowExampleWidgetStandaloneWindow<ExampleShapesStandaloneWindow>(app);
+        else if (std::strcmp(argv[1], "testing") == 0)
+            createAndShowExampleWidgetStandaloneWindow<TestingWidgetStandaloneWindow>(app);
+        else
+            d_stderr2("Invalid demo mode, must be one of: color, rectangles, shapes");
+    }
+    else
+    {
+        createAndShowExampleWidgetStandaloneWindow<DemoWindow>(app);
+    }
 
     return 0;
 }

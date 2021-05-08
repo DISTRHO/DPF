@@ -149,7 +149,7 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
     puglPostRedisplayRect(pData->view, prect);
 }
 
-void Window::onReshape(const uint width, const uint height)
+void Window::onReshape(uint, uint)
 {
     puglFallbackOnResize(pData->view);
 }

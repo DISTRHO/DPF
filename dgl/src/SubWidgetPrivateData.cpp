@@ -21,17 +21,17 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
-SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const p)
+SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const pw)
     : self(s),
-      parent(p),
+      parentWidget(pw),
       absolutePos()
 {
-    parent->pData->subWidgets.push_back(self);
+    parentWidget->pData->subWidgets.push_back(self);
 }
 
 SubWidget::PrivateData::~PrivateData()
 {
-    parent->pData->subWidgets.remove(self);
+    parentWidget->pData->subWidgets.remove(self);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -25,10 +25,10 @@ START_NAMESPACE_DGL
 
 struct SubWidget::PrivateData {
     SubWidget* const self;
-    Widget* const parent;
+    Widget* const parentWidget;
     Point<int> absolutePos;
 
-    explicit PrivateData(SubWidget* const s, Widget* const p);
+    explicit PrivateData(SubWidget* const s, Widget* const pw);
     ~PrivateData();
 
     // NOTE display function is different depending on build type, must call displaySubWidgets at the end
