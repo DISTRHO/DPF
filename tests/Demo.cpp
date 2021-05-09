@@ -25,6 +25,7 @@
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"
 #include "dgl/src/Geometry.cpp"
+#include "dgl/src/ImageBase.cpp"
 #include "dgl/src/OpenGL.cpp"
 #include "dgl/src/SubWidget.cpp"
 #include "dgl/src/SubWidgetPrivateData.cpp"
@@ -37,8 +38,12 @@
 #include "dgl/StandaloneWindow.hpp"
 
 #include "widgets/ExampleColorWidget.hpp"
+#include "widgets/ExampleImagesWidget.hpp"
 #include "widgets/ExampleRectanglesWidget.hpp"
 #include "widgets/ExampleShapesWidget.hpp"
+
+#include "demo_res/DemoArtwork.cpp"
+#include "images_res/CatPics.cpp"
 
 START_NAMESPACE_DGL
 
@@ -66,6 +71,7 @@ public:
 #if 0
         // for text
         font = nvg.createFontFromFile("sans", "./nanovg_res/Roboto-Regular.ttf");
+#endif
 
         using namespace DemoArtwork;
         img1.loadFromMemory(ico1Data, ico1Width, ico1Height, GL_BGR);
@@ -73,7 +79,6 @@ public:
         img3.loadFromMemory(ico3Data, ico3Width, ico2Height, GL_BGR);
         img4.loadFromMemory(ico4Data, ico4Width, ico4Height, GL_BGR);
         img5.loadFromMemory(ico5Data, ico5Width, ico5Height, GL_BGR);
-#endif
     }
 
 protected:
@@ -110,7 +115,6 @@ protected:
         // reset color
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-#if 0
         const int pad = iconSize/2 - DemoArtwork::ico1Width/2;
 
         img1.drawAt(pad, pad);
@@ -119,6 +123,7 @@ protected:
         img4.drawAt(pad, pad + 9 + iconSize*3);
         img5.drawAt(pad, pad + 12 + iconSize*4);
 
+#if 0
         // draw some text
         nvg.beginFrame(this);
 
@@ -215,9 +220,9 @@ private:
     int curPage, curHover;
     Rectangle<double> bgIcon;
     Line<int> lineSep;
-#if 0
-    Image img1, img2, img3, img4, img5;
+    OpenGLImage img1, img2, img3, img4, img5;
 
+#if 0
     // for text
     NanoVG nvg;D
     NanoVG::FontId font;
@@ -238,20 +243,21 @@ public:
     DemoWindow(Application& app)
         : StandaloneWindow(app),
           wColor(this),
+          wImages(this),
           wRects(this),
           wShapes(this),
           wLeft(this, this),
           curWidget(nullptr)
     {
         wColor.hide();
-//         wImages.hide();
+        wImages.hide();
         wRects.hide();
         wShapes.hide();
 //         wText.hide();
 //         //wPerf.hide();
 
         wColor.setAbsoluteX(kSidebarWidth);
-//         wImages.setAbsoluteX(kSidebarWidth);
+        wImages.setAbsoluteX(kSidebarWidth);
         wRects.setAbsoluteX(kSidebarWidth);
         wShapes.setAbsoluteX(kSidebarWidth);
 //         wText.setAbsoluteX(kSidebarWidth);
@@ -275,9 +281,9 @@ protected:
         case 0:
             curWidget = &wColor;
             break;
-//         case 1:
-//             curWidget = &wImages;
-//             break;
+        case 1:
+            curWidget = &wImages;
+            break;
         case 2:
             curWidget = &wRects;
             break;
@@ -309,7 +315,7 @@ protected:
 
         Size<uint> size(width-kSidebarWidth, height);
         wColor.setSize(size);
-//         wImages.setSize(size);
+        wImages.setSize(size);
         wRects.setSize(size);
         wShapes.setSize(size);
 //         wText.setSize(size);
@@ -323,7 +329,7 @@ protected:
 
 private:
     ExampleColorSubWidget wColor;
-//     ExampleImagesWidget wImages;
+    ExampleImagesSubWidget wImages;
     ExampleRectanglesSubWidget wRects;
     ExampleShapesSubWidget wShapes;
 //     ExampleTextWidget wText;
@@ -364,6 +370,8 @@ int main(int argc, char* argv[])
 
         /**/ if (std::strcmp(argv[1], "color") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleColorStandaloneWindow>(app);
+        else if (std::strcmp(argv[1], "images") == 0)
+            createAndShowExampleWidgetStandaloneWindow<ExampleImagesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "rectangles") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "shapes") == 0)

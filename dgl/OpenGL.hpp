@@ -116,6 +116,135 @@ struct OpenGLGraphicsContext : GraphicsContext
 
 // -----------------------------------------------------------------------
 
+/**
+   OpenGL Image class.
+
+   This is an Image class that handles raw image data in pixels.
+   You can init the image data on the contructor or later on by calling loadFromMemory().
+
+   To generate raw data useful for this class see the utils/png2rgba.py script.
+   Be careful when using a PNG without alpha channel, for those the format is 'GL_BGR'
+   instead of the default 'GL_BGRA'.
+
+   Images are drawn on screen via 2D textures.
+ */
+class OpenGLImage : public ImageBase
+{
+public:
+   /**
+      Constructor for a null Image.
+    */
+    OpenGLImage();
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    OpenGLImage(const char* const rawData,
+                const uint width,
+                const uint height,
+                const GLenum format = GL_BGRA,
+                const GLenum type = GL_UNSIGNED_BYTE);
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    OpenGLImage(const char* const rawData,
+                const Size<uint>& size,
+                const GLenum format = GL_BGRA,
+                const GLenum type = GL_UNSIGNED_BYTE);
+
+   /**
+      Constructor using another image data.
+    */
+    OpenGLImage(const OpenGLImage& image);
+
+   /**
+      Destructor.
+    */
+    ~OpenGLImage() override;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromMemory(const char* const rawData,
+                        const uint width,
+                        const uint height,
+                        const GLenum format = GL_BGRA,
+                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromMemory(const char* const rawData,
+                        const Size<uint>& size,
+                        const GLenum format = GL_BGRA,
+                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
+
+   /**
+      TODO document this.
+    */
+    void setup();
+
+   /**
+      TODO document this.
+    */
+    void cleanup();
+
+   /**
+      Get the image format.
+    */
+    GLenum getFormat() const noexcept;
+
+   /**
+      Get the image type.
+    */
+    GLenum getType() const noexcept;
+
+   /**
+      Draw this image at position @a pos using the graphics context @a context.
+    */
+    void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
+
+   /**
+      TODO document this.
+    */
+    OpenGLImage& operator=(const OpenGLImage& image) noexcept;
+
+   /**
+      Draw this image at (0, 0) point using the current OpenGL context.
+    */
+    // TODO mark as deprecated
+    void draw();
+
+   /**
+      Draw this image at (x, y) point using the current OpenGL context.
+    */
+    // TODO mark as deprecated
+    void drawAt(const int x, const int y);
+
+   /**
+      Draw this image at position @a pos using the current OpenGL context.
+    */
+    // TODO mark as deprecated
+    void drawAt(const Point<int>& pos);
+
+protected:
+   /** @internal */
+//     void _drawAt(const Point<int>& pos) override;
+
+private:
+    GLenum fFormat;
+    GLenum fType;
+    GLuint fTextureId;
+    bool setupCalled;
+};
+
+// -----------------------------------------------------------------------
+
 END_NAMESPACE_DGL
 
 #endif

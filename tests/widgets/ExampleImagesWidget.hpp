@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,22 +20,25 @@
 // ------------------------------------------------------
 // DGL Stuff
 
-#include "Image.hpp"
-#include "Widget.hpp"
-#include "Window.hpp"
+#include "../../dgl/Image.hpp"
+#include "../../dgl/SubWidget.hpp"
+#include "../../dgl/TopLevelWidget.hpp"
+
 
 // ------------------------------------------------------
 // Images
 
 #include "../images_res/CatPics.hpp"
 
+START_NAMESPACE_DGL
+
 // ------------------------------------------------------
 // our widget
 
-class ExampleImagesWidget : public Widget,
+template <class BaseWidget>
+class ExampleImagesWidget : public BaseWidget,
                             public IdleCallback
 {
-public:
     static const int kImg1y = 0;
     static const int kImg2y = 500/2-CatPics::cat2Height/2;
     static const int kImg3x = 400/3-CatPics::cat3Width/3;
@@ -44,160 +47,207 @@ public:
     static const int kImg2max = 500-CatPics::cat2Width;
     static const int kImg3max = 400-CatPics::cat3Height;
 
-    ExampleImagesWidget(Window& parent, const bool setParentSize = false)
-        : Widget(parent),
-          fImgTop1st(1),
-          fImgTop2nd(2),
-          fImgTop3rd(3),
-          fImg1x(0),
-          fImg2x(kImg2max),
-          fImg3y(kImg3max),
-          fImg1rev(false),
-          fImg2rev(true),
-          fImg3rev(true),
-          fImg1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
-          fImg2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          fImg3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+    int imgTop1st, imgTop2nd, imgTop3rd;
+    int img1x, img2x, img3y;
+    bool img1rev, img2rev, img3rev;
+    Image img1, img2, img3;
+
+public:
+    static constexpr const char* kExampleWidgetName = "Images";
+
+    // SubWidget
+    ExampleImagesWidget(Widget* const parent)
+        : BaseWidget(parent),
+          imgTop1st(1),
+          imgTop2nd(2),
+          imgTop3rd(3),
+          img1x(0),
+          img2x(kImg2max),
+          img3y(kImg3max),
+          img1rev(false),
+          img2rev(true),
+          img3rev(true),
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
     {
-        setSize(500, 400);
+        BaseWidget::setSize(500, 400);
 
-        parent.addIdleCallback(this);
-
-        if (setParentSize)
-        {
-            parent.setSize(500, 400);
-            parent.setResizable(false);
-        }
+        parent->getApp().addIdleCallback(this);
     }
 
-private:
+    // TopLevelWidget
+    ExampleImagesWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo),
+          imgTop1st(1),
+          imgTop2nd(2),
+          imgTop3rd(3),
+          img1x(0),
+          img2x(kImg2max),
+          img3y(kImg3max),
+          img1rev(false),
+          img2rev(true),
+          img3rev(true),
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+    {
+        BaseWidget::setSize(500, 400);
+
+        windowToMapTo.getApp().addIdleCallback(this);
+    }
+
+    // StandaloneWindow
+    ExampleImagesWidget(Application& app)
+        : BaseWidget(app),
+          imgTop1st(1),
+          imgTop2nd(2),
+          imgTop3rd(3),
+          img1x(0),
+          img2x(kImg2max),
+          img3y(kImg3max),
+          img1rev(false),
+          img2rev(true),
+          img3rev(true),
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+    {
+        BaseWidget::setSize(500, 400);
+
+        app.addIdleCallback(this);
+    }
+
+protected:
     void idleCallback() noexcept override
     {
-        if (fImg1rev)
+        if (img1rev)
         {
-            fImg1x -= 2;
-            if (fImg1x <= -50)
+            img1x -= 2;
+            if (img1x <= -50)
             {
-                fImg1rev = false;
+                img1rev = false;
                 setNewTopImg(1);
             }
         }
         else
         {
-            fImg1x += 2;
-            if (fImg1x >= kImg1max+50)
+            img1x += 2;
+            if (img1x >= kImg1max+50)
             {
-                fImg1rev = true;
+                img1rev = true;
                 setNewTopImg(1);
             }
         }
 
-        if (fImg2rev)
+        if (img2rev)
         {
-            fImg2x -= 1;
-            if (fImg2x <= -50)
+            img2x -= 1;
+            if (img2x <= -50)
             {
-                fImg2rev = false;
+                img2rev = false;
                 setNewTopImg(2);
             }
         }
         else
         {
-            fImg2x += 4;
-            if (fImg2x >= kImg2max+50)
+            img2x += 4;
+            if (img2x >= kImg2max+50)
             {
-                fImg2rev = true;
+                img2rev = true;
                 setNewTopImg(2);
             }
         }
 
-        if (fImg3rev)
+        if (img3rev)
         {
-            fImg3y -= 3;
-            if (fImg3y <= -50)
+            img3y -= 3;
+            if (img3y <= -50)
             {
-                fImg3rev = false;
+                img3rev = false;
                 setNewTopImg(3);
             }
         }
         else
         {
-            fImg3y += 3;
-            if (fImg3y >= kImg3max+50)
+            img3y += 3;
+            if (img3y >= kImg3max+50)
             {
-                fImg3rev = true;
+                img3rev = true;
                 setNewTopImg(3);
             }
         }
 
-        repaint();
+        BaseWidget::repaint();
     }
 
     void onDisplay() override
     {
-        switch (fImgTop3rd)
+        switch (imgTop3rd)
         {
         case 1:
-            fImg1.drawAt(fImg1x, kImg1y);
+            img1.drawAt(img1x, kImg1y);
             break;
         case 2:
-            fImg2.drawAt(fImg2x, kImg2y);
+            img2.drawAt(img2x, kImg2y);
             break;
         case 3:
-            fImg3.drawAt(kImg3x, fImg3y);
+            img3.drawAt(kImg3x, img3y);
             break;
         };
 
-        switch (fImgTop2nd)
+        switch (imgTop2nd)
         {
         case 1:
-            fImg1.drawAt(fImg1x, kImg1y);
+            img1.drawAt(img1x, kImg1y);
             break;
         case 2:
-            fImg2.drawAt(fImg2x, kImg2y);
+            img2.drawAt(img2x, kImg2y);
             break;
         case 3:
-            fImg3.drawAt(kImg3x, fImg3y);
+            img3.drawAt(kImg3x, img3y);
             break;
         };
 
-        switch (fImgTop1st)
+        switch (imgTop1st)
         {
         case 1:
-            fImg1.drawAt(fImg1x, kImg1y);
+            img1.drawAt(img1x, kImg1y);
             break;
         case 2:
-            fImg2.drawAt(fImg2x, kImg2y);
+            img2.drawAt(img2x, kImg2y);
             break;
         case 3:
-            fImg3.drawAt(kImg3x, fImg3y);
+            img3.drawAt(kImg3x, img3y);
             break;
         };
     }
 
+private:
     void setNewTopImg(const int imgId) noexcept
     {
-        if (fImgTop1st == imgId)
+        if (imgTop1st == imgId)
             return;
 
-        if (fImgTop2nd == imgId)
+        if (imgTop2nd == imgId)
         {
-            fImgTop2nd = fImgTop1st;
-            fImgTop1st =  imgId;
+            imgTop2nd = imgTop1st;
+            imgTop1st =  imgId;
             return;
         }
 
-        fImgTop3rd = fImgTop2nd;
-        fImgTop2nd = fImgTop1st;
-        fImgTop1st =  imgId;
+        imgTop3rd = imgTop2nd;
+        imgTop2nd = imgTop1st;
+        imgTop1st =  imgId;
     }
-
-    int fImgTop1st, fImgTop2nd, fImgTop3rd;
-    int fImg1x, fImg2x, fImg3y;
-    bool fImg1rev, fImg2rev, fImg3rev;
-    Image fImg1, fImg2, fImg3;
 };
 
+typedef ExampleImagesWidget<SubWidget> ExampleImagesSubWidget;
+typedef ExampleImagesWidget<TopLevelWidget> ExampleImagesTopLevelWidget;
+typedef ExampleImagesWidget<StandaloneWindow> ExampleImagesStandaloneWindow;
+
 // ------------------------------------------------------
+
+END_NAMESPACE_DGL
 
 #endif // EXAMPLE_IMAGES_WIDGET_HPP_INCLUDED

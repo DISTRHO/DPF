@@ -111,6 +111,185 @@ void Rectangle<T>::_draw(const bool outline)
 
 // -----------------------------------------------------------------------
 
+OpenGLImage::OpenGLImage()
+    : ImageBase(),
+      fFormat(0),
+      fType(0),
+      fTextureId(0),
+      setupCalled(false) {}
+
+OpenGLImage::OpenGLImage(const OpenGLImage& image)
+    : ImageBase(image),
+      fFormat(image.fFormat),
+      fType(image.fType),
+      fTextureId(0),
+      setupCalled(false) {}
+
+OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const GLenum format, const GLenum type)
+    : ImageBase(rawData, width, height),
+      fFormat(format),
+      fType(type),
+      fTextureId(0),
+      setupCalled(false) {}
+
+OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const GLenum format, const GLenum type)
+    : ImageBase(rawData, size),
+      fFormat(format),
+      fType(type),
+      fTextureId(0),
+      setupCalled(false) {}
+
+OpenGLImage::~OpenGLImage()
+{
+    if (setupCalled) {
+    // FIXME test if this is still necessary with new pugl
+#ifndef DISTRHO_OS_MAC
+        if (fTextureId != 0)
+            cleanup();
+#endif
+        DISTRHO_SAFE_ASSERT(fTextureId == 0);
+    }
+}
+
+void OpenGLImage::loadFromMemory(const char* const rawData,
+                                 const uint width,
+                                 const uint height,
+                                 const GLenum format,
+                                 const GLenum type) noexcept
+{
+    loadFromMemory(rawData, Size<uint>(width, height), format, type);
+}
+
+void OpenGLImage::loadFromMemory(const char* const rdata,
+                                 const Size<uint>& s,
+                                 const GLenum format,
+                                 const GLenum type) noexcept
+{
+    rawData = rdata;
+    size    = s;
+    fFormat  = format;
+    fType    = type;
+    setupCalled = false;
+}
+
+void OpenGLImage::setup()
+{
+    setupCalled = true;
+    DISTRHO_SAFE_ASSERT_RETURN(fTextureId == 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
+
+    glGenTextures(1, &fTextureId);
+    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0,);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, fTextureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 static_cast<GLsizei>(size.getWidth()), static_cast<GLsizei>(size.getHeight()), 0,
+                 fFormat, fType, rawData);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+void OpenGLImage::cleanup()
+{
+    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0,);
+    glDeleteTextures(1, &fTextureId);
+    fTextureId = 0;
+}
+
+GLenum OpenGLImage::getFormat() const noexcept
+{
+    return fFormat;
+}
+
+GLenum OpenGLImage::getType() const noexcept
+{
+    return fType;
+}
+
+void OpenGLImage::drawAt(const GraphicsContext&, const Point<int>& pos)
+{
+    drawAt(pos);
+}
+
+OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
+{
+    rawData = image.rawData;
+    size    = image.size;
+    fFormat  = image.fFormat;
+    fType    = image.fType;
+    setupCalled = false;
+    return *this;
+}
+
+void OpenGLImage::draw()
+{
+    drawAt(Point<int>(0, 0));
+}
+
+void OpenGLImage::drawAt(const int x, const int y)
+{
+    drawAt(Point<int>(x, y));
+}
+
+void OpenGLImage::drawAt(const Point<int>& pos)
+{
+    if (isInvalid())
+        return;
+
+    if (! setupCalled)
+    {
+        // TODO check if this is valid, give warning about needing to call setup/cleanup manually
+        setup();
+    }
+
+    if (fTextureId == 0)
+        return;
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, fTextureId);
+
+    glBegin(GL_QUADS);
+
+    {
+        const int x = pos.getX();
+        const int y = pos.getY();
+        const int w = static_cast<int>(size.getWidth());
+        const int h = static_cast<int>(size.getHeight());
+
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(x, y);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(x+w, y);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(x+w, y+h);
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(x, y+h);
+    }
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+// -----------------------------------------------------------------------
+
 #if 0
 void Widget::PrivateData::display(const uint width,
                                   const uint height,

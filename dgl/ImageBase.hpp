@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,7 +21,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    Base DGL Image class.
@@ -69,6 +69,11 @@ public:
     bool isValid() const noexcept;
 
    /**
+      Check if this image is not valid.
+    */
+    bool isInvalid() const noexcept;
+
+   /**
       Get width.
     */
     uint getWidth() const noexcept;
@@ -89,19 +94,19 @@ public:
     const char* getRawData() const noexcept;
 
    /**
-      Draw this image at (0, 0) point.
+      Draw this image at (0, 0) point using the current OpenGL context.
     */
-    void draw();
+    void draw(const GraphicsContext& context);
 
    /**
-      Draw this image at (x, y) point.
+      Draw this image at (x, y) point using the current OpenGL context.
     */
-    void drawAt(const int x, const int y);
+    void drawAt(const GraphicsContext& context, const int x, const int y);
 
    /**
-      Draw this image at position @a pos.
+      Draw this image at position @a pos using the current OpenGL context.
     */
-    void drawAt(const Point<int>& pos);
+    virtual void drawAt(const GraphicsContext& context, const Point<int>& pos) = 0;
 
    /**
       TODO document this.
@@ -111,14 +116,11 @@ public:
     bool operator!=(const ImageBase& image) const noexcept;
 
 protected:
-   /** @internal */
-    virtual void _drawAt(const Point<int>& pos) = 0;
-
-    const char* fRawData;
-    Size<uint> fSize;
+    const char* rawData;
+    Size<uint> size;
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 
