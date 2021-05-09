@@ -21,12 +21,16 @@
 #include "tests.hpp"
 
 // #define DPF_TEST_POINT_CPP
+#include "dgl/OpenGL.hpp"
 #include "dgl/src/pugl.cpp"
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"
+#include "dgl/src/Color.cpp"
 #include "dgl/src/Geometry.cpp"
 #include "dgl/src/ImageBase.cpp"
+#include "dgl/src/NanoVG.cpp"
 #include "dgl/src/OpenGL.cpp"
+#include "dgl/src/Resources.cpp"
 #include "dgl/src/SubWidget.cpp"
 #include "dgl/src/SubWidgetPrivateData.cpp"
 #include "dgl/src/TopLevelWidget.cpp"
@@ -40,6 +44,7 @@
 #include "widgets/ExampleColorWidget.hpp"
 #include "widgets/ExampleImagesWidget.hpp"
 #include "widgets/ExampleRectanglesWidget.hpp"
+#include "widgets/ExampleTextWidget.hpp"
 #include "widgets/ExampleShapesWidget.hpp"
 
 #include "demo_res/DemoArtwork.cpp"
@@ -68,10 +73,8 @@ public:
           curPage(0),
           curHover(-1)
     {
-#if 0
         // for text
-        font = nvg.createFontFromFile("sans", "./nanovg_res/Roboto-Regular.ttf");
-#endif
+        nvg.loadSharedResources();
 
         using namespace DemoArtwork;
         img1.loadFromMemory(ico1Data, ico1Width, ico1Height, GL_BGR);
@@ -123,7 +126,6 @@ protected:
         img4.drawAt(pad, pad + 9 + iconSize*3);
         img5.drawAt(pad, pad + 12 + iconSize*4);
 
-#if 0
         // draw some text
         nvg.beginFrame(this);
 
@@ -136,7 +138,6 @@ protected:
         nvg.textBox(15, 440, iconSize, "Look!", nullptr);
 
         nvg.endFrame();
-#endif
     }
 
     bool onMouse(const MouseEvent& ev) override
@@ -222,11 +223,8 @@ private:
     Line<int> lineSep;
     OpenGLImage img1, img2, img3, img4, img5;
 
-#if 0
     // for text
-    NanoVG nvg;D
-    NanoVG::FontId font;
-#endif
+    NanoVG nvg;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -246,6 +244,7 @@ public:
           wImages(this),
           wRects(this),
           wShapes(this),
+          wText(this),
           wLeft(this, this),
           curWidget(nullptr)
     {
@@ -253,14 +252,14 @@ public:
         wImages.hide();
         wRects.hide();
         wShapes.hide();
-//         wText.hide();
+        wText.hide();
 //         //wPerf.hide();
 
         wColor.setAbsoluteX(kSidebarWidth);
         wImages.setAbsoluteX(kSidebarWidth);
         wRects.setAbsoluteX(kSidebarWidth);
         wShapes.setAbsoluteX(kSidebarWidth);
-//         wText.setAbsoluteX(kSidebarWidth);
+        wText.setAbsoluteX(kSidebarWidth);
         wLeft.setAbsolutePos(2, 2);
 //         wPerf.setAbsoluteY(5);
 
@@ -290,9 +289,9 @@ protected:
         case 3:
             curWidget = &wShapes;
             break;
-//         case 4:
-//             curWidget = &wText;
-//             break;
+        case 4:
+            curWidget = &wText;
+            break;
         default:
             curWidget = nullptr;
             break;
@@ -318,7 +317,7 @@ protected:
         wImages.setSize(size);
         wRects.setSize(size);
         wShapes.setSize(size);
-//         wText.setSize(size);
+        wText.setSize(size);
 
         wLeft.setSize(kSidebarWidth-4, height-4);
         //wRezHandle.setAbsoluteX(width-wRezHandle.getWidth());
@@ -332,7 +331,7 @@ private:
     ExampleImagesSubWidget wImages;
     ExampleRectanglesSubWidget wRects;
     ExampleShapesSubWidget wShapes;
-//     ExampleTextWidget wText;
+    ExampleTextSubWidget wText;
     LeftSideWidget wLeft;
     //ResizeHandle wRezHandle;
 //     NanoPerfWidget wPerf;
@@ -376,6 +375,8 @@ int main(int argc, char* argv[])
             createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "shapes") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleShapesStandaloneWindow>(app);
+        else if (std::strcmp(argv[1], "text") == 0)
+            createAndShowExampleWidgetStandaloneWindow<ExampleTextStandaloneWindow>(app);
         else
             d_stderr2("Invalid demo mode, must be one of: color, rectangles, shapes");
     }

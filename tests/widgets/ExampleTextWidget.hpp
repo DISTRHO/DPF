@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,51 +20,69 @@
 // ------------------------------------------------------
 // DGL Stuff
 
-#include "NanoVG.hpp"
+#include "../../dgl/NanoVG.hpp"
+
+START_NAMESPACE_DGL
 
 // ------------------------------------------------------
 // our widget
 
-class ExampleTextWidget : public NanoWidget
+template <class BaseWidget>
+class ExampleTextWidget : public BaseWidget
 {
 public:
-    ExampleTextWidget(Window& parent)
-        : NanoWidget(parent),
-          fFont(createFontFromFile("sans", "./nanovg_res/Roboto-Regular.ttf"))
+    static constexpr const char* kExampleWidgetName = "Text";
+
+    // SubWidget
+    explicit ExampleTextWidget(Widget* const parent)
+        : BaseWidget(parent)
     {
-        setSize(500, 300);
+        NanoVG::loadSharedResources();
+        BaseWidget::setSize(500, 300);
     }
 
-    ExampleTextWidget(Widget* groupWidget)
-        : NanoWidget(groupWidget),
-          fFont(createFontFromFile("sans", "./nanovg_res/Roboto-Regular.ttf"))
+    // TopLevelWidget
+    explicit ExampleTextWidget(Window& windowToMapTo)
+        : BaseWidget(windowToMapTo)
     {
-        setSize(500, 300);
+        NanoVG::loadSharedResources();
+        BaseWidget::setSize(500, 300);
+    }
+
+    // StandaloneWindow
+    explicit ExampleTextWidget(Application& app)
+        : BaseWidget(app)
+    {
+        NanoVG::loadSharedResources();
+        BaseWidget::setSize(500, 300);
     }
 
 protected:
     void onNanoDisplay() override
     {
-        const int width  = getWidth();
-        const int height = getHeight();
+        const int width  = BaseWidget::getWidth();
+        const int height = BaseWidget::getHeight();
 
-        fontSize(40.0f);
-        textAlign(Align(ALIGN_CENTER|ALIGN_MIDDLE));
-        textLineHeight(20.0f);
+        NanoVG::fontSize(40.0f);
+        NanoVG::textAlign(NanoVG::Align(NanoVG::ALIGN_CENTER|NanoVG::ALIGN_MIDDLE));
+        NanoVG::textLineHeight(20.0f);
 
-        beginPath();
-        fillColor(220,220,220,255);
-        roundedRect(10, height/4+10, width-20, height/2-20, 3);
-        fill();
+        NanoVG::beginPath();
+        NanoVG::fillColor(220,220,220,255);
+        NanoVG::roundedRect(10, height/4+10, width-20, height/2-20, 3);
+        NanoVG::fill();
 
-        fillColor(0,200,0,220);
-        textBox(10, height/2, width-20, "Hello World!", nullptr);
+        NanoVG::fillColor(0,150,0,220);
+        NanoVG::textBox(10, height/2, width-20, "Hello World!", nullptr);
     }
-
-private:
-    FontId fFont;
 };
 
+typedef ExampleTextWidget<NanoSubWidget> ExampleTextSubWidget;
+typedef ExampleTextWidget<NanoTopLevelWidget> ExampleTextTopLevelWidget;
+typedef ExampleTextWidget<NanoStandaloneWindow> ExampleTextStandaloneWindow;
+
 // ------------------------------------------------------
+
+END_NAMESPACE_DGL
 
 #endif // EXAMPLE_TEXT_WIDGET_HPP_INCLUDED

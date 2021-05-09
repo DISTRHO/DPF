@@ -90,13 +90,17 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaling(1.0),
       pendingVisibility(kPendingVisibilityNone)
 {
+    if (isEmbed)
+    {
+        puglSetDefaultSize(view, width, height);
+        puglSetParentWindow(view, parentWindowHandle);
+    }
+
     init(width, height, resizable);
 
     if (isEmbed)
     {
         appData->oneWindowShown();
-        puglSetDefaultSize(view, width, height);
-        puglSetParentWindow(view, parentWindowHandle);
         puglShow(view);
     }
 }
@@ -137,7 +141,7 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     puglSetHandle(view, this);
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
-    puglSetViewHint(view, PUGL_DEPTH_BITS, 8);
+    puglSetViewHint(view, PUGL_DEPTH_BITS, 16);
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
@@ -149,6 +153,10 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     rect.width = width;
     rect.height = height;
     puglSetFrame(view, rect);
+
+    // FIXME this is bad
+    puglRealize(view);
+    puglX11GlEnter(view, NULL);
 }
 
 // -----------------------------------------------------------------------
@@ -182,9 +190,16 @@ void Window::PrivateData::show()
         isClosed = false;
         appData->oneWindowShown();
 
+#ifdef DISTRHO_OS_WINDOWS
+        puglWin32ShowWindowCentered(view);
+#else
+        puglShow(view);
+#endif
+        /*
         pendingVisibility = kPendingVisibilityShow;
         const PuglStatus status = puglRealize(view);
         DISTRHO_SAFE_ASSERT_INT_RETURN(status == PUGL_SUCCESS, status, close());
+        */
     }
     else
     {
