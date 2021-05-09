@@ -37,6 +37,10 @@ PUGL_BEGIN_DECLS
 PUGL_API const char*
 puglGetWindowTitle(const PuglView* view);
 
+// expose backend enter
+PUGL_API void
+puglBackendEnter(PuglView* view);
+
 // set window size without changing frame x/y position
 PUGL_API PuglStatus
 puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);

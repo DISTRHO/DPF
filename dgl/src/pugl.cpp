@@ -94,6 +94,14 @@ const char* puglGetWindowTitle(const PuglView* view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// expose backend enter
+
+void puglBackendEnter(PuglView* view)
+{
+    view->backend->enter(view, NULL);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // set window size without changing frame x/y position
 
 PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height)

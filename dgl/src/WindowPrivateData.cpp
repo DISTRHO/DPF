@@ -156,7 +156,7 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
 
     // FIXME this is bad
     puglRealize(view);
-    puglX11GlEnter(view, NULL);
+    puglBackendEnter(view);
 }
 
 // -----------------------------------------------------------------------
