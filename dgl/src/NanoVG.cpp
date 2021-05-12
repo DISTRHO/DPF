@@ -53,6 +53,7 @@ DGL_EXT(PFNGLUNIFORM2FVPROC,               glUniform2fv)
 DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 # undef DGL_EXT
 #endif
 
@@ -66,20 +67,32 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 #if defined(NANOVG_GL2)
 # define nvgCreateGL nvgCreateGL2
 # define nvgDeleteGL nvgDeleteGL2
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGL2
+# define nvglImageHandle nvglImageHandleGL2
 #elif defined(NANOVG_GL3)
 # define nvgCreateGL nvgCreateGL3
 # define nvgDeleteGL nvgDeleteGL3
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGL3
+# define nvglImageHandle nvglImageHandleGL3
 #elif defined(NANOVG_GLES2)
 # define nvgCreateGL nvgCreateGLES2
 # define nvgDeleteGL nvgDeleteGLES2
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES2
+# define nvglImageHandle nvglImageHandleGLES2
 #elif defined(NANOVG_GLES3)
 # define nvgCreateGL nvgCreateGLES3
 # define nvgDeleteGL nvgDeleteGLES3
+# define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES3
+# define nvglImageHandle nvglImageHandleGLES3
 #endif
 
 static NVGcontext* nvgCreateGL_helper(int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
+# if defined(__GNUC__) && (__GNUC__ >= 10)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
     static bool needsInit = true;
 # define DGL_EXT(PROC, func) \
       if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
@@ -111,8 +124,12 @@ DGL_EXT(PFNGLUNIFORM2FVPROC,               glUniform2fv)
 DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 # undef DGL_EXT
     needsInit = false;
+# if defined(__GNUC__) && (__GNUC__ >= 10)
+#  pragma GCC diagnostic pop
+# endif
 #endif
     return nvgCreateGL(flags);
 }
@@ -921,8 +938,7 @@ bool NanoVG::loadSharedResources()
 
     using namespace dpf_resources;
 
-    return nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF,
-                            (const uchar*)dejavusans_ttf, dejavusans_ttf_size, 0) >= 0;
+    return nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (uchar*)dejavusans_ttf, dejavusans_ttf_size, 0) >= 0;
 }
 #endif
 

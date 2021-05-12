@@ -316,7 +316,7 @@ protected:
 
         LV2_Atom_MidiEvent atomMidiEvent;
         atomMidiEvent.atom.size = 3;
-        atomMidiEvent.atom.type = fMidiEventURID;
+        atomMidiEvent.atom.type = fURIDs.midiEvent;
 
         atomMidiEvent.data[0] = channel + (velocity != 0 ? 0x90 : 0x80);
         atomMidiEvent.data[1] = note;
