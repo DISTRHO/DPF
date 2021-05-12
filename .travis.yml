@@ -1,8 +1,5 @@
-os:
-  - linux
-
-sudo: required
-dist: trusty
+os: linux
+dist: bionic
 
 languages: c++
 compiler: gcc
