@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -37,10 +38,10 @@ typedef uint32_t v3_param_id;
 
 typedef uint8_t v3_tuid[16];
 
-inline static int
+inline static bool
 v3_tuid_match(const v3_tuid a, const v3_tuid b)
 {
-	return !memcmp(a, b, sizeof(v3_tuid));
+	return memcmp(a, b, sizeof(v3_tuid)) == 0;
 }
 
 #if defined(_WIN32)
