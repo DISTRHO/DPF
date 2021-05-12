@@ -1,7 +1,4 @@
 
-os: linux
-dist: bionic
-
 cache:
   directories:
     - ${HOME}/debs
@@ -11,7 +8,7 @@ jobs:
   - name: "Linux native"
     os: linux
     compiler: gcc
-    dist: focal
+    dist: bionic
     env:
       - TARGET="linux"
     services:
