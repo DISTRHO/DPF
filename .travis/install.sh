@@ -10,8 +10,10 @@ sudo apt-get install -y \
     liblo-dev \
     libgl1-mesa-dev \
     libx11-dev \
-    apple-x86-setup \
-    mingw32-x-gcc \
-    mingw32-x-pkgconfig \
-    mingw64-x-gcc \
-    mingw64-x-pkgconfig
+    mingw-w64 \
+    binutils-mingw-w64-i686 \
+    binutils-mingw-w64-x86-64 \
+    g++-mingw-w64-i686 \
+    g++-mingw-w64-x86-64 \
+
+#     apple-x86-setup

@@ -10,6 +10,6 @@ install:
   - sh ${TRAVIS_BUILD_DIR}/.travis/install.sh
 script:
   - sh ${TRAVIS_BUILD_DIR}/.travis/script-linux.sh
-  - sh ${TRAVIS_BUILD_DIR}/.travis/script-macos.sh
+  #- sh ${TRAVIS_BUILD_DIR}/.travis/script-macos.sh
   - sh ${TRAVIS_BUILD_DIR}/.travis/script-win32.sh
   - sh ${TRAVIS_BUILD_DIR}/.travis/script-win64.sh
