@@ -27,6 +27,8 @@
 # include "src/DistrhoPluginLV2export.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_VST)
 # include "src/DistrhoPluginVST.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_VST3)
+# include "src/DistrhoPluginVST3.cpp"
 #else
 # error unsupported format
 #endif
