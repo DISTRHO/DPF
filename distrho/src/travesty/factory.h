@@ -48,7 +48,7 @@ struct v3_plugin_factory {
 		(void *self, int32_t idx, struct v3_class_info *);
 
 	V3_API v3_result (*create_instance)
-		(void *self, const char *class_id, const char *_iid, void **instance);
+		(void *self, const v3_tuid class_id, const v3_tuid iid, void **instance);
 };
 
 static const v3_tuid v3_plugin_factory_iid =
@@ -102,7 +102,7 @@ struct v3_class_info_3 {
 };
 
 struct v3_plugin_factory_3 {
-	struct v3_plugin_factory;
+	struct v3_plugin_factory_2;
 
 	V3_API v3_result (*get_class_info_utf16)
 		(void *self, int32_t idx, struct v3_class_info_3 *);
@@ -113,3 +113,10 @@ struct v3_plugin_factory_3 {
 
 static const v3_tuid v3_plugin_factory_3_iid =
 	V3_ID(0x4555A2AB, 0xC1234E57, 0x9B122910, 0x36878931);
+
+#ifdef __cplusplus
+struct v3_plugin_factory_cpp : v3_funknown, v3_plugin_factory {
+	v3_plugin_factory_2 v2;
+	v3_plugin_factory_3 v3;
+};
+#endif
