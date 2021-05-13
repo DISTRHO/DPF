@@ -37,23 +37,6 @@ TopLevelWidget::PrivateData::~PrivateData()
     window.pData->topLevelWidget = nullptr;
 }
 
-void TopLevelWidget::PrivateData::display()
-{
-    const Size<uint> size(window.getSize());
-    const uint width         = size.getWidth();
-    const uint height        = size.getHeight();
-    const double autoScaling = window.pData->autoScaling;
-
-    // full viewport size
-    glViewport(0, -(height * autoScaling - height), width * autoScaling, height * autoScaling);
-
-    // main widget drawing
-    self->onDisplay();
-
-    // now draw subwidgets if there are any
-    selfw->pData->displaySubWidgets(width, height, autoScaling);
-}
-
 void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
 {
     Events::MouseEvent rev = ev;

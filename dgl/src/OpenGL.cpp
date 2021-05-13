@@ -16,6 +16,7 @@
 
 #include "../OpenGL.hpp"
 #include "SubWidgetPrivateData.hpp"
+#include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
 #include "WindowPrivateData.hpp"
 
@@ -357,7 +358,7 @@ void Widget::PrivateData::display(const uint width,
 }
 #endif
 
-void SubWidget::PrivateData::display(uint width, uint height, double autoScaling)
+void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaling)
 {
     bool needsDisableScissor = false;
 
@@ -369,7 +370,7 @@ void SubWidget::PrivateData::display(uint width, uint height, double autoScaling
                    width * autoScaling,
                    height * autoScaling);
     }
-    else if (viewportNeedsScaling)
+    else if (needsViewportScaling)
     {
         // limit viewport to widget bounds
         glViewport(absolutePos.getX(),
@@ -405,6 +406,25 @@ void SubWidget::PrivateData::display(uint width, uint height, double autoScaling
     }
 
 //     displaySubWidgets(width, height, autoScaling);
+}
+
+// -----------------------------------------------------------------------
+
+void TopLevelWidget::PrivateData::display()
+{
+    const Size<uint> size(window.getSize());
+    const uint width         = size.getWidth();
+    const uint height        = size.getHeight();
+    const double autoScaling = window.pData->autoScaling;
+
+    // full viewport size
+    glViewport(0, -(height * autoScaling - height), width * autoScaling, height * autoScaling);
+
+    // main widget drawing
+    self->onDisplay();
+
+    // now draw subwidgets if there are any
+    selfw->pData->displaySubWidgets(width, height, autoScaling);
 }
 
 // -----------------------------------------------------------------------

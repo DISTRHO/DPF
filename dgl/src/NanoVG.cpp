@@ -963,7 +963,7 @@ NanoWidget<BaseWidget>::NanoWidget(Widget* const parent, int flags)
       NanoVG(flags),
       nData(new PrivateData(this))
 {
-    BaseWidget::pData->viewportNeedsScaling = true;
+    BaseWidget::pData->needsViewportScaling = true;
 }
 
 // TopLevelWidget

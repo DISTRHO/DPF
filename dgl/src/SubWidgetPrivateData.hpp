@@ -27,7 +27,7 @@ struct SubWidget::PrivateData {
     SubWidget* const self;
     Widget* const parentWidget;
     Point<int> absolutePos;
-    bool viewportNeedsScaling; // needed for NanoVG
+    bool needsViewportScaling; // needed for NanoVG
 
     explicit PrivateData(SubWidget* const s, Widget* const pw);
     ~PrivateData();

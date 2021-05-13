@@ -15,7 +15,8 @@
  */
 
 #include "../Cairo.hpp"
-#include "WidgetPrivateData.hpp"
+#include "SubWidgetPrivateData.hpp"
+#include "WindowPrivateData.hpp"
 
 START_NAMESPACE_DGL
 
@@ -64,15 +65,14 @@ void Rectangle<T>::_draw(const bool outline)
 
 // -----------------------------------------------------------------------
 
-void Widget::PrivateData::display(const uint width,
-                                  const uint height,
-                                  const double autoScaling,
-                                  const bool renderingSubWidget)
+void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaling)
 {
+    /*
     if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
         return;
+    */
 
-    cairo_t* cr = static_cast<const CairoGraphicsContext&>(parent.getGraphicsContext()).cairo;
+    cairo_t* cr = static_cast<const CairoGraphicsContext&>(self->getGraphicsContext()).handle;
     cairo_matrix_t matrix;
     cairo_get_matrix(cr, &matrix);
     cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
@@ -83,7 +83,7 @@ void Widget::PrivateData::display(const uint width,
 
     cairo_set_matrix(cr, &matrix);
 
-    displaySubWidgets(width, height, autoScaling);
+//     displaySubWidgets(width, height, autoScaling);
 }
 
 // -----------------------------------------------------------------------
