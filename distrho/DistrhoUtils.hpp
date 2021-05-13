@@ -64,7 +64,7 @@ inline float round(float __x)
 /*
  * Return a 64-bit number from 4 8-bit numbers.
  */
-static inline
+static inline constexpr
 int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept
 {
     return (a << 24) | (b << 16) | (c << 8) | (d << 0);
@@ -73,7 +73,7 @@ int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_
 /*
  * Return an hexadecimal representation of a MAJ.MIN.MICRO version number.
  */
-static inline
+static inline constexpr
 uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept
 {
     return uint32_t(major << 16) | uint32_t(minor << 8) | (micro << 0);
