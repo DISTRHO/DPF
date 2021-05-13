@@ -113,6 +113,7 @@ void Rectangle<T>::_draw(const bool outline)
 // -----------------------------------------------------------------------
 // Possible template data types
 
+#ifndef DPF_TEST_DEMO
 template class Line<double>;
 template class Line<float>;
 template class Line<int>;
@@ -140,6 +141,7 @@ template class Rectangle<int>;
 template class Rectangle<uint>;
 template class Rectangle<short>;
 template class Rectangle<ushort>;
+#endif
 
 // -----------------------------------------------------------------------
 

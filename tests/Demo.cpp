@@ -20,7 +20,7 @@
 
 #include "tests.hpp"
 
-// #define DPF_TEST_POINT_CPP
+#define DPF_TEST_DEMO
 #include "dgl/OpenGL.hpp"
 #include "dgl/src/pugl.cpp"
 #include "dgl/src/Application.cpp"
