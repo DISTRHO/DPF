@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,8 +17,10 @@
 #include "DistrhoUIPrivateData.hpp"
 #include "src/WindowPrivateData.hpp"
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "src/WidgetPrivateData.hpp"
+# include "src/TopLevelWidgetPrivateData.hpp"
 #endif
+
+#include "NanoVG.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -69,14 +71,12 @@ UI* createUiWrapper(void* const dspPtr, Window* const window)
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 UI::UI(uint width, uint height)
     : UIWidget(width, height),
-      pData(new PrivateData()) {}
+      uiData(new PrivateData()) {}
 #else
 UI::UI(uint width, uint height)
     : UIWidget(*d_lastUiWindow),
-      pData(new PrivateData())
+      uiData(new PrivateData())
 {
-    ((UIWidget*)this)->pData->needsFullViewport = false;
-
     if (width > 0 && height > 0)
         setSize(width, height);
 }
@@ -84,7 +84,7 @@ UI::UI(uint width, uint height)
 
 UI::~UI()
 {
-    delete pData;
+    delete uiData;
 }
 
 #if DISTRHO_UI_USER_RESIZABLE && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -93,10 +93,11 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
     DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(minHeight > 0,);
 
-    pData->automaticallyScale = automaticallyScale;
-    pData->minWidth = minWidth;
-    pData->minHeight = minHeight;
+    uiData->automaticallyScale = automaticallyScale;
+    uiData->minWidth = minWidth;
+    uiData->minHeight = minHeight;
 
+#if 0 /* TODO */
     Window& window(getParentWindow());
 
     const double uiScaleFactor = window.getScaling();
@@ -104,6 +105,7 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
 
     if (d_isNotZero(uiScaleFactor - 1.0))
         setSize(getWidth() * uiScaleFactor, getHeight() * uiScaleFactor);
+#endif
 }
 #endif
 
@@ -112,47 +114,47 @@ void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRa
 
 uint UI::getBackgroundColor() const noexcept
 {
-    return pData->bgColor;
+    return uiData->bgColor;
 }
 
 uint UI::getForegroundColor() const noexcept
 {
-    return pData->fgColor;
+    return uiData->fgColor;
 }
 
 double UI::getSampleRate() const noexcept
 {
-    return pData->sampleRate;
+    return uiData->sampleRate;
 }
 
 void UI::editParameter(uint32_t index, bool started)
 {
-    pData->editParamCallback(index + pData->parameterOffset, started);
+    uiData->editParamCallback(index + uiData->parameterOffset, started);
 }
 
 void UI::setParameterValue(uint32_t index, float value)
 {
-    pData->setParamCallback(index + pData->parameterOffset, value);
+    uiData->setParamCallback(index + uiData->parameterOffset, value);
 }
 
 #if DISTRHO_PLUGIN_WANT_STATE
 void UI::setState(const char* key, const char* value)
 {
-    pData->setStateCallback(key, value);
+    uiData->setStateCallback(key, value);
 }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES
 bool UI::requestStateFile(const char* key)
 {
-    return pData->fileRequestCallback(key);
+    return uiData->fileRequestCallback(key);
 }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 {
-    pData->sendNoteCallback(channel, note, velocity);
+    uiData->sendNoteCallback(channel, note, velocity);
 }
 #endif
 
@@ -162,7 +164,7 @@ void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 
 void* UI::getPluginInstancePointer() const noexcept
 {
-    return pData->dspPtr;
+    return uiData->dspPtr;
 }
 #endif
 
@@ -203,9 +205,9 @@ void UI::uiFileBrowserSelected(const char*)
 }
 # endif
 
-void UI::uiReshape(uint width, uint height)
+void UI::uiReshape(uint, uint)
 {
-    Window::PrivateData::Fallback::onReshape(width, height);
+    pData->fallbackOnResize();
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -213,13 +215,20 @@ void UI::uiReshape(uint width, uint height)
 
 void UI::onResize(const ResizeEvent& ev)
 {
-    if (pData->resizeInProgress)
+    if (uiData->resizeInProgress)
         return;
 
-    pData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
+    uiData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
+
+// -----------------------------------------------------------------------
+// Possible template data types
+
+template class NanoWidget<SubWidget>;
+template class NanoWidget<TopLevelWidget>;
+template class NanoWidget<StandaloneWindow>;

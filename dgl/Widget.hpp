@@ -32,7 +32,7 @@ START_NAMESPACE_DGL
 
 class Application;
 // class NanoWidget;
-// class Window;
+class Window;
 // class StandaloneWindow;
 class SubWidget;
 class TopLevelWidget;
@@ -155,6 +155,12 @@ public:
     Application& getApp() const noexcept;
 
    /**
+      Get the window associated with this widget.
+      This is the same as calling `getTopLevelWidget()->getWindow()`.
+    */
+    Window& getWindow() const noexcept;
+
+   /**
       Get the graphics context associated with this widget.
       GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,
       for example GraphicsContext.
@@ -173,6 +179,10 @@ public:
       On the raw Widget class this function does nothing.
     */
     virtual void repaint() noexcept;
+
+    // TODO deprecated
+    Application& getParentApp() const noexcept { return getApp(); }
+    Window& getParentWindow() const noexcept { return getWindow(); }
 
 protected:
    /**

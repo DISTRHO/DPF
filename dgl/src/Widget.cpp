@@ -127,6 +127,11 @@ Application& Widget::getApp() const noexcept
     return pData->topLevelWidget->getApp();
 }
 
+Window& Widget::getWindow() const noexcept
+{
+    return pData->topLevelWidget->getWindow();
+}
+
 TopLevelWidget* Widget::getTopLevelWidget() const noexcept
 {
     return pData->topLevelWidget;

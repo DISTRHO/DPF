@@ -19,6 +19,12 @@
 
 #include "Widget.hpp"
 
+#ifdef DISTRHO_DEFINES_H_INCLUDED
+START_NAMESPACE_DISTRHO
+class UI;
+END_NAMESPACE_DISTRHO
+#endif
+
 START_NAMESPACE_DGL
 
 class Window;
@@ -55,13 +61,25 @@ public:
     */
     Application& getApp() const noexcept;
 
+   /**
+      Get the window associated with this top-level widget.
+    */
+    Window& getWindow() const noexcept;
+
     void repaint() noexcept;
     void repaint(const Rectangle<uint>& rect) noexcept;
+
+    // TODO deprecated
+    Application& getParentApp() const noexcept { return getApp(); }
+    Window& getParentWindow() const noexcept { return getWindow(); }
 
 private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Window;
+#ifdef DISTRHO_DEFINES_H_INCLUDED
+    friend class DISTRHO_NAMESPACE::UI;
+#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopLevelWidget)
 };

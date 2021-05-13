@@ -57,6 +57,11 @@ void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
     selfw->pData->giveMouseEventForSubWidgets(rev);
 }
 
+void TopLevelWidget::PrivateData::fallbackOnResize()
+{
+    puglFallbackOnResize(window.pData->view);
+}
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

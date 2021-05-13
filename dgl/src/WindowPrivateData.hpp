@@ -78,6 +78,9 @@ struct Window::PrivateData : IdleCallback {
     explicit PrivateData(Application& app, Window* self, Window& transientWindow);
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
+    explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
+
+    /** Constructor for an embed Window, with a few extra hints from the host side. */
     explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
                          uint width, uint height, double scaling, bool resizable);
 

@@ -76,6 +76,36 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
 
 Window::PrivateData::PrivateData(Application& a, Window* const s,
                                  const uintptr_t parentWindowHandle,
+                                 const double scale, const bool resizable)
+    : app(a),
+      appData(a.pData),
+      self(s),
+      view(puglNewView(appData->world)),
+      topLevelWidget(nullptr),
+      isClosed(parentWindowHandle == 0),
+      isVisible(parentWindowHandle != 0),
+      isEmbed(parentWindowHandle != 0),
+      scaling(scale),
+      autoScaling(1.0),
+      pendingVisibility(kPendingVisibilityNone)
+{
+    if (isEmbed)
+    {
+        // puglSetDefaultSize(DEFAULT_WIDTH, DEFAULT_HEIGHT, height);
+        puglSetParentWindow(view, parentWindowHandle);
+    }
+
+    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
+
+    if (isEmbed)
+    {
+        appData->oneWindowShown();
+        puglShow(view);
+    }
+}
+
+Window::PrivateData::PrivateData(Application& a, Window* const s,
+                                 const uintptr_t parentWindowHandle,
                                  const uint width, const uint height,
                                  const double scale, const bool resizable)
     : app(a),

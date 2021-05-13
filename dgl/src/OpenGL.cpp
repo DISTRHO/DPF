@@ -111,6 +111,37 @@ void Rectangle<T>::_draw(const bool outline)
 }
 
 // -----------------------------------------------------------------------
+// Possible template data types
+
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<uint>;
+template class Line<short>;
+template class Line<ushort>;
+
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<uint>;
+template class Circle<short>;
+template class Circle<ushort>;
+
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<uint>;
+template class Triangle<short>;
+template class Triangle<ushort>;
+
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
+
+// -----------------------------------------------------------------------
 
 OpenGLImage::OpenGLImage()
     : ImageBase(),

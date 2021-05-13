@@ -26,10 +26,10 @@
 typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
-typedef DGL_NAMESPACE::NanoWidget UIWidget;
+typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
 #else
-# include "../dgl/Widget.hpp"
-typedef DGL_NAMESPACE::Widget UIWidget;
+# include "../dgl/TopLevelWidget.hpp"
+typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #endif
 
 #ifdef DGL_CAIRO
@@ -259,7 +259,7 @@ protected:
 
 private:
     struct PrivateData;
-    PrivateData* const pData;
+    PrivateData* const uiData;
     friend class UIExporter;
     friend class UIExporterWindow;
 

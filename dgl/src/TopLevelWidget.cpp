@@ -35,6 +35,11 @@ Application& TopLevelWidget::getApp() const noexcept
     return pData->window.getApp();
 }
 
+Window& TopLevelWidget::getWindow() const noexcept
+{
+    return pData->window;
+}
+
 void TopLevelWidget::repaint() noexcept
 {
     pData->window.repaint();

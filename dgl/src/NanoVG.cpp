@@ -15,7 +15,7 @@
  */
 
 #include "../NanoVG.hpp"
-#include "WidgetPrivateData.hpp"
+#include "SubWidgetPrivateData.hpp"
 
 #ifndef DGL_NO_SHARED_RESOURCES
 # include "Resources.hpp"
@@ -956,67 +956,59 @@ struct NanoWidget<BaseWidget>::PrivateData {
     }
 };
 
+// -----------------------------------------------------------------------
 // SubWidget
-template <class BaseWidget>
-NanoWidget<BaseWidget>::NanoWidget(Widget* const parent, int flags)
-    : BaseWidget(parent),
+
+template <>
+NanoWidget<SubWidget>::NanoWidget(Widget* const parent, int flags)
+    : SubWidget(parent),
       NanoVG(flags),
       nData(new PrivateData(this))
 {
-    BaseWidget::pData->needsViewportScaling = true;
+    pData->needsViewportScaling = true;
 }
 
-// TopLevelWidget
-template <class BaseWidget>
-NanoWidget<BaseWidget>::NanoWidget(Window& windowToMapTo, int flags)
-    : BaseWidget(windowToMapTo),
-      NanoVG(flags),
-      nData(new PrivateData(this))
-{
-}
-
-// StandaloneWindow
-template <class BaseWidget>
-NanoWidget<BaseWidget>::NanoWidget(Application& app, int flags)
-    : BaseWidget(app),
-      NanoVG(flags),
-      nData(new PrivateData(this))
-{
-}
-
-/*
-NanoWidget::NanoWidget(Window& parent, int flags)
-    : Widget(parent),
-      NanoVG(flags),
-      nData(new PrivateData(this))
-{
-    pData->needsScaling = true;
-}
-
-NanoWidget::NanoWidget(Widget* groupWidget, int flags)
-    : Widget(groupWidget, true),
-      NanoVG(flags),
-      nData(new PrivateData(this))
-{
-    pData->needsScaling = true;
-}
-
-NanoWidget::NanoWidget(NanoWidget* groupWidget)
-    : Widget(groupWidget, false),
-      NanoVG(groupWidget),
-      nData(new PrivateData(this))
-{
-    pData->needsScaling = true;
-    pData->skipDisplay = true;
-    groupWidget->nData->subWidgets.push_back(this);
-}
-*/
-
-template <class BaseWidget>
-NanoWidget<BaseWidget>::~NanoWidget()
+template <>
+NanoWidget<SubWidget>::~NanoWidget()
 {
     delete nData;
 }
+
+// -----------------------------------------------------------------------
+// TopLevelWidget
+
+template <>
+NanoWidget<TopLevelWidget>::NanoWidget(Window& windowToMapTo, int flags)
+    : TopLevelWidget(windowToMapTo),
+      NanoVG(flags),
+      nData(new PrivateData(this))
+{
+}
+
+template <>
+NanoWidget<TopLevelWidget>::~NanoWidget()
+{
+    delete nData;
+}
+
+// -----------------------------------------------------------------------
+// StandaloneWindow
+
+template <>
+NanoWidget<StandaloneWindow>::NanoWidget(Application& app, int flags)
+    : StandaloneWindow(app),
+      NanoVG(flags),
+      nData(new PrivateData(this))
+{
+}
+
+template <>
+NanoWidget<StandaloneWindow>::~NanoWidget()
+{
+    delete nData;
+}
+
+// -----------------------------------------------------------------------
 
 template <class BaseWidget>
 void NanoWidget<BaseWidget>::onDisplay()

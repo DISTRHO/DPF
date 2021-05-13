@@ -56,7 +56,17 @@ public:
     explicit Window(Application& app);
 
    /**
-      Constructor for an embed Window, typically used in modules or plugins that run inside another host.
+      Constructor for an embed Window without known size,
+      typically used in modules or plugins that run inside another host.
+    */
+    explicit Window(Application& app,
+                    uintptr_t parentWindowHandle,
+                    double scaling,
+                    bool resizable);
+
+   /**
+      Constructor for an embed Window with known size,
+      typically used in modules or plugins that run inside another host.
     */
     explicit Window(Application& app,
                     uintptr_t parentWindowHandle,

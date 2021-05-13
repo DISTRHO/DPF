@@ -66,7 +66,7 @@ public:
           fIsReady(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fUI->uiData != nullptr,);
 
         setSize(fUI->getWidth(), fUI->getHeight());
     }
@@ -92,24 +92,27 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        UI::PrivateData* const pData = fUI->pData;
-        DISTRHO_SAFE_ASSERT_RETURN(pData != nullptr,);
+        UI::PrivateData* const uiData = fUI->uiData;
+        DISTRHO_SAFE_ASSERT_RETURN(uiData != nullptr,);
 
-        if (pData->automaticallyScale)
+#if 0 /* TODO */
+        if (uiData->automaticallyScale)
         {
-            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(pData->minWidth);
-            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(pData->minHeight);
+            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(uiData->minWidth);
+            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(uiData->minHeight);
             _setAutoScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
         }
+#endif
 
-        pData->resizeInProgress = true;
+        uiData->resizeInProgress = true;
         fUI->setSize(width, height);
-        pData->resizeInProgress = false;
+        uiData->resizeInProgress = false;
 
         fUI->uiReshape(width, height);
         fIsReady = true;
     }
 
+#if 0 /* TODO */
 # ifndef DGL_FILE_BROWSER_DISABLED
     // custom file-browser selected
     void fileBrowserSelected(const char* filename) override
@@ -119,6 +122,7 @@ protected:
         fUI->uiFileBrowserSelected(filename);
     }
 # endif
+#endif
 
 private:
     UI* const fUI;
@@ -153,7 +157,7 @@ public:
           fChangingSize(false),
           fUI(glWindow.getUI()),
 #endif
-          fData((fUI != nullptr) ? fUI->pData : nullptr)
+          fData((fUI != nullptr) ? fUI->uiData : nullptr)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
@@ -325,8 +329,8 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        glWindow.addIdleCallback(cb);
         glWindow.setVisible(true);
+        glApp.addIdleCallback(cb);
         glApp.exec();
     }
 
@@ -338,7 +342,9 @@ public:
 
     void focus()
     {
+#if 0 /* TODO */
         glWindow.focus();
+#endif
     }
 
     bool idle()
@@ -415,7 +421,9 @@ public:
 
     void setWindowTransientWinId(const uintptr_t winId)
     {
+#if 0 /* TODO */
         glWindow.setTransientWinId(winId);
+#endif
     }
 
     bool setWindowVisible(const bool yesNo)
@@ -427,12 +435,16 @@ public:
 
     bool handlePluginKeyboard(const bool press, const uint key)
     {
+#if 0 /* TODO */
         return glWindow.handlePluginKeyboard(press, key);
+#endif
     }
 
     bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key)
     {
+#if 0 /* TODO */
         return glWindow.handlePluginSpecial(press, key);
+#endif
     }
 #endif
 
