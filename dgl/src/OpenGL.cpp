@@ -365,12 +365,11 @@ void SubWidget::PrivateData::display(uint width, uint height, double autoScaling
     {
         // full viewport size
         glViewport(0,
-                    -(height * autoScaling - height),
-                    width * autoScaling,
-                    height * autoScaling);
+                   -(height * autoScaling - height),
+                   width * autoScaling,
+                   height * autoScaling);
     }
-    /*
-    else if (needsScaling)
+    else if (viewportNeedsScaling)
     {
         // limit viewport to widget bounds
         glViewport(absolutePos.getX(),
@@ -378,7 +377,6 @@ void SubWidget::PrivateData::display(uint width, uint height, double autoScaling
                    self->getWidth(),
                    self->getHeight());
     }
-    */
     else
     {
         // only set viewport pos

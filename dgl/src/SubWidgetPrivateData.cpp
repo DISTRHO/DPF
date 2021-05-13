@@ -24,7 +24,8 @@ START_NAMESPACE_DGL
 SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const pw)
     : self(s),
       parentWidget(pw),
-      absolutePos()
+      absolutePos(),
+      viewportNeedsScaling(false)
 {
     parentWidget->pData->subWidgets.push_back(self);
 }

@@ -124,6 +124,7 @@ private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Widget;
+    template <class BaseWidget> friend class NanoWidget;
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SubWidget)
 };
 

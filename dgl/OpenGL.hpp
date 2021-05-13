@@ -232,10 +232,6 @@ public:
     // TODO mark as deprecated
     void drawAt(const Point<int>& pos);
 
-protected:
-   /** @internal */
-//     void _drawAt(const Point<int>& pos) override;
-
 private:
     GLenum fFormat;
     GLenum fType;
