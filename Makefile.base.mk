@@ -314,6 +314,19 @@ LIBLO_LIBS   = $(shell $(PKG_CONFIG) --libs liblo)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Backwards-compatible HAVE_DGL
+
+ifeq ($(MACOS_OR_WINDOWS),true)
+HAVE_DGL = true
+else ifeq ($(HAVE_OPENGL),true)
+ifeq ($(HAIKU),true)
+HAVE_DGL = true
+else
+HAVE_DGL = $(HAVE_X11)
+endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set app extension
 
 ifeq ($(WINDOWS),true)
