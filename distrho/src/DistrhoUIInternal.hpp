@@ -95,15 +95,6 @@ protected:
         UI::PrivateData* const uiData = fUI->uiData;
         DISTRHO_SAFE_ASSERT_RETURN(uiData != nullptr,);
 
-#if 0 /* TODO */
-        if (uiData->automaticallyScale)
-        {
-            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(uiData->minWidth);
-            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(uiData->minHeight);
-            _setAutoScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
-        }
-#endif
-
         uiData->resizeInProgress = true;
         fUI->setSize(width, height);
         uiData->resizeInProgress = false;
@@ -342,9 +333,7 @@ public:
 
     void focus()
     {
-#if 0 /* TODO */
         glWindow.focus();
-#endif
     }
 
     bool idle()

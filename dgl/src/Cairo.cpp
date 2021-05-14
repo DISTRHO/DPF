@@ -65,7 +65,7 @@ void Rectangle<T>::_draw(const bool outline)
 
 // -----------------------------------------------------------------------
 
-void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaling)
+void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
     /*
     if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
@@ -83,7 +83,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 
     cairo_set_matrix(cr, &matrix);
 
-//     displaySubWidgets(width, height, autoScaling);
+//     displaySubWidgets(width, height, autoScaleFactor);
 }
 
 // -----------------------------------------------------------------------

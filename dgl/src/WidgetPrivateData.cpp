@@ -53,7 +53,7 @@ Widget::PrivateData::~PrivateData()
     subWidgets.clear();
 }
 
-void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double scaling)
+void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double autoScaleFactor)
 {
     if (subWidgets.size() == 0)
         return;
@@ -63,7 +63,7 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
         SubWidget* const subwidget(*it);
 
         if (subwidget->isVisible())
-            subwidget->pData->display(width, height, scaling);
+            subwidget->pData->display(width, height, autoScaleFactor);
     }
 }
 

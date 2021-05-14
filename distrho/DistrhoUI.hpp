@@ -69,15 +69,6 @@ public:
     */
     virtual ~UI();
 
-#if DISTRHO_UI_USER_RESIZABLE && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   /**
-      Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
-      @see Window::setGeometryConstraints(uint,uint,bool)
-      @see Window::setScaling(double)
-    */
-    void setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale = false);
-#endif
-
    /* --------------------------------------------------------------------------------------------------------
     * Host state */
 

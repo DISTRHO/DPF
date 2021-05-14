@@ -86,6 +86,14 @@ START_NAMESPACE_DGL
 #include "pugl-upstream/src/implementation.c"
 
 // --------------------------------------------------------------------------------------------------------------------
+// expose backend enter
+
+void puglBackendEnter(PuglView* view)
+{
+    view->backend->enter(view, NULL);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // missing in pugl, directly returns title char* pointer
 
 const char* puglGetWindowTitle(const PuglView* view)
@@ -94,11 +102,68 @@ const char* puglGetWindowTitle(const PuglView* view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// expose backend enter
+// bring view window into the foreground, aka "raise" window
 
-void puglBackendEnter(PuglView* view)
+void puglRaiseWindow(PuglView* view)
 {
-    view->backend->enter(view, NULL);
+#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
+    // nothing here yet
+#elif defined(DISTRHO_OS_WINDOWS)
+    SetForegroundWindow(view->impl->hwnd);
+    SetActiveWindow(view->impl->hwnd);
+#else
+    XRaiseWindow(view->impl->display, view->impl->win);
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// set backend that matches current build
+
+void puglSetMatchingBackendForCurrentBuild(PuglView* view)
+{
+#ifdef DGL_CAIRO
+    puglSetBackend(view, puglCairoBackend());
+#endif
+#ifdef DGL_OPENGL
+    puglSetBackend(view, puglGlBackend());
+#endif
+#ifdef DGL_Vulkan
+    puglSetBackend(view, puglVulkanBackend());
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// Combine puglSetMinSize and puglSetAspectRatio
+
+PuglStatus puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect)
+{
+    view->minWidth  = width;
+    view->minHeight = height;
+
+    if (aspect) {
+        view->minAspectX = width;
+        view->minAspectY = height;
+        view->maxAspectX = width;
+        view->maxAspectY = height;
+    }
+
+#if defined(DISTRHO_OS_HAIKU)
+    // nothing?
+#elif defined(DISTRHO_OS_MAC)
+    if (view->impl->window)
+    {
+        [view->impl->window setContentMinSize:sizePoints(view, view->minWidth, view->minHeight)];
+
+        if (aspect)
+            [view->impl->window setContentAspectRatio:sizePoints(view, view->minAspectX, view->minAspectY)];
+    }
+#elif defined(DISTRHO_OS_WINDOWS)
+    // nothing
+#else
+    return updateSizeHints(view);
+#endif
+
+    return PUGL_SUCCESS;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -159,22 +224,6 @@ PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int he
     view->frame.width = width;
     view->frame.height = height;
     return PUGL_SUCCESS;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// set backend that matches current build
-
-void puglSetMatchingBackendForCurrentBuild(PuglView* view)
-{
-#ifdef DGL_CAIRO
-    puglSetBackend(view, puglCairoBackend());
-#endif
-#ifdef DGL_OPENGL
-    puglSetBackend(view, puglGlBackend());
-#endif
-#ifdef DGL_Vulkan
-    puglSetBackend(view, puglVulkanBackend());
-#endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -66,8 +66,13 @@ public:
     */
     Window& getWindow() const noexcept;
 
+    // TODO group stuff after here, convenience functions present in Window class
     void repaint() noexcept;
     void repaint(const Rectangle<uint>& rect) noexcept;
+    void setGeometryConstraints(uint minimumWidth,
+                                uint minimumHeight,
+                                bool keepAspectRatio = false,
+                                bool automaticallyScale = false);
 
     // TODO deprecated
     Application& getParentApp() const noexcept { return getApp(); }

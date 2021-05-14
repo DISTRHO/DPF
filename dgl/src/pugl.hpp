@@ -33,21 +33,29 @@ START_NAMESPACE_DGL
 
 PUGL_BEGIN_DECLS
 
-// missing in pugl, directly returns title char* pointer
-PUGL_API const char*
-puglGetWindowTitle(const PuglView* view);
-
 // expose backend enter
 PUGL_API void
 puglBackendEnter(PuglView* view);
 
-// set window size without changing frame x/y position
-PUGL_API PuglStatus
-puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
+// missing in pugl, directly returns title char* pointer
+PUGL_API const char*
+puglGetWindowTitle(const PuglView* view);
+
+// bring view window into the foreground, aka "raise" window
+PUGL_API void
+puglRaiseWindow(PuglView* view);
 
 // DGL specific, assigns backend that matches current DGL build
 PUGL_API void
 puglSetMatchingBackendForCurrentBuild(PuglView* view);
+
+// Combine puglSetMinSize and puglSetAspectRatio
+PUGL_API PuglStatus
+puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect);
+
+// set window size without changing frame x/y position
+PUGL_API PuglStatus
+puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
 
 // DGL specific, build-specific drawing prepare
 PUGL_API void

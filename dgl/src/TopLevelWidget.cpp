@@ -50,6 +50,14 @@ void TopLevelWidget::repaint(const Rectangle<uint>& rect) noexcept
     pData->window.repaint(rect);
 }
 
+void TopLevelWidget::setGeometryConstraints(const uint minimumWidth,
+                                            const uint minimumHeight,
+                                            const bool keepAspectRatio,
+                                            const bool automaticallyScale)
+{
+    pData->window.setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale);
+}
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL

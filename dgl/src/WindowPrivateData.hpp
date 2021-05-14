@@ -58,11 +58,15 @@ struct Window::PrivateData : IdleCallback {
     /** Whether this Window is embed into another (usually not DGL-controlled) Window. */
     const bool isEmbed;
 
-    /** Scaling to report to widgets on request, purely informational. */
-    double scaling;
+    /** Scale factor to report to widgets on request, purely informational. */
+    double scaleFactor;
 
     /** Automatic scaling to apply on widgets, implemented internally. */
-    double autoScaling;
+    bool autoScaling;
+    double autoScaleFactor;
+
+    /** Pugl minWidth, minHeight access. */
+    uint minWidth, minHeight;
 
     /** Pending state of visility, used for the action to be triggered during Pugl create events. */
     enum PendingVisibility {
@@ -101,6 +105,8 @@ struct Window::PrivateData : IdleCallback {
       *       A closed window is always hidden, but the reverse is not always true.
       */
     void close();
+
+    void setResizable(bool resizable);
 
     const GraphicsContext& getGraphicsContext() const noexcept;
 

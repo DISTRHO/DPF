@@ -49,8 +49,11 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaling(1.0),
-      autoScaling(1.0),
+      scaleFactor(1.0),
+      autoScaling(false),
+      autoScaleFactor(1.0),
+      minWidth(0),
+      minHeight(0),
       pendingVisibility(kPendingVisibilityNone)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -65,8 +68,11 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaling(1.0),
-      autoScaling(1.0),
+      scaleFactor(1.0),
+      autoScaling(false),
+      autoScaleFactor(1.0),
+      minWidth(0),
+      minHeight(0),
       pendingVisibility(kPendingVisibilityNone)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -85,8 +91,11 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaling(scale),
-      autoScaling(1.0),
+      scaleFactor(scale),
+      autoScaling(false),
+      autoScaleFactor(1.0),
+      minWidth(0),
+      minHeight(0),
       pendingVisibility(kPendingVisibilityNone)
 {
     if (isEmbed)
@@ -116,8 +125,11 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaling(scale),
-      autoScaling(1.0),
+      scaleFactor(scale),
+      autoScaling(false),
+      autoScaleFactor(1.0),
+      minWidth(0),
+      minHeight(0),
       pendingVisibility(kPendingVisibilityNone)
 {
     if (isEmbed)
@@ -293,6 +305,20 @@ void Window::PrivateData::close()
 
 // -----------------------------------------------------------------------
 
+void Window::PrivateData::setResizable(const bool resizable)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(! isEmbed,);
+
+    DGL_DBG("Window setResizable called\n");
+
+    puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
+#ifdef DISTRHO_OS_WINDOWS
+    puglWin32SetWindowResizable(view, resizable);
+#endif
+}
+
+// -----------------------------------------------------------------------
+
 void Window::PrivateData::idleCallback()
 {
 // #if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
@@ -328,6 +354,13 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
     DGL_DBGp("PUGL: onReshape : %i %i\n", width, height);
+
+    if (autoScaling)
+    {
+        const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(minWidth);
+        const double scaleVertical   = static_cast<double>(height) / static_cast<double>(minHeight);
+        autoScaleFactor = scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical;
+    }
 
     self->onReshape(width, height);
 

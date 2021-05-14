@@ -124,6 +124,9 @@ public:
     */
     void close();
 
+    bool isResizable() const noexcept;
+    void setResizable(bool resizable);
+
    /**
       Get width.
     */
@@ -159,8 +162,27 @@ public:
     */
     void setSize(const Size<uint>& size);
 
+   /**
+      Get the title of the window previously set with setTitle().
+    */
     const char* getTitle() const noexcept;
+
+   /**
+      Set the title of the window, typically displayed in the title bar or in window switchers.
+
+      This only makes sense for non-embedded windows.
+    */
     void setTitle(const char* title);
+
+   /**
+      Check if key repeat events are ignored.
+    */
+    bool isIgnoringKeyRepeat() const noexcept;
+
+   /**
+      Set to ignore (or not) key repeat events according to @a ignore.
+    */
+    void setIgnoringKeyRepeat(bool ignore) noexcept;
 
    /**
       Get the application associated with this window.
@@ -177,8 +199,46 @@ public:
     */
     uintptr_t getNativeWindowHandle() const noexcept;
 
+   /**
+      Get the scale factor requested for this window.
+      This is purely informational, and up to developers to choose what to do with it.
+
+      If you do not want to deal with this yourself,
+      consider using setGeometryConstraints() where you can specify to automatically scale the window contents.
+      @see setGeometryConstraints
+    */
+    double getScaleFactor() const noexcept;
+
+   /**
+      Grab the keyboard input focus.
+    */
+    void focus();
+
+   /**
+      Request repaint of this window, for the entire area.
+    */
     void repaint() noexcept;
+
+   /**
+      Request partial repaint of this window, with bounds according to @a rect.
+    */
     void repaint(const Rectangle<uint>& rect) noexcept;
+
+   /**
+      Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.
+    */
+    void setGeometryConstraints(uint minimumWidth,
+                                uint minimumHeight,
+                                bool keepAspectRatio = false,
+                                bool automaticallyScale = false);
+
+    /*
+    void setTransientWinId(uintptr_t winId);
+    */
+
+    // TODO deprecated
+    inline bool getIgnoringKeyRepeat() const noexcept { return isIgnoringKeyRepeat(); }
+    inline double getScaling() const noexcept { return getScaling(); }
 
 protected:
    /**
@@ -266,27 +326,14 @@ END_NAMESPACE_DGL
 
     void exec(bool lockWait = false);
 
-    void focus();
-
-#ifndef DGL_FILE_BROWSER_DISABLED
-    bool openFileBrowser(const FileBrowserOptions& options);
-#endif
-
-    bool isResizable() const noexcept;
-    void setResizable(bool resizable);
-
-    bool getIgnoringKeyRepeat() const noexcept;
-    void setIgnoringKeyRepeat(bool ignore) noexcept;
-
-    void setGeometryConstraints(uint width, uint height, bool aspect);
-    void setTransientWinId(uintptr_t winId);
-
-    double getScaling() const noexcept;
-
     const GraphicsContext& getGraphicsContext() const noexcept;
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);
+
+#ifndef DGL_FILE_BROWSER_DISABLED
+    bool openFileBrowser(const FileBrowserOptions& options);
+#endif
 
 
 protected:

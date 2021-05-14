@@ -33,7 +33,7 @@ struct SubWidget::PrivateData {
     ~PrivateData();
 
     // NOTE display function is different depending on build type, must call displaySubWidgets at the end
-    void display(uint width, uint height, double autoScaling);
+    void display(uint width, uint height, double autoScaleFactor);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };

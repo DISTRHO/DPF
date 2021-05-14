@@ -81,6 +81,16 @@ void Window::close()
     pData->close();
 }
 
+bool Window::isResizable() const noexcept
+{
+    return puglGetViewHint(pData->view, PUGL_RESIZABLE) == PUGL_TRUE;
+}
+
+void Window::setResizable(const bool resizable)
+{
+    pData->setResizable(resizable);
+}
+
 uint Window::getWidth() const noexcept
 {
     return puglGetFrame(pData->view).width;
@@ -129,6 +139,16 @@ void Window::setTitle(const char* const title)
     puglSetWindowTitle(pData->view, title);
 }
 
+bool Window::isIgnoringKeyRepeat() const noexcept
+{
+    return puglGetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT) == PUGL_TRUE;
+}
+
+void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
+{
+    puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
+}
+
 Application& Window::getApp() const noexcept
 {
     return pData->app;
@@ -137,6 +157,19 @@ Application& Window::getApp() const noexcept
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
     return puglGetNativeWindow(pData->view);
+}
+
+double Window::getScaleFactor() const noexcept
+{
+    return pData->scaleFactor;
+}
+
+void Window::focus()
+{
+    if (! pData->isEmbed)
+        puglRaiseWindow(pData->view);
+
+    puglGrabFocus(pData->view);
 }
 
 void Window::repaint() noexcept
@@ -153,6 +186,41 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
         static_cast<double>(rect.getHeight()),
     };
     puglPostRedisplayRect(pData->view, prect);
+}
+
+void Window::setGeometryConstraints(const uint minimumWidth,
+                                    const uint minimumHeight,
+                                    const bool keepAspectRatio,
+                                    const bool automaticallyScale)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(minimumWidth > 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(minimumHeight > 0,);
+
+    if (pData->isEmbed) {
+        // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
+        DISTRHO_SAFE_ASSERT_RETURN(isResizable(),);
+    } else if (! isResizable()) {
+        setResizable(true);
+    }
+
+    pData->minWidth = minimumWidth;
+    pData->minHeight = minimumHeight;
+    pData->autoScaling = automaticallyScale;
+
+    const double scaleFactor = pData->scaleFactor;
+
+    puglSetGeometryConstraints(pData->view,
+                               minimumWidth * scaleFactor,
+                               minimumHeight * scaleFactor,
+                               keepAspectRatio);
+
+    if (scaleFactor != 1.0)
+    {
+        const Size<uint> size(getSize());
+
+        setSize(size.getWidth() * scaleFactor,
+                size.getHeight() * scaleFactor);
+    }
 }
 
 void Window::onReshape(uint, uint)
@@ -173,62 +241,9 @@ void Window::exec(bool lockWait)
 }
 #endif
 
-void Window::focus()
-{
-    if (! pData->fUsingEmbed)
-        puglRaiseWindow(pData->fView);
-
-    puglGrabFocus(pData->fView);
-}
-
-bool Window::isResizable() const noexcept
-{
-    return puglGetViewHint(pData->fView, PUGL_RESIZABLE) == PUGL_TRUE;
-}
-
-void Window::setResizable(const bool resizable)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(pData->fUsingEmbed,);
-    if (pData->fUsingEmbed)
-    {
-        DGL_DBG("Window setResizable cannot be called when embedded\n");
-        return;
-    }
-
-    DGL_DBG("Window setResizable called\n");
-
-    puglSetViewHint(pData->fView, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
-#ifdef DISTRHO_OS_WINDOWS
-    puglWin32SetWindowResizable(pData->fView, resizable);
-#endif
-}
-
-bool Window::getIgnoringKeyRepeat() const noexcept
-{
-    return puglGetViewHint(pData->fView, PUGL_IGNORE_KEY_REPEAT) == PUGL_TRUE;
-}
-
-void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
-{
-    puglSetViewHint(pData->fView, PUGL_IGNORE_KEY_REPEAT, ignore);
-}
-
-void Window::setGeometryConstraints(const uint width, const uint height, bool aspect)
-{
-    // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
-    DISTRHO_SAFE_ASSERT_RETURN(isResizable(),);
-
-    puglUpdateGeometryConstraints(pData->fView, width, height, aspect);
-}
-
 void Window::setTransientWinId(const uintptr_t winId)
 {
     puglSetTransientFor(pData->fView, winId);
-}
-
-double Window::getScaling() const noexcept
-{
-    return pData->fScaling;
 }
 
 #if 0
@@ -237,13 +252,6 @@ Application& Window::getApp() const noexcept
     return pData->fApp;
 }
 #endif
-
-void Window::_setAutoScaling(double scaling) noexcept
-{
-    DISTRHO_SAFE_ASSERT_RETURN(scaling > 0.0,);
-
-    pData->fAutoScaling = scaling;
-}
 
 void Window::_addWidget(Widget* const widget)
 {

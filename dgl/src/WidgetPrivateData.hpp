@@ -41,7 +41,7 @@ struct Widget::PrivateData {
     explicit PrivateData(Widget* const s, Widget* const pw);
     ~PrivateData();
 
-    void displaySubWidgets(uint width, uint height, double autoScaling);
+    void displaySubWidgets(uint width, uint height, double autoScaleFactor);
     void giveMouseEventForSubWidgets(Events::MouseEvent& ev);
 
     static TopLevelWidget* findTopLevelWidget(Widget* const w);

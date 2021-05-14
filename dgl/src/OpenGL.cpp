@@ -327,7 +327,7 @@ void OpenGLImage::drawAt(const Point<int>& pos)
 #if 0
 void Widget::PrivateData::display(const uint width,
                                   const uint height,
-                                  const double autoScaling,
+                                  const double autoScaleFactor,
                                   const bool renderingSubWidget)
 {
     printf("Widget::PrivateData::display INIT\n");
@@ -346,9 +346,9 @@ void Widget::PrivateData::display(const uint width,
     {
         // full viewport size
         glViewport(0,
-                    -(height * autoScaling - height),
-                    width * autoScaling,
-                    height * autoScaling);
+                    -(height * autoScaleFactor - height),
+                    width * autoScaleFactor,
+                    height * autoScaleFactor);
     }
 #if 0
     else if (needsScaling)
@@ -362,16 +362,16 @@ void Widget::PrivateData::display(const uint width,
     else
     {
         // only set viewport pos
-        glViewport(absolutePos.getX() * autoScaling,
-                    -std::round((height * autoScaling - height) + (absolutePos.getY() * autoScaling)),
-                    std::round(width * autoScaling),
-                    std::round(height * autoScaling));
+        glViewport(absolutePos.getX() * autoScaleFactor,
+                    -std::round((height * autoScaleFactor - height) + (absolutePos.getY() * autoScaleFactor)),
+                    std::round(width * autoScaleFactor),
+                    std::round(height * autoScaleFactor));
 
         // then cut the outer bounds
-        glScissor(absolutePos.getX() * autoScaling,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaling),
-                  std::round(self->getWidth() * autoScaling),
-                  std::round(self->getHeight() * autoScaling));
+        glScissor(absolutePos.getX() * autoScaleFactor,
+                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaleFactor),
+                  std::round(self->getWidth() * autoScaleFactor),
+                  std::round(self->getHeight() * autoScaleFactor));
 
         glEnable(GL_SCISSOR_TEST);
         needsDisableScissor = true;
@@ -387,11 +387,11 @@ void Widget::PrivateData::display(const uint width,
         needsDisableScissor = false;
     }
 
-    displaySubWidgets(width, height, autoScaling);
+    displaySubWidgets(width, height, autoScaleFactor);
 }
 #endif
 
-void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaling)
+void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
     bool needsDisableScissor = false;
 
@@ -399,9 +399,9 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     {
         // full viewport size
         glViewport(0,
-                   -(height * autoScaling - height),
-                   width * autoScaling,
-                   height * autoScaling);
+                   -(height * autoScaleFactor - height),
+                   width * autoScaleFactor,
+                   height * autoScaleFactor);
     }
     else if (needsViewportScaling)
     {
@@ -414,16 +414,16 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     else
     {
         // only set viewport pos
-        glViewport(absolutePos.getX() * autoScaling,
-                    -std::round((height * autoScaling - height) + (absolutePos.getY() * autoScaling)),
-                    std::round(width * autoScaling),
-                    std::round(height * autoScaling));
+        glViewport(absolutePos.getX() * autoScaleFactor,
+                    -std::round((height * autoScaleFactor - height) + (absolutePos.getY() * autoScaleFactor)),
+                    std::round(width * autoScaleFactor),
+                    std::round(height * autoScaleFactor));
 
         // then cut the outer bounds
-        glScissor(absolutePos.getX() * autoScaling,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaling),
-                  std::round(self->getWidth() * autoScaling),
-                  std::round(self->getHeight() * autoScaling));
+        glScissor(absolutePos.getX() * autoScaleFactor,
+                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaleFactor),
+                  std::round(self->getWidth() * autoScaleFactor),
+                  std::round(self->getHeight() * autoScaleFactor));
 
         glEnable(GL_SCISSOR_TEST);
         needsDisableScissor = true;
@@ -438,7 +438,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
         needsDisableScissor = false;
     }
 
-//     displaySubWidgets(width, height, autoScaling);
+//     displaySubWidgets(width, height, autoScaleFactor);
 }
 
 // -----------------------------------------------------------------------
@@ -446,18 +446,22 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 void TopLevelWidget::PrivateData::display()
 {
     const Size<uint> size(window.getSize());
-    const uint width         = size.getWidth();
-    const uint height        = size.getHeight();
-    const double autoScaling = window.pData->autoScaling;
+    const uint width  = size.getWidth();
+    const uint height = size.getHeight();
+
+    const double autoScaleFactor = window.pData->autoScaleFactor;
 
     // full viewport size
-    glViewport(0, -(height * autoScaling - height), width * autoScaling, height * autoScaling);
+    if (window.pData->autoScaling)
+        glViewport(0, -height, width, height);
+    else
+        glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
 
     // main widget drawing
     self->onDisplay();
 
     // now draw subwidgets if there are any
-    selfw->pData->displaySubWidgets(width, height, autoScaling);
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
 }
 
 // -----------------------------------------------------------------------

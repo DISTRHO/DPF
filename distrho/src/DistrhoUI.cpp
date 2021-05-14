@@ -87,28 +87,6 @@ UI::~UI()
     delete uiData;
 }
 
-#if DISTRHO_UI_USER_RESIZABLE && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-void UI::setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(minWidth > 0,);
-    DISTRHO_SAFE_ASSERT_RETURN(minHeight > 0,);
-
-    uiData->automaticallyScale = automaticallyScale;
-    uiData->minWidth = minWidth;
-    uiData->minHeight = minHeight;
-
-#if 0 /* TODO */
-    Window& window(getParentWindow());
-
-    const double uiScaleFactor = window.getScaling();
-    window.setGeometryConstraints(minWidth * uiScaleFactor, minHeight * uiScaleFactor, keepAspectRatio);
-
-    if (d_isNotZero(uiScaleFactor - 1.0))
-        setSize(getWidth() * uiScaleFactor, getHeight() * uiScaleFactor);
-#endif
-}
-#endif
-
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
 

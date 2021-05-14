@@ -41,12 +41,12 @@ void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
 {
     Events::MouseEvent rev = ev;
 
-    const double autoScaling = window.pData->autoScaling;
-
-    if (autoScaling != 1.0)
+    if (window.pData->autoScaling)
     {
-        rev.pos.setX(ev.pos.getX() / autoScaling);
-        rev.pos.setY(ev.pos.getY() / autoScaling);
+        const double autoScaleFactor = window.pData->autoScaleFactor;
+
+        rev.pos.setX(ev.pos.getX() / autoScaleFactor);
+        rev.pos.setY(ev.pos.getY() / autoScaleFactor);
     }
 
     // give top-level widget chance to catch this event first
