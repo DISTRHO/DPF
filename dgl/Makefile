@@ -59,6 +59,7 @@ OBJS_cairo = $(OBJS_common) \
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_opengl = $(OBJS_common) \
+	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/OpenGL.cpp.opengl.o \
 	../build/dgl/NanoVG.cpp.opengl.o \
 	../build/dgl/pugl.cpp.opengl.o

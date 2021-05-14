@@ -100,6 +100,11 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->parentWidget->repaint();
 }
 
+Widget* SubWidget::getParentWidget() const noexcept
+{
+    return pData->parentWidget;
+}
+
 void SubWidget::repaint() noexcept
 {
     if (! isVisible())
@@ -112,6 +117,17 @@ void SubWidget::repaint() noexcept
 void SubWidget::onPositionChanged(const PositionChangedEvent&)
 {
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+// Possible template data types
+
+template<>
+bool SubWidget::contains(const Point<double>& pos) const noexcept
+{
+    return contains(pos.getX(), pos.getY());
+}
+
+// float, int, uint, short, ushort
 
 // --------------------------------------------------------------------------------------------------------------------
 

@@ -110,6 +110,11 @@ public:
     void setAbsolutePos(const Point<int>& pos) noexcept;
 
    /**
+      Get parent Widget, as passed in the constructor.
+    */
+    Widget* getParentWidget() const noexcept;
+
+   /**
       Request repaint of this subwidget's area to the window this widget belongs to.
     */
     void repaint() noexcept override;

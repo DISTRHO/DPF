@@ -25,30 +25,25 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-#ifndef DISTRHO_OS_HAIKU
-ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image)
-    : Window(parent),
-      Widget((Window&)*this),
+ImageAboutWindow::ImageAboutWindow(Window& parentWindow, const Image& image)
+    : StandaloneWindow(parentWindow.getApp()),
       fImgBackground(image)
 {
+    // TODO set transient
     Window::setResizable(false);
     Window::setSize(image.getSize());
     Window::setTitle("About");
 }
 
-ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image)
-    : Window(widget->getParentWindow()),
-      Widget((Window&)*this),
+ImageAboutWindow::ImageAboutWindow(TopLevelWidget* const parentTopLevelWidget, const Image& image)
+    : StandaloneWindow(parentTopLevelWidget->getApp()),
       fImgBackground(image)
 {
+    // TODO set transient
     Window::setResizable(false);
     Window::setSize(image.getSize());
     Window::setTitle("About");
 }
-#else
-ImageAboutWindow::ImageAboutWindow(Window& parent, const Image& image) : fImgBackground(image) {}
-ImageAboutWindow::ImageAboutWindow(Widget* widget, const Image& image) : fImgBackground(image) {}
-#endif
 
 void ImageAboutWindow::setImage(const Image& image)
 {
@@ -56,12 +51,9 @@ void ImageAboutWindow::setImage(const Image& image)
         return;
 
     fImgBackground = image;
-#ifndef DISTRHO_OS_HAIKU
     Window::setSize(image.getSize());
-#endif
 }
 
-#ifndef DISTRHO_OS_HAIKU
 void ImageAboutWindow::onDisplay()
 {
     fImgBackground.draw();
@@ -94,7 +86,6 @@ void ImageAboutWindow::onReshape(uint width, uint height)
     Widget::setSize(width, height);
     Window::onReshape(width, height);
 }
-#endif
 
 // -----------------------------------------------------------------------
 
@@ -104,7 +95,7 @@ struct ImageButton::PrivateData {
     Image imageHover;
     Image imageDown;
 
-    PrivateData(Widget* const s, const Image& normal, const Image& hover, const Image& down)
+    PrivateData(SubWidget* const s, const Image& normal, const Image& hover, const Image& down)
         : impl(s),
           imageNormal(normal),
           imageHover(hover),
@@ -115,15 +106,15 @@ struct ImageButton::PrivateData {
 
 // -----------------------------------------------------------------------
 
-ImageButton::ImageButton(Window& parent, const Image& image)
-    : Widget(parent),
+ImageButton::ImageButton(Widget* const parentWidget, const Image& image)
+    : SubWidget(parentWidget),
       pData(new PrivateData(this, image, image, image))
 {
     setSize(image.getSize());
 }
 
-ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown)
-    : Widget(parent),
+ImageButton::ImageButton(Widget* const parentWidget, const Image& imageNormal, const Image& imageDown)
+    : SubWidget(parentWidget),
       pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
@@ -131,33 +122,8 @@ ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& 
     setSize(imageNormal.getSize());
 }
 
-ImageButton::ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
-    : Widget(parent),
-      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
-{
-    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
-
-    setSize(imageNormal.getSize());
-}
-
-ImageButton::ImageButton(Widget* widget, const Image& image)
-    : Widget(widget->getParentWindow()),
-      pData(new PrivateData(this, image, image, image))
-{
-    setSize(image.getSize());
-}
-
-ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown)
-    : Widget(widget->getParentWindow()),
-      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
-{
-    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
-
-    setSize(imageNormal.getSize());
-}
-
-ImageButton::ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
-    : Widget(widget->getParentWindow()),
+ImageButton::ImageButton(Widget* const parentWidget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
+    : SubWidget(parentWidget),
       pData(new PrivateData(this, imageNormal, imageHover, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
@@ -203,36 +169,8 @@ bool ImageButton::onMotion(const MotionEvent& ev)
 
 // -----------------------------------------------------------------------
 
-ImageKnob::ImageKnob(Window& parent, const Image& image, Orientation orientation) noexcept
-    : Widget(parent),
-      fImage(image),
-      fMinimum(0.0f),
-      fMaximum(1.0f),
-      fStep(0.0f),
-      fValue(0.5f),
-      fValueDef(fValue),
-      fValueTmp(fValue),
-      fUsingDefault(false),
-      fUsingLog(false),
-      fOrientation(orientation),
-      fRotationAngle(0),
-      fDragging(false),
-      fLastX(0),
-      fLastY(0),
-      fCallback(nullptr),
-      fIsImgVertical(image.getHeight() > image.getWidth()),
-      fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
-      fImgLayerHeight(fImgLayerWidth),
-      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
-      fIsReady(false),
-      fTextureId(0)
-{
-    glGenTextures(1, &fTextureId);
-    setSize(fImgLayerWidth, fImgLayerHeight);
-}
-
-ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation) noexcept
-    : Widget(widget->getParentWindow()),
+ImageKnob::ImageKnob(Widget* const parentWidget, const Image& image, Orientation orientation) noexcept
+    : SubWidget(parentWidget),
       fImage(image),
       fMinimum(0.0f),
       fMaximum(1.0f),
@@ -260,7 +198,7 @@ ImageKnob::ImageKnob(Widget* widget, const Image& image, Orientation orientation
 }
 
 ImageKnob::ImageKnob(const ImageKnob& imageKnob)
-    : Widget(imageKnob.getParentWindow()),
+    : SubWidget(imageKnob.getParentWidget()),
       fImage(imageKnob.fImage),
       fMinimum(imageKnob.fMinimum),
       fMaximum(imageKnob.fMaximum),
@@ -655,8 +593,8 @@ float ImageKnob::_invlogscale(float value) const
 
 // -----------------------------------------------------------------------
 
-ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
-    : Widget(parent),
+ImageSlider::ImageSlider(Widget* const parentWidget, const Image& image) noexcept
+    : SubWidget(parentWidget),
       fImage(image),
       fMinimum(0.0f),
       fMaximum(1.0f),
@@ -675,30 +613,9 @@ ImageSlider::ImageSlider(Window& parent, const Image& image) noexcept
       fEndPos(),
       fSliderArea()
 {
+    /* TODO
     setNeedsFullViewport();
-}
-
-ImageSlider::ImageSlider(Widget* widget, const Image& image) noexcept
-    : Widget(widget->getParentWindow()),
-      fImage(image),
-      fMinimum(0.0f),
-      fMaximum(1.0f),
-      fStep(0.0f),
-      fValue(0.5f),
-      fValueDef(fValue),
-      fValueTmp(fValue),
-      fUsingDefault(false),
-      fDragging(false),
-      fInverted(false),
-      fValueIsSet(false),
-      fStartedX(0),
-      fStartedY(0),
-      fCallback(nullptr),
-      fStartPos(),
-      fEndPos(),
-      fSliderArea()
-{
-    setNeedsFullViewport();
+    */
 }
 
 float ImageSlider::getValue() const noexcept
@@ -1008,20 +925,8 @@ void ImageSlider::_recheckArea() noexcept
 
 // -----------------------------------------------------------------------
 
-ImageSwitch::ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept
-    : Widget(parent),
-      fImageNormal(imageNormal),
-      fImageDown(imageDown),
-      fIsDown(false),
-      fCallback(nullptr)
-{
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
-
-    setSize(fImageNormal.getSize());
-}
-
-ImageSwitch::ImageSwitch(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept
-    : Widget(widget->getParentWindow()),
+ImageSwitch::ImageSwitch(Widget* parentWidget, const Image& imageNormal, const Image& imageDown) noexcept
+    : SubWidget(parentWidget),
       fImageNormal(imageNormal),
       fImageDown(imageDown),
       fIsDown(false),
@@ -1033,7 +938,7 @@ ImageSwitch::ImageSwitch(Widget* widget, const Image& imageNormal, const Image& 
 }
 
 ImageSwitch::ImageSwitch(const ImageSwitch& imageSwitch) noexcept
-    : Widget(imageSwitch.getParentWindow()),
+    : SubWidget(imageSwitch.getParentWidget()),
       fImageNormal(imageSwitch.fImageNormal),
       fImageDown(imageSwitch.fImageDown),
       fIsDown(imageSwitch.fIsDown),

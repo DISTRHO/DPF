@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -32,17 +32,17 @@ struct ButtonImpl {
 
     int button;
     int state;
-    Widget* self;
+    SubWidget* self;
 
     ImageButton::Callback* callback_img;
 
-    ButtonImpl(Widget* const s) noexcept
+    ButtonImpl(SubWidget* const s) noexcept
         : button(-1),
           state(kStateNormal),
           self(s),
           callback_img(nullptr) {}
 
-    bool onMouse(const Widget::MouseEvent& ev)
+    bool onMouse(const Events::MouseEvent& ev)
     {
         // button was released, handle it now
         if (button != -1 && ! ev.press)
@@ -83,7 +83,7 @@ struct ButtonImpl {
         return false;
     }
 
-    bool onMotion(const Widget::MotionEvent& ev)
+    bool onMotion(const Events::MotionEvent& ev)
     {
         // keep pressed
         if (button != -1)

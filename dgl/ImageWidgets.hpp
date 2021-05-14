@@ -18,36 +18,29 @@
 #define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
 #include "Image.hpp"
-#include "Widget.hpp"
-#include "Window.hpp"
+#include "StandaloneWindow.hpp"
+#include "SubWidget.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-#ifndef DISTRHO_OS_HAIKU
-class ImageAboutWindow : public Window,
-                         public Widget
-#else
-// crash when creating or opening 2nd window
-class ImageAboutWindow
-#endif
+class ImageAboutWindow : public StandaloneWindow
 {
 public:
-    explicit ImageAboutWindow(Window& parent, const Image& image = Image());
-    explicit ImageAboutWindow(Widget* widget, const Image& image = Image());
+    explicit ImageAboutWindow(Window& parentWindow, const Image& image = Image());
+    explicit ImageAboutWindow(TopLevelWidget* parentTopLevelWidget, const Image& image = Image());
 
     void setImage(const Image& image);
 
-#ifndef DISTRHO_OS_HAIKU
+    // TODO
+    void exec() {}
+
 protected:
     void onDisplay() override;
     bool onKeyboard(const KeyboardEvent&) override;
     bool onMouse(const MouseEvent&) override;
     void onReshape(uint width, uint height) override;
-#else
-    void exec() {}
-#endif
 
 private:
     Image fImgBackground;
@@ -57,7 +50,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-class ImageButton : public Widget
+class ImageButton : public SubWidget
 {
 public:
     class Callback
@@ -67,13 +60,9 @@ public:
         virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
     };
 
-    explicit ImageButton(Window& parent, const Image& image);
-    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageDown);
-    explicit ImageButton(Window& parent, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
-
-    explicit ImageButton(Widget* widget, const Image& image);
-    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageDown);
-    explicit ImageButton(Widget* widget, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
+    explicit ImageButton(Widget* parentWidget, const Image& image);
+    explicit ImageButton(Widget* parentWidget, const Image& imageNormal, const Image& imageDown);
+    explicit ImageButton(Widget* parentWidget, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
 
     ~ImageButton() override;
 
@@ -93,7 +82,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-class ImageKnob : public Widget
+class ImageKnob : public SubWidget
 {
 public:
     enum Orientation {
@@ -110,8 +99,7 @@ public:
         virtual void imageKnobValueChanged(ImageKnob* imageKnob, float value) = 0;
     };
 
-    explicit ImageKnob(Window& parent, const Image& image, Orientation orientation = Vertical) noexcept;
-    explicit ImageKnob(Widget* widget, const Image& image, Orientation orientation = Vertical) noexcept;
+    explicit ImageKnob(Widget* parentWidget, const Image& image, Orientation orientation = Vertical) noexcept;
     explicit ImageKnob(const ImageKnob& imageKnob);
     ImageKnob& operator=(const ImageKnob& imageKnob);
     ~ImageKnob() override;
@@ -172,7 +160,7 @@ private:
 
 // note set range and step before setting the value
 
-class ImageSlider : public Widget
+class ImageSlider : public SubWidget
 {
 public:
     class Callback
@@ -184,8 +172,7 @@ public:
         virtual void imageSliderValueChanged(ImageSlider* imageSlider, float value) = 0;
     };
 
-    explicit ImageSlider(Window& parent, const Image& image) noexcept;
-    explicit ImageSlider(Widget* widget, const Image& image) noexcept;
+    explicit ImageSlider(Widget* parentWidget, const Image& image) noexcept;
 
     float getValue() const noexcept;
     void setValue(float value, bool sendCallback = false) noexcept;
@@ -242,7 +229,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-class ImageSwitch : public Widget
+class ImageSwitch : public SubWidget
 {
 public:
     class Callback
@@ -252,8 +239,7 @@ public:
         virtual void imageSwitchClicked(ImageSwitch* imageSwitch, bool down) = 0;
     };
 
-    explicit ImageSwitch(Window& parent, const Image& imageNormal, const Image& imageDown) noexcept;
-    explicit ImageSwitch(Widget* widget, const Image& imageNormal, const Image& imageDown) noexcept;
+    explicit ImageSwitch(Widget* parentWidget, const Image& imageNormal, const Image& imageDown) noexcept;
     explicit ImageSwitch(const ImageSwitch& imageSwitch) noexcept;
     ImageSwitch& operator=(const ImageSwitch& imageSwitch) noexcept;
 
