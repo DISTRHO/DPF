@@ -40,6 +40,11 @@ Window& TopLevelWidget::getWindow() const noexcept
     return pData->window;
 }
 
+double TopLevelWidget::getScaleFactor() const noexcept
+{
+    return pData->window.getScaleFactor();
+}
+
 void TopLevelWidget::repaint() noexcept
 {
     pData->window.repaint();

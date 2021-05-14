@@ -137,7 +137,7 @@ public:
                const fileRequestFunc fileRequestCall,
                const char* const bundlePath = nullptr,
                void* const dspPtr = nullptr,
-               const float scaleFactor = 1.0f,
+               const double scaleFactor = 1.0,
                const uint32_t bgColor = 0,
                const uint32_t fgColor = 0xffffffff)
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI

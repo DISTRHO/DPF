@@ -61,7 +61,7 @@ public:
     */
     explicit Window(Application& app,
                     uintptr_t parentWindowHandle,
-                    double scaling,
+                    double scaleFactor,
                     bool resizable);
 
    /**
@@ -72,7 +72,7 @@ public:
                     uintptr_t parentWindowHandle,
                     uint width,
                     uint height,
-                    double scaling,
+                    double scaleFactor,
                     bool resizable);
 
    /**

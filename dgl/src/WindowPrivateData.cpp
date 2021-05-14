@@ -40,6 +40,16 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+static double getDesktopScaleFactor()
+{
+    if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
+        return std::max(1.0, std::atof(scale));
+
+    return 1.0;
+}
+
+// -----------------------------------------------------------------------
+
 Window::PrivateData::PrivateData(Application& a, Window* const s)
     : app(a),
       appData(a.pData),
@@ -49,7 +59,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaleFactor(1.0),
+      scaleFactor(getDesktopScaleFactor()),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -68,7 +78,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaleFactor(1.0),
+      scaleFactor(getDesktopScaleFactor()),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -91,7 +101,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale),
+      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor()),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -125,7 +135,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale),
+      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor()),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),

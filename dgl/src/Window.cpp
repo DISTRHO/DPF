@@ -31,17 +31,17 @@ Window::Window(Application& app)
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
-               const double scaling,
+               const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, scaling, resizable)) {}
+    : pData(new PrivateData(app, this, parentWindowHandle, scaleFactor, resizable)) {}
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
                const uint width,
                const uint height,
-               const double scaling,
+               const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaling, resizable)) {}
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable)) {}
 
 Window::~Window()
 {
