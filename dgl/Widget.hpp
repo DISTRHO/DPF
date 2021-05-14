@@ -19,27 +19,19 @@
 
 #include "Events.hpp"
 
-// -----------------------------------------------------------------------
-// Forward class names
-
-// #ifdef DISTRHO_DEFINES_H_INCLUDED
-// START_NAMESPACE_DISTRHO
-// class UI;
-// END_NAMESPACE_DISTRHO
-// #endif
-
 START_NAMESPACE_DGL
 
+// --------------------------------------------------------------------------------------------------------------------
+// Forward class names
+
 class Application;
-// class NanoWidget;
-class Window;
-// class StandaloneWindow;
 class SubWidget;
 class TopLevelWidget;
+class Window;
 
 using namespace Events;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    Base DGL Widget class.
@@ -85,9 +77,9 @@ public:
     bool isVisible() const noexcept;
 
    /**
-      Set widget visible (or not) according to @a yesNo.
+      Set widget visible (or not) according to @a visible.
     */
-    void setVisible(bool yesNo);
+    void setVisible(bool visible);
 
    /**
       Show widget.
@@ -234,34 +226,13 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const pData;
-
-//     friend class NanoWidget;
-//     friend class Window;
-//     friend class StandaloneWindow;
     friend class SubWidget;
     friend class TopLevelWidget;
-// #ifdef DISTRHO_DEFINES_H_INCLUDED
-//     friend class DISTRHO_NAMESPACE::UI;
-// #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Widget)
 };
 
-#if 0
-    // TODO: should we remove this?
-   /**
-      Get this widget's window application.
-      Same as calling getParentWindow().getApp().
-    */
-    Application& getParentApp() const noexcept;
-
-   /**
-      Get parent window, as passed in the constructor.
-    */
-    Window& getParentWindow() const noexcept;
-#endif
-
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

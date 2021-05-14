@@ -94,12 +94,12 @@ void Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
 
 // -----------------------------------------------------------------------
 
-TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const w)
+TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const pw)
 {
-    if (w->pData->topLevelWidget != nullptr)
-        return w->pData->topLevelWidget;
-    if (w->pData->parentWidget != nullptr)
-        return findTopLevelWidget(w->pData->parentWidget);
+    if (pw->pData->topLevelWidget != nullptr)
+        return pw->pData->topLevelWidget;
+    if (pw->pData->parentWidget != nullptr)
+        return findTopLevelWidget(pw->pData->parentWidget);
     return nullptr;
 }
 

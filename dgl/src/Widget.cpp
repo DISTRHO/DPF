@@ -19,7 +19,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Widget
 
 Widget::Widget(TopLevelWidget* const topLevelWidget)
@@ -38,12 +38,12 @@ bool Widget::isVisible() const noexcept
     return pData->visible;
 }
 
-void Widget::setVisible(bool yesNo)
+void Widget::setVisible(bool visible)
 {
-    if (pData->visible == yesNo)
+    if (pData->visible == visible)
         return;
 
-    pData->visible = yesNo;
+    pData->visible = visible;
     repaint();
 }
 
@@ -124,11 +124,13 @@ void Widget::setSize(const Size<uint>& size) noexcept
 
 Application& Widget::getApp() const noexcept
 {
+    DISTRHO_SAFE_ASSERT(pData->topLevelWidget != nullptr);
     return pData->topLevelWidget->getApp();
 }
 
 Window& Widget::getWindow() const noexcept
 {
+    DISTRHO_SAFE_ASSERT(pData->topLevelWidget != nullptr);
     return pData->topLevelWidget->getWindow();
 }
 
@@ -185,34 +187,6 @@ void Widget::onResize(const ResizeEvent&)
 {
 }
 
-// -----------------------------------------------------------------------
-
-// -----------------------------------------------------------------------
-
-// -----------------------------------------------------------------------
-
-#if 0
-Widget::Widget(Widget* groupWidget)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, true))
-{
-}
-
-Widget::Widget(Widget* groupWidget, bool addToSubWidgets)
-    : pData(new PrivateData(this, groupWidget->getParentWindow(), groupWidget, addToSubWidgets))
-{
-}
-
-Window& Widget::getParentWindow() const noexcept
-{
-    return pData->parent;
-}
-
-void Widget::setNeedsFullViewport()
-{
-    pData->needsFullViewport = true;
-}
-#endif
-
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
