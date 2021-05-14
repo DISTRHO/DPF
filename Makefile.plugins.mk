@@ -131,6 +131,11 @@ all:
 # ---------------------------------------------------------------------------------------------------------------------
 # Common
 
+$(BUILD_DIR)/%.S.o: %.S
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
+
 $(BUILD_DIR)/%.c.o: %.c
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"

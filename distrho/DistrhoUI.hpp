@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -262,14 +262,6 @@ private:
     PrivateData* const uiData;
     friend class UIExporter;
     friend class UIExporterWindow;
-
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    // these should not be used
-    void setAbsoluteX(int) const noexcept {}
-    void setAbsoluteY(int) const noexcept {}
-    void setAbsolutePos(int, int) const noexcept {}
-    void setAbsolutePos(const DGL_NAMESPACE::Point<int>&) const noexcept {}
-#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };
