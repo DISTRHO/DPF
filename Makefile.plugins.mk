@@ -71,6 +71,7 @@ vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
 # Handle UI stuff, disable UI support automatically
 
 ifeq ($(FILES_UI),)
+HAVE_DGL = false
 UI_TYPE = none
 endif
 
