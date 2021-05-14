@@ -196,7 +196,11 @@ void UI::onResize(const ResizeEvent& ev)
     if (uiData->resizeInProgress)
         return;
 
-    uiData->setSizeCallback(ev.size.getWidth(), ev.size.getHeight());
+    const uint width = ev.size.getWidth();
+    const uint height = ev.size.getHeight();
+
+    pData->window.setSize(width, height);
+    uiData->setSizeCallback(width, height);
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 

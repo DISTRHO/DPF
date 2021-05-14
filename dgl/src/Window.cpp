@@ -121,6 +121,10 @@ void Window::setSize(const uint width, const uint height)
 {
     DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
 
+    // FIXME add default and min props for this
+    if (pData->minWidth == 0 && pData->minHeight == 0)
+        puglSetDefaultSize(pData->view, width, height);
+
     puglSetWindowSize(pData->view, width, height);
 }
 

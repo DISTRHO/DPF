@@ -31,8 +31,10 @@ ImageAboutWindow::ImageAboutWindow(Window& parentWindow, const Image& image)
 {
     // TODO set transient
     Window::setResizable(false);
-    Window::setSize(image.getSize());
     Window::setTitle("About");
+
+    if (image.isValid())
+        Window::setSize(image.getSize());
 }
 
 ImageAboutWindow::ImageAboutWindow(TopLevelWidget* const parentTopLevelWidget, const Image& image)
@@ -41,8 +43,10 @@ ImageAboutWindow::ImageAboutWindow(TopLevelWidget* const parentTopLevelWidget, c
 {
     // TODO set transient
     Window::setResizable(false);
-    Window::setSize(image.getSize());
     Window::setTitle("About");
+
+    if (image.isValid())
+        Window::setSize(image.getSize());
 }
 
 void ImageAboutWindow::setImage(const Image& image)
