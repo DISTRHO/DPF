@@ -246,13 +246,6 @@ void Window::setTransientWinId(const uintptr_t winId)
     puglSetTransientFor(pData->fView, winId);
 }
 
-#if 0
-Application& Window::getApp() const noexcept
-{
-    return pData->fApp;
-}
-#endif
-
 void Window::_addWidget(Widget* const widget)
 {
     pData->addWidget(widget);
