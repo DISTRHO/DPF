@@ -24,6 +24,9 @@
 # include "../dgl/Base.hpp"
 # include "extra/ExternalWindow.hpp"
 typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
+#elif DISTRHO_UI_USE_CUSTOM
+# include DISTRHO_UI_CUSTOM_INCLUDE_PATH
+typedef DISTRHO_UI_CUSTOM_WIDGET_TYPE UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
