@@ -37,7 +37,37 @@ TopLevelWidget::PrivateData::~PrivateData()
     window.pData->topLevelWidget = nullptr;
 }
 
-void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
+bool TopLevelWidget::PrivateData::keyboardEvent(const Events::KeyboardEvent& ev)
+{
+    // give top-level widget chance to catch this event first
+    if (self->onKeyboard(ev))
+        return true;
+
+    // propagate event to all subwidgets recursively
+    return selfw->pData->giveKeyboardEventForSubWidgets(ev);
+}
+
+bool TopLevelWidget::PrivateData::specialEvent(const Events::SpecialEvent& ev)
+{
+    // give top-level widget chance to catch this event first
+    if (self->onSpecial(ev))
+        return true;
+
+    // propagate event to all subwidgets recursively
+    return selfw->pData->giveSpecialEventForSubWidgets(ev);
+}
+
+bool TopLevelWidget::PrivateData::characterInputEvent(const Events::CharacterInputEvent& ev)
+{
+    // give top-level widget chance to catch this event first
+    if (self->onCharacterInput(ev))
+        return true;
+
+    // propagate event to all subwidgets recursively
+    return selfw->pData->giveCharacterInputEventForSubWidgets(ev);
+}
+
+bool TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
 {
     Events::MouseEvent rev = ev;
 
@@ -51,10 +81,52 @@ void TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
 
     // give top-level widget chance to catch this event first
     if (self->onMouse(ev))
-        return;
+        return true;
 
     // propagate event to all subwidgets recursively
-    selfw->pData->giveMouseEventForSubWidgets(rev);
+    return selfw->pData->giveMouseEventForSubWidgets(rev);
+}
+
+bool TopLevelWidget::PrivateData::motionEvent(const Events::MotionEvent& ev)
+{
+    Events::MotionEvent rev = ev;
+
+    if (window.pData->autoScaling)
+    {
+        const double autoScaleFactor = window.pData->autoScaleFactor;
+
+        rev.pos.setX(ev.pos.getX() / autoScaleFactor);
+        rev.pos.setY(ev.pos.getY() / autoScaleFactor);
+    }
+
+    // give top-level widget chance to catch this event first
+    if (self->onMotion(ev))
+        return true;
+
+    // propagate event to all subwidgets recursively
+    return selfw->pData->giveMotionEventForSubWidgets(rev);
+}
+
+bool TopLevelWidget::PrivateData::scrollEvent(const Events::ScrollEvent& ev)
+{
+    Events::ScrollEvent rev = ev;
+
+    if (window.pData->autoScaling)
+    {
+        const double autoScaleFactor = window.pData->autoScaleFactor;
+
+        rev.pos.setX(ev.pos.getX() / autoScaleFactor);
+        rev.pos.setY(ev.pos.getY() / autoScaleFactor);
+        rev.delta.setX(ev.delta.getX() / autoScaleFactor);
+        rev.delta.setY(ev.delta.getY() / autoScaleFactor);
+    }
+
+    // give top-level widget chance to catch this event first
+    if (self->onScroll(ev))
+        return true;
+
+    // propagate event to all subwidgets recursively
+    return selfw->pData->giveScrollEventForSubWidgets(rev);
 }
 
 void TopLevelWidget::PrivateData::fallbackOnResize()

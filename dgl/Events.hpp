@@ -170,19 +170,22 @@ namespace Events
       Some systems and devices support finer resolution and/or higher values for fast scrolls,
       so programs should handle any value gracefully.
 
-      @a pos   The widget-relative coordinates of the pointer.
-      @a delta The scroll distance.
+      @a pos       The widget-relative coordinates of the pointer.
+      @a delta     The scroll distance.
+      @a direction The direction of the scroll or "smooth".
       @see onScroll
     */
     struct ScrollEvent : BaseEvent {
         Point<double> pos;
         Point<double> delta;
+        ScrollDirection direction;
 
         /** Constuctor */
         ScrollEvent() noexcept
             : BaseEvent(),
               pos(0.0, 0.0),
-              delta(0.0, 0.0) {}
+              delta(0.0, 0.0),
+              direction(kScrollSmooth) {}
     };
 
    /**

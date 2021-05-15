@@ -130,6 +130,21 @@ enum CrossingMode {
     kCrossingUngrab  ///< Crossing due to a grab release
 };
 
+/**
+   Scroll direction.
+
+   Describes the direction of a scroll event along with whether the scroll is a "smooth" scroll.
+   The discrete directions are for devices like mouse wheels with constrained axes,
+   while a smooth scroll is for those with arbitrary scroll direction freedom, like some touchpads.
+*/
+enum ScrollDirection {
+  kScrollUp,    ///< Scroll up
+  kScrollDown,  ///< Scroll down
+  kScrollLeft,  ///< Scroll left
+  kScrollRight, ///< Scroll right
+  kScrollSmooth ///< Smooth scroll in any direction
+};
+
 // --------------------------------------------------------------------------------------------------------------------
 // Base DGL classes
 

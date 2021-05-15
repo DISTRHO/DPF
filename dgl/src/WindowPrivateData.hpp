@@ -109,19 +109,15 @@ struct Window::PrivateData : IdleCallback {
     void onPuglConfigure(int width, int height);
     void onPuglExpose();
     void onPuglClose();
+    void onPuglKey(const Events::KeyboardEvent& ev);
+    void onPuglSpecial(const Events::SpecialEvent& ev);
+    void onPuglText(const Events::CharacterInputEvent& ev);
     void onPuglMouse(const Events::MouseEvent& ev);
+    void onPuglMotion(const Events::MotionEvent& ev);
+    void onPuglScroll(const Events::ScrollEvent& ev);
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);
-
-#if 0
-    // Fallback build-specific Window functions
-    struct Fallback {
-        static void onDisplayBefore(const GraphicsContext& context);
-        static void onDisplayAfter(const GraphicsContext& context);
-        static void onReshape(const GraphicsContext& context, uint width, uint height);
-    };
-#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
@@ -184,33 +180,6 @@ END_NAMESPACE_DGL
 # endif
 #endif
 #endif
-
-#if 0 // ndef DPF_TEST_WINDOW_CPP
-    // -------------------------------------------------------------------
-    // stuff that uses pugl internals or build-specific things
-
-    void init(const bool resizable = false);
-    void setVisible(const bool visible);
-    void windowSpecificIdle();
-
-    // -------------------------------------------------------------------
-
-    // -------------------------------------------------------------------
-
-    void addWidget(Widget* const widget);
-    void removeWidget(Widget* const widget);
-
-    // -------------------------------------------------------------------
-
-    void onPuglClose();
-    void onPuglMouse(const Widget::MouseEvent& ev);
-
-    // -------------------------------------------------------------------
-#endif
-
-// #ifdef DISTRHO_DEFINES_H_INCLUDED
-//     friend class DISTRHO_NAMESPACE::UI;
-// #endif
 
 #if 0
 // -----------------------------------------------------------------------
@@ -286,147 +255,6 @@ struct Window::PrivateData {
     }
 
     // -------------------------------------------------------------------
-
-    // -------------------------------------------------------------------
-
-    int onPuglKeyboard(const bool press, const uint key)
-    {
-        DBGp("PUGL: onKeyboard : %i %i\n", press, key);
-
-        if (fModal.childFocus != nullptr)
-        {
-            fModal.childFocus->focus();
-            return 0;
-        }
-
-        Widget::KeyboardEvent ev;
-        ev.press = press;
-        ev.key  = key;
-        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time = puglGetEventTimestamp(fView);
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onKeyboard(ev))
-                return 0;
-        }
-
-        return 1;
-    }
-
-    int onPuglSpecial(const bool press, const Key key)
-    {
-        DBGp("PUGL: onSpecial : %i %i\n", press, key);
-
-        if (fModal.childFocus != nullptr)
-        {
-            fModal.childFocus->focus();
-            return 0;
-        }
-
-        Widget::SpecialEvent ev;
-        ev.press = press;
-        ev.key   = key;
-        ev.mod   = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time  = puglGetEventTimestamp(fView);
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onSpecial(ev))
-                return 0;
-        }
-
-        return 1;
-    }
-
-    void onPuglMotion(int x, int y)
-    {
-        // DBGp("PUGL: onMotion : %i %i\n", x, y);
-
-        if (fModal.childFocus != nullptr)
-            return;
-
-        x /= fAutoScaling;
-        y /= fAutoScaling;
-
-        Widget::MotionEvent ev;
-        ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time = puglGetEventTimestamp(fView);
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
-
-            if (widget->isVisible() && widget->onMotion(ev))
-                break;
-        }
-    }
-
-    void onPuglScroll(int x, int y, float dx, float dy)
-    {
-        DBGp("PUGL: onScroll : %i %i %f %f\n", x, y, dx, dy);
-
-        if (fModal.childFocus != nullptr)
-            return;
-
-        x /= fAutoScaling;
-        y /= fAutoScaling;
-        dx /= fAutoScaling;
-        dy /= fAutoScaling;
-
-        Widget::ScrollEvent ev;
-        ev.delta = Point<float>(dx, dy);
-        ev.mod   = static_cast<Modifier>(puglGetModifiers(fView));
-        ev.time  = puglGetEventTimestamp(fView);
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            ev.pos = Point<int>(x-widget->getAbsoluteX(), y-widget->getAbsoluteY());
-
-            if (widget->isVisible() && widget->onScroll(ev))
-                break;
-        }
-    }
-
-    // -------------------------------------------------------------------
-
-    bool handlePluginKeyboard(const bool press, const uint key)
-    {
-        DBGp("PUGL: handlePluginKeyboard : %i %i\n", press, key);
-
-        if (fModal.childFocus != nullptr)
-        {
-            fModal.childFocus->focus();
-            return true;
-        }
-
-        Widget::KeyboardEvent ev;
-        ev.press = press;
-        ev.key   = key;
-        ev.mod   = static_cast<Modifier>(fView->mods);
-        ev.time  = 0;
-
-        if ((ev.mod & kModifierShift) != 0 && ev.key >= 'a' && ev.key <= 'z')
-            ev.key -= 'a' - 'A'; // a-z -> A-Z
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onKeyboard(ev))
-                return true;
-        }
-
-        return false;
-    }
 
     bool handlePluginSpecial(const bool press, const Key key)
     {
@@ -518,8 +346,5 @@ struct Window::PrivateData {
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 #endif
-
-// #undef DGL_DBG
-// #undef DGL_DBGF
 
 #endif // DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED

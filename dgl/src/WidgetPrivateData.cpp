@@ -67,12 +67,68 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
     }
 }
 
-void Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
+// -----------------------------------------------------------------------
+
+bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const Events::KeyboardEvent& ev)
 {
     if (! visible)
-        return;
+        return false;
     if (subWidgets.size() == 0)
-        return;
+        return false;
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->onKeyboard(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveSpecialEventForSubWidgets(const Events::SpecialEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->onSpecial(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const Events::CharacterInputEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->onCharacterInput(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
 
     const double x = ev.pos.getX();
     const double y = ev.pos.getY();
@@ -88,8 +144,64 @@ void Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
                                y - widget->getAbsoluteY());
 
         if (widget->onMouse(ev))
-            return;
+            return true;
     }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveMotionEventForSubWidgets(Events::MotionEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onMotion(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveScrollEventForSubWidgets(Events::ScrollEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onScroll(ev))
+            return true;
+    }
+
+    return false;
 }
 
 // -----------------------------------------------------------------------

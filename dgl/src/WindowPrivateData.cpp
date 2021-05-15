@@ -384,9 +384,48 @@ void Window::PrivateData::onPuglClose()
     close();
 }
 
+void Window::PrivateData::onPuglKey(const Events::KeyboardEvent& ev)
+{
+    DGL_DBGp("onPuglKey : %i %u %u\n", ev.press, ev.key, ev.keycode);
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->keyboardEvent(ev);
+#endif
+}
+
+void Window::PrivateData::onPuglSpecial(const Events::SpecialEvent& ev)
+{
+    DGL_DBGp("onPuglSpecial : %i %u\n", ev.press, ev.key);
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->specialEvent(ev);
+#endif
+}
+
+void Window::PrivateData::onPuglText(const Events::CharacterInputEvent& ev)
+{
+    DGL_DBGp("onPuglText : %u %u %s\n", ev.keycode, ev.character, ev.string);
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->characterInputEvent(ev);
+#endif
+}
+
 void Window::PrivateData::onPuglMouse(const Events::MouseEvent& ev)
 {
-    DGL_DBGp("PUGL: onMouse : %i %i %f %f\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
+    DGL_DBGp("onPuglMouse : %i %i %f %f\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
 
 //         if (fModal.childFocus != nullptr)
 //             return fModal.childFocus->focus();
@@ -394,6 +433,32 @@ void Window::PrivateData::onPuglMouse(const Events::MouseEvent& ev)
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
         topLevelWidget->pData->mouseEvent(ev);
+#endif
+}
+
+void Window::PrivateData::onPuglMotion(const Events::MotionEvent& ev)
+{
+    DGL_DBGp("onPuglMotion : %f %f\n", ev.button, ev.pos.getX(), ev.pos.getY());
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->motionEvent(ev);
+#endif
+}
+
+void Window::PrivateData::onPuglScroll(const Events::ScrollEvent& ev)
+{
+    DGL_DBGp("onPuglScroll : %f %f %f %f\n", ev.pos.getX(), ev.pos.getY(), ev.delta.getX(), ev.delta.getY());
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->scrollEvent(ev);
 #endif
 }
 
@@ -424,6 +489,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View moved/resized, a #PuglEventConfigure
     case PUGL_CONFIGURE:
+        // unused x, y (double)
         pData->onPuglConfigure(event->configure.width, event->configure.height);
         break;
 
@@ -441,6 +507,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View must be drawn, a #PuglEventExpose
     case PUGL_EXPOSE:
+        // unused x, y, width, height (double)
         pData->onPuglExpose();
         break;
 
@@ -459,14 +526,38 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Key pressed, a #PuglEventKey
     case PUGL_KEY_PRESS:
-        break;
     ///< Key released, a #PuglEventKey
     case PUGL_KEY_RELEASE:
+    {
+        // unused x, y, xRoot, yRoot (double)
+        // TODO special keys?
+        Events::KeyboardEvent ev;
+        ev.mod     = event->key.state;
+        ev.flags   = event->key.flags;
+        ev.time    = static_cast<uint>(event->key.time * 1000.0 + 0.5);
+        ev.press   = event->type == PUGL_KEY_PRESS;
+        ev.key     = event->key.key;
+        ev.keycode = event->key.keycode;
+        if ((ev.mod & kModifierShift) != 0 && ev.key >= 'a' && ev.key <= 'z')
+            ev.key -= 'a' - 'A'; // a-z -> A-Z
+        pData->onPuglKey(ev);
         break;
+    }
 
     ///< Character entered, a #PuglEventText
     case PUGL_TEXT:
+    {
+        // unused x, y, xRoot, yRoot (double)
+        Events::CharacterInputEvent ev;
+        ev.mod       = event->text.state;
+        ev.flags     = event->text.flags;
+        ev.time      = static_cast<uint>(event->text.time * 1000.0 + 0.5);
+        ev.keycode   = event->text.keycode;
+        ev.character = event->text.character;
+        std::strncpy(ev.string, event->text.string, sizeof(ev.string));
+        pData->onPuglText(ev);
         break;
+    }
 
     ///< Pointer entered view, a #PuglEventCrossing
     case PUGL_POINTER_IN:
@@ -493,11 +584,29 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Pointer moved, a #PuglEventMotion
     case PUGL_MOTION:
+    {
+        Events::MotionEvent ev;
+        ev.mod   = event->motion.state;
+        ev.flags = event->motion.flags;
+        ev.time  = static_cast<uint>(event->motion.time * 1000.0 + 0.5);
+        ev.pos   = Point<double>(event->motion.x, event->motion.y);
+        pData->onPuglMotion(ev);
         break;
+    }
 
     ///< Scrolled, a #PuglEventScroll
     case PUGL_SCROLL:
+    {
+        Events::ScrollEvent ev;
+        ev.mod       = event->scroll.state;
+        ev.flags     = event->scroll.flags;
+        ev.time      = static_cast<uint>(event->scroll.time * 1000.0 + 0.5);
+        ev.pos       = Point<double>(event->scroll.x, event->scroll.y);
+        ev.delta     = Point<double>(event->scroll.dx, event->scroll.dy);
+        ev.direction = static_cast<ScrollDirection>(event->scroll.direction);
+        pData->onPuglScroll(ev);
         break;
+    }
 
     ///< Custom client message, a #PuglEventClient
     case PUGL_CLIENT:
@@ -645,6 +754,9 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 
 	return 0;
 }
+
+#undef DGL_DBG
+#undef DGL_DBGF
 
 // -----------------------------------------------------------------------
 
