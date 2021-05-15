@@ -41,9 +41,6 @@ struct ImGuiUI::Impl
     void setupGL();
     void cleanupGL();
 
-    // perhaps DPF will implement this in the future
-    float getScaleFactor() const { return 1.0f; }
-
     static int mouseButtonToImGui(int button);
 
     ImGuiUI* fSelf = nullptr;
@@ -178,7 +175,8 @@ bool ImGuiUI::onMotion(const MotionEvent& event)
     ImGui::SetCurrentContext(fImpl->fContext);
     ImGuiIO &io = ImGui::GetIO();
 
-    const float scaleFactor = fImpl->getScaleFactor();
+    // FIXME
+    const double scaleFactor = 1; // getScaleFactor();
     io.MousePos.x = std::round(scaleFactor * event.pos.getX());
     io.MousePos.y = std::round(scaleFactor * event.pos.getY());
 
@@ -206,7 +204,7 @@ void ImGuiUI::onResize(const ResizeEvent& event)
     ImGui::SetCurrentContext(fImpl->fContext);
     ImGuiIO &io = ImGui::GetIO();
 
-    const float scaleFactor = fImpl->getScaleFactor();
+    const double scaleFactor = getScaleFactor();
     io.DisplaySize.x = std::round(scaleFactor * width);
     io.DisplaySize.y = std::round(scaleFactor * height);
 }
@@ -252,7 +250,7 @@ void ImGuiUI::Impl::setupGL()
     ImGui::SetCurrentContext(fContext);
 
     ImGuiIO &io = ImGui::GetIO();
-    const float scaleFactor = getScaleFactor();
+    const double scaleFactor = fSelf->getScaleFactor();
     io.DisplaySize.x = std::round(scaleFactor * fSelf->getWidth());
     io.DisplaySize.y = std::round(scaleFactor * fSelf->getHeight());
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
