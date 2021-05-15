@@ -438,7 +438,7 @@ void Window::PrivateData::onPuglMouse(const Events::MouseEvent& ev)
 
 void Window::PrivateData::onPuglMotion(const Events::MotionEvent& ev)
 {
-    DGL_DBGp("onPuglMotion : %f %f\n", ev.button, ev.pos.getX(), ev.pos.getY());
+    DGL_DBGp("onPuglMotion : %f %f\n", ev.pos.getX(), ev.pos.getY());
 
 //         if (fModal.childFocus != nullptr)
 //             return fModal.childFocus->focus();
