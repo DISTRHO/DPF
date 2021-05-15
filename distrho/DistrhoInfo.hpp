@@ -562,6 +562,7 @@ START_NAMESPACE_DISTRHO
    @see Plugin::getTimePosition()
  */
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
+
 /**
    Wherever the %UI uses a custom toolkit implementation based on OpenGL.@n
    When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.

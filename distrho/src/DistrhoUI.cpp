@@ -196,6 +196,8 @@ void UI::onResize(const ResizeEvent& ev)
     if (uiData->resizeInProgress)
         return;
 
+    UIWidget::onResize(ev);
+
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
 
