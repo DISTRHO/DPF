@@ -68,13 +68,6 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl minWidth, minHeight access. */
     uint minWidth, minHeight;
 
-    /** Pending state of visility, used for the action to be triggered during Pugl create events. */
-    enum PendingVisibility {
-        kPendingVisibilityNone,
-        kPendingVisibilityShow,
-        kPendingVisibilityHide
-    } pendingVisibility;
-
     /** Constructor for a regular, standalone window. */
     explicit PrivateData(Application& app, Window* self);
 
@@ -113,9 +106,8 @@ struct Window::PrivateData : IdleCallback {
     void idleCallback() override;
 
     // pugl events
-    void onPuglDisplay();
-    void onPuglReshape(int width, int height);
-    void onPuglCreate();
+    void onPuglConfigure(int width, int height);
+    void onPuglExpose();
     void onPuglClose();
     void onPuglMouse(const Events::MouseEvent& ev);
 

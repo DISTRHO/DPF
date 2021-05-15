@@ -63,8 +63,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0),
-      pendingVisibility(kPendingVisibilityNone)
+      minHeight(0)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
@@ -82,8 +81,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0),
-      pendingVisibility(kPendingVisibilityNone)
+      minHeight(0)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
@@ -105,8 +103,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0),
-      pendingVisibility(kPendingVisibilityNone)
+      minHeight(0)
 {
     if (isEmbed)
     {
@@ -139,8 +136,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0),
-      pendingVisibility(kPendingVisibilityNone)
+      minHeight(0)
 {
     if (isEmbed)
     {
@@ -247,11 +243,6 @@ void Window::PrivateData::show()
 #else
         puglShow(view);
 #endif
-        /*
-        pendingVisibility = kPendingVisibilityShow;
-        const PuglStatus status = puglRealize(view);
-        DISTRHO_SAFE_ASSERT_INT_RETURN(status == PUGL_SUCCESS, status, close());
-        */
     }
     else
     {
@@ -272,9 +263,6 @@ void Window::PrivateData::hide()
         DGL_DBG("Window hide cannot be called when embedded\n");
         return;
     }
-
-    pendingVisibility = kPendingVisibilityHide;
-
     if (! isVisible)
     {
         DGL_DBG("Window hide matches current visible state, ignoring request\n");
@@ -347,19 +335,7 @@ void Window::PrivateData::idleCallback()
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::onPuglDisplay()
-{
-    DGL_DBGp("PUGL: onPuglDisplay : %p\n", topLevelWidget);
-
-    puglOnDisplayPrepare(view);
-
-#ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->display();
-#endif
-}
-
-void Window::PrivateData::onPuglReshape(const int width, const int height)
+void Window::PrivateData::onPuglConfigure(const int width, const int height)
 {
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
@@ -380,18 +356,15 @@ void Window::PrivateData::onPuglReshape(const int width, const int height)
 #endif
 }
 
-void Window::PrivateData::onPuglCreate()
+void Window::PrivateData::onPuglExpose()
 {
-    DGL_DBGp("PUGL: onPuglCreate %i\n", pendingVisibility);
+    DGL_DBGp("PUGL: onPuglExpose : %p\n", topLevelWidget);
 
-    if (pendingVisibility != kPendingVisibilityShow)
-        return;
+    puglOnDisplayPrepare(view);
 
-    pendingVisibility = kPendingVisibilityNone;
-#ifdef DISTRHO_OS_WINDOWS
-    puglWin32ShowWindowCentered(view);
-#else
-    puglShow(view);
+#ifndef DPF_TEST_WINDOW_CPP
+    if (topLevelWidget != nullptr)
+        topLevelWidget->pData->display();
 #endif
 }
 
@@ -437,14 +410,38 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_NOTHING:
         break;
 
+    ///< View created, a #PuglEventCreate
+    case PUGL_CREATE:
+#ifdef DGL_PUGL_USING_X11
+        if (! pData->isEmbed)
+            puglExtraSetWindowTypeAndPID(view);
+#endif
+        break;
+
+    ///< View destroyed, a #PuglEventDestroy
+    case PUGL_DESTROY:
+        break;
+
     ///< View moved/resized, a #PuglEventConfigure
     case PUGL_CONFIGURE:
-        pData->onPuglReshape(event->configure.width, event->configure.height);
+        pData->onPuglConfigure(event->configure.width, event->configure.height);
+        break;
+
+    ///< View made visible, a #PuglEventMap
+    case PUGL_MAP:
+        break;
+
+    ///< View made invisible, a #PuglEventUnmap
+    case PUGL_UNMAP:
+        break;
+
+    ///< View ready to draw, a #PuglEventUpdate
+    case PUGL_UPDATE:
         break;
 
     ///< View must be drawn, a #PuglEventExpose
     case PUGL_EXPOSE:
-        pData->onPuglDisplay();
+        pData->onPuglExpose();
         break;
 
     ///< View will be closed, a #PuglEventClose
@@ -452,12 +449,36 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         pData->onPuglClose();
         break;
 
-    case PUGL_CREATE:
-        pData->onPuglCreate();
+    ///< Keyboard focus entered view, a #PuglEventFocus
+    case PUGL_FOCUS_IN:
         break;
 
-    case PUGL_BUTTON_PRESS:   ///< Mouse button pressed, a #PuglEventButton
-    case PUGL_BUTTON_RELEASE: ///< Mouse button released, a #PuglEventButton
+    ///< Keyboard focus left view, a #PuglEventFocus
+    case PUGL_FOCUS_OUT:
+        break;
+
+    ///< Key pressed, a #PuglEventKey
+    case PUGL_KEY_PRESS:
+        break;
+    ///< Key released, a #PuglEventKey
+    case PUGL_KEY_RELEASE:
+        break;
+
+    ///< Character entered, a #PuglEventText
+    case PUGL_TEXT:
+        break;
+
+    ///< Pointer entered view, a #PuglEventCrossing
+    case PUGL_POINTER_IN:
+        break;
+    ///< Pointer left view, a #PuglEventCrossing
+    case PUGL_POINTER_OUT:
+        break;
+
+    ///< Mouse button pressed, a #PuglEventButton
+    case PUGL_BUTTON_PRESS:
+    ///< Mouse button released, a #PuglEventButton
+    case PUGL_BUTTON_RELEASE:
     {
         Events::MouseEvent ev;
         ev.mod    = event->button.state;
@@ -470,8 +491,28 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         break;
     }
 
-    // TODO
-    default:
+    ///< Pointer moved, a #PuglEventMotion
+    case PUGL_MOTION:
+        break;
+
+    ///< Scrolled, a #PuglEventScroll
+    case PUGL_SCROLL:
+        break;
+
+    ///< Custom client message, a #PuglEventClient
+    case PUGL_CLIENT:
+        break;
+
+    ///< Timer triggered, a #PuglEventTimer
+    case PUGL_TIMER:
+        break;
+
+    ///< Recursive loop entered, a #PuglEventLoopEnter
+    case PUGL_LOOP_ENTER:
+        break;
+
+    ///< Recursive loop left, a #PuglEventLoopLeave
+    case PUGL_LOOP_LEAVE:
         break;
     }
 
@@ -608,177 +649,3 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-#if 0
-#ifdef DGL_CAIRO
-# define PUGL_CAIRO
-# include "../Cairo.hpp"
-#endif
-#ifdef DGL_OPENGL
-# define PUGL_OPENGL
-# include "../OpenGL.hpp"
-#endif
-
-#ifndef DPF_TEST_WINDOW_CPP
-#include "WidgetPrivateData.hpp"
-#include "pugl-upstream/include/pugl/pugl.h"
-#include "pugl-extra/extras.h"
-#endif
-
-extern "C" {
-#include "pugl-upstream/src/implementation.c"
-#include "pugl-extra/extras.c"
-}
-
-#if defined(DISTRHO_OS_HAIKU)
-# define DGL_DEBUG_EVENTS
-# include "pugl-upstream/src/haiku.cpp"
-#elif defined(DISTRHO_OS_MAC)
-# include "pugl-upstream/src/mac.m"
-#elif defined(DISTRHO_OS_WINDOWS)
-# include "ppugl-upstream/src/win.c"
-# undef max
-# undef min
-#else
-# define DGL_PUGL_USING_X11
-extern "C" {
-# include "pugl-upstream/src/x11.c"
-// # ifdef DGL_CAIRO
-// #  include "pugl-upstream/src/x11_cairo.c"
-// # endif
-# ifdef DGL_OPENGL
-#  include "pugl-upstream/src/x11_gl.c"
-# endif
-# define PUGL_DETAIL_X11_H_INCLUDED
-# include "pugl-extra/x11.c"
-}
-#endif
-
-#include <inttypes.h>
-#include <stdarg.h>
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-
-START_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::addWidget(Widget* const widget)
-{
-    fWidgets.push_back(widget);
-}
-
-void Window::PrivateData::removeWidget(Widget* const widget)
-{
-    fWidgets.remove(widget);
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
-{
-    DGL_DBGp("PUGL: onMouse : %i %i %i %i\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
-
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
-
-    Widget::MouseEvent rev = ev;
-    double x = ev.pos.getX() / fAutoScaling;
-    double y = ev.pos.getY() / fAutoScaling;
-
-    FOR_EACH_WIDGET_INV(rit)
-    {
-        Widget* const widget(*rit);
-
-        rev.pos = Point<double>(x - widget->getAbsoluteX(),
-                                y - widget->getAbsoluteY());
-
-        if (widget->isVisible() && widget->onMouse(rev))
-            break;
-    }
-}
-
-PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
-{
-    Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
-
-    switch (event->type)
-    {
-    ///< No event
-    case PUGL_NOTHING:
-        break;
-
-    ///< View created, a #PuglEventCreate
-    case PUGL_CREATE:
-#ifdef DGL_PUGL_USING_X11
-        if (! pData->fUsingEmbed)
-            puglExtraSetWindowTypeAndPID(view);
-#endif
-        break;
-
-    ///< View destroyed, a #PuglEventDestroy
-    case PUGL_DESTROY:
-        break;
-
-    ///< View moved/resized, a #PuglEventConfigure
-    case PUGL_CONFIGURE:
-        pData->onPuglReshape(event->configure.width, event->configure.height);
-        break;
-
-    case PUGL_MAP:            ///< View made visible, a #PuglEventMap
-    case PUGL_UNMAP:          ///< View made invisible, a #PuglEventUnmap
-        break;
-
-    ///< View ready to draw, a #PuglEventUpdate
-    case PUGL_UPDATE:
-        break;
-
-    ///< View must be drawn, a #PuglEventExpose
-    case PUGL_EXPOSE:
-        pData->onPuglDisplay();
-        break;
-
-    ///< View will be closed, a #PuglEventClose
-    case PUGL_CLOSE:
-        pData->onPuglClose();
-        break;
-
-    case PUGL_BUTTON_PRESS:   ///< Mouse button pressed, a #PuglEventButton
-    case PUGL_BUTTON_RELEASE: ///< Mouse button released, a #PuglEventButton
-    {
-        Widget::MouseEvent ev;
-        ev.mod    = event->button.state;
-        ev.flags  = event->button.flags;
-        ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
-        ev.button = event->button.button;
-        ev.press  = event->type == PUGL_BUTTON_PRESS;
-        ev.pos    = Point<double>(event->button.x, event->button.y);
-        pData->onPuglMouse(ev);
-        break;
-    }
-
-    case PUGL_FOCUS_IN:       ///< Keyboard focus entered view, a #PuglEventFocus
-    case PUGL_FOCUS_OUT:      ///< Keyboard focus left view, a #PuglEventFocus
-    case PUGL_KEY_PRESS:      ///< Key pressed, a #PuglEventKey
-    case PUGL_KEY_RELEASE:    ///< Key released, a #PuglEventKey
-    case PUGL_TEXT:           ///< Character entered, a #PuglEventText
-    case PUGL_POINTER_IN:     ///< Pointer entered view, a #PuglEventCrossing
-    case PUGL_POINTER_OUT:    ///< Pointer left view, a #PuglEventCrossing
-    case PUGL_MOTION:         ///< Pointer moved, a #PuglEventMotion
-    case PUGL_SCROLL:         ///< Scrolled, a #PuglEventScroll
-    case PUGL_CLIENT:         ///< Custom client message, a #PuglEventClient
-    case PUGL_TIMER:          ///< Timer triggered, a #PuglEventTimer
-    case PUGL_LOOP_ENTER:     ///< Recursive loop entered, a #PuglEventLoopEnter
-    case PUGL_LOOP_LEAVE:     ///< Recursive loop left, a #PuglEventLoopLeave
-        break;
-    }
-
-    return PUGL_SUCCESS;
-}
-
-// -----------------------------------------------------------------------
-
-END_NAMESPACE_DGL
-#endif
