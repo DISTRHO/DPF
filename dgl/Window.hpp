@@ -100,6 +100,9 @@ public:
     bool isResizable() const noexcept;
     void setResizable(bool yesNo);
 
+    bool isDecorated() const noexcept;
+    void setDecorated(bool yesNo);
+
     uint getWidth() const noexcept;
     uint getHeight() const noexcept;
     Size<uint> getSize() const noexcept;
