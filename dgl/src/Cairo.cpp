@@ -145,6 +145,37 @@ void CairoImage::drawAt(const GraphicsContext&, const Point<int>&)
 }
 
 // -----------------------------------------------------------------------
+// CairoSubWidget
+
+template <>
+CairoWidget<SubWidget>::CairoWidget(Widget* const parent)
+    : SubWidget(parent) {}
+
+template class CairoWidget<SubWidget>;
+
+// -----------------------------------------------------------------------
+// CairoTopLevelWidget
+
+template <>
+CairoWidget<TopLevelWidget>::CairoWidget(Window& windowToMapTo)
+    : TopLevelWidget(windowToMapTo) {}
+
+template class CairoWidget<TopLevelWidget>;
+
+// -----------------------------------------------------------------------
+// CairoStandaloneWindow
+
+template <>
+CairoWidget<StandaloneWindow>::CairoWidget(Application& app)
+    : StandaloneWindow(app) {}
+
+template <>
+CairoWidget<StandaloneWindow>::CairoWidget(Application& app, Window& parentWindow)
+    : StandaloneWindow(app, parentWindow) {}
+
+template class CairoWidget<StandaloneWindow>;
+
+// -----------------------------------------------------------------------
 
 template <>
 void ImageBaseAboutWindow<CairoImage>::onDisplay()

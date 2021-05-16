@@ -943,7 +943,7 @@ bool NanoVG::loadSharedResources()
 #endif
 
 // -----------------------------------------------------------------------
-// SubWidget
+// NanoSubWidget
 
 template <>
 NanoWidget<SubWidget>::NanoWidget(Widget* const parent, int flags)
@@ -956,26 +956,27 @@ NanoWidget<SubWidget>::NanoWidget(Widget* const parent, int flags)
 template class NanoWidget<SubWidget>;
 
 // -----------------------------------------------------------------------
-// TopLevelWidget
+// NanoTopLevelWidget
 
 template <>
 NanoWidget<TopLevelWidget>::NanoWidget(Window& windowToMapTo, int flags)
     : TopLevelWidget(windowToMapTo),
-      NanoVG(flags)
-{
-}
+      NanoVG(flags) {}
 
 template class NanoWidget<TopLevelWidget>;
 
 // -----------------------------------------------------------------------
-// StandaloneWindow
+// NanoStandaloneWindow
 
 template <>
 NanoWidget<StandaloneWindow>::NanoWidget(Application& app, int flags)
     : StandaloneWindow(app),
-      NanoVG(flags)
-{
-}
+      NanoVG(flags) {}
+
+template <>
+NanoWidget<StandaloneWindow>::NanoWidget(Application& app, Window& parentWindow, int flags)
+    : StandaloneWindow(app, parentWindow),
+      NanoVG(flags) {}
 
 template class NanoWidget<StandaloneWindow>;
 

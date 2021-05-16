@@ -20,7 +20,6 @@
 #include "ImageBase.hpp"
 #include "ImageBaseWidgets.hpp"
 #include "SubWidget.hpp"
-#include "TopLevelWidget.hpp"
 
 #include <cairo/cairo.h>
 
@@ -86,48 +85,65 @@ public:
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
-   Cairo SubWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
+   CairoWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
  */
-class CairoSubWidget : public SubWidget
+template <class BaseWidget>
+class CairoWidget : public BaseWidget
 {
 public:
-    CairoSubWidget(Widget* widgetToGroupTo)
-        : SubWidget(widgetToGroupTo) {}
+   /**
+      Constructor for a CairoSubWidget.
+      @see CreateFlags
+    */
+    explicit CairoWidget(Widget* const parentGroupWidget);
+
+   /**
+      Constructor for a CairoTopLevelWidget.
+      @see CreateFlags
+    */
+    explicit CairoWidget(Window& windowToMapTo);
+
+   /**
+      Constructor for a CairoStandaloneWindow without parent window.
+      @see CreateFlags
+    */
+    explicit CairoWidget(Application& app);
+
+   /**
+      Constructor for a CairoStandaloneWindow with parent window.
+      @see CreateFlags
+    */
+    explicit CairoWidget(Application& app, Window& parentWindow);
+
+   /**
+      Destructor.
+    */
+    virtual ~CairoWidget() {}
 
 protected:
+   /**
+      New virtual onDisplay function.
+      @see onDisplay
+    */
+    virtual void onCairoDisplay(const CairoGraphicsContext& context) = 0;
+
+private:
+   /**
+      Widget display function.
+      Implemented internally to wrap begin/endFrame() automatically.
+    */
     void onDisplay() override
     {
-        const CairoGraphicsContext& context((const CairoGraphicsContext&)getGraphicsContext());
+        const CairoGraphicsContext& context((const CairoGraphicsContext&)BaseWidget::getGraphicsContext());
         onCairoDisplay(context);
     }
 
-    virtual void onCairoDisplay(const CairoGraphicsContext& context) = 0;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoSubWidget);
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoWidget);
 };
 
-// --------------------------------------------------------------------------------------------------------------------
-
-/**
-   Cairo TopLevelWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
- */
-class CairoTopLevelWidget : public TopLevelWidget
-{
-public:
-    CairoTopLevelWidget(Window& windowToMapTo)
-        : TopLevelWidget(windowToMapTo) {}
-
-protected:
-    void onDisplay() override
-    {
-        const CairoGraphicsContext& context((const CairoGraphicsContext&)getGraphicsContext());
-        onCairoDisplay(context);
-    }
-
-    virtual void onCairoDisplay(const CairoGraphicsContext& context) = 0;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoTopLevelWidget);
-};
+typedef CairoWidget<SubWidget> CairoSubWidget;
+typedef CairoWidget<TopLevelWidget> CairoTopLevelWidget;
+typedef CairoWidget<StandaloneWindow> CairoStandaloneWindow;
 
 // --------------------------------------------------------------------------------------------------------------------
 

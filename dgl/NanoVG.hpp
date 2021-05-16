@@ -895,10 +895,16 @@ public:
     explicit NanoWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a NanoStandaloneWindow.
+      Constructor for a NanoStandaloneWindow without parent window.
       @see CreateFlags
     */
     explicit NanoWidget(Application& app, int flags = CREATE_ANTIALIAS);
+
+   /**
+      Constructor for a NanoStandaloneWindow with parent window.
+      @see CreateFlags
+    */
+    explicit NanoWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.

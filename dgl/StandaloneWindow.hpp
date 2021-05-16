@@ -38,8 +38,8 @@ public:
    /**
       Constructor with parent window, typically used to run as modal.
     */
-    StandaloneWindow(Application& app, Window& parent)
-      : Window(app, parent),
+    StandaloneWindow(Application& app, Window& parentWindow)
+      : Window(app, parentWindow),
         TopLevelWidget((Window&)*this) {}
 
    /**
