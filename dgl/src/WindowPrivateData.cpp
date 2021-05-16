@@ -472,18 +472,25 @@ void Window::PrivateData::onPuglClose()
 {
     DGL_DBG("PUGL: onClose\n");
 
-    if (! self->onClose())
-        return;
+    // if we have a parent or running as standalone we can prevent closing in certain conditions
+    if (modal.parent != nullptr || appData->isStandalone)
+    {
+        // parent gives focus to us as modal, prevent closing
+        if (modal.child != nullptr)
+            return modal.child->focus();
+
+        // ask window if we should close
+        if (! self->onClose())
+            return;
+    }
 
     if (modal.enabled)
         stopModal();
 
-    if (modal.child != nullptr)
+    if (PrivateData* const child = modal.child)
     {
-        if (modal.child->modal.enabled)
-            modal.child->stopModal();
-
-        modal.child->close();
+        modal.child = nullptr;
+        child->close();
     }
 
     close();
