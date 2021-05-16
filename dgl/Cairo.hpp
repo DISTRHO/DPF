@@ -17,6 +17,8 @@
 #ifndef DGL_CAIRO_HPP_INCLUDED
 #define DGL_CAIRO_HPP_INCLUDED
 
+#include "ImageBase.hpp"
+#include "ImageBaseWidgets.hpp"
 #include "SubWidget.hpp"
 #include "TopLevelWidget.hpp"
 
@@ -33,6 +35,54 @@ struct CairoGraphicsContext : GraphicsContext
 {
     cairo_t* handle;
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+   Cairo Image class.
+
+   TODO ...
+ */
+class CairoImage : public ImageBase
+{
+public:
+   /**
+      Constructor for a null Image.
+    */
+    CairoImage();
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    CairoImage(const char* const rawData,
+               const uint width,
+               const uint height);
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    CairoImage(const char* const rawData,
+               const Size<uint>& size);
+
+   /**
+      Constructor using another image data.
+    */
+    CairoImage(const CairoImage& image);
+
+   /**
+      Destructor.
+    */
+    ~CairoImage() override;
+
+   /**
+      Draw this image at position @a pos using the graphics context @a context.
+    */
+    void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    Cairo SubWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
@@ -75,6 +125,10 @@ protected:
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoTopLevelWidget);
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+
+typedef ImageBaseAboutWindow<CairoImage> CairoImageAboutWindow;
 
 // --------------------------------------------------------------------------------------------------------------------
 

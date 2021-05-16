@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,35 +18,10 @@
 #define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
 #include "Image.hpp"
-#include "StandaloneWindow.hpp"
+#include "ImageBaseWidgets.hpp"
 #include "SubWidget.hpp"
 
 START_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-
-class ImageAboutWindow : public StandaloneWindow
-{
-public:
-    explicit ImageAboutWindow(Window& parentWindow, const Image& image = Image());
-    explicit ImageAboutWindow(TopLevelWidget* parentTopLevelWidget, const Image& image = Image());
-
-    void setImage(const Image& image);
-
-    // TODO
-    void exec() {}
-
-protected:
-    void onDisplay() override;
-    bool onKeyboard(const KeyboardEvent&) override;
-    bool onMouse(const MouseEvent&) override;
-    void onReshape(uint width, uint height) override;
-
-private:
-    Image fImgBackground;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageAboutWindow)
-};
 
 // -----------------------------------------------------------------------
 

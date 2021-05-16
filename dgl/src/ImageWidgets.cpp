@@ -15,6 +15,8 @@
  */
 
 #include "../Image.hpp"
+#include "../ImageBaseWidgets.hpp"
+
 #include "Common.hpp"
 #include "WidgetPrivateData.hpp"
 
@@ -22,74 +24,6 @@
 #include "../OpenGL.hpp"
 
 START_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-
-ImageAboutWindow::ImageAboutWindow(Window& parentWindow, const Image& image)
-    : StandaloneWindow(parentWindow.getApp()),
-      fImgBackground(image)
-{
-    // TODO set transient
-    Window::setResizable(false);
-    Window::setTitle("About");
-
-    if (image.isValid())
-        Window::setSize(image.getSize());
-}
-
-ImageAboutWindow::ImageAboutWindow(TopLevelWidget* const parentTopLevelWidget, const Image& image)
-    : StandaloneWindow(parentTopLevelWidget->getApp()),
-      fImgBackground(image)
-{
-    // TODO set transient
-    Window::setResizable(false);
-    Window::setTitle("About");
-
-    if (image.isValid())
-        Window::setSize(image.getSize());
-}
-
-void ImageAboutWindow::setImage(const Image& image)
-{
-    if (fImgBackground == image)
-        return;
-
-    fImgBackground = image;
-    Window::setSize(image.getSize());
-}
-
-void ImageAboutWindow::onDisplay()
-{
-    fImgBackground.draw();
-}
-
-bool ImageAboutWindow::onKeyboard(const KeyboardEvent& ev)
-{
-    if (ev.press && ev.key == kCharEscape)
-    {
-        Window::close();
-        return true;
-    }
-
-    return false;
-}
-
-bool ImageAboutWindow::onMouse(const MouseEvent& ev)
-{
-    if (ev.press)
-    {
-        Window::close();
-        return true;
-    }
-
-    return false;
-}
-
-void ImageAboutWindow::onReshape(uint width, uint height)
-{
-    Widget::setSize(width, height);
-    Window::onReshape(width, height);
-}
 
 // -----------------------------------------------------------------------
 

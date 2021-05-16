@@ -15,6 +15,8 @@
  */
 
 #include "../OpenGL.hpp"
+#include "../ImageWidgets.hpp"
+
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -111,51 +113,11 @@ void Rectangle<T>::_draw(const bool outline)
 }
 
 // -----------------------------------------------------------------------
-// Possible template data types
-
-#ifndef DPF_TEST_DEMO
-template class Line<double>;
-template class Line<float>;
-template class Line<int>;
-template class Line<uint>;
-template class Line<short>;
-template class Line<ushort>;
-
-template class Circle<double>;
-template class Circle<float>;
-template class Circle<int>;
-template class Circle<uint>;
-template class Circle<short>;
-template class Circle<ushort>;
-
-template class Triangle<double>;
-template class Triangle<float>;
-template class Triangle<int>;
-template class Triangle<uint>;
-template class Triangle<short>;
-template class Triangle<ushort>;
-
-template class Rectangle<double>;
-template class Rectangle<float>;
-template class Rectangle<int>;
-template class Rectangle<uint>;
-template class Rectangle<short>;
-template class Rectangle<ushort>;
-#endif
-
-// -----------------------------------------------------------------------
 
 OpenGLImage::OpenGLImage()
     : ImageBase(),
       fFormat(0),
       fType(0),
-      fTextureId(0),
-      setupCalled(false) {}
-
-OpenGLImage::OpenGLImage(const OpenGLImage& image)
-    : ImageBase(image),
-      fFormat(image.fFormat),
-      fType(image.fType),
       fTextureId(0),
       setupCalled(false) {}
 
@@ -170,6 +132,13 @@ OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, cons
     : ImageBase(rawData, size),
       fFormat(format),
       fType(type),
+      fTextureId(0),
+      setupCalled(false) {}
+
+OpenGLImage::OpenGLImage(const OpenGLImage& image)
+    : ImageBase(image),
+      fFormat(image.fFormat),
+      fType(image.fType),
       fTextureId(0),
       setupCalled(false) {}
 
@@ -324,72 +293,13 @@ void OpenGLImage::drawAt(const Point<int>& pos)
 
 // -----------------------------------------------------------------------
 
-#if 0
-void Widget::PrivateData::display(const uint width,
-                                  const uint height,
-                                  const double autoScaleFactor,
-                                  const bool renderingSubWidget)
+template <>
+void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
 {
-    printf("Widget::PrivateData::display INIT\n");
-
-    if (/*(skipDisplay && ! renderingSubWidget) ||*/ size.isInvalid() || ! visible)
-        return;
-
-    bool needsDisableScissor = false;
-
-    // reset color
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-#if 0
-    if (/*needsFullViewport ||*/ (absolutePos.isZero() && size == Size<uint>(width, height)))
-#endif
-    {
-        // full viewport size
-        glViewport(0,
-                    -(height * autoScaleFactor - height),
-                    width * autoScaleFactor,
-                    height * autoScaleFactor);
-    }
-#if 0
-    else if (needsScaling)
-    {
-        // limit viewport to widget bounds
-        glViewport(absolutePos.getX(),
-                   height - self->getHeight() - absolutePos.getY(),
-                   self->getWidth(),
-                   self->getHeight());
-    }
-    else
-    {
-        // only set viewport pos
-        glViewport(absolutePos.getX() * autoScaleFactor,
-                    -std::round((height * autoScaleFactor - height) + (absolutePos.getY() * autoScaleFactor)),
-                    std::round(width * autoScaleFactor),
-                    std::round(height * autoScaleFactor));
-
-        // then cut the outer bounds
-        glScissor(absolutePos.getX() * autoScaleFactor,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaleFactor),
-                  std::round(self->getWidth() * autoScaleFactor),
-                  std::round(self->getHeight() * autoScaleFactor));
-
-        glEnable(GL_SCISSOR_TEST);
-        needsDisableScissor = true;
-    }
-#endif
-
-    // display widget
-    self->onDisplay();
-
-    if (needsDisableScissor)
-    {
-        glDisable(GL_SCISSOR_TEST);
-        needsDisableScissor = false;
-    }
-
-    displaySubWidgets(width, height, autoScaleFactor);
+    img.draw();
 }
-#endif
+
+// -----------------------------------------------------------------------
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
@@ -453,9 +363,9 @@ void TopLevelWidget::PrivateData::display()
 
     // full viewport size
     if (window.pData->autoScaling)
-        glViewport(0, -height, width, height);
-    else
         glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
+    else
+        glViewport(0, -height, width, height);
 
     // main widget drawing
     self->onDisplay();
@@ -472,5 +382,52 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 }
 
 // -----------------------------------------------------------------------
+// Possible template data types
+
+#ifndef DPF_TEST_DEMO
+// // FIXME
+// template class Line<double>;
+// template class Line<float>;
+// template class Line<int>;
+// template class Line<uint>;
+// template class Line<short>;
+// template class Line<ushort>;
+// 
+// template class Circle<double>;
+// template class Circle<float>;
+// template class Circle<int>;
+// template class Circle<uint>;
+// template class Circle<short>;
+// template class Circle<ushort>;
+// 
+// template class Triangle<double>;
+// template class Triangle<float>;
+// template class Triangle<int>;
+// template class Triangle<uint>;
+// template class Triangle<short>;
+// template class Triangle<ushort>;
+// 
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
+#endif
+
+// -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+// templated classes
+
+#include "ImageBaseWidgets.cpp"
+
+START_NAMESPACE_DGL
+
+template class ImageBaseAboutWindow<OpenGLImage>;
+
+END_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------

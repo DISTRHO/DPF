@@ -29,10 +29,17 @@ class StandaloneWindow : public Window,
 {
 public:
    /**
-      Constructor.
+      Constructor without parent.
     */
     StandaloneWindow(Application& app)
       : Window(app),
+        TopLevelWidget((Window&)*this) {}
+
+   /**
+      Constructor with parent window, typically used to run as modal.
+    */
+    StandaloneWindow(Application& app, Window& parent)
+      : Window(app, parent),
         TopLevelWidget((Window&)*this) {}
 
    /**

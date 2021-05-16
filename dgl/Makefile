@@ -29,6 +29,7 @@ OBJS_common = \
 	../build/dgl/Color.cpp.o \
 	../build/dgl/Geometry.cpp.o \
 	../build/dgl/ImageBase.cpp.o \
+	../build/dgl/ImageBaseWidgets.cpp.o \
 	../build/dgl/Resources.cpp.o \
 	../build/dgl/SubWidget.cpp.o \
 	../build/dgl/SubWidgetPrivateData.cpp.o \

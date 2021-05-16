@@ -64,6 +64,37 @@ void Rectangle<T>::_draw(const bool outline)
 }
 
 // -----------------------------------------------------------------------
+// CairoImage
+
+CairoImage::CairoImage()
+    : ImageBase() {}
+
+CairoImage::CairoImage(const char* const rawData, const uint width, const uint height)
+    : ImageBase(rawData, width, height) {}
+
+CairoImage::CairoImage(const char* const rawData, const Size<uint>& size)
+    : ImageBase(rawData, size) {}
+
+CairoImage::CairoImage(const CairoImage& image)
+    : ImageBase(image.rawData, image.size) {}
+
+CairoImage::~CairoImage()
+{
+}
+
+void CairoImage::drawAt(const GraphicsContext&, const Point<int>&)
+{
+}
+
+// -----------------------------------------------------------------------
+
+template <>
+void ImageBaseAboutWindow<CairoImage>::onDisplay()
+{
+    img.draw(getGraphicsContext());
+}
+
+// -----------------------------------------------------------------------
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
@@ -96,6 +127,39 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 #endif
     return context;
 }
+
+// -----------------------------------------------------------------------
+// Possible template data types
+
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<uint>;
+template class Line<short>;
+template class Line<ushort>;
+
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<uint>;
+template class Circle<short>;
+template class Circle<ushort>;
+
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<uint>;
+template class Triangle<short>;
+template class Triangle<ushort>;
+
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
+
+template class ImageBaseAboutWindow<CairoImage>;
 
 // -----------------------------------------------------------------------
 
