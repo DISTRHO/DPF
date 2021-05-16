@@ -22,7 +22,7 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-static void notImplemented(const char *name)
+static void notImplemented(const char* const name)
 {
     d_stderr2("cairo function not implemented: %s", name);
 }
@@ -36,6 +36,13 @@ void Line<T>::draw()
     notImplemented("Line::draw");
 }
 
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<uint>;
+template class Line<short>;
+template class Line<ushort>;
+
 // -----------------------------------------------------------------------
 // Circle
 
@@ -44,6 +51,13 @@ void Circle<T>::_draw(const bool outline)
 {
     notImplemented("Circle::draw");
 }
+
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<uint>;
+template class Circle<short>;
+template class Circle<ushort>;
 
 // -----------------------------------------------------------------------
 // Triangle
@@ -54,14 +68,55 @@ void Triangle<T>::_draw(const bool outline)
     notImplemented("Triangle::draw");
 }
 
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<uint>;
+template class Triangle<short>;
+template class Triangle<ushort>;
+
+
 // -----------------------------------------------------------------------
 // Rectangle
 
 template<typename T>
-void Rectangle<T>::_draw(const bool outline)
+static void drawRectangle(const Rectangle<T>& rect, const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
+
+    // TODO
+}
+
+template<typename T>
+void Rectangle<T>::draw(const GraphicsContext&)
+{
+    drawRectangle(*this, false);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline(const GraphicsContext&)
+{
+    drawRectangle(*this, true);
+}
+
+template<typename T>
+void Rectangle<T>::draw()
 {
     notImplemented("Rectangle::draw");
 }
+
+template<typename T>
+void Rectangle<T>::drawOutline()
+{
+    notImplemented("Rectangle::drawOutline");
+}
+
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
 
 // -----------------------------------------------------------------------
 // CairoImage
@@ -94,6 +149,8 @@ void ImageBaseAboutWindow<CairoImage>::onDisplay()
     img.draw(getGraphicsContext());
 }
 
+template class ImageBaseAboutWindow<CairoImage>;
+
 // -----------------------------------------------------------------------
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
@@ -122,44 +179,9 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
     GraphicsContext& context((GraphicsContext&)graphicsContext);
-#ifdef DGL_CAIRO
     ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
-#endif
     return context;
 }
-
-// -----------------------------------------------------------------------
-// Possible template data types
-
-template class Line<double>;
-template class Line<float>;
-template class Line<int>;
-template class Line<uint>;
-template class Line<short>;
-template class Line<ushort>;
-
-template class Circle<double>;
-template class Circle<float>;
-template class Circle<int>;
-template class Circle<uint>;
-template class Circle<short>;
-template class Circle<ushort>;
-
-template class Triangle<double>;
-template class Triangle<float>;
-template class Triangle<int>;
-template class Triangle<uint>;
-template class Triangle<short>;
-template class Triangle<ushort>;
-
-template class Rectangle<double>;
-template class Rectangle<float>;
-template class Rectangle<int>;
-template class Rectangle<uint>;
-template class Rectangle<short>;
-template class Rectangle<ushort>;
-
-template class ImageBaseAboutWindow<CairoImage>;
 
 // -----------------------------------------------------------------------
 

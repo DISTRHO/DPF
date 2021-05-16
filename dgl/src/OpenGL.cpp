@@ -42,6 +42,13 @@ void Line<T>::draw()
     glEnd();
 }
 
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<uint>;
+template class Line<short>;
+template class Line<ushort>;
+
 // -----------------------------------------------------------------------
 // Circle
 
@@ -66,6 +73,13 @@ void Circle<T>::_draw(const bool outline)
     glEnd();
 }
 
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<uint>;
+template class Circle<short>;
+template class Circle<ushort>;
+
 // -----------------------------------------------------------------------
 // Triangle
 
@@ -85,32 +99,75 @@ void Triangle<T>::_draw(const bool outline)
     glEnd();
 }
 
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<uint>;
+template class Triangle<short>;
+template class Triangle<ushort>;
+
 // -----------------------------------------------------------------------
 // Rectangle
 
 template<typename T>
-void Rectangle<T>::_draw(const bool outline)
+static void drawRectangle(const Rectangle<T>& rect, const bool outline)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fSize.isValid(),);
+    DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
 
     glBegin(outline ? GL_LINE_LOOP : GL_QUADS);
 
     {
+        const T x = rect.getX();
+        const T y = rect.getY();
+        const T w = rect.getWidth();
+        const T h = rect.getHeight();
+
         glTexCoord2f(0.0f, 0.0f);
-        glVertex2d(fPos.fX, fPos.fY);
+        glVertex2d(x, y);
 
         glTexCoord2f(1.0f, 0.0f);
-        glVertex2d(fPos.fX+fSize.fWidth, fPos.fY);
+        glVertex2d(x+w, y);
 
         glTexCoord2f(1.0f, 1.0f);
-        glVertex2d(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
+        glVertex2d(x+w, y+h);
 
         glTexCoord2f(0.0f, 1.0f);
-        glVertex2d(fPos.fX, fPos.fY+fSize.fHeight);
+        glVertex2d(x, y+h);
     }
 
     glEnd();
 }
+
+template<typename T>
+void Rectangle<T>::draw(const GraphicsContext&)
+{
+    drawRectangle(*this, false);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline(const GraphicsContext&)
+{
+    drawRectangle(*this, true);
+}
+
+template<typename T>
+void Rectangle<T>::draw()
+{
+    drawRectangle(*this, true);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline()
+{
+    drawRectangle(*this, true);
+}
+
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
 
 // -----------------------------------------------------------------------
 
@@ -377,40 +434,6 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
     return (const GraphicsContext&)graphicsContext;
 }
-
-// -----------------------------------------------------------------------
-// Possible template data types
-
-#ifndef DPF_TEST_DEMO
-// // FIXME
-// template class Line<double>;
-// template class Line<float>;
-// template class Line<int>;
-// template class Line<uint>;
-// template class Line<short>;
-// template class Line<ushort>;
-// 
-// template class Circle<double>;
-// template class Circle<float>;
-// template class Circle<int>;
-// template class Circle<uint>;
-// template class Circle<short>;
-// template class Circle<ushort>;
-// 
-// template class Triangle<double>;
-// template class Triangle<float>;
-// template class Triangle<int>;
-// template class Triangle<uint>;
-// template class Triangle<short>;
-// template class Triangle<ushort>;
-// 
-template class Rectangle<double>;
-template class Rectangle<float>;
-template class Rectangle<int>;
-template class Rectangle<uint>;
-template class Rectangle<short>;
-template class Rectangle<ushort>;
-#endif
 
 // -----------------------------------------------------------------------
 

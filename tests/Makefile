@@ -25,7 +25,7 @@ ifeq ($(HAVE_CAIRO),true)
 WTESTS   = Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
-# TESTS   += Demo
+TESTS   += Demo
 WTESTS   = Window.opengl
 endif
 ifeq ($(HAVE_VULKAN),true)
@@ -119,9 +119,9 @@ clean:
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
 
-../build/tests/Demo: ../build/tests/Demo.cpp.o
+../build/tests/Demo: ../build/tests/Demo.cpp.o ../build/libdgl-opengl.a
 	@echo "Linking Demo"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 ../build/tests/Testing: ../build/tests/Testing.cpp.o
 	@echo "Linking Testing"

@@ -903,7 +903,7 @@ public:
    /**
       Destructor.
     */
-    virtual ~NanoWidget();
+    virtual ~NanoWidget() {}
 
 protected:
    /**
@@ -913,14 +913,16 @@ protected:
     virtual void onNanoDisplay() = 0;
 
 private:
-    struct PrivateData;
-    PrivateData* const nData;
-
    /**
       Widget display function.
       Implemented internally to wrap begin/endFrame() automatically.
     */
-    void onDisplay() override;
+    inline void onDisplay() override
+    {
+        NanoVG::beginFrame(BaseWidget::getWidth(), BaseWidget::getHeight());
+        onNanoDisplay();
+        NanoVG::endFrame();
+    }
 
     // these should not be used
     void beginFrame(uint,uint) {}

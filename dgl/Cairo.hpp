@@ -105,6 +105,8 @@ protected:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoSubWidget);
 };
 
+// --------------------------------------------------------------------------------------------------------------------
+
 /**
    Cairo TopLevelWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
  */

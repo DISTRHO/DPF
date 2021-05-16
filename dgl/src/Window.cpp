@@ -172,6 +172,13 @@ Application& Window::getApp() const noexcept
     return pData->app;
 }
 
+#ifndef DPF_TEST_WINDOW_CPP
+const GraphicsContext& Window::getGraphicsContext() const noexcept
+{
+    return pData->getGraphicsContext();
+}
+#endif
+
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
     return puglGetNativeWindow(pData->view);

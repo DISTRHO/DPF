@@ -215,6 +215,14 @@ public:
     Application& getApp() const noexcept;
 
    /**
+      Get the graphics context associated with this window.
+      GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,
+      for example GraphicsContext.
+      @see CairoSubWidget, CairoTopLevelWidget
+    */
+    const GraphicsContext& getGraphicsContext() const noexcept;
+
+   /**
       Get the "native" window handle.
       Returned value depends on the platform:
        - HaikuOS: This is a pointer to a `BView`.

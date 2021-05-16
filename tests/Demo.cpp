@@ -20,26 +20,8 @@
 
 #include "tests.hpp"
 
-#define DPF_TEST_DEMO
-#include "dgl/OpenGL.hpp"
-#include "dgl/src/pugl.cpp"
-#include "dgl/src/Application.cpp"
-#include "dgl/src/ApplicationPrivateData.cpp"
-#include "dgl/src/Color.cpp"
-#include "dgl/src/Geometry.cpp"
-#include "dgl/src/ImageBase.cpp"
-#include "dgl/src/NanoVG.cpp"
-#include "dgl/src/OpenGL.cpp"
-#include "dgl/src/Resources.cpp"
-#include "dgl/src/SubWidget.cpp"
-#include "dgl/src/SubWidgetPrivateData.cpp"
-#include "dgl/src/TopLevelWidget.cpp"
-#include "dgl/src/TopLevelWidgetPrivateData.cpp"
-#include "dgl/src/Widget.cpp"
-#include "dgl/src/WidgetPrivateData.cpp"
-#include "dgl/src/Window.cpp"
-#include "dgl/src/WindowPrivateData.cpp"
-#include "dgl/StandaloneWindow.hpp"
+// TODO backend agnostic
+#include "../dgl/OpenGL.hpp"
 
 #include "widgets/ExampleColorWidget.hpp"
 #include "widgets/ExampleImagesWidget.hpp"

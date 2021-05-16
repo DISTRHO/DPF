@@ -16,6 +16,7 @@
 
 #include "WidgetPrivateData.hpp"
 #include "../TopLevelWidget.hpp"
+#include "../Window.hpp"
 
 START_NAMESPACE_DGL
 
@@ -132,6 +133,12 @@ Window& Widget::getWindow() const noexcept
 {
     DISTRHO_SAFE_ASSERT(pData->topLevelWidget != nullptr);
     return pData->topLevelWidget->getWindow();
+}
+
+const GraphicsContext& Widget::getGraphicsContext() const noexcept
+{
+    DISTRHO_SAFE_ASSERT(pData->topLevelWidget != nullptr);
+    return pData->topLevelWidget->getWindow().getGraphicsContext();
 }
 
 TopLevelWidget* Widget::getTopLevelWidget() const noexcept

@@ -20,8 +20,8 @@
 
 #include "tests.hpp"
 
-#define DPF_TEST_WINDOW_CPP
 #define DPF_TEST_POINT_CPP
+#define DPF_TEST_WINDOW_CPP
 #include "dgl/src/pugl.cpp"
 #include "dgl/src/Application.cpp"
 #include "dgl/src/ApplicationPrivateData.cpp"

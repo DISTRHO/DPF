@@ -34,28 +34,13 @@ public:
     static constexpr const char* kExampleWidgetName = "Text";
 
     // SubWidget
-    explicit ExampleTextWidget(Widget* const parent)
-        : BaseWidget(parent)
-    {
-        NanoVG::loadSharedResources();
-        BaseWidget::setSize(500, 300);
-    }
+    explicit ExampleTextWidget(Widget* const parent);
 
     // TopLevelWidget
-    explicit ExampleTextWidget(Window& windowToMapTo)
-        : BaseWidget(windowToMapTo)
-    {
-        NanoVG::loadSharedResources();
-        BaseWidget::setSize(500, 300);
-    }
+    explicit ExampleTextWidget(Window& windowToMapTo);
 
     // StandaloneWindow
-    explicit ExampleTextWidget(Application& app)
-        : BaseWidget(app)
-    {
-        NanoVG::loadSharedResources();
-        BaseWidget::setSize(500, 300);
-    }
+    explicit ExampleTextWidget(Application& app);
 
 protected:
     void onNanoDisplay() override
@@ -76,6 +61,34 @@ protected:
         NanoVG::textBox(10, height/2, width-20, "Hello World!", nullptr);
     }
 };
+
+template<> inline
+ExampleTextWidget<NanoSubWidget>::ExampleTextWidget(Widget* const parent)
+    : NanoSubWidget(parent)
+{
+    loadSharedResources();
+    setSize(500, 300);
+}
+
+template<> inline
+ExampleTextWidget<NanoTopLevelWidget>::ExampleTextWidget(Window& windowToMapTo)
+    : NanoTopLevelWidget(windowToMapTo)
+{
+    loadSharedResources();
+    setSize(500, 300);
+}
+
+template<> inline
+ExampleTextWidget<NanoStandaloneWindow>::ExampleTextWidget(Application& app)
+    : NanoStandaloneWindow(app)
+{
+    loadSharedResources();
+    setSize(500, 300);
+}
+
+template class ExampleTextWidget<NanoSubWidget>;
+template class ExampleTextWidget<NanoTopLevelWidget>;
+template class ExampleTextWidget<NanoStandaloneWindow>;
 
 typedef ExampleTextWidget<NanoSubWidget> ExampleTextSubWidget;
 typedef ExampleTextWidget<NanoTopLevelWidget> ExampleTextTopLevelWidget;

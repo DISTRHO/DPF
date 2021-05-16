@@ -195,7 +195,7 @@ public:
 
    /**
       Return true if size is not null (0x0).
-      A non-null size is still invalid if its width or height is negative.
+      A non-null size is still invalid if its width or height are negative.
     */
     bool isNotNull() const noexcept;
 
@@ -732,17 +732,38 @@ public:
     */
     bool containsY(const T& y) const noexcept;
 
-#ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this rectangle using the current OpenGL state.
+      Return true if size is null (0x0).
+      An null size is also invalid.
     */
-    void draw();
+    bool isNull() const noexcept;
 
    /**
-      Draw lines (outline of this rectangle) using the current OpenGL state.
+      Return true if size is not null (0x0).
+      A non-null size is still invalid if its width or height are negative.
     */
-    void drawOutline();
-#endif
+    bool isNotNull() const noexcept;
+
+   /**
+      Return true if size is valid (width and height are higher than zero).
+    */
+    bool isValid() const noexcept;
+
+   /**
+      Return true if size is invalid (width or height are lower or equal to zero).
+      An invalid size might not be null under some circumstances.
+    */
+    bool isInvalid() const noexcept;
+
+   /**
+      Draw this rectangle using the provided graphics context.
+    */
+    void draw(const GraphicsContext& context);
+
+   /**
+      Draw lines (outline of this rectangle) using the provided graphics context.
+    */
+    void drawOutline(const GraphicsContext& context);
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
     Rectangle<T>& operator*=(double m) noexcept;
@@ -750,14 +771,23 @@ public:
     bool operator==(const Rectangle<T>& size) const noexcept;
     bool operator!=(const Rectangle<T>& size) const noexcept;
 
-private:
-    Point<T> fPos;
-    Size<T>  fSize;
+   /**
+      Draw this rectangle using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void draw();
 
-#ifndef DPF_TEST_POINT_CPP
-   /** @internal */
-    void _draw(const bool outline);
-#endif
+   /** DEPRECATED
+      Draw lines (outline of this rectangle) using the current OpenGL state.
+      DEPRECATED please use drawOutline(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void drawOutline();
+
+private:
+    Point<T> pos;
+    Size<T> size;
 };
 
 // -----------------------------------------------------------------------

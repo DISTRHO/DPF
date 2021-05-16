@@ -57,6 +57,10 @@ public:
     void setHeight(uint height) { Window::setHeight(height); }
     void setSize(uint width, uint height) { Window::setSize(width, height); }
     void setSize(const Size<uint>& size) { Window::setSize(size); }
+    bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0)
+    { return Window::addIdleCallback(callback, timerFrequencyInMs); }
+    bool removeIdleCallback(IdleCallback* callback) { return Window::removeIdleCallback(callback); }
+    const GraphicsContext& getGraphicsContext() const noexcept { return Window::getGraphicsContext(); }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

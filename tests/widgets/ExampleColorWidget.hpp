@@ -20,8 +20,8 @@
 // ------------------------------------------------------
 // DGL Stuff
 
+#include "../../dgl/StandaloneWindow.hpp"
 #include "../../dgl/SubWidget.hpp"
-#include "../../dgl/TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
@@ -42,37 +42,13 @@ public:
     static constexpr const char* kExampleWidgetName = "Color";
 
     // SubWidget
-    explicit ExampleColorWidget(Widget* const parent)
-        : BaseWidget(parent),
-          cur('r'),
-          reverse(false),
-          r(0), g(0), b(0)
-    {
-        BaseWidget::setSize(300, 300);
-        parent->getApp().addIdleCallback(this);
-    }
+    explicit ExampleColorWidget(Widget* const parent);
 
     // TopLevelWidget
-    explicit ExampleColorWidget(Window& windowToMapTo)
-        : BaseWidget(windowToMapTo),
-          cur('r'),
-          reverse(false),
-          r(0), g(0), b(0)
-    {
-        BaseWidget::setSize(300, 300);
-        windowToMapTo.getApp().addIdleCallback(this);
-    }
+    explicit ExampleColorWidget(Window& windowToMapTo);
 
     // StandaloneWindow
-    explicit ExampleColorWidget(Application& app)
-        : BaseWidget(app),
-          cur('r'),
-          reverse(false),
-          r(0), g(0), b(0)
-    {
-        BaseWidget::setSize(300, 300);
-        app.addIdleCallback(this);
-    }
+    explicit ExampleColorWidget(Application& app);
 
 protected:
     void idleCallback() noexcept override
@@ -130,9 +106,11 @@ protected:
 
     void onDisplay() override
     {
+        const GraphicsContext& context(BaseWidget::getGraphicsContext());
+
         // paint bg color (in full size)
         glColor3b(r, g, b);
-        bgFull.draw();
+        bgFull.draw(context);
 
         // paint inverted color (in 2/3 size)
         glColor3b(100-r, 100-g, 100-b);
@@ -151,6 +129,41 @@ protected:
         bgSmall = Rectangle<uint>(width/6, height/6, width*2/3, height*2/3);
     }
 };
+
+template<> inline
+ExampleColorWidget<SubWidget>::ExampleColorWidget(Widget* const parent)
+    : SubWidget(parent),
+      cur('r'),
+      reverse(false),
+      r(0), g(0), b(0)
+{
+    setSize(300, 300);
+    parent->getApp().addIdleCallback(this);
+}
+
+// TopLevelWidget
+template<> inline
+ExampleColorWidget<TopLevelWidget>::ExampleColorWidget(Window& windowToMapTo)
+    : TopLevelWidget(windowToMapTo),
+      cur('r'),
+      reverse(false),
+      r(0), g(0), b(0)
+{
+    setSize(300, 300);
+    addIdleCallback(this);
+}
+
+// StandaloneWindow
+template<> inline
+ExampleColorWidget<StandaloneWindow>::ExampleColorWidget(Application& app)
+    : StandaloneWindow(app),
+      cur('r'),
+      reverse(false),
+      r(0), g(0), b(0)
+{
+    setSize(300, 300);
+    addIdleCallback(this);
+}
 
 typedef ExampleColorWidget<SubWidget> ExampleColorSubWidget;
 typedef ExampleColorWidget<TopLevelWidget> ExampleColorTopLevelWidget;

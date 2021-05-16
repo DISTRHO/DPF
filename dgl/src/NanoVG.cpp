@@ -943,36 +943,17 @@ bool NanoVG::loadSharedResources()
 #endif
 
 // -----------------------------------------------------------------------
-
-template <class BaseWidget>
-struct NanoWidget<BaseWidget>::PrivateData {
-    NanoWidget<BaseWidget>* const self;
-
-    PrivateData(NanoWidget<BaseWidget>* const s)
-        : self(s) {}
-
-    ~PrivateData()
-    {
-    }
-};
-
-// -----------------------------------------------------------------------
 // SubWidget
 
 template <>
 NanoWidget<SubWidget>::NanoWidget(Widget* const parent, int flags)
     : SubWidget(parent),
-      NanoVG(flags),
-      nData(new PrivateData(this))
+      NanoVG(flags)
 {
     pData->needsViewportScaling = true;
 }
 
-template <>
-NanoWidget<SubWidget>::~NanoWidget()
-{
-    delete nData;
-}
+template class NanoWidget<SubWidget>;
 
 // -----------------------------------------------------------------------
 // TopLevelWidget
@@ -980,16 +961,11 @@ NanoWidget<SubWidget>::~NanoWidget()
 template <>
 NanoWidget<TopLevelWidget>::NanoWidget(Window& windowToMapTo, int flags)
     : TopLevelWidget(windowToMapTo),
-      NanoVG(flags),
-      nData(new PrivateData(this))
+      NanoVG(flags)
 {
 }
 
-template <>
-NanoWidget<TopLevelWidget>::~NanoWidget()
-{
-    delete nData;
-}
+template class NanoWidget<TopLevelWidget>;
 
 // -----------------------------------------------------------------------
 // StandaloneWindow
@@ -997,35 +973,11 @@ NanoWidget<TopLevelWidget>::~NanoWidget()
 template <>
 NanoWidget<StandaloneWindow>::NanoWidget(Application& app, int flags)
     : StandaloneWindow(app),
-      NanoVG(flags),
-      nData(new PrivateData(this))
+      NanoVG(flags)
 {
 }
 
-template <>
-NanoWidget<StandaloneWindow>::~NanoWidget()
-{
-    delete nData;
-}
-
-// -----------------------------------------------------------------------
-
-template <class BaseWidget>
-void NanoWidget<BaseWidget>::onDisplay()
-{
-    NanoVG::beginFrame(BaseWidget::getWidth(), BaseWidget::getHeight());
-    onNanoDisplay();
-
-    /*
-    for (std::vector<NanoWidget*>::iterator it = nData->subWidgets.begin(); it != nData->subWidgets.end(); ++it)
-    {
-        NanoWidget* const widget(*it);
-        widget->onNanoDisplay();
-    }
-    */
-
-    NanoVG::endFrame();
-}
+template class NanoWidget<StandaloneWindow>;
 
 // -----------------------------------------------------------------------
 

@@ -153,7 +153,7 @@ public:
     Window& getWindow() const noexcept;
 
    /**
-      Get the graphics context associated with this widget.
+      Get the graphics context associated with this widget's window.
       GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,
       for example GraphicsContext.
       @see CairoSubWidget, CairoTopLevelWidget
