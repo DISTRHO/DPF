@@ -25,7 +25,7 @@ ifeq ($(HAVE_CAIRO),true)
 WTESTS   = Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
-TESTS   += Demo
+# TESTS   += Demo
 WTESTS   = Window.opengl
 endif
 ifeq ($(HAVE_VULKAN),true)
