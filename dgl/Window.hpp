@@ -191,6 +191,25 @@ public:
     void setIgnoringKeyRepeat(bool ignore) noexcept;
 
    /**
+      Add a callback function to be triggered on every idle cycle or on a specific timer frequency.
+      You can add more than one, and remove them at anytime with removeIdleCallback().
+      This can be used to perform some action at a regular interval with relatively low frequency.
+
+      If providing a timer frequency, there are a few things to note:
+       1. There is a platform-specific limit to the number of supported timers, and overhead associated with each,
+          so you should create only a few timers and perform several tasks in one if necessary.
+       2. This timer frequency is not guaranteed to have a resolution better than 10ms
+          (the maximum timer resolution on Windows) and may be rounded up if it is too short.
+          On X11 and MacOS, a resolution of about 1ms can usually be relied on.
+    */
+    bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
+
+   /**
+      Remove an idle callback previously added via addIdleCallback().
+    */
+    bool removeIdleCallback(IdleCallback* callback);
+
+   /**
       Get the application associated with this window.
     */
     Application& getApp() const noexcept;

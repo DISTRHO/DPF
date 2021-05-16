@@ -225,7 +225,10 @@ HAVE_OPENGL = true
 else
 HAVE_OPENGL = $(shell $(PKG_CONFIG) --exists gl && echo true)
 ifneq ($(HAIKU),true)
-HAVE_X11    = $(shell $(PKG_CONFIG) --exists x11 && echo true)
+HAVE_X11     = $(shell $(PKG_CONFIG) --exists x11 && echo true)
+HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
+HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
+HAVE_XRANDR  = $(shell $(PKG_CONFIG) --exists xrandr && echo true)
 endif
 endif
 
@@ -254,6 +257,19 @@ ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_X11),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags x11)
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs x11)
+ifeq ($(HAVE_XCURSOR),true)
+# TODO -DHAVE_XCURSOR
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xcursor)
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xcursor)
+endif
+ifeq ($(HAVE_XEXT),true)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xext) -DHAVE_XEXT -DHAVE_XSYNC
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xext)
+endif
+ifeq ($(HAVE_XRANDR),true)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xrandr) -DHAVE_XRANDR
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xrandr)
+endif
 endif
 endif
 

@@ -153,6 +153,20 @@ void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
     puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
 }
 
+bool Window::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr, false)
+
+    return pData->addIdleCallback(callback, timerFrequencyInMs);
+}
+
+bool Window::removeIdleCallback(IdleCallback* const callback)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr, false)
+
+    return pData->removeIdleCallback(callback);
+}
+
 Application& Window::getApp() const noexcept
 {
     return pData->app;

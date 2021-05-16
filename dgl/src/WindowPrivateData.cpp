@@ -348,6 +348,31 @@ void Window::PrivateData::idleCallback()
 }
 
 // -----------------------------------------------------------------------
+
+bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
+{
+    if (timerFrequencyInMs == 0)
+    {
+        appData->idleCallbacks.push_back(callback);
+        return true;
+    }
+
+    return puglStartTimer(view, (uintptr_t)callback, static_cast<double>(timerFrequencyInMs) / 1000.0) == PUGL_SUCCESS;
+}
+
+bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
+{
+    if (std::find(appData->idleCallbacks.begin(),
+                  appData->idleCallbacks.end(), callback) != appData->idleCallbacks.end())
+    {
+        appData->idleCallbacks.remove(callback);
+        return true;
+    }
+
+    return puglStopTimer(view, (uintptr_t)callback) == PUGL_SUCCESS;
+}
+
+// -----------------------------------------------------------------------
 // modal handling
 
 void Window::PrivateData::startModal()
@@ -740,6 +765,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Timer triggered, a #PuglEventTimer
     case PUGL_TIMER:
+        if (IdleCallback* const idleCallback = reinterpret_cast<IdleCallback*>(event->timer.id))
+            idleCallback->idleCallback();
         break;
 
     ///< Recursive loop entered, a #PuglEventLoopEnter

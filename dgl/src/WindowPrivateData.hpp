@@ -136,6 +136,9 @@ struct Window::PrivateData : IdleCallback {
 
     void idleCallback() override;
 
+    bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs);
+    bool removeIdleCallback(IdleCallback* callback);
+
     // modal handling
     void startModal();
     void stopModal();
@@ -152,6 +155,7 @@ struct Window::PrivateData : IdleCallback {
     void onPuglMouse(const Events::MouseEvent& ev);
     void onPuglMotion(const Events::MotionEvent& ev);
     void onPuglScroll(const Events::ScrollEvent& ev);
+    void onPuglTimer(IdleCallback* idleCallback);
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);

@@ -40,6 +40,16 @@ Window& TopLevelWidget::getWindow() const noexcept
     return pData->window;
 }
 
+bool TopLevelWidget::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
+{
+    return pData->window.addIdleCallback(callback, timerFrequencyInMs);
+}
+
+bool TopLevelWidget::removeIdleCallback(IdleCallback* const callback)
+{
+    return pData->window.removeIdleCallback(callback);
+}
+
 double TopLevelWidget::getScaleFactor() const noexcept
 {
     return pData->window.getScaleFactor();

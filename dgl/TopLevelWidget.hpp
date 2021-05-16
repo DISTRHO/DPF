@@ -67,6 +67,8 @@ public:
     Window& getWindow() const noexcept;
 
     // TODO group stuff after here, convenience functions present in Window class
+    bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
+    bool removeIdleCallback(IdleCallback* callback);
     double getScaleFactor() const noexcept;
     void repaint() noexcept;
     void repaint(const Rectangle<uint>& rect) noexcept;

@@ -77,12 +77,12 @@ public:
       Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).
       There are no guarantees in terms of timing.
     */
-    void addIdleCallback(IdleCallback* const callback);
+    void addIdleCallback(IdleCallback* callback);
 
    /**
       Remove an idle callback previously added via addIdleCallback().
     */
-    void removeIdleCallback(IdleCallback* const callback);
+    void removeIdleCallback(IdleCallback* callback);
 
 private:
     struct PrivateData;
