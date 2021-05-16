@@ -72,6 +72,7 @@ START_NAMESPACE_DGL
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
 # include "pugl-upstream/src/x11.c"
+# include "pugl-upstream/src/x11_stub.c"
 # ifdef DGL_CAIRO
 #  include "pugl-upstream/src/x11_cairo.c"
 # endif

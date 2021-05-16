@@ -108,6 +108,7 @@ protected:
     {
         const GraphicsContext& context(BaseWidget::getGraphicsContext());
 
+#if 0 /* TODO make generic */
         // paint bg color (in full size)
         glColor3b(r, g, b);
         bgFull.draw(context);
@@ -115,6 +116,7 @@ protected:
         // paint inverted color (in 2/3 size)
         glColor3b(100-r, 100-g, 100-b);
         bgSmall.draw();
+#endif
     }
 
     void onResize(const ResizeEvent& ev) override

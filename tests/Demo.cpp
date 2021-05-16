@@ -14,25 +14,37 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef DGL_OPENGL
-#error OpenGL build required for Demo
-#endif
+// #ifndef DGL_OPENGL
+// #error OpenGL build required for Demo
+// #endif
 
 #include "tests.hpp"
-
-// TODO backend agnostic
-#include "../dgl/OpenGL.hpp"
 
 #include "widgets/ExampleColorWidget.hpp"
 #include "widgets/ExampleImagesWidget.hpp"
 #include "widgets/ExampleRectanglesWidget.hpp"
-#include "widgets/ExampleTextWidget.hpp"
 #include "widgets/ExampleShapesWidget.hpp"
+#ifdef DGL_OPENGL
+#include "widgets/ExampleTextWidget.hpp"
+#endif
 
 #include "demo_res/DemoArtwork.cpp"
 #include "images_res/CatPics.cpp"
 
+#ifdef DGL_CAIRO
+#include "../dgl/Cairo.hpp"
+typedef DGL_NAMESPACE::CairoImage DemoImage;
+#endif
+#ifdef DGL_OPENGL
+#include "../dgl/OpenGL.hpp"
+typedef DGL_NAMESPACE::OpenGLImage DemoImage;
+#endif
+
 START_NAMESPACE_DGL
+
+typedef ExampleImagesWidget<SubWidget, DemoImage> ExampleImagesSubWidget;
+typedef ExampleImagesWidget<TopLevelWidget, DemoImage> ExampleImagesTopLevelWidget;
+typedef ExampleImagesWidget<StandaloneWindow, DemoImage> ExampleImagesStandaloneWindow;
 
 // --------------------------------------------------------------------------------------------------------------------
 // Left side tab-like widget
@@ -40,7 +52,11 @@ START_NAMESPACE_DGL
 class LeftSideWidget : public SubWidget
 {
 public:
+#ifdef DGL_OPENGL
     static const int kPageCount = 5;
+#else
+    static const int kPageCount = 4;
+#endif
 
     class Callback
     {
@@ -55,22 +71,26 @@ public:
           curPage(0),
           curHover(-1)
     {
+#ifdef DGL_OPENGL
         // for text
         nvg.loadSharedResources();
+#endif
 
         using namespace DemoArtwork;
-        img1.loadFromMemory(ico1Data, ico1Width, ico1Height, GL_BGR);
-        img2.loadFromMemory(ico2Data, ico2Width, ico2Height, GL_BGR);
-        img3.loadFromMemory(ico3Data, ico3Width, ico2Height, GL_BGR);
-        img4.loadFromMemory(ico4Data, ico4Width, ico4Height, GL_BGR);
-        img5.loadFromMemory(ico5Data, ico5Width, ico5Height, GL_BGR);
+        img1.loadFromMemory(ico1Data, ico1Width, ico1Height, kImageFormatBGR);
+        img2.loadFromMemory(ico2Data, ico2Width, ico2Height, kImageFormatBGR);
+        img3.loadFromMemory(ico3Data, ico3Width, ico2Height, kImageFormatBGR);
+        img4.loadFromMemory(ico4Data, ico4Width, ico4Height, kImageFormatBGR);
+        img5.loadFromMemory(ico5Data, ico5Width, ico5Height, kImageFormatBGR);
     }
 
 protected:
     void onDisplay() override
     {
+        const GraphicsContext& context(getGraphicsContext());
         const int iconSize = bgIcon.getWidth();
 
+#if 0 /* TODO make generic */
         glColor3f(0.027f, 0.027f, 0.027f);
         Rectangle<uint>(0, 0, getSize()).draw();
 
@@ -99,15 +119,17 @@ protected:
 
         // reset color
         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+#endif
 
         const int pad = iconSize/2 - DemoArtwork::ico1Width/2;
 
-        img1.drawAt(pad, pad);
-        img2.drawAt(pad, pad + 3 + iconSize);
-        img3.drawAt(pad, pad + 6 + iconSize*2);
-        img4.drawAt(pad, pad + 9 + iconSize*3);
-        img5.drawAt(pad, pad + 12 + iconSize*4);
+        img1.drawAt(context, pad, pad);
+        img2.drawAt(context, pad, pad + 3 + iconSize);
+        img3.drawAt(context, pad, pad + 6 + iconSize*2);
+        img4.drawAt(context, pad, pad + 9 + iconSize*3);
+        img5.drawAt(context, pad, pad + 12 + iconSize*4);
 
+#ifdef DGL_OPENGL
         // draw some text
         nvg.beginFrame(this);
 
@@ -120,6 +142,7 @@ protected:
         nvg.textBox(15, 440, iconSize, "Look!", nullptr);
 
         nvg.endFrame();
+#endif
     }
 
     bool onMouse(const MouseEvent& ev) override
@@ -203,10 +226,12 @@ private:
     int curPage, curHover;
     Rectangle<double> bgIcon;
     Line<int> lineSep;
-    OpenGLImage img1, img2, img3, img4, img5;
+    DemoImage img1, img2, img3, img4, img5;
 
+#ifdef DGL_OPENGL
     // for text
     NanoVG nvg;
+#endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -226,7 +251,9 @@ public:
           wImages(this),
           wRects(this),
           wShapes(this),
+#ifdef DGL_OPENGL
           wText(this),
+#endif
           wLeft(this, this),
           curWidget(nullptr)
     {
@@ -234,16 +261,18 @@ public:
         wImages.hide();
         wRects.hide();
         wShapes.hide();
+#ifdef DGL_OPENGL
         wText.hide();
-//         //wPerf.hide();
+#endif
 
         wColor.setAbsoluteX(kSidebarWidth);
         wImages.setAbsoluteX(kSidebarWidth);
         wRects.setAbsoluteX(kSidebarWidth);
         wShapes.setAbsoluteX(kSidebarWidth);
+#ifdef DGL_OPENGL
         wText.setAbsoluteX(kSidebarWidth);
+#endif
         wLeft.setAbsolutePos(2, 2);
-//         wPerf.setAbsoluteY(5);
 
         setSize(600, 500);
         setTitle("DGL Demo");
@@ -271,9 +300,11 @@ protected:
         case 3:
             curWidget = &wShapes;
             break;
+#ifdef DGL_OPENGL
         case 4:
             curWidget = &wText;
             break;
+#endif
         default:
             curWidget = nullptr;
             break;
@@ -299,13 +330,10 @@ protected:
         wImages.setSize(size);
         wRects.setSize(size);
         wShapes.setSize(size);
+#ifdef DGL_OPENGL
         wText.setSize(size);
-
+#endif
         wLeft.setSize(kSidebarWidth-4, height-4);
-        //wRezHandle.setAbsoluteX(width-wRezHandle.getWidth());
-        //wRezHandle.setAbsoluteY(height-wRezHandle.getHeight());
-
-//         wPerf.setAbsoluteX(width-wPerf.getWidth()-5);
     }
 
 private:
@@ -313,10 +341,10 @@ private:
     ExampleImagesSubWidget wImages;
     ExampleRectanglesSubWidget wRects;
     ExampleShapesSubWidget wShapes;
+#ifdef DGL_OPENGL
     ExampleTextSubWidget wText;
+#endif
     LeftSideWidget wLeft;
-    //ResizeHandle wRezHandle;
-//     NanoPerfWidget wPerf;
 
     Widget* curWidget;
 };
@@ -357,8 +385,10 @@ int main(int argc, char* argv[])
             createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "shapes") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleShapesStandaloneWindow>(app);
+#ifdef DGL_OPENGL
         else if (std::strcmp(argv[1], "text") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleTextStandaloneWindow>(app);
+#endif
         else
             d_stderr2("Invalid demo mode, must be one of: color, rectangles, shapes");
     }

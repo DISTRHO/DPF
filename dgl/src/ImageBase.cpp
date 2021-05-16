@@ -23,19 +23,23 @@ START_NAMESPACE_DGL
 
 ImageBase::ImageBase()
     : rawData(nullptr),
-      size(0, 0) {}
+      size(0, 0),
+      format(kImageFormatBGRA) {}
 
-ImageBase::ImageBase(const char* const rdata, const uint width, const uint height)
+ImageBase::ImageBase(const char* const rdata, const uint width, const uint height, const ImageFormat fmt)
   : rawData(rdata),
-    size(width, height) {}
+    size(width, height),
+    format(fmt) {}
 
-ImageBase::ImageBase(const char* const rdata, const Size<uint>& s)
+ImageBase::ImageBase(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
   : rawData(rdata),
-    size(s) {}
+    size(s),
+    format(fmt) {}
 
 ImageBase::ImageBase(const ImageBase& image)
   : rawData(image.rawData),
-    size(image.size) {}
+    size(image.size),
+    format(image.format) {}
 
 // --------------------------------------------------------------------------------------------------------------------
 // public methods
@@ -70,6 +74,26 @@ const Size<uint>& ImageBase::getSize() const noexcept
 const char* ImageBase::getRawData() const noexcept
 {
     return rawData;
+}
+
+ImageFormat ImageBase::getFormat() const noexcept
+{
+    return format;
+}
+
+void ImageBase::loadFromMemory(const char* const rawData,
+                                 const uint width,
+                                 const uint height,
+                                 const ImageFormat format) noexcept
+{
+    loadFromMemory(rawData, Size<uint>(width, height), format);
+}
+
+void ImageBase::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
+{
+    rawData = rdata;
+    size    = s;
+    format  = fmt;
 }
 
 void ImageBase::draw(const GraphicsContext& context)

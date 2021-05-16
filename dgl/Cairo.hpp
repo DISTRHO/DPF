@@ -55,16 +55,13 @@ public:
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    CairoImage(const char* const rawData,
-               const uint width,
-               const uint height);
+    CairoImage(const char* rawData, uint width, uint height, ImageFormat format);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    CairoImage(const char* const rawData,
-               const Size<uint>& size);
+    CairoImage(const char* rawData, const Size<uint>& size, ImageFormat format);
 
    /**
       Constructor using another image data.
@@ -80,6 +77,10 @@ public:
       Draw this image at position @a pos using the graphics context @a context.
     */
     void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
+
+    // FIXME this should not be needed
+    inline void drawAt(const GraphicsContext& context, int x, int y)
+    { drawAt(context, Point<int>(x, y)); };
 };
 
 // --------------------------------------------------------------------------------------------------------------------

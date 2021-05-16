@@ -15,7 +15,10 @@
  */
 
 #include "../Cairo.hpp"
+
 #include "SubWidgetPrivateData.hpp"
+#include "TopLevelWidgetPrivateData.hpp"
+#include "WidgetPrivateData.hpp"
 #include "WindowPrivateData.hpp"
 
 START_NAMESPACE_DGL
@@ -124,14 +127,14 @@ template class Rectangle<ushort>;
 CairoImage::CairoImage()
     : ImageBase() {}
 
-CairoImage::CairoImage(const char* const rawData, const uint width, const uint height)
-    : ImageBase(rawData, width, height) {}
+CairoImage::CairoImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
+    : ImageBase(rawData, width, height, format) {}
 
-CairoImage::CairoImage(const char* const rawData, const Size<uint>& size)
-    : ImageBase(rawData, size) {}
+CairoImage::CairoImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
+    : ImageBase(rawData, size, format) {}
 
 CairoImage::CairoImage(const CairoImage& image)
-    : ImageBase(image.rawData, image.size) {}
+    : ImageBase(image.rawData, image.size, image.format) {}
 
 CairoImage::~CairoImage()
 {
@@ -171,7 +174,32 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 
     cairo_set_matrix(cr, &matrix);
 
-//     displaySubWidgets(width, height, autoScaleFactor);
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
+}
+
+// -----------------------------------------------------------------------
+
+void TopLevelWidget::PrivateData::display()
+{
+    const Size<uint> size(window.getSize());
+    const uint width  = size.getWidth();
+    const uint height = size.getHeight();
+
+    const double autoScaleFactor = window.pData->autoScaleFactor;
+
+#if 0
+    // full viewport size
+    if (window.pData->autoScaling)
+        glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
+    else
+        glViewport(0, 0, width, height);
+#endif
+
+    // main widget drawing
+    self->onDisplay();
+
+    // now draw subwidgets if there are any
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
 }
 
 // -----------------------------------------------------------------------
@@ -186,3 +214,10 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+// templated classes
+
+#include "ImageBaseWidgets.cpp"
+
+// -----------------------------------------------------------------------

@@ -171,6 +171,23 @@ template class Rectangle<ushort>;
 
 // -----------------------------------------------------------------------
 
+static GLenum asOpenGLImageFormat(const ImageFormat format)
+{
+    switch (format)
+    {
+    case kImageFormatBGR:
+        return GL_BGR;
+    case kImageFormatBGRA:
+        return GL_BGRA;
+    case kImageFormatRGB:
+        return GL_RGB;
+    case kImageFormatRGBA:
+        return GL_RGBA;
+    }
+
+    return GL_BGRA;
+}
+
 static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 {
     DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
@@ -192,7 +209,7 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
                  static_cast<GLsizei>(image.getWidth()),
                  static_cast<GLsizei>(image.getHeight()),
                  0,
-                 image.getFormat(), image.getType(), image.getRawData());
+                 asOpenGLImageFormat(image.getFormat()), GL_UNSIGNED_BYTE, image.getRawData());
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
@@ -200,83 +217,50 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 
 OpenGLImage::OpenGLImage()
     : ImageBase(),
-      fFormat(0),
-      fType(0),
-      fTextureId(0),
+      textureId(0),
       setupCalled(false)
 {
-    glGenTextures(1, &fTextureId);
-    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
-OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const GLenum format, const GLenum type)
-    : ImageBase(rawData, width, height),
-      fFormat(format),
-      fType(type),
-      fTextureId(0),
+OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
+    : ImageBase(rawData, width, height, format),
+      textureId(0),
       setupCalled(false)
 {
-    glGenTextures(1, &fTextureId);
-    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
-OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const GLenum format, const GLenum type)
-    : ImageBase(rawData, size),
-      fFormat(format),
-      fType(type),
-      fTextureId(0),
+OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
+    : ImageBase(rawData, size, format),
+      textureId(0),
       setupCalled(false)
 {
-    glGenTextures(1, &fTextureId);
-    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
 OpenGLImage::OpenGLImage(const OpenGLImage& image)
     : ImageBase(image),
-      fFormat(image.fFormat),
-      fType(image.fType),
-      fTextureId(0),
+      textureId(0),
       setupCalled(false)
 {
-    glGenTextures(1, &fTextureId);
-    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
 OpenGLImage::~OpenGLImage()
 {
-    if (fTextureId != 0)
-        glDeleteTextures(1, &fTextureId);
+    if (textureId != 0)
+        glDeleteTextures(1, &textureId);
 }
 
-void OpenGLImage::loadFromMemory(const char* const rawData,
-                                 const uint width,
-                                 const uint height,
-                                 const GLenum format,
-                                 const GLenum type) noexcept
+void OpenGLImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
-    loadFromMemory(rawData, Size<uint>(width, height), format, type);
-}
-
-void OpenGLImage::loadFromMemory(const char* const rdata,
-                                 const Size<uint>& s,
-                                 const GLenum format,
-                                 const GLenum type) noexcept
-{
-    rawData = rdata;
-    size    = s;
-    fFormat  = format;
-    fType    = type;
+    ImageBase::loadFromMemory(rdata, s, fmt);
     setupCalled = false;
-}
-
-GLenum OpenGLImage::getFormat() const noexcept
-{
-    return fFormat;
-}
-
-GLenum OpenGLImage::getType() const noexcept
-{
-    return fType;
 }
 
 void OpenGLImage::drawAt(const GraphicsContext&, const Point<int>& pos)
@@ -288,8 +272,7 @@ OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
 {
     rawData = image.rawData;
     size    = image.size;
-    fFormat  = image.fFormat;
-    fType    = image.fType;
+    format  = image.format;
     setupCalled = false;
     return *this;
 }
@@ -306,17 +289,17 @@ void OpenGLImage::drawAt(const int x, const int y)
 
 void OpenGLImage::drawAt(const Point<int>& pos)
 {
-    if (fTextureId == 0 || isInvalid())
+    if (textureId == 0 || isInvalid())
         return;
 
     if (! setupCalled)
     {
-        setupOpenGLImage(*this, fTextureId);
+        setupOpenGLImage(*this, textureId);
         setupCalled = true;
     }
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, fTextureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     glBegin(GL_QUADS);
 
@@ -352,6 +335,8 @@ void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
 {
     img.draw();
 }
+
+template class ImageBaseAboutWindow<OpenGLImage>;
 
 // -----------------------------------------------------------------------
 
@@ -443,11 +428,5 @@ END_NAMESPACE_DGL
 // templated classes
 
 #include "ImageBaseWidgets.cpp"
-
-START_NAMESPACE_DGL
-
-template class ImageBaseAboutWindow<OpenGLImage>;
-
-END_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------

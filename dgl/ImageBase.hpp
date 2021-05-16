@@ -23,6 +23,13 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+enum ImageFormat {
+    kImageFormatBGR,
+    kImageFormatBGRA,
+    kImageFormatRGB,
+    kImageFormatRGBA,
+};
+
 /**
    Base DGL Image class.
 
@@ -44,13 +51,13 @@ protected:
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    ImageBase(const char* const rawData, const uint width, const uint height);
+    ImageBase(const char* rawData, uint width, uint height, ImageFormat format);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    ImageBase(const char* const rawData, const Size<uint>& size);
+    ImageBase(const char* rawData, const Size<uint>& size, ImageFormat format);
 
    /**
       Constructor using another image data.
@@ -94,6 +101,25 @@ public:
     const char* getRawData() const noexcept;
 
    /**
+      Get the image format.
+    */
+    ImageFormat getFormat() const noexcept;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromMemory(const char* rawData, uint width, uint height, ImageFormat format = kImageFormatBGRA) noexcept;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    virtual void loadFromMemory(const char* rawData,
+                                const Size<uint>& size,
+                                ImageFormat format = kImageFormatBGRA) noexcept;
+
+   /**
       Draw this image at (0, 0) point using the current OpenGL context.
     */
     void draw(const GraphicsContext& context);
@@ -101,7 +127,7 @@ public:
    /**
       Draw this image at (x, y) point using the current OpenGL context.
     */
-    void drawAt(const GraphicsContext& context, const int x, const int y);
+    void drawAt(const GraphicsContext& context, int x, int y);
 
    /**
       Draw this image at position @a pos using the current OpenGL context.
@@ -118,6 +144,7 @@ public:
 protected:
     const char* rawData;
     Size<uint> size;
+    ImageFormat format;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

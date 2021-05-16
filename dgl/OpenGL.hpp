@@ -141,20 +141,13 @@ public:
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    OpenGLImage(const char* const rawData,
-                const uint width,
-                const uint height,
-                const GLenum format = GL_BGRA,
-                const GLenum type = GL_UNSIGNED_BYTE);
+    OpenGLImage(const char* rawData, uint width, uint height, ImageFormat format = kImageFormatBGRA);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    OpenGLImage(const char* const rawData,
-                const Size<uint>& size,
-                const GLenum format = GL_BGRA,
-                const GLenum type = GL_UNSIGNED_BYTE);
+    OpenGLImage(const char* rawData, const Size<uint>& size, ImageFormat format = kImageFormatBGRA);
 
    /**
       Constructor using another image data.
@@ -170,30 +163,9 @@ public:
       Load image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void loadFromMemory(const char* const rawData,
-                        const uint width,
-                        const uint height,
-                        const GLenum format = GL_BGRA,
-                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
-
-   /**
-      Load image data from memory.
-      @note @a rawData must remain valid for the lifetime of this Image.
-    */
-    void loadFromMemory(const char* const rawData,
+    void loadFromMemory(const char* rawData,
                         const Size<uint>& size,
-                        const GLenum format = GL_BGRA,
-                        const GLenum type = GL_UNSIGNED_BYTE) noexcept;
-
-   /**
-      Get the image format.
-    */
-    GLenum getFormat() const noexcept;
-
-   /**
-      Get the image type.
-    */
-    GLenum getType() const noexcept;
+                        ImageFormat format = kImageFormatBGRA) noexcept override;
 
    /**
       Draw this image at position @a pos using the graphics context @a context.
@@ -223,10 +195,20 @@ public:
     // TODO mark as deprecated
     void drawAt(const Point<int>& pos);
 
+    // FIXME this should not be needed
+    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format)
+    { loadFromMemory(rawData, Size<uint>(w, h), format); };
+    inline void drawAt(const GraphicsContext& context, int x, int y)
+    { drawAt(context, Point<int>(x, y)); };
+
+   /**
+      Get the image type.
+    */
+    // TODO mark as deprecated
+    GLenum getType() const noexcept { return GL_UNSIGNED_BYTE; }
+
 private:
-    GLenum fFormat;
-    GLenum fType;
-    GLuint fTextureId;
+    GLuint textureId;
     bool setupCalled;
 };
 

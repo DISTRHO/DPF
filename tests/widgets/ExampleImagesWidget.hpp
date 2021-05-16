@@ -20,10 +20,9 @@
 // ------------------------------------------------------
 // DGL Stuff
 
-#include "../../dgl/Image.hpp"
+#include "../../dgl/ImageBase.hpp"
 #include "../../dgl/SubWidget.hpp"
 #include "../../dgl/TopLevelWidget.hpp"
-
 
 // ------------------------------------------------------
 // Images
@@ -35,7 +34,7 @@ START_NAMESPACE_DGL
 // ------------------------------------------------------
 // our widget
 
-template <class BaseWidget>
+template <class BaseWidget, class BaseImage>
 class ExampleImagesWidget : public BaseWidget,
                             public IdleCallback
 {
@@ -50,7 +49,7 @@ class ExampleImagesWidget : public BaseWidget,
     int imgTop1st, imgTop2nd, imgTop3rd;
     int img1x, img2x, img3y;
     bool img1rev, img2rev, img3rev;
-    Image img1, img2, img3;
+    BaseImage img1, img2, img3;
 
 public:
     static constexpr const char* kExampleWidgetName = "Images";
@@ -67,9 +66,9 @@ public:
           img1rev(false),
           img2rev(true),
           img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
     {
         BaseWidget::setSize(500, 400);
 
@@ -88,9 +87,9 @@ public:
           img1rev(false),
           img2rev(true),
           img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
     {
         BaseWidget::setSize(500, 400);
 
@@ -109,9 +108,9 @@ public:
           img1rev(false),
           img2rev(true),
           img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, GL_BGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, GL_BGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, GL_BGR)
+          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
+          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
+          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
     {
         BaseWidget::setSize(500, 400);
 
@@ -183,42 +182,44 @@ protected:
 
     void onDisplay() override
     {
+        const GraphicsContext& context(BaseWidget::getGraphicsContext());
+
         switch (imgTop3rd)
         {
         case 1:
-            img1.drawAt(img1x, kImg1y);
+            img1.drawAt(context, img1x, kImg1y);
             break;
         case 2:
-            img2.drawAt(img2x, kImg2y);
+            img2.drawAt(context, img2x, kImg2y);
             break;
         case 3:
-            img3.drawAt(kImg3x, img3y);
+            img3.drawAt(context, kImg3x, img3y);
             break;
         };
 
         switch (imgTop2nd)
         {
         case 1:
-            img1.drawAt(img1x, kImg1y);
+            img1.drawAt(context, img1x, kImg1y);
             break;
         case 2:
-            img2.drawAt(img2x, kImg2y);
+            img2.drawAt(context, img2x, kImg2y);
             break;
         case 3:
-            img3.drawAt(kImg3x, img3y);
+            img3.drawAt(context, kImg3x, img3y);
             break;
         };
 
         switch (imgTop1st)
         {
         case 1:
-            img1.drawAt(img1x, kImg1y);
+            img1.drawAt(context, img1x, kImg1y);
             break;
         case 2:
-            img2.drawAt(img2x, kImg2y);
+            img2.drawAt(context, img2x, kImg2y);
             break;
         case 3:
-            img3.drawAt(kImg3x, img3y);
+            img3.drawAt(context, kImg3x, img3y);
             break;
         };
     }
@@ -241,10 +242,6 @@ private:
         imgTop1st =  imgId;
     }
 };
-
-typedef ExampleImagesWidget<SubWidget> ExampleImagesSubWidget;
-typedef ExampleImagesWidget<TopLevelWidget> ExampleImagesTopLevelWidget;
-typedef ExampleImagesWidget<StandaloneWindow> ExampleImagesStandaloneWindow;
 
 // ------------------------------------------------------
 

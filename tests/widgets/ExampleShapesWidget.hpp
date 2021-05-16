@@ -69,6 +69,7 @@ protected:
         glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 #endif
 
+#if 0 /* TODO make generic */
         glLineWidth(1.0f);
         glColor3f(0.302f, 0.337f, 0.361f);
         bg.draw();
@@ -92,6 +93,7 @@ protected:
         glLineWidth(2.0f);
         glColor3f(0.176f/4, 0.212f/4, 0.235f/4);
         cir.drawOutline();
+#endif
     }
 
     void onResize(const ResizeEvent& ev) override

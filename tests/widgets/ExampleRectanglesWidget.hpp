@@ -81,30 +81,36 @@ protected:
             // 1st
             r.setY(3);
 
+#if 0 /* TODO make generic */
             if (clicked[0+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
+#endif
 
             r.draw();
 
             // 2nd
             r.setY(3 + height/3);
 
+#if 0 /* TODO make generic */
             if (clicked[3+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
+#endif
 
             r.draw();
 
             // 3rd
             r.setY(3 + height*2/3);
 
+#if 0 /* TODO make generic */
             if (clicked[6+i])
                 glColor3f(0.8f, 0.5f, 0.3f);
             else
                 glColor3f(0.3f, 0.5f, 0.8f);
+#endif
 
             r.draw();
         }

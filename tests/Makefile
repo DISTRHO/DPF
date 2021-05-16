@@ -22,11 +22,12 @@ BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra
 
 TESTS    = Application Color Point
 ifeq ($(HAVE_CAIRO),true)
-WTESTS   = Window.cairo
+TESTS   += Demo.cairo
+WTESTS  += Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
-TESTS   += Demo
-WTESTS   = Window.opengl
+TESTS   += Demo.opengl
+WTESTS  += Window.opengl
 endif
 ifeq ($(HAVE_VULKAN),true)
 WTESTS   = Window.vulkan
@@ -88,16 +89,6 @@ clean:
 	@echo "Compiling $< (Cairo)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
-../build/tests/Demo.cpp.o: Demo.cpp
-	-@mkdir -p ../build/tests
-	@echo "Compiling $< (OpenGL)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
-
-../build/tests/Testing.cpp.o: Testing.cpp
-	-@mkdir -p ../build/tests
-	@echo "Compiling $< (OpenGL)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
-
 ../build/tests/%.cpp.opengl.o: %.cpp
 	-@mkdir -p ../build/tests
 	@echo "Compiling $< (OpenGL)"
@@ -119,14 +110,6 @@ clean:
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
 
-../build/tests/Demo: ../build/tests/Demo.cpp.o ../build/libdgl-opengl.a
-	@echo "Linking Demo"
-	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
-
-../build/tests/Testing: ../build/tests/Testing.cpp.o
-	@echo "Linking Testing"
-	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
-
 ../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
@@ -134,6 +117,18 @@ clean:
 ../build/tests/%.vulkan: ../build/tests/%.cpp.vulkan.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
+
+../build/tests/Demo.cairo: ../build/tests/Demo.cpp.cairo.o ../build/libdgl-cairo.a
+	@echo "Linking Demo (Cairo)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
+
+../build/tests/Demo.opengl: ../build/tests/Demo.cpp.opengl.o ../build/libdgl-opengl.a
+	@echo "Linking Demo (OpenGL)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
+
+../build/tests/Demo.vulkan: ../build/tests/Demo.cpp.vulkan.o ../build/libdgl-vulkan.a
+	@echo "Linking Demo (OpenGL)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
