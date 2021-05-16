@@ -23,11 +23,11 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 // Window
 
-// Window::Window(Window& transientParentWindow)
-//     : pData(new PrivateData(transientParentWindow.pData->fAppData, this, transientParentWindow)) {}
-
 Window::Window(Application& app)
     : pData(new PrivateData(app, this)) {}
+
+Window::Window(Application& app, Window& parent)
+    : pData(new PrivateData(app, this, parent.pData)) {}
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
@@ -170,10 +170,7 @@ double Window::getScaleFactor() const noexcept
 
 void Window::focus()
 {
-    if (! pData->isEmbed)
-        puglRaiseWindow(pData->view);
-
-    puglGrabFocus(pData->view);
+    pData->focus();
 }
 
 void Window::repaint() noexcept
@@ -190,6 +187,11 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
         static_cast<double>(rect.getHeight()),
     };
     puglPostRedisplayRect(pData->view, prect);
+}
+
+void Window::runAsModal(bool blockWait)
+{
+    pData->runAsModal(blockWait);
 }
 
 void Window::setGeometryConstraints(const uint minimumWidth,
@@ -242,13 +244,6 @@ void Window::onReshape(uint, uint)
 }
 
 #if 0
-#if 0
-void Window::exec(bool lockWait)
-{
-    pData->exec(lockWait);
-}
-#endif
-
 void Window::setTransientWinId(const uintptr_t winId)
 {
     puglSetTransientFor(pData->fView, winId);

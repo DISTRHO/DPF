@@ -56,6 +56,12 @@ public:
     explicit Window(Application& app);
 
    /**
+      Constructor for a modal window, by having another window as its parent.
+      The Application instance must be the same between the 2 windows.
+    */
+    explicit Window(Application& app, Window& parent);
+
+   /**
       Constructor for an embed Window without known size,
       typically used in modules or plugins that run inside another host.
     */
@@ -225,6 +231,13 @@ public:
     void repaint(const Rectangle<uint>& rect) noexcept;
 
    /**
+      Run this window as a modal, blocking input events from the parent.
+      Only valid for windows that have been created with another window as parent (as passed in the constructor).
+      Can optionally block-wait, but such option is only available if the application is running as standalone.
+    */
+    void runAsModal(bool blockWait = false);
+
+   /**
       Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.
     */
     void setGeometryConstraints(uint minimumWidth,
@@ -239,6 +252,7 @@ public:
     // TODO deprecated
     inline bool getIgnoringKeyRepeat() const noexcept { return isIgnoringKeyRepeat(); }
     inline double getScaling() const noexcept { return getScaling(); }
+    inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
 protected:
    /**
@@ -257,6 +271,7 @@ protected:
    /**
       A function called when the window is resized.
       If there is a top-level widget associated with this window, its size will be set right after this function.
+      TODO this seems wrong, top-level widget should be resized here
     */
     virtual void onReshape(uint width, uint height);
 
@@ -317,10 +332,6 @@ END_NAMESPACE_DGL
               buttons() {}
     };
 #endif // DGL_FILE_BROWSER_DISABLED
-
-    static Window& withTransientParentWindow(Window& transientParentWindow);
-
-    void exec(bool lockWait = false);
 
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);

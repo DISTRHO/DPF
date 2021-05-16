@@ -63,12 +63,13 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0)
+      minHeight(0),
+      modal(this)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
-Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transientWindow)
+Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* const ppData)
     : app(a),
       appData(a.pData),
       self(s),
@@ -77,15 +78,16 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, Window& transi
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaleFactor(getDesktopScaleFactor()),
+      scaleFactor(ppData->scaleFactor),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0)
+      minHeight(0),
+      modal(this, ppData)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
-    puglSetTransientFor(view, transientWindow.getNativeWindowHandle());
+    puglSetTransientFor(view, puglGetNativeWindow(ppData->view));
 }
 
 Window::PrivateData::PrivateData(Application& a, Window* const s,
@@ -103,7 +105,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0)
+      minHeight(0),
+      modal(this)
 {
     if (isEmbed)
     {
@@ -136,7 +139,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
-      minHeight(0)
+      minHeight(0),
+      modal(this)
 {
     if (isEmbed)
     {
@@ -279,12 +283,22 @@ void Window::PrivateData::hide()
 //     }
 #endif
 
+    if (modal.enabled)
+        stopModal();
+
     puglHide(view);
 
-//     if (fModal.enabled)
-//         exec_fini();
-
     isVisible = false;
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::focus()
+{
+    if (! isEmbed)
+        puglRaiseWindow(view);
+
+    puglGrabFocus(view);
 }
 
 // -----------------------------------------------------------------------
@@ -327,13 +341,91 @@ void Window::PrivateData::idleCallback()
 //         std::free(buffer);
 //     }
 // #endif
-//
-//     if (fModal.enabled && fModal.parent != nullptr)
-//         fModal.parent->windowSpecificIdle();
-//     self->repaint();
+
+//     if (modal.enabled && modal.parent != nullptr)
+//         modal.parent->idleCallback();
 }
 
 // -----------------------------------------------------------------------
+// modal handling
+
+void Window::PrivateData::startModal()
+{
+    DGL_DBG("Window modal loop starting..."); DGL_DBGF;
+    DISTRHO_SAFE_ASSERT_RETURN(modal.parent != nullptr, show());
+
+    // activate modal mode for this window
+    modal.enabled = true;
+
+    // make parent give focus to us
+    modal.parent->modal.child = this;
+
+    // make sure both parent and ourselves are visible
+    modal.parent->show();
+    show();
+
+    DGL_DBG("Ok\n");
+}
+
+void Window::PrivateData::stopModal()
+{
+    DGL_DBG("Window modal loop stopping..."); DGL_DBGF;
+
+    // deactivate modal mode
+    modal.enabled = false;
+
+    // safety checks, make sure we have a parent and we are currently active as the child to give focus to
+    if (modal.parent == nullptr)
+        return;
+    if (modal.parent->modal.child != this)
+        return;
+
+    // stop parent from giving focus to us, so it behaves like normal
+    modal.parent->modal.child = nullptr;
+
+    // the mouse position probably changed since the modal appeared,
+    // so send a mouse motion event to the modal's parent window
+#if 0
+#if defined(DISTRHO_OS_HAIKU)
+    // TODO
+#elif defined(DISTRHO_OS_MAC)
+    // TODO
+#elif defined(DISTRHO_OS_WINDOWS)
+    // TODO
+#else
+    int i, wx, wy;
+    uint u;
+    ::Window w;
+    if (XQueryPointer(fModal.parent->xDisplay, fModal.parent->xWindow, &w, &w, &i, &i, &wx, &wy, &u) == True)
+        fModal.parent->onPuglMotion(wx, wy);
+#endif
+#endif
+
+    DGL_DBG("Ok\n");
+}
+
+void Window::PrivateData::runAsModal(const bool blockWait)
+{
+    DGL_DBGp("Window::PrivateData::runAsModal %i\n", blockWait);
+    startModal();
+
+    if (blockWait)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(appData->isStandalone,);
+
+        while (isVisible && modal.enabled)
+            appData->idle(10);
+
+        stopModal();
+    }
+    else
+    {
+        appData->idle(0);
+    }
+}
+
+// -----------------------------------------------------------------------
+// pugl events
 
 void Window::PrivateData::onPuglConfigure(const int width, const int height)
 {
@@ -372,14 +464,19 @@ void Window::PrivateData::onPuglClose()
 {
     DGL_DBG("PUGL: onClose\n");
 
-//         if (fModal.enabled)
-//             exec_fini();
-
     if (! self->onClose())
         return;
 
-//     if (fModal.childFocus != nullptr)
-//         fModal.childFocus->fSelf->onClose();
+    if (modal.enabled)
+        stopModal();
+
+    if (modal.child != nullptr)
+    {
+        if (modal.child->modal.enabled)
+            modal.child->stopModal();
+
+        modal.child->close();
+    }
 
     close();
 }
@@ -388,8 +485,8 @@ void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
 {
     DGL_DBGp("onPuglFocus : %i %i\n", focus, mode);
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     self->onFocus(focus, mode);
@@ -400,8 +497,8 @@ void Window::PrivateData::onPuglKey(const Events::KeyboardEvent& ev)
 {
     DGL_DBGp("onPuglKey : %i %u %u\n", ev.press, ev.key, ev.keycode);
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
@@ -413,8 +510,8 @@ void Window::PrivateData::onPuglSpecial(const Events::SpecialEvent& ev)
 {
     DGL_DBGp("onPuglSpecial : %i %u\n", ev.press, ev.key);
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
@@ -426,8 +523,8 @@ void Window::PrivateData::onPuglText(const Events::CharacterInputEvent& ev)
 {
     DGL_DBGp("onPuglText : %u %u %s\n", ev.keycode, ev.character, ev.string);
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
@@ -439,8 +536,8 @@ void Window::PrivateData::onPuglMouse(const Events::MouseEvent& ev)
 {
     DGL_DBGp("onPuglMouse : %i %i %f %f\n", ev.button, ev.press, ev.pos.getX(), ev.pos.getY());
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
@@ -452,8 +549,8 @@ void Window::PrivateData::onPuglMotion(const Events::MotionEvent& ev)
 {
     DGL_DBGp("onPuglMotion : %f %f\n", ev.pos.getX(), ev.pos.getY());
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
@@ -465,8 +562,8 @@ void Window::PrivateData::onPuglScroll(const Events::ScrollEvent& ev)
 {
     DGL_DBGp("onPuglScroll : %f %f %f %f\n", ev.pos.getX(), ev.pos.getY(), ev.delta.getX(), ev.delta.getY());
 
-//         if (fModal.childFocus != nullptr)
-//             return fModal.childFocus->focus();
+    if (modal.child != nullptr)
+        return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)

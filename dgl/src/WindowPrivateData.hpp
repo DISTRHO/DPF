@@ -68,11 +68,40 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl minWidth, minHeight access. */
     uint minWidth, minHeight;
 
+    /** Modal window setup. */
+    struct Modal {
+//         PrivateData* self;   // pointer to PrivateData this Modal class belongs to
+        PrivateData* parent; // parent of this window (so we can become modal)
+        PrivateData* child;  // child window to give focus to when modal mode is enabled
+        bool enabled;        // wherever modal mode is enabled (only possible if parent != null)
+
+        /** Constructor for a non-modal window. */
+        Modal(PrivateData* const s) noexcept
+            : parent(nullptr),
+              child(nullptr),
+              enabled(false) {}
+
+        /** Constructor for a modal window (with a parent). */
+        Modal(PrivateData* const s, PrivateData* const p) noexcept
+            : parent(p),
+              child(nullptr),
+              enabled(false) {}
+
+        /** Destructor. */
+        ~Modal() noexcept
+        {
+            DISTRHO_SAFE_ASSERT(! enabled);
+        }
+    } modal;
+
     /** Constructor for a regular, standalone window. */
     explicit PrivateData(Application& app, Window* self);
 
+    /** Constructor for a modal window. */
+    explicit PrivateData(Application& app, Window* self, PrivateData* ppData);
+
     /** Constructor for a regular, standalone window with a transient parent. */
-    explicit PrivateData(Application& app, Window* self, Window& transientWindow);
+//     explicit PrivateData(Application& app, Window* self, Window& transientWindow);
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
     explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
@@ -89,6 +118,7 @@ struct Window::PrivateData : IdleCallback {
 
     void show();
     void hide();
+    void focus();
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).
@@ -104,6 +134,11 @@ struct Window::PrivateData : IdleCallback {
     const GraphicsContext& getGraphicsContext() const noexcept;
 
     void idleCallback() override;
+
+    // modal handling
+    void startModal();
+    void stopModal();
+    void runAsModal(bool blockWait);
 
     // pugl events
     void onPuglConfigure(int width, int height);
@@ -128,39 +163,6 @@ struct Window::PrivateData : IdleCallback {
 END_NAMESPACE_DGL
 
 #if 0
-    // this one depends on build type
-    // GraphicsContext fContext;
-
-    bool fFirstInit;
-    bool fVisible;
-    bool fUsingEmbed;
-    double fScaling;
-    double fAutoScaling;
-
-    struct Modal {
-        bool enabled;
-        PrivateData* parent;
-        PrivateData* childFocus;
-
-        Modal()
-            : enabled(false),
-              parent(nullptr),
-              childFocus(nullptr) {}
-
-        Modal(PrivateData* const p)
-            : enabled(false),
-              parent(p),
-              childFocus(nullptr) {}
-
-        ~Modal()
-        {
-            DISTRHO_SAFE_ASSERT(! enabled);
-            DISTRHO_SAFE_ASSERT(childFocus == nullptr);
-        }
-
-        DISTRHO_DECLARE_NON_COPY_STRUCT(Modal)
-    } fModal;
-
 // #if defined(DISTRHO_OS_HAIKU)
 //     BApplication* bApplication;
 //     BView*        bView;
@@ -187,74 +189,6 @@ END_NAMESPACE_DGL
 // Window Private
 
 struct Window::PrivateData {
-    // -------------------------------------------------------------------
-
-    void exec(const bool lockWait)
-    {
-        DBG("Window exec\n");
-        exec_init();
-
-        if (lockWait)
-        {
-            for (; fVisible && fModal.enabled;)
-            {
-                idle();
-                d_msleep(10);
-            }
-
-            exec_fini();
-        }
-        else
-        {
-            idle();
-        }
-    }
-
-    // -------------------------------------------------------------------
-
-    void exec_init()
-    {
-        DBG("Window modal loop starting..."); DBGF;
-        DISTRHO_SAFE_ASSERT_RETURN(fModal.parent != nullptr, setVisible(true));
-
-        fModal.enabled = true;
-        fModal.parent->fModal.childFocus = this;
-
-        fModal.parent->setVisible(true);
-        setVisible(true);
-
-        DBG("Ok\n");
-    }
-
-    void exec_fini()
-    {
-        DBG("Window modal loop stopping..."); DBGF;
-        fModal.enabled = false;
-
-        if (fModal.parent != nullptr)
-        {
-            fModal.parent->fModal.childFocus = nullptr;
-
-            // the mouse position probably changed since the modal appeared,
-            // so send a mouse motion event to the modal's parent window
-#if defined(DISTRHO_OS_HAIKU)
-            // TODO
-#elif defined(DISTRHO_OS_MAC)
-            // TODO
-#elif defined(DISTRHO_OS_WINDOWS)
-            // TODO
-#else
-            int i, wx, wy;
-            uint u;
-            ::Window w;
-            if (XQueryPointer(fModal.parent->xDisplay, fModal.parent->xWindow, &w, &w, &i, &i, &wx, &wy, &u) == True)
-                fModal.parent->onPuglMotion(wx, wy);
-#endif
-        }
-
-        DBG("Ok\n");
-    }
-
     // -------------------------------------------------------------------
 
     bool handlePluginSpecial(const bool press, const Key key)
