@@ -232,7 +232,7 @@ bool Window::onClose()
     return true;
 }
 
-void Window::onFocus(bool)
+void Window::onFocus(bool, CrossingMode)
 {
 }
 

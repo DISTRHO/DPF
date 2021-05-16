@@ -252,7 +252,7 @@ protected:
       A function called when the window gains or loses the keyboard focus.
       The default implementation does nothing.
     */
-    virtual void onFocus(bool focus);
+    virtual void onFocus(bool focus, CrossingMode mode);
 
    /**
       A function called when the window is resized.
@@ -277,16 +277,6 @@ END_NAMESPACE_DGL
  * add focusEvent with CrossingMode arg
  * add eventcrossing/enter-leave event
  */
-
-// class StandaloneWindow;
-// class Widget;
-
-// #ifdef DISTRHO_DEFINES_H_INCLUDED
-// START_NAMESPACE_DISTRHO
-// class UI;
-// class UIExporter;
-// END_NAMESPACE_DISTRHO
-// #endif
 
 #if 0
 #ifndef DGL_FILE_BROWSER_DISABLED
@@ -332,8 +322,6 @@ END_NAMESPACE_DGL
 
     void exec(bool lockWait = false);
 
-    const GraphicsContext& getGraphicsContext() const noexcept;
-
     void addIdleCallback(IdleCallback* const callback);
     void removeIdleCallback(IdleCallback* const callback);
 
@@ -341,38 +329,13 @@ END_NAMESPACE_DGL
     bool openFileBrowser(const FileBrowserOptions& options);
 #endif
 
-
 protected:
 #ifndef DGL_FILE_BROWSER_DISABLED
     virtual void fileBrowserSelected(const char* filename);
 #endif
 
-    // internal
-    void _setAutoScaling(double scaling) noexcept;
-
-    virtual void _addWidget(Widget* const widget);
-    virtual void _removeWidget(Widget* const widget);
-    void _idle();
-
     bool handlePluginKeyboard(const bool press, const uint key);
     bool handlePluginSpecial(const bool press, const Key key);
-
-//     friend class Widget;
-//     friend class StandaloneWindow;
-// #ifdef DISTRHO_DEFINES_H_INCLUDED
-//     friend class DISTRHO_NAMESPACE::UI;
-//     friend class DISTRHO_NAMESPACE::UIExporter;
-// #endif
-
-    // Prevent copies
-// #ifdef DISTRHO_PROPER_CPP11_SUPPORT
-//     Window& operator=(Window&) = delete;
-//     Window& operator=(const Window&) = delete;
-// #else
-//     Window& operator=(Window&);
-//     Window& operator=(const Window&);
-// #endif
-
 #endif
 
 // -----------------------------------------------------------------------

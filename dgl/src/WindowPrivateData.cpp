@@ -384,15 +384,15 @@ void Window::PrivateData::onPuglClose()
     close();
 }
 
-void Window::PrivateData::onPuglFocus(const bool focus)
+void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
 {
-    DGL_DBGp("onPuglFocus : %i %u %u\n", focus);
+    DGL_DBGp("onPuglFocus : %i %i\n", focus, mode);
 
 //         if (fModal.childFocus != nullptr)
 //             return fModal.childFocus->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    self->onFocus(focus);
+    self->onFocus(focus, mode);
 #endif
 }
 
@@ -532,7 +532,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_FOCUS_IN:
     ///< Keyboard focus left view, a #PuglEventFocus
     case PUGL_FOCUS_OUT:
-        pData->onPuglFocus(event->type == PUGL_FOCUS_IN);
+        pData->onPuglFocus(event->type == PUGL_FOCUS_IN,
+                           static_cast<CrossingMode>(event->focus.mode));
         break;
 
     ///< Key pressed, a #PuglEventKey
