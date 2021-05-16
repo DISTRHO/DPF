@@ -384,6 +384,18 @@ void Window::PrivateData::onPuglClose()
     close();
 }
 
+void Window::PrivateData::onPuglFocus(const bool focus)
+{
+    DGL_DBGp("onPuglFocus : %i %u %u\n", focus);
+
+//         if (fModal.childFocus != nullptr)
+//             return fModal.childFocus->focus();
+
+#ifndef DPF_TEST_WINDOW_CPP
+    self->onFocus(focus);
+#endif
+}
+
 void Window::PrivateData::onPuglKey(const Events::KeyboardEvent& ev)
 {
     DGL_DBGp("onPuglKey : %i %u %u\n", ev.press, ev.key, ev.keycode);
@@ -518,10 +530,9 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Keyboard focus entered view, a #PuglEventFocus
     case PUGL_FOCUS_IN:
-        break;
-
     ///< Keyboard focus left view, a #PuglEventFocus
     case PUGL_FOCUS_OUT:
+        pData->onPuglFocus(event->type == PUGL_FOCUS_IN);
         break;
 
     ///< Key pressed, a #PuglEventKey

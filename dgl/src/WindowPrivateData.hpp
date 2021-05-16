@@ -109,6 +109,7 @@ struct Window::PrivateData : IdleCallback {
     void onPuglConfigure(int width, int height);
     void onPuglExpose();
     void onPuglClose();
+    void onPuglFocus(bool focus);
     void onPuglKey(const Events::KeyboardEvent& ev);
     void onPuglSpecial(const Events::SpecialEvent& ev);
     void onPuglText(const Events::CharacterInputEvent& ev);

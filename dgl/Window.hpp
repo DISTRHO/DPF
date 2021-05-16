@@ -242,17 +242,23 @@ public:
 
 protected:
    /**
-      A function called when the window is resized.
-      If there is a top-level widget associated with this window, its size will be set right after this function.
-    */
-    virtual void onReshape(uint width, uint height);
-
-   /**
       A function called when the window is attempted to be closed.
       Returning true closes the window, which is the default behaviour.
       Override this method and return false to prevent the window from being closed by the user.
     */
     virtual bool onClose();
+
+   /**
+      A function called when the window gains or loses the keyboard focus.
+      The default implementation does nothing.
+    */
+    virtual void onFocus(bool focus);
+
+   /**
+      A function called when the window is resized.
+      If there is a top-level widget associated with this window, its size will be set right after this function.
+    */
+    virtual void onReshape(uint width, uint height);
 
 private:
     struct PrivateData;

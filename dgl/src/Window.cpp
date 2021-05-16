@@ -227,14 +227,18 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     }
 }
 
-void Window::onReshape(uint, uint)
-{
-    puglFallbackOnResize(pData->view);
-}
-
 bool Window::onClose()
 {
     return true;
+}
+
+void Window::onFocus(bool)
+{
+}
+
+void Window::onReshape(uint, uint)
+{
+    puglFallbackOnResize(pData->view);
 }
 
 #if 0
