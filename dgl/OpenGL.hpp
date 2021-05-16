@@ -186,16 +186,6 @@ public:
                         const GLenum type = GL_UNSIGNED_BYTE) noexcept;
 
    /**
-      TODO document this.
-    */
-    void setup();
-
-   /**
-      TODO document this.
-    */
-    void cleanup();
-
-   /**
       Get the image format.
     */
     GLenum getFormat() const noexcept;

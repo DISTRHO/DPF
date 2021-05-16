@@ -118,7 +118,6 @@ struct Window::PrivateData : IdleCallback {
 
     void show();
     void hide();
-    void focus();
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).
@@ -128,6 +127,8 @@ struct Window::PrivateData : IdleCallback {
       *       A closed window is always hidden, but the reverse is not always true.
       */
     void close();
+
+    void focus();
 
     void setResizable(bool resizable);
 

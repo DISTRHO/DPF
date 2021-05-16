@@ -53,33 +53,10 @@ public:
     uint getHeight() const noexcept { return Window::getHeight(); }
     const Size<uint> getSize() const noexcept { return Window::getSize(); }
     void repaint() noexcept { Window::repaint(); }
-
-   /**
-      Overloaded functions to ensure size changes apply on both TopLevelWidget and Window classes.
-    */
-    void setWidth(uint width)
-    {
-        TopLevelWidget::setWidth(width);
-        Window::setWidth(width);
-    }
-
-    void setHeight(uint height)
-    {
-        TopLevelWidget::setHeight(height);
-        Window::setHeight(height);
-    }
-
-    void setSize(uint width, uint height)
-    {
-        TopLevelWidget::setSize(width, height);
-        Window::setSize(width, height);
-    }
-
-    void setSize(const Size<uint>& size)
-    {
-        TopLevelWidget::setSize(size);
-        Window::setSize(size);
-    }
+    void setWidth(uint width) { Window::setWidth(width); }
+    void setHeight(uint height) { Window::setHeight(height); }
+    void setSize(uint width, uint height) { Window::setSize(width, height); }
+    void setSize(const Size<uint>& size) { Window::setSize(size); }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

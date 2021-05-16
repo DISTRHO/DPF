@@ -25,8 +25,10 @@ START_NAMESPACE_DGL
 
 struct SubWidget::PrivateData {
     SubWidget* const self;
+    Widget* const selfw;
     Widget* const parentWidget;
     Point<int> absolutePos;
+    bool needsFullViewportForDrawing; // needed for widgets drawing out of bounds
     bool needsViewportScaling; // needed for NanoVG
 
     explicit PrivateData(SubWidget* const s, Widget* const pw);

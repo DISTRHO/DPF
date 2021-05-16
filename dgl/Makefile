@@ -40,7 +40,6 @@ OBJS_common = \
 	../build/dgl/Window.cpp.o \
 	../build/dgl/WindowPrivateData.cpp.o
 
-# 	../build/dgl/StandaloneWindow.cpp.o \
 # 	../build/dgl/WindowFileBrowser.cpp.o
 
 # TODO: ImageWidgets.cpp
@@ -64,11 +63,6 @@ OBJS_opengl = $(OBJS_common) \
 	../build/dgl/OpenGL.cpp.opengl.o \
 	../build/dgl/NanoVG.cpp.opengl.o \
 	../build/dgl/pugl.cpp.opengl.o
-
-# 	../build/dgl/Image.cpp.opengl.o \
-# 	../build/dgl/ImageWidgets.cpp.opengl.o \
-# 	../build/dgl/WidgetPrivateData.cpp.opengl.o \
-# 	../build/dgl/WindowPrivateData.cpp.opengl.o
 
 # ifeq ($(MACOS),true)
 # OBJS_opengl += ../build/dgl/Window.mm.opengl.o

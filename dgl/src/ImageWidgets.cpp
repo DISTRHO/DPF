@@ -551,9 +551,7 @@ ImageSlider::ImageSlider(Widget* const parentWidget, const Image& image) noexcep
       fEndPos(),
       fSliderArea()
 {
-    /* TODO
-    setNeedsFullViewport();
-    */
+    setNeedsFullViewportDrawing();
 }
 
 float ImageSlider::getValue() const noexcept

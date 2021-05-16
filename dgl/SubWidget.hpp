@@ -52,12 +52,14 @@ public:
    /**
       Check if this widget contains the point defined by @a x and @a y.
     */
+    // TODO rename as containsRelativePos
     template<typename T>
     bool contains(T x, T y) const noexcept;
 
    /**
       Check if this widget contains the point @a pos.
     */
+    // TODO rename as containsRelativePos
     template<typename T>
     bool contains(const Point<T>& pos) const noexcept;
 
@@ -118,6 +120,11 @@ public:
       Request repaint of this subwidget's area to the window this widget belongs to.
     */
     void repaint() noexcept override;
+
+   /**
+      Indicate that this subwidget will draw out of bounds, and thus needs the entire viewport available for drawing.
+    */
+    void setNeedsFullViewportDrawing(bool needsFullViewportForDrawing = true);
 
 protected:
    /**

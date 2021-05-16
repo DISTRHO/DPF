@@ -205,6 +205,7 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     rect.width = width;
     rect.height = height;
     puglSetFrame(view, rect);
+    puglSetWindowSize(view, width, height);
 
     // FIXME this is bad
     puglRealize(view);
@@ -293,16 +294,6 @@ void Window::PrivateData::hide()
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::focus()
-{
-    if (! isEmbed)
-        puglRaiseWindow(view);
-
-    puglGrabFocus(view);
-}
-
-// -----------------------------------------------------------------------
-
 void Window::PrivateData::close()
 {
     DGL_DBG("Window close\n");
@@ -313,6 +304,16 @@ void Window::PrivateData::close()
     isClosed = true;
     hide();
     appData->oneWindowClosed();
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::focus()
+{
+    if (! isEmbed)
+        puglRaiseWindow(view);
+
+    puglGrabFocus(view);
 }
 
 // -----------------------------------------------------------------------
@@ -359,6 +360,10 @@ void Window::PrivateData::startModal()
 
     // make parent give focus to us
     modal.parent->modal.child = this;
+
+    // FIXME?
+    PuglRect rect = puglGetFrame(view);
+    puglSetDefaultSize(view, rect.width, rect.height);
 
     // make sure both parent and ourselves are visible
     modal.parent->show();
@@ -446,6 +451,9 @@ void Window::PrivateData::onPuglConfigure(const int width, const int height)
     if (topLevelWidget != nullptr)
         topLevelWidget->setSize(width, height);
 #endif
+
+    // always repaint after a resize
+    puglPostRedisplay(view);
 }
 
 void Window::PrivateData::onPuglExpose()
@@ -488,9 +496,7 @@ void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
     if (modal.child != nullptr)
         return modal.child->focus();
 
-#ifndef DPF_TEST_WINDOW_CPP
     self->onFocus(focus, mode);
-#endif
 }
 
 void Window::PrivateData::onPuglKey(const Events::KeyboardEvent& ev)
@@ -571,12 +577,16 @@ void Window::PrivateData::onPuglScroll(const Events::ScrollEvent& ev)
 #endif
 }
 
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
+#endif
 
 PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const PuglEvent* const event)
 {
-    printEvent(event, "pugl event: ", true);
     Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
+    printEvent(event, "pugl event: ", true);
+#endif
 
     switch (event->type)
     {
@@ -739,6 +749,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
 // -----------------------------------------------------------------------
 
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
 static int printModifiers(const uint32_t mods)
 {
 	return fprintf(stderr, "Modifiers:%s%s%s%s\n",
@@ -863,6 +874,7 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 
 	return 0;
 }
+#endif
 
 #undef DGL_DBG
 #undef DGL_DBGF

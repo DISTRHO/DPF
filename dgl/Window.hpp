@@ -271,7 +271,6 @@ protected:
    /**
       A function called when the window is resized.
       If there is a top-level widget associated with this window, its size will be set right after this function.
-      TODO this seems wrong, top-level widget should be resized here
     */
     virtual void onReshape(uint width, uint height);
 

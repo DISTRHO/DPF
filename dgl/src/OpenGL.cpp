@@ -114,44 +114,81 @@ void Rectangle<T>::_draw(const bool outline)
 
 // -----------------------------------------------------------------------
 
+static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 static_cast<GLsizei>(image.getWidth()),
+                 static_cast<GLsizei>(image.getHeight()),
+                 0,
+                 image.getFormat(), image.getType(), image.getRawData());
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
 OpenGLImage::OpenGLImage()
     : ImageBase(),
       fFormat(0),
       fType(0),
       fTextureId(0),
-      setupCalled(false) {}
+      setupCalled(false)
+{
+    glGenTextures(1, &fTextureId);
+    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+}
 
 OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const GLenum format, const GLenum type)
     : ImageBase(rawData, width, height),
       fFormat(format),
       fType(type),
       fTextureId(0),
-      setupCalled(false) {}
+      setupCalled(false)
+{
+    glGenTextures(1, &fTextureId);
+    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+}
 
 OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const GLenum format, const GLenum type)
     : ImageBase(rawData, size),
       fFormat(format),
       fType(type),
       fTextureId(0),
-      setupCalled(false) {}
+      setupCalled(false)
+{
+    glGenTextures(1, &fTextureId);
+    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+}
 
 OpenGLImage::OpenGLImage(const OpenGLImage& image)
     : ImageBase(image),
       fFormat(image.fFormat),
       fType(image.fType),
       fTextureId(0),
-      setupCalled(false) {}
+      setupCalled(false)
+{
+    glGenTextures(1, &fTextureId);
+    DISTRHO_SAFE_ASSERT(fTextureId != 0);
+}
 
 OpenGLImage::~OpenGLImage()
 {
-    if (setupCalled) {
-    // FIXME test if this is still necessary with new pugl
-#ifndef DISTRHO_OS_MAC
-        if (fTextureId != 0)
-            cleanup();
-#endif
-        DISTRHO_SAFE_ASSERT(fTextureId == 0);
-    }
+    if (fTextureId != 0)
+        glDeleteTextures(1, &fTextureId);
 }
 
 void OpenGLImage::loadFromMemory(const char* const rawData,
@@ -173,43 +210,6 @@ void OpenGLImage::loadFromMemory(const char* const rdata,
     fFormat  = format;
     fType    = type;
     setupCalled = false;
-}
-
-void OpenGLImage::setup()
-{
-    setupCalled = true;
-    DISTRHO_SAFE_ASSERT_RETURN(fTextureId == 0,);
-    DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
-
-    glGenTextures(1, &fTextureId);
-    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0,);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, fTextureId);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                 static_cast<GLsizei>(size.getWidth()), static_cast<GLsizei>(size.getHeight()), 0,
-                 fFormat, fType, rawData);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
-}
-
-void OpenGLImage::cleanup()
-{
-    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0,);
-    glDeleteTextures(1, &fTextureId);
-    fTextureId = 0;
 }
 
 GLenum OpenGLImage::getFormat() const noexcept
@@ -249,17 +249,14 @@ void OpenGLImage::drawAt(const int x, const int y)
 
 void OpenGLImage::drawAt(const Point<int>& pos)
 {
-    if (isInvalid())
+    if (fTextureId == 0 || isInvalid())
         return;
 
     if (! setupCalled)
     {
-        // TODO check if this is valid, give warning about needing to call setup/cleanup manually
-        setup();
+        setupOpenGLImage(*this, fTextureId);
+        setupCalled = true;
     }
-
-    if (fTextureId == 0)
-        return;
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, fTextureId);
@@ -305,7 +302,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 {
     bool needsDisableScissor = false;
 
-    if (absolutePos.isZero() && self->getSize() == Size<uint>(width, height))
+    if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
     {
         // full viewport size
         glViewport(0,
@@ -348,7 +345,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
         needsDisableScissor = false;
     }
 
-//     displaySubWidgets(width, height, autoScaleFactor);
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
 }
 
 // -----------------------------------------------------------------------
@@ -365,7 +362,7 @@ void TopLevelWidget::PrivateData::display()
     if (window.pData->autoScaling)
         glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
     else
-        glViewport(0, -height, width, height);
+        glViewport(0, 0, width, height);
 
     // main widget drawing
     self->onDisplay();

@@ -33,7 +33,7 @@ SubWidget::~SubWidget()
 template<typename T>
 bool SubWidget::contains(T x, T y) const noexcept
 {
-    return Rectangle<double>(getAbsoluteX(), getAbsoluteY(), getWidth(), getHeight()).contains(x, y);
+    return Rectangle<double>(0, 0, getWidth(), getHeight()).contains(x, y);
 }
 
 template<typename T>
@@ -111,7 +111,17 @@ void SubWidget::repaint() noexcept
         return;
 
     if (TopLevelWidget* const topw = getTopLevelWidget())
-        topw->repaint(getConstrainedAbsoluteArea());
+    {
+        if (pData->needsFullViewportForDrawing)
+            topw->repaint();
+        else
+            topw->repaint(getConstrainedAbsoluteArea());
+    }
+}
+
+void SubWidget::setNeedsFullViewportDrawing(const bool needsFullViewportForDrawing)
+{
+    pData->needsFullViewportForDrawing = needsFullViewportForDrawing;
 }
 
 void SubWidget::onPositionChanged(const PositionChangedEvent&)
