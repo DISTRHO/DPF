@@ -14,7 +14,7 @@ BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
 # TODO fix these after pugl-upstream is done
-BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra -Wno-narrowing
+BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers -Wno-narrowing
 
 # ifneq ($(MACOS_OLD),true)
 # needed by sofd right now, fix later
@@ -39,36 +39,42 @@ OBJS_common = \
 	../build/dgl/WidgetPrivateData.cpp.o \
 	../build/dgl/Window.cpp.o \
 	../build/dgl/WindowPrivateData.cpp.o
-
 # 	../build/dgl/WindowFileBrowser.cpp.o
-
-# TODO: ImageWidgets.cpp
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_cairo = $(OBJS_common) \
-	../build/dgl/Cairo.cpp.cairo.o \
-	../build/dgl/pugl.cpp.cairo.o
+	../build/dgl/Cairo.cpp.cairo.o
 
-# ifeq ($(MACOS),true)
-# OBJS_cairo += ../build/dgl/Window.mm.cairo.o
-# else
-# OBJS_cairo += ../build/dgl/Window.cpp.cairo.o
-# endif
+ifeq ($(MACOS),true)
+OBJS_cairo += ../build/dgl/pugl.mm.cairo.o
+else
+OBJS_cairo += ../build/dgl/pugl.cpp.cairo.o
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_opengl = $(OBJS_common) \
 	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/OpenGL.cpp.opengl.o \
-	../build/dgl/NanoVG.cpp.opengl.o \
-	../build/dgl/pugl.cpp.opengl.o
+	../build/dgl/NanoVG.cpp.opengl.o
 
-# ifeq ($(MACOS),true)
-# OBJS_opengl += ../build/dgl/Window.mm.opengl.o
-# else
-# OBJS_opengl += ../build/dgl/Window.cpp.opengl.o
-# endif
+ifeq ($(MACOS),true)
+OBJS_opengl += ../build/dgl/pugl.mm.opengl.o
+else
+OBJS_opengl += ../build/dgl/pugl.cpp.opengl.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+OBJS_vulkan = $(OBJS_common) \
+	../build/dgl/Cairo.cpp.vulkan.o
+
+ifeq ($(MACOS),true)
+OBJS_vulkan += ../build/dgl/pugl.mm.vulkan.o
+else
+OBJS_vulkan += ../build/dgl/pugl.cpp.vulkan.o
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -80,6 +86,10 @@ ifeq ($(HAVE_OPENGL),true)
 TARGETS += ../build/libdgl-opengl.a
 # Compat name, to be removed soon
 TARGETS += ../build/libdgl.a
+endif
+
+ifeq ($(HAVE_VULKAN),true)
+TARGETS += ../build/libdgl-vulkan.a
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -100,6 +110,12 @@ all: $(TARGETS)
 	$(SILENT)rm -f $@
 	$(SILENT)$(AR) crs $@ $^
 
+../build/libdgl-vulkan.a: $(OBJS_vulkan)
+	-@mkdir -p ../build
+	@echo "Creating libdgl-vulkan.a"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
 # Compat name, to be removed soon
 ../build/libdgl.a: ../build/libdgl-opengl.a
 	@echo "Symlinking libdgl.a"
@@ -117,6 +133,11 @@ all: $(TARGETS)
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
+../build/dgl/%.mm.o: src/%.mm
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -ObjC++ -o $@
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/dgl/%.cpp.cairo.o: src/%.cpp
@@ -124,15 +145,10 @@ all: $(TARGETS)
 	@echo "Compiling $< (Cairo variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
-# ../build/dgl/Window.cpp.cairo.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (Cairo variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
-# 
-# ../build/dgl/Window.mm.cairo.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (Cairo variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -ObjC++ -c -o $@
+../build/dgl/%.mm.cairo.o: src/%.mm
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (Cairo variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -141,15 +157,22 @@ all: $(TARGETS)
 	@echo "Compiling $< (OpenGL variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
-# ../build/dgl/Window.cpp.opengl.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (OpenGL variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
-# 
-# ../build/dgl/Window.mm.opengl.o: src/Window.cpp src/sofd/* src/pugl-upstream/*
-# 	-@mkdir -p ../build/dgl
-# 	@echo "Compiling $< (OpenGL variant)"
-# 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -ObjC++ -c -o $@
+../build/dgl/%.mm.opengl.o: src/%.mm
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (OpenGL variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -ObjC++ -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+../build/dgl/%.cpp.vulkan.o: src/%.cpp
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (Vulkan variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -o $@
+
+../build/dgl/%.mm.vulkan.o: src/%.mm
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $< (Vulkan variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -164,5 +187,6 @@ debug:
 -include $(OBJS_common:%.o=%.d)
 -include $(OBJS_cairo:%.o=%.d)
 -include $(OBJS_opengl:%.o=%.d)
+-include $(OBJS_vulkan:%.o=%.d)
 
 # ---------------------------------------------------------------------------------------------------------------------

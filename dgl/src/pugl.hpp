@@ -28,6 +28,7 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
 #include "pugl-upstream/include/pugl/pugl.h"
 
@@ -64,6 +65,20 @@ puglOnDisplayPrepare(PuglView* view);
 // DGL specific, build-specific fallback resize
 PUGL_API void
 puglFallbackOnResize(PuglView* view);
+
+#ifdef DISTRHO_OS_WINDOWS
+// win32 specific, call ShowWindow with SW_RESTORE
+PUGL_API void
+puglWin32RestoreWindow(PuglView* view);
+
+// win32 specific, center view based on parent coordinates (if there is one)
+PUGL_API void
+puglWin32ShowWindowCentered(PuglView* view);
+
+// win32 specific, set or unset WS_SIZEBOX style flag
+PUGL_API void
+puglWin32SetWindowResizable(PuglView* view, bool resizable);
+#endif
 
 PUGL_END_DECLS
 

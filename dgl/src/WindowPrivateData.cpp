@@ -19,11 +19,13 @@
 
 #include "pugl.hpp"
 
-#include <cinttypes>
+#define DGL_DEBUG_EVENTS
+
+#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
+# include <cinttypes>
+#endif
 
 START_NAMESPACE_DGL
-
-#define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
 # define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);

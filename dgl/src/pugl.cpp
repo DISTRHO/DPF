@@ -25,7 +25,36 @@
 
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
+# import <Cocoa/Cocoa.h>
+# include <dlfcn.h>
+# include <mach/mach_time.h>
+# ifdef DGL_CAIRO
+#  include <cairo.h>
+#  include <cairo-quartz.h>
+# endif
+# ifdef DGL_OPENGL
+#  include <OpenGL/gl.h>
+# endif
+# ifdef DGL_VULKAN
+#  import <QuartzCore/CAMetalLayer.h>
+#  include <vulkan/vulkan_core.h>
+#  include <vulkan/vulkan_macos.h>
+# endif
 #elif defined(DISTRHO_OS_WINDOWS)
+# include <wctype.h>
+# include <windows.h>
+# include <windowsx.h>
+# ifdef DGL_CAIRO
+#  include <cairo.h>
+#  include <cairo-win32.h>
+# endif
+# ifdef DGL_OPENGL
+#  include <GL/gl.h>
+# endif
+# ifdef DGL_VULKAN
+#  include <vulkan/vulkan.h>
+#  include <vulkan/vulkan_win32.h>
+# endif
 #else
 # include <dlfcn.h>
 # include <sys/select.h>
@@ -51,6 +80,7 @@
 #  include <cairo-xlib.h>
 # endif
 # ifdef DGL_OPENGL
+#  include <GL/gl.h>
 #  include <GL/glx.h>
 # endif
 # ifdef DGL_VULKAN
@@ -67,9 +97,33 @@ START_NAMESPACE_DGL
 
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
+/*
 # define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
 # define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
+*/
+# import "pugl-upstream/src/mac.m"
+# import "pugl-upstream/src/mac_stub.m"
+# ifdef DGL_CAIRO
+#  import "pugl-upstream/src/mac_cairo.m"
+# endif
+# ifdef DGL_OPENGL
+#  import "pugl-upstream/src/mac_gl.m"
+# endif
+# ifdef DGL_VULKAN
+#  import "pugl-upstream/src/mac_vulkan.m"
+# endif
 #elif defined(DISTRHO_OS_WINDOWS)
+# include "pugl-upstream/src/win.c"
+# include "pugl-upstream/src/win_stub.c"
+# ifdef DGL_CAIRO
+#  include "pugl-upstream/src/win_cairo.c"
+# endif
+# ifdef DGL_OPENGL
+#  include "pugl-upstream/src/win_gl.c"
+# endif
+# ifdef DGL_VULKAN
+#  include "pugl-upstream/src/win_vulkan.c"
+# endif
 #else
 # include "pugl-upstream/src/x11.c"
 # include "pugl-upstream/src/x11_stub.c"
@@ -120,7 +174,7 @@ void puglRaiseWindow(PuglView* view)
 // --------------------------------------------------------------------------------------------------------------------
 // set backend that matches current build
 
-void puglSetMatchingBackendForCurrentBuild(PuglView* view)
+void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 {
 #ifdef DGL_CAIRO
     puglSetBackend(view, puglCairoBackend());
@@ -136,7 +190,7 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* view)
 // --------------------------------------------------------------------------------------------------------------------
 // Combine puglSetMinSize and puglSetAspectRatio
 
-PuglStatus puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect)
+PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, const uint height, const bool aspect)
 {
     view->minWidth  = width;
     view->minHeight = height;
@@ -170,16 +224,18 @@ PuglStatus puglSetGeometryConstraints(PuglView* view, unsigned int width, unsign
 // --------------------------------------------------------------------------------------------------------------------
 // set window size without changing frame x/y position
 
-PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height)
+PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint height)
 {
 #if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
-    // TODO
-    const PuglRect frame = { 0.0, 0.0, (double)width, (double)height };
+    // keep upstream behaviour
+    const PuglRect frame = { view->frame.x, view->frame.y, (double)width, (double)height };
     return puglSetFrame(view, frame);
 #elif defined(DISTRHO_OS_WINDOWS)
     // matches upstream pugl, except we add SWP_NOMOVE flag
     if (view->impl->hwnd)
     {
+        const PuglRect frame = view->frame;
+
         RECT rect = { (long)frame.x,
                       (long)frame.y,
                       (long)frame.x + (long)frame.width,
@@ -202,23 +258,6 @@ PuglStatus puglSetWindowSize(PuglView* view, unsigned int width, unsigned int he
     {
         if (! XResizeWindow(view->world->impl->display, view->impl->win, width, height))
             return PUGL_UNKNOWN_ERROR;
-#if 0
-        if (! fResizable)
-        {
-            XSizeHints sizeHints;
-            memset(&sizeHints, 0, sizeof(sizeHints));
-
-            sizeHints.flags      = PSize|PMinSize|PMaxSize;
-            sizeHints.width      = static_cast<int>(width);
-            sizeHints.height     = static_cast<int>(height);
-            sizeHints.min_width  = static_cast<int>(width);
-            sizeHints.min_height = static_cast<int>(height);
-            sizeHints.max_width  = static_cast<int>(width);
-            sizeHints.max_height = static_cast<int>(height);
-
-            XSetWMNormalHints(xDisplay, xWindow, &sizeHints);
-        }
-#endif
     }
 #endif
 
@@ -241,7 +280,7 @@ void puglOnDisplayPrepare(PuglView*)
 // --------------------------------------------------------------------------------------------------------------------
 // DGL specific, build-specific fallback resize
 
-void puglFallbackOnResize(PuglView* view)
+void puglFallbackOnResize(PuglView* const view)
 {
 #ifdef DGL_OPENGL
     glEnable(GL_BLEND);
@@ -254,6 +293,60 @@ void puglFallbackOnResize(PuglView* view)
     glLoadIdentity();
 #endif
 }
+
+#ifdef DISTRHO_OS_WINDOWS
+// --------------------------------------------------------------------------------------------------------------------
+// win32 specific, call ShowWindow with SW_RESTORE
+
+void puglWin32RestoreWindow(PuglView* const view)
+{
+    PuglInternals* impl = view->impl;
+    DISTRHO_SAFE_ASSERT_RETURN(impl->hwnd != nullptr,);
+
+    ShowWindow(impl->hwnd, SW_RESTORE);
+    SetFocus(impl->hwnd);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// win32 specific, center view based on parent coordinates (if there is one)
+
+void puglWin32ShowWindowCentered(PuglView* const view)
+{
+    PuglInternals* impl = view->impl;
+    DISTRHO_SAFE_ASSERT_RETURN(impl->hwnd != nullptr,);
+
+    RECT rectChild, rectParent;
+
+    if (view->transientParent != 0 &&
+        GetWindowRect(impl->hwnd, &rectChild) &&
+        GetWindowRect((HWND)view->transientParent, &rectParent))
+    {
+        SetWindowPos(impl->hwnd, (HWND)view->transientParent,
+                     rectParent.left + (rectChild.right-rectChild.left)/2,
+                     rectParent.top + (rectChild.bottom-rectChild.top)/2,
+                     0, 0, SWP_SHOWWINDOW|SWP_NOSIZE);
+    }
+    else
+    {
+        ShowWindow(impl->hwnd, SW_SHOWNORMAL);
+    }
+
+    SetFocus(impl->hwnd);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// win32 specific, set or unset WS_SIZEBOX style flag
+
+void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
+{
+    PuglInternals* impl = view->impl;
+    DISTRHO_SAFE_ASSERT_RETURN(impl->hwnd != nullptr,);
+
+    const int winFlags = resizable ? GetWindowLong(impl->hwnd, GWL_STYLE) |  WS_SIZEBOX
+                                   : GetWindowLong(impl->hwnd, GWL_STYLE) & ~WS_SIZEBOX;
+    SetWindowLong(impl->hwnd, GWL_STYLE, winFlags);
+}
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 

@@ -16,7 +16,7 @@ BUILD_CXX_FLAGS += $(DGL_FLAGS) -I.. -I../dgl/src/pugl-upstream/include -DDONT_S
 LINK_FLAGS      += -lpthread
 
 # TODO fix within pugl
-BUILD_CXX_FLAGS += -Wno-missing-field-initializers -Wno-extra
+BUILD_CXX_FLAGS += -Wno-extra -Wno-missing-field-initializers
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -33,8 +33,8 @@ ifeq ($(HAVE_VULKAN),true)
 WTESTS   = Window.vulkan
 endif
 
-TARGETS  = $(TESTS:%=../build/tests/%)
-TARGETS += $(WTESTS:Window.%=../build/tests/Window.%)
+TARGETS  = $(TESTS:%=../build/tests/%$(APP_EXT))
+TARGETS += $(WTESTS:Window.%=../build/tests/Window.%$(APP_EXT))
 
 OBJS     = $(TESTS:%=../build/tests/%.cpp.o)
 OBJS    += $(WTESTS:Window.%=../build/tests/Window.cpp.%.o)
@@ -102,31 +102,31 @@ clean:
 # ---------------------------------------------------------------------------------------------------------------------
 # linking steps
 
-../build/tests/%: ../build/tests/%.cpp.o
+../build/tests/%$(APP_EXT): ../build/tests/%.cpp.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) -o $@
 
-../build/tests/%.cairo: ../build/tests/%.cpp.cairo.o
+../build/tests/%.cairo$(APP_EXT): ../build/tests/%.cpp.cairo.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
 
-../build/tests/%.opengl: ../build/tests/%.cpp.opengl.o
+../build/tests/%.opengl$(APP_EXT): ../build/tests/%.cpp.opengl.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
-../build/tests/%.vulkan: ../build/tests/%.cpp.vulkan.o
+../build/tests/%.vulkan$(APP_EXT): ../build/tests/%.cpp.vulkan.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
 
-../build/tests/Demo.cairo: ../build/tests/Demo.cpp.cairo.o ../build/libdgl-cairo.a
+../build/tests/Demo.cairo$(APP_EXT): ../build/tests/Demo.cpp.cairo.o ../build/libdgl-cairo.a
 	@echo "Linking Demo (Cairo)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(CAIRO_LIBS) -o $@
 
-../build/tests/Demo.opengl: ../build/tests/Demo.cpp.opengl.o ../build/libdgl-opengl.a
+../build/tests/Demo.opengl$(APP_EXT): ../build/tests/Demo.cpp.opengl.o ../build/libdgl-opengl.a
 	@echo "Linking Demo (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
-../build/tests/Demo.vulkan: ../build/tests/Demo.cpp.vulkan.o ../build/libdgl-vulkan.a
+../build/tests/Demo.vulkan$(APP_EXT): ../build/tests/Demo.cpp.vulkan.o ../build/libdgl-vulkan.a
 	@echo "Linking Demo (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
 
