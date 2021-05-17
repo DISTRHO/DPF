@@ -25,6 +25,7 @@ START_NAMESPACE_DGL
 
 enum ImageFormat {
     kImageFormatNull,
+    kImageFormatGrayscale,
     kImageFormatBGR,
     kImageFormatBGRA,
     kImageFormatRGB,

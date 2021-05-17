@@ -118,12 +118,34 @@ struct OpenGLGraphicsContext : GraphicsContext
 // -----------------------------------------------------------------------
 
 static inline
+ImageFormat asDISTRHOImageFormat(const GLenum format)
+{
+    switch (format)
+    {
+    case GL_LUMINANCE:
+        return kImageFormatGrayscale;
+    case GL_BGR:
+        return kImageFormatBGR;
+    case GL_BGRA:
+        return kImageFormatBGRA;
+    case GL_RGB:
+        return kImageFormatRGB;
+    case GL_RGBA:
+        return kImageFormatRGBA;
+    }
+
+    return kImageFormatNull;
+}
+
+static inline
 GLenum asOpenGLImageFormat(const ImageFormat format)
 {
     switch (format)
     {
     case kImageFormatNull:
         break;
+    case kImageFormatGrayscale:
+        return GL_LUMINANCE;
     case kImageFormatBGR:
         return GL_BGR;
     case kImageFormatBGRA:
@@ -199,31 +221,50 @@ public:
     */
     OpenGLImage& operator=(const OpenGLImage& image) noexcept;
 
+    // FIXME this should not be needed
+    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format = kImageFormatBGRA)
+    { loadFromMemory(rawData, Size<uint>(w, h), format); };
+    inline void draw(const GraphicsContext& context)
+    { drawAt(context, Point<int>(0, 0)); };
+    inline void drawAt(const GraphicsContext& context, int x, int y)
+    { drawAt(context, Point<int>(x, y)); };
+
+   /**
+      Constructor using raw image data, specifying an OpenGL image format.
+      @note @a rawData must remain valid for the lifetime of this Image.
+      DEPRECATED This constructor uses OpenGL image format instead of DISTRHO one.
+    */
+    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*,uint,uint,ImageFormat")
+    explicit OpenGLImage(const char* rawData, uint width, uint height, GLenum format);
+
+   /**
+      Constructor using raw image data, specifying an OpenGL image format.
+      @note @a rawData must remain valid for the lifetime of this Image.
+      DEPRECATED This constructor uses OpenGL image format instead of DISTRHO one.
+    */
+    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*,const Size<uint>&,ImageFormat")
+    explicit OpenGLImage(const char* rawData, const Size<uint>& size, GLenum format);
+
    /**
       Draw this image at (0, 0) point using the current OpenGL context.
+      DEPRECATED This function does not take into consideration the current graphics context and only works in OpenGL.
     */
     DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
       Draw this image at (x, y) point using the current OpenGL context.
+      DEPRECATED This function does not take into consideration the current graphics context and only works in OpenGL.
     */
     DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,int,int)")
     void drawAt(const int x, const int y);
 
    /**
       Draw this image at position @a pos using the current OpenGL context.
+      DEPRECATED This function does not take into consideration the current graphics context and only works in OpenGL.
     */
     DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,const Point<int>&)")
     void drawAt(const Point<int>& pos);
-
-    // FIXME this should not be needed
-    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format)
-    { loadFromMemory(rawData, Size<uint>(w, h), format); };
-    inline void draw(const GraphicsContext& context)
-    { drawAt(context, Point<int>(0, 0)); };
-    inline void drawAt(const GraphicsContext& context, int x, int y)
-    { drawAt(context, Point<int>(x, y)); };
 
    /**
       Get the image type.

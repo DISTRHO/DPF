@@ -280,6 +280,8 @@ static cairo_format_t asCairoImageFormat(const ImageFormat format)
     {
     case kImageFormatNull:
         break;
+    case kImageFormatGrayscale:
+        return CAIRO_FORMAT_A8;
     case kImageFormatBGR:
     case kImageFormatRGB:
         return CAIRO_FORMAT_RGB24;
@@ -365,6 +367,10 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
     switch (fmt)
     {
     case kImageFormatNull:
+        break;
+    case kImageFormatGrayscale:
+        // Grayscale to A8
+        // TODO
         break;
     case kImageFormatBGR:
         // BGR8 to CAIRO_FORMAT_RGB24

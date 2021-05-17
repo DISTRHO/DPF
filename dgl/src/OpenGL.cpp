@@ -401,6 +401,24 @@ OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
 }
 
 // deprecated calls
+OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const GLenum format)
+    : ImageBase(rawData, width, height, asDISTRHOImageFormat(format)),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const GLenum format)
+    : ImageBase(rawData, size, asDISTRHOImageFormat(format)),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
 void OpenGLImage::draw()
 {
     drawOpenGLImage(*this, Point<int>(0, 0), textureId, setupCalled);
