@@ -27,129 +27,129 @@ static const float M_2PIf = 3.14159265358979323846f*2.0f;
 
 template<typename T>
 Point<T>::Point() noexcept
-    : fX(0),
-      fY(0) {}
+    : x(0),
+      y(0) {}
 
 template<typename T>
-Point<T>::Point(const T& x, const T& y) noexcept
-    : fX(x),
-      fY(y) {}
+Point<T>::Point(const T& x2, const T& y2) noexcept
+    : x(x2),
+      y(y2) {}
 
 template<typename T>
 Point<T>::Point(const Point<T>& pos) noexcept
-    : fX(pos.fX),
-      fY(pos.fY) {}
+    : x(pos.x),
+      y(pos.y) {}
 
 template<typename T>
 const T& Point<T>::getX() const noexcept
 {
-    return fX;
+    return x;
 }
 
 template<typename T>
 const T& Point<T>::getY() const noexcept
 {
-    return fY;
+    return y;
 }
 
 template<typename T>
-void Point<T>::setX(const T& x) noexcept
+void Point<T>::setX(const T& x2) noexcept
 {
-    fX = x;
+    x = x2;
 }
 
 template<typename T>
-void Point<T>::setY(const T& y) noexcept
+void Point<T>::setY(const T& y2) noexcept
 {
-    fY = y;
+    y = y2;
 }
 
 template<typename T>
-void Point<T>::setPos(const T& x, const T& y) noexcept
+void Point<T>::setPos(const T& x2, const T& y2) noexcept
 {
-    fX = x;
-    fY = y;
+    x = x2;
+    y = y2;
 }
 
 template<typename T>
 void Point<T>::setPos(const Point<T>& pos) noexcept
 {
-    fX = pos.fX;
-    fY = pos.fY;
+    x = pos.x;
+    y = pos.y;
 }
 
 template<typename T>
-void Point<T>::moveBy(const T& x, const T& y) noexcept
+void Point<T>::moveBy(const T& x2, const T& y2) noexcept
 {
-    fX = static_cast<T>(fX+x);
-    fY = static_cast<T>(fY+y);
+    x = static_cast<T>(x+x2);
+    y = static_cast<T>(y+y2);
 }
 
 template<typename T>
 void Point<T>::moveBy(const Point<T>& pos) noexcept
 {
-    fX = static_cast<T>(fX+pos.fX);
-    fY = static_cast<T>(fY+pos.fY);
+    x = static_cast<T>(x+pos.x);
+    y = static_cast<T>(y+pos.y);
 }
 
 template<typename T>
 bool Point<T>::isZero() const noexcept
 {
-    return fX == 0 && fY == 0;
+    return x == 0 && y == 0;
 }
 
 template<typename T>
 bool Point<T>::isNotZero() const noexcept
 {
-    return fX != 0 || fY != 0;
+    return x != 0 || y != 0;
 }
 
 template<typename T>
 Point<T> Point<T>::operator+(const Point<T>& pos) noexcept
 {
-    return Point<T>(fX+pos.fX, fY+pos.fY);
+    return Point<T>(x+pos.x, y+pos.y);
 }
 
 template<typename T>
 Point<T> Point<T>::operator-(const Point<T>& pos) noexcept
 {
-    return Point<T>(fX-pos.fX, fY-pos.fY);
+    return Point<T>(x-pos.x, y-pos.y);
 }
 
 template<typename T>
 Point<T>& Point<T>::operator=(const Point<T>& pos) noexcept
 {
-    fX = pos.fX;
-    fY = pos.fY;
+    x = pos.x;
+    y = pos.y;
     return *this;
 }
 
 template<typename T>
 Point<T>& Point<T>::operator+=(const Point<T>& pos) noexcept
 {
-    fX = static_cast<T>(fX+pos.fX);
-    fY = static_cast<T>(fY+pos.fY);
+    x = static_cast<T>(x+pos.x);
+    y = static_cast<T>(y+pos.y);
     return *this;
 }
 
 template<typename T>
 Point<T>& Point<T>::operator-=(const Point<T>& pos) noexcept
 {
-    fX = static_cast<T>(fX-pos.fX);
-    fY = static_cast<T>(fY-pos.fY);
+    x = static_cast<T>(x-pos.x);
+    y = static_cast<T>(y-pos.y);
     return *this;
 }
 
 template<typename T>
 bool Point<T>::operator==(const Point<T>& pos) const noexcept
 {
-    return (fX == pos.fX && fY == pos.fY);
+    return (x == pos.x && y == pos.y);
 }
 
 template<typename T>
 bool Point<T>::operator!=(const Point<T>& pos) const noexcept
 {
-    return (fX != pos.fX || fY != pos.fY);
+    return (x != pos.x || y != pos.y);
 }
 
 // -----------------------------------------------------------------------
@@ -321,162 +321,162 @@ bool Size<T>::operator!=(const Size<T>& size) const noexcept
 
 template<typename T>
 Line<T>::Line() noexcept
-    : fPosStart(0, 0),
-      fPosEnd(0, 0) {}
+    : posStart(0, 0),
+      posEnd(0, 0) {}
 
 template<typename T>
 Line<T>::Line(const T& startX, const T& startY, const T& endX, const T& endY) noexcept
-    : fPosStart(startX, startY),
-      fPosEnd(endX, endY) {}
+    : posStart(startX, startY),
+      posEnd(endX, endY) {}
 
 template<typename T>
 Line<T>::Line(const T& startX, const T& startY, const Point<T>& endPos) noexcept
-    : fPosStart(startX, startY),
-      fPosEnd(endPos) {}
+    : posStart(startX, startY),
+      posEnd(endPos) {}
 
 template<typename T>
 Line<T>::Line(const Point<T>& startPos, const T& endX, const T& endY) noexcept
-    : fPosStart(startPos),
-      fPosEnd(endX, endY) {}
+    : posStart(startPos),
+      posEnd(endX, endY) {}
 
 template<typename T>
 Line<T>::Line(const Point<T>& startPos, const Point<T>& endPos) noexcept
-    : fPosStart(startPos),
-      fPosEnd(endPos) {}
+    : posStart(startPos),
+      posEnd(endPos) {}
 
 template<typename T>
 Line<T>::Line(const Line<T>& line) noexcept
-    : fPosStart(line.fPosStart),
-      fPosEnd(line.fPosEnd) {}
+    : posStart(line.posStart),
+      posEnd(line.posEnd) {}
 
 template<typename T>
 const T& Line<T>::getStartX() const noexcept
 {
-    return fPosStart.fX;
+    return posStart.x;
 }
 
 template<typename T>
 const T& Line<T>::getStartY() const noexcept
 {
-    return fPosStart.fY;
+    return posStart.y;
 }
 
 template<typename T>
 const T& Line<T>::getEndX() const noexcept
 {
-    return fPosEnd.fX;
+    return posEnd.x;
 }
 
 template<typename T>
 const T& Line<T>::getEndY() const noexcept
 {
-    return fPosEnd.fY;
+    return posEnd.y;
 }
 
 template<typename T>
 const Point<T>& Line<T>::getStartPos() const noexcept
 {
-    return fPosStart;
+    return posStart;
 }
 
 template<typename T>
 const Point<T>& Line<T>::getEndPos() const noexcept
 {
-    return fPosEnd;
+    return posEnd;
 }
 
 template<typename T>
 void Line<T>::setStartX(const T& x) noexcept
 {
-    fPosStart.fX = x;
+    posStart.x = x;
 }
 
 template<typename T>
 void Line<T>::setStartY(const T& y) noexcept
 {
-    fPosStart.fY = y;
+    posStart.y = y;
 }
 
 template<typename T>
 void Line<T>::setStartPos(const T& x, const T& y) noexcept
 {
-    fPosStart = Point<T>(x, y);
+    posStart = Point<T>(x, y);
 }
 
 template<typename T>
 void Line<T>::setStartPos(const Point<T>& pos) noexcept
 {
-    fPosStart = pos;
+    posStart = pos;
 }
 
 template<typename T>
 void Line<T>::setEndX(const T& x) noexcept
 {
-    fPosEnd.fX = x;
+    posEnd.x = x;
 }
 
 template<typename T>
 void Line<T>::setEndY(const T& y) noexcept
 {
-    fPosEnd.fY = y;
+    posEnd.y = y;
 }
 
 template<typename T>
 void Line<T>::setEndPos(const T& x, const T& y) noexcept
 {
-    fPosEnd = Point<T>(x, y);
+    posEnd = Point<T>(x, y);
 }
 
 template<typename T>
 void Line<T>::setEndPos(const Point<T>& pos) noexcept
 {
-    fPosEnd = pos;
+    posEnd = pos;
 }
 
 template<typename T>
 void Line<T>::moveBy(const T& x, const T& y) noexcept
 {
-    fPosStart.moveBy(x, y);
-    fPosEnd.moveBy(x, y);
+    posStart.moveBy(x, y);
+    posEnd.moveBy(x, y);
 }
 
 template<typename T>
 void Line<T>::moveBy(const Point<T>& pos) noexcept
 {
-    fPosStart.moveBy(pos);
-    fPosEnd.moveBy(pos);
+    posStart.moveBy(pos);
+    posEnd.moveBy(pos);
 }
 
 template<typename T>
 bool Line<T>::isNull() const noexcept
 {
-    return fPosStart == fPosEnd;
+    return posStart == posEnd;
 }
 
 template<typename T>
 bool Line<T>::isNotNull() const noexcept
 {
-    return fPosStart != fPosEnd;
+    return posStart != posEnd;
 }
 
 template<typename T>
 Line<T>& Line<T>::operator=(const Line<T>& line) noexcept
 {
-    fPosStart = line.fPosStart;
-    fPosEnd   = line.fPosEnd;
+    posStart = line.posStart;
+    posEnd   = line.posEnd;
     return *this;
 }
 
 template<typename T>
 bool Line<T>::operator==(const Line<T>& line) const noexcept
 {
-    return (fPosStart == line.fPosStart && fPosEnd == line.fPosEnd);
+    return (posStart == line.posStart && posEnd == line.posEnd);
 }
 
 template<typename T>
 bool Line<T>::operator!=(const Line<T>& line) const noexcept
 {
-    return (fPosStart != line.fPosStart || fPosEnd != line.fPosEnd);
+    return (posStart != line.posStart || posEnd != line.posEnd);
 }
 
 // -----------------------------------------------------------------------
@@ -530,13 +530,13 @@ Circle<T>::Circle(const Circle<T>& cir) noexcept
 template<typename T>
 const T& Circle<T>::getX() const noexcept
 {
-    return fPos.fX;
+    return fPos.x;
 }
 
 template<typename T>
 const T& Circle<T>::getY() const noexcept
 {
-    return fPos.fY;
+    return fPos.y;
 }
 
 template<typename T>
@@ -548,20 +548,20 @@ const Point<T>& Circle<T>::getPos() const noexcept
 template<typename T>
 void Circle<T>::setX(const T& x) noexcept
 {
-    fPos.fX = x;
+    fPos.x = x;
 }
 
 template<typename T>
 void Circle<T>::setY(const T& y) noexcept
 {
-    fPos.fY = y;
+    fPos.y = y;
 }
 
 template<typename T>
 void Circle<T>::setPos(const T& x, const T& y) noexcept
 {
-    fPos.fX = x;
-    fPos.fY = y;
+    fPos.x = x;
+    fPos.y = y;
 }
 
 template<typename T>
@@ -605,20 +605,6 @@ void Circle<T>::setNumSegments(const uint num)
     fSin = std::sin(fTheta);
 }
 
-#ifndef DPF_TEST_POINT_CPP
-template<typename T>
-void Circle<T>::draw()
-{
-    _draw(false);
-}
-
-template<typename T>
-void Circle<T>::drawOutline()
-{
-    _draw(true);
-}
-#endif
-
 template<typename T>
 Circle<T>& Circle<T>::operator=(const Circle<T>& cir) noexcept
 {
@@ -648,85 +634,71 @@ bool Circle<T>::operator!=(const Circle<T>& cir) const noexcept
 
 template<typename T>
 Triangle<T>::Triangle() noexcept
-    : fPos1(0, 0),
-      fPos2(0, 0),
-      fPos3(0, 0) {}
+    : pos1(0, 0),
+      pos2(0, 0),
+      pos3(0, 0) {}
 
 template<typename T>
 Triangle<T>::Triangle(const T& x1, const T& y1, const T& x2, const T& y2, const T& x3, const T& y3) noexcept
-    : fPos1(x1, y1),
-      fPos2(x2, y2),
-      fPos3(x3, y3) {}
+    : pos1(x1, y1),
+      pos2(x2, y2),
+      pos3(x3, y3) {}
 
 template<typename T>
 Triangle<T>::Triangle(const Point<T>& pos1, const Point<T>& pos2, const Point<T>& pos3) noexcept
-    : fPos1(pos1),
-      fPos2(pos2),
-      fPos3(pos3) {}
+    : pos1(pos1),
+      pos2(pos2),
+      pos3(pos3) {}
 
 template<typename T>
 Triangle<T>::Triangle(const Triangle<T>& tri) noexcept
-    : fPos1(tri.fPos1),
-      fPos2(tri.fPos2),
-      fPos3(tri.fPos3) {}
+    : pos1(tri.pos1),
+      pos2(tri.pos2),
+      pos3(tri.pos3) {}
 
 template<typename T>
 bool Triangle<T>::isNull() const noexcept
 {
-    return fPos1 == fPos2 && fPos1 == fPos3;
+    return pos1 == pos2 && pos1 == pos3;
 }
 
 template<typename T>
 bool Triangle<T>::isNotNull() const noexcept
 {
-    return fPos1 != fPos2 || fPos1 != fPos3;
+    return pos1 != pos2 || pos1 != pos3;
 }
 
 template<typename T>
 bool Triangle<T>::isValid() const noexcept
 {
-    return fPos1 != fPos2 && fPos1 != fPos3;
+    return pos1 != pos2 && pos1 != pos3;
 }
 
 template<typename T>
 bool Triangle<T>::isInvalid() const noexcept
 {
-    return fPos1 == fPos2 || fPos1 == fPos3;
+    return pos1 == pos2 || pos1 == pos3;
 }
-
-#ifndef DPF_TEST_POINT_CPP
-template<typename T>
-void Triangle<T>::draw()
-{
-    _draw(false);
-}
-
-template<typename T>
-void Triangle<T>::drawOutline()
-{
-    _draw(true);
-}
-#endif
 
 template<typename T>
 Triangle<T>& Triangle<T>::operator=(const Triangle<T>& tri) noexcept
 {
-    fPos1 = tri.fPos1;
-    fPos2 = tri.fPos2;
-    fPos3 = tri.fPos3;
+    pos1 = tri.pos1;
+    pos2 = tri.pos2;
+    pos3 = tri.pos3;
     return *this;
 }
 
 template<typename T>
 bool Triangle<T>::operator==(const Triangle<T>& tri) const noexcept
 {
-    return (fPos1 == tri.fPos1 && fPos2 == tri.fPos2 && fPos3 == tri.fPos3);
+    return (pos1 == tri.pos1 && pos2 == tri.pos2 && pos3 == tri.pos3);
 }
 
 template<typename T>
 bool Triangle<T>::operator!=(const Triangle<T>& tri) const noexcept
 {
-    return (fPos1 != tri.fPos1 || fPos2 != tri.fPos2 || fPos3 != tri.fPos3);
+    return (pos1 != tri.pos1 || pos2 != tri.pos2 || pos3 != tri.pos3);
 }
 
 // -----------------------------------------------------------------------
@@ -765,13 +737,13 @@ Rectangle<T>::Rectangle(const Rectangle<T>& rect) noexcept
 template<typename T>
 const T& Rectangle<T>::getX() const noexcept
 {
-    return pos.fX;
+    return pos.x;
 }
 
 template<typename T>
 const T& Rectangle<T>::getY() const noexcept
 {
-    return pos.fY;
+    return pos.y;
 }
 
 template<typename T>
@@ -801,20 +773,20 @@ const Size<T>& Rectangle<T>::getSize() const noexcept
 template<typename T>
 void Rectangle<T>::setX(const T& x) noexcept
 {
-    pos.fX = x;
+    pos.x = x;
 }
 
 template<typename T>
 void Rectangle<T>::setY(const T& y) noexcept
 {
-    pos.fY = y;
+    pos.y = y;
 }
 
 template<typename T>
 void Rectangle<T>::setPos(const T& x, const T& y) noexcept
 {
-    pos.fX = x;
-    pos.fY = y;
+    pos.x = x;
+    pos.y = y;
 }
 
 template<typename T>
@@ -889,25 +861,25 @@ void Rectangle<T>::setRectangle(const Rectangle<T>& rect) noexcept
 template<typename T>
 bool Rectangle<T>::contains(const T& x, const T& y) const noexcept
 {
-    return (x >= pos.fX && y >= pos.fY && x <= pos.fX+size.fWidth && y <= pos.fY+size.fHeight);
+    return (x >= pos.x && y >= pos.y && x <= pos.x+size.fWidth && y <= pos.y+size.fHeight);
 }
 
 template<typename T>
 bool Rectangle<T>::contains(const Point<T>& pos) const noexcept
 {
-    return contains(pos.fX, pos.fY);
+    return contains(pos.x, pos.y);
 }
 
 template<typename T>
 bool Rectangle<T>::containsX(const T& x) const noexcept
 {
-    return (x >= pos.fX && x <= pos.fX + size.fWidth);
+    return (x >= pos.x && x <= pos.x + size.fWidth);
 }
 
 template<typename T>
 bool Rectangle<T>::containsY(const T& y) const noexcept
 {
-    return (y >= pos.fY && y <= pos.fY + size.fHeight);
+    return (y >= pos.y && y <= pos.y + size.fHeight);
 }
 
 template<typename T>

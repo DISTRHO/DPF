@@ -15,6 +15,7 @@
  */
 
 #include "../Cairo.hpp"
+#include "../Color.hpp"
 
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
@@ -31,7 +32,34 @@ static void notImplemented(const char* const name)
 }
 
 // -----------------------------------------------------------------------
+// Color
+
+void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
+{
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    if (includeAlpha)
+        cairo_set_source_rgba(handle, red, green, blue, alpha);
+    else
+        cairo_set_source_rgb(handle, red, green, blue);
+}
+
+// -----------------------------------------------------------------------
 // Line
+
+template<typename T>
+void Line<T>::draw(const GraphicsContext& context, const T width)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
+    DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    cairo_set_line_width(handle, width);
+    cairo_move_to(handle, posStart.getX(), posStart.getY());
+    cairo_line_to(handle, posEnd.getX(), posEnd.getY());
+    cairo_stroke(handle);
+}
 
 template<typename T>
 void Line<T>::draw()
@@ -50,9 +78,65 @@ template class Line<ushort>;
 // Circle
 
 template<typename T>
-void Circle<T>::_draw(const bool outline)
+static void drawCircle(cairo_t* const handle,
+                       const Point<T>& pos,
+                       const uint numSegments,
+                       const float size,
+                       const float sin,
+                       const float cos,
+                       const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(numSegments >= 3 && size > 0.0f,);
+
+    const T origx = pos.getX();
+    const T origy = pos.getY();
+    double t, x = size, y = 0.0;
+
+    /*
+    glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
+
+    for (uint i=0; i<numSegments; ++i)
+    {
+        glVertex2d(x + origx, y + origy);
+
+        t = x;
+        x = cos * x - sin * y;
+        y = sin * t + cos * y;
+    }
+
+    glEnd();
+    */
+}
+
+template<typename T>
+void Circle<T>::draw(const GraphicsContext& context)
+{
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    drawCircle<T>(handle, fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    cairo_set_line_width(handle, lineWidth);
+    drawCircle<T>(handle, fPos, fNumSegments, fSize, fSin, fCos, true);
+}
+
+template<typename T>
+void Circle<T>::draw()
 {
     notImplemented("Circle::draw");
+}
+
+template<typename T>
+void Circle<T>::drawOutline()
+{
+    notImplemented("Circle::drawOutline");
 }
 
 template class Circle<double>;
@@ -66,9 +150,46 @@ template class Circle<ushort>;
 // Triangle
 
 template<typename T>
-void Triangle<T>::_draw(const bool outline)
+static void drawTriangle(cairo_t* const handle,
+                         const Point<T>& pos1,
+                         const Point<T>& pos2,
+                         const Point<T>& pos3,
+                         const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
+
+    // TODO
+}
+
+template<typename T>
+void Triangle<T>::draw(const GraphicsContext& context)
+{
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    drawTriangle<T>(handle, pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    cairo_set_line_width(handle, lineWidth);
+    drawTriangle<T>(handle, pos1, pos2, pos3, true);
+}
+
+template<typename T>
+void Triangle<T>::draw()
 {
     notImplemented("Triangle::draw");
+}
+
+template<typename T>
+void Triangle<T>::drawOutline()
+{
+    notImplemented("Triangle::drawOutline");
 }
 
 template class Triangle<double>;
@@ -83,23 +204,31 @@ template class Triangle<ushort>;
 // Rectangle
 
 template<typename T>
-static void drawRectangle(const Rectangle<T>& rect, const bool outline)
+static void drawRectangle(cairo_t* const handle, const Rectangle<T>& rect, const bool outline)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
-
     // TODO
 }
 
 template<typename T>
-void Rectangle<T>::draw(const GraphicsContext&)
+void Rectangle<T>::draw(const GraphicsContext& context)
 {
-    drawRectangle(*this, false);
+    DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    drawRectangle(handle, *this, false);
 }
 
 template<typename T>
-void Rectangle<T>::drawOutline(const GraphicsContext&)
+void Rectangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
 {
-    drawRectangle(*this, true);
+    DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    cairo_set_line_width(handle, lineWidth);
+    drawRectangle(handle, *this, true);
 }
 
 template<typename T>

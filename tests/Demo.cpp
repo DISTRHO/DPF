@@ -14,10 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// #ifndef DGL_OPENGL
-// #error OpenGL build required for Demo
-// #endif
-
 #include "tests.hpp"
 
 #include "widgets/ExampleColorWidget.hpp"
@@ -90,36 +86,33 @@ protected:
         const GraphicsContext& context(getGraphicsContext());
         const int iconSize = bgIcon.getWidth();
 
-#if 0 /* TODO make generic */
-        glColor3f(0.027f, 0.027f, 0.027f);
-        Rectangle<uint>(0, 0, getSize()).draw();
+        Color(0.027f, 0.027f, 0.027f).setFor(context);
+        Rectangle<uint>(0, 0, getSize()).draw(context);
 
         bgIcon.setY(curPage*iconSize + curPage*3);
 
-        glColor3f(0.129f, 0.129f, 0.129f);
-        bgIcon.draw();
+        Color(0.129f, 0.129f, 0.129f).setFor(context);
+        bgIcon.draw(context);
 
-        glColor3f(0.184f, 0.184f, 0.184f);
-        bgIcon.drawOutline();
+        Color(0.184f, 0.184f, 0.184f).setFor(context);
+        bgIcon.drawOutline(context);
 
         if (curHover != curPage && curHover != -1)
         {
             Rectangle<int> rHover(1, curHover*iconSize + curHover*3, iconSize-2, iconSize-2);
 
-            glColor3f(0.071f, 0.071f, 0.071f);
-            rHover.draw();
+            Color(0.071f, 0.071f, 0.071f).setFor(context);
+            rHover.draw(context);
 
-            glColor3f(0.102f, 0.102f, 0.102f);
-            rHover.drawOutline();
+            Color(0.102f, 0.102f, 0.102f).setFor(context);
+            rHover.drawOutline(context);
         }
 
-        glLineWidth(2.0f);
-        glColor3f(0.184f, 0.184f, 0.184f);
-        lineSep.draw();
+        Color(0.184f, 0.184f, 0.184f).setFor(context);
+        lineSep.draw(context);
 
         // reset color
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-#endif
+        Color(1.0f, 1.0f, 1.0f, 1.0f).setFor(context, true);
 
         const int pad = iconSize/2 - DemoArtwork::ico1Width/2;
 
@@ -274,6 +267,7 @@ public:
 #endif
         wLeft.setAbsolutePos(2, 2);
 
+        setResizable(true);
         setSize(600, 500);
         setTitle("DGL Demo");
 
@@ -375,8 +369,6 @@ int main(int argc, char* argv[])
 
     if (argc > 1)
     {
-        // TODO images, text
-
         /**/ if (std::strcmp(argv[1], "color") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleColorStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "images") == 0)

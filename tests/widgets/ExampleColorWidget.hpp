@@ -20,6 +20,7 @@
 // ------------------------------------------------------
 // DGL Stuff
 
+#include "../../dgl/Color.hpp"
 #include "../../dgl/StandaloneWindow.hpp"
 #include "../../dgl/SubWidget.hpp"
 
@@ -108,15 +109,13 @@ protected:
     {
         const GraphicsContext& context(BaseWidget::getGraphicsContext());
 
-#if 0 /* TODO make generic */
         // paint bg color (in full size)
-        glColor3b(r, g, b);
+        Color(r, g, b).setFor(context);
         bgFull.draw(context);
 
         // paint inverted color (in 2/3 size)
-        glColor3b(100-r, 100-g, 100-b);
-        bgSmall.draw();
-#endif
+        Color(100-r, 100-g, 100-b).setFor(context);
+        bgSmall.draw(context);
     }
 
     void onResize(const ResizeEvent& ev) override
@@ -132,6 +131,7 @@ protected:
     }
 };
 
+// SubWidget
 template<> inline
 ExampleColorWidget<SubWidget>::ExampleColorWidget(Widget* const parent)
     : SubWidget(parent),

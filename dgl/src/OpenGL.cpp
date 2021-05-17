@@ -15,6 +15,7 @@
  */
 
 #include "../OpenGL.hpp"
+#include "../Color.hpp"
 #include "../ImageWidgets.hpp"
 
 #include "SubWidgetPrivateData.hpp"
@@ -25,21 +26,47 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// Color
+
+void Color::setFor(const GraphicsContext&, const bool includeAlpha)
+{
+    if (includeAlpha)
+        glColor4f(red, green, blue, alpha);
+    else
+        glColor3f(red, green, blue);
+}
+
+// -----------------------------------------------------------------------
 // Line
 
 template<typename T>
-void Line<T>::draw()
+static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fPosStart != fPosEnd,);
+    DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
 
     glBegin(GL_LINES);
 
     {
-        glVertex2d(fPosStart.fX, fPosStart.fY);
-        glVertex2d(fPosEnd.fX, fPosEnd.fY);
+        glVertex2d(posStart.getX(), posStart.getY());
+        glVertex2d(posEnd.getX(), posEnd.getY());
     }
 
     glEnd();
+}
+
+template<typename T>
+void Line<T>::draw(const GraphicsContext&, const T width)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
+
+    glLineWidth(width);
+    drawLine<T>(posStart, posEnd);
+}
+
+template<typename T>
+void Line<T>::draw()
+{
+    drawLine<T>(posStart, posEnd);
 }
 
 template class Line<double>;
@@ -53,24 +80,58 @@ template class Line<ushort>;
 // Circle
 
 template<typename T>
-void Circle<T>::_draw(const bool outline)
+static void drawCircle(const Point<T>& pos,
+                       const uint numSegments,
+                       const float size,
+                       const float sin,
+                       const float cos,
+                       const bool outline)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fNumSegments >= 3 && fSize > 0.0f,);
+    DISTRHO_SAFE_ASSERT_RETURN(numSegments >= 3 && size > 0.0f,);
 
-    double t, x = fSize, y = 0.0;
+    const T origx = pos.getX();
+    const T origy = pos.getY();
+    double t, x = size, y = 0.0;
 
     glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
 
-    for (uint i=0; i<fNumSegments; ++i)
+    for (uint i=0; i<numSegments; ++i)
     {
-        glVertex2d(x + fPos.fX, y + fPos.fY);
+        glVertex2d(x + origx, y + origy);
 
         t = x;
-        x = fCos * x - fSin * y;
-        y = fSin * t + fCos * y;
+        x = cos * x - sin * y;
+        y = sin * t + cos * y;
     }
 
     glEnd();
+}
+
+template<typename T>
+void Circle<T>::draw(const GraphicsContext&)
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(lineWidth);
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
+}
+
+template<typename T>
+void Circle<T>::draw()
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline()
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
 }
 
 template class Circle<double>;
@@ -84,19 +145,49 @@ template class Circle<ushort>;
 // Triangle
 
 template<typename T>
-void Triangle<T>::_draw(const bool outline)
+static void drawTriangle(const Point<T>& pos1,
+                         const Point<T>& pos2,
+                         const Point<T>& pos3,
+                         const bool outline)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fPos1 != fPos2 && fPos1 != fPos3,);
+    DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
 
     glBegin(outline ? GL_LINE_LOOP : GL_TRIANGLES);
 
     {
-        glVertex2d(fPos1.fX, fPos1.fY);
-        glVertex2d(fPos2.fX, fPos2.fY);
-        glVertex2d(fPos3.fX, fPos3.fY);
+        glVertex2d(pos1.getX(), pos1.getY());
+        glVertex2d(pos2.getX(), pos2.getY());
+        glVertex2d(pos3.getX(), pos3.getY());
     }
 
     glEnd();
+}
+
+template<typename T>
+void Triangle<T>::draw(const GraphicsContext&)
+{
+    drawTriangle<T>(pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(lineWidth);
+    drawTriangle<T>(pos1, pos2, pos3, true);
+}
+
+template<typename T>
+void Triangle<T>::draw()
+{
+    drawTriangle<T>(pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline()
+{
+    drawTriangle<T>(pos1, pos2, pos3, true);
 }
 
 template class Triangle<double>;
@@ -141,25 +232,28 @@ static void drawRectangle(const Rectangle<T>& rect, const bool outline)
 template<typename T>
 void Rectangle<T>::draw(const GraphicsContext&)
 {
-    drawRectangle(*this, false);
+    drawRectangle<T>(*this, false);
 }
 
 template<typename T>
-void Rectangle<T>::drawOutline(const GraphicsContext&)
+void Rectangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
 {
-    drawRectangle(*this, true);
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(lineWidth);
+    drawRectangle<T>(*this, true);
 }
 
 template<typename T>
 void Rectangle<T>::draw()
 {
-    drawRectangle(*this, true);
+    drawRectangle<T>(*this, false);
 }
 
 template<typename T>
 void Rectangle<T>::drawOutline()
 {
-    drawRectangle(*this, true);
+    drawRectangle<T>(*this, true);
 }
 
 template class Rectangle<double>;

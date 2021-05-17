@@ -114,7 +114,7 @@ public:
     bool operator!=(const Point<T>& pos) const noexcept;
 
 private:
-    T fX, fY;
+    T x, y;
     template<typename> friend class Line;
     template<typename> friend class Circle;
     template<typename> friend class Triangle;
@@ -348,13 +348,6 @@ public:
     */
     void moveBy(const Point<T>& pos) noexcept;
 
-#ifndef DPF_TEST_POINT_CPP
-   /**
-      Draw this line using the current OpenGL state.
-    */
-    void draw();
-#endif
-
    /**
       Return true if line is null (start and end pos are equal).
     */
@@ -365,12 +358,28 @@ public:
     */
     bool isNotNull() const noexcept;
 
+#ifndef DPF_TEST_POINT_CPP
+   /**
+      Draw this line using the provided graphics context, optionally specifying line width.
+    */
+    void draw(const GraphicsContext& context, T width = 1);
+#endif
+
     Line<T>& operator=(const Line<T>& line) noexcept;
     bool operator==(const Line<T>& line) const noexcept;
     bool operator!=(const Line<T>& line) const noexcept;
 
+#ifndef DPF_TEST_POINT_CPP
+   /**
+      Draw this line using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void draw();
+#endif
+
 private:
-    Point<T> fPosStart, fPosEnd;
+    Point<T> posStart, posEnd;
 };
 
 // -----------------------------------------------------------------------
@@ -464,21 +473,35 @@ public:
     */
     void setNumSegments(const uint num);
 
-#ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this circle using the current OpenGL state.
+      Draw this circle using the provided graphics context.
     */
-    void draw();
+    void draw(const GraphicsContext& context);
 
    /**
-      Draw lines (outline of this circle) using the current OpenGL state.
+      Draw lines (outline of this circle) using the provided graphics context, optionally specifying line width.
     */
-    void drawOutline();
-#endif
+    void drawOutline(const GraphicsContext& context, T lineWidth = 1);
 
     Circle<T>& operator=(const Circle<T>& cir) noexcept;
     bool operator==(const Circle<T>& cir) const noexcept;
     bool operator!=(const Circle<T>& cir) const noexcept;
+
+#ifndef DPF_TEST_POINT_CPP
+   /**
+      Draw this circle using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void draw();
+
+   /**
+      Draw lines (outline of this circle) using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void drawOutline();
+#endif
 
 private:
     Point<T> fPos;
@@ -487,9 +510,6 @@ private:
 
     // cached values
     float fTheta, fCos, fSin;
-
-   /** @internal */
-    void _draw(const bool outline);
 };
 
 // -----------------------------------------------------------------------
@@ -546,29 +566,38 @@ public:
     */
     bool isInvalid() const noexcept;
 
-#ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this triangle using the current OpenGL state.
+      Draw this triangle using the provided graphics context.
     */
-    void draw();
+    void draw(const GraphicsContext& context);
 
    /**
-      Draw lines (outline of this triangle) using the current OpenGL state.
+      Draw lines (outline of this triangle) using the provided graphics context, optionally specifying line width.
     */
-    void drawOutline();
-#endif
+    void drawOutline(const GraphicsContext& context, T lineWidth = 1);
 
     Triangle<T>& operator=(const Triangle<T>& tri) noexcept;
     bool operator==(const Triangle<T>& tri) const noexcept;
     bool operator!=(const Triangle<T>& tri) const noexcept;
 
-private:
-    Point<T> fPos1, fPos2, fPos3;
-
 #ifndef DPF_TEST_POINT_CPP
-   /** @internal */
-    void _draw(const bool outline);
+   /**
+      Draw this triangle using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void draw();
+
+   /**
+      Draw lines (outline of this triangle) using the current OpenGL state.
+      DEPRECATED please use draw(const GraphicsContext&) instead.
+    */
+    // TODO mark deprecated
+    void drawOutline();
 #endif
+
+private:
+    Point<T> pos1, pos2, pos3;
 };
 
 // -----------------------------------------------------------------------
@@ -761,9 +790,9 @@ public:
     void draw(const GraphicsContext& context);
 
    /**
-      Draw lines (outline of this rectangle) using the provided graphics context.
+      Draw lines (outline of this rectangle) using the provided graphics context, optionally specifying line width.
     */
-    void drawOutline(const GraphicsContext& context);
+    void drawOutline(const GraphicsContext& context, T lineWidth = 1);
 
     Rectangle<T>& operator=(const Rectangle<T>& rect) noexcept;
     Rectangle<T>& operator*=(double m) noexcept;

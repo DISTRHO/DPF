@@ -96,6 +96,11 @@ struct Color {
     void fixBounds() noexcept;
 
    /**
+      Set this color for use in the next drawing operation for the provided context.
+    */
+    void setFor(const GraphicsContext& context, bool includeAlpha = false);
+
+   /**
       @internal
       Needed for NanoVG compatibility.
     */

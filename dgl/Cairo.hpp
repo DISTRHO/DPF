@@ -130,7 +130,7 @@ protected:
 private:
    /**
       Widget display function.
-      Implemented internally to wrap begin/endFrame() automatically.
+      Implemented internally to pass context into the drawing function.
     */
     void onDisplay() override
     {

@@ -20,6 +20,7 @@
 // ------------------------------------------------------
 // DGL Stuff
 
+#include "../../dgl/Color.hpp"
 #include "../../dgl/SubWidget.hpp"
 #include "../../dgl/TopLevelWidget.hpp"
 
@@ -65,6 +66,8 @@ public:
 protected:
     void onDisplay() override
     {
+        const GraphicsContext& context(BaseWidget::getGraphicsContext());
+
         const uint width  = BaseWidget::getWidth();
         const uint height = BaseWidget::getHeight();
 
@@ -81,36 +84,30 @@ protected:
             // 1st
             r.setY(3);
 
-#if 0 /* TODO make generic */
             if (clicked[0+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
-#endif
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
             r.draw();
 
             // 2nd
             r.setY(3 + height/3);
 
-#if 0 /* TODO make generic */
             if (clicked[3+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
-#endif
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
             r.draw();
 
             // 3rd
             r.setY(3 + height*2/3);
 
-#if 0 /* TODO make generic */
             if (clicked[6+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
-#endif
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
             r.draw();
         }

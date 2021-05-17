@@ -20,6 +20,7 @@
 // ------------------------------------------------------
 // DGL Stuff
 
+#include "../../dgl/Color.hpp"
 #include "../../dgl/SubWidget.hpp"
 #include "../../dgl/TopLevelWidget.hpp"
 
@@ -60,40 +61,28 @@ public:
 protected:
     void onDisplay() override
     {
-#if 0
-        glEnable(GL_MULTISAMPLE);
-        glEnable(GL_LINE_SMOOTH);
-        glEnable(GL_SRC_ALPHA);
-        glEnable(GL_ONE_MINUS_SRC_ALPHA);
-        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-#endif
+        const GraphicsContext& context(BaseWidget::getGraphicsContext());
 
-#if 0 /* TODO make generic */
-        glLineWidth(1.0f);
-        glColor3f(0.302f, 0.337f, 0.361f);
-        bg.draw();
+        Color(0.302f, 0.337f, 0.361f).setFor(context);;
+        bg.draw(context);
 
-        glColor3f(0.235f, 0.271f, 0.294f);
-        rect.draw();
+        Color(0.235f, 0.271f, 0.294f).setFor(context);
+        rect.draw(context);
 
-        glColor3f(0.176f, 0.212f, 0.235f);
-        rect.drawOutline();
+        Color(0.176f, 0.212f, 0.235f).setFor(context);
+        rect.drawOutline(context, 1);
 
-        glColor3f(0.302f*2, 0.337f*2, 0.361f*2);
-        tri.draw();
+        Color(0.302f*2, 0.337f*2, 0.361f*2).setFor(context);
+        tri.draw(context);
 
-        glLineWidth(3.0f);
-        glColor3f(0.302f/2.0f, 0.337f/2.0f, 0.361f/2.0f);
-        tri.drawOutline();
+        Color(0.302f/2.0f, 0.337f/2.0f, 0.361f/2.0f).setFor(context);
+        tri.drawOutline(context, 3);
 
-        glColor3f(0.235f, 0.271f, 0.294f);
-        cir.draw();
+        Color(0.235f, 0.271f, 0.294f).setFor(context);
+        cir.draw(context);
 
-        glLineWidth(2.0f);
-        glColor3f(0.176f/4, 0.212f/4, 0.235f/4);
-        cir.drawOutline();
-#endif
+        Color(0.176f/4, 0.212f/4, 0.235f/4).setFor(context);
+        cir.drawOutline(context, 2);
     }
 
     void onResize(const ResizeEvent& ev) override
