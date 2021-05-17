@@ -17,7 +17,6 @@
 #ifndef DGL_IMAGE_HPP_INCLUDED
 #define DGL_IMAGE_HPP_INCLUDED
 
-#include "ImageBase.hpp"
 #include "OpenGL.hpp"
 
 START_NAMESPACE_DGL

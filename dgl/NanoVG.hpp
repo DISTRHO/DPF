@@ -878,38 +878,38 @@ private:
    new onNanoDisplay() needs to be overridden instead.
  */
 template <class BaseWidget>
-class NanoWidget : public BaseWidget,
-                   public NanoVG
+class NanoBaseWidget : public BaseWidget,
+                       public NanoVG
 {
 public:
    /**
       Constructor for a NanoSubWidget.
       @see CreateFlags
     */
-    explicit NanoWidget(Widget* const parentGroupWidget, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Widget* const parentGroupWidget, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a NanoTopLevelWidget.
       @see CreateFlags
     */
-    explicit NanoWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a NanoStandaloneWindow without parent window.
       @see CreateFlags
     */
-    explicit NanoWidget(Application& app, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Application& app, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a NanoStandaloneWindow with parent window.
       @see CreateFlags
     */
-    explicit NanoWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.
     */
-    virtual ~NanoWidget() {}
+    virtual ~NanoBaseWidget() {}
 
 protected:
    /**
@@ -937,12 +937,15 @@ private:
     void cancelFrame() {}
     void endFrame() {}
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoBaseWidget)
 };
 
-typedef NanoWidget<SubWidget> NanoSubWidget;
-typedef NanoWidget<TopLevelWidget> NanoTopLevelWidget;
-typedef NanoWidget<StandaloneWindow> NanoStandaloneWindow;
+typedef NanoBaseWidget<SubWidget> NanoSubWidget;
+typedef NanoBaseWidget<TopLevelWidget> NanoTopLevelWidget;
+typedef NanoBaseWidget<StandaloneWindow> NanoStandaloneWindow;
+
+DISTRHO_DEPRECATED_BY("NanoSubWidget")
+typedef NanoSubWidget NanoWidget;
 
 // -----------------------------------------------------------------------
 

@@ -213,6 +213,6 @@ END_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // Possible template data types
 
-template class NanoWidget<SubWidget>;
-template class NanoWidget<TopLevelWidget>;
-template class NanoWidget<StandaloneWindow>;
+// template class NanoBaseWidget<SubWidget>;
+// template class NanoBaseWidget<TopLevelWidget>;
+// template class NanoBaseWidget<StandaloneWindow>;

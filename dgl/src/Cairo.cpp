@@ -432,32 +432,32 @@ CairoImage& CairoImage::operator=(const CairoImage& image) noexcept
 // CairoSubWidget
 
 template <>
-CairoWidget<SubWidget>::CairoWidget(Widget* const parent)
+CairoBaseWidget<SubWidget>::CairoBaseWidget(Widget* const parent)
     : SubWidget(parent) {}
 
-template class CairoWidget<SubWidget>;
+template class CairoBaseWidget<SubWidget>;
 
 // -----------------------------------------------------------------------
 // CairoTopLevelWidget
 
 template <>
-CairoWidget<TopLevelWidget>::CairoWidget(Window& windowToMapTo)
+CairoBaseWidget<TopLevelWidget>::CairoBaseWidget(Window& windowToMapTo)
     : TopLevelWidget(windowToMapTo) {}
 
-template class CairoWidget<TopLevelWidget>;
+template class CairoBaseWidget<TopLevelWidget>;
 
 // -----------------------------------------------------------------------
 // CairoStandaloneWindow
 
 template <>
-CairoWidget<StandaloneWindow>::CairoWidget(Application& app)
+CairoBaseWidget<StandaloneWindow>::CairoBaseWidget(Application& app)
     : StandaloneWindow(app) {}
 
 template <>
-CairoWidget<StandaloneWindow>::CairoWidget(Application& app, Window& parentWindow)
+CairoBaseWidget<StandaloneWindow>::CairoBaseWidget(Application& app, Window& parentWindow)
     : StandaloneWindow(app, parentWindow) {}
 
-template class CairoWidget<StandaloneWindow>;
+template class CairoBaseWidget<StandaloneWindow>;
 
 // -----------------------------------------------------------------------
 

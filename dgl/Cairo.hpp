@@ -110,37 +110,37 @@ private:
    CairoWidget, handy class that takes graphics context during onDisplay and passes it in a new function.
  */
 template <class BaseWidget>
-class CairoWidget : public BaseWidget
+class CairoBaseWidget : public BaseWidget
 {
 public:
    /**
       Constructor for a CairoSubWidget.
       @see CreateFlags
     */
-    explicit CairoWidget(Widget* const parentGroupWidget);
+    explicit CairoBaseWidget(Widget* const parentGroupWidget);
 
    /**
       Constructor for a CairoTopLevelWidget.
       @see CreateFlags
     */
-    explicit CairoWidget(Window& windowToMapTo);
+    explicit CairoBaseWidget(Window& windowToMapTo);
 
    /**
       Constructor for a CairoStandaloneWindow without parent window.
       @see CreateFlags
     */
-    explicit CairoWidget(Application& app);
+    explicit CairoBaseWidget(Application& app);
 
    /**
       Constructor for a CairoStandaloneWindow with parent window.
       @see CreateFlags
     */
-    explicit CairoWidget(Application& app, Window& parentWindow);
+    explicit CairoBaseWidget(Application& app, Window& parentWindow);
 
    /**
       Destructor.
     */
-    virtual ~CairoWidget() {}
+    virtual ~CairoBaseWidget() {}
 
 protected:
    /**
@@ -160,12 +160,12 @@ private:
         onCairoDisplay(context);
     }
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoWidget);
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(CairoBaseWidget);
 };
 
-typedef CairoWidget<SubWidget> CairoSubWidget;
-typedef CairoWidget<TopLevelWidget> CairoTopLevelWidget;
-typedef CairoWidget<StandaloneWindow> CairoStandaloneWindow;
+typedef CairoBaseWidget<SubWidget> CairoSubWidget;
+typedef CairoBaseWidget<TopLevelWidget> CairoTopLevelWidget;
+typedef CairoBaseWidget<StandaloneWindow> CairoStandaloneWindow;
 
 // --------------------------------------------------------------------------------------------------------------------
 

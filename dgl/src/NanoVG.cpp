@@ -257,11 +257,6 @@ NanoVG::NanoVG(int flags)
       fInFrame(false),
       fIsSubWidget(false) {}
 
-// NanoVG::NanoVG(NanoWidget* groupWidget)
-//     : fContext(groupWidget->fContext),
-//       fInFrame(false),
-//       fIsSubWidget(true) {}
-
 NanoVG::~NanoVG()
 {
     DISTRHO_SAFE_ASSERT(! fInFrame);
@@ -946,39 +941,39 @@ bool NanoVG::loadSharedResources()
 // NanoSubWidget
 
 template <>
-NanoWidget<SubWidget>::NanoWidget(Widget* const parent, int flags)
+NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parent, int flags)
     : SubWidget(parent),
       NanoVG(flags)
 {
     pData->needsViewportScaling = true;
 }
 
-template class NanoWidget<SubWidget>;
+template class NanoBaseWidget<SubWidget>;
 
 // -----------------------------------------------------------------------
 // NanoTopLevelWidget
 
 template <>
-NanoWidget<TopLevelWidget>::NanoWidget(Window& windowToMapTo, int flags)
+NanoBaseWidget<TopLevelWidget>::NanoBaseWidget(Window& windowToMapTo, int flags)
     : TopLevelWidget(windowToMapTo),
       NanoVG(flags) {}
 
-template class NanoWidget<TopLevelWidget>;
+template class NanoBaseWidget<TopLevelWidget>;
 
 // -----------------------------------------------------------------------
 // NanoStandaloneWindow
 
 template <>
-NanoWidget<StandaloneWindow>::NanoWidget(Application& app, int flags)
+NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, int flags)
     : StandaloneWindow(app),
       NanoVG(flags) {}
 
 template <>
-NanoWidget<StandaloneWindow>::NanoWidget(Application& app, Window& parentWindow, int flags)
+NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, Window& parentWindow, int flags)
     : StandaloneWindow(app, parentWindow),
       NanoVG(flags) {}
 
-template class NanoWidget<StandaloneWindow>;
+template class NanoBaseWidget<StandaloneWindow>;
 
 // -----------------------------------------------------------------------
 
