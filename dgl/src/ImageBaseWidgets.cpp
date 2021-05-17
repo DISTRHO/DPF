@@ -57,7 +57,7 @@ void ImageBaseAboutWindow<ImageType>::setImage(const ImageType& image)
 template <class ImageType>
 bool ImageBaseAboutWindow<ImageType>::onKeyboard(const KeyboardEvent& ev)
 {
-    if (ev.press && ev.key == kCharEscape)
+    if (ev.press && ev.key == kKeyEscape)
     {
         close();
         return true;

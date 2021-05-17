@@ -63,6 +63,7 @@ void Line<T>::draw(const GraphicsContext&, const T width)
     drawLine<T>(posStart, posEnd);
 }
 
+// deprecated calls
 template<typename T>
 void Line<T>::draw()
 {
@@ -122,6 +123,7 @@ void Circle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
 }
 
+// deprecated calls
 template<typename T>
 void Circle<T>::draw()
 {
@@ -178,6 +180,7 @@ void Triangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     drawTriangle<T>(pos1, pos2, pos3, true);
 }
 
+// deprecated calls
 template<typename T>
 void Triangle<T>::draw()
 {
@@ -244,6 +247,7 @@ void Rectangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     drawRectangle<T>(*this, true);
 }
 
+// deprecated calls
 template<typename T>
 void Rectangle<T>::draw()
 {
@@ -312,6 +316,47 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
     glDisable(GL_TEXTURE_2D);
 }
 
+static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, const GLuint textureId, bool& setupCalled)
+{
+    if (textureId == 0 || image.isInvalid())
+        return;
+
+    if (! setupCalled)
+    {
+        setupOpenGLImage(image, textureId);
+        setupCalled = true;
+    }
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glBegin(GL_QUADS);
+
+    {
+        const int x = pos.getX();
+        const int y = pos.getY();
+        const int w = static_cast<int>(image.getWidth());
+        const int h = static_cast<int>(image.getHeight());
+
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(x, y);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(x+w, y);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(x+w, y+h);
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(x, y+h);
+    }
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
 OpenGLImage::OpenGLImage()
     : ImageBase(),
       textureId(0),
@@ -362,7 +407,7 @@ void OpenGLImage::loadFromMemory(const char* const rdata, const Size<uint>& s, c
 
 void OpenGLImage::drawAt(const GraphicsContext&, const Point<int>& pos)
 {
-    drawAt(pos);
+    drawOpenGLImage(*this, pos, textureId, setupCalled);
 }
 
 OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
@@ -374,55 +419,20 @@ OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
     return *this;
 }
 
+// deprecated calls
 void OpenGLImage::draw()
 {
-    drawAt(Point<int>(0, 0));
+    drawOpenGLImage(*this, Point<int>(0, 0), textureId, setupCalled);
 }
 
 void OpenGLImage::drawAt(const int x, const int y)
 {
-    drawAt(Point<int>(x, y));
+    drawOpenGLImage(*this, Point<int>(x, y), textureId, setupCalled);
 }
 
 void OpenGLImage::drawAt(const Point<int>& pos)
 {
-    if (textureId == 0 || isInvalid())
-        return;
-
-    if (! setupCalled)
-    {
-        setupOpenGLImage(*this, textureId);
-        setupCalled = true;
-    }
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    glBegin(GL_QUADS);
-
-    {
-        const int x = pos.getX();
-        const int y = pos.getY();
-        const int w = static_cast<int>(size.getWidth());
-        const int h = static_cast<int>(size.getHeight());
-
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2d(x, y);
-
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2d(x+w, y);
-
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2d(x+w, y+h);
-
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2d(x, y+h);
-    }
-
-    glEnd();
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
+    drawOpenGLImage(*this, pos, textureId, setupCalled);
 }
 
 // -----------------------------------------------------------------------
@@ -430,7 +440,8 @@ void OpenGLImage::drawAt(const Point<int>& pos)
 template <>
 void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
 {
-    img.draw();
+    const GraphicsContext& context(getGraphicsContext());
+    img.draw(context);
 }
 
 template class ImageBaseAboutWindow<OpenGLImage>;

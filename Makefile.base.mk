@@ -327,6 +327,10 @@ DGL_FLAGS   += -DHAVE_VULKAN
 VULKAN_FLAGS  = $(shell $(PKG_CONFIG) --cflags vulkan)
 VULKAN_LIBS   = $(shell $(PKG_CONFIG) --libs vulkan)
 
+ifneq ($(WINDOWS),true)
+VULKAN_LIBS  += -ldl
+endif
+
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

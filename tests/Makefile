@@ -4,9 +4,6 @@
 # Created by falkTX
 #
 
-# debug mode by default
-DEBUG=true
-
 include ../Makefile.base.mk
 
 # ---------------------------------------------------------------------------------------------------------------------

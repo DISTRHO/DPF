@@ -198,6 +198,8 @@ public:
     // FIXME this should not be needed
     inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format)
     { loadFromMemory(rawData, Size<uint>(w, h), format); };
+    inline void draw(const GraphicsContext& context)
+    { drawAt(context, Point<int>(0, 0)); };
     inline void drawAt(const GraphicsContext& context, int x, int y)
     { drawAt(context, Point<int>(x, y)); };
 

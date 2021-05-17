@@ -21,6 +21,12 @@
 #include "ImageBaseWidgets.hpp"
 #include "SubWidget.hpp"
 
+// TODO switch to use templated image type after merging widget-related PRs
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -240,5 +246,9 @@ private:
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+# pragma GCC diagnostic pop
+#endif
 
 #endif // DGL_IMAGE_WIDGETS_HPP_INCLUDED
