@@ -252,10 +252,10 @@ public:
         switch (value)
         {
         // convert some specials to normal keys
-        case  1: index = kCharBackspace; break;
-        case  6: index = kCharEscape;    break;
-        case  7: index = ' ';            break;
-        case 22: index = kCharDelete;    break;
+        case  1: index = kKeyBackspace; break;
+        case  6: index = kKeyEscape;    break;
+        case  7: index = ' ';           break;
+        case 22: index = kKeyDelete;    break;
 
         // handle rest of special keys
         case 40: special = kKeyF1;       break;
