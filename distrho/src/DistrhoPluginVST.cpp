@@ -30,14 +30,16 @@
 # define __cdecl
 #endif
 
-#define VESTIGE_HEADER
+#ifndef VESTIGE_HEADER
+# define VESTIGE_HEADER 1
+#endif
 #define VST_FORCE_DEPRECATED 0
 
 #include <clocale>
 #include <map>
 #include <string>
 
-#ifdef VESTIGE_HEADER
+#if VESTIGE_HEADER
 # include "vestige/vestige.h"
 #define effFlagsProgramChunks (1 << 5)
 #define effSetProgramName 4
