@@ -229,9 +229,9 @@ public:
     }
 # endif
 
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         using namespace DGL_NAMESPACE;
@@ -342,10 +342,10 @@ public:
             fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
             return 1;
         }
-# endif
 
         return 0;
     }
+# endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
     // -------------------------------------------------------------------
 
@@ -714,6 +714,7 @@ public:
                 fVstUI->idle();
             break;
 
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         case effEditKeyDown:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(true, index, value);
@@ -723,6 +724,7 @@ public:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(false, index, value);
             break;
+# endif
 #endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_STATE
