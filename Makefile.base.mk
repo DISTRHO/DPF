@@ -219,6 +219,7 @@ endif
 # Check for required libraries
 
 HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
+HAVE_VULKAN = $(shell $(PKG_CONFIG) --exists vulkan && echo true)
 
 ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_OPENGL = true
@@ -313,6 +314,18 @@ OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl x11)
 endif
 
 HAVE_CAIRO_OR_OPENGL = true
+
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set Vulkan specific stuff
+
+ifeq ($(HAVE_VULKAN),true)
+
+DGL_FLAGS   += -DHAVE_VULKAN
+
+VULKAN_FLAGS  = $(shell $(PKG_CONFIG) --cflags vulkan)
+VULKAN_LIBS   = $(shell $(PKG_CONFIG) --libs vulkan)
 
 endif
 

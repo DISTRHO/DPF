@@ -55,8 +55,8 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_opengl = $(OBJS_common) \
-	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/OpenGL.cpp.opengl.o \
+	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/NanoVG.cpp.opengl.o
 
 ifeq ($(MACOS),true)
@@ -68,7 +68,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_vulkan = $(OBJS_common) \
-	../build/dgl/Cairo.cpp.vulkan.o
+	../build/dgl/Vulkan.cpp.vulkan.o
 
 ifeq ($(MACOS),true)
 OBJS_vulkan += ../build/dgl/pugl.mm.vulkan.o
