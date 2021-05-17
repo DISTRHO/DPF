@@ -30,6 +30,7 @@ START_NAMESPACE_DGL
 
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
+#define PUGL_NO_INCLUDE_GLU_H
 #include "pugl-upstream/include/pugl/pugl.h"
 
 PUGL_BEGIN_DECLS
