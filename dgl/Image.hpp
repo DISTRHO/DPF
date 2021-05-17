@@ -22,7 +22,7 @@
 
 START_NAMESPACE_DGL
 
-// TODO mark as deprecated
+DISTRHO_DEPRECATED_BY("OpenGLImage")
 typedef OpenGLImage Image;
 
 END_NAMESPACE_DGL

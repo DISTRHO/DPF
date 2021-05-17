@@ -180,19 +180,19 @@ public:
    /**
       Draw this image at (0, 0) point using the current OpenGL context.
     */
-    // TODO mark as deprecated
+    DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
       Draw this image at (x, y) point using the current OpenGL context.
     */
-    // TODO mark as deprecated
+    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,int,int)")
     void drawAt(const int x, const int y);
 
    /**
       Draw this image at position @a pos using the current OpenGL context.
     */
-    // TODO mark as deprecated
+    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,const Point<int>&)")
     void drawAt(const Point<int>& pos);
 
     // FIXME this should not be needed
@@ -203,8 +203,9 @@ public:
 
    /**
       Get the image type.
+      DEPRECATED Type is always assumed to be GL_UNSIGNED_BYTE.
     */
-    // TODO mark as deprecated
+    DISTRHO_DEPRECATED
     GLenum getType() const noexcept { return GL_UNSIGNED_BYTE; }
 
 private:
@@ -216,7 +217,7 @@ private:
 
 typedef ImageBaseAboutWindow<OpenGLImage> OpenGLImageAboutWindow;
 
-// TODO deprecated
+DISTRHO_DEPRECATED_BY("OpenGLImageAboutWindow")
 typedef OpenGLImageAboutWindow ImageAboutWindow;
 
 // -----------------------------------------------------------------------

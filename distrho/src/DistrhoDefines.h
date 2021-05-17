@@ -75,6 +75,15 @@
 # define DISTRHO_DEPRECATED
 #endif
 
+/* Define DISTRHO_DEPRECATED_BY */
+#if defined(__clang__)
+# define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("", other)))
+#elif defined(__GNUC__)
+# define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("Use " other)))
+#else
+# define DISTRHO_DEPRECATED_BY(other) DISTRHO_DEPRECATED
+#endif
+
 /* Define DISTRHO_SAFE_ASSERT* */
 #define DISTRHO_SAFE_ASSERT(cond)               if (! (cond))   d_safe_assert(#cond, __FILE__, __LINE__);
 #define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }

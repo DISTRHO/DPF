@@ -276,9 +276,13 @@ public:
     void setTransientWinId(uintptr_t winId);
     */
 
-    // TODO deprecated
+    DISTRHO_DEPRECATED_BY("isIgnoringKeyRepeat()")
     inline bool getIgnoringKeyRepeat() const noexcept { return isIgnoringKeyRepeat(); }
-    inline double getScaling() const noexcept { return getScaling(); }
+
+    DISTRHO_DEPRECATED_BY("getScaleFactor()")
+    inline double getScaling() const noexcept { return getScaleFactor(); }
+
+    DISTRHO_DEPRECATED_BY("runAsModal(bool)")
     inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
 protected:

@@ -374,7 +374,7 @@ public:
       Draw this line using the current OpenGL state.
       DEPRECATED please use draw(const GraphicsContext&) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 #endif
 
@@ -492,14 +492,14 @@ public:
       Draw this circle using the current OpenGL state.
       DEPRECATED please use draw(const GraphicsContext&) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
       Draw lines (outline of this circle) using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      DEPRECATED please use draw(const GraphicsContext&,T) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
 #endif
 
@@ -585,14 +585,14 @@ public:
       Draw this triangle using the current OpenGL state.
       DEPRECATED please use draw(const GraphicsContext&) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
       Draw lines (outline of this triangle) using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      DEPRECATED please use draw(const GraphicsContext&,T) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
 #endif
 
@@ -804,14 +804,14 @@ public:
       Draw this rectangle using the current OpenGL state.
       DEPRECATED please use draw(const GraphicsContext&) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /** DEPRECATED
       Draw lines (outline of this rectangle) using the current OpenGL state.
-      DEPRECATED please use drawOutline(const GraphicsContext&) instead.
+      DEPRECATED please use drawOutline(const GraphicsContext&,T) instead.
     */
-    // TODO mark deprecated
+    DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
 
 private:

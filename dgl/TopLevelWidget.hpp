@@ -77,8 +77,10 @@ public:
                                 bool keepAspectRatio = false,
                                 bool automaticallyScale = false);
 
-    // TODO deprecated
+    DISTRHO_DEPRECATED_BY("getApp()")
     Application& getParentApp() const noexcept { return getApp(); }
+
+    DISTRHO_DEPRECATED_BY("getWindow()")
     Window& getParentWindow() const noexcept { return getWindow(); }
 
 private:
