@@ -35,6 +35,10 @@ typedef DGL_NAMESPACE::CairoImage DemoImage;
 #include "../dgl/OpenGL.hpp"
 typedef DGL_NAMESPACE::OpenGLImage DemoImage;
 #endif
+#ifdef DGL_VULKAN
+#include "../dgl/Vulkan.hpp"
+typedef DGL_NAMESPACE::VulkanImage DemoImage;
+#endif
 
 START_NAMESPACE_DGL
 
@@ -244,6 +248,9 @@ public:
 #endif
 #ifdef DGL_OPENGL
     static constexpr const char* const kExampleWidgetName = "Demo - OpenGL";
+#endif
+#ifdef DGL_VULKAN
+    static constexpr const char* const kExampleWidgetName = "Demo - Vulkan";
 #endif
 
     DemoWindow(Application& app)

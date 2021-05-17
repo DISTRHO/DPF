@@ -17,7 +17,7 @@
 #ifndef DGL_VULKAN_HPP_INCLUDED
 #define DGL_VULKAN_HPP_INCLUDED
 
-#include "Base.hpp"
+#include "ImageBase.hpp"
 
 #include <vulkan/vulkan_core.h>
 
@@ -30,6 +30,70 @@ START_NAMESPACE_DGL
  */
 struct VulkanGraphicsContext : GraphicsContext
 {
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+   Vulkan Image class.
+
+   TODO ...
+ */
+class VulkanImage : public ImageBase
+{
+public:
+   /**
+      Constructor for a null Image.
+    */
+    VulkanImage();
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    VulkanImage(const char* rawData, uint width, uint height, ImageFormat format);
+
+   /**
+      Constructor using raw image data.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    VulkanImage(const char* rawData, const Size<uint>& size, ImageFormat format);
+
+   /**
+      Constructor using another image data.
+    */
+    VulkanImage(const VulkanImage& image);
+
+   /**
+      Destructor.
+    */
+    ~VulkanImage() override;
+
+   /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromMemory(const char* rawData,
+                        const Size<uint>& size,
+                        ImageFormat format = kImageFormatBGRA) noexcept override;
+
+   /**
+      Draw this image at position @a pos using the graphics context @a context.
+    */
+    void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
+
+   /**
+      TODO document this.
+    */
+    VulkanImage& operator=(const VulkanImage& image) noexcept;
+
+    // FIXME this should not be needed
+    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format = kImageFormatBGRA)
+    { loadFromMemory(rawData, Size<uint>(w, h), format); };
+    inline void draw(const GraphicsContext& context)
+    { drawAt(context, Point<int>(0, 0)); };
+    inline void drawAt(const GraphicsContext& context, int x, int y)
+    { drawAt(context, Point<int>(x, y)); };
 };
 
 // --------------------------------------------------------------------------------------------------------------------

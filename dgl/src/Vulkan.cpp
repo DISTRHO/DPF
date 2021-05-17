@@ -165,6 +165,40 @@ template class Rectangle<short>;
 template class Rectangle<ushort>;
 
 // -----------------------------------------------------------------------
+// VulkanImage
+
+VulkanImage::VulkanImage()
+    : ImageBase() {}
+
+VulkanImage::VulkanImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
+    : ImageBase(rawData, width, height, format) {}
+
+VulkanImage::VulkanImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
+    : ImageBase(rawData, size, format) {}
+
+VulkanImage::VulkanImage(const VulkanImage& image)
+    : ImageBase(image.rawData, image.size, image.format) {}
+
+VulkanImage::~VulkanImage() {}
+
+void VulkanImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
+{
+    ImageBase::loadFromMemory(rdata, s, fmt);
+}
+
+void VulkanImage::drawAt(const GraphicsContext&, const Point<int>&)
+{
+}
+
+VulkanImage& VulkanImage::operator=(const VulkanImage& image) noexcept
+{
+    rawData = image.rawData;
+    size    = image.size;
+    format  = image.format;
+    return *this;
+}
+
+// -----------------------------------------------------------------------
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {

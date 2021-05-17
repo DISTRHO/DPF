@@ -27,6 +27,7 @@ TESTS   += Demo.opengl
 WTESTS  += Window.opengl
 endif
 ifeq ($(HAVE_VULKAN),true)
+TESTS   += Demo.vulkan
 WTESTS   = Window.vulkan
 endif
 
