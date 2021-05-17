@@ -358,13 +358,14 @@ void ImageKnob::onDisplay()
             const uint& v1(fIsImgVertical ? fImgLayerWidth : fImgLayerHeight);
             const uint& v2(fIsImgVertical ? fImgLayerHeight : fImgLayerWidth);
 
-            const uint layerDataSize   = v1 * v2 * ((fImage.getFormat() == GL_BGRA || fImage.getFormat() == GL_RGBA) ? 4 : 3);
+            const uint layerDataSize   = v1 * v2 * ((fImage.getFormat() == kImageFormatBGRA ||
+                                                     fImage.getFormat() == kImageFormatRGBA) ? 4 : 3);
             /*      */ imageDataOffset = layerDataSize * uint(normValue * float(fImgLayerCount-1));
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
                      static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
-                     fImage.getFormat(), fImage.getType(), fImage.getRawData() + imageDataOffset);
+                     asOpenGLImageFormat(fImage.getFormat()), GL_UNSIGNED_BYTE, fImage.getRawData() + imageDataOffset);
 
         fIsReady = true;
     }

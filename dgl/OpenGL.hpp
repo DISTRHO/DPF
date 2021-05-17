@@ -117,6 +117,28 @@ struct OpenGLGraphicsContext : GraphicsContext
 
 // -----------------------------------------------------------------------
 
+static inline
+GLenum asOpenGLImageFormat(const ImageFormat format)
+{
+    switch (format)
+    {
+    case kImageFormatNull:
+        break;
+    case kImageFormatBGR:
+        return GL_BGR;
+    case kImageFormatBGRA:
+        return GL_BGRA;
+    case kImageFormatRGB:
+        return GL_RGB;
+    case kImageFormatRGBA:
+        return GL_RGBA;
+    }
+
+    return 0x0;
+}
+
+// -----------------------------------------------------------------------
+
 /**
    OpenGL Image class.
 

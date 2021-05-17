@@ -270,25 +270,6 @@ template class Rectangle<ushort>;
 // -----------------------------------------------------------------------
 // OpenGLImage
 
-static GLenum asOpenGLImageFormat(const ImageFormat format)
-{
-    switch (format)
-    {
-    case kImageFormatNull:
-        break;
-    case kImageFormatBGR:
-        return GL_BGR;
-    case kImageFormatBGRA:
-        return GL_BGRA;
-    case kImageFormatRGB:
-        return GL_RGB;
-    case kImageFormatRGBA:
-        return GL_RGBA;
-    }
-
-    return 0x0;
-}
-
 static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 {
     DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
