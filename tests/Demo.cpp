@@ -239,7 +239,12 @@ class DemoWindow : public StandaloneWindow,
     static const int kSidebarWidth = 81;
 
 public:
-    static constexpr const char* const kExampleWidgetName = "Demo";
+#ifdef DGL_CAIRO
+    static constexpr const char* const kExampleWidgetName = "Demo - Cairo";
+#endif
+#ifdef DGL_OPENGL
+    static constexpr const char* const kExampleWidgetName = "Demo - OpenGL";
+#endif
 
     DemoWindow(Application& app)
         : StandaloneWindow(app),
