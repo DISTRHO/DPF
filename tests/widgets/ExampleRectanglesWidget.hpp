@@ -113,7 +113,7 @@ protected:
         }
     }
 
-    bool onMouse(const MouseEvent& ev) override
+    bool onMouse(const Widget::MouseEvent& ev) override
     {
         if (ev.button != 1 || ! ev.press)
             return false;

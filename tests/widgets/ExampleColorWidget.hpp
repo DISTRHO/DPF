@@ -118,7 +118,7 @@ protected:
         bgSmall.draw(context);
     }
 
-    void onResize(const ResizeEvent& ev) override
+    void onResize(const Widget::ResizeEvent& ev) override
     {
         const uint width  = ev.size.getWidth();
         const uint height = ev.size.getHeight();

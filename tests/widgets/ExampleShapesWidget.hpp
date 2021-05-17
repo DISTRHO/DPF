@@ -85,7 +85,7 @@ protected:
         cir.drawOutline(context, 2);
     }
 
-    void onResize(const ResizeEvent& ev) override
+    void onResize(const Widget::ResizeEvent& ev) override
     {
         const int width  = ev.size.getWidth();
         const int height = ev.size.getHeight();
