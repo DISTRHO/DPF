@@ -69,7 +69,7 @@ void Widget::PrivateData::displaySubWidgets(const uint width, const uint height,
 
 // -----------------------------------------------------------------------
 
-bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const Events::KeyboardEvent& ev)
+bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const KeyboardEvent& ev)
 {
     if (! visible)
         return false;
@@ -87,7 +87,7 @@ bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const Events::KeyboardE
     return false;
 }
 
-bool Widget::PrivateData::giveSpecialEventForSubWidgets(const Events::SpecialEvent& ev)
+bool Widget::PrivateData::giveSpecialEventForSubWidgets(const SpecialEvent& ev)
 {
     if (! visible)
         return false;
@@ -105,7 +105,7 @@ bool Widget::PrivateData::giveSpecialEventForSubWidgets(const Events::SpecialEve
     return false;
 }
 
-bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const Events::CharacterInputEvent& ev)
+bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev)
 {
     if (! visible)
         return false;
@@ -123,7 +123,7 @@ bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const Events::Cha
     return false;
 }
 
-bool Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
+bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
 {
     if (! visible)
         return false;
@@ -150,7 +150,7 @@ bool Widget::PrivateData::giveMouseEventForSubWidgets(Events::MouseEvent& ev)
     return false;
 }
 
-bool Widget::PrivateData::giveMotionEventForSubWidgets(Events::MotionEvent& ev)
+bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
 {
     if (! visible)
         return false;
@@ -177,7 +177,7 @@ bool Widget::PrivateData::giveMotionEventForSubWidgets(Events::MotionEvent& ev)
     return false;
 }
 
-bool Widget::PrivateData::giveScrollEventForSubWidgets(Events::ScrollEvent& ev)
+bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
 {
     if (! visible)
         return false;

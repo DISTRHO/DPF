@@ -18,7 +18,7 @@
 #define DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../Window.hpp"
-#include "../Events.hpp"
+#include "../Widget.hpp"
 #include "ApplicationPrivateData.hpp"
 
 #include "pugl.hpp"
@@ -149,12 +149,12 @@ struct Window::PrivateData : IdleCallback {
     void onPuglExpose();
     void onPuglClose();
     void onPuglFocus(bool focus, CrossingMode mode);
-    void onPuglKey(const Events::KeyboardEvent& ev);
-    void onPuglSpecial(const Events::SpecialEvent& ev);
-    void onPuglText(const Events::CharacterInputEvent& ev);
-    void onPuglMouse(const Events::MouseEvent& ev);
-    void onPuglMotion(const Events::MotionEvent& ev);
-    void onPuglScroll(const Events::ScrollEvent& ev);
+    void onPuglKey(const Widget::KeyboardEvent& ev);
+    void onPuglSpecial(const Widget::SpecialEvent& ev);
+    void onPuglText(const Widget::CharacterInputEvent& ev);
+    void onPuglMouse(const Widget::MouseEvent& ev);
+    void onPuglMotion(const Widget::MotionEvent& ev);
+    void onPuglScroll(const Widget::ScrollEvent& ev);
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);

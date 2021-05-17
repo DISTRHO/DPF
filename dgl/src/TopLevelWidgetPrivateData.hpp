@@ -33,12 +33,12 @@ struct TopLevelWidget::PrivateData {
     explicit PrivateData(TopLevelWidget* const s, Window& w);
     ~PrivateData();
     void display();
-    bool keyboardEvent(const Events::KeyboardEvent& ev);
-    bool specialEvent(const Events::SpecialEvent& ev);
-    bool characterInputEvent(const Events::CharacterInputEvent& ev);
-    bool mouseEvent(const Events::MouseEvent& ev);
-    bool motionEvent(const Events::MotionEvent& ev);
-    bool scrollEvent(const Events::ScrollEvent& ev);
+    bool keyboardEvent(const KeyboardEvent& ev);
+    bool specialEvent(const SpecialEvent& ev);
+    bool characterInputEvent(const CharacterInputEvent& ev);
+    bool mouseEvent(const MouseEvent& ev);
+    bool motionEvent(const MotionEvent& ev);
+    bool scrollEvent(const ScrollEvent& ev);
     void fallbackOnResize();
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)

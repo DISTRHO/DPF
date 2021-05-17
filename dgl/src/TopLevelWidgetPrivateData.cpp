@@ -37,7 +37,7 @@ TopLevelWidget::PrivateData::~PrivateData()
     window.pData->topLevelWidget = nullptr;
 }
 
-bool TopLevelWidget::PrivateData::keyboardEvent(const Events::KeyboardEvent& ev)
+bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)
 {
     // give top-level widget chance to catch this event first
     if (self->onKeyboard(ev))
@@ -47,7 +47,7 @@ bool TopLevelWidget::PrivateData::keyboardEvent(const Events::KeyboardEvent& ev)
     return selfw->pData->giveKeyboardEventForSubWidgets(ev);
 }
 
-bool TopLevelWidget::PrivateData::specialEvent(const Events::SpecialEvent& ev)
+bool TopLevelWidget::PrivateData::specialEvent(const SpecialEvent& ev)
 {
     // give top-level widget chance to catch this event first
     if (self->onSpecial(ev))
@@ -57,7 +57,7 @@ bool TopLevelWidget::PrivateData::specialEvent(const Events::SpecialEvent& ev)
     return selfw->pData->giveSpecialEventForSubWidgets(ev);
 }
 
-bool TopLevelWidget::PrivateData::characterInputEvent(const Events::CharacterInputEvent& ev)
+bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent& ev)
 {
     // give top-level widget chance to catch this event first
     if (self->onCharacterInput(ev))
@@ -67,9 +67,9 @@ bool TopLevelWidget::PrivateData::characterInputEvent(const Events::CharacterInp
     return selfw->pData->giveCharacterInputEventForSubWidgets(ev);
 }
 
-bool TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
+bool TopLevelWidget::PrivateData::mouseEvent(const MouseEvent& ev)
 {
-    Events::MouseEvent rev = ev;
+    MouseEvent rev = ev;
 
     if (window.pData->autoScaling)
     {
@@ -87,9 +87,9 @@ bool TopLevelWidget::PrivateData::mouseEvent(const Events::MouseEvent& ev)
     return selfw->pData->giveMouseEventForSubWidgets(rev);
 }
 
-bool TopLevelWidget::PrivateData::motionEvent(const Events::MotionEvent& ev)
+bool TopLevelWidget::PrivateData::motionEvent(const MotionEvent& ev)
 {
-    Events::MotionEvent rev = ev;
+    MotionEvent rev = ev;
 
     if (window.pData->autoScaling)
     {
@@ -107,9 +107,9 @@ bool TopLevelWidget::PrivateData::motionEvent(const Events::MotionEvent& ev)
     return selfw->pData->giveMotionEventForSubWidgets(rev);
 }
 
-bool TopLevelWidget::PrivateData::scrollEvent(const Events::ScrollEvent& ev)
+bool TopLevelWidget::PrivateData::scrollEvent(const ScrollEvent& ev)
 {
-    Events::ScrollEvent rev = ev;
+    ScrollEvent rev = ev;
 
     if (window.pData->autoScaling)
     {

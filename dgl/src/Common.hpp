@@ -42,7 +42,7 @@ struct ButtonImpl {
           self(s),
           callback_img(nullptr) {}
 
-    bool onMouse(const Events::MouseEvent& ev)
+    bool onMouse(const Widget::MouseEvent& ev)
     {
         // button was released, handle it now
         if (button != -1 && ! ev.press)
@@ -83,7 +83,7 @@ struct ButtonImpl {
         return false;
     }
 
-    bool onMotion(const Events::MotionEvent& ev)
+    bool onMotion(const Widget::MotionEvent& ev)
     {
         // keep pressed
         if (button != -1)

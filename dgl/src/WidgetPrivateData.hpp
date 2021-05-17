@@ -43,12 +43,12 @@ struct Widget::PrivateData {
 
     void displaySubWidgets(uint width, uint height, double autoScaleFactor);
 
-    bool giveKeyboardEventForSubWidgets(const Events::KeyboardEvent& ev);
-    bool giveSpecialEventForSubWidgets(const Events::SpecialEvent& ev);
-    bool giveCharacterInputEventForSubWidgets(const Events::CharacterInputEvent& ev);
-    bool giveMouseEventForSubWidgets(Events::MouseEvent& ev);
-    bool giveMotionEventForSubWidgets(Events::MotionEvent& ev);
-    bool giveScrollEventForSubWidgets(Events::ScrollEvent& ev);
+    bool giveKeyboardEventForSubWidgets(const KeyboardEvent& ev);
+    bool giveSpecialEventForSubWidgets(const SpecialEvent& ev);
+    bool giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev);
+    bool giveMouseEventForSubWidgets(MouseEvent& ev);
+    bool giveMotionEventForSubWidgets(MotionEvent& ev);
+    bool giveScrollEventForSubWidgets(ScrollEvent& ev);
 
     static TopLevelWidget* findTopLevelWidget(Widget* const w);
 
