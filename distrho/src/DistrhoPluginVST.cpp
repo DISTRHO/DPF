@@ -183,20 +183,8 @@ public:
               nullptr, // TODO file request
               nullptr,
               plugin->getInstancePointer(),
-              scaleFactor),
-          fShouldCaptureVstKeys(false)
+              scaleFactor)
     {
-        // FIXME only needed for windows?
-//#ifdef DISTRHO_OS_WINDOWS
-        char strBuf[0xff+1];
-        std::memset(strBuf, 0, sizeof(char)*(0xff+1));
-        hostCallback(audioMasterGetProductString, 0, 0, strBuf);
-        d_stdout("Plugin UI running in '%s'", strBuf);
-
-        // TODO make a white-list of needed hosts
-        if (/*std::strcmp(strBuf, "") == 0*/ true)
-            fShouldCaptureVstKeys = true;
-//#endif
     }
 
     // -------------------------------------------------------------------
@@ -243,9 +231,6 @@ public:
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        if (! fShouldCaptureVstKeys)
-            return 0;
-
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         using namespace DGL_NAMESPACE;
@@ -253,44 +238,87 @@ public:
         int special = 0;
         switch (value)
         {
-        // convert some specials to normal keys
+        // convert some VST special values to normal keys
         case  1: index = kKeyBackspace; break;
+        case  2: index = '\t';          break;
+        // 3 clear
+        case  4: index = '\r';          break;
         case  6: index = kKeyEscape;    break;
         case  7: index = ' ';           break;
+        //  8 next
+        // 17 select
+        // 18 print
+        case 19: index = '\n';          break;
+        // 20 snapshot
         case 22: index = kKeyDelete;    break;
+        // 23 help
+        case 57: index = '=';           break;
+
+        // numpad stuff follows
+        case 24: index = '0';           break;
+        case 25: index = '1';           break;
+        case 26: index = '2';           break;
+        case 27: index = '3';           break;
+        case 28: index = '4';           break;
+        case 29: index = '5';           break;
+        case 30: index = '6';           break;
+        case 31: index = '7';           break;
+        case 32: index = '8';           break;
+        case 33: index = '9';           break;
+        case 34: index = '*';           break;
+        case 35: index = '+';           break;
+        // 36 separator
+        case 37: index = '-';           break;
+        case 38: index = '.';           break;
+        case 39: index = '/';           break;
 
         // handle rest of special keys
-        case 40: special = kKeyF1;       break;
-        case 41: special = kKeyF2;       break;
-        case 42: special = kKeyF3;       break;
-        case 43: special = kKeyF4;       break;
-        case 44: special = kKeyF5;       break;
-        case 45: special = kKeyF6;       break;
-        case 46: special = kKeyF7;       break;
-        case 47: special = kKeyF8;       break;
-        case 48: special = kKeyF9;       break;
-        case 49: special = kKeyF10;      break;
-        case 50: special = kKeyF11;      break;
-        case 51: special = kKeyF12;      break;
-        case 11: special = kKeyLeft;     break;
-        case 12: special = kKeyUp;       break;
-        case 13: special = kKeyRight;    break;
-        case 14: special = kKeyDown;     break;
-        case 15: special = kKeyPageUp;   break;
-        case 16: special = kKeyPageDown; break;
-        case 10: special = kKeyHome;     break;
-        case  9: special = kKeyEnd;      break;
-        case 21: special = kKeyInsert;   break;
-        case 54: special = kKeyShift;    break;
-        case 55: special = kKeyControl;  break;
-        case 56: special = kKeyAlt;      break;
+        /* these special keys are missing:
+           - kKeySuper
+           - kKeyMenu
+           - kKeyCapsLock
+           - kKeyPrintScreen
+         */
+        case 40: special = kKeyF1;         break;
+        case 41: special = kKeyF2;         break;
+        case 42: special = kKeyF3;         break;
+        case 43: special = kKeyF4;         break;
+        case 44: special = kKeyF5;         break;
+        case 45: special = kKeyF6;         break;
+        case 46: special = kKeyF7;         break;
+        case 47: special = kKeyF8;         break;
+        case 48: special = kKeyF9;         break;
+        case 49: special = kKeyF10;        break;
+        case 50: special = kKeyF11;        break;
+        case 51: special = kKeyF12;        break;
+        case 11: special = kKeyLeft;       break;
+        case 12: special = kKeyUp;         break;
+        case 13: special = kKeyRight;      break;
+        case 14: special = kKeyDown;       break;
+        case 15: special = kKeyPageUp;     break;
+        case 16: special = kKeyPageDown;   break;
+        case 10: special = kKeyHome;       break;
+        case  9: special = kKeyEnd;        break;
+        case 21: special = kKeyInsert;     break;
+        case 54: special = kKeyShift;      break;
+        case 55: special = kKeyControl;    break;
+        case 56: special = kKeyAlt;        break;
+        case 52: special = kKeyNumLock;    break;
+        case 53: special = kKeyScrollLock; break;
+        case  5: special = kKeyPause;      break;
         }
 
         if (special != 0)
-            return fUI.handlePluginSpecial(down, static_cast<Key>(special));
+        {
+            fUI.handlePluginSpecial(down, static_cast<Key>(special));
+            return 1;
+        }
 
-        if (index >= 0)
-            return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
+        if (index > 0)
+        {
+            fUI.handlePluginKeyboard(down, static_cast<uint>(index));
+            return 1;
+        }
 # endif
 
         return 0;
@@ -360,7 +388,6 @@ private:
 
     // Plugin UI
     UIExporter fUI;
-    bool fShouldCaptureVstKeys;
 
     // -------------------------------------------------------------------
     // Callbacks

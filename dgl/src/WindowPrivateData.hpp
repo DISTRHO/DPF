@@ -70,19 +70,18 @@ struct Window::PrivateData : IdleCallback {
 
     /** Modal window setup. */
     struct Modal {
-//         PrivateData* self;   // pointer to PrivateData this Modal class belongs to
         PrivateData* parent; // parent of this window (so we can become modal)
         PrivateData* child;  // child window to give focus to when modal mode is enabled
         bool enabled;        // wherever modal mode is enabled (only possible if parent != null)
 
         /** Constructor for a non-modal window. */
-        Modal(PrivateData* const s) noexcept
+        Modal() noexcept
             : parent(nullptr),
               child(nullptr),
               enabled(false) {}
 
         /** Constructor for a modal window (with a parent). */
-        Modal(PrivateData* const s, PrivateData* const p) noexcept
+        Modal(PrivateData* const p) noexcept
             : parent(p),
               child(nullptr),
               enabled(false) {}

@@ -66,7 +66,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
-      modal(this)
+      modal()
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
@@ -85,7 +85,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
-      modal(this, ppData)
+      modal(ppData)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
@@ -108,7 +108,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
-      modal(this)
+      modal()
 {
     if (isEmbed)
     {
@@ -142,7 +142,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
-      modal(this)
+      modal()
 {
     if (isEmbed)
     {

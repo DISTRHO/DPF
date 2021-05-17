@@ -408,7 +408,7 @@ public:
         fChangingSize = false;
     }
 
-    void setWindowTransientWinId(const uintptr_t winId)
+    void setWindowTransientWinId(const uintptr_t /*winId*/)
     {
 #if 0 /* TODO */
         glWindow.setTransientWinId(winId);
@@ -422,18 +422,20 @@ public:
         return ! glApp.isQuiting();
     }
 
-    bool handlePluginKeyboard(const bool press, const uint key)
+    bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/)
     {
 #if 0 /* TODO */
         return glWindow.handlePluginKeyboard(press, key);
 #endif
+        return false;
     }
 
-    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key)
+    bool handlePluginSpecial(const bool /*press*/, const DGL_NAMESPACE::Key /*key*/)
     {
 #if 0 /* TODO */
         return glWindow.handlePluginSpecial(press, key);
 #endif
+        return false;
     }
 #endif
 
