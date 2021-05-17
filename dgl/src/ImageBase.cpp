@@ -24,7 +24,7 @@ START_NAMESPACE_DGL
 ImageBase::ImageBase()
     : rawData(nullptr),
       size(0, 0),
-      format(kImageFormatBGRA) {}
+      format(kImageFormatNull) {}
 
 ImageBase::ImageBase(const char* const rdata, const uint width, const uint height, const ImageFormat fmt)
   : rawData(rdata),

@@ -61,6 +61,9 @@ public:
     { return Window::addIdleCallback(callback, timerFrequencyInMs); }
     bool removeIdleCallback(IdleCallback* callback) { return Window::removeIdleCallback(callback); }
     const GraphicsContext& getGraphicsContext() const noexcept { return Window::getGraphicsContext(); }
+    void setGeometryConstraints(uint minimumWidth, uint minimumHeight,
+                                bool keepAspectRatio = false, bool automaticallyScale = false)
+    { Window::setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale); }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

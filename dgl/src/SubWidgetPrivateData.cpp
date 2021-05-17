@@ -26,6 +26,7 @@ SubWidget::PrivateData::PrivateData(SubWidget* const s, Widget* const pw)
       selfw((Widget*)s),
       parentWidget(pw),
       absolutePos(),
+      needsFullViewportForDrawing(false),
       needsViewportScaling(false)
 {
     parentWidget->pData->subWidgets.push_back(self);

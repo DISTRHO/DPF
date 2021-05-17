@@ -264,11 +264,14 @@ template class Rectangle<short>;
 template class Rectangle<ushort>;
 
 // -----------------------------------------------------------------------
+// OpenGLImage
 
 static GLenum asOpenGLImageFormat(const ImageFormat format)
 {
     switch (format)
     {
+    case kImageFormatNull:
+        break;
     case kImageFormatBGR:
         return GL_BGR;
     case kImageFormatBGRA:
@@ -279,7 +282,7 @@ static GLenum asOpenGLImageFormat(const ImageFormat format)
         return GL_RGBA;
     }
 
-    return GL_BGRA;
+    return 0x0;
 }
 
 static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
@@ -353,8 +356,8 @@ OpenGLImage::~OpenGLImage()
 
 void OpenGLImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
-    ImageBase::loadFromMemory(rdata, s, fmt);
     setupCalled = false;
+    ImageBase::loadFromMemory(rdata, s, fmt);
 }
 
 void OpenGLImage::drawAt(const GraphicsContext&, const Point<int>& pos)
@@ -456,7 +459,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     }
     else
     {
-        // only set viewport pos
+        // set viewport pos
         glViewport(absolutePos.getX() * autoScaleFactor,
                     -std::round((height * autoScaleFactor - height) + (absolutePos.getY() * autoScaleFactor)),
                     std::round(width * autoScaleFactor),
@@ -476,10 +479,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     self->onDisplay();
 
     if (needsDisableScissor)
-    {
         glDisable(GL_SCISSOR_TEST);
-        needsDisableScissor = false;
-    }
 
     selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
 }

@@ -73,13 +73,33 @@ public:
     ~CairoImage() override;
 
    /**
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
+    */
+    void loadFromMemory(const char* rawData,
+                        const Size<uint>& size,
+                        ImageFormat format = kImageFormatBGRA) noexcept override;
+
+   /**
       Draw this image at position @a pos using the graphics context @a context.
     */
     void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
 
+   /**
+      TODO document this.
+    */
+    CairoImage& operator=(const CairoImage& image) noexcept;
+
     // FIXME this should not be needed
+    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format)
+    { loadFromMemory(rawData, Size<uint>(w, h), format); };
     inline void drawAt(const GraphicsContext& context, int x, int y)
     { drawAt(context, Point<int>(x, y)); };
+
+private:
+    cairo_surface_t* surface;
+    uchar* surfacedata;
+    int* datarefcount;
 };
 
 // --------------------------------------------------------------------------------------------------------------------

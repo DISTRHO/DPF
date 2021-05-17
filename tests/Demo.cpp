@@ -67,17 +67,19 @@ public:
           curPage(0),
           curHover(-1)
     {
-#ifdef DGL_OPENGL
-        // for text
-        nvg.loadSharedResources();
-#endif
 
         using namespace DemoArtwork;
         img1.loadFromMemory(ico1Data, ico1Width, ico1Height, kImageFormatBGR);
         img2.loadFromMemory(ico2Data, ico2Width, ico2Height, kImageFormatBGR);
         img3.loadFromMemory(ico3Data, ico3Width, ico2Height, kImageFormatBGR);
         img4.loadFromMemory(ico4Data, ico4Width, ico4Height, kImageFormatBGR);
+
+#ifdef DGL_OPENGL
         img5.loadFromMemory(ico5Data, ico5Width, ico5Height, kImageFormatBGR);
+
+        // for text
+        nvg.loadSharedResources();
+#endif
     }
 
 protected:
@@ -120,9 +122,10 @@ protected:
         img2.drawAt(context, pad, pad + 3 + iconSize);
         img3.drawAt(context, pad, pad + 6 + iconSize*2);
         img4.drawAt(context, pad, pad + 9 + iconSize*3);
-        img5.drawAt(context, pad, pad + 12 + iconSize*4);
 
 #ifdef DGL_OPENGL
+        img5.drawAt(context, pad, pad + 12 + iconSize*4);
+
         // draw some text
         nvg.beginFrame(this);
 
@@ -267,10 +270,6 @@ public:
 #endif
         wLeft.setAbsolutePos(2, 2);
 
-        setResizable(true);
-        setSize(600, 500);
-        setTitle("DGL Demo");
-
         curPageChanged(0);
     }
 
@@ -350,6 +349,7 @@ template <class ExampleWidgetStandaloneWindow>
 void createAndShowExampleWidgetStandaloneWindow(Application& app)
 {
     ExampleWidgetStandaloneWindow swin(app);
+    swin.setResizable(true);
     swin.setSize(600, 500);
     swin.setTitle(ExampleWidgetStandaloneWindow::kExampleWidgetName);
     swin.show();

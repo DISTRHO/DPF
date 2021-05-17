@@ -92,20 +92,28 @@ static void drawCircle(cairo_t* const handle,
     const T origy = pos.getY();
     double t, x = size, y = 0.0;
 
+    // TODO use arc
     /*
-    glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
+    cairo_arc(handle, origx, origy, size, sin, cos);
+    */
 
-    for (uint i=0; i<numSegments; ++i)
+    cairo_move_to(handle, x + origx, y + origy);
+
+    for (uint i=1; i<numSegments; ++i)
     {
-        glVertex2d(x + origx, y + origy);
+        cairo_line_to(handle, x + origx, y + origy);
 
         t = x;
         x = cos * x - sin * y;
         y = sin * t + cos * y;
     }
 
-    glEnd();
-    */
+    cairo_line_to(handle, x + origx, y + origy);
+
+    if (outline)
+        cairo_stroke(handle);
+    else
+        cairo_fill(handle);
 }
 
 template<typename T>
@@ -158,7 +166,15 @@ static void drawTriangle(cairo_t* const handle,
 {
     DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
 
-    // TODO
+    cairo_move_to(handle, pos1.getX(), pos1.getY());
+    cairo_line_to(handle, pos2.getX(), pos2.getY());
+    cairo_line_to(handle, pos3.getX(), pos3.getY());
+    cairo_line_to(handle, pos1.getX(), pos1.getY());
+
+    if (outline)
+        cairo_stroke(handle);
+    else
+        cairo_fill(handle);
 }
 
 template<typename T>
@@ -206,7 +222,12 @@ template class Triangle<ushort>;
 template<typename T>
 static void drawRectangle(cairo_t* const handle, const Rectangle<T>& rect, const bool outline)
 {
-    // TODO
+    cairo_rectangle(handle, rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+
+    if (outline)
+        cairo_stroke(handle);
+    else
+        cairo_fill(handle);
 }
 
 template<typename T>
@@ -253,24 +274,152 @@ template class Rectangle<ushort>;
 // -----------------------------------------------------------------------
 // CairoImage
 
+static cairo_format_t asCairoImageFormat(const ImageFormat format)
+{
+    switch (format)
+    {
+    case kImageFormatNull:
+        break;
+    case kImageFormatBGR:
+    case kImageFormatRGB:
+        return CAIRO_FORMAT_RGB24;
+    case kImageFormatBGRA:
+    case kImageFormatRGBA:
+        return CAIRO_FORMAT_ARGB32;
+    }
+
+    return CAIRO_FORMAT_INVALID;
+}
+
 CairoImage::CairoImage()
-    : ImageBase() {}
+    : ImageBase(),
+      surface(nullptr),
+      surfacedata(nullptr),
+      datarefcount(nullptr) {}
 
 CairoImage::CairoImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
-    : ImageBase(rawData, width, height, format) {}
+    : ImageBase(rawData, width, height, format),
+      surface(nullptr),
+      surfacedata(nullptr),
+      datarefcount(nullptr)
+{
+    loadFromMemory(rawData, width, height, format);
+}
 
 CairoImage::CairoImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
-    : ImageBase(rawData, size, format) {}
+    : ImageBase(rawData, size, format),
+      surface(nullptr),
+      surfacedata(nullptr),
+      datarefcount(nullptr)
+{
+    loadFromMemory(rawData, size, format);
+}
 
 CairoImage::CairoImage(const CairoImage& image)
-    : ImageBase(image.rawData, image.size, image.format) {}
+    : ImageBase(image.rawData, image.size, image.format),
+      surface(cairo_surface_reference(image.surface)),
+      surfacedata(image.surfacedata),
+      datarefcount(image.datarefcount)
+{
+    if (datarefcount != nullptr)
+        ++(*datarefcount);
+}
 
 CairoImage::~CairoImage()
 {
+    cairo_surface_destroy(surface);
+
+    if (datarefcount != nullptr && --(*datarefcount) == 0)
+    {
+        std::free(surfacedata);
+        std::free(datarefcount);
+    }
 }
 
-void CairoImage::drawAt(const GraphicsContext&, const Point<int>&)
+void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
+    const cairo_format_t cairoformat = asCairoImageFormat(fmt);
+    const uint width  = s.getWidth();
+    const uint height = s.getHeight();
+    const int stride  = cairo_format_stride_for_width(cairoformat, width);
+
+    uchar* const newdata = (uchar*)std::malloc(width * height * stride * 4);
+    DISTRHO_SAFE_ASSERT_RETURN(newdata != nullptr,);
+
+    cairo_surface_t* const newsurface = cairo_image_surface_create_for_data(newdata, cairoformat, width, height, stride);
+    DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
+    DISTRHO_SAFE_ASSERT_RETURN(s.getWidth() == cairo_image_surface_get_width(newsurface),);
+    DISTRHO_SAFE_ASSERT_RETURN(s.getHeight() == cairo_image_surface_get_height(newsurface),);
+
+    cairo_surface_destroy(surface);
+
+    if (datarefcount != nullptr && --(*datarefcount) == 0)
+        std::free(surfacedata);
+    else
+        datarefcount = (int*)malloc(sizeof(*datarefcount));
+
+    surface = newsurface;
+    surfacedata = newdata;
+    *datarefcount = 1;
+
+    switch (fmt)
+    {
+    case kImageFormatNull:
+        break;
+    case kImageFormatBGR:
+        // BGR8 to CAIRO_FORMAT_RGB24
+        for (uint h = 0; h < height; ++h)
+        {
+            for (uint w = 0; w < width; ++w)
+            {
+                newdata[h*width*4+w*4+0] = rdata[h*width*3+w*3+0];
+                newdata[h*width*4+w*4+1] = rdata[h*width*3+w*3+1];
+                newdata[h*width*4+w*4+2] = rdata[h*width*3+w*3+2];
+                newdata[h*width*4+w*4+3] = 0;
+            }
+        }
+        break;
+    case kImageFormatBGRA:
+        // RGB8 to CAIRO_FORMAT_ARGB32
+        // TODO
+        break;
+    case kImageFormatRGB:
+        // RGB8 to CAIRO_FORMAT_RGB24
+        // TODO
+        break;
+    case kImageFormatRGBA:
+        // RGBA8 to CAIRO_FORMAT_ARGB32
+        // TODO
+        break;
+    }
+
+    ImageBase::loadFromMemory(rdata, s, fmt);
+}
+
+void CairoImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
+{
+    if (surface == nullptr)
+        return;
+
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+
+    cairo_set_source_surface(handle, surface, pos.getX(), pos.getY());
+    cairo_paint(handle);
+}
+
+CairoImage& CairoImage::operator=(const CairoImage& image) noexcept
+{
+    cairo_surface_t* newsurface = cairo_surface_reference(image.surface);
+    cairo_surface_destroy(surface);
+    surface = newsurface;
+    rawData = image.rawData;
+    size    = image.size;
+    format  = image.format;
+    surfacedata = image.surfacedata;
+    datarefcount = image.datarefcount;
+    if (datarefcount != nullptr)
+        ++(*datarefcount);
+    return *this;
 }
 
 // -----------------------------------------------------------------------
@@ -318,21 +467,47 @@ template class ImageBaseAboutWindow<CairoImage>;
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
-    /*
-    if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
-        return;
-    */
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(self->getGraphicsContext()).handle;
 
-    cairo_t* cr = static_cast<const CairoGraphicsContext&>(self->getGraphicsContext()).handle;
+    bool needsResetClip = false;
+
     cairo_matrix_t matrix;
-    cairo_get_matrix(cr, &matrix);
-    cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: autoScaling and cropping
+    cairo_get_matrix(handle, &matrix);
+
+    if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
+    {
+        // full viewport size
+        cairo_translate(handle, 0, 0);
+    }
+    else if (needsViewportScaling)
+    {
+        // limit viewport to widget bounds
+        // NOTE only used for nanovg for now, which is not relevant here
+        cairo_translate(handle, 0, 0);
+    }
+    else
+    {
+        // set viewport pos
+        cairo_translate(handle, absolutePos.getX(), absolutePos.getY());
+
+        // then cut the outer bounds
+        cairo_rectangle(handle,
+                        0,
+                        0,
+                        std::round(self->getWidth() * autoScaleFactor),
+                        std::round(self->getHeight() * autoScaleFactor));
+
+        cairo_clip(handle);
+        needsResetClip = true;
+    }
 
     // display widget
     self->onDisplay();
 
-    cairo_set_matrix(cr, &matrix);
+    if (needsResetClip)
+        cairo_reset_clip(handle);
+
+    cairo_set_matrix(handle, &matrix);
 
     selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
 }
@@ -347,6 +522,7 @@ void TopLevelWidget::PrivateData::display()
 
     const double autoScaleFactor = window.pData->autoScaleFactor;
 
+    // FIXME anything needed here?
 #if 0
     // full viewport size
     if (window.pData->autoScaling)

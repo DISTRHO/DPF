@@ -89,7 +89,7 @@ protected:
             else
                 Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
 
             // 2nd
             r.setY(3 + height/3);
@@ -99,7 +99,7 @@ protected:
             else
                 Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
 
             // 3rd
             r.setY(3 + height*2/3);
@@ -109,7 +109,7 @@ protected:
             else
                 Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
         }
     }
 
