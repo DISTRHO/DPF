@@ -183,7 +183,8 @@ public:
               nullptr, // TODO file request
               nullptr,
               plugin->getInstancePointer(),
-              scaleFactor)
+              scaleFactor),
+          fKeyboardModifiers(0)
     {
     }
 
@@ -275,7 +276,6 @@ public:
         // handle rest of special keys
         /* these special keys are missing:
            - kKeySuper
-           - kKeyMenu
            - kKeyCapsLock
            - kKeyPrintScreen
          */
@@ -303,20 +303,43 @@ public:
         case 54: special = kKeyShift;      break;
         case 55: special = kKeyControl;    break;
         case 56: special = kKeyAlt;        break;
+        case 58: special = kKeyMenu;       break;
         case 52: special = kKeyNumLock;    break;
         case 53: special = kKeyScrollLock; break;
         case  5: special = kKeyPause;      break;
         }
 
+        switch (special)
+        {
+        case kKeyShift:
+            if (down)
+                fKeyboardModifiers |= kModifierShift;
+            else
+                fKeyboardModifiers &= ~kModifierShift;
+            break;
+        case kKeyControl:
+            if (down)
+                fKeyboardModifiers |= kModifierControl;
+            else
+                fKeyboardModifiers &= ~kModifierControl;
+            break;
+        case kKeyAlt:
+            if (down)
+                fKeyboardModifiers |= kModifierAlt;
+            else
+                fKeyboardModifiers &= ~kModifierAlt;
+            break;
+        }
+
         if (special != 0)
         {
-            fUI.handlePluginSpecial(down, static_cast<Key>(special));
+            fUI.handlePluginSpecial(down, static_cast<Key>(special), fKeyboardModifiers);
             return 1;
         }
 
         if (index > 0)
         {
-            fUI.handlePluginKeyboard(down, static_cast<uint>(index));
+            fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
             return 1;
         }
 # endif
@@ -388,6 +411,7 @@ private:
 
     // Plugin UI
     UIExporter fUI;
+    uint16_t fKeyboardModifiers;
 
     // -------------------------------------------------------------------
     // Callbacks

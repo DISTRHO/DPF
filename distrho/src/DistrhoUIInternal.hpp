@@ -422,7 +422,7 @@ public:
         return ! glApp.isQuiting();
     }
 
-    bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/)
+    bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/, const uint16_t /*mods*/)
     {
 #if 0 /* TODO */
         return glWindow.handlePluginKeyboard(press, key);
@@ -430,7 +430,7 @@ public:
         return false;
     }
 
-    bool handlePluginSpecial(const bool /*press*/, const DGL_NAMESPACE::Key /*key*/)
+    bool handlePluginSpecial(const bool /*press*/, const DGL_NAMESPACE::Key /*key*/, const uint16_t /*mods*/)
     {
 #if 0 /* TODO */
         return glWindow.handlePluginSpecial(press, key);
