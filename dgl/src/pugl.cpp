@@ -182,9 +182,11 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 #ifdef DGL_OPENGL
     puglSetBackend(view, puglGlBackend());
 #endif
-#ifdef DGL_Vulkan
+#ifdef DGL_VULKAN
     puglSetBackend(view, puglVulkanBackend());
 #endif
+    if (view->backend == nullptr)
+        puglSetBackend(view, puglStubBackend());
 }
 
 // --------------------------------------------------------------------------------------------------------------------
