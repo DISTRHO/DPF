@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,7 +17,6 @@
 #include "DistrhoUI.hpp"
 #include "DemoWidgetBanner.hpp"
 #include "DemoWidgetClickable.hpp"
-#include "Window.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -42,9 +41,10 @@ public:
     {
     }
 
-    void onDisplay()
+protected:
+    void onCairoDisplay(const CairoGraphicsContext& context)
     {
-        cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+        cairo_t* cr = context.handle;
 
         cairo_set_source_rgb(cr, 1.0, 0.8, 0.5);
         cairo_paint(cr);
