@@ -318,6 +318,15 @@ HAVE_CAIRO_OR_OPENGL = true
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set Stub specific stuff
+
+ifeq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+HAVE_STUB = true
+else
+HAVE_STUB = $(HAVE_X11)
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set Vulkan specific stuff
 
 ifeq ($(HAVE_VULKAN),true)

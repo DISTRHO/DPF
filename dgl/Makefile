@@ -67,6 +67,16 @@ endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+OBJS_stub = $(OBJS_common)
+
+ifeq ($(MACOS),true)
+OBJS_stub += ../build/dgl/pugl.mm.o
+else
+OBJS_stub += ../build/dgl/pugl.cpp.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 OBJS_vulkan = $(OBJS_common) \
 	../build/dgl/Vulkan.cpp.vulkan.o
 
@@ -88,6 +98,10 @@ TARGETS += ../build/libdgl-opengl.a
 TARGETS += ../build/libdgl.a
 endif
 
+ifeq ($(HAVE_STUB),true)
+TARGETS += ../build/libdgl-stub.a
+endif
+
 ifeq ($(HAVE_VULKAN),true)
 TARGETS += ../build/libdgl-vulkan.a
 endif
@@ -107,6 +121,12 @@ all: $(TARGETS)
 ../build/libdgl-opengl.a: $(OBJS_opengl)
 	-@mkdir -p ../build
 	@echo "Creating libdgl-opengl.a"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
+../build/libdgl-stub.a: $(OBJS_stub)
+	-@mkdir -p ../build
+	@echo "Creating libdgl-stub.a"
 	$(SILENT)rm -f $@
 	$(SILENT)$(AR) crs $@ $^
 
@@ -187,6 +207,7 @@ debug:
 -include $(OBJS_common:%.o=%.d)
 -include $(OBJS_cairo:%.o=%.d)
 -include $(OBJS_opengl:%.o=%.d)
+-include $(OBJS_stub:%.o=%.d)
 -include $(OBJS_vulkan:%.o=%.d)
 
 # ---------------------------------------------------------------------------------------------------------------------
