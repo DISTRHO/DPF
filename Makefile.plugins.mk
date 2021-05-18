@@ -103,6 +103,18 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),vulkan)
+ifeq ($(HAVE_VULKAN),true)
+DGL_FLAGS += -DDGL_VULKAN
+DGL_FLAGS += $(VULKAN_FLAGS)
+DGL_LIBS  += $(VULKAN_LIBS)
+DGL_LIB    = $(DPF_PATH)/build/libdgl-vulkan.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 ifeq ($(UI_TYPE),external)
 DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
