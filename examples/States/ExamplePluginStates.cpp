@@ -279,7 +279,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
        /**
           This plugin does nothing, it just demonstrates state usage.
           So here we directly copy inputs over outputs, leaving the audio untouched.
-          We need to be careful in case the host re-uses the same buffer for both ins and outs.
+          We need to be careful in case the host re-uses the same buffer for both inputs and outputs.
         */
         if (outputs[0] != inputs[0])
             std::memcpy(outputs[0], inputs[0], sizeof(float)*frames);

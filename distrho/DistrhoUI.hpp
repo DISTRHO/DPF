@@ -20,6 +20,16 @@
 #include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
+#ifdef DGL_CAIRO
+# include "Cairo.hpp"
+#endif
+#ifdef DGL_OPENGL
+# include "OpenGL.hpp"
+#endif
+#ifdef DGL_VULKAN
+# include "Vulkan.hpp"
+#endif
+
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "../dgl/Base.hpp"
 # include "extra/ExternalWindow.hpp"
@@ -36,13 +46,6 @@ typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
 #else
 # include "../dgl/TopLevelWidget.hpp"
 typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
-#endif
-
-#ifdef DGL_CAIRO
-# include "Cairo.hpp"
-#endif
-#ifdef DGL_OPENGL
-# include "OpenGL.hpp"
 #endif
 
 START_NAMESPACE_DISTRHO
