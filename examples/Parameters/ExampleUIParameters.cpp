@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoUI.hpp"
+#include "Color.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -102,6 +103,8 @@ protected:
     */
     void onDisplay() override
     {
+        const GraphicsContext& context(getGraphicsContext());
+
         const uint width = getWidth();
         const uint height = getHeight();
         const uint minwh = std::min(width, height);
@@ -112,10 +115,10 @@ protected:
         // if host doesn't respect aspect-ratio but supports ui background, draw out-of-bounds color from it
         if (width != height && bgColor != 0)
         {
-            const GLubyte red   = (bgColor >> 24) & 0xff;
-            const GLubyte green = (bgColor >> 16) & 0xff;
-            const GLubyte blue  = (bgColor >>  8) & 0xff;
-            glColor3ub(red, green, blue);
+            const int red   = (bgColor >> 24) & 0xff;
+            const int green = (bgColor >> 16) & 0xff;
+            const int blue  = (bgColor >>  8) & 0xff;
+            Color(red, green, blue).setFor(context);
 
             if (width > height)
             {
@@ -128,7 +131,7 @@ protected:
                 r.setSize(width, height-width);
             }
 
-            r.draw();
+            r.draw(context);
         }
 
         r.setWidth(minwh/3 - 6);
@@ -143,31 +146,31 @@ protected:
             r.setY(3);
 
             if (fParamGrid[0+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
 
             // middle
             r.setY(3 + minwh/3);
 
             if (fParamGrid[3+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
 
             // bottom
             r.setY(3 + minwh*2/3);
 
             if (fParamGrid[6+i])
-                glColor3f(0.8f, 0.5f, 0.3f);
+                Color(0.8f, 0.5f, 0.3f).setFor(context);
             else
-                glColor3f(0.3f, 0.5f, 0.8f);
+                Color(0.3f, 0.5f, 0.8f).setFor(context);
 
-            r.draw();
+            r.draw(context);
         }
     }
 
