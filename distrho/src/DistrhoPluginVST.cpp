@@ -130,9 +130,11 @@ private:
 
 // -----------------------------------------------------------------------
 
-class ParameterCheckHelper
+struct ParameterCheckHelper
 {
-public:
+    bool* parameterChecks;
+    float* parameterValues;
+
     ParameterCheckHelper()
         : parameterChecks(nullptr),
           parameterValues(nullptr) {}
@@ -150,9 +152,6 @@ public:
             parameterValues = nullptr;
         }
     }
-
-    bool*  parameterChecks;
-    float* parameterValues;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
@@ -350,16 +349,16 @@ public:
     // -------------------------------------------------------------------
 
 protected:
-    intptr_t hostCallback(const int32_t opcode,
-                          const int32_t index = 0,
-                          const intptr_t value = 0,
-                          void* const ptr = nullptr,
-                          const float opt = 0.0f)
+    inline intptr_t hostCallback(const int32_t opcode,
+                                 const int32_t index = 0,
+                                 const intptr_t value = 0,
+                                 void* const ptr = nullptr,
+                                 const float opt = 0.0f) const
     {
         return fAudioMaster(fEffect, opcode, index, value, ptr, opt);
     }
 
-    void editParameter(const uint32_t index, const bool started)
+    void editParameter(const uint32_t index, const bool started) const
     {
         hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
     }
@@ -708,7 +707,6 @@ public:
             }
             break;
 
-        //case effIdle:
         case effEditIdle:
             if (fVstUI != nullptr)
                 fVstUI->idle();
