@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['size',['size',['../structMidiEvent.html#a48b420a6dbca6502113b92c336a3041e',1,'MidiEvent']]],
-  ['symbol',['symbol',['../structAudioPort.html#af2bda30f97a1b63cbeb9f11f718d3d30',1,'AudioPort::symbol()'],['../structParameter.html#a3e546efd8dbd0d77351208b670719468',1,'Parameter::symbol()']]]
+  ['ranges_808',['ranges',['../structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db',1,'Parameter']]],
+  ['restrictedmode_809',['restrictedMode',['../structParameterEnumerationValues.html#a014ebcacbe68c3f77f2f8ac9ffe3cd6f',1,'ParameterEnumerationValues']]]
 ];

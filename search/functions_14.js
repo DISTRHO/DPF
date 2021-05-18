@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['widget',['Widget',['../classWidget.html#a556f58c8ff8a80ae22cc4df7e5f8218c',1,'Widget::Widget(Window &amp;parent)'],['../classWidget.html#a9c9ae5d2378d0c917cce894745f263cc',1,'Widget::Widget(Widget *groupWidget)']]],
-  ['writemidievent',['writeMidiEvent',['../classPlugin.html#a0467eef817ac130cbbe1c0fbe09660c6',1,'Plugin']]]
+  ['vstguistandalonewindow_756',['VstGuiStandaloneWindow',['../classVstGuiStandaloneWindow.html#a42194a31b6ebd9b12fee1460bca2df79',1,'VstGuiStandaloneWindow']]],
+  ['vulkanimage_757',['VulkanImage',['../classVulkanImage.html#aaa625bb7cbad92de916c0d6877033a42',1,'VulkanImage::VulkanImage()'],['../classVulkanImage.html#a9a3d03e892ee950aa291811e54845568',1,'VulkanImage::VulkanImage(const char *rawData, uint width, uint height, ImageFormat format)'],['../classVulkanImage.html#aa1af6c288a92b400c0f99dd62b709443',1,'VulkanImage::VulkanImage(const char *rawData, const Size&lt; uint &gt; &amp;size, ImageFormat format)'],['../classVulkanImage.html#a5821aca1ae6e78a7e7c9814a42f55f35',1,'VulkanImage::VulkanImage(const VulkanImage &amp;image)']]]
 ];
