@@ -78,12 +78,26 @@ public:
    /**
       Get the color used for UI background (i.e. window color) in RGBA format.
       Returns 0 by default, in case of error or lack of host support.
+
+      The following example code can be use to extract individual colors:
+      ```
+      const int red   = (bgColor >> 24) & 0xff;
+      const int green = (bgColor >> 16) & 0xff;
+      const int blue  = (bgColor >>  8) & 0xff;
+      ```
     */
     uint getBackgroundColor() const noexcept;
 
    /**
       Get the color used for UI foreground (i.e. text color) in RGBA format.
       Returns 0xffffffff by default, in case of error or lack of host support.
+
+      The following example code can be use to extract individual colors:
+      ```
+      const int red   = (fgColor >> 24) & 0xff;
+      const int green = (fgColor >> 16) & 0xff;
+      const int blue  = (fgColor >>  8) & 0xff;
+      ```
     */
     uint getForegroundColor() const noexcept;
 
