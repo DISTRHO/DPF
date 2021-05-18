@@ -444,6 +444,7 @@ void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
 }
 
 template class ImageBaseAboutWindow<OpenGLImage>;
+template class ImageBaseButton<OpenGLImage>;
 
 // -----------------------------------------------------------------------
 

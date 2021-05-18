@@ -17,12 +17,13 @@
 #ifndef DGL_COMMON_HPP_INCLUDED
 #define DGL_COMMON_HPP_INCLUDED
 
-#include "../ImageWidgets.hpp"
+#include "../ImageBaseWidgets.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+template <class ImageType>
 struct ButtonImpl {
     enum State {
         kStateNormal = 0,
@@ -32,11 +33,11 @@ struct ButtonImpl {
 
     int button;
     int state;
-    SubWidget* self;
+    ImageBaseButton<ImageType>* const self;
 
-    ImageButton::Callback* callback_img;
+    typename ImageBaseButton<ImageType>::Callback* callback_img;
 
-    ButtonImpl(SubWidget* const s) noexcept
+    explicit ButtonImpl(ImageBaseButton<ImageType>* const s) noexcept
         : button(-1),
           state(kStateNormal),
           self(s),
@@ -66,7 +67,7 @@ struct ButtonImpl {
             self->repaint();
 
             if (callback_img != nullptr)
-                callback_img->imageButtonClicked((ImageButton*)self, button2);
+                callback_img->imageButtonClicked(self, button2);
 
             return true;
         }

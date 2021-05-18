@@ -170,6 +170,7 @@ typedef CairoBaseWidget<StandaloneWindow> CairoStandaloneWindow;
 // --------------------------------------------------------------------------------------------------------------------
 
 typedef ImageBaseAboutWindow<CairoImage> CairoImageAboutWindow;
+typedef ImageBaseButton<CairoImage> CairoImageButton;
 
 // --------------------------------------------------------------------------------------------------------------------
 

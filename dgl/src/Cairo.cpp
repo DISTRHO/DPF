@@ -16,6 +16,7 @@
 
 #include "../Cairo.hpp"
 #include "../Color.hpp"
+#include "../ImageBaseWidgets.hpp"
 
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
@@ -468,6 +469,7 @@ void ImageBaseAboutWindow<CairoImage>::onDisplay()
 }
 
 template class ImageBaseAboutWindow<CairoImage>;
+template class ImageBaseButton<CairoImage>;
 
 // -----------------------------------------------------------------------
 

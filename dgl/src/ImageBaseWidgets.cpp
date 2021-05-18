@@ -15,6 +15,7 @@
  */
 
 #include "../ImageBaseWidgets.hpp"
+#include "Common.hpp"
 
 START_NAMESPACE_DGL
 
@@ -84,6 +85,97 @@ void ImageBaseAboutWindow<ImageType>::onReshape(uint width, uint height)
     // FIXME needed?
     TopLevelWidget::setSize(width, height);
     StandaloneWindow::onReshape(width, height);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+struct ImageBaseButton<ImageType>::PrivateData {
+    ButtonImpl<ImageType> impl;
+    ImageType imageNormal;
+    ImageType imageHover;
+    ImageType imageDown;
+
+    PrivateData(ImageBaseButton<ImageType>* const s, const ImageType& normal, const ImageType& hover, const ImageType& down)
+        : impl(s),
+          imageNormal(normal),
+          imageHover(hover),
+          imageDown(down) {}
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& image)
+    : SubWidget(parentWidget),
+      pData(new PrivateData(this, image, image, image))
+{
+    setSize(image.getSize());
+}
+
+template <class ImageType>
+ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageDown)
+    : SubWidget(parentWidget),
+      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
+{
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
+
+    setSize(imageNormal.getSize());
+}
+
+template <class ImageType>
+ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageHover, const ImageType& imageDown)
+    : SubWidget(parentWidget),
+      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
+{
+    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
+
+    setSize(imageNormal.getSize());
+}
+
+template <class ImageType>
+ImageBaseButton<ImageType>::~ImageBaseButton()
+{
+    delete pData;
+}
+
+template <class ImageType>
+void ImageBaseButton<ImageType>::setCallback(Callback* callback) noexcept
+{
+    pData->impl.callback_img = callback;
+}
+
+template <class ImageType>
+void ImageBaseButton<ImageType>::onDisplay()
+{
+    const GraphicsContext& context(getGraphicsContext());
+
+    switch (pData->impl.state)
+    {
+    case ButtonImpl<ImageType>::kStateDown:
+        pData->imageDown.draw(context);
+        break;
+    case ButtonImpl<ImageType>::kStateHover:
+        pData->imageHover.draw(context);
+        break;
+    default:
+        pData->imageNormal.draw(context);
+        break;
+    }
+}
+
+template <class ImageType>
+bool ImageBaseButton<ImageType>::onMouse(const MouseEvent& ev)
+{
+    return pData->impl.onMouse(ev);
+}
+
+template <class ImageType>
+bool ImageBaseButton<ImageType>::onMotion(const MotionEvent& ev)
+{
+    return pData->impl.onMotion(ev);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

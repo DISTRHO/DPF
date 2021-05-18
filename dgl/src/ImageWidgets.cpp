@@ -14,10 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Image.hpp"
-#include "../ImageBaseWidgets.hpp"
-
-#include "Common.hpp"
+#include "../ImageWidgets.hpp"
 #include "WidgetPrivateData.hpp"
 
 // TODO make this code more generic and move GL specific bits to OpenGL.cpp
@@ -30,86 +27,6 @@
 #endif
 
 START_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-
-struct ImageButton::PrivateData {
-    ButtonImpl impl;
-    Image imageNormal;
-    Image imageHover;
-    Image imageDown;
-
-    PrivateData(SubWidget* const s, const Image& normal, const Image& hover, const Image& down)
-        : impl(s),
-          imageNormal(normal),
-          imageHover(hover),
-          imageDown(down) {}
-
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
-};
-
-// -----------------------------------------------------------------------
-
-ImageButton::ImageButton(Widget* const parentWidget, const Image& image)
-    : SubWidget(parentWidget),
-      pData(new PrivateData(this, image, image, image))
-{
-    setSize(image.getSize());
-}
-
-ImageButton::ImageButton(Widget* const parentWidget, const Image& imageNormal, const Image& imageDown)
-    : SubWidget(parentWidget),
-      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
-{
-    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
-
-    setSize(imageNormal.getSize());
-}
-
-ImageButton::ImageButton(Widget* const parentWidget, const Image& imageNormal, const Image& imageHover, const Image& imageDown)
-    : SubWidget(parentWidget),
-      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
-{
-    DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
-
-    setSize(imageNormal.getSize());
-}
-
-ImageButton::~ImageButton()
-{
-    delete pData;
-}
-
-void ImageButton::setCallback(Callback* callback) noexcept
-{
-    pData->impl.callback_img = callback;
-}
-
-void ImageButton::onDisplay()
-{
-    switch (pData->impl.state)
-    {
-    case ButtonImpl::kStateDown:
-        pData->imageDown.draw();
-        break;
-    case ButtonImpl::kStateHover:
-        pData->imageHover.draw();
-        break;
-    default:
-        pData->imageNormal.draw();
-        break;
-    }
-}
-
-bool ImageButton::onMouse(const MouseEvent& ev)
-{
-    return pData->impl.onMouse(ev);
-}
-
-bool ImageButton::onMotion(const MotionEvent& ev)
-{
-    return pData->impl.onMotion(ev);
-}
 
 // -----------------------------------------------------------------------
 

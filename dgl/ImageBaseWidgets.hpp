@@ -18,6 +18,7 @@
 #define DGL_IMAGE_BASE_WIDGETS_HPP_INCLUDED
 
 #include "StandaloneWindow.hpp"
+#include "SubWidget.hpp"
 
 START_NAMESPACE_DGL
 
@@ -44,6 +45,39 @@ private:
     ImageType img;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageBaseAboutWindow)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+class ImageBaseButton : public SubWidget
+{
+public:
+    class Callback
+    {
+    public:
+        virtual ~Callback() {}
+        virtual void imageButtonClicked(ImageBaseButton* imageButton, int button) = 0;
+    };
+
+    explicit ImageBaseButton(Widget* parentWidget, const ImageType& image);
+    explicit ImageBaseButton(Widget* parentWidget, const ImageType& imageNormal, const ImageType& imageDown);
+    explicit ImageBaseButton(Widget* parentWidget, const ImageType& imageNormal, const ImageType& imageHover, const ImageType& imageDown);
+
+    ~ImageBaseButton() override;
+
+    void setCallback(Callback* callback) noexcept;
+
+protected:
+     void onDisplay() override;
+     bool onMouse(const MouseEvent&) override;
+     bool onMotion(const MotionEvent&) override;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageBaseButton)
 };
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -31,38 +31,6 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class ImageButton : public SubWidget
-{
-public:
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void imageButtonClicked(ImageButton* imageButton, int button) = 0;
-    };
-
-    explicit ImageButton(Widget* parentWidget, const Image& image);
-    explicit ImageButton(Widget* parentWidget, const Image& imageNormal, const Image& imageDown);
-    explicit ImageButton(Widget* parentWidget, const Image& imageNormal, const Image& imageHover, const Image& imageDown);
-
-    ~ImageButton() override;
-
-    void setCallback(Callback* callback) noexcept;
-
-protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-     bool onMotion(const MotionEvent&) override;
-
-private:
-    struct PrivateData;
-    PrivateData* const pData;
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageButton)
-};
-
-// -----------------------------------------------------------------------
-
 class ImageKnob : public SubWidget
 {
 public:
