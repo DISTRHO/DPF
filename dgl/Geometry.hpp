@@ -371,8 +371,8 @@ public:
 
 #ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this line using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      Draw this line using the current OpenGL state.@n
+      DEPRECATED Please use draw(const GraphicsContext&) instead.
     */
     DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
@@ -489,15 +489,15 @@ public:
 
 #ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this circle using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      Draw this circle using the current OpenGL state.@n
+      DEPRECATED Please use draw(const GraphicsContext&) instead.
     */
     DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
-      Draw lines (outline of this circle) using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&,T) instead.
+      Draw lines (outline of this circle) using the current OpenGL state.@n
+      DEPRECATED Please use drawOutline(const GraphicsContext&,T) instead.
     */
     DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
@@ -582,15 +582,15 @@ public:
 
 #ifndef DPF_TEST_POINT_CPP
    /**
-      Draw this triangle using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      Draw this triangle using the current OpenGL state.@n
+      DEPRECATED Please use draw(const GraphicsContext&) instead.
     */
     DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
    /**
-      Draw lines (outline of this triangle) using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&,T) instead.
+      Draw lines (outline of this triangle) using the current OpenGL state.@n
+      DEPRECATED Please use drawOutline(const GraphicsContext&,T) instead.
     */
     DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
@@ -801,15 +801,15 @@ public:
     bool operator!=(const Rectangle<T>& size) const noexcept;
 
    /**
-      Draw this rectangle using the current OpenGL state.
-      DEPRECATED please use draw(const GraphicsContext&) instead.
+      Draw this rectangle using the current OpenGL state.@n
+      DEPRECATED Please use draw(const GraphicsContext&) instead.
     */
     DISTRHO_DEPRECATED_BY("draw(const GraphicsContext&)")
     void draw();
 
-   /** DEPRECATED
-      Draw lines (outline of this rectangle) using the current OpenGL state.
-      DEPRECATED please use drawOutline(const GraphicsContext&,T) instead.
+   /**
+      Draw lines (outline of this rectangle) using the current OpenGL state.@n
+      DEPRECATED Please use drawOutline(const GraphicsContext&,T) instead.
     */
     DISTRHO_DEPRECATED_BY("drawOutline(const GraphicsContext&)")
     void drawOutline();
