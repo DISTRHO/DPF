@@ -17,40 +17,34 @@ BUILD_CXX_FLAGS += -Wno-extra -Wno-missing-field-initializers
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-TESTS    = Application Color Point NanoSubWidgets
+MANUAL_TESTS  =
+UNIT_TESTS    = Application Color Point
+
 ifeq ($(HAVE_CAIRO),true)
-TESTS   += Demo.cairo
-WTESTS  += Window.cairo
+MANUAL_TESTS += Demo.cairo
+UNIT_TESTS   += Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
-TESTS   += Demo.opengl
-WTESTS  += Window.opengl
+MANUAL_TESTS += Demo.opengl
+MANUAL_TESTS += NanoSubWidgets
+UNIT_TESTS   += Window.opengl
+endif
+ifeq ($(HAVE_STUB),true)
+UNIT_TESTS   += Window.stub
 endif
 ifeq ($(HAVE_VULKAN),true)
-TESTS   += Demo.vulkan
-WTESTS   = Window.vulkan
+UNIT_TESTS += Window.vulkan
 endif
 
-TARGETS  = $(TESTS:%=../build/tests/%$(APP_EXT))
-TARGETS += $(WTESTS:Window.%=../build/tests/Window.%$(APP_EXT))
+MANUAL_TARGETS = $(MANUAL_TESTS:%=../build/tests/%$(APP_EXT))
+UNIT_TARGET    = $(UNIT_TESTS:%=../build/tests/%$(APP_EXT))
 
-OBJS     = $(TESTS:%=../build/tests/%.cpp.o)
-OBJS    += $(WTESTS:Window.%=../build/tests/Window.cpp.%.o)
+ALL_OBJS  = $(MANUAL_TESTS:%=../build/tests/%.cpp.o)
+ALL_OBJS += $(UNIT_TESTS:%=../build/tests/%.cpp.o)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-ifeq ($(HAVE_CAIRO),true)
-endif
-
-ifeq ($(HAVE_OPENGL),true)
-endif
-
-ifeq ($(HAVE_VULKAN),true)
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
-
-all: $(TARGETS)
+all: $(MANUAL_TARGETS) $(UNIT_TARGET)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -61,8 +55,8 @@ endef
 
 # 	valgrind --leak-check=full $@
 
-run: $(TARGETS)
-	$(foreach TEST,$(TARGETS),$(call RUN_TEST,$(TEST)))
+run: $(UNIT_TARGET)
+	$(foreach TEST,$^,$(call RUN_TEST,$(TEST)))
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -92,6 +86,11 @@ clean:
 	@echo "Compiling $< (OpenGL)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
+../build/tests/%.cpp.stub.o: %.cpp
+	-@mkdir -p ../build/tests
+	@echo "Compiling $< (Stub)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
+
 ../build/tests/%.cpp.vulkan.o: %.cpp
 	-@mkdir -p ../build/tests
 	@echo "Compiling $< (Vulkan)"
@@ -112,9 +111,16 @@ clean:
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
+../build/tests/%.stub$(APP_EXT): ../build/tests/%.cpp.stub.o
+	@echo "Linking $*"
+	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) -o $@
+
 ../build/tests/%.vulkan$(APP_EXT): ../build/tests/%.cpp.vulkan.o
 	@echo "Linking $*"
 	$(SILENT)$(CXX) $< $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+# linking steps (special, links against DGL static lib)
 
 ../build/tests/Demo.cairo$(APP_EXT): ../build/tests/Demo.cpp.cairo.o ../build/libdgl-cairo.a
 	@echo "Linking Demo (Cairo)"

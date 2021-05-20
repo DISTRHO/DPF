@@ -46,10 +46,10 @@ int main()
     // constructor gives correct integer values normalized to float (arguments are r, g, b, a; in order)
     {
         Color c(51, 102, 153);
-        DISTRHO_ASSERT_EQUAL(c.red, 0.2f, "red value is 0.2 (integer 51)");
-        DISTRHO_ASSERT_EQUAL(c.green, 0.4f, "green value is 0.4 (integer 102)");
-        DISTRHO_ASSERT_EQUAL(c.blue, 0.6f, "blue value is 0.6 (integer 153)");
-        DISTRHO_ASSERT_EQUAL(c.alpha, 1.0f, "alpha value is 1");
+        DISTRHO_ASSERT_SAFE_EQUAL(c.red, 0.2f, "red value is 0.2 (integer 51)");
+        DISTRHO_ASSERT_SAFE_EQUAL(c.green, 0.4f, "green value is 0.4 (integer 102)");
+        DISTRHO_ASSERT_SAFE_EQUAL(c.blue, 0.6f, "blue value is 0.6 (integer 153)");
+        DISTRHO_ASSERT_SAFE_EQUAL(c.alpha, 1.0f, "alpha value is 1");
 
         Color white(255, 255, 255);
         DISTRHO_ASSERT_EQUAL(white.red, 1.0f, "white's red value is 1");
@@ -177,9 +177,9 @@ int main()
 
         // half point, round to 1 decimal point due to precision loss
         Color grey = Color::fromHTML("#7b7b7b");
-        DISTRHO_ASSERT_EQUAL(std::round(grey.red*10)/10, 0.5f, "grey's rounded red value is 0.5");
-        DISTRHO_ASSERT_EQUAL(std::round(grey.green*10)/10, 0.5f, "grey's rounded green value is 0.5");
-        DISTRHO_ASSERT_EQUAL(std::round(grey.blue*10)/10, 0.5f, "grey's rounded blue value is 0.5");
+        DISTRHO_ASSERT_SAFE_EQUAL(std::round(grey.red*10)/10, 0.5f, "grey's rounded red value is 0.5");
+        DISTRHO_ASSERT_SAFE_EQUAL(std::round(grey.green*10)/10, 0.5f, "grey's rounded green value is 0.5");
+        DISTRHO_ASSERT_SAFE_EQUAL(std::round(grey.blue*10)/10, 0.5f, "grey's rounded blue value is 0.5");
     }
 
     // check bounds

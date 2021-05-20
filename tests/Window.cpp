@@ -14,10 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#if !(defined(DGL_CAIRO) || defined(DGL_OPENGL) || defined(DGL_VULKAN))
-# error test setup failed, must be for cairo, opengl or vulkan
-#endif
-
 #include "tests.hpp"
 
 #define DPF_TEST_POINT_CPP

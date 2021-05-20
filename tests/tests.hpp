@@ -24,6 +24,9 @@
 #define DISTRHO_ASSERT_NOT_EQUAL(v1, v2, msg) \
     if (v1 == v2) { d_stderr2("Test condition failed: %s; file:%s line:%i", msg, __FILE__, __LINE__); return 1; }
 
+#define DISTRHO_ASSERT_SAFE_EQUAL(v1, v2, msg) \
+    if (d_isNotEqual(v1, v2)) { d_stderr2("Test condition failed: %s; file:%s line:%i", msg, __FILE__, __LINE__); return 1; }
+
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
