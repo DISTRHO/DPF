@@ -77,6 +77,13 @@ public:
 protected:
     void onNanoDisplay() override
     {
+        beginPath();
+
+        fillColor(Color(0.5f, 0.5f, 0.5f));
+        rect(0, 0, getWidth(), getHeight());
+        fill();
+
+        closePath();
     }
 
 private:
@@ -92,24 +99,12 @@ public:
         : Window(app),
           container(*this)
     {
-        const uint targetWidth = 1000;
-        const uint targetHeight = 600;
+        const uint targetWidth = 400;
+        const uint targetHeight = 400;
 
         setSize(targetWidth, targetHeight);
-        // container.setSize(width, height);
-
         setTitle("NanoVG SubWidgets test");
     }
-
-    /*
-protected:
-    void onReshape(uint width, uint height) override
-    {
-        container.setSize(width, height);
-
-        Window::onReshape(width, height);
-    }
-    */
 
 private:
     NanoRectanglesContainer container;
