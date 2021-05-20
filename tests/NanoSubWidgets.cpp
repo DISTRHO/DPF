@@ -52,14 +52,16 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 
-class NanoRectanglesContainer : public NanoTopLevelWidget
+class NanoRectanglesContainer : public NanoTopLevelWidget,
+                                public IdleCallback
 {
 public:
     explicit NanoRectanglesContainer(Window& parent)
         : NanoTopLevelWidget(parent),
           rect1(this),
           rect2(this),
-          rect3(this)
+          rect3(this),
+          rectToHide(1)
     {
         rect1.setAbsolutePos(100, 100);
         rect1.setSize(25, 25);
@@ -72,6 +74,9 @@ public:
         rect3.setAbsolutePos(300, 300);
         rect3.setSize(25, 25);
         rect3.setColor(Color(0, 0, 255));
+
+        idleCallback();
+        addIdleCallback(this, 500);
     }
 
 protected:
@@ -86,8 +91,34 @@ protected:
         closePath();
     }
 
+    void idleCallback() override
+    {
+        switch (rectToHide)
+        {
+        case 1:
+            rect1.hide();
+            rect2.show();
+            rect3.show();
+            rectToHide = 2;
+            break;
+        case 2:
+            rect1.show();
+            rect2.hide();
+            rect3.show();
+            rectToHide = 3;
+            break;
+        case 3:
+            rect1.show();
+            rect2.show();
+            rect3.hide();
+            rectToHide = 1;
+            break;
+        }
+    }
+
 private:
     NanoRectangle rect1, rect2, rect3;
+    int rectToHide;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
