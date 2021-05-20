@@ -207,7 +207,6 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     rect.width = width;
     rect.height = height;
     puglSetFrame(view, rect);
-    puglSetWindowSize(view, width, height);
 
     // FIXME this is bad
     puglRealize(view);
@@ -244,6 +243,11 @@ void Window::PrivateData::show()
     {
         isClosed = false;
         appData->oneWindowShown();
+
+        // FIXME
+        PuglRect rect = puglGetFrame(view);
+        puglSetDefaultSize(view, rect.width, rect.height);
+        puglSetWindowSize(view, rect.width, rect.height);
 
 #ifdef DISTRHO_OS_WINDOWS
         puglWin32ShowWindowCentered(view);
