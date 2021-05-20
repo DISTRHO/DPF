@@ -17,7 +17,7 @@ BUILD_CXX_FLAGS += -Wno-extra -Wno-missing-field-initializers
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-TESTS    = Application Color Point
+TESTS    = Application Color Point NanoSubWidgets
 ifeq ($(HAVE_CAIRO),true)
 TESTS   += Demo.cairo
 WTESTS  += Window.cairo
@@ -127,6 +127,10 @@ clean:
 ../build/tests/Demo.vulkan$(APP_EXT): ../build/tests/Demo.cpp.vulkan.o ../build/libdgl-vulkan.a
 	@echo "Linking Demo (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
+
+../build/tests/NanoSubWidgets$(APP_EXT): ../build/tests/NanoSubWidgets.cpp.o ../build/libdgl-opengl.a
+	@echo "Linking Demo (OpenGL)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

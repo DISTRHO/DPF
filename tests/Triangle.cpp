@@ -14,6 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "tests.hpp"
+
 // --------------------------------------------------------------------------------------------------------------------
 
 int main()
