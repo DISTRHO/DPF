@@ -3,6 +3,33 @@
 #
 # SPDX-License-Identifier: ISC
 
+# ------------------------------------------------------------------------------
+# CMake support module for the DISTRHO Plugin Framework
+#
+# The purpose of this module is to help building music plugins easily, when the
+# project uses CMake as its build system.
+#
+# In order to use the helpers provided by this module, a plugin author should
+# add DPF as a subproject, making the function `dpf_add_plugin` available.
+# The usage of this function is documented below in greater detail.
+#
+# Example project `CMakeLists.txt`:
+#
+# ```
+# cmake_minimum_required(VERSION 3.7)
+# project(MyPlugin)
+#
+# add_subdirectory(DPF)
+#
+# dpf_add_plugin(MyPlugin
+#   TARGETS lv2 vst
+#   UI_TYPE opengl
+#   FILES_DSP
+#       src/MyPlugin.cpp
+#   FILES_UI
+#       src/MyUI.cpp)
+# ```
+
 include(CMakeParseArguments)
 
 # ------------------------------------------------------------------------------
