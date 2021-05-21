@@ -25,7 +25,6 @@ include ../../Makefile.plugins.mk
 
 ifneq ($(MACOS_OR_WINDOWS),true)
 TARGETS += ladspa
-TARGETS += dssi
 endif
 
 TARGETS += lv2_dsp
