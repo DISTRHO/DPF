@@ -280,7 +280,7 @@ function(dpf__add_dgl_cairo)
   find_package(PkgConfig)
   pkg_check_modules(CAIRO "cairo" REQUIRED)
 
-  dpf__add_static_library(dgl-cairo EXCLUDE_FROM_ALL
+  dpf__add_static_library(dgl-cairo STATIC
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
@@ -326,7 +326,7 @@ function(dpf__add_dgl_opengl)
 
   find_package(OpenGL REQUIRED)
 
-  dpf__add_static_library(dgl-opengl EXCLUDE_FROM_ALL
+  dpf__add_static_library(dgl-opengl STATIC
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
