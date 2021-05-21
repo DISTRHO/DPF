@@ -177,6 +177,8 @@ function(dpf__build_jack NAME DGL_LIBRARY)
     return()
   endif()
 
+  link_directories(${JACK_LIBRARY_DIRS})
+
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
@@ -189,7 +191,6 @@ function(dpf__build_jack NAME DGL_LIBRARY)
 
   target_include_directories("${NAME}-jack" PRIVATE ${JACK_INCLUDE_DIRS})
   target_link_libraries("${NAME}-jack" PRIVATE ${JACK_LIBRARIES})
-  link_directories(${JACK_LIBRARY_DIRS})
 endfunction()
 
 # dpf__build_ladspa
@@ -223,6 +224,8 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     return()
   endif()
 
+  link_directories(${LIBLO_LIBRARY_DIRS})
+
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-dssi" ${_no_srcs})
@@ -243,7 +246,6 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
 
     target_include_directories("${NAME}-dssi-ui" PRIVATE ${LIBLO_INCLUDE_DIRS})
     target_link_libraries("${NAME}-dssi-ui" PRIVATE ${LIBLO_LIBRARIES})
-    link_directories(${LIBLO_LIBRARY_DIRS})
   endif()
 endfunction()
 
@@ -321,6 +323,8 @@ function(dpf__add_dgl_cairo)
   find_package(PkgConfig)
   pkg_check_modules(CAIRO "cairo" REQUIRED)
 
+  link_directories(${CAIRO_LIBRARY_DIRS})
+
   dpf__add_static_library(dgl-cairo STATIC
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
@@ -348,7 +352,6 @@ function(dpf__add_dgl_cairo)
 
   target_include_directories(dgl-cairo PUBLIC ${CAIRO_INCLUDE_DIRS})
   target_link_libraries(dgl-cairo PRIVATE dgl-cairo-definitions ${CAIRO_LIBRARIES})
-  link_directories(${CAIRO_LIBRARY_DIRS})
 endfunction()
 
 # dpf__add_dgl_opengl
