@@ -2,7 +2,7 @@
 # ------------------------------ #
 
 dpf_add_plugin(d_cairoui
-  TARGETS jack ladspa dssi lv2 vst
+  TARGETS jack dssi lv2 vst
   UI_TYPE cairo
   FILES_DSP
       CairoExamplePlugin.cpp
