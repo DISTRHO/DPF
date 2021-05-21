@@ -122,6 +122,14 @@ endfunction()
 # Add build rules for a JACK program.
 #
 function(dpf__build_jack NAME DGL_LIBRARY)
+  find_package(PkgConfig)
+  pkg_check_modules(JACK "jack")
+  if(NOT JACK_FOUND)
+    dpf__warn_once_only(missing_jack
+      "JACK is not found, skipping the `jack` plugin targets")
+    return()
+  endif()
+
   dpf__add_executable("${NAME}-jack")
   dpf__add_plugin_main("${NAME}-jack" "jack")
   dpf__add_ui_main("${NAME}-jack" "jack" "${DGL_LIBRARY}")
@@ -129,9 +137,6 @@ function(dpf__build_jack NAME DGL_LIBRARY)
   set_target_properties("${NAME}-jack" PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
-
-  find_package(PkgConfig)
-  pkg_check_modules(JACK "jack" REQUIRED)
 
   target_include_directories("${NAME}-jack" PRIVATE ${JACK_INCLUDE_DIRS})
   target_link_libraries("${NAME}-jack" PRIVATE ${JACK_LIBRARIES})
@@ -159,7 +164,14 @@ endfunction()
 # Add build rules for a DSSI plugin.
 #
 function(dpf__build_dssi NAME DGL_LIBRARY)
-  # -- build for DSSI
+  find_package(PkgConfig)
+  pkg_check_modules(LIBLO "liblo")
+  if(NOT LIBLO_FOUND)
+    dpf__warn_once_only(missing_liblo
+      "liblo is not found, skipping the `dssi` plugin targets")
+    return()
+  endif()
+
   dpf__add_module("${NAME}-dssi")
   dpf__add_plugin_main("${NAME}-dssi" "dssi")
   target_link_libraries("${NAME}-dssi" PRIVATE "${NAME}-dsp")
@@ -175,9 +187,6 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     set_target_properties("${NAME}-dssi-ui" PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}-dssi/$<0:>"
       OUTPUT_NAME "${NAME}_ui")
-
-    find_package(PkgConfig)
-    pkg_check_modules(LIBLO "liblo" REQUIRED)
 
     target_include_directories("${NAME}-dssi-ui" PRIVATE ${LIBLO_INCLUDE_DIRS})
     target_link_libraries("${NAME}-dssi-ui" PRIVATE ${LIBLO_LIBRARIES})
@@ -468,4 +477,17 @@ function(dpf__ensure_sources_non_empty VAR)
     file(WRITE "${_file}" "")
   endif()
   set("${VAR}" "${_file}" PARENT_SCOPE)
+endfunction()
+
+# dpf__warn_once
+# ------------------------------------------------------------------------------
+#
+# Prints a warning message once only.
+#
+function(dpf__warn_once_only TOKEN MESSAGE)
+  get_property(_warned GLOBAL PROPERTY "dpf__have_warned_${TOKEN}")
+  if(NOT _warned)
+    set_property(GLOBAL PROPERTY "dpf__have_warned_${TOKEN}" TRUE)
+    message(WARNING "${MESSAGE}")
+  endif()
 endfunction()
