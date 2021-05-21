@@ -32,19 +32,22 @@ LINK_FLAGS += $(shell $(PKG_CONFIG) glew --libs)
 # --------------------------------------------------------------
 # Enable all selected plugin types
 
+ifeq ($(HAVE_OPENGL),true)
+
 ifeq ($(HAVE_JACK),true)
-ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-endif
-endif
+endif # HAVE_JACK
 
-ifeq ($(HAVE_OPENGL),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
+ifeq ($(HAVE_LIBLO),true)
+TARGETS += dssi
+endif # HAVE_LIBLO
+endif # MACOS_OR_WINDOWS
+
 TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
-endif
-
 TARGETS += vst
+
+endif # HAVE_OPENGL
 
 all: $(TARGETS)
 

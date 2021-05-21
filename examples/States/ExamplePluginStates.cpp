@@ -208,6 +208,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
         }
     }
 
+#if DISTRHO_PLUGIN_WANT_FULL_STATE /* FIXME */
    /**
       Get the value of an internal state.
       The host may call this function from any non-realtime context.
@@ -239,6 +240,7 @@ The plugin will be treated as an effect, but it will not change the host audio."
 
         return sFalse;
     }
+#endif
 
    /**
       Change an internal state.
@@ -295,7 +297,6 @@ private:
       Our parameters used to display the grid on/off states.
     */
     bool fParamGrid[9];
-
 
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.

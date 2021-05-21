@@ -29,8 +29,12 @@ include ../../Makefile.plugins.mk
 ifeq ($(HAVE_JACK),true)
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-endif
-endif
+endif # HAVE_OPENGL
+endif # HAVE_JACK
+
+ifneq ($(MACOS_OR_WINDOWS),true)
+TARGETS += dssi
+endif # MACOS_OR_WINDOWS
 
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += lv2_sep
