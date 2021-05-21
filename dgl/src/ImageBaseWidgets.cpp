@@ -947,89 +947,128 @@ void ImageSlider::_recheckArea() noexcept
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if 0
-ImageSwitch::ImageSwitch(Widget* parentWidget, const Image& imageNormal, const Image& imageDown) noexcept
+template <class ImageType>
+struct ImageBaseSwitch<ImageType>::PrivateData {
+    ImageBaseSwitch<ImageType>* const self;
+    ImageType imageNormal;
+    ImageType imageDown;
+    bool isDown;
+    Callback* callback;
+
+    PrivateData(ImageBaseSwitch<ImageType>* const s, const ImageType& normal, const ImageType& down)
+        : self(s),
+          imageNormal(normal),
+          imageDown(down),
+          isDown(false),
+          callback(nullptr)
+    {
+        DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
+    }
+
+    PrivateData(ImageBaseSwitch<ImageType>* const s, PrivateData* const other)
+        : self(s),
+          imageNormal(other->imageNormal),
+          imageDown(other->imageDown),
+          isDown(other->isDown),
+          callback(other->callback)
+    {
+        DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
+    }
+
+    void assignFrom(PrivateData* const other)
+    {
+        imageNormal = other->imageNormal;
+        imageDown   = other->imageDown;
+        isDown      = other->isDown;
+        callback    = other->callback;
+        DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
+    }
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+ImageBaseSwitch<ImageType>::ImageBaseSwitch(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageDown) noexcept
     : SubWidget(parentWidget),
-      fImageNormal(imageNormal),
-      fImageDown(imageDown),
-      fIsDown(false),
-      fCallback(nullptr)
+      pData(new PrivateData(this, imageNormal, imageDown))
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
-
-    setSize(fImageNormal.getSize());
+    setSize(imageNormal.getSize());
 }
 
-ImageSwitch::ImageSwitch(const ImageSwitch& imageSwitch) noexcept
+template <class ImageType>
+ImageBaseSwitch<ImageType>::ImageBaseSwitch(const ImageBaseSwitch<ImageType>& imageSwitch) noexcept
     : SubWidget(imageSwitch.getParentWidget()),
-      fImageNormal(imageSwitch.fImageNormal),
-      fImageDown(imageSwitch.fImageDown),
-      fIsDown(imageSwitch.fIsDown),
-      fCallback(imageSwitch.fCallback)
+      pData(new PrivateData(this, imageSwitch.pData))
 {
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
-
-    setSize(fImageNormal.getSize());
+    setSize(pData->imageNormal.getSize());
 }
 
-ImageSwitch& ImageSwitch::operator=(const ImageSwitch& imageSwitch) noexcept
+template <class ImageType>
+ImageBaseSwitch<ImageType>& ImageBaseSwitch<ImageType>::operator=(const ImageBaseSwitch<ImageType>& imageSwitch) noexcept
 {
-    fImageNormal = imageSwitch.fImageNormal;
-    fImageDown   = imageSwitch.fImageDown;
-    fIsDown      = imageSwitch.fIsDown;
-    fCallback    = imageSwitch.fCallback;
-
-    DISTRHO_SAFE_ASSERT(fImageNormal.getSize() == fImageDown.getSize());
-
-    setSize(fImageNormal.getSize());
-
+    pData->assignFrom(imageSwitch.pData);
+    setSize(pData->imageNormal.getSize());
     return *this;
 }
 
-bool ImageSwitch::isDown() const noexcept
+template <class ImageType>
+ImageBaseSwitch<ImageType>::~ImageBaseSwitch()
 {
-    return fIsDown;
+    delete pData;
 }
 
-void ImageSwitch::setDown(bool down) noexcept
+template <class ImageType>
+bool ImageBaseSwitch<ImageType>::isDown() const noexcept
 {
-    if (fIsDown == down)
+    return pData->isDown;
+}
+
+template <class ImageType>
+void ImageBaseSwitch<ImageType>::setDown(const bool down) noexcept
+{
+    if (pData->isDown == down)
         return;
 
-    fIsDown = down;
+    pData->isDown = down;
     repaint();
 }
 
-void ImageSwitch::setCallback(Callback* callback) noexcept
+template <class ImageType>
+void ImageBaseSwitch<ImageType>::setCallback(Callback* const callback) noexcept
 {
-    fCallback = callback;
+    pData->callback = callback;
 }
 
-void ImageSwitch::onDisplay()
+template <class ImageType>
+void ImageBaseSwitch<ImageType>::onDisplay()
 {
-    if (fIsDown)
-        fImageDown.draw();
+    const GraphicsContext& context(getGraphicsContext());
+
+    if (pData->isDown)
+        pData->imageDown.draw(context);
     else
-        fImageNormal.draw();
+        pData->imageNormal.draw(context);
 }
 
-bool ImageSwitch::onMouse(const MouseEvent& ev)
+template <class ImageType>
+bool ImageBaseSwitch<ImageType>::onMouse(const MouseEvent& ev)
 {
     if (ev.press && contains(ev.pos))
     {
-        fIsDown = !fIsDown;
+        pData->isDown = !pData->isDown;
 
         repaint();
 
-        if (fCallback != nullptr)
-            fCallback->imageSwitchClicked(this, fIsDown);
+        if (pData->callback != nullptr)
+            pData->callback->imageSwitchClicked(this, pData->isDown);
 
         return true;
     }
 
     return false;
 }
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 

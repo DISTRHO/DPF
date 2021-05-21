@@ -255,6 +255,7 @@ public:
     explicit ImageBaseSwitch(Widget* parentWidget, const ImageType& imageNormal, const ImageType& imageDown) noexcept;
     explicit ImageBaseSwitch(const ImageBaseSwitch& imageSwitch) noexcept;
     ImageBaseSwitch& operator=(const ImageBaseSwitch& imageSwitch) noexcept;
+    ~ImageBaseSwitch() override;
 
     bool isDown() const noexcept;
     void setDown(bool down) noexcept;
@@ -268,13 +269,6 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const pData;
-
-    /*
-    Image fImageNormal;
-    Image fImageDown;
-    bool  fIsDown;
-    Callback* fCallback;
-    */
 
     DISTRHO_LEAK_DETECTOR(ImageBaseSwitch)
 };
