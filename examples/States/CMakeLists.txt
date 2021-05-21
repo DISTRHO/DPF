@@ -3,7 +3,6 @@
 
 dpf_add_plugin(d_states
   TARGETS jack lv2 vst
-  UI_TYPE opengl
   FILES_DSP
       ExamplePluginStates.cpp
   FILES_UI

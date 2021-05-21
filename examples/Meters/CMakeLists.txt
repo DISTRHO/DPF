@@ -3,7 +3,6 @@
 
 dpf_add_plugin(d_meters
   TARGETS jack dssi lv2 vst
-  UI_TYPE opengl
   FILES_DSP
       ExamplePluginMeters.cpp
   FILES_UI

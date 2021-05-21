@@ -35,7 +35,7 @@ include(CMakeParseArguments)
 #       `jack`, `ladspa`, `dssi`, `lv2`, `vst`
 #
 #   `UI_TYPE` <type>
-#       the user interface type, if any: `cairo`, `opengl`
+#       the user interface type: `opengl` (default), `cairo`
 #
 #   `MONOLITHIC`
 #       build LV2 as a single binary for UI and DSP
@@ -45,6 +45,7 @@ include(CMakeParseArguments)
 #
 #   `FILES_UI` <file1>...<fileN>
 #       list of sources which are part of the UI
+#       empty indicates the plugin does not have UI
 #
 #   `FILES_COMMON` <file1>...<fileN>
 #       list of sources which are part of both DSP and UI
@@ -55,16 +56,21 @@ function(dpf_add_plugin NAME)
   set(multiValueArgs TARGETS FILES_DSP FILES_UI)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  if(NOT _dpf_plugin_UI_TYPE)
-    set(_dgl_library)
-  elseif(_dpf_plugin_UI_TYPE STREQUAL "cairo")
-    dpf__add_dgl_cairo()
-    set(_dgl_library dgl-cairo)
-  elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
-    dpf__add_dgl_opengl()
-    set(_dgl_library dgl-opengl)
-  else()
-    message(FATAL_ERROR "Unrecognized UI type for plugin: ${UI_TYPE}")
+  if("${_dpf_plugin_UI_TYPE}" STREQUAL "")
+    set(_dpf_plugin_UI_TYPE "opengl")
+  endif()
+
+  set(_dgl_library)
+  if(_dpf_plugin_FILES_UI)
+    if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
+      dpf__add_dgl_cairo()
+      set(_dgl_library dgl-cairo)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
+      dpf__add_dgl_opengl()
+      set(_dgl_library dgl-opengl)
+    else()
+      message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
+    endif()
   endif()
 
   ###
