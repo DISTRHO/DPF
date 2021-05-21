@@ -56,7 +56,6 @@ endif
 
 OBJS_opengl = $(OBJS_common) \
 	../build/dgl/OpenGL.cpp.opengl.o \
-	../build/dgl/ImageWidgets.cpp.o \
 	../build/dgl/NanoVG.cpp.opengl.o
 
 ifeq ($(MACOS),true)

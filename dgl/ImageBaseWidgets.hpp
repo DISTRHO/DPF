@@ -82,6 +82,205 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 
+template <class ImageType>
+class ImageBaseKnob : public SubWidget
+{
+public:
+    enum Orientation {
+        Horizontal,
+        Vertical
+    };
+
+    class Callback
+    {
+    public:
+        virtual ~Callback() {}
+        virtual void imageKnobDragStarted(ImageBaseKnob* imageKnob) = 0;
+        virtual void imageKnobDragFinished(ImageBaseKnob* imageKnob) = 0;
+        virtual void imageKnobValueChanged(ImageBaseKnob* imageKnob, float value) = 0;
+    };
+
+    explicit ImageBaseKnob(Widget* parentWidget, const ImageType& image, Orientation orientation = Vertical) noexcept;
+    explicit ImageBaseKnob(const ImageBaseKnob& imageKnob);
+    ImageBaseKnob& operator=(const ImageBaseKnob& imageKnob);
+    ~ImageBaseKnob() override;
+
+    float getValue() const noexcept;
+
+    void setDefault(float def) noexcept;
+    void setRange(float min, float max) noexcept;
+    void setStep(float step) noexcept;
+    void setValue(float value, bool sendCallback = false) noexcept;
+    void setUsingLogScale(bool yesNo) noexcept;
+
+    void setCallback(Callback* callback) noexcept;
+    void setOrientation(Orientation orientation) noexcept;
+    void setRotationAngle(int angle);
+
+    void setImageLayerCount(uint count) noexcept;
+
+protected:
+     void onDisplay() override;
+     bool onMouse(const MouseEvent&) override;
+     bool onMotion(const MotionEvent&) override;
+     bool onScroll(const ScrollEvent&) override;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+
+    /*
+    Image fImage;
+    float fMinimum;
+    float fMaximum;
+    float fStep;
+    float fValue;
+    float fValueDef;
+    float fValueTmp;
+    bool  fUsingDefault;
+    bool  fUsingLog;
+    Orientation fOrientation;
+
+    int  fRotationAngle;
+    bool fDragging;
+    int  fLastX;
+    int  fLastY;
+
+    Callback* fCallback;
+
+    bool fIsImgVertical;
+    uint fImgLayerWidth;
+    uint fImgLayerHeight;
+    uint fImgLayerCount;
+    bool fIsReady;
+    GLuint fTextureId;
+
+    float _logscale(float value) const;
+    float _invlogscale(float value) const;
+    */
+
+    DISTRHO_LEAK_DETECTOR(ImageBaseKnob)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+// note set range and step before setting the value
+
+template <class ImageType>
+class ImageBaseSlider : public SubWidget
+{
+public:
+    class Callback
+    {
+    public:
+        virtual ~Callback() {}
+        virtual void imageSliderDragStarted(ImageBaseSlider* imageSlider) = 0;
+        virtual void imageSliderDragFinished(ImageBaseSlider* imageSlider) = 0;
+        virtual void imageSliderValueChanged(ImageBaseSlider* imageSlider, float value) = 0;
+    };
+
+    explicit ImageBaseSlider(Widget* parentWidget, const ImageType& image) noexcept;
+
+    float getValue() const noexcept;
+    void setValue(float value, bool sendCallback = false) noexcept;
+    void setDefault(float def) noexcept;
+
+    void setStartPos(const Point<int>& startPos) noexcept;
+    void setStartPos(int x, int y) noexcept;
+    void setEndPos(const Point<int>& endPos) noexcept;
+    void setEndPos(int x, int y) noexcept;
+
+    void setInverted(bool inverted) noexcept;
+    void setRange(float min, float max) noexcept;
+    void setStep(float step) noexcept;
+
+    void setCallback(Callback* callback) noexcept;
+
+protected:
+     void onDisplay() override;
+     bool onMouse(const MouseEvent&) override;
+     bool onMotion(const MotionEvent&) override;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+
+    /*
+    Image fImage;
+    float fMinimum;
+    float fMaximum;
+    float fStep;
+    float fValue;
+    float fValueDef;
+    float fValueTmp;
+    bool  fUsingDefault;
+
+    bool fDragging;
+    bool fInverted;
+    bool fValueIsSet;
+    int  fStartedX;
+    int  fStartedY;
+
+    Callback* fCallback;
+
+    Point<int> fStartPos;
+    Point<int> fEndPos;
+    Rectangle<double> fSliderArea;
+
+    void _recheckArea() noexcept;
+    */
+
+    // these should not be used
+    void setAbsoluteX(int) const noexcept {}
+    void setAbsoluteY(int) const noexcept {}
+    void setAbsolutePos(int, int) const noexcept {}
+    void setAbsolutePos(const Point<int>&) const noexcept {}
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageBaseSlider)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+class ImageBaseSwitch : public SubWidget
+{
+public:
+    class Callback
+    {
+    public:
+        virtual ~Callback() {}
+        virtual void imageSwitchClicked(ImageBaseSwitch* imageSwitch, bool down) = 0;
+    };
+
+    explicit ImageBaseSwitch(Widget* parentWidget, const ImageType& imageNormal, const ImageType& imageDown) noexcept;
+    explicit ImageBaseSwitch(const ImageBaseSwitch& imageSwitch) noexcept;
+    ImageBaseSwitch& operator=(const ImageBaseSwitch& imageSwitch) noexcept;
+
+    bool isDown() const noexcept;
+    void setDown(bool down) noexcept;
+
+    void setCallback(Callback* callback) noexcept;
+
+protected:
+     void onDisplay() override;
+     bool onMouse(const MouseEvent&) override;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+
+    /*
+    Image fImageNormal;
+    Image fImageDown;
+    bool  fIsDown;
+    Callback* fCallback;
+    */
+
+    DISTRHO_LEAK_DETECTOR(ImageBaseSwitch)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
 END_NAMESPACE_DGL
 
 #endif // DGL_IMAGE_BASE_WIDGETS_HPP_INCLUDED

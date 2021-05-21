@@ -19,7 +19,6 @@
 
 #include "ImageBase.hpp"
 #include "ImageBaseWidgets.hpp"
-#include "SubWidget.hpp"
 
 #include <cairo/cairo.h>
 
@@ -115,25 +114,21 @@ class CairoBaseWidget : public BaseWidget
 public:
    /**
       Constructor for a CairoSubWidget.
-      @see CreateFlags
     */
     explicit CairoBaseWidget(Widget* const parentGroupWidget);
 
    /**
       Constructor for a CairoTopLevelWidget.
-      @see CreateFlags
     */
     explicit CairoBaseWidget(Window& windowToMapTo);
 
    /**
       Constructor for a CairoStandaloneWindow without parent window.
-      @see CreateFlags
     */
     explicit CairoBaseWidget(Application& app);
 
    /**
       Constructor for a CairoStandaloneWindow with parent window.
-      @see CreateFlags
     */
     explicit CairoBaseWidget(Application& app, Window& parentWindow);
 
@@ -171,6 +166,9 @@ typedef CairoBaseWidget<StandaloneWindow> CairoStandaloneWindow;
 
 typedef ImageBaseAboutWindow<CairoImage> CairoImageAboutWindow;
 typedef ImageBaseButton<CairoImage> CairoImageButton;
+typedef ImageBaseKnob<CairoImage> CairoImageKnob;
+typedef ImageBaseSlider<CairoImage> CairoImageSlider;
+typedef ImageBaseSwitch<CairoImage> CairoImageSwitch;
 
 // --------------------------------------------------------------------------------------------------------------------
 

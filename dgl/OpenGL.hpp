@@ -282,12 +282,9 @@ private:
 
 typedef ImageBaseAboutWindow<OpenGLImage> OpenGLImageAboutWindow;
 typedef ImageBaseButton<OpenGLImage> OpenGLImageButton;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageAboutWindow")
-typedef OpenGLImageAboutWindow ImageAboutWindow;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageButton")
-typedef OpenGLImageButton ImageButton;
+typedef ImageBaseKnob<OpenGLImage> OpenGLImageKnob;
+typedef ImageBaseSlider<OpenGLImage> OpenGLImageSlider;
+typedef ImageBaseSwitch<OpenGLImage> OpenGLImageSwitch;
 
 // -----------------------------------------------------------------------
 

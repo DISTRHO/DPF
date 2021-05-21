@@ -17,206 +17,25 @@
 #ifndef DGL_IMAGE_WIDGETS_HPP_INCLUDED
 #define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
-#include "Image.hpp"
-#include "ImageBaseWidgets.hpp"
-#include "SubWidget.hpp"
-
-// TODO switch to use templated image type after merging widget-related PRs
-#if defined(__GNUC__) && (__GNUC__ >= 6)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+#include "OpenGL.hpp"
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+DISTRHO_DEPRECATED_BY("OpenGLImageAboutWindow")
+typedef OpenGLImageAboutWindow ImageAboutWindow;
 
-class ImageKnob : public SubWidget
-{
-public:
-    enum Orientation {
-        Horizontal,
-        Vertical
-    };
+DISTRHO_DEPRECATED_BY("OpenGLImageButton")
+typedef OpenGLImageButton ImageButton;
 
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void imageKnobDragStarted(ImageKnob* imageKnob) = 0;
-        virtual void imageKnobDragFinished(ImageKnob* imageKnob) = 0;
-        virtual void imageKnobValueChanged(ImageKnob* imageKnob, float value) = 0;
-    };
+DISTRHO_DEPRECATED_BY("OpenGLImageKnob")
+typedef OpenGLImageKnob ImageKnob;
 
-    explicit ImageKnob(Widget* parentWidget, const Image& image, Orientation orientation = Vertical) noexcept;
-    explicit ImageKnob(const ImageKnob& imageKnob);
-    ImageKnob& operator=(const ImageKnob& imageKnob);
-    ~ImageKnob() override;
+DISTRHO_DEPRECATED_BY("OpenGLImageSlider")
+typedef OpenGLImageSlider ImageSlider;
 
-    float getValue() const noexcept;
-
-    void setDefault(float def) noexcept;
-    void setRange(float min, float max) noexcept;
-    void setStep(float step) noexcept;
-    void setValue(float value, bool sendCallback = false) noexcept;
-    void setUsingLogScale(bool yesNo) noexcept;
-
-    void setCallback(Callback* callback) noexcept;
-    void setOrientation(Orientation orientation) noexcept;
-    void setRotationAngle(int angle);
-
-    void setImageLayerCount(uint count) noexcept;
-
-protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-     bool onMotion(const MotionEvent&) override;
-     bool onScroll(const ScrollEvent&) override;
-
-private:
-    Image fImage;
-    float fMinimum;
-    float fMaximum;
-    float fStep;
-    float fValue;
-    float fValueDef;
-    float fValueTmp;
-    bool  fUsingDefault;
-    bool  fUsingLog;
-    Orientation fOrientation;
-
-    int  fRotationAngle;
-    bool fDragging;
-    int  fLastX;
-    int  fLastY;
-
-    Callback* fCallback;
-
-    bool fIsImgVertical;
-    uint fImgLayerWidth;
-    uint fImgLayerHeight;
-    uint fImgLayerCount;
-    bool fIsReady;
-    GLuint fTextureId;
-
-    float _logscale(float value) const;
-    float _invlogscale(float value) const;
-
-    DISTRHO_LEAK_DETECTOR(ImageKnob)
-};
-
-// -----------------------------------------------------------------------
-
-// note set range and step before setting the value
-
-class ImageSlider : public SubWidget
-{
-public:
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void imageSliderDragStarted(ImageSlider* imageSlider) = 0;
-        virtual void imageSliderDragFinished(ImageSlider* imageSlider) = 0;
-        virtual void imageSliderValueChanged(ImageSlider* imageSlider, float value) = 0;
-    };
-
-    explicit ImageSlider(Widget* parentWidget, const Image& image) noexcept;
-
-    float getValue() const noexcept;
-    void setValue(float value, bool sendCallback = false) noexcept;
-    void setDefault(float def) noexcept;
-
-    void setStartPos(const Point<int>& startPos) noexcept;
-    void setStartPos(int x, int y) noexcept;
-    void setEndPos(const Point<int>& endPos) noexcept;
-    void setEndPos(int x, int y) noexcept;
-
-    void setInverted(bool inverted) noexcept;
-    void setRange(float min, float max) noexcept;
-    void setStep(float step) noexcept;
-
-    void setCallback(Callback* callback) noexcept;
-
-protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-     bool onMotion(const MotionEvent&) override;
-
-private:
-    Image fImage;
-    float fMinimum;
-    float fMaximum;
-    float fStep;
-    float fValue;
-    float fValueDef;
-    float fValueTmp;
-    bool  fUsingDefault;
-
-    bool fDragging;
-    bool fInverted;
-    bool fValueIsSet;
-    int  fStartedX;
-    int  fStartedY;
-
-    Callback* fCallback;
-
-    Point<int> fStartPos;
-    Point<int> fEndPos;
-    Rectangle<double> fSliderArea;
-
-    void _recheckArea() noexcept;
-
-    // these should not be used
-    void setAbsoluteX(int) const noexcept {}
-    void setAbsoluteY(int) const noexcept {}
-    void setAbsolutePos(int, int) const noexcept {}
-    void setAbsolutePos(const Point<int>&) const noexcept {}
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ImageSlider)
-};
-
-// -----------------------------------------------------------------------
-
-class ImageSwitch : public SubWidget
-{
-public:
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void imageSwitchClicked(ImageSwitch* imageSwitch, bool down) = 0;
-    };
-
-    explicit ImageSwitch(Widget* parentWidget, const Image& imageNormal, const Image& imageDown) noexcept;
-    explicit ImageSwitch(const ImageSwitch& imageSwitch) noexcept;
-    ImageSwitch& operator=(const ImageSwitch& imageSwitch) noexcept;
-
-    bool isDown() const noexcept;
-    void setDown(bool down) noexcept;
-
-    void setCallback(Callback* callback) noexcept;
-
-protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-
-private:
-    Image fImageNormal;
-    Image fImageDown;
-    bool  fIsDown;
-
-    Callback* fCallback;
-
-    DISTRHO_LEAK_DETECTOR(ImageSwitch)
-};
-
-// -----------------------------------------------------------------------
+DISTRHO_DEPRECATED_BY("OpenGLImageSwitch")
+typedef OpenGLImageSwitch ImageSwitch;
 
 END_NAMESPACE_DGL
-
-#if defined(__GNUC__) && (__GNUC__ >= 6)
-# pragma GCC diagnostic pop
-#endif
 
 #endif // DGL_IMAGE_WIDGETS_HPP_INCLUDED
