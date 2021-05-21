@@ -120,6 +120,15 @@ DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
 endif
 
+ifeq ($(UI_TYPE),stub)
+ifeq ($(HAVE_STUB),true)
+DGL_LIB    = $(DPF_PATH)/build/libdgl-stub.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 DGL_LIBS += $(DGL_SYSTEM_LIBS)
 
 ifneq ($(HAVE_DGL),true)
