@@ -394,7 +394,7 @@ int main(int argc, char* argv[])
             createAndShowExampleWidgetStandaloneWindow<ExampleTextStandaloneWindow>(app);
 #endif
         else
-            d_stderr2("Invalid demo mode, must be one of: color, rectangles, shapes");
+            d_stderr2("Invalid demo mode, must be one of: color, images, rectangles or shapes");
     }
     else
     {
