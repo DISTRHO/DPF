@@ -130,7 +130,9 @@ function(dpf__build_jack NAME DGL_LIBRARY)
     return()
   endif()
 
-  dpf__add_executable("${NAME}-jack")
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_executable("${NAME}-jack" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-jack" "jack")
   dpf__add_ui_main("${NAME}-jack" "jack" "${DGL_LIBRARY}")
   target_link_libraries("${NAME}-jack" PRIVATE "${NAME}-dsp" "${NAME}-ui")
@@ -149,7 +151,9 @@ endfunction()
 # Add build rules for a DSSI plugin.
 #
 function(dpf__build_ladspa NAME)
-  dpf__add_module("${NAME}-ladspa")
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-ladspa" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-ladspa" "ladspa")
   target_link_libraries("${NAME}-ladspa" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-ladspa" PROPERTIES
@@ -172,7 +176,9 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     return()
   endif()
 
-  dpf__add_module("${NAME}-dssi")
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-dssi" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-dssi" "dssi")
   target_link_libraries("${NAME}-dssi" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-dssi" PROPERTIES
@@ -181,7 +187,7 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     PREFIX "")
 
   if(DGL_LIBRARY)
-    dpf__add_executable("${NAME}-dssi-ui")
+    dpf__add_executable("${NAME}-dssi-ui" ${_no_srcs})
     dpf__add_ui_main("${NAME}-dssi-ui" "dssi" "${DGL_LIBRARY}")
     target_link_libraries("${NAME}-dssi-ui" PRIVATE "${NAME}-ui")
     set_target_properties("${NAME}-dssi-ui" PROPERTIES
@@ -200,7 +206,9 @@ endfunction()
 # Add build rules for a LV2 plugin.
 #
 function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
-  dpf__add_module("${NAME}-lv2")
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-lv2" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-lv2" "lv2")
   target_link_libraries("${NAME}-lv2" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-lv2" PROPERTIES
@@ -215,7 +223,7 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
       set_target_properties("${NAME}-lv2" PROPERTIES
         OUTPUT_NAME "${NAME}")
     else()
-      dpf__add_module("${NAME}-lv2-ui")
+      dpf__add_module("${NAME}-lv2-ui" ${_no_srcs})
       dpf__add_ui_main("${NAME}-lv2-ui" "lv2" "${DGL_LIBRARY}")
       target_link_libraries("${NAME}-lv2-ui" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2-ui" PROPERTIES
@@ -241,7 +249,9 @@ endfunction()
 # Add build rules for a VST plugin.
 #
 function(dpf__build_vst NAME DGL_LIBRARY)
-  dpf__add_module("${NAME}-vst")
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-vst" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-vst" "vst")
   dpf__add_ui_main("${NAME}-vst" "vst" "${DGL_LIBRARY}")
   target_link_libraries("${NAME}-vst" PRIVATE "${NAME}-dsp" "${NAME}-ui")
@@ -478,6 +488,20 @@ function(dpf__ensure_sources_non_empty VAR)
   endif()
   set("${VAR}" "${_file}" PARENT_SCOPE)
 endfunction()
+
+# dpf__create_dummy_source_list
+# ------------------------------------------------------------------------------
+#
+# Create a dummy source list which is equivalent to compiling nothing.
+# This is only for compatibility with older CMake versions, which refuse to add
+# targets without any sources.
+#
+macro(dpf__create_dummy_source_list VAR)
+  set("${VAR}")
+  if(CMAKE_VERSION VERSION_LESS "3.11")
+    dpf__ensure_sources_non_empty("${VAR}")
+  endif()
+endmacro()
 
 # dpf__warn_once
 # ------------------------------------------------------------------------------
