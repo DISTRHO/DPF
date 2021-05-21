@@ -28,7 +28,14 @@
 #       src/MyPlugin.cpp
 #   FILES_UI
 #       src/MyUI.cpp)
+#
+# target_include_directories(MyPlugin
+#   PUBLIC src)
 # ```
+#
+# Important: note that properties, such as include directories, definitions,
+# and linked libraries *must* be marked with `PUBLIC` so they take effect and
+# propagate into all the plugin targets.
 
 include(CMakeParseArguments)
 
