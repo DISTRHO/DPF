@@ -18,6 +18,7 @@
 #include "../Color.hpp"
 #include "../ImageBaseWidgets.hpp"
 
+#include "Common.hpp"
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -215,7 +216,6 @@ template class Triangle<int>;
 template class Triangle<uint>;
 template class Triangle<short>;
 template class Triangle<ushort>;
-
 
 // -----------------------------------------------------------------------
 // Rectangle
@@ -461,15 +461,55 @@ CairoBaseWidget<StandaloneWindow>::CairoBaseWidget(Application& app, Window& par
 template class CairoBaseWidget<StandaloneWindow>;
 
 // -----------------------------------------------------------------------
+// ImageBaseAboutWindow
 
+#if 0
 template <>
 void ImageBaseAboutWindow<CairoImage>::onDisplay()
 {
     img.draw(getGraphicsContext());
 }
+#endif
 
 template class ImageBaseAboutWindow<CairoImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseButton
+
 template class ImageBaseButton<CairoImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseKnob
+
+template <>
+void ImageBaseKnob<CairoImage>::PrivateData::init()
+{
+    notImplemented("ImageBaseKnob::PrivateData::init");
+}
+
+template <>
+void ImageBaseKnob<CairoImage>::PrivateData::cleanup()
+{
+    notImplemented("ImageBaseKnob::PrivateData::cleanup");
+}
+
+template <>
+void ImageBaseKnob<CairoImage>::onDisplay()
+{
+    notImplemented("ImageBaseKnob::onDisplay");
+}
+
+template class ImageBaseKnob<CairoImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSlider
+
+template class ImageBaseSlider<CairoImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSwitch
+
+template class ImageBaseSwitch<CairoImage>;
 
 // -----------------------------------------------------------------------
 

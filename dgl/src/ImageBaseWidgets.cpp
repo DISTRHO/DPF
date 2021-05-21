@@ -15,6 +15,7 @@
  */
 
 #include "../ImageBaseWidgets.hpp"
+#include "../Color.hpp"
 #include "Common.hpp"
 
 START_NAMESPACE_DGL
@@ -53,6 +54,12 @@ void ImageBaseAboutWindow<ImageType>::setImage(const ImageType& image)
 
     img = image;
     setSize(image.getSize());
+}
+
+template <class ImageType>
+void ImageBaseAboutWindow<ImageType>::onDisplay()
+{
+    img.draw(getGraphicsContext());
 }
 
 template <class ImageType>
@@ -180,291 +187,246 @@ bool ImageBaseButton<ImageType>::onMotion(const MotionEvent& ev)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if 0
-ImageKnob::ImageKnob(Widget* const parentWidget, const Image& image, Orientation orientation) noexcept
+template <class ImageType>
+ImageBaseKnob<ImageType>::PrivateData::PrivateData(const ImageType& img, const Orientation o)
+    : image(img),
+        minimum(0.0f),
+        maximum(1.0f),
+        step(0.0f),
+        value(0.5f),
+        valueDef(value),
+        valueTmp(value),
+        usingDefault(false),
+        usingLog(false),
+        orientation(o),
+        rotationAngle(0),
+        dragging(false),
+        lastX(0),
+        lastY(0),
+        callback(nullptr),
+        isImgVertical(img.getHeight() > img.getWidth()),
+        imgLayerWidth(isImgVertical ? img.getWidth() : img.getHeight()),
+        imgLayerHeight(imgLayerWidth),
+        imgLayerCount(isImgVertical ? img.getHeight()/imgLayerHeight : img.getWidth()/imgLayerWidth),
+        isReady(false),
+        textureId(0)
+{
+    init();
+}
+
+template <class ImageType>
+ImageBaseKnob<ImageType>::PrivateData::PrivateData(PrivateData* const other)
+    : image(other->image),
+        minimum(other->minimum),
+        maximum(other->maximum),
+        step(other->step),
+        value(other->value),
+        valueDef(other->valueDef),
+        valueTmp(value),
+        usingDefault(other->usingDefault),
+        usingLog(other->usingLog),
+        orientation(other->orientation),
+        rotationAngle(other->rotationAngle),
+        dragging(false),
+        lastX(0),
+        lastY(0),
+        callback(other->callback),
+        isImgVertical(other->isImgVertical),
+        imgLayerWidth(other->imgLayerWidth),
+        imgLayerHeight(other->imgLayerHeight),
+        imgLayerCount(other->imgLayerCount),
+        isReady(false),
+        textureId(0)
+{
+    init();
+}
+
+template <class ImageType>
+void ImageBaseKnob<ImageType>::PrivateData::assignFrom(PrivateData* const other)
+{
+    cleanup();
+    image    = other->image;
+    minimum  = other->minimum;
+    maximum  = other->maximum;
+    step     = other->step;
+    value    = other->value;
+    valueDef = other->valueDef;
+    valueTmp = value;
+    usingDefault  = other->usingDefault;
+    usingLog      = other->usingLog;
+    orientation   = other->orientation;
+    rotationAngle = other->rotationAngle;
+    dragging = false;
+    lastX    = 0;
+    lastY    = 0;
+    callback = other->callback;
+    isImgVertical  = other->isImgVertical;
+    imgLayerWidth  = other->imgLayerWidth;
+    imgLayerHeight = other->imgLayerHeight;
+    imgLayerCount  = other->imgLayerCount;
+    isReady  = false;
+    init();
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+template <class ImageType>
+ImageBaseKnob<ImageType>::ImageBaseKnob(Widget* const parentWidget, const ImageType& image, const Orientation orientation) noexcept
     : SubWidget(parentWidget),
-      fImage(image),
-      fMinimum(0.0f),
-      fMaximum(1.0f),
-      fStep(0.0f),
-      fValue(0.5f),
-      fValueDef(fValue),
-      fValueTmp(fValue),
-      fUsingDefault(false),
-      fUsingLog(false),
-      fOrientation(orientation),
-      fRotationAngle(0),
-      fDragging(false),
-      fLastX(0),
-      fLastY(0),
-      fCallback(nullptr),
-      fIsImgVertical(image.getHeight() > image.getWidth()),
-      fImgLayerWidth(fIsImgVertical ? image.getWidth() : image.getHeight()),
-      fImgLayerHeight(fImgLayerWidth),
-      fImgLayerCount(fIsImgVertical ? image.getHeight()/fImgLayerHeight : image.getWidth()/fImgLayerWidth),
-      fIsReady(false),
-      fTextureId(0)
+      pData(new PrivateData(image, orientation))
 {
-    glGenTextures(1, &fTextureId);
-    setSize(fImgLayerWidth, fImgLayerHeight);
+    setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
 
-ImageKnob::ImageKnob(const ImageKnob& imageKnob)
+template <class ImageType>
+ImageBaseKnob<ImageType>::ImageBaseKnob(const ImageBaseKnob<ImageType>& imageKnob)
     : SubWidget(imageKnob.getParentWidget()),
-      fImage(imageKnob.fImage),
-      fMinimum(imageKnob.fMinimum),
-      fMaximum(imageKnob.fMaximum),
-      fStep(imageKnob.fStep),
-      fValue(imageKnob.fValue),
-      fValueDef(imageKnob.fValueDef),
-      fValueTmp(fValue),
-      fUsingDefault(imageKnob.fUsingDefault),
-      fUsingLog(imageKnob.fUsingLog),
-      fOrientation(imageKnob.fOrientation),
-      fRotationAngle(imageKnob.fRotationAngle),
-      fDragging(false),
-      fLastX(0),
-      fLastY(0),
-      fCallback(imageKnob.fCallback),
-      fIsImgVertical(imageKnob.fIsImgVertical),
-      fImgLayerWidth(imageKnob.fImgLayerWidth),
-      fImgLayerHeight(imageKnob.fImgLayerHeight),
-      fImgLayerCount(imageKnob.fImgLayerCount),
-      fIsReady(false),
-      fTextureId(0)
+      pData(new PrivateData(imageKnob.pData))
 {
-    glGenTextures(1, &fTextureId);
-    setSize(fImgLayerWidth, fImgLayerHeight);
+    setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
 
-ImageKnob& ImageKnob::operator=(const ImageKnob& imageKnob)
+template <class ImageType>
+ImageBaseKnob<ImageType>& ImageBaseKnob<ImageType>::operator=(const ImageBaseKnob<ImageType>& imageKnob)
 {
-    fImage    = imageKnob.fImage;
-    fMinimum  = imageKnob.fMinimum;
-    fMaximum  = imageKnob.fMaximum;
-    fStep     = imageKnob.fStep;
-    fValue    = imageKnob.fValue;
-    fValueDef = imageKnob.fValueDef;
-    fValueTmp = fValue;
-    fUsingDefault  = imageKnob.fUsingDefault;
-    fUsingLog      = imageKnob.fUsingLog;
-    fOrientation   = imageKnob.fOrientation;
-    fRotationAngle = imageKnob.fRotationAngle;
-    fDragging = false;
-    fLastX    = 0;
-    fLastY    = 0;
-    fCallback = imageKnob.fCallback;
-    fIsImgVertical  = imageKnob.fIsImgVertical;
-    fImgLayerWidth  = imageKnob.fImgLayerWidth;
-    fImgLayerHeight = imageKnob.fImgLayerHeight;
-    fImgLayerCount  = imageKnob.fImgLayerCount;
-    fIsReady  = false;
-
-    if (fTextureId != 0)
-    {
-        glDeleteTextures(1, &fTextureId);
-        fTextureId = 0;
-    }
-
-    glGenTextures(1, &fTextureId);
-    setSize(fImgLayerWidth, fImgLayerHeight);
-
+    pData->assignFrom(imageKnob.pData);
+    setSize(pData->imgLayerWidth, pData->imgLayerHeight);
     return *this;
 }
 
-ImageKnob::~ImageKnob()
+template <class ImageType>
+ImageBaseKnob<ImageType>::~ImageBaseKnob()
 {
-    if (fTextureId != 0)
-    {
-        glDeleteTextures(1, &fTextureId);
-        fTextureId = 0;
-    }
+    delete pData;
 }
 
-float ImageKnob::getValue() const noexcept
+template <class ImageType>
+float ImageBaseKnob<ImageType>::getValue() const noexcept
 {
-    return fValue;
+    return pData->value;
 }
 
 // NOTE: value is assumed to be scaled if using log
-void ImageKnob::setDefault(float value) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setDefault(float value) noexcept
 {
-    fValueDef = value;
-    fUsingDefault = true;
+    pData->valueDef = value;
+    pData->usingDefault = true;
 }
 
-void ImageKnob::setRange(float min, float max) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setRange(float min, float max) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(max > min,);
 
-    if (fValue < min)
+    if (pData->value < min)
     {
-        fValue = min;
+        pData->value = min;
         repaint();
 
-        if (fCallback != nullptr)
+        if (pData->callback != nullptr)
         {
             try {
-                fCallback->imageKnobValueChanged(this, fValue);
-            } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange < min");
+                pData->callback->imageKnobValueChanged(this, pData->value);
+            } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setRange < min");
         }
     }
-    else if (fValue > max)
+    else if (pData->value > max)
     {
-        fValue = max;
+        pData->value = max;
         repaint();
 
-        if (fCallback != nullptr)
+        if (pData->callback != nullptr)
         {
             try {
-                fCallback->imageKnobValueChanged(this, fValue);
-            } DISTRHO_SAFE_EXCEPTION("ImageKnob::setRange > max");
+                pData->callback->imageKnobValueChanged(this, pData->value);
+            } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setRange > max");
         }
     }
 
-    fMinimum = min;
-    fMaximum = max;
+    pData->minimum = min;
+    pData->maximum = max;
 }
 
-void ImageKnob::setStep(float step) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setStep(float step) noexcept
 {
-    fStep = step;
+    pData->step = step;
 }
 
 // NOTE: value is assumed to be scaled if using log
-void ImageKnob::setValue(float value, bool sendCallback) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setValue(float value, bool sendCallback) noexcept
 {
-    if (d_isEqual(fValue, value))
+    if (d_isEqual(pData->value, value))
         return;
 
-    fValue = value;
+    pData->value = value;
 
-    if (d_isZero(fStep))
-        fValueTmp = value;
+    if (d_isZero(pData->step))
+        pData->valueTmp = value;
 
-    if (fRotationAngle == 0)
-        fIsReady = false;
+    if (pData->rotationAngle == 0)
+        pData->isReady = false;
 
     repaint();
 
-    if (sendCallback && fCallback != nullptr)
+    if (sendCallback && pData->callback != nullptr)
     {
         try {
-            fCallback->imageKnobValueChanged(this, fValue);
-        } DISTRHO_SAFE_EXCEPTION("ImageKnob::setValue");
+            pData->callback->imageKnobValueChanged(this, pData->value);
+        } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setValue");
     }
 }
 
-void ImageKnob::setUsingLogScale(bool yesNo) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setUsingLogScale(bool yesNo) noexcept
 {
-    fUsingLog = yesNo;
+    pData->usingLog = yesNo;
 }
 
-void ImageKnob::setCallback(Callback* callback) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setCallback(Callback* callback) noexcept
 {
-    fCallback = callback;
+    pData->callback = callback;
 }
 
-void ImageKnob::setOrientation(Orientation orientation) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setOrientation(Orientation orientation) noexcept
 {
-    if (fOrientation == orientation)
+    if (pData->orientation == orientation)
         return;
 
-    fOrientation = orientation;
+    pData->orientation = orientation;
 }
 
-void ImageKnob::setRotationAngle(int angle)
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setRotationAngle(int angle)
 {
-    if (fRotationAngle == angle)
+    if (pData->rotationAngle == angle)
         return;
 
-    fRotationAngle = angle;
-    fIsReady = false;
+    pData->rotationAngle = angle;
+    pData->isReady = false;
 }
 
-void ImageKnob::setImageLayerCount(uint count) noexcept
+template <class ImageType>
+void ImageBaseKnob<ImageType>::setImageLayerCount(uint count) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(count > 1,);
 
-    fImgLayerCount = count;
+    pData->imgLayerCount = count;
 
-    if (fIsImgVertical)
-        fImgLayerHeight = fImage.getHeight()/count;
+    if (pData->isImgVertical)
+        pData->imgLayerHeight = pData->image.getHeight()/count;
     else
-        fImgLayerWidth = fImage.getWidth()/count;
+        pData->imgLayerWidth = pData->image.getWidth()/count;
 
-    setSize(fImgLayerWidth, fImgLayerHeight);
+    setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
 
-void ImageKnob::onDisplay()
-{
-    const float normValue = ((fUsingLog ? _invlogscale(fValue) : fValue) - fMinimum) / (fMaximum - fMinimum);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, fTextureId);
-
-    if (! fIsReady)
-    {
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-
-        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
-
-        glPixelStorei(GL_PACK_ALIGNMENT, 1);
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-        uint imageDataOffset = 0;
-
-        if (fRotationAngle == 0)
-        {
-            DISTRHO_SAFE_ASSERT_RETURN(fImgLayerCount > 0,);
-            DISTRHO_SAFE_ASSERT_RETURN(normValue >= 0.0f,);
-
-            const uint& v1(fIsImgVertical ? fImgLayerWidth : fImgLayerHeight);
-            const uint& v2(fIsImgVertical ? fImgLayerHeight : fImgLayerWidth);
-
-            const uint layerDataSize   = v1 * v2 * ((fImage.getFormat() == kImageFormatBGRA ||
-                                                     fImage.getFormat() == kImageFormatRGBA) ? 4 : 3);
-            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(fImgLayerCount-1));
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
-                     asOpenGLImageFormat(fImage.getFormat()), GL_UNSIGNED_BYTE, fImage.getRawData() + imageDataOffset);
-
-        fIsReady = true;
-    }
-
-    const int w = static_cast<int>(getWidth());
-    const int h = static_cast<int>(getHeight());
-
-    if (fRotationAngle != 0)
-    {
-        glPushMatrix();
-
-        const int w2 = w/2;
-        const int h2 = h/2;
-
-        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
-        glRotatef(normValue*static_cast<float>(fRotationAngle), 0.0f, 0.0f, 1.0f);
-
-        Rectangle<int>(-w2, -h2, w, h).draw();
-
-        glPopMatrix();
-    }
-    else
-    {
-        Rectangle<int>(0, 0, w, h).draw();
-    }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
-}
-
-bool ImageKnob::onMouse(const MouseEvent& ev)
+template <class ImageType>
+bool ImageBaseKnob<ImageType>::onMouse(const MouseEvent& ev)
 {
     if (ev.button != 1)
         return false;
@@ -474,57 +436,58 @@ bool ImageKnob::onMouse(const MouseEvent& ev)
         if (! contains(ev.pos))
             return false;
 
-        if ((ev.mod & kModifierShift) != 0 && fUsingDefault)
+        if ((ev.mod & kModifierShift) != 0 && pData->usingDefault)
         {
-            setValue(fValueDef, true);
-            fValueTmp = fValue;
+            setValue(pData->valueDef, true);
+            pData->valueTmp = pData->value;
             return true;
         }
 
-        fDragging = true;
-        fLastX = ev.pos.getX();
-        fLastY = ev.pos.getY();
+        pData->dragging = true;
+        pData->lastX = ev.pos.getX();
+        pData->lastY = ev.pos.getY();
 
-        if (fCallback != nullptr)
-            fCallback->imageKnobDragStarted(this);
+        if (pData->callback != nullptr)
+            pData->callback->imageKnobDragStarted(this);
 
         return true;
     }
-    else if (fDragging)
+    else if (pData->dragging)
     {
-        if (fCallback != nullptr)
-            fCallback->imageKnobDragFinished(this);
+        if (pData->callback != nullptr)
+            pData->callback->imageKnobDragFinished(this);
 
-        fDragging = false;
+        pData->dragging = false;
         return true;
     }
 
     return false;
 }
 
-bool ImageKnob::onMotion(const MotionEvent& ev)
+template <class ImageType>
+bool ImageBaseKnob<ImageType>::onMotion(const MotionEvent& ev)
 {
-    if (! fDragging)
+    if (! pData->dragging)
         return false;
 
     bool doVal = false;
     float d, value = 0.0f;
 
-    if (fOrientation == ImageKnob::Horizontal)
+    if (pData->orientation == ImageBaseKnob<ImageType>::Horizontal)
     {
-        if (const int movX = ev.pos.getX() - fLastX)
+        if (const int movX = ev.pos.getX() - pData->lastX)
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-            value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movX));
+            value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movX));
             doVal = true;
         }
     }
-    else if (fOrientation == ImageKnob::Vertical)
+    else if (pData->orientation == ImageBaseKnob<ImageType>::Vertical)
     {
-        if (const int movY = fLastY - ev.pos.getY())
+        if (const int movY = pData->lastY - ev.pos.getY())
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-            value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * float(movY));
+            value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movY));
             doVal = true;
         }
     }
@@ -532,265 +495,320 @@ bool ImageKnob::onMotion(const MotionEvent& ev)
     if (! doVal)
         return false;
 
-    if (fUsingLog)
-        value = _logscale(value);
+    if (pData->usingLog)
+        value = pData->logscale(value);
 
-    if (value < fMinimum)
+    if (value < pData->minimum)
     {
-        fValueTmp = value = fMinimum;
+        pData->valueTmp = value = pData->minimum;
     }
-    else if (value > fMaximum)
+    else if (value > pData->maximum)
     {
-        fValueTmp = value = fMaximum;
+        pData->valueTmp = value = pData->maximum;
     }
-    else if (d_isNotZero(fStep))
+    else if (d_isNotZero(pData->step))
     {
-        fValueTmp = value;
-        const float rest = std::fmod(value, fStep);
-        value = value - rest + (rest > fStep/2.0f ? fStep : 0.0f);
+        pData->valueTmp = value;
+        const float rest = std::fmod(value, pData->step);
+        value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
     }
 
     setValue(value, true);
 
-    fLastX = ev.pos.getX();
-    fLastY = ev.pos.getY();
+    pData->lastX = ev.pos.getX();
+    pData->lastY = ev.pos.getY();
 
     return true;
 }
 
-bool ImageKnob::onScroll(const ScrollEvent& ev)
+template <class ImageType>
+bool ImageBaseKnob<ImageType>::onScroll(const ScrollEvent& ev)
 {
     if (! contains(ev.pos))
         return false;
 
     const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-    float       value = (fUsingLog ? _invlogscale(fValueTmp) : fValueTmp) + (float(fMaximum - fMinimum) / d * 10.f * ev.delta.getY());
+    float       value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * 10.f * ev.delta.getY());
 
-    if (fUsingLog)
-        value = _logscale(value);
+    if (pData->usingLog)
+        value = pData->logscale(value);
 
-    if (value < fMinimum)
+    if (value < pData->minimum)
     {
-        fValueTmp = value = fMinimum;
+        pData->valueTmp = value = pData->minimum;
     }
-    else if (value > fMaximum)
+    else if (value > pData->maximum)
     {
-        fValueTmp = value = fMaximum;
+        pData->valueTmp = value = pData->maximum;
     }
-    else if (d_isNotZero(fStep))
+    else if (d_isNotZero(pData->step))
     {
-        fValueTmp = value;
-        const float rest = std::fmod(value, fStep);
-        value = value - rest + (rest > fStep/2.0f ? fStep : 0.0f);
+        pData->valueTmp = value;
+        const float rest = std::fmod(value, pData->step);
+        value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
     }
 
     setValue(value, true);
     return true;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
-float ImageKnob::_logscale(float value) const
-{
-    const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
-    const float a = fMaximum/std::exp(fMaximum*b);
-    return a * std::exp(b*value);
-}
+template <class ImageType>
+struct ImageBaseSlider<ImageType>::PrivateData {
+    ImageType image;
+    float minimum;
+    float maximum;
+    float step;
+    float value;
+    float valueDef;
+    float valueTmp;
+    bool  usingDefault;
 
-float ImageKnob::_invlogscale(float value) const
-{
-    const float b = std::log(fMaximum/fMinimum)/(fMaximum-fMinimum);
-    const float a = fMaximum/std::exp(fMaximum*b);
-    return std::log(value/a)/b;
-}
-#endif
+    bool dragging;
+    bool inverted;
+    bool valueIsSet;
+    int  startedX;
+    int  startedY;
+
+    Callback* callback;
+
+    Point<int> startPos;
+    Point<int> endPos;
+    Rectangle<double> sliderArea;
+
+    PrivateData(const ImageType& img)
+        : image(img),
+          minimum(0.0f),
+          maximum(1.0f),
+          step(0.0f),
+          value(0.5f),
+          valueDef(value),
+          valueTmp(value),
+          usingDefault(false),
+          dragging(false),
+          inverted(false),
+          valueIsSet(false),
+          startedX(0),
+          startedY(0),
+          callback(nullptr),
+          startPos(),
+          endPos(),
+          sliderArea() {}
+
+    void recheckArea() noexcept
+    {
+        if (startPos.getY() == endPos.getY())
+        {
+            // horizontal
+            sliderArea = Rectangle<double>(startPos.getX(),
+                                           startPos.getY(),
+                                           endPos.getX() + static_cast<int>(image.getWidth()) - startPos.getX(),
+                                           static_cast<int>(image.getHeight()));
+        }
+        else
+        {
+            // vertical
+            sliderArea = Rectangle<double>(startPos.getX(),
+                                           startPos.getY(),
+                                           static_cast<int>(image.getWidth()),
+                                           endPos.getY() + static_cast<int>(image.getHeight()) - startPos.getY());
+        }
+    }
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if 0
-ImageSlider::ImageSlider(Widget* const parentWidget, const Image& image) noexcept
+template <class ImageType>
+ImageBaseSlider<ImageType>::ImageBaseSlider(Widget* const parentWidget, const ImageType& image) noexcept
     : SubWidget(parentWidget),
-      fImage(image),
-      fMinimum(0.0f),
-      fMaximum(1.0f),
-      fStep(0.0f),
-      fValue(0.5f),
-      fValueDef(fValue),
-      fValueTmp(fValue),
-      fUsingDefault(false),
-      fDragging(false),
-      fInverted(false),
-      fValueIsSet(false),
-      fStartedX(0),
-      fStartedY(0),
-      fCallback(nullptr),
-      fStartPos(),
-      fEndPos(),
-      fSliderArea()
+      pData(new PrivateData(image))
 {
     setNeedsFullViewportDrawing();
 }
 
-float ImageSlider::getValue() const noexcept
+template <class ImageType>
+ImageBaseSlider<ImageType>::~ImageBaseSlider()
 {
-    return fValue;
+    delete pData;
 }
 
-void ImageSlider::setValue(float value, bool sendCallback) noexcept
+template <class ImageType>
+float ImageBaseSlider<ImageType>::getValue() const noexcept
 {
-    if (! fValueIsSet)
-        fValueIsSet = true;
+    return pData->value;
+}
 
-    if (d_isEqual(fValue, value))
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setValue(float value, bool sendCallback) noexcept
+{
+    if (! pData->valueIsSet)
+        pData->valueIsSet = true;
+
+    if (d_isEqual(pData->value, value))
         return;
 
-    fValue = value;
+    pData->value = value;
 
-    if (d_isZero(fStep))
-        fValueTmp = value;
+    if (d_isZero(pData->step))
+        pData->valueTmp = value;
 
     repaint();
 
-    if (sendCallback && fCallback != nullptr)
+    if (sendCallback && pData->callback != nullptr)
     {
         try {
-            fCallback->imageSliderValueChanged(this, fValue);
-        } DISTRHO_SAFE_EXCEPTION("ImageSlider::setValue");
+            pData->callback->imageSliderValueChanged(this, pData->value);
+        } DISTRHO_SAFE_EXCEPTION("ImageBaseSlider::setValue");
     }
 }
 
-void ImageSlider::setStartPos(const Point<int>& startPos) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setStartPos(const Point<int>& startPos) noexcept
 {
-    fStartPos = startPos;
-    _recheckArea();
+    pData->startPos = startPos;
+    pData->recheckArea();
 }
 
-void ImageSlider::setStartPos(int x, int y) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setStartPos(int x, int y) noexcept
 {
     setStartPos(Point<int>(x, y));
 }
 
-void ImageSlider::setEndPos(const Point<int>& endPos) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setEndPos(const Point<int>& endPos) noexcept
 {
-    fEndPos = endPos;
-    _recheckArea();
+    pData->endPos = endPos;
+    pData->recheckArea();
 }
 
-void ImageSlider::setEndPos(int x, int y) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setEndPos(int x, int y) noexcept
 {
     setEndPos(Point<int>(x, y));
 }
 
-void ImageSlider::setInverted(bool inverted) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setInverted(bool inverted) noexcept
 {
-    if (fInverted == inverted)
+    if (pData->inverted == inverted)
         return;
 
-    fInverted = inverted;
+    pData->inverted = inverted;
     repaint();
 }
 
-void ImageSlider::setDefault(float value) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setDefault(float value) noexcept
 {
-    fValueDef = value;
-    fUsingDefault = true;
+    pData->valueDef = value;
+    pData->usingDefault = true;
 }
 
-void ImageSlider::setRange(float min, float max) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setRange(float min, float max) noexcept
 {
-    fMinimum = min;
-    fMaximum = max;
+    pData->minimum = min;
+    pData->maximum = max;
 
-    if (fValue < min)
+    if (pData->value < min)
     {
-        fValue = min;
+        pData->value = min;
         repaint();
 
-        if (fCallback != nullptr && fValueIsSet)
+        if (pData->callback != nullptr && pData->valueIsSet)
         {
             try {
-                fCallback->imageSliderValueChanged(this, fValue);
-            } DISTRHO_SAFE_EXCEPTION("ImageSlider::setRange < min");
+                pData->callback->imageSliderValueChanged(this, pData->value);
+            } DISTRHO_SAFE_EXCEPTION("ImageBaseSlider::setRange < min");
         }
     }
-    else if (fValue > max)
+    else if (pData->value > max)
     {
-        fValue = max;
+        pData->value = max;
         repaint();
 
-        if (fCallback != nullptr && fValueIsSet)
+        if (pData->callback != nullptr && pData->valueIsSet)
         {
             try {
-                fCallback->imageSliderValueChanged(this, fValue);
-            } DISTRHO_SAFE_EXCEPTION("ImageSlider::setRange > max");
+                pData->callback->imageSliderValueChanged(this, pData->value);
+            } DISTRHO_SAFE_EXCEPTION("ImageBaseSlider::setRange > max");
         }
     }
 }
 
-void ImageSlider::setStep(float step) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setStep(float step) noexcept
 {
-    fStep = step;
+    pData->step = step;
 }
 
-void ImageSlider::setCallback(Callback* callback) noexcept
+template <class ImageType>
+void ImageBaseSlider<ImageType>::setCallback(Callback* callback) noexcept
 {
-    fCallback = callback;
+    pData->callback = callback;
 }
 
-void ImageSlider::onDisplay()
+template <class ImageType>
+void ImageBaseSlider<ImageType>::onDisplay()
 {
-#if 0 // DEBUG, paints slider area
-    glColor3f(0.4f, 0.5f, 0.1f);
-    glRecti(fSliderArea.getX(), fSliderArea.getY(), fSliderArea.getX()+fSliderArea.getWidth(), fSliderArea.getY()+fSliderArea.getHeight());
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+    const GraphicsContext& context(getGraphicsContext());
+
+#if 1 // DEBUG, paints slider area
+    Color(0.4f, 0.5f, 0.1f).setFor(context);
+    Rectangle<int>(pData->sliderArea.getX(),
+                   pData->sliderArea.getY(),
+                   pData->sliderArea.getX()+pData->sliderArea.getWidth(),
+                   pData->sliderArea.getY()+pData->sliderArea.getHeight()).draw(context);
+    Color(1.0f, 1.0f, 1.0f, 1.0f).setFor(context, true);
 #endif
 
-    const float normValue = (fValue - fMinimum) / (fMaximum - fMinimum);
+    const float normValue = (pData->value - pData->minimum) / (pData->maximum - pData->minimum);
 
     int x, y;
 
-    if (fStartPos.getY() == fEndPos.getY())
+    if (pData->startPos.getY() == pData->endPos.getY())
     {
         // horizontal
-        if (fInverted)
-            x = fEndPos.getX() - static_cast<int>(normValue*static_cast<float>(fEndPos.getX()-fStartPos.getX()));
+        if (pData->inverted)
+            x = pData->endPos.getX() - static_cast<int>(normValue*static_cast<float>(pData->endPos.getX()-pData->startPos.getX()));
         else
-            x = fStartPos.getX() + static_cast<int>(normValue*static_cast<float>(fEndPos.getX()-fStartPos.getX()));
+            x = pData->startPos.getX() + static_cast<int>(normValue*static_cast<float>(pData->endPos.getX()-pData->startPos.getX()));
 
-        y = fStartPos.getY();
+        y = pData->startPos.getY();
     }
     else
     {
         // vertical
-        x = fStartPos.getX();
+        x = pData->startPos.getX();
 
-        if (fInverted)
-            y = fEndPos.getY() - static_cast<int>(normValue*static_cast<float>(fEndPos.getY()-fStartPos.getY()));
+        if (pData->inverted)
+            y = pData->endPos.getY() - static_cast<int>(normValue*static_cast<float>(pData->endPos.getY()-pData->startPos.getY()));
         else
-            y = fStartPos.getY() + static_cast<int>(normValue*static_cast<float>(fEndPos.getY()-fStartPos.getY()));
+            y = pData->startPos.getY() + static_cast<int>(normValue*static_cast<float>(pData->endPos.getY()-pData->startPos.getY()));
     }
 
-    fImage.drawAt(x, y);
+    pData->image.drawAt(context, x, y);
 }
-#endif
 
-// --------------------------------------------------------------------------------------------------------------------
-
-#if 0
-bool ImageSlider::onMouse(const MouseEvent& ev)
+template <class ImageType>
+bool ImageBaseSlider<ImageType>::onMouse(const MouseEvent& ev)
 {
     if (ev.button != 1)
         return false;
 
     if (ev.press)
     {
-        if (! fSliderArea.contains(ev.pos))
+        if (! pData->sliderArea.contains(ev.pos))
             return false;
 
-        if ((ev.mod & kModifierShift) != 0 && fUsingDefault)
+        if ((ev.mod & kModifierShift) != 0 && pData->usingDefault)
         {
-            setValue(fValueDef, true);
-            fValueTmp = fValue;
+            setValue(pData->valueDef, true);
+            pData->valueTmp = pData->value;
             return true;
         }
 
@@ -798,166 +816,140 @@ bool ImageSlider::onMouse(const MouseEvent& ev)
         const int x = ev.pos.getX();
         const int y = ev.pos.getY();
 
-        if (fStartPos.getY() == fEndPos.getY())
+        if (pData->startPos.getY() == pData->endPos.getY())
         {
             // horizontal
-            vper = float(x - fSliderArea.getX()) / float(fSliderArea.getWidth());
+            vper = float(x - pData->sliderArea.getX()) / float(pData->sliderArea.getWidth());
         }
         else
         {
             // vertical
-            vper = float(y - fSliderArea.getY()) / float(fSliderArea.getHeight());
+            vper = float(y - pData->sliderArea.getY()) / float(pData->sliderArea.getHeight());
         }
 
         float value;
 
-        if (fInverted)
-            value = fMaximum - vper * (fMaximum - fMinimum);
+        if (pData->inverted)
+            value = pData->maximum - vper * (pData->maximum - pData->minimum);
         else
-            value = fMinimum + vper * (fMaximum - fMinimum);
+            value = pData->minimum + vper * (pData->maximum - pData->minimum);
 
-        if (value < fMinimum)
+        if (value < pData->minimum)
         {
-            fValueTmp = value = fMinimum;
+            pData->valueTmp = value = pData->minimum;
         }
-        else if (value > fMaximum)
+        else if (value > pData->maximum)
         {
-            fValueTmp = value = fMaximum;
+            pData->valueTmp = value = pData->maximum;
         }
-        else if (d_isNotZero(fStep))
+        else if (d_isNotZero(pData->step))
         {
-            fValueTmp = value;
-            const float rest = std::fmod(value, fStep);
-            value = value - rest + (rest > fStep/2.0f ? fStep : 0.0f);
+            pData->valueTmp = value;
+            const float rest = std::fmod(value, pData->step);
+            value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
         }
 
-        fDragging = true;
-        fStartedX = x;
-        fStartedY = y;
+        pData->dragging = true;
+        pData->startedX = x;
+        pData->startedY = y;
 
-        if (fCallback != nullptr)
-            fCallback->imageSliderDragStarted(this);
+        if (pData->callback != nullptr)
+            pData->callback->imageSliderDragStarted(this);
 
         setValue(value, true);
 
         return true;
     }
-    else if (fDragging)
+    else if (pData->dragging)
     {
-        if (fCallback != nullptr)
-            fCallback->imageSliderDragFinished(this);
+        if (pData->callback != nullptr)
+            pData->callback->imageSliderDragFinished(this);
 
-        fDragging = false;
+        pData->dragging = false;
         return true;
     }
 
     return false;
 }
-#endif
 
-// --------------------------------------------------------------------------------------------------------------------
-
-#if 0
-bool ImageSlider::onMotion(const MotionEvent& ev)
+template <class ImageType>
+bool ImageBaseSlider<ImageType>::onMotion(const MotionEvent& ev)
 {
-    if (! fDragging)
+    if (! pData->dragging)
         return false;
 
-    const bool horizontal = fStartPos.getY() == fEndPos.getY();
+    const bool horizontal = pData->startPos.getY() == pData->endPos.getY();
     const int x = ev.pos.getX();
     const int y = ev.pos.getY();
 
-    if ((horizontal && fSliderArea.containsX(x)) || (fSliderArea.containsY(y) && ! horizontal))
+    if ((horizontal && pData->sliderArea.containsX(x)) || (pData->sliderArea.containsY(y) && ! horizontal))
     {
         float vper;
 
         if (horizontal)
         {
             // horizontal
-            vper = float(x - fSliderArea.getX()) / float(fSliderArea.getWidth());
+            vper = float(x - pData->sliderArea.getX()) / float(pData->sliderArea.getWidth());
         }
         else
         {
             // vertical
-            vper = float(y - fSliderArea.getY()) / float(fSliderArea.getHeight());
+            vper = float(y - pData->sliderArea.getY()) / float(pData->sliderArea.getHeight());
         }
 
         float value;
 
-        if (fInverted)
-            value = fMaximum - vper * (fMaximum - fMinimum);
+        if (pData->inverted)
+            value = pData->maximum - vper * (pData->maximum - pData->minimum);
         else
-            value = fMinimum + vper * (fMaximum - fMinimum);
+            value = pData->minimum + vper * (pData->maximum - pData->minimum);
 
-        if (value < fMinimum)
+        if (value < pData->minimum)
         {
-            fValueTmp = value = fMinimum;
+            pData->valueTmp = value = pData->minimum;
         }
-        else if (value > fMaximum)
+        else if (value > pData->maximum)
         {
-            fValueTmp = value = fMaximum;
+            pData->valueTmp = value = pData->maximum;
         }
-        else if (d_isNotZero(fStep))
+        else if (d_isNotZero(pData->step))
         {
-            fValueTmp = value;
-            const float rest = std::fmod(value, fStep);
-            value = value - rest + (rest > fStep/2.0f ? fStep : 0.0f);
+            pData->valueTmp = value;
+            const float rest = std::fmod(value, pData->step);
+            value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
         }
 
         setValue(value, true);
     }
     else if (horizontal)
     {
-        if (x < fSliderArea.getX())
-            setValue(fInverted ? fMaximum : fMinimum, true);
+        if (x < pData->sliderArea.getX())
+            setValue(pData->inverted ? pData->maximum : pData->minimum, true);
         else
-            setValue(fInverted ? fMinimum : fMaximum, true);
+            setValue(pData->inverted ? pData->minimum : pData->maximum, true);
     }
     else
     {
-        if (y < fSliderArea.getY())
-            setValue(fInverted ? fMaximum : fMinimum, true);
+        if (y < pData->sliderArea.getY())
+            setValue(pData->inverted ? pData->maximum : pData->minimum, true);
         else
-            setValue(fInverted ? fMinimum : fMaximum, true);
+            setValue(pData->inverted ? pData->minimum : pData->maximum, true);
     }
 
     return true;
 }
 
-void ImageSlider::_recheckArea() noexcept
-{
-    if (fStartPos.getY() == fEndPos.getY())
-    {
-        // horizontal
-        fSliderArea = Rectangle<double>(fStartPos.getX(),
-                                        fStartPos.getY(),
-                                        fEndPos.getX() + static_cast<int>(fImage.getWidth()) - fStartPos.getX(),
-                                        static_cast<int>(fImage.getHeight()));
-    }
-    else
-    {
-        // vertical
-        fSliderArea = Rectangle<double>(fStartPos.getX(),
-                                        fStartPos.getY(),
-                                        static_cast<int>(fImage.getWidth()),
-                                        fEndPos.getY() + static_cast<int>(fImage.getHeight()) - fStartPos.getY());
-    }
-}
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
 struct ImageBaseSwitch<ImageType>::PrivateData {
-    ImageBaseSwitch<ImageType>* const self;
     ImageType imageNormal;
     ImageType imageDown;
     bool isDown;
     Callback* callback;
 
-    PrivateData(ImageBaseSwitch<ImageType>* const s, const ImageType& normal, const ImageType& down)
-        : self(s),
-          imageNormal(normal),
+    PrivateData(const ImageType& normal, const ImageType& down)
+        : imageNormal(normal),
           imageDown(down),
           isDown(false),
           callback(nullptr)
@@ -965,9 +957,8 @@ struct ImageBaseSwitch<ImageType>::PrivateData {
         DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
     }
 
-    PrivateData(ImageBaseSwitch<ImageType>* const s, PrivateData* const other)
-        : self(s),
-          imageNormal(other->imageNormal),
+    PrivateData(PrivateData* const other)
+        : imageNormal(other->imageNormal),
           imageDown(other->imageDown),
           isDown(other->isDown),
           callback(other->callback)
@@ -992,7 +983,7 @@ struct ImageBaseSwitch<ImageType>::PrivateData {
 template <class ImageType>
 ImageBaseSwitch<ImageType>::ImageBaseSwitch(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageDown) noexcept
     : SubWidget(parentWidget),
-      pData(new PrivateData(this, imageNormal, imageDown))
+      pData(new PrivateData(imageNormal, imageDown))
 {
     setSize(imageNormal.getSize());
 }
@@ -1000,7 +991,7 @@ ImageBaseSwitch<ImageType>::ImageBaseSwitch(Widget* const parentWidget, const Im
 template <class ImageType>
 ImageBaseSwitch<ImageType>::ImageBaseSwitch(const ImageBaseSwitch<ImageType>& imageSwitch) noexcept
     : SubWidget(imageSwitch.getParentWidget()),
-      pData(new PrivateData(this, imageSwitch.pData))
+      pData(new PrivateData(imageSwitch.pData))
 {
     setSize(pData->imageNormal.getSize());
 }

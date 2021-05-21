@@ -18,6 +18,7 @@
 #include "../Color.hpp"
 #include "../ImageWidgets.hpp"
 
+#include "Common.hpp"
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -435,16 +436,124 @@ void OpenGLImage::drawAt(const Point<int>& pos)
 }
 
 // -----------------------------------------------------------------------
+// ImageBaseAboutWindow
 
+#if 0
 template <>
 void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
     img.draw(context);
 }
+#endif
 
 template class ImageBaseAboutWindow<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseButton
+
 template class ImageBaseButton<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseKnob
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::init()
+{
+    glGenTextures(1, &textureId);
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::cleanup()
+{
+    if (textureId != 0)
+    {
+        glDeleteTextures(1, &textureId);
+        textureId = 0;
+    }
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::onDisplay()
+{
+    const GraphicsContext& context(getGraphicsContext());
+    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum) / (pData->maximum - pData->minimum);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, pData->textureId);
+
+    if (! pData->isReady)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        uint imageDataOffset = 0;
+
+        if (pData->rotationAngle == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(pData->imgLayerCount > 0,);
+            DISTRHO_SAFE_ASSERT_RETURN(normValue >= 0.0f,);
+
+            const uint& v1(pData->isImgVertical ? pData->imgLayerWidth : pData->imgLayerHeight);
+            const uint& v2(pData->isImgVertical ? pData->imgLayerHeight : pData->imgLayerWidth);
+
+            const uint layerDataSize   = v1 * v2 * ((pData->image.getFormat() == kImageFormatBGRA ||
+                                                     pData->image.getFormat() == kImageFormatRGBA) ? 4 : 3);
+            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount-1));
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                     static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
+                     asOpenGLImageFormat(pData->image.getFormat()), GL_UNSIGNED_BYTE, pData->image.getRawData() + imageDataOffset);
+
+        pData->isReady = true;
+    }
+
+    const int w = static_cast<int>(getWidth());
+    const int h = static_cast<int>(getHeight());
+
+    if (pData->rotationAngle != 0)
+    {
+        glPushMatrix();
+
+        const int w2 = w/2;
+        const int h2 = h/2;
+
+        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
+        glRotatef(normValue*static_cast<float>(pData->rotationAngle), 0.0f, 0.0f, 1.0f);
+
+        Rectangle<int>(-w2, -h2, w, h).draw(context);
+
+        glPopMatrix();
+    }
+    else
+    {
+        Rectangle<int>(0, 0, w, h).draw(context);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+template class ImageBaseKnob<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSlider
+
+template class ImageBaseSlider<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSwitch
+
+template class ImageBaseSwitch<OpenGLImage>;
 
 // -----------------------------------------------------------------------
 

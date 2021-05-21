@@ -129,36 +129,6 @@ private:
     struct PrivateData;
     PrivateData* const pData;
 
-    /*
-    Image fImage;
-    float fMinimum;
-    float fMaximum;
-    float fStep;
-    float fValue;
-    float fValueDef;
-    float fValueTmp;
-    bool  fUsingDefault;
-    bool  fUsingLog;
-    Orientation fOrientation;
-
-    int  fRotationAngle;
-    bool fDragging;
-    int  fLastX;
-    int  fLastY;
-
-    Callback* fCallback;
-
-    bool fIsImgVertical;
-    uint fImgLayerWidth;
-    uint fImgLayerHeight;
-    uint fImgLayerCount;
-    bool fIsReady;
-    GLuint fTextureId;
-
-    float _logscale(float value) const;
-    float _invlogscale(float value) const;
-    */
-
     DISTRHO_LEAK_DETECTOR(ImageBaseKnob)
 };
 
@@ -180,6 +150,7 @@ public:
     };
 
     explicit ImageBaseSlider(Widget* parentWidget, const ImageType& image) noexcept;
+    ~ImageBaseSlider() override;
 
     float getValue() const noexcept;
     void setValue(float value, bool sendCallback = false) noexcept;
@@ -204,31 +175,6 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const pData;
-
-    /*
-    Image fImage;
-    float fMinimum;
-    float fMaximum;
-    float fStep;
-    float fValue;
-    float fValueDef;
-    float fValueTmp;
-    bool  fUsingDefault;
-
-    bool fDragging;
-    bool fInverted;
-    bool fValueIsSet;
-    int  fStartedX;
-    int  fStartedY;
-
-    Callback* fCallback;
-
-    Point<int> fStartPos;
-    Point<int> fEndPos;
-    Rectangle<double> fSliderArea;
-
-    void _recheckArea() noexcept;
-    */
 
     // these should not be used
     void setAbsoluteX(int) const noexcept {}

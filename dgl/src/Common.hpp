@@ -120,6 +120,64 @@ struct ButtonImpl {
 
 // -----------------------------------------------------------------------
 
+template <class ImageType>
+struct ImageBaseKnob<ImageType>::PrivateData {
+    ImageType image;
+    float minimum;
+    float maximum;
+    float step;
+    float value;
+    float valueDef;
+    float valueTmp;
+    bool usingDefault;
+    bool usingLog;
+    Orientation orientation;
+
+    int rotationAngle;
+    bool dragging;
+    int lastX;
+    int lastY;
+
+    Callback* callback;
+
+    bool isImgVertical;
+    uint imgLayerWidth;
+    uint imgLayerHeight;
+    uint imgLayerCount;
+    bool isReady;
+    /*GL*/uint textureId;
+
+    explicit PrivateData(const ImageType& img, const Orientation o);
+    explicit PrivateData(PrivateData* const other);
+    void assignFrom(PrivateData* const other);
+
+    ~PrivateData()
+    {
+        cleanup();
+    }
+
+    void init();
+    void cleanup();
+
+    inline float logscale(float value) const
+    {
+        const float b = std::log(maximum/minimum)/(maximum-minimum);
+        const float a = maximum/std::exp(maximum*b);
+        return a * std::exp(b*value);
+    }
+
+    inline float invlogscale(float value) const
+    {
+        const float b = std::log(maximum/minimum)/(maximum-minimum);
+        const float a = maximum/std::exp(maximum*b);
+        return std::log(value/a)/b;
+    }
+
+    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+};
+
+// -----------------------------------------------------------------------
+
 END_NAMESPACE_DGL
 
 #endif // DGL_APP_PRIVATE_DATA_HPP_INCLUDED
