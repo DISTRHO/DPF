@@ -2,7 +2,7 @@
 # ------------------------------ #
 
 dpf_add_plugin(d_latency
-  TARGETS ladspa lv2 vst
+  TARGETS ladspa lv2 vst2
   FILES_DSP
       LatencyExamplePlugin.cpp)
 

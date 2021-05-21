@@ -22,7 +22,7 @@
 # add_subdirectory(DPF)
 #
 # dpf_add_plugin(MyPlugin
-#   TARGETS lv2 vst
+#   TARGETS lv2 vst2
 #   UI_TYPE opengl
 #   FILES_DSP
 #       src/MyPlugin.cpp
@@ -71,7 +71,7 @@ include(CMakeParseArguments)
 #
 #   `TARGETS` <tgt1>...<tgtN>
 #       a list of one of more of the following target types:
-#       `jack`, `ladspa`, `dssi`, `lv2`, `vst`
+#       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`
 #
 #   `UI_TYPE` <type>
 #       the user interface type: `opengl` (default), `cairo`
@@ -147,8 +147,8 @@ function(dpf_add_plugin NAME)
       dpf__build_dssi("${NAME}" "${_dgl_library}")
     elseif(_target STREQUAL "lv2")
       dpf__build_lv2("${NAME}" "${_dgl_library}" "${_dpf_plugin_MONOLITHIC}")
-    elseif(_target STREQUAL "vst")
-      dpf__build_vst("${NAME}" "${_dgl_library}")
+    elseif(_target STREQUAL "vst2")
+      dpf__build_vst2("${NAME}" "${_dgl_library}")
     else()
       message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
@@ -290,21 +290,21 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2")
 endfunction()
 
-# dpf__build_vst
+# dpf__build_vst2
 # ------------------------------------------------------------------------------
 #
-# Add build rules for a VST plugin.
+# Add build rules for a VST2 plugin.
 #
-function(dpf__build_vst NAME DGL_LIBRARY)
+function(dpf__build_vst2 NAME DGL_LIBRARY)
   dpf__create_dummy_source_list(_no_srcs)
 
-  dpf__add_module("${NAME}-vst" ${_no_srcs})
-  dpf__add_plugin_main("${NAME}-vst" "vst")
-  dpf__add_ui_main("${NAME}-vst" "vst" "${DGL_LIBRARY}")
-  target_link_libraries("${NAME}-vst" PRIVATE "${NAME}-dsp" "${NAME}-ui")
-  set_target_properties("${NAME}-vst" PROPERTIES
+  dpf__add_module("${NAME}-vst2" ${_no_srcs})
+  dpf__add_plugin_main("${NAME}-vst2" "vst2")
+  dpf__add_ui_main("${NAME}-vst2" "vst2" "${DGL_LIBRARY}")
+  target_link_libraries("${NAME}-vst2" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  set_target_properties("${NAME}-vst2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
-    OUTPUT_NAME "${NAME}-vst"
+    OUTPUT_NAME "${NAME}-vst2"
     PREFIX "")
 endfunction()
 
@@ -500,6 +500,13 @@ endfunction()
 #
 function(dpf__add_plugin_target_definition NAME TARGET)
   string(TOUPPER "${TARGET}" _upperTarget)
+
+  # resolve the alias into the proper name
+  # the name "vst2" is new, "vst" is legacy
+  if(_upperTarget STREQUAL "VST2")
+    set(_upperTarget "VST")
+  endif()
+
   target_compile_definitions("${NAME}" PRIVATE "DISTRHO_PLUGIN_TARGET_${_upperTarget}")
 endfunction()
 

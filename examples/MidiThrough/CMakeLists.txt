@@ -2,7 +2,7 @@
 # ------------------------------ #
 
 dpf_add_plugin(d_midiThrough
-  TARGETS jack lv2 vst
+  TARGETS jack lv2 vst2
   FILES_DSP
       MidiThroughExamplePlugin.cpp)
 
