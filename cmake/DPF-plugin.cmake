@@ -110,6 +110,8 @@ function(dpf_add_plugin NAME)
       dpf__build_lv2("${NAME}" "${_dgl_library}" "${_dpf_plugin_MONOLITHIC}")
     elseif(_target STREQUAL "vst")
       dpf__build_vst("${NAME}" "${_dgl_library}")
+    else()
+      message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
   endforeach()
 endfunction()
@@ -416,7 +418,7 @@ endfunction()
 # dpf__add_static_library
 # ------------------------------------------------------------------------------
 #
-# Adds a module target, and set some default properties on the target.
+# Adds a static library target, and set some default properties on the target.
 #
 function(dpf__add_static_library NAME)
   add_library("${NAME}" STATIC ${ARGN})
