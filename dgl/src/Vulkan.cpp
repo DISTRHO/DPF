@@ -211,20 +211,16 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 
 void TopLevelWidget::PrivateData::display()
 {
+    if (! selfw->pData->visible)
+        return;
+
     const Size<uint> size(window.getSize());
     const uint width  = size.getWidth();
     const uint height = size.getHeight();
 
     const double autoScaleFactor = window.pData->autoScaleFactor;
 
-    // FIXME anything needed here?
-#if 0
-    // full viewport size
-    if (window.pData->autoScaling)
-        glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
-    else
-        glViewport(0, 0, width, height);
-#endif
+    // TODO
 
     // main widget drawing
     self->onDisplay();

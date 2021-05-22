@@ -39,6 +39,10 @@ TopLevelWidget::PrivateData::~PrivateData()
 
 bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     // give top-level widget chance to catch this event first
     if (self->onKeyboard(ev))
         return true;
@@ -49,6 +53,10 @@ bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)
 
 bool TopLevelWidget::PrivateData::specialEvent(const SpecialEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     // give top-level widget chance to catch this event first
     if (self->onSpecial(ev))
         return true;
@@ -59,6 +67,10 @@ bool TopLevelWidget::PrivateData::specialEvent(const SpecialEvent& ev)
 
 bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     // give top-level widget chance to catch this event first
     if (self->onCharacterInput(ev))
         return true;
@@ -69,6 +81,10 @@ bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent&
 
 bool TopLevelWidget::PrivateData::mouseEvent(const MouseEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     MouseEvent rev = ev;
 
     if (window.pData->autoScaling)
@@ -89,6 +105,10 @@ bool TopLevelWidget::PrivateData::mouseEvent(const MouseEvent& ev)
 
 bool TopLevelWidget::PrivateData::motionEvent(const MotionEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     MotionEvent rev = ev;
 
     if (window.pData->autoScaling)
@@ -109,6 +129,10 @@ bool TopLevelWidget::PrivateData::motionEvent(const MotionEvent& ev)
 
 bool TopLevelWidget::PrivateData::scrollEvent(const ScrollEvent& ev)
 {
+    // ignore event if we are not visible
+    if (! selfw->pData->visible)
+        return false;
+
     ScrollEvent rev = ev;
 
     if (window.pData->autoScaling)

@@ -757,6 +757,9 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 
 void TopLevelWidget::PrivateData::display()
 {
+    if (! selfw->pData->visible)
+        return;
+
     const Size<uint> size(window.getSize());
     const uint width  = size.getWidth();
     const uint height = size.getHeight();
