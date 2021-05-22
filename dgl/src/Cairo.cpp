@@ -326,22 +326,22 @@ CairoImage::CairoImage()
       surfacedata(nullptr),
       datarefcount(nullptr) {}
 
-CairoImage::CairoImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
-    : ImageBase(rawData, width, height, format),
+CairoImage::CairoImage(const char* const rdata, const uint w, const uint h, const ImageFormat fmt)
+    : ImageBase(rdata, w, h, fmt),
       surface(nullptr),
       surfacedata(nullptr),
       datarefcount(nullptr)
 {
-    loadFromMemory(rawData, width, height, format);
+    loadFromMemory(rdata, w, h, fmt);
 }
 
-CairoImage::CairoImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
-    : ImageBase(rawData, size, format),
+CairoImage::CairoImage(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
+    : ImageBase(rdata, s, fmt),
       surface(nullptr),
       surfacedata(nullptr),
       datarefcount(nullptr)
 {
-    loadFromMemory(rawData, size, format);
+    loadFromMemory(rdata, s, fmt);
 }
 
 CairoImage::CairoImage(const CairoImage& image)
@@ -368,11 +368,11 @@ CairoImage::~CairoImage()
 void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
     const cairo_format_t cairoformat = asCairoImageFormat(fmt);
-    const uint width  = s.getWidth();
-    const uint height = s.getHeight();
-    const int stride  = cairo_format_stride_for_width(cairoformat, width);
+    const int width  = static_cast<int>(s.getWidth());
+    const int height = static_cast<int>(s.getHeight());
+    const int stride = cairo_format_stride_for_width(cairoformat, width);
 
-    uchar* const newdata = (uchar*)std::malloc(width * height * stride * 4);
+    uchar* const newdata = (uchar*)std::malloc(static_cast<size_t>(width * height * stride * 4));
     DISTRHO_SAFE_ASSERT_RETURN(newdata != nullptr,);
 
     cairo_surface_t* const newsurface = cairo_image_surface_create_for_data(newdata, cairoformat, width, height, stride);
@@ -401,13 +401,13 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
         break;
     case kImageFormatBGR:
         // BGR8 to CAIRO_FORMAT_RGB24
-        for (uint h = 0; h < height; ++h)
+        for (int h = 0; h < height; ++h)
         {
-            for (uint w = 0; w < width; ++w)
+            for (int w = 0; w < width; ++w)
             {
-                newdata[h*width*4+w*4+0] = rdata[h*width*3+w*3+0];
-                newdata[h*width*4+w*4+1] = rdata[h*width*3+w*3+1];
-                newdata[h*width*4+w*4+2] = rdata[h*width*3+w*3+2];
+                newdata[h*width*4+w*4+0] = static_cast<uchar>(rdata[h*width*3+w*3+0]);
+                newdata[h*width*4+w*4+1] = static_cast<uchar>(rdata[h*width*3+w*3+1]);
+                newdata[h*width*4+w*4+2] = static_cast<uchar>(rdata[h*width*3+w*3+2]);
                 newdata[h*width*4+w*4+3] = 0;
             }
         }
@@ -415,16 +415,16 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
     case kImageFormatBGRA:
         // BGRA8 to CAIRO_FORMAT_ARGB32
         // FIXME something is wrong here...
-        for (uint h = 0, t; h < height; ++h)
+        for (int h = 0, t; h < height; ++h)
         {
-            for (uint w = 0; w < width; ++w)
+            for (int w = 0; w < width; ++w)
             {
                 if ((t = rdata[h*width*4+w*4+3]) != 0)
                 {
-                    newdata[h*width*4+w*4+0] = rdata[h*width*4+w*4+0];
-                    newdata[h*width*4+w*4+1] = rdata[h*width*4+w*4+1];
-                    newdata[h*width*4+w*4+2] = rdata[h*width*4+w*4+2];
-                    newdata[h*width*4+w*4+3] = t;
+                    newdata[h*width*4+w*4+0] = static_cast<uchar>(rdata[h*width*4+w*4+0]);
+                    newdata[h*width*4+w*4+1] = static_cast<uchar>(rdata[h*width*4+w*4+1]);
+                    newdata[h*width*4+w*4+2] = static_cast<uchar>(rdata[h*width*4+w*4+2]);
+                    newdata[h*width*4+w*4+3] = static_cast<uchar>(t);
                 }
                 else
                 {
@@ -476,6 +476,11 @@ void CairoImage::loadFromPNG(const char* const pngData, const uint pngSize) noex
     cairo_surface_t* const newsurface = cairo_image_surface_create_from_png_stream(PngReaderData::read, &readerData);
     DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
 
+    const int newwidth = cairo_image_surface_get_width(newsurface);
+    const int newheight = cairo_image_surface_get_height(newsurface);
+    DISTRHO_SAFE_ASSERT_INT_RETURN(newwidth > 0, newwidth,);
+    DISTRHO_SAFE_ASSERT_INT_RETURN(newheight > 0, newheight,);
+
     cairo_surface_destroy(surface);
 
     if (datarefcount != nullptr && --(*datarefcount) == 0)
@@ -489,7 +494,7 @@ void CairoImage::loadFromPNG(const char* const pngData, const uint pngSize) noex
 
     rawData = nullptr;
     format = kImageFormatNull; // asCairoImageFormat(cairo_image_surface_get_format(newsurface));
-    size = Size<uint>(cairo_image_surface_get_width(newsurface), cairo_image_surface_get_height(newsurface));
+    size = Size<uint>(static_cast<uint>(newwidth), static_cast<uint>(newheight));
 }
 
 void CairoImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
@@ -597,7 +602,7 @@ void ImageBaseKnob<CairoImage>::PrivateData::cleanup()
    Get the pixel size in bytes.
    @return pixel size, or 0 if the format is unknown, or pixels are not aligned to bytes.
 */
-static uint getBytesPerPixel(cairo_format_t format) noexcept
+static int getBytesPerPixel(const cairo_format_t format) noexcept
 {
     switch (format)
     {
@@ -617,17 +622,17 @@ static uint getBytesPerPixel(cairo_format_t format) noexcept
     }
 }
 
-static cairo_surface_t* getRegion(cairo_surface_t* origsurface, uint x, uint y, uint width, uint height) noexcept
+static cairo_surface_t* getRegion(cairo_surface_t* origsurface, int x, int y, int width, int height) noexcept
 {
     const cairo_format_t format = cairo_image_surface_get_format(origsurface);
-    const uint bpp = getBytesPerPixel(format);
+    const int bpp = getBytesPerPixel(format);
 
     if (bpp == 0)
         return nullptr;
 
-    const uint fullWidth  = cairo_image_surface_get_width(origsurface);
-    const uint fullHeight = cairo_image_surface_get_height(origsurface);
-    const uint stride     = cairo_image_surface_get_stride(origsurface);
+    const int fullWidth   = cairo_image_surface_get_width(origsurface);
+    const int fullHeight  = cairo_image_surface_get_height(origsurface);
+    const int stride      = cairo_image_surface_get_stride(origsurface);
     uchar* const fullData = cairo_image_surface_get_data(origsurface);
 
     x = (x < fullWidth) ? x : fullWidth;
@@ -635,7 +640,7 @@ static cairo_surface_t* getRegion(cairo_surface_t* origsurface, uint x, uint y, 
     width = (x + width < fullWidth) ? width : (fullWidth - x);
     height = (x + height < fullHeight) ? height : (fullHeight - x);
 
-    uchar* const data = fullData + x * bpp + y * stride;
+    uchar* const data = fullData + (x * bpp + y * stride);
     return cairo_image_surface_create_for_data(data, format, width, height, stride);
 }
 
@@ -644,22 +649,22 @@ void ImageBaseKnob<CairoImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
     cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
-    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
+    const double normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
         / (pData->maximum - pData->minimum);
 
     cairo_surface_t* surface = (cairo_surface_t*)pData->cairoSurface;
 
     if (! pData->isReady)
     {
-        const uint layerW = pData->imgLayerWidth;
-        const uint layerH = pData->imgLayerHeight;
-        uint layerNum = 0;
+        const int layerW = static_cast<int>(pData->imgLayerWidth);
+        const int layerH = static_cast<int>(pData->imgLayerHeight);
+        int layerNum = 0;
 
         if (pData->rotationAngle == 0)
-            layerNum = uint(normValue * float(pData->imgLayerCount-1));
+            layerNum = static_cast<int>(normValue * static_cast<double>(pData->imgLayerCount - 1) + 0.5);
 
-        const uint layerX = pData->isImgVertical ? 0 : layerNum * layerW;
-        const uint layerY = !pData->isImgVertical ? 0 : layerNum * layerH;
+        const int layerX = pData->isImgVertical ? 0 : layerNum * layerW;
+        const int layerY = !pData->isImgVertical ? 0 : layerNum * layerH;
 
         cairo_surface_t* newsurface;
 
@@ -672,8 +677,8 @@ void ImageBaseKnob<CairoImage>::onDisplay()
             newsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH);
             cairo_t* const cr = cairo_create(newsurface);
             cairo_translate(cr, 0.5 * layerW, 0.5 * layerH);
-            cairo_rotate(cr, normValue * pData->rotationAngle * (float)(M_PI / 180));
-            cairo_set_source_surface(cr, pData->image.getSurface(), -0.5f * layerW, -0.5f * layerH);
+            cairo_rotate(cr, normValue * pData->rotationAngle * (M_PI / 180));
+            cairo_set_source_surface(cr, pData->image.getSurface(), -0.5 * layerW, -0.5 * layerH);
             cairo_paint(cr);
             cairo_destroy(cr);
         }

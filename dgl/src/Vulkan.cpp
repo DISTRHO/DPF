@@ -170,11 +170,11 @@ template class Rectangle<ushort>;
 VulkanImage::VulkanImage()
     : ImageBase() {}
 
-VulkanImage::VulkanImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
-    : ImageBase(rawData, width, height, format) {}
+VulkanImage::VulkanImage(const char* const rdata, const uint w, const uint h, const ImageFormat fmt)
+    : ImageBase(rdata, w, h, fmt) {}
 
-VulkanImage::VulkanImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
-    : ImageBase(rawData, size, format) {}
+VulkanImage::VulkanImage(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
+    : ImageBase(rdata, s, fmt) {}
 
 VulkanImage::VulkanImage(const VulkanImage& image)
     : ImageBase(image.rawData, image.size, image.format) {}

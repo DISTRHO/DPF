@@ -60,7 +60,7 @@ void Line<T>::draw(const GraphicsContext&, const T width)
 {
     DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
-    glLineWidth(width);
+    glLineWidth(static_cast<GLfloat>(width));
     drawLine<T>(posStart, posEnd);
 }
 
@@ -120,7 +120,7 @@ void Circle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
 {
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    glLineWidth(lineWidth);
+    glLineWidth(static_cast<GLfloat>(lineWidth));
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
 }
 
@@ -177,7 +177,7 @@ void Triangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
 {
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    glLineWidth(lineWidth);
+    glLineWidth(static_cast<GLfloat>(lineWidth));
     drawTriangle<T>(pos1, pos2, pos3, true);
 }
 
@@ -244,7 +244,7 @@ void Rectangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
 {
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    glLineWidth(lineWidth);
+    glLineWidth(static_cast<GLfloat>(lineWidth));
     drawRectangle<T>(*this, true);
 }
 
@@ -348,8 +348,8 @@ OpenGLImage::OpenGLImage()
     DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
-OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const ImageFormat format)
-    : ImageBase(rawData, width, height, format),
+OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const ImageFormat fmt)
+    : ImageBase(rdata, w, h, fmt),
       textureId(0),
       setupCalled(false)
 {
@@ -357,8 +357,8 @@ OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint
     DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
-OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const ImageFormat format)
-    : ImageBase(rawData, size, format),
+OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
+    : ImageBase(rdata, s, fmt),
       textureId(0),
       setupCalled(false)
 {
@@ -402,8 +402,8 @@ OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
 }
 
 // deprecated calls
-OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint height, const GLenum format)
-    : ImageBase(rawData, width, height, asDISTRHOImageFormat(format)),
+OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const GLenum fmt)
+    : ImageBase(rdata, w, h, asDISTRHOImageFormat(fmt)),
       textureId(0),
       setupCalled(false)
 {
@@ -411,8 +411,8 @@ OpenGLImage::OpenGLImage(const char* const rawData, const uint width, const uint
     DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
-OpenGLImage::OpenGLImage(const char* const rawData, const Size<uint>& size, const GLenum format)
-    : ImageBase(rawData, size, asDISTRHOImageFormat(format)),
+OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const GLenum fmt)
+    : ImageBase(rdata, s, asDISTRHOImageFormat(fmt)),
       textureId(0),
       setupCalled(false)
 {
@@ -568,31 +568,33 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     {
         // full viewport size
         glViewport(0,
-                   -(height * autoScaleFactor - height),
-                   width * autoScaleFactor,
-                   height * autoScaleFactor);
+                   -static_cast<int>(height * autoScaleFactor - height + 0.5),
+                   static_cast<int>(width * autoScaleFactor + 0.5),
+                   static_cast<int>(height * autoScaleFactor + 0.5));
     }
     else if (needsViewportScaling)
     {
         // limit viewport to widget bounds
         glViewport(absolutePos.getX(),
-                   height - self->getHeight() - absolutePos.getY(),
-                   self->getWidth(),
-                   self->getHeight());
+                   static_cast<int>(height - self->getHeight()) - absolutePos.getY(),
+                   static_cast<int>(self->getWidth()),
+                   static_cast<int>(self->getHeight()));
     }
     else
     {
         // set viewport pos
-        glViewport(absolutePos.getX() * autoScaleFactor,
-                    -std::round((height * autoScaleFactor - height) + (absolutePos.getY() * autoScaleFactor)),
-                    std::round(width * autoScaleFactor),
-                    std::round(height * autoScaleFactor));
+        glViewport(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
+                   -static_cast<int>(std::round((height * autoScaleFactor - height)
+                                     + (absolutePos.getY() * autoScaleFactor))),
+                   static_cast<int>(std::round(width * autoScaleFactor)),
+                   static_cast<int>(std::round(height * autoScaleFactor)));
 
         // then cut the outer bounds
-        glScissor(absolutePos.getX() * autoScaleFactor,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * autoScaleFactor),
-                  std::round(self->getWidth() * autoScaleFactor),
-                  std::round(self->getHeight() * autoScaleFactor));
+        glScissor(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
+                  static_cast<int>(height - std::round((static_cast<int>(self->getHeight()) + absolutePos.getY())
+                                                       * autoScaleFactor)),
+                  static_cast<int>(std::round(self->getWidth() * autoScaleFactor)),
+                  static_cast<int>(std::round(self->getHeight() * autoScaleFactor)));
 
         glEnable(GL_SCISSOR_TEST);
         needsDisableScissor = true;
@@ -622,9 +624,16 @@ void TopLevelWidget::PrivateData::display()
 
     // full viewport size
     if (window.pData->autoScaling)
-        glViewport(0, -(height * autoScaleFactor - height), width * autoScaleFactor, height * autoScaleFactor);
+    {
+        glViewport(0,
+                   -static_cast<int>(height * autoScaleFactor - height),
+                   static_cast<int>(width * autoScaleFactor),
+                   static_cast<int>(height * autoScaleFactor));
+    }
     else
-        glViewport(0, 0, width, height);
+    {
+        glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
+    }
 
     // main widget drawing
     self->onDisplay();

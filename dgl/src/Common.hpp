@@ -75,7 +75,7 @@ struct ButtonImpl {
         // button was pressed, wait for release
         if (ev.press && self->contains(ev.pos))
         {
-            button = ev.button;
+            button = static_cast<int>(ev.button);
             state  = kStateDown;
             self->repaint();
             return true;
@@ -135,8 +135,8 @@ struct ImageBaseKnob<ImageType>::PrivateData {
 
     int rotationAngle;
     bool dragging;
-    int lastX;
-    int lastY;
+    double lastX;
+    double lastY;
 
     Callback* callback;
 
@@ -164,18 +164,18 @@ struct ImageBaseKnob<ImageType>::PrivateData {
     void init();
     void cleanup();
 
-    inline float logscale(float value) const
+    inline float logscale(const float v) const
     {
         const float b = std::log(maximum/minimum)/(maximum-minimum);
         const float a = maximum/std::exp(maximum*b);
-        return a * std::exp(b*value);
+        return a * std::exp(b*v);
     }
 
-    inline float invlogscale(float value) const
+    inline float invlogscale(const float v) const
     {
         const float b = std::log(maximum/minimum)/(maximum-minimum);
         const float a = maximum/std::exp(maximum*b);
-        return std::log(value/a)/b;
+        return std::log(v/a)/b;
     }
 
     DISTRHO_DECLARE_NON_COPYABLE(PrivateData)

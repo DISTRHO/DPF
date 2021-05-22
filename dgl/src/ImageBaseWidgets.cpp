@@ -201,8 +201,8 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(const ImageType& img, const O
         orientation(o),
         rotationAngle(0),
         dragging(false),
-        lastX(0),
-        lastY(0),
+        lastX(0.0),
+        lastY(0.0),
         callback(nullptr),
         alwaysRepaint(false),
         isImgVertical(img.getHeight() > img.getWidth()),
@@ -228,8 +228,8 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(PrivateData* const other)
         orientation(other->orientation),
         rotationAngle(other->rotationAngle),
         dragging(false),
-        lastX(0),
-        lastY(0),
+        lastX(0.0),
+        lastY(0.0),
         callback(other->callback),
         alwaysRepaint(other->alwaysRepaint),
         isImgVertical(other->isImgVertical),
@@ -245,21 +245,21 @@ template <class ImageType>
 void ImageBaseKnob<ImageType>::PrivateData::assignFrom(PrivateData* const other)
 {
     cleanup();
-    image    = other->image;
-    minimum  = other->minimum;
-    maximum  = other->maximum;
-    step     = other->step;
-    value    = other->value;
-    valueDef = other->valueDef;
-    valueTmp = value;
-    usingDefault  = other->usingDefault;
-    usingLog      = other->usingLog;
-    orientation   = other->orientation;
-    rotationAngle = other->rotationAngle;
-    dragging = false;
-    lastX    = 0;
-    lastY    = 0;
-    callback = other->callback;
+    image          = other->image;
+    minimum        = other->minimum;
+    maximum        = other->maximum;
+    step           = other->step;
+    value          = other->value;
+    valueDef       = other->valueDef;
+    valueTmp       = value;
+    usingDefault   = other->usingDefault;
+    usingLog       = other->usingLog;
+    orientation    = other->orientation;
+    rotationAngle  = other->rotationAngle;
+    dragging       = false;
+    lastX          = 0.0;
+    lastY          = 0.0;
+    callback       = other->callback;
     alwaysRepaint  = other->alwaysRepaint;
     isImgVertical  = other->isImgVertical;
     imgLayerWidth  = other->imgLayerWidth;
@@ -476,7 +476,7 @@ bool ImageBaseKnob<ImageType>::onMotion(const MotionEvent& ev)
 
     if (pData->orientation == ImageBaseKnob<ImageType>::Horizontal)
     {
-        if (const int movX = ev.pos.getX() - pData->lastX)
+        if (const double movX = ev.pos.getX() - pData->lastX)
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
             value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movX));
@@ -485,7 +485,7 @@ bool ImageBaseKnob<ImageType>::onMotion(const MotionEvent& ev)
     }
     else if (pData->orientation == ImageBaseKnob<ImageType>::Vertical)
     {
-        if (const int movY = pData->lastY - ev.pos.getY())
+        if (const double movY = pData->lastY - ev.pos.getY())
         {
             d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
             value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movY));
@@ -529,7 +529,8 @@ bool ImageBaseKnob<ImageType>::onScroll(const ScrollEvent& ev)
         return false;
 
     const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-    float       value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * 10.f * ev.delta.getY());
+    float       value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp)
+                      + ((pData->maximum - pData->minimum) / d * 10.f * static_cast<float>(ev.delta.getY()));
 
     if (pData->usingLog)
         value = pData->logscale(value);
@@ -569,8 +570,8 @@ struct ImageBaseSlider<ImageType>::PrivateData {
     bool dragging;
     bool inverted;
     bool valueIsSet;
-    int  startedX;
-    int  startedY;
+    double startedX;
+    double startedY;
 
     Callback* callback;
 
@@ -590,8 +591,8 @@ struct ImageBaseSlider<ImageType>::PrivateData {
           dragging(false),
           inverted(false),
           valueIsSet(false),
-          startedX(0),
-          startedY(0),
+          startedX(0.0),
+          startedY(0.0),
           callback(nullptr),
           startPos(),
           endPos(),
@@ -814,8 +815,8 @@ bool ImageBaseSlider<ImageType>::onMouse(const MouseEvent& ev)
         }
 
         float vper;
-        const int x = ev.pos.getX();
-        const int y = ev.pos.getY();
+        const double x = ev.pos.getX();
+        const double y = ev.pos.getY();
 
         if (pData->startPos.getY() == pData->endPos.getY())
         {
@@ -880,8 +881,8 @@ bool ImageBaseSlider<ImageType>::onMotion(const MotionEvent& ev)
         return false;
 
     const bool horizontal = pData->startPos.getY() == pData->endPos.getY();
-    const int x = ev.pos.getX();
-    const int y = ev.pos.getY();
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
 
     if ((horizontal && pData->sliderArea.containsX(x)) || (pData->sliderArea.containsY(y) && ! horizontal))
     {

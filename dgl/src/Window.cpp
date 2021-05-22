@@ -93,18 +93,25 @@ void Window::setResizable(const bool resizable)
 
 uint Window::getWidth() const noexcept
 {
-    return puglGetFrame(pData->view).width;
+    const double width = puglGetFrame(pData->view).width;
+    DISTRHO_SAFE_ASSERT_RETURN(width >= 0.0, 0);
+    return static_cast<uint>(width + 0.5);
 }
 
 uint Window::getHeight() const noexcept
 {
-    return puglGetFrame(pData->view).height;
+    const double height = puglGetFrame(pData->view).height;
+    DISTRHO_SAFE_ASSERT_RETURN(height >= 0.0, 0);
+    return static_cast<uint>(height + 0.5);
 }
 
 Size<uint> Window::getSize() const noexcept
 {
     const PuglRect rect = puglGetFrame(pData->view);
-    return Size<uint>(rect.width, rect.height);
+    DISTRHO_SAFE_ASSERT_RETURN(rect.width >= 0.0, Size<uint>());
+    DISTRHO_SAFE_ASSERT_RETURN(rect.height >= 0.0, Size<uint>());
+    return Size<uint>(static_cast<uint>(rect.width + 0.5),
+                      static_cast<uint>(rect.height + 0.5));
 }
 
 void Window::setWidth(const uint width)
@@ -123,7 +130,7 @@ void Window::setSize(const uint width, const uint height)
 
     // FIXME add default and min props for this
     if (pData->minWidth == 0 && pData->minHeight == 0)
-        puglSetDefaultSize(pData->view, width, height);
+        puglSetDefaultSize(pData->view, static_cast<int>(width), static_cast<int>(height));
 
     puglSetWindowSize(pData->view, width, height);
 }
@@ -237,16 +244,16 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     const double scaleFactor = pData->scaleFactor;
 
     puglSetGeometryConstraints(pData->view,
-                               minimumWidth * scaleFactor,
-                               minimumHeight * scaleFactor,
+                               static_cast<uint>(minimumWidth * scaleFactor + 0.5),
+                               static_cast<uint>(minimumHeight * scaleFactor + 0.5),
                                keepAspectRatio);
 
     if (scaleFactor != 1.0)
     {
         const Size<uint> size(getSize());
 
-        setSize(size.getWidth() * scaleFactor,
-                size.getHeight() * scaleFactor);
+        setSize(static_cast<uint>(size.getWidth() * scaleFactor + 0.5),
+                static_cast<uint>(size.getHeight() * scaleFactor + 0.5));
     }
 }
 

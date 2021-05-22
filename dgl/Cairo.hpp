@@ -106,8 +106,8 @@ public:
     CairoImage& operator=(const CairoImage& image) noexcept;
 
     // FIXME this should not be needed
-    inline void loadFromMemory(const char* rawData, uint w, uint h, ImageFormat format = kImageFormatBGRA)
-    { loadFromMemory(rawData, Size<uint>(w, h), format); };
+    inline void loadFromMemory(const char* rdata, uint w, uint h, ImageFormat fmt = kImageFormatBGRA)
+    { loadFromMemory(rdata, Size<uint>(w, h), fmt); };
     inline void draw(const GraphicsContext& context)
     { drawAt(context, Point<int>(0, 0)); };
     inline void drawAt(const GraphicsContext& context, int x, int y)

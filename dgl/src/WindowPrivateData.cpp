@@ -146,7 +146,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
 {
     if (isEmbed)
     {
-        puglSetDefaultSize(view, width, height);
+        puglSetDefaultSize(view, static_cast<int>(width), static_cast<int>(height));
         puglSetParentWindow(view, parentWindowHandle);
     }
 
@@ -246,8 +246,8 @@ void Window::PrivateData::show()
 
         // FIXME
         PuglRect rect = puglGetFrame(view);
-        puglSetDefaultSize(view, rect.width, rect.height);
-        puglSetWindowSize(view, rect.width, rect.height);
+        puglSetDefaultSize(view, static_cast<int>(rect.width), static_cast<int>(rect.height));
+        puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
 
 #ifdef DISTRHO_OS_WINDOWS
         puglWin32ShowWindowCentered(view);
@@ -395,7 +395,7 @@ void Window::PrivateData::startModal()
 
     // FIXME?
     PuglRect rect = puglGetFrame(view);
-    puglSetDefaultSize(view, rect.width, rect.height);
+    puglSetDefaultSize(view, static_cast<int>(rect.width), static_cast<int>(rect.height));
 
     // make sure both parent and ourselves are visible
     modal.parent->show();
@@ -464,7 +464,7 @@ void Window::PrivateData::runAsModal(const bool blockWait)
 // -----------------------------------------------------------------------
 // pugl events
 
-void Window::PrivateData::onPuglConfigure(const int width, const int height)
+void Window::PrivateData::onPuglConfigure(const double width, const double height)
 {
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
@@ -472,16 +472,18 @@ void Window::PrivateData::onPuglConfigure(const int width, const int height)
 
     if (autoScaling)
     {
-        const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(minWidth);
-        const double scaleVertical   = static_cast<double>(height) / static_cast<double>(minHeight);
+        const double scaleHorizontal = width  / static_cast<double>(minWidth);
+        const double scaleVertical   = height / static_cast<double>(minHeight);
         autoScaleFactor = scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical;
     }
 
-    self->onReshape(width, height);
+    const uint uwidth = static_cast<uint>(width + 0.5);
+    const uint uheight = static_cast<uint>(height + 0.5);
+    self->onReshape(uwidth, uheight);
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
-        topLevelWidget->setSize(width, height);
+        topLevelWidget->setSize(uwidth, uheight);
 #endif
 
     // always repaint after a resize

@@ -249,7 +249,22 @@ bool Size<T>::isInvalid() const noexcept
 template<typename T>
 Size<int> Size<T>::toInt() const noexcept
 {
-    return Size<int>(fWidth, fHeight);
+    return Size<int>(static_cast<int>(fWidth),
+                     static_cast<int>(fHeight));
+}
+
+template<>
+Size<int> Size<double>::toInt() const noexcept
+{
+    return Size<int>(static_cast<int>(fWidth + 0.5),
+                     static_cast<int>(fHeight + 0.5));
+}
+
+template<>
+Size<int> Size<float>::toInt() const noexcept
+{
+    return Size<int>(static_cast<int>(fWidth + 0.5f),
+                     static_cast<int>(fHeight + 0.5f));
 }
 
 template<typename T>
@@ -645,10 +660,10 @@ Triangle<T>::Triangle(const T& x1, const T& y1, const T& x2, const T& y2, const 
       pos3(x3, y3) {}
 
 template<typename T>
-Triangle<T>::Triangle(const Point<T>& pos1, const Point<T>& pos2, const Point<T>& pos3) noexcept
-    : pos1(pos1),
-      pos2(pos2),
-      pos3(pos3) {}
+Triangle<T>::Triangle(const Point<T>& p1, const Point<T>& p2, const Point<T>& p3) noexcept
+    : pos1(p1),
+      pos2(p2),
+      pos3(p3) {}
 
 template<typename T>
 Triangle<T>::Triangle(const Triangle<T>& tri) noexcept
@@ -710,24 +725,24 @@ Rectangle<T>::Rectangle() noexcept
       size(0, 0) {}
 
 template<typename T>
-Rectangle<T>::Rectangle(const T& x, const T& y, const T& width, const T& height) noexcept
+Rectangle<T>::Rectangle(const T& x, const T& y, const T& w, const T& h) noexcept
     : pos(x, y),
-      size(width, height) {}
+      size(w, h) {}
 
 template<typename T>
-Rectangle<T>::Rectangle(const T& x, const T& y, const Size<T>& size) noexcept
+Rectangle<T>::Rectangle(const T& x, const T& y, const Size<T>& s) noexcept
     : pos(x, y),
-      size(size) {}
+      size(s) {}
 
 template<typename T>
-Rectangle<T>::Rectangle(const Point<T>& pos, const T& width, const T& height) noexcept
-    : pos(pos),
-      size(width, height) {}
+Rectangle<T>::Rectangle(const Point<T>& p, const T& w, const T& h) noexcept
+    : pos(p),
+      size(w, h) {}
 
 template<typename T>
-Rectangle<T>::Rectangle(const Point<T>& pos, const Size<T>& size) noexcept
-    : pos(pos),
-      size(size) {}
+Rectangle<T>::Rectangle(const Point<T>& p, const Size<T>& s) noexcept
+    : pos(p),
+      size(s) {}
 
 template<typename T>
 Rectangle<T>::Rectangle(const Rectangle<T>& rect) noexcept
@@ -865,9 +880,9 @@ bool Rectangle<T>::contains(const T& x, const T& y) const noexcept
 }
 
 template<typename T>
-bool Rectangle<T>::contains(const Point<T>& pos) const noexcept
+bool Rectangle<T>::contains(const Point<T>& p) const noexcept
 {
-    return contains(pos.x, pos.y);
+    return contains(p.x, p.y);
 }
 
 template<typename T>

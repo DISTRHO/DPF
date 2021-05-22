@@ -91,6 +91,9 @@ struct Window::PrivateData : IdleCallback {
         {
             DISTRHO_SAFE_ASSERT(! enabled);
         }
+
+        DISTRHO_DECLARE_NON_COPYABLE(Modal)
+        DISTRHO_PREVENT_HEAP_ALLOCATION
     } modal;
 
     /** Constructor for a regular, standalone window. */
@@ -144,7 +147,7 @@ struct Window::PrivateData : IdleCallback {
     void runAsModal(bool blockWait);
 
     // pugl events
-    void onPuglConfigure(int width, int height);
+    void onPuglConfigure(double width, double height);
     void onPuglExpose();
     void onPuglClose();
     void onPuglFocus(bool focus, CrossingMode mode);

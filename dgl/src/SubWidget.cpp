@@ -64,8 +64,8 @@ Rectangle<int> SubWidget::getAbsoluteArea() const noexcept
 
 Rectangle<uint> SubWidget::getConstrainedAbsoluteArea() const noexcept
 {
-    return Rectangle<uint>(std::max(0, getAbsoluteX()),
-                           std::max(0, getAbsoluteY()),
+    return Rectangle<uint>(static_cast<uint>(std::max(0, getAbsoluteX())),
+                           static_cast<uint>(std::max(0, getAbsoluteY())),
                            getSize());
 }
 

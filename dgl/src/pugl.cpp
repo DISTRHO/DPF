@@ -194,14 +194,14 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 
 PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, const uint height, const bool aspect)
 {
-    view->minWidth  = width;
-    view->minHeight = height;
+    view->minWidth  = (int)width;
+    view->minHeight = (int)height;
 
     if (aspect) {
-        view->minAspectX = width;
-        view->minAspectY = height;
-        view->maxAspectX = width;
-        view->maxAspectY = height;
+        view->minAspectX = (int)width;
+        view->minAspectY = (int)height;
+        view->maxAspectX = (int)width;
+        view->maxAspectY = (int)height;
     }
 
 #if defined(DISTRHO_OS_HAIKU)

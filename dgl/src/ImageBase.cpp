@@ -81,12 +81,12 @@ ImageFormat ImageBase::getFormat() const noexcept
     return format;
 }
 
-void ImageBase::loadFromMemory(const char* const rawData,
-                                 const uint width,
-                                 const uint height,
-                                 const ImageFormat format) noexcept
+void ImageBase::loadFromMemory(const char* const rdata,
+                               const uint width,
+                               const uint height,
+                               const ImageFormat fmt) noexcept
 {
-    loadFromMemory(rawData, Size<uint>(width, height), format);
+    loadFromMemory(rdata, Size<uint>(width, height), fmt);
 }
 
 void ImageBase::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
