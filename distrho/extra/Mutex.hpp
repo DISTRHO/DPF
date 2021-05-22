@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -39,7 +39,7 @@ public:
     /*
      * Constructor.
      */
-    Mutex(bool inheritPriority = true) noexcept
+    Mutex(const bool inheritPriority = true) noexcept
         : fMutex()
     {
         pthread_mutexattr_t attr;
@@ -61,9 +61,9 @@ public:
     /*
      * Lock the mutex.
      */
-    void lock() const noexcept
+    bool lock() const noexcept
     {
-        pthread_mutex_lock(&fMutex);
+        return (pthread_mutex_lock(&fMutex) == 0);
     }
 
     /*
@@ -86,7 +86,6 @@ public:
 private:
     mutable pthread_mutex_t fMutex;
 
-    DISTRHO_PREVENT_HEAP_ALLOCATION
     DISTRHO_DECLARE_NON_COPY_CLASS(Mutex)
 };
 
@@ -133,12 +132,13 @@ public:
     /*
      * Lock the mutex.
      */
-    void lock() const noexcept
+    bool lock() const noexcept
     {
 #ifdef DISTRHO_OS_WINDOWS
         EnterCriticalSection(&fSection);
+        return true;
 #else
-        pthread_mutex_lock(&fMutex);
+        return (pthread_mutex_lock(&fMutex) == 0);
 #endif
     }
 
@@ -174,7 +174,6 @@ private:
     mutable pthread_mutex_t fMutex;
 #endif
 
-    DISTRHO_PREVENT_HEAP_ALLOCATION
     DISTRHO_DECLARE_NON_COPY_CLASS(RecursiveMutex)
 };
 
@@ -294,6 +293,10 @@ public:
     ScopeTryLocker(const Mutex& mutex) noexcept
         : fMutex(mutex),
           fLocked(mutex.tryLock()) {}
+
+    ScopeTryLocker(const Mutex& mutex, const bool forceLock) noexcept
+        : fMutex(mutex),
+          fLocked(forceLock ? mutex.lock() : mutex.tryLock()) {}
 
     ~ScopeTryLocker() noexcept
     {
