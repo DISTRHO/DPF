@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -39,6 +39,10 @@
 #  define DISTRHO_OS_HAIKU 1
 # elif defined(__linux__) || defined(__linux)
 #  define DISTRHO_OS_LINUX 1
+# elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#  define DISTRHO_OS_BSD 1
+# elif defined(__GNU__)
+#  define DISTRHO_OS_GNU_HURD 1
 # endif
 #endif
 
@@ -85,10 +89,24 @@
 #endif
 
 /* Define DISTRHO_SAFE_ASSERT* */
-#define DISTRHO_SAFE_ASSERT(cond)               if (! (cond))   d_safe_assert(#cond, __FILE__, __LINE__);
+#define DISTRHO_SAFE_ASSERT(cond)               if (! (cond)) d_safe_assert      (#cond, __FILE__, __LINE__);
+#define DISTRHO_SAFE_ASSERT_INT(cond, value)    if (! (cond)) d_safe_assert_int  (#cond, __FILE__, __LINE__, static_cast<int>(value));
+#define DISTRHO_SAFE_ASSERT_INT2(cond, v1, v2)  if (! (cond)) d_safe_assert_int2 (#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2));
+#define DISTRHO_SAFE_ASSERT_UINT(cond, value)   if (! (cond)) d_safe_assert_uint (#cond, __FILE__, __LINE__, static_cast<uint>(value));
+#define DISTRHO_SAFE_ASSERT_UINT2(cond, v1, v2) if (! (cond)) d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2));
+
 #define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
 #define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
 #define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
+
+#define DISTRHO_CUSTOM_SAFE_ASSERT(msg, cond)             if (! (cond))   d_custom_safe_assert(msg, #cond, __FILE__, __LINE__);
+#define DISTRHO_CUSTOM_SAFE_ASSERT_BREAK(msg, cond)       if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); break; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_CONTINUE(msg, cond)    if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); continue; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_RETURN(msg, cond, ret) if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); return ret; }
+
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_BREAK(msg, cond)       if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } break; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_CONTINUE(msg, cond)    if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } continue; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN(msg, cond, ret) if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } return ret; }
 
 #define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value); break; }
 #define DISTRHO_SAFE_ASSERT_INT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); continue; }
@@ -112,37 +130,21 @@
 #define DISTRHO_SAFE_EXCEPTION_CONTINUE(msg)    catch(...) { d_safe_exception(msg, __FILE__, __LINE__); continue; }
 #define DISTRHO_SAFE_EXCEPTION_RETURN(msg, ret) catch(...) { d_safe_exception(msg, __FILE__, __LINE__); return ret; }
 
-/* Define DISTRHO_DECLARE_NON_COPY_CLASS */
+/* Define DISTRHO_DECLARE_NON_COPYABLE */
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) \
-private:                                           \
-    ClassName(ClassName&) = delete;                \
-    ClassName(const ClassName&) = delete;          \
-    ClassName& operator=(ClassName&) = delete  ;   \
+# define DISTRHO_DECLARE_NON_COPYABLE(ClassName) \
+private:                                         \
+    ClassName(ClassName&) = delete;              \
+    ClassName(const ClassName&) = delete;        \
+    ClassName& operator=(ClassName&) = delete;   \
     ClassName& operator=(const ClassName&) = delete;
 #else
-# define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) \
-private:                                           \
-    ClassName(ClassName&);                         \
-    ClassName(const ClassName&);                   \
-    ClassName& operator=(ClassName&);              \
+# define DISTRHO_DECLARE_NON_COPYABLE(ClassName) \
+private:                                         \
+    ClassName(ClassName&);                       \
+    ClassName(const ClassName&);                 \
+    ClassName& operator=(ClassName&);            \
     ClassName& operator=(const ClassName&);
-#endif
-
-/* Define DISTRHO_DECLARE_NON_COPY_STRUCT */
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) \
-    StructName(StructName&) = delete;                \
-    StructName(const StructName&) = delete;          \
-    StructName& operator=(StructName&) = delete;     \
-    StructName& operator=(const StructName&) = delete;
-#else
-# define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) \
-private:                                             \
-    StructName(StructName&);                         \
-    StructName(const StructName&);                   \
-    StructName& operator=(StructName&);              \
-    StructName& operator=(const StructName&);
 #endif
 
 /* Define DISTRHO_PREVENT_HEAP_ALLOCATION */
@@ -166,10 +168,27 @@ private:                                 \
 #define END_NAMESPACE_DISTRHO }
 #define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;
 
+/* Define DISTRHO_OS_SEP and DISTRHO_OS_SPLIT */
+#ifdef DISTRHO_OS_WINDOWS
+# define DISTRHO_OS_SEP       '\\'
+# define DISTRHO_OS_SEP_STR   "\\"
+# define DISTRHO_OS_SPLIT     ';'
+# define DISTRHO_OS_SPLIT_STR ";"
+#else
+# define DISTRHO_OS_SEP       '/'
+# define DISTRHO_OS_SEP_STR   "/"
+# define DISTRHO_OS_SPLIT     ':'
+# define DISTRHO_OS_SPLIT_STR ":"
+#endif
+
 /* Useful typedefs */
 typedef unsigned char uchar;
 typedef unsigned short int ushort;
 typedef unsigned int uint;
 typedef unsigned long int ulong;
+
+/* Deprecated macros */
+#define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) DISTRHO_DECLARE_NON_COPYABLE(ClassName)
+#define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) DISTRHO_DECLARE_NON_COPYABLE(StructName)
 
 #endif // DISTRHO_DEFINES_H_INCLUDED
