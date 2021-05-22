@@ -18,6 +18,7 @@
 #define DGL_IMAGE_BASE_HPP_INCLUDED
 
 #include "Geometry.hpp"
+#include "SVG.hpp"
 
 START_NAMESPACE_DGL
 

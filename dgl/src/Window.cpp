@@ -929,7 +929,7 @@ struct Window::PrivateData {
         fSelf->onDisplayAfter();
     }
 
-    int onPuglKeyboard(const bool press, const uint key)
+    int onPuglKeyboard(const bool press, const uint key, const uint keycode)
     {
         DBGp("PUGL: onKeyboard : %i %i\n", press, key);
 
@@ -942,6 +942,7 @@ struct Window::PrivateData {
         Widget::KeyboardEvent ev;
         ev.press = press;
         ev.key  = key;
+        ev.keycode = keycode;
         ev.mod  = static_cast<Modifier>(puglGetModifiers(fView));
         ev.time = puglGetEventTimestamp(fView);
 
@@ -1295,9 +1296,9 @@ struct Window::PrivateData {
         handlePtr->onPuglDisplay();
     }
 
-    static int onKeyboardCallback(PuglView* view, bool press, uint32_t key)
+    static int onKeyboardCallback(PuglView* view, bool press, uint32_t key, uint32_t keycode)
     {
-        return handlePtr->onPuglKeyboard(press, key);
+        return handlePtr->onPuglKeyboard(press, key, keycode);
     }
 
     static int onSpecialCallback(PuglView* view, bool press, PuglKey key)

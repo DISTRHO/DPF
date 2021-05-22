@@ -92,6 +92,13 @@ void Image::loadFromMemory(const char* const rawData,
     fIsReady = false;
 }
 
+void Image::loadFromSVG(const SVG& svg) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(svg.isValid(),)
+
+    loadFromMemory((const char*)svg.getRGBAData(), svg.getSize(), GL_RGBA);
+}
+
 GLenum Image::getFormat() const noexcept
 {
     return fFormat;
@@ -114,8 +121,7 @@ Image& Image::operator=(const Image& image) noexcept
 
 void Image::_drawAt(const Point<int>& pos)
 {
-    if (fTextureId == 0 || ! isValid())
-        return;
+    DISTRHO_SAFE_ASSERT_RETURN(fTextureId != 0 && isValid(), )
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, fTextureId);
