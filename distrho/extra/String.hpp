@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,7 @@
 #define DISTRHO_STRING_HPP_INCLUDED
 
 #include "../DistrhoUtils.hpp"
+#include "../extra/ScopedSafeLocale.hpp"
 
 #include <algorithm>
 
@@ -187,8 +188,7 @@ public:
         char strBuf[0xff+1];
 
         {
-            // TODO
-            // const ScopedLocale csl;
+            const ScopedSafeLocale ssl;
             std::snprintf(strBuf, 0xff, "%.12g", static_cast<double>(value));
         }
 
@@ -208,8 +208,7 @@ public:
         char strBuf[0xff+1];
 
         {
-            // TODO
-            // const ScopedLocale csl;
+            const ScopedSafeLocale ssl;
             std::snprintf(strBuf, 0xff, "%.24g", value);
         }
 

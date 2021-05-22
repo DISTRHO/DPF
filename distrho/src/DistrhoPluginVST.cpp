@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../extra/ScopedSafeLocale.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
 # undef DISTRHO_PLUGIN_HAS_UI
@@ -101,32 +102,6 @@ void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
     std::snprintf(dst, size-1, "%d", value);
     dst[size-1] = '\0';
 }
-
-// -----------------------------------------------------------------------
-
-class ScopedSafeLocale {
-public:
-    ScopedSafeLocale() noexcept
-        : locale(::strdup(::setlocale(LC_NUMERIC, nullptr)))
-    {
-        ::setlocale(LC_NUMERIC, "C");
-    }
-
-    ~ScopedSafeLocale() noexcept
-    {
-        if (locale != nullptr)
-        {
-            ::setlocale(LC_NUMERIC, locale);
-            std::free(locale);
-        }
-    }
-
-private:
-    char* const locale;
-
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedSafeLocale)
-    DISTRHO_PREVENT_HEAP_ALLOCATION
-};
 
 // -----------------------------------------------------------------------
 
@@ -777,9 +752,6 @@ public:
                 {
                     // add another separator
                     chunkStr += "\xff";
-
-                    // temporarily set locale to "C" while converting floats
-                    const ScopedSafeLocale ssl;
 
                     for (uint32_t i=0; i<paramCount; ++i)
                     {
