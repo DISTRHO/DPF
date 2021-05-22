@@ -140,6 +140,7 @@ struct ImageBaseKnob<ImageType>::PrivateData {
 
     Callback* callback;
 
+    bool alwaysRepaint;
     bool isImgVertical;
     uint imgLayerWidth;
     uint imgLayerHeight;
@@ -148,7 +149,6 @@ struct ImageBaseKnob<ImageType>::PrivateData {
 
     union {
         uint glTextureId;
-        // ImageType cairoDisplayImage;
         void* cairoSurface;
     };
 

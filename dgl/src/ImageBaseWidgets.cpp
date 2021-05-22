@@ -204,6 +204,7 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(const ImageType& img, const O
         lastX(0),
         lastY(0),
         callback(nullptr),
+        alwaysRepaint(false),
         isImgVertical(img.getHeight() > img.getWidth()),
         imgLayerWidth(isImgVertical ? img.getWidth() : img.getHeight()),
         imgLayerHeight(imgLayerWidth),
@@ -230,6 +231,7 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(PrivateData* const other)
         lastX(0),
         lastY(0),
         callback(other->callback),
+        alwaysRepaint(other->alwaysRepaint),
         isImgVertical(other->isImgVertical),
         imgLayerWidth(other->imgLayerWidth),
         imgLayerHeight(other->imgLayerHeight),
@@ -258,11 +260,12 @@ void ImageBaseKnob<ImageType>::PrivateData::assignFrom(PrivateData* const other)
     lastX    = 0;
     lastY    = 0;
     callback = other->callback;
+    alwaysRepaint  = other->alwaysRepaint;
     isImgVertical  = other->isImgVertical;
     imgLayerWidth  = other->imgLayerWidth;
     imgLayerHeight = other->imgLayerHeight;
     imgLayerCount  = other->imgLayerCount;
-    isReady  = false;
+    isReady        = false;
     init();
 }
 
@@ -364,7 +367,7 @@ void ImageBaseKnob<ImageType>::setValue(float value, bool sendCallback) noexcept
     if (d_isZero(pData->step))
         pData->valueTmp = value;
 
-    if (pData->rotationAngle == 0)
+    if (pData->rotationAngle == 0 || pData->alwaysRepaint)
         pData->isReady = false;
 
     repaint();
@@ -755,8 +758,8 @@ void ImageBaseSlider<ImageType>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
 
-#if 1 // DEBUG, paints slider area
-    Color(0.4f, 0.5f, 0.1f).setFor(context);
+#if 0 // DEBUG, paints slider area
+    Color(1.0f, 1.0f, 1.0f, 0.5f).setFor(context, true);
     Rectangle<int>(pData->sliderArea.getX(),
                    pData->sliderArea.getY(),
                    pData->sliderArea.getX()+pData->sliderArea.getWidth(),

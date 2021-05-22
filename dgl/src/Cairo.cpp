@@ -413,8 +413,26 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
         }
         break;
     case kImageFormatBGRA:
-        // RGB8 to CAIRO_FORMAT_ARGB32
-        // TODO
+        // BGRA8 to CAIRO_FORMAT_ARGB32
+        // FIXME something is wrong here...
+        for (uint h = 0, t; h < height; ++h)
+        {
+            for (uint w = 0; w < width; ++w)
+            {
+                if ((t = rdata[h*width*4+w*4+3]) != 0)
+                {
+                    newdata[h*width*4+w*4+0] = rdata[h*width*4+w*4+0];
+                    newdata[h*width*4+w*4+1] = rdata[h*width*4+w*4+1];
+                    newdata[h*width*4+w*4+2] = rdata[h*width*4+w*4+2];
+                    newdata[h*width*4+w*4+3] = t;
+                }
+                else
+                {
+                    // make all pixels zero, cairo does not render full transparency otherwise
+                    memset(&newdata[h*width*4+w*4], 0, 4);
+                }
+            }
+        }
         break;
     case kImageFormatRGB:
         // RGB8 to CAIRO_FORMAT_RGB24
@@ -564,14 +582,13 @@ template class ImageBaseButton<CairoImage>;
 template <>
 void ImageBaseKnob<CairoImage>::PrivateData::init()
 {
-    // new (&cairoDisplayImage) CairoImage();
+    alwaysRepaint = true;
     cairoSurface = nullptr;
 }
 
 template <>
 void ImageBaseKnob<CairoImage>::PrivateData::cleanup()
 {
-    // cairoDisplayImage.~CairoImage();
     cairo_surface_destroy((cairo_surface_t*)cairoSurface);
     cairoSurface = nullptr;
 }
@@ -644,23 +661,24 @@ void ImageBaseKnob<CairoImage>::onDisplay()
         const uint layerX = pData->isImgVertical ? 0 : layerNum * layerW;
         const uint layerY = !pData->isImgVertical ? 0 : layerNum * layerH;
 
-        cairo_surface_t* const newsurface = getRegion(pData->image.getSurface(), layerX, layerY, layerW, layerH);
-        DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
+        cairo_surface_t* newsurface;
 
-        if (pData->rotationAngle != 0)
+        if (pData->rotationAngle == 0)
         {
-            // TODO
-            /*
-            CairoImage rotated(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH), false);
-            cairo_t* cr = cairo_create(rotated.getSurface());
+            newsurface = getRegion(pData->image.getSurface(), layerX, layerY, layerW, layerH);
+        }
+        else
+        {
+            newsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH);
+            cairo_t* const cr = cairo_create(newsurface);
             cairo_translate(cr, 0.5 * layerW, 0.5 * layerH);
-            cairo_rotate(cr, normValue * angle * (float)(M_PI / 180));
-            cairo_set_source_surface(cr, displayImage.getSurface(), -0.5f * layerW, -0.5f * layerH);
+            cairo_rotate(cr, normValue * pData->rotationAngle * (float)(M_PI / 180));
+            cairo_set_source_surface(cr, pData->image.getSurface(), -0.5f * layerW, -0.5f * layerH);
             cairo_paint(cr);
             cairo_destroy(cr);
-            pData->cairoDisplayImage = rotated;
-            */
         }
+
+        DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
 
         cairo_surface_destroy(surface);
         pData->cairoSurface = surface = newsurface;
