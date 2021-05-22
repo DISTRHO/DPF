@@ -33,7 +33,7 @@ ifeq ($(HAVE_STUB),true)
 UNIT_TESTS   += Window.stub
 endif
 ifeq ($(HAVE_VULKAN),true)
-UNIT_TESTS += Window.vulkan
+UNIT_TESTS   += Window.vulkan
 endif
 
 MANUAL_TARGETS = $(MANUAL_TESTS:%=../build/tests/%$(APP_EXT))
@@ -144,5 +144,9 @@ clean:
 -include ../build/tests/Demo.cpp.cairo.d
 -include ../build/tests/Demo.cpp.opengl.d
 -include ../build/tests/Demo.cpp.vulkan.d
+-include ../build/tests/Window.cpp.cairo.d
+-include ../build/tests/Window.cpp.opengl.d
+-include ../build/tests/Window.cpp.stub.d
+-include ../build/tests/Window.cpp.vulkan.d
 
 # ---------------------------------------------------------------------------------------------------------------------

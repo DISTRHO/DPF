@@ -303,6 +303,7 @@ void Window::PrivateData::hide()
 void Window::PrivateData::close()
 {
     DGL_DBG("Window close\n");
+    // DGL_DBGp("Window close DBG %i %i %p\n", isEmbed, isClosed, appData);
 
     if (isEmbed || isClosed)
         return;
@@ -530,6 +531,9 @@ void Window::PrivateData::onPuglClose()
 void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
 {
     DGL_DBGp("onPuglFocus : %i %i\n", focus, mode);
+
+    if (isClosed)
+        return;
 
     if (modal.child != nullptr)
         return modal.child->focus();

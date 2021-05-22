@@ -49,6 +49,7 @@ private:
     void run() override
     {
         d_sleep(numSecondsToWait);
+        d_stdout("About to quit now...");
         app.quit();
     }
 };
