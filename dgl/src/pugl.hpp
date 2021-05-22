@@ -24,14 +24,21 @@
 #include <cstddef>
 #include <cstdint>
 
-START_NAMESPACE_DGL
-
-// --------------------------------------------------------------------------------------------------------------------
-
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
 #define PUGL_NO_INCLUDE_GLU_H
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#ifndef DISTRHO_OS_MAC
+START_NAMESPACE_DGL
+#else
+USE_NAMESPACE_DGL
+#endif
+
 #include "pugl-upstream/include/pugl/pugl.h"
+
+// --------------------------------------------------------------------------------------------------------------------
 
 PUGL_BEGIN_DECLS
 
@@ -85,6 +92,8 @@ PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
+#endif
 
 #endif // DGL_PUGL_HPP_INCLUDED

@@ -15,6 +15,10 @@ LINK_FLAGS      += -lpthread
 # TODO fix within pugl
 BUILD_CXX_FLAGS += -Wno-extra -Wno-missing-field-initializers
 
+ifeq ($(MACOS),true)
+BUILD_CXX_FLAGS += -ObjC++ -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 MANUAL_TESTS  =

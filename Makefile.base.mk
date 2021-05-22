@@ -63,6 +63,10 @@ ifneq (,$(filter arm%,$(TARGET_PROCESSOR)))
 CPU_ARM=true
 CPU_ARM_OR_AARCH64=true
 endif
+ifneq (,$(filter arm64%,$(TARGET_PROCESSOR)))
+CPU_ARM64=true
+CPU_ARM_OR_AARCH64=true
+endif
 ifneq (,$(filter aarch64%,$(TARGET_PROCESSOR)))
 CPU_AARCH64=true
 CPU_ARM_OR_AARCH64=true
@@ -136,12 +140,17 @@ BASE_OPTS += -mtune=generic -msse -msse2
 endif
 
 ifeq ($(CPU_ARM),true)
+ifneq ($(CPU_ARM64),true)
 BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
+endif
 endif
 
 ifeq ($(MACOS),true)
 # MacOS linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip -Wl,-dead_strip_dylibs
+ifneq ($(SKIP_STRIPPING),true)
+LINK_OPTS += -Wl,-x
+endif
 else
 # Common linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,--gc-sections -Wl,-O1 -Wl,--as-needed
@@ -247,7 +256,7 @@ DGL_SYSTEM_LIBS += -lbe
 endif
 
 ifeq ($(MACOS),true)
-DGL_SYSTEM_LIBS += -framework Cocoa
+DGL_SYSTEM_LIBS += -framework Cocoa -framework CoreVideo
 endif
 
 ifeq ($(WINDOWS),true)

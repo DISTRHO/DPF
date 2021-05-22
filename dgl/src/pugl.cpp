@@ -89,18 +89,21 @@
 # endif
 #endif
 
+#ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#define PUGL_DISABLE_DEPRECATED
-
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
-/*
-# define PuglWindow     DISTRHO_JOIN_MACRO(PuglWindow,     DGL_NAMESPACE)
-# define PuglOpenGLView DISTRHO_JOIN_MACRO(PuglOpenGLView, DGL_NAMESPACE)
-*/
+# ifndef DISTRHO_MACOS_NAMESPACE_MACRO
+#  define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, SEP, INTERFACE) NS ## SEP ## INTERFACE
+#  define DISTRHO_MACOS_NAMESPACE_MACRO(NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, _, INTERFACE)
+#  define PuglStubView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglStubView)
+#  define PuglWrapperView DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWrapperView)
+#  define PuglWindow      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWindow)
+# endif
 # import "pugl-upstream/src/mac.m"
 # import "pugl-upstream/src/mac_stub.m"
 # ifdef DGL_CAIRO
@@ -207,6 +210,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 #if defined(DISTRHO_OS_HAIKU)
     // nothing?
 #elif defined(DISTRHO_OS_MAC)
+    /*
     if (view->impl->window)
     {
         [view->impl->window setContentMinSize:sizePoints(view, view->minWidth, view->minHeight)];
@@ -214,6 +218,9 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         if (aspect)
             [view->impl->window setContentAspectRatio:sizePoints(view, view->minAspectX, view->minAspectY)];
     }
+    */
+    puglSetMinSize(view, width, height);
+    puglSetAspectRatio(view, width, height, width, height);
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
 #else
@@ -352,4 +359,6 @@ void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
+#endif
