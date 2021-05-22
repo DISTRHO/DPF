@@ -37,14 +37,16 @@ public:
      */
     explicit String() noexcept
         : fBuffer(_null()),
-          fBufferLen(0) {}
+          fBufferLen(0),
+          fBufferAlloc(false) {}
 
     /*
      * Simple character.
      */
     explicit String(const char c) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char ch[2];
         ch[0] = c;
@@ -58,7 +60,8 @@ public:
      */
     explicit String(char* const strBuf, const bool copyData = true) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         if (copyData || strBuf == nullptr)
         {
@@ -66,10 +69,10 @@ public:
         }
         else
         {
-            fBuffer    = strBuf;
-            fBufferLen = std::strlen(strBuf);
+            fBuffer      = strBuf;
+            fBufferLen   = std::strlen(strBuf);
+            fBufferAlloc = true;
         }
-
     }
 
     /*
@@ -77,7 +80,8 @@ public:
      */
     explicit String(const char* const strBuf) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         _dup(strBuf);
     }
@@ -87,7 +91,8 @@ public:
      */
     explicit String(const int value) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%d", value);
@@ -101,7 +106,8 @@ public:
      */
     explicit String(const unsigned int value, const bool hexadecimal = false) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%x" : "%u", value);
@@ -115,7 +121,8 @@ public:
      */
     explicit String(const long value) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%ld", value);
@@ -129,7 +136,8 @@ public:
      */
     explicit String(const unsigned long value, const bool hexadecimal = false) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%lx" : "%lu", value);
@@ -143,7 +151,8 @@ public:
      */
     explicit String(const long long value) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, "%lld", value);
@@ -157,7 +166,8 @@ public:
      */
     explicit String(const unsigned long long value, const bool hexadecimal = false) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
         std::snprintf(strBuf, 0xff, hexadecimal ? "0x%llx" : "%llu", value);
@@ -171,10 +181,17 @@ public:
      */
     explicit String(const float value) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
-        std::snprintf(strBuf, 0xff, "%.12g", static_cast<double>(value));
+
+        {
+            // TODO
+            // const ScopedLocale csl;
+            std::snprintf(strBuf, 0xff, "%.12g", static_cast<double>(value));
+        }
+
         strBuf[0xff] = '\0';
 
         _dup(strBuf);
@@ -185,10 +202,17 @@ public:
      */
     explicit String(const double value) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         char strBuf[0xff+1];
-        std::snprintf(strBuf, 0xff, "%.24g", value);
+
+        {
+            // TODO
+            // const ScopedLocale csl;
+            std::snprintf(strBuf, 0xff, "%.24g", value);
+        }
+
         strBuf[0xff] = '\0';
 
         _dup(strBuf);
@@ -202,7 +226,8 @@ public:
      */
     String(const String& str) noexcept
         : fBuffer(_null()),
-          fBufferLen(0)
+          fBufferLen(0),
+          fBufferAlloc(false)
     {
         _dup(str.fBuffer);
     }
@@ -217,13 +242,12 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fBuffer != nullptr,);
 
-        if (fBuffer == _null())
-            return;
+        if (fBufferAlloc)
+            std::free(fBuffer);
 
-        std::free(fBuffer);
-
-        fBuffer    = nullptr;
-        fBufferLen = 0;
+        fBuffer      = nullptr;
+        fBufferLen   = 0;
+        fBufferAlloc = false;
     }
 
     // -------------------------------------------------------------------
@@ -251,6 +275,20 @@ public:
     bool isNotEmpty() const noexcept
     {
         return (fBufferLen != 0);
+    }
+
+    /*
+     * Check if the string contains a specific character, case-sensitive.
+     */
+    bool contains(const char c) const noexcept
+    {
+        for (std::size_t i=0; i<fBufferLen; ++i)
+        {
+            if (fBuffer[i] == c)
+                return true;
+        }
+
+        return false;
     }
 
     /*
@@ -388,7 +426,7 @@ public:
             if (ret < 0)
             {
                 // should never happen!
-                d_safe_assert("ret >= 0", __FILE__, __LINE__);
+                d_safe_assert_int("ret >= 0", __FILE__, __LINE__, int(ret));
 
                 if (found != nullptr)
                     *found = false;
@@ -498,9 +536,7 @@ public:
         if (n >= fBufferLen)
             return *this;
 
-        for (std::size_t i=n; i < fBufferLen; ++i)
-            fBuffer[i] = '\0';
-
+        fBuffer[n] = '\0';
         fBufferLen = n;
 
         return *this;
@@ -529,7 +565,7 @@ public:
     }
 
     /*
-     * Convert to all ascii characters to lowercase.
+     * Convert all ascii characters to lowercase.
      */
     String& toLower() noexcept
     {
@@ -545,7 +581,7 @@ public:
     }
 
     /*
-     * Convert to all ascii characters to uppercase.
+     * Convert all ascii characters to uppercase.
      */
     String& toUpper() noexcept
     {
@@ -570,13 +606,15 @@ public:
 
     /*
      * Get and release the string buffer, while also clearing this string.
+     * This allows to keep a pointer to the buffer after this object is deleted.
      * Result must be freed.
      */
     char* getAndReleaseBuffer() noexcept
     {
-        char* const ret = fBuffer;
+        char* ret = fBufferLen > 0 ? fBuffer : nullptr;
         fBuffer = _null();
         fBufferLen = 0;
+        fBufferAlloc = false;
         return ret;
     }
 
@@ -591,7 +629,7 @@ public:
             "abcdefghijklmnopqrstuvwxyz"
             "0123456789+/";
 
-        const std::size_t kTmpBufSize = std::min(d_nextPowerOf2(dataSize/3), 65536U);
+        const std::size_t kTmpBufSize = std::min(d_nextPowerOf2(static_cast<uint32_t>(dataSize/3)), 65536U);
 
         const uchar* bytesToEncode((const uchar*)data);
 
@@ -723,16 +761,26 @@ public:
 
     String& operator+=(const char* const strBuf) noexcept
     {
-        if (strBuf == nullptr)
+        if (strBuf == nullptr || strBuf[0] == '\0')
             return *this;
 
-        const std::size_t newBufSize = fBufferLen + std::strlen(strBuf) + 1;
-        char              newBuf[newBufSize];
+        const std::size_t strBufLen = std::strlen(strBuf);
 
-        std::strcpy(newBuf, fBuffer);
-        std::strcat(newBuf, strBuf);
+        // for empty strings, we can just take the appended string as our entire data
+        if (isEmpty())
+        {
+            _dup(strBuf, strBufLen);
+            return *this;
+        }
 
-        _dup(newBuf, newBufSize-1);
+        // we have some data ourselves, reallocate to add the new stuff
+        char* const newBuf = (char*)realloc(fBuffer, fBufferLen + strBufLen + 1);
+        DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, *this);
+
+        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);
+
+        fBuffer = newBuf;
+        fBufferLen += strBufLen;
 
         return *this;
     }
@@ -744,13 +792,18 @@ public:
 
     String operator+(const char* const strBuf) noexcept
     {
-        const std::size_t newBufSize = fBufferLen + ((strBuf != nullptr) ? std::strlen(strBuf) : 0) + 1;
-        char              newBuf[newBufSize];
+        if (strBuf == nullptr || strBuf[0] == '\0')
+            return *this;
+        if (isEmpty())
+            return String(strBuf);
 
-        std::strcpy(newBuf, fBuffer);
+        const std::size_t strBufLen = std::strlen(strBuf);
+        const std::size_t newBufSize = fBufferLen + strBufLen;
+        char* const newBuf = (char*)malloc(newBufSize + 1);
+        DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
 
-        if (strBuf != nullptr)
-            std::strcat(newBuf, strBuf);
+        std::memcpy(newBuf, fBuffer, fBufferLen);
+        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);
 
         return String(newBuf);
     }
@@ -763,8 +816,9 @@ public:
     // -------------------------------------------------------------------
 
 private:
-    char*       fBuffer;    // the actual string buffer
-    std::size_t fBufferLen; // string length
+    char*       fBuffer;      // the actual string buffer
+    std::size_t fBufferLen;   // string length
+    bool        fBufferAlloc; // wherever the buffer is allocated, not using _null()
 
     /*
      * Static null string.
@@ -792,7 +846,7 @@ private:
             if (std::strcmp(fBuffer, strBuf) == 0)
                 return;
 
-            if (fBuffer != _null())
+            if (fBufferAlloc)
                 std::free(fBuffer);
 
             fBufferLen = (size > 0) ? size : std::strlen(strBuf);
@@ -800,28 +854,31 @@ private:
 
             if (fBuffer == nullptr)
             {
-                fBuffer    = _null();
-                fBufferLen = 0;
+                fBuffer      = _null();
+                fBufferLen   = 0;
+                fBufferAlloc = false;
                 return;
             }
 
-            std::strcpy(fBuffer, strBuf);
+            fBufferAlloc = true;
 
+            std::strcpy(fBuffer, strBuf);
             fBuffer[fBufferLen] = '\0';
         }
         else
         {
-            DISTRHO_SAFE_ASSERT(size == 0);
+            DISTRHO_SAFE_ASSERT_UINT(size == 0, static_cast<uint>(size));
 
             // don't recreate null string
-            if (fBuffer == _null())
+            if (! fBufferAlloc)
                 return;
 
             DISTRHO_SAFE_ASSERT(fBuffer != nullptr);
             std::free(fBuffer);
 
-            fBuffer    = _null();
-            fBufferLen = 0;
+            fBuffer      = _null();
+            fBufferLen   = 0;
+            fBufferAlloc = false;
         }
     }
 
@@ -833,12 +890,19 @@ private:
 static inline
 String operator+(const String& strBefore, const char* const strBufAfter) noexcept
 {
-    const char* const strBufBefore = strBefore.buffer();
-    const std::size_t newBufSize   = strBefore.length() + ((strBufAfter != nullptr) ? std::strlen(strBufAfter) : 0) + 1;
-    char newBuf[newBufSize];
+    if (strBufAfter == nullptr || strBufAfter[0] == '\0')
+        return strBefore;
+    if (strBefore.isEmpty())
+        return String(strBufAfter);
 
-    std::strcpy(newBuf, strBufBefore);
-    std::strcat(newBuf, strBufAfter);
+    const std::size_t strBeforeLen = strBefore.length();
+    const std::size_t strBufAfterLen = std::strlen(strBufAfter);
+    const std::size_t newBufSize = strBeforeLen + strBufAfterLen;
+    char* const newBuf = (char*)malloc(newBufSize + 1);
+    DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
+
+    std::memcpy(newBuf, strBefore.buffer(), strBeforeLen);
+    std::memcpy(newBuf + strBeforeLen, strBufAfter, strBufAfterLen + 1);
 
     return String(newBuf);
 }
@@ -846,12 +910,19 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
 static inline
 String operator+(const char* const strBufBefore, const String& strAfter) noexcept
 {
-    const char* const strBufAfter = strAfter.buffer();
-    const std::size_t newBufSize  = ((strBufBefore != nullptr) ? std::strlen(strBufBefore) : 0) + strAfter.length() + 1;
-    char newBuf[newBufSize];
+    if (strAfter.isEmpty())
+        return String(strBufBefore);
+    if (strBufBefore == nullptr || strBufBefore[0] == '\0')
+        return strAfter;
 
-    std::strcpy(newBuf, strBufBefore);
-    std::strcat(newBuf, strBufAfter);
+    const std::size_t strBufBeforeLen = std::strlen(strBufBefore);
+    const std::size_t strAfterLen = strAfter.length();
+    const std::size_t newBufSize = strBufBeforeLen + strAfterLen;
+    char* const newBuf = (char*)malloc(newBufSize + 1);
+    DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
+
+    std::memcpy(newBuf, strBufBefore, strBufBeforeLen);
+    std::memcpy(newBuf + strBufBeforeLen, strAfter.buffer(), strAfterLen + 1);
 
     return String(newBuf);
 }
