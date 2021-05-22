@@ -109,7 +109,7 @@ struct ImageBaseButton<ImageType>::PrivateData {
           imageHover(hover),
           imageDown(down) {}
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -617,7 +617,7 @@ struct ImageBaseSlider<ImageType>::PrivateData {
         }
     }
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -976,7 +976,7 @@ struct ImageBaseSwitch<ImageType>::PrivateData {
         DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
     }
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
 
 // --------------------------------------------------------------------------------------------------------------------

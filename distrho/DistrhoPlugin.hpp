@@ -369,7 +369,7 @@ struct ParameterEnumerationValues {
         }
     }
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(ParameterEnumerationValues)
+    DISTRHO_DECLARE_NON_COPYABLE(ParameterEnumerationValues)
 };
 
 /**

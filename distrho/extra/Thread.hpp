@@ -324,7 +324,7 @@ private:
         return nullptr;
     }
 
-    DISTRHO_DECLARE_NON_COPY_CLASS(Thread)
+    DISTRHO_DECLARE_NON_COPYABLE(Thread)
 };
 
 // -----------------------------------------------------------------------

@@ -115,7 +115,7 @@ struct ButtonImpl {
     }
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_STRUCT(ButtonImpl)
+    DISTRHO_DECLARE_NON_COPYABLE(ButtonImpl)
 };
 
 // -----------------------------------------------------------------------
@@ -178,7 +178,7 @@ struct ImageBaseKnob<ImageType>::PrivateData {
         return std::log(value/a)/b;
     }
 
-    DISTRHO_DECLARE_NON_COPY_STRUCT(PrivateData)
+    DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
 
 // -----------------------------------------------------------------------

@@ -54,13 +54,13 @@ START_NAMESPACE_DISTRHO
     DISTRHO_NAMESPACE::LeakedObjectDetector<ClassName> DISTRHO_JOIN_MACRO(leakDetector_, ClassName);
 
 # define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
-    DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)                       \
+    DISTRHO_DECLARE_NON_COPYABLE(ClassName)                       \
     DISTRHO_LEAK_DETECTOR(ClassName)
 #else
 /** Don't use leak detection on release builds. */
 # define DISTRHO_LEAK_DETECTOR(ClassName)
 # define DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ClassName) \
-    DISTRHO_DECLARE_NON_COPY_CLASS(ClassName)
+    DISTRHO_DECLARE_NON_COPYABLE(ClassName)
 #endif
 
 //==============================================================================

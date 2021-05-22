@@ -86,7 +86,7 @@ public:
 private:
     mutable pthread_mutex_t fMutex;
 
-    DISTRHO_DECLARE_NON_COPY_CLASS(Mutex)
+    DISTRHO_DECLARE_NON_COPYABLE(Mutex)
 };
 
 // -----------------------------------------------------------------------
@@ -174,7 +174,7 @@ private:
     mutable pthread_mutex_t fMutex;
 #endif
 
-    DISTRHO_DECLARE_NON_COPY_CLASS(RecursiveMutex)
+    DISTRHO_DECLARE_NON_COPYABLE(RecursiveMutex)
 };
 
 // -----------------------------------------------------------------------
@@ -255,7 +255,7 @@ private:
     volatile bool   fTriggered;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(Signal)
+    DISTRHO_DECLARE_NON_COPYABLE(Signal)
 };
 
 // -----------------------------------------------------------------------
@@ -280,7 +280,7 @@ private:
     const Mutex& fMutex;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeLocker)
+    DISTRHO_DECLARE_NON_COPYABLE(ScopeLocker)
 };
 
 // -----------------------------------------------------------------------
@@ -319,7 +319,7 @@ private:
     const bool   fLocked;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeTryLocker)
+    DISTRHO_DECLARE_NON_COPYABLE(ScopeTryLocker)
 };
 
 // -----------------------------------------------------------------------
@@ -344,7 +344,7 @@ private:
     const Mutex& fMutex;
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopeUnlocker)
+    DISTRHO_DECLARE_NON_COPYABLE(ScopeUnlocker)
 };
 
 // -----------------------------------------------------------------------
