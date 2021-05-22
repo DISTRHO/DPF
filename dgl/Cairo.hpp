@@ -72,7 +72,7 @@ public:
     ~CairoImage() override;
 
    /**
-      Load image data from memory.
+      Load raw image data from memory.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
     void loadFromMemory(const char* rawData,
@@ -80,9 +80,25 @@ public:
                         ImageFormat format = kImageFormatBGRA) noexcept override;
 
    /**
+      Load PNG image from memory.
+      Image size is read from PNG contents.
+      @note @a pngData must remain valid for the lifetime of this Image.
+    */
+    void loadFromPNG(const char* pngData, uint dataSize) noexcept;
+
+   /**
       Draw this image at position @a pos using the graphics context @a context.
     */
     void drawAt(const GraphicsContext& context, const Point<int>& pos) override;
+
+   /**
+      Get the cairo surface currently associated with this image.
+      FIXME might be removed
+    */
+    inline cairo_surface_t* getSurface() const noexcept
+    {
+        return surface;
+    }
 
    /**
       TODO document this.

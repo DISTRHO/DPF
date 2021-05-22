@@ -460,27 +460,29 @@ template class ImageBaseButton<OpenGLImage>;
 template <>
 void ImageBaseKnob<OpenGLImage>::PrivateData::init()
 {
-    glGenTextures(1, &textureId);
+    glTextureId = 0;
+    glGenTextures(1, &glTextureId);
 }
 
 template <>
 void ImageBaseKnob<OpenGLImage>::PrivateData::cleanup()
 {
-    if (textureId != 0)
-    {
-        glDeleteTextures(1, &textureId);
-        textureId = 0;
-    }
+    if (glTextureId == 0)
+        return;
+
+    glDeleteTextures(1, &glTextureId);
+    glTextureId = 0;
 }
 
 template <>
 void ImageBaseKnob<OpenGLImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
-    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum) / (pData->maximum - pData->minimum);
+    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
+        / (pData->maximum - pData->minimum);
 
     glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, pData->textureId);
+    glBindTexture(GL_TEXTURE_2D, pData->glTextureId);
 
     if (! pData->isReady)
     {
@@ -505,6 +507,7 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
             const uint& v1(pData->isImgVertical ? pData->imgLayerWidth : pData->imgLayerHeight);
             const uint& v2(pData->isImgVertical ? pData->imgLayerHeight : pData->imgLayerWidth);
 
+            // TODO kImageFormatGreyscale
             const uint layerDataSize   = v1 * v2 * ((pData->image.getFormat() == kImageFormatBGRA ||
                                                      pData->image.getFormat() == kImageFormatRGBA) ? 4 : 3);
             /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount-1));

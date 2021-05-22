@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
  * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -275,7 +276,7 @@ template class Rectangle<ushort>;
 // -----------------------------------------------------------------------
 // CairoImage
 
-static cairo_format_t asCairoImageFormat(const ImageFormat format)
+static cairo_format_t asCairoImageFormat(const ImageFormat format) noexcept
 {
     switch (format)
     {
@@ -293,6 +294,31 @@ static cairo_format_t asCairoImageFormat(const ImageFormat format)
 
     return CAIRO_FORMAT_INVALID;
 }
+
+/*
+static ImageFormat asCairoImageFormat(const cairo_format_t format) noexcept
+{
+    switch (format)
+    {
+    case CAIRO_FORMAT_INVALID:
+        break;
+    case CAIRO_FORMAT_ARGB32:
+        break;
+    case CAIRO_FORMAT_RGB24:
+        break;
+    case CAIRO_FORMAT_A8:
+        break;
+    case CAIRO_FORMAT_A1:
+        break;
+    case CAIRO_FORMAT_RGB16_565:
+        break;
+    case CAIRO_FORMAT_RGB30:
+        break;
+    }
+
+    return kImageFormatNull;
+}
+*/
 
 CairoImage::CairoImage()
     : ImageBase(),
@@ -403,6 +429,51 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
     ImageBase::loadFromMemory(rdata, s, fmt);
 }
 
+// const GraphicsContext& context
+void CairoImage::loadFromPNG(const char* const pngData, const uint pngSize) noexcept
+{
+    struct PngReaderData
+    {
+        const char* dataPtr;
+        uint sizeLeft;
+
+        static cairo_status_t read(void* const closure, uchar* const data, const uint length) noexcept
+        {
+            PngReaderData& readerData = *reinterpret_cast<PngReaderData*>(closure);
+
+            if (readerData.sizeLeft < length)
+                return CAIRO_STATUS_READ_ERROR;
+
+            std::memcpy(data, readerData.dataPtr, length);
+            readerData.dataPtr += length;
+            readerData.sizeLeft -= length;
+            return CAIRO_STATUS_SUCCESS;
+        }
+    };
+
+    PngReaderData readerData;
+    readerData.dataPtr = pngData;
+    readerData.sizeLeft = pngSize;
+
+    cairo_surface_t* const newsurface = cairo_image_surface_create_from_png_stream(PngReaderData::read, &readerData);
+    DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
+
+    cairo_surface_destroy(surface);
+
+    if (datarefcount != nullptr && --(*datarefcount) == 0)
+        std::free(surfacedata);
+    else
+        datarefcount = (int*)malloc(sizeof(*datarefcount));
+
+    surface = newsurface;
+    surfacedata = nullptr; // cairo_image_surface_get_data(newsurface);
+    *datarefcount = 1;
+
+    rawData = nullptr;
+    format = kImageFormatNull; // asCairoImageFormat(cairo_image_surface_get_format(newsurface));
+    size = Size<uint>(cairo_image_surface_get_width(newsurface), cairo_image_surface_get_height(newsurface));
+}
+
 void CairoImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
 {
     if (surface == nullptr)
@@ -418,14 +489,23 @@ CairoImage& CairoImage::operator=(const CairoImage& image) noexcept
 {
     cairo_surface_t* newsurface = cairo_surface_reference(image.surface);
     cairo_surface_destroy(surface);
+
+    if (datarefcount != nullptr && --(*datarefcount) == 0)
+    {
+        std::free(surfacedata);
+        std::free(datarefcount);
+    }
+
     surface = newsurface;
     rawData = image.rawData;
     size    = image.size;
     format  = image.format;
     surfacedata = image.surfacedata;
     datarefcount = image.datarefcount;
+
     if (datarefcount != nullptr)
         ++(*datarefcount);
+
     return *this;
 }
 
@@ -484,19 +564,114 @@ template class ImageBaseButton<CairoImage>;
 template <>
 void ImageBaseKnob<CairoImage>::PrivateData::init()
 {
-    notImplemented("ImageBaseKnob::PrivateData::init");
+    // new (&cairoDisplayImage) CairoImage();
+    cairoSurface = nullptr;
 }
 
 template <>
 void ImageBaseKnob<CairoImage>::PrivateData::cleanup()
 {
-    notImplemented("ImageBaseKnob::PrivateData::cleanup");
+    // cairoDisplayImage.~CairoImage();
+    cairo_surface_destroy((cairo_surface_t*)cairoSurface);
+    cairoSurface = nullptr;
+}
+
+/**
+   Get the pixel size in bytes.
+   @return pixel size, or 0 if the format is unknown, or pixels are not aligned to bytes.
+*/
+static uint getBytesPerPixel(cairo_format_t format) noexcept
+{
+    switch (format)
+    {
+    case CAIRO_FORMAT_ARGB32:
+    case CAIRO_FORMAT_RGB24:
+    case CAIRO_FORMAT_RGB30:
+        return 4;
+    case CAIRO_FORMAT_RGB16_565:
+        return 2;
+    case CAIRO_FORMAT_A8:
+        return 1;
+    case CAIRO_FORMAT_A1:
+        return 0;
+    default:
+        DISTRHO_SAFE_ASSERT(false);
+        return 0;
+    }
+}
+
+static cairo_surface_t* getRegion(cairo_surface_t* origsurface, uint x, uint y, uint width, uint height) noexcept
+{
+    const cairo_format_t format = cairo_image_surface_get_format(origsurface);
+    const uint bpp = getBytesPerPixel(format);
+
+    if (bpp == 0)
+        return nullptr;
+
+    const uint fullWidth  = cairo_image_surface_get_width(origsurface);
+    const uint fullHeight = cairo_image_surface_get_height(origsurface);
+    const uint stride     = cairo_image_surface_get_stride(origsurface);
+    uchar* const fullData = cairo_image_surface_get_data(origsurface);
+
+    x = (x < fullWidth) ? x : fullWidth;
+    y = (y < fullHeight) ? y : fullHeight;
+    width = (x + width < fullWidth) ? width : (fullWidth - x);
+    height = (x + height < fullHeight) ? height : (fullHeight - x);
+
+    uchar* const data = fullData + x * bpp + y * stride;
+    return cairo_image_surface_create_for_data(data, format, width, height, stride);
 }
 
 template <>
 void ImageBaseKnob<CairoImage>::onDisplay()
 {
-    notImplemented("ImageBaseKnob::onDisplay");
+    const GraphicsContext& context(getGraphicsContext());
+    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
+        / (pData->maximum - pData->minimum);
+
+    cairo_surface_t* surface = (cairo_surface_t*)pData->cairoSurface;
+
+    if (! pData->isReady)
+    {
+        const uint layerW = pData->imgLayerWidth;
+        const uint layerH = pData->imgLayerHeight;
+        uint layerNum = 0;
+
+        if (pData->rotationAngle == 0)
+            layerNum = uint(normValue * float(pData->imgLayerCount-1));
+
+        const uint layerX = pData->isImgVertical ? 0 : layerNum * layerW;
+        const uint layerY = !pData->isImgVertical ? 0 : layerNum * layerH;
+
+        cairo_surface_t* const newsurface = getRegion(pData->image.getSurface(), layerX, layerY, layerW, layerH);
+        DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
+
+        if (pData->rotationAngle != 0)
+        {
+            // TODO
+            /*
+            CairoImage rotated(cairo_image_surface_create(CAIRO_FORMAT_ARGB32, layerW, layerH), false);
+            cairo_t* cr = cairo_create(rotated.getSurface());
+            cairo_translate(cr, 0.5 * layerW, 0.5 * layerH);
+            cairo_rotate(cr, normValue * angle * (float)(M_PI / 180));
+            cairo_set_source_surface(cr, displayImage.getSurface(), -0.5f * layerW, -0.5f * layerH);
+            cairo_paint(cr);
+            cairo_destroy(cr);
+            pData->cairoDisplayImage = rotated;
+            */
+        }
+
+        cairo_surface_destroy(surface);
+        pData->cairoSurface = surface = newsurface;
+        pData->isReady = true;
+    }
+
+    if (surface != nullptr)
+    {
+        cairo_set_source_surface(handle, surface, 0, 0);
+        cairo_paint(handle);
+    }
 }
 
 template class ImageBaseKnob<CairoImage>;

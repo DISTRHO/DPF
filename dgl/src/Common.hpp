@@ -145,7 +145,12 @@ struct ImageBaseKnob<ImageType>::PrivateData {
     uint imgLayerHeight;
     uint imgLayerCount;
     bool isReady;
-    /*GL*/uint textureId;
+
+    union {
+        uint glTextureId;
+        // ImageType cairoDisplayImage;
+        void* cairoSurface;
+    };
 
     explicit PrivateData(const ImageType& img, const Orientation o);
     explicit PrivateData(PrivateData* const other);

@@ -208,8 +208,7 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(const ImageType& img, const O
         imgLayerWidth(isImgVertical ? img.getWidth() : img.getHeight()),
         imgLayerHeight(imgLayerWidth),
         imgLayerCount(isImgVertical ? img.getHeight()/imgLayerHeight : img.getWidth()/imgLayerWidth),
-        isReady(false),
-        textureId(0)
+        isReady(false)
 {
     init();
 }
@@ -235,8 +234,7 @@ ImageBaseKnob<ImageType>::PrivateData::PrivateData(PrivateData* const other)
         imgLayerWidth(other->imgLayerWidth),
         imgLayerHeight(other->imgLayerHeight),
         imgLayerCount(other->imgLayerCount),
-        isReady(false),
-        textureId(0)
+        isReady(false)
 {
     init();
 }
