@@ -121,6 +121,27 @@ getModifiers(PuglView* view, NSEvent* ev)
 	return mods;
 }
 
+/**
+   Convert system specific keycodes into system independent ones (PuglKeyCodes)
+*/
+static unsigned
+scancodeToHID(unsigned scancode)
+{
+	static const unsigned char KEYCODE_MACOS_TO_HID[128] = {
+		4,22,7,9,11,10,29,27,6,25,0,5,20,26,8,21,28,23,30,31,32,33,35,34,46,38,36,
+		45,37,39,48,18,24,47,12,19,158,15,13,52,14,51,49,54,56,17,16,55,43,44,53,42,
+		0,41,231,227,225,57,226,224,229,230,228,0,108,220,0,85,0,87,0,216,0,0,127,
+		84,88,0,86,109,110,103,98,89,90,91,92,93,94,95,111,96,97,0,0,0,62,63,64,60,
+		65,66,0,68,0,104,107,105,0,67,0,69,0,106,117,74,75,76,61,77,59,78,58,80,79,
+		81,82,0
+	};
+
+	if (scancode >= 128)
+		return 0;
+
+	return KEYCODE_MACOS_TO_HID[scancode];
+}
+
 static int
 getFixedAppKitButton(NSInteger button)
 {
@@ -253,8 +274,9 @@ keyDown(NSView<PuglGenericView> *self, NSEvent *event)
 
 	if (puglview->keyboardFunc && !(puglview->ignoreKeyRepeat && [event isARepeat])) {
 		NSString* chars = [event characters];
+		unsigned keycode = scancodeToHID([event keyCode]);
 		puglview->mods = getModifiers(puglview, event);
-		puglview->keyboardFunc(puglview, true, [chars characterAtIndex:0]);
+		puglview->keyboardFunc(puglview, true, [chars characterAtIndex:0], keycode);
 	}
 }
 
@@ -265,8 +287,9 @@ keyUp(NSView<PuglGenericView> *self, NSEvent *event)
 
 	if (puglview->keyboardFunc) {
 		NSString* chars = [event characters];
+		unsigned keycode = scancodeToHID([event keyCode]);
 		puglview->mods = getModifiers(puglview, event);
-		puglview->keyboardFunc(puglview, false, [chars characterAtIndex:0]);
+		puglview->keyboardFunc(puglview, false, [chars characterAtIndex:0], keycode);
 	}
 }
 

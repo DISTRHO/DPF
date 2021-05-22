@@ -85,6 +85,7 @@ public:
     struct KeyboardEvent : BaseEvent {
         bool press;
         uint key;
+        uint keycode;
 
         /** Constuctor */
         KeyboardEvent() noexcept
