@@ -17,7 +17,7 @@
 #ifndef DGL_IMAGE_WIDGETS_HPP_INCLUDED
 #define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
-#include "OpenGL.hpp"
+#include "Image.hpp"
 
 START_NAMESPACE_DGL
 

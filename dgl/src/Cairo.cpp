@@ -25,6 +25,9 @@
 #include "WidgetPrivateData.hpp"
 #include "WindowPrivateData.hpp"
 
+// templated classes
+#include "ImageBaseWidgets.cpp"
+
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
@@ -799,10 +802,3 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-// -----------------------------------------------------------------------
-// templated classes
-
-#include "ImageBaseWidgets.cpp"
-
-// -----------------------------------------------------------------------
