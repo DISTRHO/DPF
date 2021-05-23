@@ -76,6 +76,9 @@ struct Application::PrivateData {
         For standalone mode only. */
     void quit();
 
+    /** Set pugl world class name. */
+    void setClassName(const char* name);
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
 };
 

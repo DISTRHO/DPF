@@ -67,6 +67,11 @@ void Application::removeIdleCallback(IdleCallback* const callback)
     pData->idleCallbacks.remove(callback);
 }
 
+void Application::setClassName(const char* const name)
+{
+    pData->setClassName(name);
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

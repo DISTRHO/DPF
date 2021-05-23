@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -53,14 +53,35 @@ UI* createUiWrapper(void* dspPtr, uintptr_t winId, double scaleFactor, const cha
 UI* createUiWrapper(void* dspPtr, Window* window);
 #endif
 
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+// -----------------------------------------------------------------------
+// Plugin Application, will set class name based on plugin details
+
+class PluginApplication : public Application
+{
+public:
+    PluginApplication()
+      : Application(DISTRHO_UI_IS_STANDALONE)
+    {
+        const char* const className = (
+#ifdef DISTRHO_PLUGIN_BRAND
+            DISTRHO_PLUGIN_BRAND
+#else
+            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
+#endif
+            "-" DISTRHO_PLUGIN_NAME
+        );
+        setClassName(className);
+    }
+};
+
 // -----------------------------------------------------------------------
 // Plugin Window, needed to take care of resize properly
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 class UIExporterWindow : public Window
 {
 public:
-    UIExporterWindow(Application& app, const intptr_t winId, const double scaleFactor, void* const dspPtr)
+    UIExporterWindow(PluginApplication& app, const intptr_t winId, const double scaleFactor, void* const dspPtr)
         : Window(app, winId, scaleFactor, DISTRHO_UI_USER_RESIZABLE),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
@@ -143,7 +164,7 @@ public:
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         : fUI(createUiWrapper(dspPtr, winId, scaleFactor, bundlePath)),
 #else
-        : glApp(DISTRHO_UI_IS_STANDALONE),
+        : glApp(),
           glWindow(glApp, winId, scaleFactor, dspPtr),
           fChangingSize(false),
           fUI(glWindow.getUI()),
@@ -461,8 +482,8 @@ private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
-    Application      glApp;
-    UIExporterWindow glWindow;
+    PluginApplication glApp;
+    UIExporterWindow  glWindow;
 
     // prevent recursion
     bool fChangingSize;

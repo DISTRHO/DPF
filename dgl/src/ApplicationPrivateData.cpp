@@ -41,18 +41,7 @@ Application::PrivateData::PrivateData(const bool standalone)
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
 
     puglSetWorldHandle(world, this);
-
-    // FIXME
-    static int wc_count = 0;
-    char classNameBuf[256];
-    std::srand((std::time(NULL)));
-    std::snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d-%d-%p",
-                  "TESTING", std::rand(), ++wc_count, this);
-    // DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE)
-    classNameBuf[sizeof(classNameBuf)-1] = '\0';
-    d_stderr("--------------------------------------------------------------- className is %s", classNameBuf);
-
-    puglSetClassName(world, classNameBuf);
+    puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
 #ifdef HAVE_X11
     sofdFileDialogSetup(world);
 #endif
@@ -134,6 +123,13 @@ void Application::PrivateData::quit()
         window->close();
     }
 #endif
+}
+
+void Application::PrivateData::setClassName(const char* const name)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
+
+    puglSetClassName(world, name);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
