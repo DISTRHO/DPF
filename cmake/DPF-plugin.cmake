@@ -124,7 +124,9 @@ function(dpf_add_plugin NAME)
 
   if(_dgl_library)
     # make sure that all code will see DGL_* definitions
-    target_link_libraries("${NAME}" PUBLIC "${_dgl_library}-definitions")
+    target_link_libraries("${NAME}" PUBLIC
+      "${_dgl_library}-definitions"
+      dgl-system-libs-definitions)
   endif()
 
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
@@ -327,22 +329,32 @@ function(dpf__add_dgl_cairo)
 
   dpf__add_static_library(dgl-cairo STATIC
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Resources.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/Cairo.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp")
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Cairo.cpp")
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/Window.cpp")
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
   else()
     target_sources(dgl-cairo PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/Window.mm")
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-cairo PRIVATE
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-cairo PRIVATE dgl-system-libs)
@@ -372,25 +384,33 @@ function(dpf__add_dgl_opengl)
 
   dpf__add_static_library(dgl-opengl STATIC
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Resources.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/Image.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/ImageWidgets.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp")
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/Window.cpp")
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
   else()
     target_sources(dgl-opengl PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/Window.mm")
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-opengl PRIVATE
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
@@ -412,6 +432,7 @@ function(dpf__add_dgl_system_libs)
     return()
   endif()
   add_library(dgl-system-libs INTERFACE)
+  add_library(dgl-system-libs-definitions INTERFACE)
   if(HAIKU)
     target_link_libraries(dgl-system-libs INTERFACE "be")
   elseif(WIN32)
@@ -423,7 +444,9 @@ function(dpf__add_dgl_system_libs)
     find_package(X11 REQUIRED)
     target_include_directories(dgl-system-libs INTERFACE "${X11_INCLUDE_DIR}")
     target_link_libraries(dgl-system-libs INTERFACE "${X11_X11_LIB}")
+    target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_X11")
   endif()
+  target_link_libraries(dgl-system-libs INTERFACE dgl-system-libs-definitions)
 endfunction()
 
 # dpf__add_executable
