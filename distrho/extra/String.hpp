@@ -528,6 +528,29 @@ public:
     }
 
     /*
+     * Remove all occurrences of character 'c', shifting and truncating the string as necessary.
+     */
+    String& remove(const char c) noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(c != '\0', *this);
+
+        if (fBufferLen == 0)
+            return *this;
+
+        for (std::size_t i=0; i < fBufferLen; ++i)
+        {
+            if (fBuffer[i] == c)
+            {
+                --fBufferLen;
+                std::memmove(fBuffer+i, fBuffer+i+1, fBufferLen-i);
+            }
+        }
+
+        fBuffer[fBufferLen] = '\0';
+        return *this;
+    }
+
+    /*
      * Truncate the string to size 'n'.
      */
     String& truncate(const std::size_t n) noexcept
