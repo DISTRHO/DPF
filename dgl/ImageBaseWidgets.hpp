@@ -38,9 +38,6 @@ protected:
     bool onKeyboard(const KeyboardEvent&) override;
     bool onMouse(const MouseEvent&) override;
 
-    // FIXME needed?
-    void onReshape(uint width, uint height) override;
-
 private:
     ImageType img;
 

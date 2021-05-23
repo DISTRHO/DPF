@@ -86,14 +86,6 @@ bool ImageBaseAboutWindow<ImageType>::onMouse(const MouseEvent& ev)
     return false;
 }
 
-template <class ImageType>
-void ImageBaseAboutWindow<ImageType>::onReshape(uint width, uint height)
-{
-    // FIXME needed?
-    TopLevelWidget::setSize(width, height);
-    StandaloneWindow::onReshape(width, height);
-}
-
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
