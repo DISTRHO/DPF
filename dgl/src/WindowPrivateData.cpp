@@ -563,7 +563,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 {
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
-    DGL_DBGp("PUGL: onReshape : %i %i\n", width, height);
+    DGL_DBGp("PUGL: onReshape : %f %f\n", width, height);
 
     if (autoScaling)
     {
