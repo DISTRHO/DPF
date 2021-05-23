@@ -23,10 +23,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifneq ($(MACOS_OR_WINDOWS),true)
 TARGETS += ladspa
-endif
-
 TARGETS += lv2_dsp
 TARGETS += vst
 

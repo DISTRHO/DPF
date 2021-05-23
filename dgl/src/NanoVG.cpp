@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,7 +15,7 @@
  */
 
 #include "../NanoVG.hpp"
-#include "WidgetPrivateData.hpp"
+#include "SubWidgetPrivateData.hpp"
 
 #ifndef DGL_NO_SHARED_RESOURCES
 # include "Resources.hpp"
@@ -257,11 +257,6 @@ NanoVG::NanoVG(int flags)
       fInFrame(false),
       fIsSubWidget(false) {}
 
-NanoVG::NanoVG(NanoWidget* groupWidget)
-    : fContext(groupWidget->fContext),
-      fInFrame(false),
-      fIsSubWidget(true) {}
-
 NanoVG::~NanoVG()
 {
     DISTRHO_SAFE_ASSERT(! fInFrame);
@@ -277,8 +272,8 @@ void NanoVG::beginFrame(const uint width, const uint height, const float scaleFa
     if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
-
     fInFrame = true;
+
     nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor);
 }
 
@@ -286,14 +281,13 @@ void NanoVG::beginFrame(Widget* const widget)
 {
     DISTRHO_SAFE_ASSERT_RETURN(widget != nullptr,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
-
     fInFrame = true;
 
     if (fContext == nullptr)
         return;
 
-    Window& window(widget->getParentWindow());
-    nvgBeginFrame(fContext, static_cast<int>(window.getWidth()), static_cast<int>(window.getHeight()), 1.0f);
+    if (TopLevelWidget* const tlw = widget->getTopLevelWidget())
+        nvgBeginFrame(fContext, static_cast<int>(tlw->getWidth()), static_cast<int>(tlw->getHeight()), 1.0f);
 }
 
 void NanoVG::cancelFrame()
@@ -789,26 +783,26 @@ void NanoVG::stroke()
 
 NanoVG::FontId NanoVG::createFontFromFile(const char* name, const char* filename)
 {
-    if (fContext == nullptr) return -1;
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0', -1);
     DISTRHO_SAFE_ASSERT_RETURN(filename != nullptr && filename[0] != '\0', -1);
+    DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr, -1);
 
     return nvgCreateFont(fContext, name, filename);
 }
 
 NanoVG::FontId NanoVG::createFontFromMemory(const char* name, const uchar* data, uint dataSize, bool freeData)
 {
-    if (fContext == nullptr) return -1;
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0', -1);
     DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, -1);
+    DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr, -1);
 
     return nvgCreateFontMem(fContext, name, const_cast<uchar*>(data), static_cast<int>(dataSize), freeData);
 }
 
 NanoVG::FontId NanoVG::findFont(const char* name)
 {
-    if (fContext == nullptr) return -1;
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0', -1);
+    DISTRHO_SAFE_ASSERT_RETURN(fContext != nullptr, -1);
 
     return nvgFindFont(fContext, name);
 }
@@ -930,79 +924,56 @@ int NanoVG::textBreakLines(const char* string, const char* end, float breakRowWi
 }
 
 #ifndef DGL_NO_SHARED_RESOURCES
-void NanoVG::loadSharedResources()
+bool NanoVG::loadSharedResources()
 {
-    if (fContext == nullptr) return;
+    if (fContext == nullptr) return false;
 
     if (nvgFindFont(fContext, NANOVG_DEJAVU_SANS_TTF) >= 0)
-        return;
+        return true;
 
     using namespace dpf_resources;
 
-    nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (uchar*)dejavusans_ttf, dejavusans_ttf_size, 0);
+    return nvgCreateFontMem(fContext, NANOVG_DEJAVU_SANS_TTF, (uchar*)dejavusans_ttf, dejavusans_ttf_size, 0) >= 0;
 }
 #endif
 
 // -----------------------------------------------------------------------
+// NanoSubWidget
 
-struct NanoWidget::PrivateData {
-    NanoWidget* const self;
-    std::vector<NanoWidget*> subWidgets;
-
-    PrivateData(NanoWidget* const s)
-        : self(s),
-          subWidgets() {}
-
-    ~PrivateData()
-    {
-        subWidgets.clear();
-    }
-};
-
-NanoWidget::NanoWidget(Window& parent, int flags)
-    : Widget(parent),
-      NanoVG(flags),
-      nData(new PrivateData(this))
+template <>
+NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parent, int flags)
+    : SubWidget(parent),
+      NanoVG(flags)
 {
-    pData->needsScaling = true;
+    pData->needsViewportScaling = true;
 }
 
-NanoWidget::NanoWidget(Widget* groupWidget, int flags)
-    : Widget(groupWidget, true),
-      NanoVG(flags),
-      nData(new PrivateData(this))
-{
-    pData->needsScaling = true;
-}
+template class NanoBaseWidget<SubWidget>;
 
-NanoWidget::NanoWidget(NanoWidget* groupWidget)
-    : Widget(groupWidget, false),
-      NanoVG(groupWidget),
-      nData(new PrivateData(this))
-{
-    pData->needsScaling = true;
-    pData->skipDisplay = true;
-    groupWidget->nData->subWidgets.push_back(this);
-}
+// -----------------------------------------------------------------------
+// NanoTopLevelWidget
 
-NanoWidget::~NanoWidget()
-{
-    delete nData;
-}
+template <>
+NanoBaseWidget<TopLevelWidget>::NanoBaseWidget(Window& windowToMapTo, int flags)
+    : TopLevelWidget(windowToMapTo),
+      NanoVG(flags) {}
 
-void NanoWidget::onDisplay()
-{
-    NanoVG::beginFrame(getWidth(), getHeight());
-    onNanoDisplay();
+template class NanoBaseWidget<TopLevelWidget>;
 
-    for (std::vector<NanoWidget*>::iterator it = nData->subWidgets.begin(); it != nData->subWidgets.end(); ++it)
-    {
-        NanoWidget* const widget(*it);
-        widget->onNanoDisplay();
-    }
+// -----------------------------------------------------------------------
+// NanoStandaloneWindow
 
-    NanoVG::endFrame();
-}
+template <>
+NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, int flags)
+    : StandaloneWindow(app),
+      NanoVG(flags) {}
+
+template <>
+NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, Window& parentWindow, int flags)
+    : StandaloneWindow(app, parentWindow),
+      NanoVG(flags) {}
+
+template class NanoBaseWidget<StandaloneWindow>;
 
 // -----------------------------------------------------------------------
 

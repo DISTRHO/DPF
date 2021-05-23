@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,9 +16,10 @@
  */
 
 #include "DistrhoUI.hpp"
+
+#include "Artwork.hpp"
 #include "DemoWidgetBanner.hpp"
 #include "DemoWidgetClickable.hpp"
-#include "Window.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -36,16 +38,29 @@ public:
         fWidgetBanner = widgetBanner;
         widgetBanner->setSize(180, 80);
         widgetBanner->setAbsolutePos(10, 10);
+
+        CairoImage knobSkin;
+        knobSkin.loadFromPNG(Artwork::knobData, Artwork::knobDataSize);
+
+        CairoImageKnob* knob = new CairoImageKnob(this, knobSkin);
+        fKnob = knob;
+        knob->setSize(80, 80);
+        knob->setAbsolutePos(10, 100);
+
+        CairoImage buttonOn, buttonOff;
+        buttonOn.loadFromPNG(Artwork::buttonOnData, Artwork::buttonOnDataSize);
+        buttonOff.loadFromPNG(Artwork::buttonOffData, Artwork::buttonOffDataSize);
+
+        CairoImageButton* button = new CairoImageButton(this, buttonOff, buttonOn);
+        fButton = button;
+        button->setSize(60, 35);
+        button->setAbsolutePos(100, 160);
     }
 
-    ~CairoExampleUI()
+protected:
+    void onCairoDisplay(const CairoGraphicsContext& context)
     {
-    }
-
-    void onDisplay()
-    {
-        cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
-
+        cairo_t* const cr = context.handle;
         cairo_set_source_rgb(cr, 1.0, 0.8, 0.5);
         cairo_paint(cr);
     }
@@ -60,6 +75,8 @@ public:
 private:
     ScopedPointer<DemoWidgetClickable> fWidgetClickable;
     ScopedPointer<DemoWidgetBanner> fWidgetBanner;
+    ScopedPointer<CairoImageKnob> fKnob;
+    ScopedPointer<CairoImageButton> fButton;
 };
 
 UI* createUI()

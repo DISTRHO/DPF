@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -116,3 +116,5 @@
    By default this is set to @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
  */
 #define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+
+#define DISTRHO_UI_USE_CAIRO 1

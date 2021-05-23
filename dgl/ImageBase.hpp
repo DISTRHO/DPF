@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,7 +21,16 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+enum ImageFormat {
+    kImageFormatNull,
+    kImageFormatGrayscale,
+    kImageFormatBGR,
+    kImageFormatBGRA,
+    kImageFormatRGB,
+    kImageFormatRGBA,
+};
 
 /**
    Base DGL Image class.
@@ -44,13 +53,13 @@ protected:
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    ImageBase(const char* const rawData, const uint width, const uint height);
+    ImageBase(const char* rawData, uint width, uint height, ImageFormat format);
 
    /**
       Constructor using raw image data.
       @note @a rawData must remain valid for the lifetime of this Image.
     */
-    ImageBase(const char* const rawData, const Size<uint>& size);
+    ImageBase(const char* rawData, const Size<uint>& size, ImageFormat format);
 
    /**
       Constructor using another image data.
@@ -67,6 +76,11 @@ public:
       Check if this image is valid.
     */
     bool isValid() const noexcept;
+
+   /**
+      Check if this image is not valid.
+    */
+    bool isInvalid() const noexcept;
 
    /**
       Get width.
@@ -89,19 +103,38 @@ public:
     const char* getRawData() const noexcept;
 
    /**
-      Draw this image at (0, 0) point.
+      Get the image format.
     */
-    void draw();
+    ImageFormat getFormat() const noexcept;
 
    /**
-      Draw this image at (x, y) point.
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void drawAt(const int x, const int y);
+    void loadFromMemory(const char* rawData, uint width, uint height, ImageFormat format = kImageFormatBGRA) noexcept;
 
    /**
-      Draw this image at position @a pos.
+      Load image data from memory.
+      @note @a rawData must remain valid for the lifetime of this Image.
     */
-    void drawAt(const Point<int>& pos);
+    virtual void loadFromMemory(const char* rawData,
+                                const Size<uint>& size,
+                                ImageFormat format = kImageFormatBGRA) noexcept;
+
+   /**
+      Draw this image at (0, 0) point using the current OpenGL context.
+    */
+    void draw(const GraphicsContext& context);
+
+   /**
+      Draw this image at (x, y) point using the current OpenGL context.
+    */
+    void drawAt(const GraphicsContext& context, int x, int y);
+
+   /**
+      Draw this image at position @a pos using the current OpenGL context.
+    */
+    virtual void drawAt(const GraphicsContext& context, const Point<int>& pos) = 0;
 
    /**
       TODO document this.
@@ -111,14 +144,12 @@ public:
     bool operator!=(const ImageBase& image) const noexcept;
 
 protected:
-   /** @internal */
-    virtual void _drawAt(const Point<int>& pos) = 0;
-
-    const char* fRawData;
-    Size<uint> fSize;
+    const char* rawData;
+    Size<uint> size;
+    ImageFormat format;
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

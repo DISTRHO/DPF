@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,7 +19,9 @@
 
 #include "Color.hpp"
 #include "OpenGL.hpp"
-#include "Widget.hpp"
+#include "SubWidget.hpp"
+#include "TopLevelWidget.hpp"
+#include "StandaloneWindow.hpp"
 
 #ifndef DGL_NO_SHARED_RESOURCES
 # define NANOVG_DEJAVU_SANS_TTF "__dpf_dejavusans_ttf__"
@@ -305,7 +307,9 @@ public:
    /**
       Constructor reusing a NanoVG context, used for subwidgets.
     */
+   /*
     NanoVG(NanoWidget* groupWidget);
+    */
 
    /**
       Destructor.
@@ -851,7 +855,7 @@ public:
    /**
       Load DPF's internal shared resources for this NanoVG class.
     */
-    virtual void loadSharedResources();
+    virtual bool loadSharedResources();
 #endif
 
 private:
@@ -873,30 +877,39 @@ private:
    The drawing function onDisplay() is implemented internally but a
    new onNanoDisplay() needs to be overridden instead.
  */
-class NanoWidget : public Widget,
-                   public NanoVG
+template <class BaseWidget>
+class NanoBaseWidget : public BaseWidget,
+                       public NanoVG
 {
 public:
    /**
-      Constructor.
+      Constructor for a NanoSubWidget.
       @see CreateFlags
     */
-    explicit NanoWidget(Window& parent, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Widget* const parentGroupWidget, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a subwidget.
+      Constructor for a NanoTopLevelWidget.
+      @see CreateFlags
     */
-    explicit NanoWidget(Widget* groupWidget, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a subwidget, reusing a NanoVG context.
+      Constructor for a NanoStandaloneWindow without parent window.
+      @see CreateFlags
     */
-    explicit NanoWidget(NanoWidget* groupWidget);
+    explicit NanoBaseWidget(Application& app, int flags = CREATE_ANTIALIAS);
+
+   /**
+      Constructor for a NanoStandaloneWindow with parent window.
+      @see CreateFlags
+    */
+    explicit NanoBaseWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.
     */
-    virtual ~NanoWidget();
+    virtual ~NanoBaseWidget() {}
 
 protected:
    /**
@@ -906,14 +919,16 @@ protected:
     virtual void onNanoDisplay() = 0;
 
 private:
-    struct PrivateData;
-    PrivateData* const nData;
-
    /**
       Widget display function.
       Implemented internally to wrap begin/endFrame() automatically.
     */
-    void onDisplay() override;
+    inline void onDisplay() override
+    {
+        NanoVG::beginFrame(BaseWidget::getWidth(), BaseWidget::getHeight());
+        onNanoDisplay();
+        NanoVG::endFrame();
+    }
 
     // these should not be used
     void beginFrame(uint,uint) {}
@@ -922,8 +937,15 @@ private:
     void cancelFrame() {}
     void endFrame() {}
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoWidget)
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoBaseWidget)
 };
+
+typedef NanoBaseWidget<SubWidget> NanoSubWidget;
+typedef NanoBaseWidget<TopLevelWidget> NanoTopLevelWidget;
+typedef NanoBaseWidget<StandaloneWindow> NanoStandaloneWindow;
+
+DISTRHO_DEPRECATED_BY("NanoSubWidget")
+typedef NanoSubWidget NanoWidget;
 
 // -----------------------------------------------------------------------
 

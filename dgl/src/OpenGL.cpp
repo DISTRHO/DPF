@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,115 +14,65 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "../Geometry.hpp"
 #include "../OpenGL.hpp"
+#include "../Color.hpp"
+#include "../ImageWidgets.hpp"
+
+#include "Common.hpp"
+#include "SubWidgetPrivateData.hpp"
+#include "TopLevelWidgetPrivateData.hpp"
+#include "WidgetPrivateData.hpp"
+#include "WindowPrivateData.hpp"
+
+// templated classes
+#include "ImageBaseWidgets.cpp"
 
 START_NAMESPACE_DGL
+
+// -----------------------------------------------------------------------
+// Color
+
+void Color::setFor(const GraphicsContext&, const bool includeAlpha)
+{
+    if (includeAlpha)
+        glColor4f(red, green, blue, alpha);
+    else
+        glColor3f(red, green, blue);
+}
 
 // -----------------------------------------------------------------------
 // Line
 
 template<typename T>
-void Line<T>::draw()
+static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fPosStart != fPosEnd,);
+    DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
 
     glBegin(GL_LINES);
 
     {
-        glVertex2d(fPosStart.fX, fPosStart.fY);
-        glVertex2d(fPosEnd.fX, fPosEnd.fY);
+        glVertex2d(posStart.getX(), posStart.getY());
+        glVertex2d(posEnd.getX(), posEnd.getY());
     }
 
     glEnd();
 }
-
-// -----------------------------------------------------------------------
-// Circle
 
 template<typename T>
-void Circle<T>::_draw(const bool outline)
+void Line<T>::draw(const GraphicsContext&, const T width)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fNumSegments >= 3 && fSize > 0.0f,);
+    DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
-    double t, x = fSize, y = 0.0;
-
-    glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
-
-    for (uint i=0; i<fNumSegments; ++i)
-    {
-        glVertex2d(x + fPos.fX, y + fPos.fY);
-
-        t = x;
-        x = fCos * x - fSin * y;
-        y = fSin * t + fCos * y;
-    }
-
-    glEnd();
+    glLineWidth(static_cast<GLfloat>(width));
+    drawLine<T>(posStart, posEnd);
 }
 
-// -----------------------------------------------------------------------
-// Triangle
-
+// deprecated calls
 template<typename T>
-void Triangle<T>::_draw(const bool outline)
+void Line<T>::draw()
 {
-    DISTRHO_SAFE_ASSERT_RETURN(fPos1 != fPos2 && fPos1 != fPos3,);
-
-    glBegin(outline ? GL_LINE_LOOP : GL_TRIANGLES);
-
-    {
-        glVertex2d(fPos1.fX, fPos1.fY);
-        glVertex2d(fPos2.fX, fPos2.fY);
-        glVertex2d(fPos3.fX, fPos3.fY);
-    }
-
-    glEnd();
+    drawLine<T>(posStart, posEnd);
 }
-
-// -----------------------------------------------------------------------
-// Rectangle
-
-template<typename T>
-void Rectangle<T>::_draw(const bool outline)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(fSize.isValid(),);
-
-    glBegin(outline ? GL_LINE_LOOP : GL_QUADS);
-
-    {
-        glTexCoord2f(0.0f, 0.0f);
-        glVertex2d(fPos.fX, fPos.fY);
-
-        glTexCoord2f(1.0f, 0.0f);
-        glVertex2d(fPos.fX+fSize.fWidth, fPos.fY);
-
-        glTexCoord2f(1.0f, 1.0f);
-        glVertex2d(fPos.fX+fSize.fWidth, fPos.fY+fSize.fHeight);
-
-        glTexCoord2f(0.0f, 1.0f);
-        glVertex2d(fPos.fX, fPos.fY+fSize.fHeight);
-    }
-
-    glEnd();
-}
-
-// -----------------------------------------------------------------------
-// Possible template data types
-
-template class Point<double>;
-template class Point<float>;
-template class Point<int>;
-template class Point<uint>;
-template class Point<short>;
-template class Point<ushort>;
-
-template class Size<double>;
-template class Size<float>;
-template class Size<int>;
-template class Size<uint>;
-template class Size<short>;
-template class Size<ushort>;
 
 template class Line<double>;
 template class Line<float>;
@@ -131,12 +81,121 @@ template class Line<uint>;
 template class Line<short>;
 template class Line<ushort>;
 
+// -----------------------------------------------------------------------
+// Circle
+
+template<typename T>
+static void drawCircle(const Point<T>& pos,
+                       const uint numSegments,
+                       const float size,
+                       const float sin,
+                       const float cos,
+                       const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(numSegments >= 3 && size > 0.0f,);
+
+    const T origx = pos.getX();
+    const T origy = pos.getY();
+    double t, x = size, y = 0.0;
+
+    glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
+
+    for (uint i=0; i<numSegments; ++i)
+    {
+        glVertex2d(x + origx, y + origy);
+
+        t = x;
+        x = cos * x - sin * y;
+        y = sin * t + cos * y;
+    }
+
+    glEnd();
+}
+
+template<typename T>
+void Circle<T>::draw(const GraphicsContext&)
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
+}
+
+// deprecated calls
+template<typename T>
+void Circle<T>::draw()
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline()
+{
+    drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
+}
+
 template class Circle<double>;
 template class Circle<float>;
 template class Circle<int>;
 template class Circle<uint>;
 template class Circle<short>;
 template class Circle<ushort>;
+
+// -----------------------------------------------------------------------
+// Triangle
+
+template<typename T>
+static void drawTriangle(const Point<T>& pos1,
+                         const Point<T>& pos2,
+                         const Point<T>& pos3,
+                         const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
+
+    glBegin(outline ? GL_LINE_LOOP : GL_TRIANGLES);
+
+    {
+        glVertex2d(pos1.getX(), pos1.getY());
+        glVertex2d(pos2.getX(), pos2.getY());
+        glVertex2d(pos3.getX(), pos3.getY());
+    }
+
+    glEnd();
+}
+
+template<typename T>
+void Triangle<T>::draw(const GraphicsContext&)
+{
+    drawTriangle<T>(pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawTriangle<T>(pos1, pos2, pos3, true);
+}
+
+// deprecated calls
+template<typename T>
+void Triangle<T>::draw()
+{
+    drawTriangle<T>(pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline()
+{
+    drawTriangle<T>(pos1, pos2, pos3, true);
+}
 
 template class Triangle<double>;
 template class Triangle<float>;
@@ -145,12 +204,453 @@ template class Triangle<uint>;
 template class Triangle<short>;
 template class Triangle<ushort>;
 
+// -----------------------------------------------------------------------
+// Rectangle
+
+template<typename T>
+static void drawRectangle(const Rectangle<T>& rect, const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
+
+    glBegin(outline ? GL_LINE_LOOP : GL_QUADS);
+
+    {
+        const T x = rect.getX();
+        const T y = rect.getY();
+        const T w = rect.getWidth();
+        const T h = rect.getHeight();
+
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(x, y);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(x+w, y);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(x+w, y+h);
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(x, y+h);
+    }
+
+    glEnd();
+}
+
+template<typename T>
+void Rectangle<T>::draw(const GraphicsContext&)
+{
+    drawRectangle<T>(*this, false);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawRectangle<T>(*this, true);
+}
+
+// deprecated calls
+template<typename T>
+void Rectangle<T>::draw()
+{
+    drawRectangle<T>(*this, false);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline()
+{
+    drawRectangle<T>(*this, true);
+}
+
 template class Rectangle<double>;
 template class Rectangle<float>;
 template class Rectangle<int>;
 template class Rectangle<uint>;
 template class Rectangle<short>;
 template class Rectangle<ushort>;
+
+// -----------------------------------------------------------------------
+// OpenGLImage
+
+static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                 static_cast<GLsizei>(image.getWidth()),
+                 static_cast<GLsizei>(image.getHeight()),
+                 0,
+                 asOpenGLImageFormat(image.getFormat()), GL_UNSIGNED_BYTE, image.getRawData());
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, const GLuint textureId, bool& setupCalled)
+{
+    if (textureId == 0 || image.isInvalid())
+        return;
+
+    if (! setupCalled)
+    {
+        setupOpenGLImage(image, textureId);
+        setupCalled = true;
+    }
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glBegin(GL_QUADS);
+
+    {
+        const int x = pos.getX();
+        const int y = pos.getY();
+        const int w = static_cast<int>(image.getWidth());
+        const int h = static_cast<int>(image.getHeight());
+
+        glTexCoord2f(0.0f, 0.0f);
+        glVertex2d(x, y);
+
+        glTexCoord2f(1.0f, 0.0f);
+        glVertex2d(x+w, y);
+
+        glTexCoord2f(1.0f, 1.0f);
+        glVertex2d(x+w, y+h);
+
+        glTexCoord2f(0.0f, 1.0f);
+        glVertex2d(x, y+h);
+    }
+
+    glEnd();
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+OpenGLImage::OpenGLImage()
+    : ImageBase(),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const ImageFormat fmt)
+    : ImageBase(rdata, w, h, fmt),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
+    : ImageBase(rdata, s, fmt),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::OpenGLImage(const OpenGLImage& image)
+    : ImageBase(image),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::~OpenGLImage()
+{
+    if (textureId != 0)
+        glDeleteTextures(1, &textureId);
+}
+
+void OpenGLImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
+{
+    setupCalled = false;
+    ImageBase::loadFromMemory(rdata, s, fmt);
+}
+
+void OpenGLImage::drawAt(const GraphicsContext&, const Point<int>& pos)
+{
+    drawOpenGLImage(*this, pos, textureId, setupCalled);
+}
+
+OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
+{
+    rawData = image.rawData;
+    size    = image.size;
+    format  = image.format;
+    setupCalled = false;
+    return *this;
+}
+
+// deprecated calls
+OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const GLenum fmt)
+    : ImageBase(rdata, w, h, asDISTRHOImageFormat(fmt)),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const GLenum fmt)
+    : ImageBase(rdata, s, asDISTRHOImageFormat(fmt)),
+      textureId(0),
+      setupCalled(false)
+{
+    glGenTextures(1, &textureId);
+    DISTRHO_SAFE_ASSERT(textureId != 0);
+}
+
+void OpenGLImage::draw()
+{
+    drawOpenGLImage(*this, Point<int>(0, 0), textureId, setupCalled);
+}
+
+void OpenGLImage::drawAt(const int x, const int y)
+{
+    drawOpenGLImage(*this, Point<int>(x, y), textureId, setupCalled);
+}
+
+void OpenGLImage::drawAt(const Point<int>& pos)
+{
+    drawOpenGLImage(*this, pos, textureId, setupCalled);
+}
+
+// -----------------------------------------------------------------------
+// ImageBaseAboutWindow
+
+#if 0
+template <>
+void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
+{
+    const GraphicsContext& context(getGraphicsContext());
+    img.draw(context);
+}
+#endif
+
+template class ImageBaseAboutWindow<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseButton
+
+template class ImageBaseButton<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseKnob
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::init()
+{
+    glTextureId = 0;
+    glGenTextures(1, &glTextureId);
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::cleanup()
+{
+    if (glTextureId == 0)
+        return;
+
+    glDeleteTextures(1, &glTextureId);
+    glTextureId = 0;
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::onDisplay()
+{
+    const GraphicsContext& context(getGraphicsContext());
+    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
+        / (pData->maximum - pData->minimum);
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, pData->glTextureId);
+
+    if (! pData->isReady)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        uint imageDataOffset = 0;
+
+        if (pData->rotationAngle == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(pData->imgLayerCount > 0,);
+            DISTRHO_SAFE_ASSERT_RETURN(normValue >= 0.0f,);
+
+            const uint& v1(pData->isImgVertical ? pData->imgLayerWidth : pData->imgLayerHeight);
+            const uint& v2(pData->isImgVertical ? pData->imgLayerHeight : pData->imgLayerWidth);
+
+            // TODO kImageFormatGreyscale
+            const uint layerDataSize   = v1 * v2 * ((pData->image.getFormat() == kImageFormatBGRA ||
+                                                     pData->image.getFormat() == kImageFormatRGBA) ? 4 : 3);
+            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount-1));
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                     static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
+                     asOpenGLImageFormat(pData->image.getFormat()), GL_UNSIGNED_BYTE, pData->image.getRawData() + imageDataOffset);
+
+        pData->isReady = true;
+    }
+
+    const int w = static_cast<int>(getWidth());
+    const int h = static_cast<int>(getHeight());
+
+    if (pData->rotationAngle != 0)
+    {
+        glPushMatrix();
+
+        const int w2 = w/2;
+        const int h2 = h/2;
+
+        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
+        glRotatef(normValue*static_cast<float>(pData->rotationAngle), 0.0f, 0.0f, 1.0f);
+
+        Rectangle<int>(-w2, -h2, w, h).draw(context);
+
+        glPopMatrix();
+    }
+    else
+    {
+        Rectangle<int>(0, 0, w, h).draw(context);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+template class ImageBaseKnob<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSlider
+
+template class ImageBaseSlider<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+// ImageBaseSwitch
+
+template class ImageBaseSwitch<OpenGLImage>;
+
+// -----------------------------------------------------------------------
+
+void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
+{
+    bool needsDisableScissor = false;
+
+    if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
+    {
+        // full viewport size
+        glViewport(0,
+                   -static_cast<int>(height * autoScaleFactor - height + 0.5),
+                   static_cast<int>(width * autoScaleFactor + 0.5),
+                   static_cast<int>(height * autoScaleFactor + 0.5));
+    }
+    else if (needsViewportScaling)
+    {
+        // limit viewport to widget bounds
+        glViewport(absolutePos.getX(),
+                   static_cast<int>(height - self->getHeight()) - absolutePos.getY(),
+                   static_cast<int>(self->getWidth()),
+                   static_cast<int>(self->getHeight()));
+    }
+    else
+    {
+        // set viewport pos
+        glViewport(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
+                   -static_cast<int>(std::round((height * autoScaleFactor - height)
+                                     + (absolutePos.getY() * autoScaleFactor))),
+                   static_cast<int>(std::round(width * autoScaleFactor)),
+                   static_cast<int>(std::round(height * autoScaleFactor)));
+
+        // then cut the outer bounds
+        glScissor(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
+                  static_cast<int>(height - std::round((static_cast<int>(self->getHeight()) + absolutePos.getY())
+                                                       * autoScaleFactor)),
+                  static_cast<int>(std::round(self->getWidth() * autoScaleFactor)),
+                  static_cast<int>(std::round(self->getHeight() * autoScaleFactor)));
+
+        glEnable(GL_SCISSOR_TEST);
+        needsDisableScissor = true;
+    }
+
+    // display widget
+    self->onDisplay();
+
+    if (needsDisableScissor)
+        glDisable(GL_SCISSOR_TEST);
+
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
+}
+
+// -----------------------------------------------------------------------
+
+void TopLevelWidget::PrivateData::display()
+{
+    if (! selfw->pData->visible)
+        return;
+
+    const Size<uint> size(window.getSize());
+    const uint width  = size.getWidth();
+    const uint height = size.getHeight();
+
+    const double autoScaleFactor = window.pData->autoScaleFactor;
+
+    // full viewport size
+    if (window.pData->autoScaling)
+    {
+        glViewport(0,
+                   -static_cast<int>(height * autoScaleFactor - height),
+                   static_cast<int>(width * autoScaleFactor),
+                   static_cast<int>(height * autoScaleFactor));
+    }
+    else
+    {
+        glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
+    }
+
+    // main widget drawing
+    self->onDisplay();
+
+    // now draw subwidgets if there are any
+    selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
+}
+
+// -----------------------------------------------------------------------
+
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    return (const GraphicsContext&)graphicsContext;
+}
 
 // -----------------------------------------------------------------------
 

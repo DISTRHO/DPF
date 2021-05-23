@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,91 +15,204 @@
  */
 
 #include "WidgetPrivateData.hpp"
-
-#ifdef DGL_CAIRO
-# include "../Cairo.hpp"
-#endif
-#ifdef DGL_OPENGL
-# include "../OpenGL.hpp"
-#endif
+#include "SubWidgetPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
+#define FOR_EACH_SUBWIDGET(it) \
+  for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
+
+#define FOR_EACH_SUBWIDGET_INV(rit) \
+  for (std::list<SubWidget*>::reverse_iterator rit = subWidgets.rbegin(); rit != subWidgets.rend(); ++rit)
+
 // -----------------------------------------------------------------------
 
-void Widget::PrivateData::display(const uint width,
-                                  const uint height,
-                                  const double scaling,
-                                  const bool renderingSubWidget)
+Widget::PrivateData::PrivateData(Widget* const s, TopLevelWidget* const tlw)
+    : self(s),
+      topLevelWidget(tlw),
+      parentWidget(nullptr),
+      id(0),
+      needsScaling(false),
+      visible(true),
+      size(0, 0),
+      subWidgets() {}
+
+Widget::PrivateData::PrivateData(Widget* const s, Widget* const pw)
+    : self(s),
+      topLevelWidget(findTopLevelWidget(pw)),
+      parentWidget(pw),
+      id(0),
+      needsScaling(false),
+      visible(true),
+      size(0, 0),
+      subWidgets() {}
+
+Widget::PrivateData::~PrivateData()
 {
-    if ((skipDisplay && ! renderingSubWidget) || size.isInvalid() || ! visible)
+    subWidgets.clear();
+}
+
+void Widget::PrivateData::displaySubWidgets(const uint width, const uint height, const double autoScaleFactor)
+{
+    if (subWidgets.size() == 0)
         return;
 
-#ifdef DGL_OPENGL
-    bool needsDisableScissor = false;
-
-    // reset color
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-    if (needsFullViewport || (absolutePos.isZero() && size == Size<uint>(width, height)))
+    for (std::list<SubWidget*>::iterator it = subWidgets.begin(); it != subWidgets.end(); ++it)
     {
-        // full viewport size
-        glViewport(0,
-                    -(height * scaling - height),
-                    width * scaling,
-                    height * scaling);
+        SubWidget* const subwidget(*it);
+
+        if (subwidget->isVisible())
+            subwidget->pData->display(width, height, autoScaleFactor);
     }
-    else if (needsScaling)
+}
+
+// -----------------------------------------------------------------------
+
+bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const KeyboardEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    FOR_EACH_SUBWIDGET_INV(rit)
     {
-        // limit viewport to widget bounds
-        glViewport(absolutePos.getX(),
-                    height - self->getHeight() - absolutePos.getY(),
-                    self->getWidth(),
-                    self->getHeight());
+        SubWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->onKeyboard(ev))
+            return true;
     }
-    else
+
+    return false;
+}
+
+bool Widget::PrivateData::giveSpecialEventForSubWidgets(const SpecialEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    FOR_EACH_SUBWIDGET_INV(rit)
     {
-        // only set viewport pos
-        glViewport(absolutePos.getX() * scaling,
-                    -std::round((height * scaling - height) + (absolutePos.getY() * scaling)),
-                    std::round(width * scaling),
-                    std::round(height * scaling));
+        SubWidget* const widget(*rit);
 
-        // then cut the outer bounds
-        glScissor(absolutePos.getX() * scaling,
-                  height - std::round((self->getHeight() + absolutePos.getY()) * scaling),
-                  std::round(self->getWidth() * scaling),
-                  std::round(self->getHeight() * scaling));
-
-        glEnable(GL_SCISSOR_TEST);
-        needsDisableScissor = true;
+        if (widget->isVisible() && widget->onSpecial(ev))
+            return true;
     }
-#endif
 
-#ifdef DGL_CAIRO
-    cairo_t* cr = parent.getGraphicsContext().cairo;
-    cairo_matrix_t matrix;
-    cairo_get_matrix(cr, &matrix);
-    cairo_translate(cr, absolutePos.getX(), absolutePos.getY());
-    // TODO: scaling and cropping
-#endif
+    return false;
+}
 
-    // display widget
-    self->onDisplay();
+bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
 
-#ifdef DGL_CAIRO
-    cairo_set_matrix(cr, &matrix);
-#endif
-
-#ifdef DGL_OPENGL
-    if (needsDisableScissor)
+    FOR_EACH_SUBWIDGET_INV(rit)
     {
-        glDisable(GL_SCISSOR_TEST);
-        needsDisableScissor = false;
-    }
-#endif
+        SubWidget* const widget(*rit);
 
-    displaySubWidgets(width, height, scaling);
+        if (widget->isVisible() && widget->onCharacterInput(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onMouse(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onMotion(ev))
+            return true;
+    }
+
+    return false;
+}
+
+bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
+{
+    if (! visible)
+        return false;
+    if (subWidgets.size() == 0)
+        return false;
+
+    const double x = ev.pos.getX();
+    const double y = ev.pos.getY();
+
+    FOR_EACH_SUBWIDGET_INV(rit)
+    {
+        SubWidget* const widget(*rit);
+
+        if (! widget->isVisible())
+            continue;
+
+        ev.pos = Point<double>(x - widget->getAbsoluteX(),
+                               y - widget->getAbsoluteY());
+
+        if (widget->onScroll(ev))
+            return true;
+    }
+
+    return false;
+}
+
+// -----------------------------------------------------------------------
+
+TopLevelWidget* Widget::PrivateData::findTopLevelWidget(Widget* const pw)
+{
+    if (pw->pData->topLevelWidget != nullptr)
+        return pw->pData->topLevelWidget;
+    if (pw->pData->parentWidget != nullptr)
+        return findTopLevelWidget(pw->pData->parentWidget);
+    return nullptr;
 }
 
 // -----------------------------------------------------------------------

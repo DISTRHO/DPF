@@ -55,6 +55,10 @@ endif
 OBJS_DSP = $(FILES_DSP:%=$(BUILD_DIR)/%.o)
 OBJS_UI  = $(FILES_UI:%=$(BUILD_DIR)/%.o)
 
+ifeq ($(MACOS),true)
+OBJS_UI += $(BUILD_DIR)/DistrhoUI_macOS_$(NAME).mm.o
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Set plugin binary file targets
 
@@ -68,9 +72,21 @@ lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst        = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set plugin symbols to export
+
+ifeq ($(MACOS),true)
+SYMBOLS_LADSPA = -Wl,-exported_symbol,_ladspa_descriptor
+SYMBOLS_DSSI   = -Wl,-exported_symbol,_ladspa_descriptor -Wl,-exported_symbol,_dssi_descriptor
+SYMBOLS_LV2    = -Wl,-exported_symbol,_lv2_descriptor -Wl,-exported_symbol,_lv2_generate_ttl
+SYMBOLS_LV2UI  = -Wl,-exported_symbol,_lv2ui_descriptor
+SYMBOLS_VST2   = -Wl,-exported_symbol,_VSTPluginMain
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
 
 ifeq ($(FILES_UI),)
+HAVE_DGL = false
 UI_TYPE = none
 endif
 
@@ -102,9 +118,30 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),vulkan)
+ifeq ($(HAVE_VULKAN),true)
+DGL_FLAGS += -DDGL_VULKAN
+DGL_FLAGS += $(VULKAN_FLAGS)
+DGL_LIBS  += $(VULKAN_LIBS)
+DGL_LIB    = $(DPF_PATH)/build/libdgl-vulkan.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 ifeq ($(UI_TYPE),external)
 DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
+endif
+
+ifeq ($(UI_TYPE),stub)
+ifeq ($(HAVE_STUB),true)
+DGL_LIB    = $(DPF_PATH)/build/libdgl-stub.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
 endif
 
 DGL_LIBS += $(DGL_SYSTEM_LIBS) -lm
@@ -130,6 +167,11 @@ all:
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Common
+
+$(BUILD_DIR)/%.S.o: %.S
+	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	@echo "Compiling $<"
+	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.c.o: %.c
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
@@ -161,6 +203,11 @@ $(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
+
+$(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUI_macOS.mm ($*)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DPUGL_NAMESPACE=$* -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I$(DPF_PATH)/dgl/src -I$(DPF_PATH)/dgl/src/pugl-upstream/include -ObjC++ -c -o $@
 
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
@@ -194,7 +241,7 @@ ladspa: $(ladspa_dsp)
 $(ladspa_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LADSPA.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LADSPA plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) $(SYMBOLS_LADSPA) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DSSI
@@ -206,7 +253,7 @@ dssi_ui:  $(dssi_ui)
 $(dssi_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating DSSI plugin library for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) $(SYMBOLS_DSSI) -o $@
 
 $(dssi_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
@@ -223,17 +270,17 @@ lv2_sep: $(lv2_dsp) $(lv2_ui)
 $(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2) $(SYMBOLS_LV2UI)  -o $@
 
 $(lv2_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin library for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) $(SYMBOLS_LV2) -o $@
 
 $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin UI for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2UI) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # VST
@@ -247,7 +294,7 @@ $(vst): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_VST2) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 

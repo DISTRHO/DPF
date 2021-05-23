@@ -1,15 +1,25 @@
-os: linux
-dist: bionic
 
-languages: c++
-compiler: gcc
+cache:
+  directories:
+    - ${HOME}/debs
+
+jobs:
+  # linux native build
+  - name: "Linux native"
+    os: linux
+    compiler: gcc
+    dist: bionic
+    env:
+      - TARGET="linux"
+    services:
+      - xvfb
 
 before_install:
-  - sh ${TRAVIS_BUILD_DIR}/.travis/before_install.sh
+  - bash ${TRAVIS_BUILD_DIR}/.travis/before_install.sh
+
 install:
-  - sh ${TRAVIS_BUILD_DIR}/.travis/install.sh
+  - bash ${TRAVIS_BUILD_DIR}/.travis/install.sh
+
 script:
-  - sh ${TRAVIS_BUILD_DIR}/.travis/script-linux.sh
-  #- sh ${TRAVIS_BUILD_DIR}/.travis/script-macos.sh
-  - sh ${TRAVIS_BUILD_DIR}/.travis/script-win32.sh
-  - sh ${TRAVIS_BUILD_DIR}/.travis/script-win64.sh
+  - make
+  - make -C tests

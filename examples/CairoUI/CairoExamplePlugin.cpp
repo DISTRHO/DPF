@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
  * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -77,7 +78,13 @@ public:
 
     void run(const float** inputs, float** outputs, uint32_t frames)
     {
-        memcpy(outputs[0], inputs[0], frames * sizeof(float));
+       /**
+          This plugin does nothing, it just demonstrates cairo UI usage.
+          So here we directly copy inputs over outputs, leaving the audio untouched.
+          We need to be careful in case the host re-uses the same buffer for both inputs and outputs.
+        */
+        if (outputs[0] != inputs[0])
+            std::memcpy(outputs[0], inputs[0], sizeof(float)*frames);
     }
 };
 

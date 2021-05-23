@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../extra/ScopedSafeLocale.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
 # undef DISTRHO_PLUGIN_HAS_UI
@@ -22,6 +23,9 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
+# undef DISTRHO_UI_USER_RESIZABLE
+# define DISTRHO_UI_USER_RESIZABLE 0
+# define DISTRHO_UI_IS_STANDALONE 0
 # include "DistrhoUIInternal.hpp"
 #endif
 
@@ -29,14 +33,16 @@
 # define __cdecl
 #endif
 
-#define VESTIGE_HEADER
+#ifndef VESTIGE_HEADER
+# define VESTIGE_HEADER 1
+#endif
 #define VST_FORCE_DEPRECATED 0
 
 #include <clocale>
 #include <map>
 #include <string>
 
-#ifdef VESTIGE_HEADER
+#if VESTIGE_HEADER
 # include "vestige/vestige.h"
 #define effFlagsProgramChunks (1 << 5)
 #define effSetProgramName 4
@@ -101,35 +107,11 @@ void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
 
 // -----------------------------------------------------------------------
 
-class ScopedSafeLocale {
-public:
-    ScopedSafeLocale() noexcept
-        : locale(::strdup(::setlocale(LC_NUMERIC, nullptr)))
-    {
-        ::setlocale(LC_NUMERIC, "C");
-    }
-
-    ~ScopedSafeLocale() noexcept
-    {
-        if (locale != nullptr)
-        {
-            ::setlocale(LC_NUMERIC, locale);
-            std::free(locale);
-        }
-    }
-
-private:
-    char* const locale;
-
-    DISTRHO_DECLARE_NON_COPY_CLASS(ScopedSafeLocale)
-    DISTRHO_PREVENT_HEAP_ALLOCATION
-};
-
-// -----------------------------------------------------------------------
-
-class ParameterCheckHelper
+struct ParameterCheckHelper
 {
-public:
+    bool* parameterChecks;
+    float* parameterValues;
+
     ParameterCheckHelper()
         : parameterChecks(nullptr),
           parameterValues(nullptr) {}
@@ -147,9 +129,6 @@ public:
             parameterValues = nullptr;
         }
     }
-
-    bool*  parameterChecks;
-    float* parameterValues;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
@@ -181,19 +160,8 @@ public:
               nullptr,
               plugin->getInstancePointer(),
               scaleFactor),
-          fShouldCaptureVstKeys(false)
+          fKeyboardModifiers(0)
     {
-        // FIXME only needed for windows?
-//#ifdef DISTRHO_OS_WINDOWS
-        char strBuf[0xff+1];
-        std::memset(strBuf, 0, sizeof(char)*(0xff+1));
-        hostCallback(audioMasterGetProductString, 0, 0, strBuf);
-        d_stdout("Plugin UI running in '%s'", strBuf);
-
-        // TODO make a white-list of needed hosts
-        if (/*std::strcmp(strBuf, "") == 0*/ true)
-            fShouldCaptureVstKeys = true;
-//#endif
     }
 
     // -------------------------------------------------------------------
@@ -237,12 +205,9 @@ public:
     }
 # endif
 
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        if (! fShouldCaptureVstKeys)
-            return 0;
-
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         using namespace DGL_NAMESPACE;
@@ -250,62 +215,127 @@ public:
         int special = 0;
         switch (value)
         {
-        // convert some specials to normal keys
-        case  1: index = kCharBackspace; break;
-        case  6: index = kCharEscape;    break;
-        case  7: index = ' ';            break;
-        case 22: index = kCharDelete;    break;
+        // convert some VST special values to normal keys
+        case  1: index = kKeyBackspace; break;
+        case  2: index = '\t';          break;
+        // 3 clear
+        case  4: index = '\r';          break;
+        case  6: index = kKeyEscape;    break;
+        case  7: index = ' ';           break;
+        //  8 next
+        // 17 select
+        // 18 print
+        case 19: index = '\n';          break;
+        // 20 snapshot
+        case 22: index = kKeyDelete;    break;
+        // 23 help
+        case 57: index = '=';           break;
+
+        // numpad stuff follows
+        case 24: index = '0';           break;
+        case 25: index = '1';           break;
+        case 26: index = '2';           break;
+        case 27: index = '3';           break;
+        case 28: index = '4';           break;
+        case 29: index = '5';           break;
+        case 30: index = '6';           break;
+        case 31: index = '7';           break;
+        case 32: index = '8';           break;
+        case 33: index = '9';           break;
+        case 34: index = '*';           break;
+        case 35: index = '+';           break;
+        // 36 separator
+        case 37: index = '-';           break;
+        case 38: index = '.';           break;
+        case 39: index = '/';           break;
 
         // handle rest of special keys
-        case 40: special = kKeyF1;       break;
-        case 41: special = kKeyF2;       break;
-        case 42: special = kKeyF3;       break;
-        case 43: special = kKeyF4;       break;
-        case 44: special = kKeyF5;       break;
-        case 45: special = kKeyF6;       break;
-        case 46: special = kKeyF7;       break;
-        case 47: special = kKeyF8;       break;
-        case 48: special = kKeyF9;       break;
-        case 49: special = kKeyF10;      break;
-        case 50: special = kKeyF11;      break;
-        case 51: special = kKeyF12;      break;
-        case 11: special = kKeyLeft;     break;
-        case 12: special = kKeyUp;       break;
-        case 13: special = kKeyRight;    break;
-        case 14: special = kKeyDown;     break;
-        case 15: special = kKeyPageUp;   break;
-        case 16: special = kKeyPageDown; break;
-        case 10: special = kKeyHome;     break;
-        case  9: special = kKeyEnd;      break;
-        case 21: special = kKeyInsert;   break;
-        case 54: special = kKeyShift;    break;
-        case 55: special = kKeyControl;  break;
-        case 56: special = kKeyAlt;      break;
+        /* these special keys are missing:
+           - kKeySuper
+           - kKeyCapsLock
+           - kKeyPrintScreen
+         */
+        case 40: special = kKeyF1;         break;
+        case 41: special = kKeyF2;         break;
+        case 42: special = kKeyF3;         break;
+        case 43: special = kKeyF4;         break;
+        case 44: special = kKeyF5;         break;
+        case 45: special = kKeyF6;         break;
+        case 46: special = kKeyF7;         break;
+        case 47: special = kKeyF8;         break;
+        case 48: special = kKeyF9;         break;
+        case 49: special = kKeyF10;        break;
+        case 50: special = kKeyF11;        break;
+        case 51: special = kKeyF12;        break;
+        case 11: special = kKeyLeft;       break;
+        case 12: special = kKeyUp;         break;
+        case 13: special = kKeyRight;      break;
+        case 14: special = kKeyDown;       break;
+        case 15: special = kKeyPageUp;     break;
+        case 16: special = kKeyPageDown;   break;
+        case 10: special = kKeyHome;       break;
+        case  9: special = kKeyEnd;        break;
+        case 21: special = kKeyInsert;     break;
+        case 54: special = kKeyShift;      break;
+        case 55: special = kKeyControl;    break;
+        case 56: special = kKeyAlt;        break;
+        case 58: special = kKeyMenu;       break;
+        case 52: special = kKeyNumLock;    break;
+        case 53: special = kKeyScrollLock; break;
+        case  5: special = kKeyPause;      break;
+        }
+
+        switch (special)
+        {
+        case kKeyShift:
+            if (down)
+                fKeyboardModifiers |= kModifierShift;
+            else
+                fKeyboardModifiers &= ~kModifierShift;
+            break;
+        case kKeyControl:
+            if (down)
+                fKeyboardModifiers |= kModifierControl;
+            else
+                fKeyboardModifiers &= ~kModifierControl;
+            break;
+        case kKeyAlt:
+            if (down)
+                fKeyboardModifiers |= kModifierAlt;
+            else
+                fKeyboardModifiers &= ~kModifierAlt;
+            break;
         }
 
         if (special != 0)
-            return fUI.handlePluginSpecial(down, static_cast<Key>(special));
+        {
+            fUI.handlePluginSpecial(down, static_cast<Key>(special), fKeyboardModifiers);
+            return 1;
+        }
 
-        if (index >= 0)
-            return fUI.handlePluginKeyboard(down, static_cast<uint>(index));
-# endif
+        if (index > 0)
+        {
+            fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
+            return 1;
+        }
 
         return 0;
     }
+# endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
     // -------------------------------------------------------------------
 
 protected:
-    intptr_t hostCallback(const int32_t opcode,
-                          const int32_t index = 0,
-                          const intptr_t value = 0,
-                          void* const ptr = nullptr,
-                          const float opt = 0.0f)
+    inline intptr_t hostCallback(const int32_t opcode,
+                                 const int32_t index = 0,
+                                 const intptr_t value = 0,
+                                 void* const ptr = nullptr,
+                                 const float opt = 0.0f) const
     {
         return fAudioMaster(fEffect, opcode, index, value, ptr, opt);
     }
 
-    void editParameter(const uint32_t index, const bool started)
+    void editParameter(const uint32_t index, const bool started) const
     {
         hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
     }
@@ -357,7 +387,7 @@ private:
 
     // Plugin UI
     UIExporter fUI;
-    bool fShouldCaptureVstKeys;
+    uint16_t fKeyboardModifiers;
 
     // -------------------------------------------------------------------
     // Callbacks
@@ -654,12 +684,12 @@ public:
             }
             break;
 
-        //case effIdle:
         case effEditIdle:
             if (fVstUI != nullptr)
                 fVstUI->idle();
             break;
 
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         case effEditKeyDown:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(true, index, value);
@@ -669,6 +699,7 @@ public:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(false, index, value);
             break;
+# endif
 #endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -723,9 +754,6 @@ public:
                 {
                     // add another separator
                     chunkStr += "\xff";
-
-                    // temporarily set locale to "C" while converting floats
-                    const ScopedSafeLocale ssl;
 
                     for (uint32_t i=0; i<paramCount; ++i)
                     {

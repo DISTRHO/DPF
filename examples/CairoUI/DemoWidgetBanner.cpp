@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,9 +16,6 @@
  */
 
 #include "DemoWidgetBanner.hpp"
-
-#include "Cairo.hpp"
-#include "Window.hpp"
 
 START_NAMESPACE_DGL
 
@@ -54,14 +52,15 @@ enum
     columns = 72,
 };
 
-DemoWidgetBanner::DemoWidgetBanner(Widget* group)
-    : Widget(group)
-{
-}
+DemoWidgetBanner::DemoWidgetBanner(SubWidget* parent)
+    : CairoSubWidget(parent) {}
 
-void DemoWidgetBanner::onDisplay()
+DemoWidgetBanner::DemoWidgetBanner(TopLevelWidget* parent)
+    : CairoSubWidget(parent) {}
+
+void DemoWidgetBanner::onCairoDisplay(const CairoGraphicsContext& context)
 {
-    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_t* cr = context.handle;
 
     Size<uint> sz = getSize();
     int w = sz.getWidth();

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,23 +20,32 @@
 #include "extra/LeakDetector.hpp"
 #include "src/DistrhoPluginChecks.h"
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "../dgl/Base.hpp"
-# include "extra/ExternalWindow.hpp"
-typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
-#elif DISTRHO_UI_USE_NANOVG
-# include "../dgl/NanoVG.hpp"
-typedef DGL_NAMESPACE::NanoWidget UIWidget;
-#else
-# include "../dgl/Widget.hpp"
-typedef DGL_NAMESPACE::Widget UIWidget;
-#endif
-
 #ifdef DGL_CAIRO
 # include "Cairo.hpp"
 #endif
 #ifdef DGL_OPENGL
 # include "OpenGL.hpp"
+#endif
+#ifdef DGL_VULKAN
+# include "Vulkan.hpp"
+#endif
+
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# include "../dgl/Base.hpp"
+# include "extra/ExternalWindow.hpp"
+typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
+#elif DISTRHO_UI_USE_CUSTOM
+# include DISTRHO_UI_CUSTOM_INCLUDE_PATH
+typedef DISTRHO_UI_CUSTOM_WIDGET_TYPE UIWidget;
+#elif DISTRHO_UI_USE_CAIRO
+# include "../dgl/Cairo.hpp"
+typedef DGL_NAMESPACE::CairoTopLevelWidget UIWidget;
+#elif DISTRHO_UI_USE_NANOVG
+# include "../dgl/NanoVG.hpp"
+typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
+#else
+# include "../dgl/TopLevelWidget.hpp"
+typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -69,27 +78,32 @@ public:
     */
     virtual ~UI();
 
-#if DISTRHO_UI_USER_RESIZABLE && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   /**
-      Set geometry constraints for the UI when resized by the user, and optionally scale UI automatically.
-      @see Window::setGeometryConstraints(uint,uint,bool)
-      @see Window::setScaling(double)
-    */
-    void setGeometryConstraints(uint minWidth, uint minHeight, bool keepAspectRatio, bool automaticallyScale = false);
-#endif
-
    /* --------------------------------------------------------------------------------------------------------
     * Host state */
 
    /**
       Get the color used for UI background (i.e. window color) in RGBA format.
       Returns 0 by default, in case of error or lack of host support.
+
+      The following example code can be use to extract individual colors:
+      ```
+      const int red   = (bgColor >> 24) & 0xff;
+      const int green = (bgColor >> 16) & 0xff;
+      const int blue  = (bgColor >>  8) & 0xff;
+      ```
     */
     uint getBackgroundColor() const noexcept;
 
    /**
       Get the color used for UI foreground (i.e. text color) in RGBA format.
       Returns 0xffffffff by default, in case of error or lack of host support.
+
+      The following example code can be use to extract individual colors:
+      ```
+      const int red   = (fgColor >> 24) & 0xff;
+      const int green = (fgColor >> 16) & 0xff;
+      const int blue  = (fgColor >>  8) & 0xff;
+      ```
     */
     uint getForegroundColor() const noexcept;
 
@@ -232,7 +246,7 @@ protected:
 # ifndef DGL_FILE_BROWSER_DISABLED
    /**
       File browser selected function.
-      @see Window::fileBrowserSelected(const char*)
+      @see Window::onFileSelected(const char*)
     */
     virtual void uiFileBrowserSelected(const char* filename);
 # endif
@@ -259,17 +273,9 @@ protected:
 
 private:
     struct PrivateData;
-    PrivateData* const pData;
+    PrivateData* const uiData;
     friend class UIExporter;
     friend class UIExporterWindow;
-
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    // these should not be used
-    void setAbsoluteX(int) const noexcept {}
-    void setAbsoluteY(int) const noexcept {}
-    void setAbsolutePos(int, int) const noexcept {}
-    void setAbsolutePos(const DGL_NAMESPACE::Point<int>&) const noexcept {}
-#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

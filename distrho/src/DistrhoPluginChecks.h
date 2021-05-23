@@ -142,11 +142,12 @@
 // -----------------------------------------------------------------------
 // Enable full state if plugin exports presets
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && ! DISTRHO_PLUGIN_WANT_FULL_STATE
-# warning Plugins with programs and state need to implement full state API
-# undef DISTRHO_PLUGIN_WANT_FULL_STATE
-# define DISTRHO_PLUGIN_WANT_FULL_STATE 1
-#endif
+// FIXME
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && ! DISTRHO_PLUGIN_WANT_FULL_STATE
+// # warning Plugins with programs and state need to implement full state API
+// # undef DISTRHO_PLUGIN_WANT_FULL_STATE
+// # define DISTRHO_PLUGIN_WANT_FULL_STATE 1
+// #endif
 
 // -----------------------------------------------------------------------
 // Disable UI if DGL or External UI is not available
@@ -160,6 +161,14 @@
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
+
+// -----------------------------------------------------------------------
+// Prevent users from messing about with DPF internals
+
+#ifdef DISTRHO_UI_IS_STANDALONE
+# error DISTRHO_UI_IS_STANDALONE must not be defined
+#endif
+
 
 // -----------------------------------------------------------------------
 

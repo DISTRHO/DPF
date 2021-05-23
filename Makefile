@@ -26,11 +26,9 @@ examples: dgl
 	$(MAKE) all -C examples/MidiThrough
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/States
-
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
-
 ifneq ($(MACOS_OR_WINDOWS),true)
 	# ExternalUI is WIP
 	$(MAKE) all -C examples/ExternalUI
@@ -54,6 +52,9 @@ else
 gen:
 endif
 
+tests: dgl
+	$(MAKE) -C tests
+
 # --------------------------------------------------------------
 
 clean:
@@ -73,4 +74,4 @@ endif
 
 # --------------------------------------------------------------
 
-.PHONY: dgl examples
+.PHONY: dgl examples tests

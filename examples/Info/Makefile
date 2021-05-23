@@ -29,8 +29,8 @@ include ../../Makefile.plugins.mk
 ifeq ($(HAVE_JACK),true)
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-endif
-endif
+endif # HAVE_OPENGL
+endif # HAVE_JACK
 
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += lv2_sep

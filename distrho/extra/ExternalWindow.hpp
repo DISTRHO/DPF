@@ -192,7 +192,7 @@ private:
 
     friend class UIExporter;
 
-    DISTRHO_DECLARE_NON_COPY_CLASS(ExternalWindow)
+    DISTRHO_DECLARE_NON_COPYABLE(ExternalWindow)
 };
 
 // -----------------------------------------------------------------------

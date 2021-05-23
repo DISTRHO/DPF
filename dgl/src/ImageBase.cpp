@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,82 +18,107 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+// protected constructors
 
 ImageBase::ImageBase()
-    : fRawData(nullptr),
-      fSize(0, 0) {}
+    : rawData(nullptr),
+      size(0, 0),
+      format(kImageFormatNull) {}
 
-ImageBase::ImageBase(const char* const rawData, const uint width, const uint height)
-  : fRawData(rawData),
-    fSize(width, height) {}
+ImageBase::ImageBase(const char* const rdata, const uint width, const uint height, const ImageFormat fmt)
+  : rawData(rdata),
+    size(width, height),
+    format(fmt) {}
 
-ImageBase::ImageBase(const char* const rawData, const Size<uint>& size)
-  : fRawData(rawData),
-    fSize(size) {}
+ImageBase::ImageBase(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
+  : rawData(rdata),
+    size(s),
+    format(fmt) {}
 
 ImageBase::ImageBase(const ImageBase& image)
-  : fRawData(image.fRawData),
-    fSize(image.fSize) {}
+  : rawData(image.rawData),
+    size(image.size),
+    format(image.format) {}
+
+// --------------------------------------------------------------------------------------------------------------------
+// public methods
 
 ImageBase::~ImageBase() {}
 
-// -----------------------------------------------------------------------
-
 bool ImageBase::isValid() const noexcept
 {
-    return (fRawData != nullptr && fSize.isValid());
+    return (rawData != nullptr && size.isValid());
+}
+
+bool ImageBase::isInvalid() const noexcept
+{
+    return (rawData == nullptr || size.isInvalid());
 }
 
 uint ImageBase::getWidth() const noexcept
 {
-    return fSize.getWidth();
+    return size.getWidth();
 }
 
 uint ImageBase::getHeight() const noexcept
 {
-    return fSize.getHeight();
+    return size.getHeight();
 }
 
 const Size<uint>& ImageBase::getSize() const noexcept
 {
-    return fSize;
+    return size;
 }
 
 const char* ImageBase::getRawData() const noexcept
 {
-    return fRawData;
+    return rawData;
 }
 
-// -----------------------------------------------------------------------
-
-void ImageBase::draw()
+ImageFormat ImageBase::getFormat() const noexcept
 {
-    _drawAt(Point<int>());
+    return format;
 }
 
-void ImageBase::drawAt(const int x, const int y)
+void ImageBase::loadFromMemory(const char* const rdata,
+                               const uint width,
+                               const uint height,
+                               const ImageFormat fmt) noexcept
 {
-    _drawAt(Point<int>(x, y));
+    loadFromMemory(rdata, Size<uint>(width, height), fmt);
 }
 
-void ImageBase::drawAt(const Point<int>& pos)
+void ImageBase::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
-    _drawAt(pos);
+    rawData = rdata;
+    size    = s;
+    format  = fmt;
 }
 
-// -----------------------------------------------------------------------
+void ImageBase::draw(const GraphicsContext& context)
+{
+    drawAt(context, Point<int>(0, 0));
+}
+
+void ImageBase::drawAt(const GraphicsContext& context, const int x, const int y)
+{
+    drawAt(context, Point<int>(x, y));
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// public operators
 
 ImageBase& ImageBase::operator=(const ImageBase& image) noexcept
 {
-    fRawData = image.fRawData;
-    fSize    = image.fSize;
+    rawData = image.rawData;
+    size    = image.size;
     return *this;
 }
 
 bool ImageBase::operator==(const ImageBase& image) const noexcept
 {
-    return (fRawData == image.fRawData && fSize == image.fSize);
+    return (rawData == image.rawData && size == image.size);
 }
 
 bool ImageBase::operator!=(const ImageBase& image) const noexcept
@@ -101,6 +126,6 @@ bool ImageBase::operator!=(const ImageBase& image) const noexcept
     return !operator==(image);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

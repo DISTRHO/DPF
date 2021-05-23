@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,7 +17,7 @@
 #ifndef DISTRHO_UI_INTERNAL_HPP_INCLUDED
 #define DISTRHO_UI_INTERNAL_HPP_INCLUDED
 
-#include "../DistrhoUI.hpp"
+#include "DistrhoUIPrivateData.hpp"
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "../extra/Sleep.hpp"
@@ -46,163 +46,48 @@ extern Window*     d_lastUiWindow;
 #endif
 
 // -----------------------------------------------------------------------
-// UI callbacks
 
-typedef void (*editParamFunc)   (void* ptr, uint32_t rindex, bool started);
-typedef void (*setParamFunc)    (void* ptr, uint32_t rindex, float value);
-typedef void (*setStateFunc)    (void* ptr, const char* key, const char* value);
-typedef void (*sendNoteFunc)    (void* ptr, uint8_t channel, uint8_t note, uint8_t velo);
-typedef void (*setSizeFunc)     (void* ptr, uint width, uint height);
-typedef bool (*fileRequestFunc) (void* ptr, const char* key);
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+UI* createUiWrapper(void* dspPtr, uintptr_t winId, double scaleFactor, const char* bundlePath);
+#else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+UI* createUiWrapper(void* dspPtr, Window* window);
+#endif
 
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 // -----------------------------------------------------------------------
-// UI private data
+// Plugin Application, will set class name based on plugin details
 
-struct UI::PrivateData {
-    // DSP
-    double   sampleRate;
-    uint32_t parameterOffset;
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-    void*    dspPtr;
+class PluginApplication : public Application
+{
+public:
+    PluginApplication()
+      : Application(DISTRHO_UI_IS_STANDALONE)
+    {
+        const char* const className = (
+#ifdef DISTRHO_PLUGIN_BRAND
+            DISTRHO_PLUGIN_BRAND
+#else
+            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
 #endif
-
-    // UI
-    bool automaticallyScale;
-    bool resizeInProgress;
-    uint minWidth;
-    uint minHeight;
-    uint bgColor;
-    uint fgColor;
-
-    // Callbacks
-    void*           callbacksPtr;
-    editParamFunc   editParamCallbackFunc;
-    setParamFunc    setParamCallbackFunc;
-    setStateFunc    setStateCallbackFunc;
-    sendNoteFunc    sendNoteCallbackFunc;
-    setSizeFunc     setSizeCallbackFunc;
-    fileRequestFunc fileRequestCallbackFunc;
-
-    PrivateData() noexcept
-        : sampleRate(d_lastUiSampleRate),
-          parameterOffset(0),
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-          dspPtr(d_lastUiDspPtr),
-#endif
-          automaticallyScale(false),
-          resizeInProgress(false),
-          minWidth(0),
-          minHeight(0),
-          bgColor(0),
-          fgColor(0),
-          callbacksPtr(nullptr),
-          editParamCallbackFunc(nullptr),
-          setParamCallbackFunc(nullptr),
-          setStateCallbackFunc(nullptr),
-          sendNoteCallbackFunc(nullptr),
-          setSizeCallbackFunc(nullptr),
-          fileRequestCallbackFunc(nullptr)
-    {
-        DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
-
-#if defined(DISTRHO_PLUGIN_TARGET_DSSI) || defined(DISTRHO_PLUGIN_TARGET_LV2)
-        parameterOffset += DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS;
-# if DISTRHO_PLUGIN_WANT_LATENCY
-        parameterOffset += 1;
-# endif
-#endif
-
-#ifdef DISTRHO_PLUGIN_TARGET_LV2
-# if (DISTRHO_PLUGIN_IS_SYNTH || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
-        parameterOffset += 1;
-#  if DISTRHO_PLUGIN_WANT_STATE
-        parameterOffset += 1;
-#  endif
-# endif
-#endif
-    }
-
-    void editParamCallback(const uint32_t rindex, const bool started)
-    {
-        if (editParamCallbackFunc != nullptr)
-            editParamCallbackFunc(callbacksPtr, rindex, started);
-    }
-
-    void setParamCallback(const uint32_t rindex, const float value)
-    {
-        if (setParamCallbackFunc != nullptr)
-            setParamCallbackFunc(callbacksPtr, rindex, value);
-    }
-
-    void setStateCallback(const char* const key, const char* const value)
-    {
-        if (setStateCallbackFunc != nullptr)
-            setStateCallbackFunc(callbacksPtr, key, value);
-    }
-
-    void sendNoteCallback(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        if (sendNoteCallbackFunc != nullptr)
-            sendNoteCallbackFunc(callbacksPtr, channel, note, velocity);
-    }
-
-    void setSizeCallback(const uint width, const uint height)
-    {
-        if (setSizeCallbackFunc != nullptr)
-            setSizeCallbackFunc(callbacksPtr, width, height);
-    }
-
-    bool fileRequestCallback(const char* key)
-    {
-        if (fileRequestCallbackFunc != nullptr)
-            return fileRequestCallbackFunc(callbacksPtr, key);
-
-        // TODO use old style DPF dialog here
-
-        return false;
+            "-" DISTRHO_PLUGIN_NAME
+        );
+        setClassName(className);
     }
 };
 
 // -----------------------------------------------------------------------
 // Plugin Window, needed to take care of resize properly
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-static inline
-UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath)
-{
-    d_lastUiDspPtr    = dspPtr;
-    g_nextWindowId    = winId;
-    g_nextScaleFactor = scaleFactor;
-    g_nextBundlePath  = bundlePath;
-    UI* const ret     = createUI();
-    d_lastUiDspPtr    = nullptr;
-    g_nextWindowId    = 0;
-    g_nextScaleFactor = 1.0;
-    g_nextBundlePath  = nullptr;
-    return ret;
-}
-#else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-static inline
-UI* createUiWrapper(void* const dspPtr, Window* const window)
-{
-    d_lastUiDspPtr = dspPtr;
-    d_lastUiWindow = window;
-    UI* const ret  = createUI();
-    d_lastUiDspPtr = nullptr;
-    d_lastUiWindow = nullptr;
-    return ret;
-}
-
 class UIExporterWindow : public Window
 {
 public:
-    UIExporterWindow(Application& app, const intptr_t winId, const double scaleFactor, void* const dspPtr)
+    UIExporterWindow(PluginApplication& app, const intptr_t winId, const double scaleFactor, void* const dspPtr)
         : Window(app, winId, scaleFactor, DISTRHO_UI_USER_RESIZABLE),
           fUI(createUiWrapper(dspPtr, this)),
           fIsReady(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fUI->pData != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fUI->uiData != nullptr,);
 
         setSize(fUI->getWidth(), fUI->getHeight());
     }
@@ -228,19 +113,14 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        UI::PrivateData* const pData = fUI->pData;
-        DISTRHO_SAFE_ASSERT_RETURN(pData != nullptr,);
+        UI::PrivateData* const uiData = fUI->uiData;
+        DISTRHO_SAFE_ASSERT_RETURN(uiData != nullptr,);
 
-        if (pData->automaticallyScale)
-        {
-            const double scaleHorizontal = static_cast<double>(width) / static_cast<double>(pData->minWidth);
-            const double scaleVertical   = static_cast<double>(height) / static_cast<double>(pData->minHeight);
-            _setAutoScaling(scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical);
-        }
-
-        pData->resizeInProgress = true;
+        /*
+        uiData->resizeInProgress = true;
         fUI->setSize(width, height);
-        pData->resizeInProgress = false;
+        uiData->resizeInProgress = false;
+        */
 
         fUI->uiReshape(width, height);
         fIsReady = true;
@@ -248,7 +128,7 @@ protected:
 
 # ifndef DGL_FILE_BROWSER_DISABLED
     // custom file-browser selected
-    void fileBrowserSelected(const char* filename) override
+    void onFileSelected(const char* const filename) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
@@ -278,7 +158,7 @@ public:
                const fileRequestFunc fileRequestCall,
                const char* const bundlePath = nullptr,
                void* const dspPtr = nullptr,
-               const float scaleFactor = 1.0f,
+               const double scaleFactor = 1.0,
                const uint32_t bgColor = 0,
                const uint32_t fgColor = 0xffffffff)
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -289,7 +169,7 @@ public:
           fChangingSize(false),
           fUI(glWindow.getUI()),
 #endif
-          fData((fUI != nullptr) ? fUI->pData : nullptr)
+          fData((fUI != nullptr) ? fUI->uiData : nullptr)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
@@ -339,7 +219,7 @@ public:
         return fUI->isRunning();
     }
 
-    intptr_t getWindowId() const noexcept
+    uintptr_t getNativeWindowHandle() const noexcept
     {
         return 0;
     }
@@ -359,9 +239,9 @@ public:
         return glWindow.isVisible();
     }
 
-    intptr_t getWindowId() const noexcept
+    uintptr_t getNativeWindowHandle() const noexcept
     {
-        return glWindow.getWindowId();
+        return glWindow.getNativeWindowHandle();
     }
 #endif
 
@@ -461,8 +341,8 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
-        glWindow.addIdleCallback(cb);
         glWindow.setVisible(true);
+        glApp.addIdleCallback(cb);
         glApp.exec();
     }
 
@@ -549,9 +429,11 @@ public:
         fChangingSize = false;
     }
 
-    void setWindowTransientWinId(const uintptr_t winId)
+    void setWindowTransientWinId(const uintptr_t /*winId*/)
     {
+#if 0 /* TODO */
         glWindow.setTransientWinId(winId);
+#endif
     }
 
     bool setWindowVisible(const bool yesNo)
@@ -561,14 +443,20 @@ public:
         return ! glApp.isQuiting();
     }
 
-    bool handlePluginKeyboard(const bool press, const uint key)
+    bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/, const uint16_t /*mods*/)
     {
+#if 0 /* TODO */
         return glWindow.handlePluginKeyboard(press, key);
+#endif
+        return false;
     }
 
-    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key)
+    bool handlePluginSpecial(const bool /*press*/, const DGL_NAMESPACE::Key /*key*/, const uint16_t /*mods*/)
     {
+#if 0 /* TODO */
         return glWindow.handlePluginSpecial(press, key);
+#endif
+        return false;
     }
 #endif
 
@@ -594,8 +482,8 @@ private:
     // -------------------------------------------------------------------
     // DGL Application and Window for this widget
 
-    Application      glApp;
-    UIExporterWindow glWindow;
+    PluginApplication glApp;
+    UIExporterWindow  glWindow;
 
     // prevent recursion
     bool fChangingSize;

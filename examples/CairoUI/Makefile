@@ -16,6 +16,7 @@ FILES_DSP = \
 	CairoExamplePlugin.cpp
 
 FILES_UI  = \
+	Artwork.cpp \
 	DemoWidgetBanner.cpp \
 	DemoWidgetClickable.cpp \
 	CairoExampleUI.cpp
@@ -29,27 +30,22 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(HAVE_JACK),true)
 ifeq ($(HAVE_CAIRO),true)
+
+ifeq ($(HAVE_JACK),true)
 TARGETS += jack
-endif
-endif
+endif # HAVE_JACK
 
 ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_CAIRO),true)
 ifeq ($(HAVE_LIBLO),true)
 TARGETS += dssi
-endif
-endif
-endif
+endif # HAVE_LIBLO
+endif # MACOS_OR_WINDOWS
 
-ifeq ($(HAVE_CAIRO),true)
 TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
-endif
-
 TARGETS += vst
+
+endif # HAVE_CAIRO
 
 all: $(TARGETS)
 

@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,17 +15,21 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "Widget.hpp"
+#pragma once
+
+#include "Cairo.hpp"
 
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-class DemoWidgetClickable : public Widget
+class DemoWidgetClickable : public CairoSubWidget
 {
 public:
-    explicit DemoWidgetClickable(Widget* group);
-    void onDisplay() override;
+    explicit DemoWidgetClickable(SubWidget* group);
+    explicit DemoWidgetClickable(TopLevelWidget* parent);
+protected:
+    void onCairoDisplay(const CairoGraphicsContext& context) override;
     bool onMouse(const MouseEvent& event) override;
 
 private:

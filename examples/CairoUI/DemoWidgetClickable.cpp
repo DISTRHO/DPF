@@ -1,6 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,21 +17,19 @@
 
 #include "DemoWidgetClickable.hpp"
 
-#include "Cairo.hpp"
-#include "Window.hpp"
-
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-DemoWidgetClickable::DemoWidgetClickable(Widget* group)
-    : Widget(group)
-{
-}
+DemoWidgetClickable::DemoWidgetClickable(SubWidget* parent)
+    : CairoSubWidget(parent) {}
 
-void DemoWidgetClickable::onDisplay()
+DemoWidgetClickable::DemoWidgetClickable(TopLevelWidget* parent)
+    : CairoSubWidget(parent) {}
+
+void DemoWidgetClickable::onCairoDisplay(const CairoGraphicsContext& context)
 {
-    cairo_t* cr = getParentWindow().getGraphicsContext().cairo;
+    cairo_t* cr = context.handle;
 
     Size<uint> sz = getSize();
     int w = sz.getWidth();

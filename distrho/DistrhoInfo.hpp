@@ -564,6 +564,28 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
 
 /**
+   Wherever the %UI uses a custom toolkit implementation based on OpenGL.@n
+   When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.
+ */
+#define DISTRHO_UI_USE_CUSTOM 1
+
+/**
+   The include path to the header file used by the custom toolkit implementation.
+   This path must be relative to dpf/distrho/DistrhoUI.hpp
+   @see DISTRHO_UI_USE_CUSTOM
+ */
+#define DISTRHO_UI_CUSTOM_INCLUDE_PATH
+
+/**
+   The top-level-widget typedef to use for the custom toolkit.
+   This widget class MUST be a subclass of DGL TopLevelWindow class.
+   It is recommended that you keep this widget class inside the DGL namespace,
+   and define widget type as e.g. DGL_NAMESPACE::MyCustomTopLevelWidget.
+   @see DISTRHO_UI_USE_CUSTOM
+ */
+#define DISTRHO_UI_CUSTOM_WIDGET_TYPE
+
+/**
    Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
    When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.
  */
