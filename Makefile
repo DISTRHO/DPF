@@ -52,6 +52,9 @@ else
 gen:
 endif
 
+tests:
+	$(MAKE) -C tests
+
 # --------------------------------------------------------------
 
 clean:
@@ -71,4 +74,4 @@ endif
 
 # --------------------------------------------------------------
 
-.PHONY: dgl examples
+.PHONY: dgl examples tests
