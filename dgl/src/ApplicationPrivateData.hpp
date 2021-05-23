@@ -39,6 +39,9 @@ struct Application::PrivateData {
     /** Whether the applicating is about to quit, or already stopped. Defaults to false. */
     bool isQuitting;
 
+    /** Helper for safely close everything from main thread. */
+    bool isQuittingInNextCycle;
+
     /** Whether the applicating is starting up, that is, no windows have been made visible yet. Defaults to true. */
     bool isStarting;
 

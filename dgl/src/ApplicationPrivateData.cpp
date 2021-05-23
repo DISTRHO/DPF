@@ -32,6 +32,7 @@ Application::PrivateData::PrivateData(const bool standalone)
                          standalone ? PUGL_WORLD_THREADS : 0x0)),
       isStandalone(standalone),
       isQuitting(false),
+      isQuittingInNextCycle(false),
       isStarting(true),
       visibleWindows(0),
       windows(),
@@ -92,6 +93,12 @@ void Application::PrivateData::oneWindowClosed() noexcept
 
 void Application::PrivateData::idle(const uint timeoutInMs)
 {
+    if (isQuittingInNextCycle)
+    {
+        quit();
+        isQuittingInNextCycle = false;
+    }
+
     if (world != nullptr)
     {
         const double timeoutInSeconds = timeoutInMs != 0
@@ -111,6 +118,12 @@ void Application::PrivateData::idle(const uint timeoutInMs)
 void Application::PrivateData::quit()
 {
     DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
+
+    if (! isQuittingInNextCycle)
+    {
+        isQuittingInNextCycle = true;
+        return;
+    }
 
     isQuitting = true;
 
