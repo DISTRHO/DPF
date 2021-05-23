@@ -18,23 +18,23 @@
 #define DGL_IMAGE_WIDGETS_HPP_INCLUDED
 
 #include "Image.hpp"
+#include "ImageBaseWidgets.hpp"
 
 START_NAMESPACE_DGL
 
-DISTRHO_DEPRECATED_BY("OpenGLImageAboutWindow")
+#ifdef DGL_CAIRO
+typedef CairoImageAboutWindow ImageAboutWindow;
+typedef CairoImageButton ImageButton;
+typedef CairoImageKnob ImageKnob;
+typedef CairoImageSlider ImageSlider;
+typedef CairoImageSwitch ImageSwitch;
+#else
 typedef OpenGLImageAboutWindow ImageAboutWindow;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageButton")
 typedef OpenGLImageButton ImageButton;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageKnob")
 typedef OpenGLImageKnob ImageKnob;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageSlider")
 typedef OpenGLImageSlider ImageSlider;
-
-DISTRHO_DEPRECATED_BY("OpenGLImageSwitch")
 typedef OpenGLImageSwitch ImageSwitch;
+#endif
 
 END_NAMESPACE_DGL
 
