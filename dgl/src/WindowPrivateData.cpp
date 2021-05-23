@@ -19,6 +19,14 @@
 
 #include "pugl.hpp"
 
+#include "../../distrho/extra/String.hpp"
+
+#ifdef DISTRHO_OS_WINDOWS
+# include <direct.h>
+#else
+# include <unistd.h>
+#endif
+
 #define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
@@ -66,6 +74,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+#ifdef DISTRHO_OS_WINDOWS
+      win32SelectedFile(nullptr),
+#endif
       modal()
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -85,6 +96,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+#ifdef DISTRHO_OS_WINDOWS
+      win32SelectedFile(nullptr),
+#endif
       modal(ppData)
 {
     init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -108,6 +122,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+#ifdef DISTRHO_OS_WINDOWS
+      win32SelectedFile(nullptr),
+#endif
       modal()
 {
     if (isEmbed)
@@ -142,6 +159,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+#ifdef DISTRHO_OS_WINDOWS
+      win32SelectedFile(nullptr),
+#endif
       modal()
 {
     if (isEmbed)
@@ -163,6 +183,9 @@ Window::PrivateData::~PrivateData()
 {
     if (isEmbed)
     {
+#ifdef HAVE_X11
+        sofdFileDialogClose(view);
+#endif
         puglHide(view);
         appData->oneWindowClosed();
         isClosed = true;
@@ -199,9 +222,6 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
-// #ifndef DGL_FILE_BROWSER_DISABLED
-//     puglSetFileSelectedFunc(fView, fileBrowserSelectedCallback);
-// #endif
 
     PuglRect rect = puglGetFrame(view);
     rect.width = width;
@@ -211,6 +231,21 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     // FIXME this is bad
     puglRealize(view);
     puglBackendEnter(view);
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::close()
+{
+    DGL_DBG("Window close\n");
+    // DGL_DBGp("Window close DBG %i %i %p\n", isEmbed, isClosed, appData);
+
+    if (isEmbed || isClosed)
+        return;
+
+    isClosed = true;
+    hide();
+    appData->oneWindowClosed();
 }
 
 // -----------------------------------------------------------------------
@@ -293,24 +328,12 @@ void Window::PrivateData::hide()
     if (modal.enabled)
         stopModal();
 
+#ifdef HAVE_X11
+    sofdFileDialogClose(view);
+#endif
     puglHide(view);
 
     isVisible = false;
-}
-
-// -----------------------------------------------------------------------
-
-void Window::PrivateData::close()
-{
-    DGL_DBG("Window close\n");
-    // DGL_DBGp("Window close DBG %i %i %p\n", isEmbed, isClosed, appData);
-
-    if (isEmbed || isClosed)
-        return;
-
-    isClosed = true;
-    hide();
-    appData->oneWindowClosed();
 }
 
 // -----------------------------------------------------------------------
@@ -341,20 +364,29 @@ void Window::PrivateData::setResizable(const bool resizable)
 
 void Window::PrivateData::idleCallback()
 {
-// #if defined(DISTRHO_OS_WINDOWS) && !defined(DGL_FILE_BROWSER_DISABLED)
-//     if (fSelectedFile.isNotEmpty())
-//     {
-//         char* const buffer = fSelectedFile.getAndReleaseBuffer();
-//         fView->fileSelectedFunc(fView, buffer);
-//         std::free(buffer);
-//     }
-// #endif
-
-//     if (modal.enabled && modal.parent != nullptr)
-//         modal.parent->idleCallback();
+#ifndef DGL_FILE_BROWSER_DISABLED
+# ifdef DISTRHO_OS_WINDOWS
+    if (char* const path = win32SelectedFile)
+    {
+        win32SelectedFile = nullptr;
+        self->onFileSelected(path);
+        std::free(path);
+    }
+# endif
+# ifdef HAVE_X11
+    char* path;
+    if (sofdFileDialogGetPath(&path))
+    {
+        // TODO ignore null path??
+        self->onFileSelected(path);
+        sofdFileDialogFree(path);
+    }
+# endif
+#endif
 }
 
 // -----------------------------------------------------------------------
+// idle callback stuff
 
 bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
@@ -377,6 +409,69 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
     }
 
     return puglStopTimer(view, (uintptr_t)callback) == PUGL_SUCCESS;
+}
+
+// -----------------------------------------------------------------------
+// file handling
+
+bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& options)
+{
+    using DISTRHO_NAMESPACE::String;
+
+    // --------------------------------------------------------------------------
+    // configure start dir
+
+    // TODO: get abspath if needed
+    // TODO: cross-platform
+
+    String startDir(options.startDir);
+
+    if (startDir.isEmpty())
+    {
+        // TESTING verify this whole thing...
+#ifdef DISTRHO_OS_WINDOWS
+        if (char* const cwd = _getcwd(nullptr, 0))
+        {
+            startDir = cwd;
+            std::free(cwd);
+        }
+#else
+        if (char* const cwd = getcwd(nullptr, 0))
+        {
+            startDir = cwd;
+            std::free(cwd);
+        }
+#endif
+    }
+
+    DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
+
+    if (! startDir.endsWith(DISTRHO_OS_SEP))
+        startDir += DISTRHO_OS_SEP_STR;
+
+    // --------------------------------------------------------------------------
+    // configure title
+
+    String title(options.title);
+
+    if (title.isEmpty())
+    {
+        title = puglGetWindowTitle(view);
+
+        if (title.isEmpty())
+            title = "FileBrowser";
+    }
+
+    // --------------------------------------------------------------------------
+    // show
+
+#ifdef HAVE_X11
+    uint flags = 0x0;
+    // TODO flags
+    return sofdFileDialogShow(view, startDir, title, flags, options.width, options.height);
+#endif
+
+    return false;
 }
 
 // -----------------------------------------------------------------------

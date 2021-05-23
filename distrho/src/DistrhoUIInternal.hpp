@@ -95,25 +95,25 @@ protected:
         UI::PrivateData* const uiData = fUI->uiData;
         DISTRHO_SAFE_ASSERT_RETURN(uiData != nullptr,);
 
+        /*
         uiData->resizeInProgress = true;
         fUI->setSize(width, height);
         uiData->resizeInProgress = false;
+        */
 
         fUI->uiReshape(width, height);
         fIsReady = true;
     }
 
-#if 0 /* TODO */
 # ifndef DGL_FILE_BROWSER_DISABLED
     // custom file-browser selected
-    void fileBrowserSelected(const char* filename) override
+    void onFileSelected(const char* const filename) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
 
         fUI->uiFileBrowserSelected(filename);
     }
 # endif
-#endif
 
 private:
     UI* const fUI;

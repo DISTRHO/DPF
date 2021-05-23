@@ -185,6 +185,7 @@ void UI::uiFileBrowserSelected(const char*)
 
 void UI::uiReshape(uint, uint)
 {
+    // NOTE this must be the same as Window::onReshape
     pData->fallbackOnResize();
 }
 
@@ -201,7 +202,9 @@ void UI::onResize(const ResizeEvent& ev)
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
 
+    /*
     pData->window.setSize(width, height);
+    */
     uiData->setSizeCallback(width, height);
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

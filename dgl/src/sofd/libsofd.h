@@ -22,9 +22,14 @@
  */
 
 #ifndef LIBSOFD_H
-#define LIBSOFD_H
+#define LIBSOFD_H 1
 
+#ifdef HAVE_X11
 #include <X11/Xlib.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 /* public API */
@@ -110,6 +115,16 @@ int x_fib_cfg_buttons (int k, int v);
  */
 int x_fib_cfg_filter_callback (int (*cb)(const char*));
 
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* END X11 specific functions */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* 'recently used' API. x-platform
  * NOTE: all functions use a static cache and are not reentrant.
  * It is expected that none of these functions are called in
@@ -172,4 +187,8 @@ unsigned int x_fib_recent_count ();
  */
 const char *x_fib_recent_at (unsigned int i);
 
-#endif // LIBSOFD_H
+#ifdef __cplusplus
+}
+#endif
+
+#endif // header guard

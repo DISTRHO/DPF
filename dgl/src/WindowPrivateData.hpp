@@ -30,7 +30,7 @@ class TopLevelWidget;
 // -----------------------------------------------------------------------
 
 struct Window::PrivateData : IdleCallback {
-    /* Reference to the DGL Application class this (private data) window associates with. */
+    /** Reference to the DGL Application class this (private data) window associates with. */
     Application& app;
 
     /** Direct access to the DGL Application private data where we registers ourselves in. */
@@ -68,6 +68,11 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl minWidth, minHeight access. */
     uint minWidth, minHeight;
 
+#ifdef DISTRHO_OS_WINDOWS
+    /** Selected file for openFileBrowser on windows, stored for fake async operation. */
+    const char* win32SelectedFile;
+#endif
+
     /** Modal window setup. */
     struct Modal {
         PrivateData* parent; // parent of this window (so we can become modal)
@@ -102,9 +107,6 @@ struct Window::PrivateData : IdleCallback {
     /** Constructor for a modal window. */
     explicit PrivateData(Application& app, Window* self, PrivateData* ppData);
 
-    /** Constructor for a regular, standalone window with a transient parent. */
-//     explicit PrivateData(Application& app, Window* self, Window& transientWindow);
-
     /** Constructor for an embed Window, with a few extra hints from the host side. */
     explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle, double scaling, bool resizable);
 
@@ -118,9 +120,6 @@ struct Window::PrivateData : IdleCallback {
     /** Helper initialization function called at the end of all this class constructors. */
     void init(uint width, uint height, bool resizable);
 
-    void show();
-    void hide();
-
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).
       * The application event-loop will stop when all windows have been closed.
@@ -130,16 +129,22 @@ struct Window::PrivateData : IdleCallback {
       */
     void close();
 
+    void show();
+    void hide();
+
     void focus();
 
     void setResizable(bool resizable);
 
     const GraphicsContext& getGraphicsContext() const noexcept;
 
+    // idle callback stuff
     void idleCallback() override;
-
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs);
     bool removeIdleCallback(IdleCallback* callback);
+
+    // file handling
+    bool openFileBrowser(const Window::FileBrowserOptions& options);
 
     // modal handling
     void startModal();

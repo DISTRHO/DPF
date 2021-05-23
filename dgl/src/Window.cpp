@@ -201,6 +201,13 @@ void Window::focus()
     pData->focus();
 }
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+bool Window::openFileBrowser(const FileBrowserOptions& options)
+{
+    return pData->openFileBrowser(options);
+}
+#endif
+
 void Window::repaint() noexcept
 {
     puglPostRedisplay(pData->view);
@@ -271,50 +278,19 @@ void Window::onReshape(uint, uint)
     puglFallbackOnResize(pData->view);
 }
 
-#if 0
-void Window::setTransientWinId(const uintptr_t winId)
-{
-    puglSetTransientFor(pData->fView, winId);
-}
-
-void Window::_addWidget(Widget* const widget)
-{
-    pData->addWidget(widget);
-}
-
-void Window::_removeWidget(Widget* const widget)
-{
-    pData->removeWidget(widget);
-}
-
-void Window::_idle()
-{
-    pData->windowSpecificIdle();
-}
-
-// -----------------------------------------------------------------------
-
-void Window::addIdleCallback(IdleCallback* const callback)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
-
-    pData->fAppData->idleCallbacks.push_back(callback);
-}
-
-void Window::removeIdleCallback(IdleCallback* const callback)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
-
-    pData->fAppData->idleCallbacks.remove(callback);
-}
-
-// -----------------------------------------------------------------------
-
 #ifndef DGL_FILE_BROWSER_DISABLED
-void Window::fileBrowserSelected(const char*)
+void Window::onFileSelected(const char*)
 {
 }
 #endif
+
+#if 0
+void Window::setTransientWinId(const uintptr_t winId)
+{
+    puglSetTransientFor(pData->view, winId);
+}
+
+// -----------------------------------------------------------------------
 
 bool Window::handlePluginKeyboard(const bool press, const uint key)
 {

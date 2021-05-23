@@ -50,6 +50,60 @@ class TopLevelWidget;
 class Window
 {
 public:
+#ifndef DGL_FILE_BROWSER_DISABLED
+   /**
+      File browser options.
+      @see Window::openFileBrowser
+    */
+    struct FileBrowserOptions {
+       /**
+          File browser button state.
+          This allows to customize the behaviour of the file browse dialog buttons.
+        */
+        enum ButtonState {
+            kButtonInvisible,
+            kButtonVisibleUnchecked,
+            kButtonVisibleChecked,
+        };
+
+        /** Start directory, uses current working directory if null */
+        const char* startDir;
+        /** File browser dialog window title, uses "FileBrowser" if null */
+        const char* title;
+        /** File browser dialog window width */
+        uint width;
+        /** File browser dialog window height */
+        uint height;
+        // TODO file filter
+
+       /**
+          File browser buttons.
+        */
+        struct Buttons {
+            /** Whether to list all files vs only those with matching file extension */
+            ButtonState listAllFiles;
+            /** Whether to show hidden files */
+            ButtonState showHidden;
+            /** Whether to show list of places (bookmarks) */
+            ButtonState showPlaces;
+
+            /** Constuctor for default values */
+            Buttons()
+                : listAllFiles(kButtonVisibleChecked),
+                  showHidden(kButtonVisibleUnchecked),
+                  showPlaces(kButtonVisibleUnchecked) {}
+        } buttons;
+
+        /** Constuctor for default values */
+        FileBrowserOptions()
+            : startDir(nullptr),
+              title(nullptr),
+              width(0),
+              height(0),
+              buttons() {}
+    };
+#endif // DGL_FILE_BROWSER_DISABLED
+
    /**
       Constructor for a regular, standalone window.
     */
@@ -130,7 +184,18 @@ public:
     */
     void close();
 
+   /**
+      Check if this window is resizable.
+      @see setResizable
+    */
     bool isResizable() const noexcept;
+
+   /**
+      Set window as resizable (by the user or window manager).
+      It is always possible to resize a window programmatically, which is not the same as the user being allowed to it.
+      @note This function does nothing for plugins, where the resizable state is set via macro.
+      @see DISTRHO_UI_USER_RESIZABLE
+    */
     void setResizable(bool resizable);
 
    /**
@@ -247,6 +312,17 @@ public:
     */
     void focus();
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+   /**
+      Open a file browser dialog with this window as parent.
+      A few options can be specified to setup the dialog.
+
+      This function does not block.
+      If a path is selected, onFileSelected() will be called with the user chosen path.
+    */
+    bool openFileBrowser(const FileBrowserOptions& options);
+#endif
+
    /**
       Request repaint of this window, for the entire area.
     */
@@ -272,16 +348,15 @@ public:
                                 bool keepAspectRatio = false,
                                 bool automaticallyScale = false);
 
-    /*
-    void setTransientWinId(uintptr_t winId);
-    */
-
+   /** DEPRECATED Use isIgnoringKeyRepeat(). */
     DISTRHO_DEPRECATED_BY("isIgnoringKeyRepeat()")
     inline bool getIgnoringKeyRepeat() const noexcept { return isIgnoringKeyRepeat(); }
 
+   /** DEPRECATED Use getScaleFactor(). */
     DISTRHO_DEPRECATED_BY("getScaleFactor()")
     inline double getScaling() const noexcept { return getScaleFactor(); }
 
+   /** DEPRECATED Use runAsModal(bool). */
     DISTRHO_DEPRECATED_BY("runAsModal(bool)")
     inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
@@ -302,8 +377,22 @@ protected:
    /**
       A function called when the window is resized.
       If there is a top-level widget associated with this window, its size will be set right after this function.
+      The default implementation sets up drawing context where necessary.
     */
     virtual void onReshape(uint width, uint height);
+
+#ifndef DGL_FILE_BROWSER_DISABLED
+   /**
+      A function called when a path is selected by the user, as triggered by openFileBrowser().
+      This action happens after the user confirms the action, so the file browser dialog will be closed at this point.
+      The default implementation does nothing.
+    */
+    virtual void onFileSelected(const char* filename);
+
+   /** DEPRECATED Use onFileSelected(). */
+    DISTRHO_DEPRECATED_BY("onFileSelected(const char*)")
+    inline virtual void fileBrowserSelected(const char* filename) { return onFileSelected(filename); }
+#endif
 
 private:
     struct PrivateData;
@@ -319,62 +408,10 @@ private:
 END_NAMESPACE_DGL
 
 /* TODO
- * add focusEvent with CrossingMode arg
  * add eventcrossing/enter-leave event
  */
-
 #if 0
-#ifndef DGL_FILE_BROWSER_DISABLED
-   /**
-      File browser options.
-    */
-    struct FileBrowserOptions {
-        const char* startDir;
-        const char* title;
-        uint width;
-        uint height;
-
-      /**
-         File browser buttons.
-
-         0 means hidden.
-         1 means visible and unchecked.
-         2 means visible and checked.
-        */
-        struct Buttons {
-            uint listAllFiles;
-            uint showHidden;
-            uint showPlaces;
-
-            /** Constuctor for default values */
-            Buttons()
-                : listAllFiles(2),
-                  showHidden(1),
-                  showPlaces(1) {}
-        } buttons;
-
-        /** Constuctor for default values */
-        FileBrowserOptions()
-            : startDir(nullptr),
-              title(nullptr),
-              width(0),
-              height(0),
-              buttons() {}
-    };
-#endif // DGL_FILE_BROWSER_DISABLED
-
-    void addIdleCallback(IdleCallback* const callback);
-    void removeIdleCallback(IdleCallback* const callback);
-
-#ifndef DGL_FILE_BROWSER_DISABLED
-    bool openFileBrowser(const FileBrowserOptions& options);
-#endif
-
 protected:
-#ifndef DGL_FILE_BROWSER_DISABLED
-    virtual void fileBrowserSelected(const char* filename);
-#endif
-
     bool handlePluginKeyboard(const bool press, const uint key);
     bool handlePluginSpecial(const bool press, const Key key);
 #endif

@@ -246,7 +246,7 @@ protected:
 # ifndef DGL_FILE_BROWSER_DISABLED
    /**
       File browser selected function.
-      @see Window::fileBrowserSelected(const char*)
+      @see Window::onFileSelected(const char*)
     */
     virtual void uiFileBrowserSelected(const char* filename);
 # endif

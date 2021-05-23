@@ -88,6 +88,28 @@ PUGL_API void
 puglWin32SetWindowResizable(PuglView* view, bool resizable);
 #endif
 
+#ifdef HAVE_X11
+// X11 specific, setup event loop filter for sofd file dialog
+PUGL_API void
+sofdFileDialogSetup(PuglWorld* world);
+
+// X11 specific, show file dialog via sofd
+PUGL_API bool
+sofdFileDialogShow(PuglView* view, const char* startDir, const char* title, uint flags, uint width, uint height);
+
+// X11 specific, close sofd file dialog
+PUGL_API void
+sofdFileDialogClose(PuglView* view);
+
+// X11 specific, get path chosen via sofd file dialog
+PUGL_API bool
+sofdFileDialogGetPath(char** path);
+
+// X11 specific, free path of sofd file dialog, no longer needed
+PUGL_API void
+sofdFileDialogFree(char* path);
+#endif
+
 PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------

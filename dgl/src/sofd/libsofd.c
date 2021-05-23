@@ -32,7 +32,7 @@
  */
 
 #ifdef SOFD_TEST
-#define SOFD_HAVE_X11
+#define HAVE_X11
 #include "libsofd.h"
 #endif
 
@@ -337,7 +337,7 @@ const char *x_fib_recent_file(const char *appname) {
 	return NULL;
 }
 
-#ifdef SOFD_HAVE_X11
+#ifdef HAVE_X11
 #include <mntent.h>
 #include <dirent.h>
 
@@ -475,7 +475,10 @@ static int (*_fib_filter_function)(const char *filename);
 #define FAREATEXTL (FAREAMRGL + TEXTSEP) //px; filename text-left FAREAMRGL + TEXTSEP
 #define SORTBTNOFF -10 //px;
 
-#define DBLCLKTME 400 //msec; double click time
+#ifndef DBLCLKTME
+#define DBLCLKTME 200 //msec; double click time
+#endif
+
 #define DRAW_OUTLINE
 #define DOUBLE_BUFFER
 
@@ -1208,7 +1211,7 @@ static int fib_dirlistadd (Display *dpy, const int i, const char* path, const ch
 
 static int fib_openrecent (Display *dpy, const char *sel) {
 	int i;
-        unsigned int j;
+	unsigned int j;
 	assert (_recentcnt > 0);
 	fib_pre_opendir (dpy);
 	query_font_geometry (dpy, _fib_gc, "Last Used", &_fib_font_time_width, NULL, NULL, NULL);
@@ -1332,8 +1335,8 @@ static int fib_open (Display *dpy, int item) {
 static void cb_cancel (Display *dpy) {
 	_status = -1;
 
-        // unused
-        return; (void)dpy;
+	// unused
+	return; (void)dpy;
 }
 
 static void cb_open (Display *dpy) {
@@ -1478,8 +1481,8 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 
 	return 0;
 
-        // unused
-        (void)dpy;
+	// unused
+	(void)dpy;
 }
 
 static void fib_update_hover (Display *dpy, int need_expose, const int type, const int item) {
@@ -1592,9 +1595,11 @@ static void fib_mousedown (Display *dpy, int x, int y, int btn, unsigned long ti
 					fib_select (dpy, it);
 					_dblclk = time;
 				}
-				/*if (_fsel >= 0) {
+				/*
+				if (_fsel >= 0) {
 					if (!(_dirlist[_fsel].flags & 4));
-				}*/
+				}
+				*/
 			}
 			break;
 		case 1: // paths
@@ -1656,8 +1661,8 @@ static void fib_mousedown (Display *dpy, int x, int y, int btn, unsigned long ti
 static void fib_mouseup (Display *dpy, int x, int y, int btn, unsigned long time) {
 	_scrl_my = -1;
 
-        // unused
-        return; (void)dpy; (void)x; (void)y; (void)btn; (void)time;
+	// unused
+	return; (void)dpy; (void)x; (void)y; (void)btn; (void)time;
 }
 
 static void add_place_raw (Display *dpy, const char *name, const char *path) {
@@ -1885,8 +1890,8 @@ static int x_error_handler (Display *d, XErrorEvent *e) {
 	font_err = 1;
 	return 0;
 
-        // unused
-        (void)d; (void)e;
+	// unused
+	(void)d; (void)e;
 }
 
 int x_fib_show (Display *dpy, Window parent, int x, int y) {
@@ -2340,7 +2345,7 @@ char *x_fib_filename () {
 	else
 		return NULL;
 }
-#endif // SOFD_HAVE_X11
+#endif // HAVE_X11
 
 #if defined(__clang__)
 # pragma clang diagnostic pop

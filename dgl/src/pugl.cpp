@@ -89,6 +89,12 @@
 # endif
 #endif
 
+#ifdef HAVE_X11
+# define 400
+# include "sofd/libsofd.h"
+# include "sofd/libsofd.c"
+#endif
+
 #ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
 #endif
@@ -355,6 +361,94 @@ void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
                                    : GetWindowLong(impl->hwnd, GWL_STYLE) & ~WS_SIZEBOX;
     SetWindowLong(impl->hwnd, GWL_STYLE, winFlags);
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+#endif
+
+#ifdef HAVE_X11
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, setup event loop filter for sofd file dialog
+
+static bool sofd_has_action;
+static char* sofd_filename;
+
+static bool sofd_event_filter(Display* const display, XEvent* const xevent)
+{
+    if (x_fib_handle_events(display, xevent) == 0)
+        return false;
+
+    if (sofd_filename != nullptr)
+        std::free(sofd_filename);
+
+    if (x_fib_status() > 0)
+        sofd_filename = x_fib_filename();
+    else
+        sofd_filename = nullptr;
+
+    x_fib_close(display);
+    sofd_has_action = true;
+    return true;
+}
+
+void sofdFileDialogSetup(PuglWorld* const world)
+{
+    puglX11SetEventFilter(world, sofd_event_filter);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, show file dialog via sofd
+
+bool sofdFileDialogShow(PuglView* const view,
+                        const char* const startDir, const char* const title,
+                        const uint flags, const uint width, const uint height)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(0, startDir) == 0, false);
+    DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(1, title) == 0, false);
+
+    /*
+    x_fib_cfg_buttons(3, options.buttons.listAllFiles-1);
+    x_fib_cfg_buttons(1, options.buttons.showHidden-1);
+    x_fib_cfg_buttons(2, options.buttons.showPlaces-1);
+    */
+
+    PuglInternals* const impl = view->impl;
+    return (x_fib_show(impl->display, impl->win, width, height) == 0);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, close sofd file dialog
+
+void sofdFileDialogClose(PuglView* const view)
+{
+    PuglInternals* const impl = view->impl;
+    x_fib_close(impl->display);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, get path chosen via sofd file dialog
+
+bool sofdFileDialogGetPath(char** path)
+{
+    if (! sofd_has_action)
+        return false;
+
+    sofd_has_action = false;
+    *path = sofd_filename;
+    return true;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, free path of sofd file dialog, no longer needed
+
+void sofdFileDialogFree(char* const path)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(path == nullptr || path == sofd_filename,);
+
+    std::free(sofd_filename);
+    sofd_filename = nullptr;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
