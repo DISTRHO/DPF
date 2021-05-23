@@ -520,9 +520,10 @@ bool ImageBaseKnob<ImageType>::onScroll(const ScrollEvent& ev)
     if (! contains(ev.pos))
         return false;
 
+    const float dir   = (ev.delta.getY() > 0.f) ? 1.f : -1.f;
     const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
     float       value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp)
-                      + ((pData->maximum - pData->minimum) / d * 10.f * static_cast<float>(ev.delta.getY()));
+                      + ((pData->maximum - pData->minimum) / d * 10.f * dir);
 
     if (pData->usingLog)
         value = pData->logscale(value);

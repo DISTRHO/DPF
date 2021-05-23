@@ -139,7 +139,7 @@ BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
 BASE_OPTS  = -O3 -ffast-math -fdata-sections -ffunction-sections
 
 ifeq ($(CPU_I386_OR_X86_64),true)
-BASE_OPTS += -mtune=generic -msse -msse2
+BASE_OPTS += -mtune=generic -msse -msse2 -mfpmath=sse
 endif
 
 ifeq ($(CPU_ARM),true)
@@ -310,6 +310,7 @@ OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
 endif
 
 ifeq ($(MACOS),true)
+OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1
 OPENGL_LIBS  = -framework OpenGL
 endif
 
