@@ -38,6 +38,9 @@ endif
 ifneq (,$(findstring mingw,$(TARGET_MACHINE)))
 WINDOWS=true
 endif
+ifneq (,$(findstring windows,$(TARGET_MACHINE)))
+WINDOWS=true
+endif
 
 endif
 endif
@@ -165,10 +168,7 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifeq ($(WINDOWS),true)
-# mingw has issues with this specific optimization
-# See https://github.com/falkTX/Carla/issues/696
-BASE_OPTS  += -fno-rerun-cse-after-loop
-# See https://github.com/falkTX/Carla/issues/855
+# Needed for windows, see https://github.com/falkTX/Carla/issues/855
 BASE_OPTS  += -mstackrealign
 else
 # Not needed for Windows
