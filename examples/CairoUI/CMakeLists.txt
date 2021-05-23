@@ -7,6 +7,7 @@ dpf_add_plugin(d_cairoui
   FILES_DSP
       CairoExamplePlugin.cpp
   FILES_UI
+      Artwork.cpp
       DemoWidgetBanner.cpp
       DemoWidgetClickable.cpp
       CairoExampleUI.cpp)
