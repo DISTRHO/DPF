@@ -317,8 +317,10 @@ public:
       Open a file browser dialog with this window as parent.
       A few options can be specified to setup the dialog.
 
-      This function does not block.
       If a path is selected, onFileSelected() will be called with the user chosen path.
+      If the user cancels or does not pick a file, onFileSelected() will be called with nullptr as filename.
+
+      This function does not block the event loop.
     */
     bool openFileBrowser(const FileBrowserOptions& options);
 #endif

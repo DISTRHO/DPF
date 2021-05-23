@@ -116,7 +116,11 @@ protected:
 
                 FileBrowserOptions opts;
                 opts.title = "Look at me";
-                openFileBrowser(opts);
+                if (! openFileBrowser(opts))
+                {
+                    selectedFile = "(Failed to start file browser)";
+                    repaint();
+                }
             }
 
             return true;
@@ -131,6 +135,16 @@ protected:
         const uint height = ev.size.getHeight();
 
         buttonBounds = Rectangle<uint>(width - 120, height/2 - 20, 100, 40);
+    }
+
+    void onFocus(const bool focus, CrossingMode) override
+    {
+        if (focus)
+            return;
+
+        buttonClick = false;
+        buttonHover = false;
+        repaint();
     }
 
     void onFileSelected(const char* filename) override

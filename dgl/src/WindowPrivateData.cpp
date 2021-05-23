@@ -23,6 +23,9 @@
 
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
+# include <winsock2.h>
+# include <windows.h>
+# include <vector>
 #else
 # include <unistd.h>
 #endif
@@ -49,6 +52,11 @@ START_NAMESPACE_DGL
 #define DEFAULT_HEIGHT 480
 
 // -----------------------------------------------------------------------
+
+#ifdef DISTRHO_OS_WINDOWS
+// static pointer used for direct comparisons
+static const char* const kWin32SelectedFileCancelled = "__dpf_cancelled__";
+#endif
 
 static double getDesktopScaleFactor()
 {
@@ -194,6 +202,11 @@ Window::PrivateData::~PrivateData()
 
     appData->idleCallbacks.remove(this);
     appData->windows.remove(self);
+
+#ifdef DISTRHO_OS_WINDOWS
+    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
+        std::free(const_cast<char*>(win32SelectedFile));
+#endif
 
     if (view != nullptr)
         puglFreeView(view);
@@ -366,11 +379,13 @@ void Window::PrivateData::idleCallback()
 {
 #ifndef DGL_FILE_BROWSER_DISABLED
 # ifdef DISTRHO_OS_WINDOWS
-    if (char* const path = win32SelectedFile)
+    if (const char* path = win32SelectedFile)
     {
         win32SelectedFile = nullptr;
+        if (path == kWin32SelectedFileCancelled)
+            path = nullptr;
         self->onFileSelected(path);
-        std::free(path);
+        std::free(const_cast<char*>(path));
     }
 # endif
 # ifdef HAVE_X11
@@ -465,6 +480,54 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     // --------------------------------------------------------------------------
     // show
 
+#ifdef DISTRHO_OS_WINDOWS
+    // the old and compatible dialog API
+    OPENFILENAMEW ofn;
+    memset(&ofn, 0, sizeof(ofn));
+    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
+        std::free(const_cast<char*>(win32SelectedFile));
+    win32SelectedFile = nullptr;
+
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = (HWND)puglGetNativeWindow(view);
+
+    // set start directory in UTF-16 encoding
+    std::vector<WCHAR> startDirW;
+    startDirW.resize(startDir.length() + 1);
+    if (MultiByteToWideChar(CP_UTF8, 0, startDir.buffer(), -1, startDirW.data(), startDirW.size()))
+        ofn.lpstrInitialDir = startDirW.data();
+
+    // set title in UTF-16 encoding
+    std::vector<WCHAR> titleW;
+    titleW.resize(title.length() + 1);
+    if (MultiByteToWideChar(CP_UTF8, 0, title.buffer(), -1, titleW.data(), titleW.size()))
+        ofn.lpstrTitle = titleW.data();
+
+    // prepare a buffer to receive the result
+    std::vector<WCHAR> fileNameW(32768); // the Unicode maximum
+    ofn.lpstrFile = fileNameW.data();
+    ofn.nMaxFile = (DWORD)fileNameW.size();
+
+    // TODO synchronous only, can't do better with WinAPI native dialogs.
+    // threading might work, if someone is motivated to risk it.
+    if (GetOpenFileNameW(&ofn))
+    {
+        // back to UTF-8
+        std::vector<char> fileNameA(4 * 32768);
+        if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1,
+                                fileNameA.data(), (int)fileNameA.size(),
+                                nullptr, nullptr))
+        {
+            // handle it during the next idle cycle (fake async)
+            win32SelectedFile = strdup(fileNameA.data());
+        }
+    }
+
+    if (win32SelectedFile == nullptr)
+        win32SelectedFile = kWin32SelectedFileCancelled;
+
+    return true;
+#endif
 #ifdef HAVE_X11
     uint flags = 0x0;
     // TODO flags

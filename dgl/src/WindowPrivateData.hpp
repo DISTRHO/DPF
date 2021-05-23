@@ -70,7 +70,7 @@ struct Window::PrivateData : IdleCallback {
 
 #ifdef DISTRHO_OS_WINDOWS
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */
-    char* win32SelectedFile;
+    const char* win32SelectedFile;
 #endif
 
     /** Modal window setup. */
