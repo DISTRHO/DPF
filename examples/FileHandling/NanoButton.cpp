@@ -84,10 +84,10 @@ void Button::setBackgroundColor(const Color color)
 
 bool Button::onMouse(const MouseEvent &ev)
 {
-    if (ev.press & contains(ev.pos))
+    if (ev.press && contains(ev.pos))
     {
         buttonActive = true;
-        setLabelColor(labelColor);     
+        setLabelColor(labelColor);
         fCallback->buttonClicked(this, true);
         return true;
     }

@@ -752,6 +752,12 @@ public:
     bool contains(const Point<T>& pos) const noexcept;
 
    /**
+      Check if this rectangle contains the point @a pos of another type.
+    */
+    template<typename T2>
+    bool contains(const Point<T2>& pos) const noexcept;
+
+   /**
       Check if this rectangle contains X.
     */
     bool containsX(const T& x) const noexcept;

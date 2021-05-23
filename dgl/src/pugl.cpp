@@ -90,7 +90,7 @@
 #endif
 
 #ifdef HAVE_X11
-# define 400
+# define DBLCLKTME 400
 # include "sofd/libsofd.h"
 # include "sofd/libsofd.c"
 #endif

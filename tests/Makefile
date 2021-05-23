@@ -30,6 +30,7 @@ UNIT_TESTS   += Window.cairo
 endif
 ifeq ($(HAVE_OPENGL),true)
 MANUAL_TESTS += Demo.opengl
+MANUAL_TESTS += FileBrowserDialog
 MANUAL_TESTS += NanoSubWidgets
 UNIT_TESTS   += Window.opengl
 endif
@@ -137,6 +138,10 @@ clean:
 ../build/tests/Demo.vulkan$(APP_EXT): ../build/tests/Demo.cpp.vulkan.o ../build/libdgl-vulkan.a
 	@echo "Linking Demo (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
+
+../build/tests/FileBrowserDialog$(APP_EXT): ../build/tests/FileBrowserDialog.cpp.o ../build/libdgl-opengl.a
+	@echo "Linking Demo (OpenGL)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 ../build/tests/NanoSubWidgets$(APP_EXT): ../build/tests/NanoSubWidgets.cpp.o ../build/libdgl-opengl.a
 	@echo "Linking Demo (OpenGL)"
