@@ -23,6 +23,8 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
+# undef DISTRHO_UI_USER_RESIZABLE
+# define DISTRHO_UI_USER_RESIZABLE 0
 # define DISTRHO_UI_IS_STANDALONE 0
 # include "DistrhoUIInternal.hpp"
 #endif
