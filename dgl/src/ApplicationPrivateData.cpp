@@ -19,6 +19,8 @@
 
 #include "pugl.hpp"
 
+#include <ctime>
+
 START_NAMESPACE_DGL
 
 typedef std::list<DGL_NAMESPACE::Window*>::reverse_iterator WindowListReverseIterator;
@@ -38,7 +40,17 @@ Application::PrivateData::PrivateData(const bool standalone)
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
 
     puglSetWorldHandle(world, this);
-    puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
+
+    // FIXME
+    static int wc_count = 0;
+    char classNameBuf[256];
+    std::srand((std::time(NULL)));
+    std::snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d-%d-%p",
+                  DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE), std::rand(), ++wc_count, this);
+    classNameBuf[sizeof(classNameBuf)-1] = '\0';
+    d_stderr("--------------------------------------------------------------- className is %s", classNameBuf);
+
+    puglSetClassName(world, classNameBuf);
 #ifdef HAVE_X11
     sofdFileDialogSetup(world);
 #endif

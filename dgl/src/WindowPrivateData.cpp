@@ -627,7 +627,7 @@ void Window::PrivateData::onPuglClose()
 
 void Window::PrivateData::onPuglFocus(const bool focus, const CrossingMode mode)
 {
-    DGL_DBGp("onPuglFocus : %i %i\n", focus, mode);
+    DGL_DBGp("onPuglFocus : %i %i | %i\n", focus, mode, isClosed);
 
     if (isClosed)
         return;
