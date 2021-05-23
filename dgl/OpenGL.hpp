@@ -234,16 +234,16 @@ public:
       @note @a rawData must remain valid for the lifetime of this Image.
       DEPRECATED This constructor uses OpenGL image format instead of DISTRHO one.
     */
-    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*,uint,uint,ImageFormat")
-    explicit OpenGLImage(const char* rawData, uint width, uint height, GLenum format);
+    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*, uint, uint, ImageFormat)")
+    explicit OpenGLImage(const char* rawData, uint width, uint height, GLenum glFormat);
 
    /**
       Constructor using raw image data, specifying an OpenGL image format.
       @note @a rawData must remain valid for the lifetime of this Image.
       DEPRECATED This constructor uses OpenGL image format instead of DISTRHO one.
     */
-    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*,const Size<uint>&,ImageFormat")
-    explicit OpenGLImage(const char* rawData, const Size<uint>& size, GLenum format);
+    DISTRHO_DEPRECATED_BY("OpenGLImage(const char*, const Size<uint>&, ImageFormat)")
+    explicit OpenGLImage(const char* rawData, const Size<uint>& size, GLenum glFormat);
 
    /**
       Draw this image at (0, 0) point using the current OpenGL context.
@@ -256,14 +256,14 @@ public:
       Draw this image at (x, y) point using the current OpenGL context.
       DEPRECATED This function does not take into consideration the current graphics context and only works in OpenGL.
     */
-    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,int,int)")
-    void drawAt(const int x, const int y);
+    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&, int, int)")
+    void drawAt(int x, int y);
 
    /**
       Draw this image at position @a pos using the current OpenGL context.
       DEPRECATED This function does not take into consideration the current graphics context and only works in OpenGL.
     */
-    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&,const Point<int>&)")
+    DISTRHO_DEPRECATED_BY("drawAt(const GraphicsContext&, const Point<int>&)")
     void drawAt(const Point<int>& pos);
 
    /**
