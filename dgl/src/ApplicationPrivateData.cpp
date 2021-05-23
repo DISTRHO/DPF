@@ -46,7 +46,8 @@ Application::PrivateData::PrivateData(const bool standalone)
     char classNameBuf[256];
     std::srand((std::time(NULL)));
     std::snprintf(classNameBuf, sizeof(classNameBuf), "%s_%d-%d-%p",
-                  DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE), std::rand(), ++wc_count, this);
+                  "TESTING", std::rand(), ++wc_count, this);
+    // DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE)
     classNameBuf[sizeof(classNameBuf)-1] = '\0';
     d_stderr("--------------------------------------------------------------- className is %s", classNameBuf);
 
