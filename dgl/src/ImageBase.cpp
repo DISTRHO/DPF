@@ -113,12 +113,13 @@ ImageBase& ImageBase::operator=(const ImageBase& image) noexcept
 {
     rawData = image.rawData;
     size    = image.size;
+    format  = image.format;
     return *this;
 }
 
 bool ImageBase::operator==(const ImageBase& image) const noexcept
 {
-    return (rawData == image.rawData && size == image.size);
+    return (rawData == image.rawData && size == image.size && format == image.format);
 }
 
 bool ImageBase::operator!=(const ImageBase& image) const noexcept
