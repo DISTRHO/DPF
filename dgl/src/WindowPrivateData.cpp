@@ -574,7 +574,9 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 
     const uint uwidth = static_cast<uint>(width + 0.5);
     const uint uheight = static_cast<uint>(height + 0.5);
-    self->onReshape(uwidth, uheight);
+
+    if (self != nullptr)
+        self->onReshape(uwidth, uheight);
 
 #ifndef DPF_TEST_WINDOW_CPP
     if (topLevelWidget != nullptr)
