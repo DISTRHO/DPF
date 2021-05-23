@@ -27,43 +27,44 @@ class NanoFilePicker : public NanoStandaloneWindow
     Rectangle<uint> buttonBounds;
     bool buttonClick = false;
     bool buttonHover = false;
+    String selectedFile;
 
 public:
     NanoFilePicker(Application& app)
-      : NanoStandaloneWindow(app)
+      : NanoStandaloneWindow(app),
+        selectedFile("No file selected yet")
     {
 #ifndef DGL_NO_SHARED_RESOURCES
         loadSharedResources();
 #endif
-
     }
 
 protected:
     void onNanoDisplay() override
     {
-        Color labelColor(255, 255, 255);
-        Color backgroundColor(32,
-                              buttonClick ? 128 : 32,
-                              buttonHover ? 128 : 32);
-        Color borderColor;
+        // Selected file
+        beginPath();
+        fontSize(14);
+        textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
+        fillColor(255, 255, 255, 255);
+        text(20, getHeight()/2, selectedFile, NULL);
+        closePath();
 
         // Button background
         beginPath();
-        fillColor(backgroundColor);
-        strokeColor(borderColor);
+        fillColor(Color(32, buttonClick ? 128 : 32, buttonHover ? 128 : 32));
+        strokeColor(Color());
         rect(buttonBounds.getX(), buttonBounds.getY(), buttonBounds.getWidth(), buttonBounds.getHeight());
         fill();
         stroke();
         closePath();
 
-        // Label
+        // Button label
         beginPath();
         fontSize(14);
-        fillColor(labelColor);
         Rectangle<float> buttonTextBounds;
         textBounds(0, 0, "Press me", NULL, buttonTextBounds);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
-
         fillColor(255, 255, 255, 255);
         text(buttonBounds.getX() + buttonBounds.getWidth()/2,
              buttonBounds.getY() + buttonBounds.getHeight()/2,
@@ -110,6 +111,9 @@ protected:
 
             if (newButtonClick)
             {
+                selectedFile = "(in progress)";
+                repaint();
+
                 FileBrowserOptions opts;
                 opts.title = "Look at me";
                 openFileBrowser(opts);
@@ -127,6 +131,18 @@ protected:
         const uint height = ev.size.getHeight();
 
         buttonBounds = Rectangle<uint>(width - 120, height/2 - 20, 100, 40);
+    }
+
+    void onFileSelected(const char* filename) override
+    {
+        if (filename == nullptr)
+            filename = "Cancelled";
+
+        if (selectedFile == filename)
+            return;
+
+        selectedFile = filename;
+        repaint();
     }
 };
 
