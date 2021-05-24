@@ -16,10 +16,6 @@ LINK_FLAGS      += $(DGL_LIBS)
 # TODO fix these after pugl-upstream is done
 BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers -Wno-narrowing
 
-ifeq ($(MACOS),true)
-BUILD_CXX_FLAGS += -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations
-endif
-
 # ifneq ($(MACOS_OLD),true)
 # needed by sofd right now, fix later
 # BUILD_CXX_FLAGS += -Wno-type-limits -fpermissive

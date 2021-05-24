@@ -310,7 +310,7 @@ OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
 endif
 
 ifeq ($(MACOS),true)
-OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1
+OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1 -Wno-deprecated-declarations
 OPENGL_LIBS  = -framework OpenGL
 endif
 
