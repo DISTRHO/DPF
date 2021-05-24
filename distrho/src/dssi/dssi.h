@@ -35,6 +35,10 @@
 extern "C" {
 #endif
 
+#ifndef DSSI_PLUGIN_EXPORT
+#   define DSSI_PLUGIN_EXPORT LADSPA_PLUGIN_EXPORT
+#endif
+
 /* 
    There is a need for an API that supports hosted MIDI soft synths
    with GUIs in Linux audio applications.  In time the GMPI initiative
@@ -411,7 +415,7 @@ typedef struct _DSSI_Descriptor {
  *   of a distinct plugin type.
  */
 
-const DSSI_Descriptor *dssi_descriptor(unsigned long Index);
+DSSI_PLUGIN_EXPORT const DSSI_Descriptor *dssi_descriptor(unsigned long Index);
   
 typedef const DSSI_Descriptor *(*DSSI_Descriptor_Function)(unsigned long Index);
 
