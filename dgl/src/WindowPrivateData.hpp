@@ -118,7 +118,9 @@ struct Window::PrivateData : IdleCallback {
     ~PrivateData() override;
 
     /** Helper initialization function called at the end of all this class constructors. */
-    void init(uint width, uint height, bool resizable);
+    void initPre(uint width, uint height, bool resizable);
+    /** Helper initialization function called on the Window constructor after we are done. */
+    void initPost();
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).

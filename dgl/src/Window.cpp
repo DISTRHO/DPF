@@ -24,16 +24,25 @@ START_NAMESPACE_DGL
 // Window
 
 Window::Window(Application& app)
-    : pData(new PrivateData(app, this)) {}
+    : pData(new PrivateData(app, this))
+{
+    pData->initPost();
+}
 
 Window::Window(Application& app, Window& parent)
-    : pData(new PrivateData(app, this, parent.pData)) {}
+    : pData(new PrivateData(app, this, parent.pData))
+{
+    pData->initPost();
+}
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
                const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, scaleFactor, resizable)) {}
+    : pData(new PrivateData(app, this, parentWindowHandle, scaleFactor, resizable))
+{
+    pData->initPost();
+}
 
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
@@ -41,7 +50,10 @@ Window::Window(Application& app,
                const uint height,
                const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable)) {}
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable))
+{
+    pData->initPost();
+}
 
 Window::~Window()
 {

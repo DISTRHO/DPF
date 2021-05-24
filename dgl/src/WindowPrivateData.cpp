@@ -87,7 +87,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
 #endif
       modal()
 {
-    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
+    initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
 Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* const ppData)
@@ -109,7 +109,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
 #endif
       modal(ppData)
 {
-    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
+    initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 
     puglSetTransientFor(view, puglGetNativeWindow(ppData->view));
 }
@@ -141,13 +141,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
         puglSetParentWindow(view, parentWindowHandle);
     }
 
-    init(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
-
-    if (isEmbed)
-    {
-        appData->oneWindowShown();
-        puglShow(view);
-    }
+    initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
 }
 
 Window::PrivateData::PrivateData(Application& a, Window* const s,
@@ -178,13 +172,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
         puglSetParentWindow(view, parentWindowHandle);
     }
 
-    init(width, height, resizable);
-
-    if (isEmbed)
-    {
-        appData->oneWindowShown();
-        puglShow(view);
-    }
+    initPre(width, height, resizable);
 }
 
 Window::PrivateData::~PrivateData()
@@ -214,7 +202,7 @@ Window::PrivateData::~PrivateData()
 
 // -----------------------------------------------------------------------
 
-void Window::PrivateData::init(const uint width, const uint height, const bool resizable)
+void Window::PrivateData::initPre(const uint width, const uint height, const bool resizable)
 {
     appData->windows.push_back(self);
     appData->idleCallbacks.push_back(this);
@@ -240,10 +228,21 @@ void Window::PrivateData::init(const uint width, const uint height, const bool r
     rect.width = width;
     rect.height = height;
     puglSetFrame(view, rect);
+}
 
-    // FIXME this is bad
+void Window::PrivateData::initPost()
+{
+    // create view now, as a few methods we allow devs to use require it
     puglRealize(view);
+
+    // FIXME this is bad, the enter/leave should be well scoped. try to find a better place for it..
     puglBackendEnter(view);
+
+    if (isEmbed)
+    {
+        appData->oneWindowShown();
+        puglShow(view);
+    }
 }
 
 // -----------------------------------------------------------------------
