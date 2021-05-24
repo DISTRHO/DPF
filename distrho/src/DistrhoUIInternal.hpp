@@ -48,9 +48,9 @@ extern Window*     d_lastUiWindow;
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI* createUiWrapper(void* dspPtr, uintptr_t winId, double scaleFactor, const char* bundlePath);
+UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath);
 #else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI* createUiWrapper(void* dspPtr, Window* window);
+UI* createUiWrapper(void* const dspPtr, Window* const window);
 #endif
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

@@ -40,7 +40,7 @@ Window*     d_lastUiWindow     = nullptr;
 // -----------------------------------------------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI* createUiWrapper(void* dspPtr, uintptr_t winId, double scaleFactor, const char* bundlePath)
+UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath)
 {
     d_lastUiDspPtr    = dspPtr;
     g_nextWindowId    = winId;
@@ -54,7 +54,7 @@ UI* createUiWrapper(void* dspPtr, uintptr_t winId, double scaleFactor, const cha
     return ret;
 }
 #else
-UI* createUiWrapper(void* dspPtr, Window* window)
+UI* createUiWrapper(void* const dspPtr, Window* const window)
 {
     d_lastUiDspPtr = dspPtr;
     d_lastUiWindow = window;
