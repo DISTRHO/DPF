@@ -160,6 +160,17 @@ private:                                 \
     static void operator delete(void*);
 #endif
 
+/* Define DISTRHO_PREVENT_VIRTUAL_HEAP_ALLOCATION */
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# define DISTRHO_PREVENT_VIRTUAL_HEAP_ALLOCATION \
+private:                                         \
+    static void* operator new(std::size_t) = delete;
+#else
+# define DISTRHO_PREVENT_VIRTUAL_HEAP_ALLOCATION \
+private:                                         \
+    static void* operator new(std::size_t);
+#endif
+
 /* Define namespace */
 #ifndef DISTRHO_NAMESPACE
 # define DISTRHO_NAMESPACE DISTRHO
