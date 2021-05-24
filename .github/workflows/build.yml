@@ -82,3 +82,79 @@ jobs:
       with:
         name: macOS artifacts
         path: ${{runner.workspace}}/build/bin/
+
+  cmake_win32:
+    runs-on: windows-2019
+    steps:
+    - name: Set environment
+      run: |
+        echo "release_arch=Win32" >> "${Env:GITHUB_ENV}"
+        echo "vcpkg_triplet=x86-windows-static" >> "${Env:GITHUB_ENV}"
+        echo "vcpkg_git_commit_id=a3db16a4475b963cacf0260068c497fb72c8f3c0" >> "${Env:GITHUB_ENV}"
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v6
+      with:
+        setupOnly: true
+        vcpkgTriplet: ${{env.vcpkg_triplet}}
+        vcpkgGitCommitId: ${{env.vcpkg_git_commit_id}}
+    #- name: Install packages
+    #  run: |
+    #    & "${Env:VCPKG_ROOT}/vcpkg" install "cairo:${Env:vcpkg_triplet}"
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Create Build Environment
+      working-directory: ${{runner.workspace}}
+      run: cmake -E make_directory build
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: |
+       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 16 2019" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    - name: Build all
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config "${Env:BUILD_TYPE}" -j 2
+    - name: Show built files
+      working-directory: ${{runner.workspace}}/build/bin
+      run: tree
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Win32 artifacts
+        path: ${{runner.workspace}}/build/bin/
+
+  cmake_win64:
+    runs-on: windows-2019
+    steps:
+    - name: Set environment
+      run: |
+        echo "release_arch=x64" >> "${Env:GITHUB_ENV}"
+        echo "vcpkg_triplet=x64-windows-static" >> "${Env:GITHUB_ENV}"
+        echo "vcpkg_git_commit_id=a3db16a4475b963cacf0260068c497fb72c8f3c0" >> "${Env:GITHUB_ENV}"
+    - name: Restore from cache and install vcpkg
+      uses: lukka/run-vcpkg@v6
+      with:
+        setupOnly: true
+        vcpkgTriplet: ${{env.vcpkg_triplet}}
+        vcpkgGitCommitId: ${{env.vcpkg_git_commit_id}}
+    #- name: Install packages
+    #  run: |
+    #    & "${Env:VCPKG_ROOT}/vcpkg" install "cairo:${Env:vcpkg_triplet}"
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Create Build Environment
+      working-directory: ${{runner.workspace}}
+      run: cmake -E make_directory build
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      run: |
+       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 16 2019" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+    - name: Build all
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config "${Env:BUILD_TYPE}" -j 2
+    - name: Show built files
+      working-directory: ${{runner.workspace}}/build/bin
+      run: tree
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Win64 artifacts
+        path: ${{runner.workspace}}/build/bin/
