@@ -289,7 +289,7 @@ protected:
 
         // reserve atom space
         const size_t atomSize = sizeof(LV2_Atom) + msgSize;
-        char*        atomBuf = (char*)alloca(atomSize);
+        char*        atomBuf = (char*)malloc(atomSize);
         std::memset(atomBuf, 0, atomSize);
 
         // set atom info
@@ -302,6 +302,9 @@ protected:
 
         // send to DSP side
         fWriteFunction(fController, eventInPortIndex, atomSize, fURIDs.atomEventTransfer, atom);
+
+        // free atom space
+        free(atomBuf);
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
