@@ -119,6 +119,14 @@ struct HugeStackBuffer {
     uint8_t  buf[size];
 };
 
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# define HeapBuffer_INIT  {0, 0, 0, 0, false, nullptr}
+# define StackBuffer_INIT {0, 0, 0, false, {0}}
+#else
+# define HeapBuffer_INIT
+# define StackBuffer_INIT
+#endif
+
 // -----------------------------------------------------------------------
 // RingBufferControl templated class
 
@@ -670,7 +678,7 @@ class HeapRingBuffer : public RingBufferControl<HeapBuffer>
 public:
     /** Constructor. */
     HeapRingBuffer() noexcept
-        : heapBuffer({0, 0, 0, 0, false, nullptr})
+        : heapBuffer(HeapBuffer_INIT)
     {
 #ifndef DISTRHO_PROPER_CPP11_SUPPORT
         std::memset(&heapBuffer, 0, sizeof(heapBuffer));
@@ -735,7 +743,7 @@ class SmallStackRingBuffer : public RingBufferControl<SmallStackBuffer>
 public:
     /** Constructor. */
     SmallStackRingBuffer() noexcept
-        : stackBuffer({0, 0, 0, false, {0}})
+        : stackBuffer(StackBuffer_INIT)
     {
 #ifndef DISTRHO_PROPER_CPP11_SUPPORT
         std::memset(&stackBuffer, 0, sizeof(stackBuffer));
