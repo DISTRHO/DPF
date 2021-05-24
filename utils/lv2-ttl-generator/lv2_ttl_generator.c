@@ -34,6 +34,8 @@ typedef void (*TTL_Generator_Function)(const char* basename);
 static int isPathSeparator(char c);
 static char* makeNormalPath(const char* path);
 
+// TODO support Unicode paths on the Windows platform
+
 int main(int argc, char* argv[])
 {
     if (argc != 2)
@@ -68,18 +70,23 @@ int main(int argc, char* argv[])
 
     if (ttlFn != NULL)
     {
+        // convert the paths to a normalized form, such that path separators are
+        // replaced with '/', and duplicate separators are removed
         char* normalPath = makeNormalPath(path);
 
+        // get rid of any "./" prefixes
         path = normalPath;
         while (path[0] == '.' && path[1] == '/')
             path += 2;
 
+        // extract the file name part
         char* basename = strrchr(path, '/');
         if (basename != NULL)
             basename += 1;
         else
             basename = (char*)path;
 
+        // remove the file extension
         char* dotPos = strrchr(basename, '.');
         if (dotPos)
             *dotPos = '\0';
