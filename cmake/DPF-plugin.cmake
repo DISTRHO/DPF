@@ -503,6 +503,9 @@ function(dpf__add_executable NAME)
     C_VISIBILITY_PRESET "hidden"
     CXX_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN TRUE)
+  if (MINGW)
+    target_compile_options("${NAME}" PUBLIC "-mstackrealign")
+  endif()
 endfunction()
 
 # dpf__add_module
@@ -520,6 +523,9 @@ function(dpf__add_module NAME)
   if ((NOT WIN32 AND NOT APPLE) OR MINGW)
     target_link_libraries("${NAME}" PRIVATE "-Wl,--no-undefined")
   endif()
+  if (MINGW)
+    target_compile_options("${NAME}" PUBLIC "-mstackrealign")
+  endif()
 endfunction()
 
 # dpf__add_static_library
@@ -534,6 +540,9 @@ function(dpf__add_static_library NAME)
     C_VISIBILITY_PRESET "hidden"
     CXX_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN TRUE)
+  if (MINGW)
+    target_compile_options("${NAME}" PUBLIC "-mstackrealign")
+  endif()
 endfunction()
 
 # dpf__add_plugin_main
