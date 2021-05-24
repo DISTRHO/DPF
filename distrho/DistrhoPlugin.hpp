@@ -569,8 +569,9 @@ struct TimePosition {
           Current tick within beat.@n
           Should always be >= 0 and < @a ticksPerBeat.@n
           The first tick is tick '0'.
+          @note Fraction part of tick is only available on some plugin formats.
         */
-        int32_t tick;
+        double tick;
 
        /**
           Number of ticks that have elapsed between frame 0 and the first beat of the current measure.

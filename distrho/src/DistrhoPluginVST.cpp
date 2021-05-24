@@ -1036,7 +1036,7 @@ public:
 
                 fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
                 fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
-                fTimePosition.bbt.tick        = static_cast<int32_t>(rest * fTimePosition.bbt.ticksPerBeat + 0.5);
+                fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
                 fTimePosition.bbt.beatsPerBar = vstTimeInfo->timeSigNumerator;
                 fTimePosition.bbt.beatType    = vstTimeInfo->timeSigDenominator;
 
@@ -1044,14 +1044,14 @@ public:
                 {
                     --fTimePosition.bbt.bar;
                     fTimePosition.bbt.beat = vstTimeInfo->timeSigNumerator - fTimePosition.bbt.beat + 1;
-                    fTimePosition.bbt.tick = int(fTimePosition.bbt.ticksPerBeat) - fTimePosition.bbt.tick - 1;
+                    fTimePosition.bbt.tick = fTimePosition.bbt.ticksPerBeat - fTimePosition.bbt.tick - 1;
                 }
             }
             else
             {
                 fTimePosition.bbt.bar         = 1;
                 fTimePosition.bbt.beat        = 1;
-                fTimePosition.bbt.tick        = 0;
+                fTimePosition.bbt.tick        = 0.0;
                 fTimePosition.bbt.beatsPerBar = 4.0f;
                 fTimePosition.bbt.beatType    = 4.0f;
             }
