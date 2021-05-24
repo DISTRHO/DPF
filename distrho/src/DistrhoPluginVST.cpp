@@ -25,7 +25,7 @@
 #if DISTRHO_PLUGIN_HAS_UI
 # undef DISTRHO_UI_USER_RESIZABLE
 # define DISTRHO_UI_USER_RESIZABLE 0
-# define DISTRHO_UI_IS_STANDALONE 0
+# define DISTRHO_UI_IS_STANDALONE false
 # include "DistrhoUIInternal.hpp"
 #endif
 
@@ -72,6 +72,9 @@ static const int kVstMidiEventSize = static_cast<int>(sizeof(VstMidiEvent));
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -429,7 +432,7 @@ class PluginVst : public ParameterCheckHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fPlugin(this, writeMidiCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
@@ -1184,6 +1187,19 @@ private:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(const uint32_t index, const float value)
+    {
+        hostCallback(audioMasterAutomate, index, 0, nullptr, value);
+        return true;
+    }
+
+    static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
+    {
+        return ((PluginVst*)ptr)->requestParameterValueChange(index, value);
+    }
+#endif
+
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
@@ -1273,7 +1289,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     }
 
     // Create dummy plugin to get data from
-    static PluginExporter plugin(nullptr, nullptr);
+    static PluginExporter plugin(nullptr, nullptr, nullptr);
 
     if (doInternalInit)
     {

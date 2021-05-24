@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -22,12 +22,19 @@
 
 #include "CarlaNative.hpp"
 
+// TODO
+#undef DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 0
+
 // -----------------------------------------------------------------------
 
 START_NAMESPACE_DISTRHO
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -184,7 +191,7 @@ class PluginCarla : public NativePluginClass
 public:
     PluginCarla(const NativeHostDescriptor* const host)
         : NativePluginClass(host),
-          fPlugin(this, writeMidiCallback),
+          fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fScalePointsCache(nullptr)
     {
 #if DISTRHO_PLUGIN_HAS_UI
@@ -509,6 +516,19 @@ private:
         };
 
         return ((PluginCarla*)ptr)->fPlugin.writeMidiEvent(midiEvent);
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(const uint32_t index, const float value)
+    {
+        // TODO implementation
+        return false;
+    }
+
+    static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
+    {
+        return thisPtr->requestParameterValueChange(index, value);
     }
 #endif
 

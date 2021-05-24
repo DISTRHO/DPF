@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -36,6 +36,7 @@ extern double   d_lastSampleRate;
 // DSP callbacks
 
 typedef bool (*writeMidiFunc) (void* ptr, const MidiEvent& midiEvent);
+typedef bool (*requestParameterValueChangeFunc) (void* ptr, uint32_t index, float value);
 
 // -----------------------------------------------------------------------
 // Plugin private data
@@ -73,6 +74,7 @@ struct Plugin::PrivateData {
     // Callbacks
     void*         callbacksPtr;
     writeMidiFunc writeMidiCallbackFunc;
+    requestParameterValueChangeFunc requestParameterValueChangeCallbackFunc;
 
     uint32_t bufferSize;
     double   sampleRate;
@@ -99,6 +101,7 @@ struct Plugin::PrivateData {
 #endif
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
+          requestParameterValueChangeCallbackFunc(nullptr),
           bufferSize(d_lastBufferSize),
           sampleRate(d_lastSampleRate)
     {
@@ -170,6 +173,16 @@ struct Plugin::PrivateData {
         return false;
     }
 #endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChangeCallback(const uint32_t index, const float value)
+    {
+        if (requestParameterValueChangeCallbackFunc != nullptr)
+            return requestParameterValueChangeCallbackFunc(callbacksPtr, index, value);
+
+        return false;
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -178,7 +191,9 @@ struct Plugin::PrivateData {
 class PluginExporter
 {
 public:
-    PluginExporter(void* const callbacksPtr, const writeMidiFunc writeMidiCall)
+    PluginExporter(void* const callbacksPtr,
+                   const writeMidiFunc writeMidiCall,
+                   const requestParameterValueChangeFunc requestParameterValueChangeCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
@@ -213,8 +228,9 @@ public:
             fPlugin->initState(i, fData->stateKeys[i], fData->stateDefValues[i]);
 #endif
 
-        fData->callbacksPtr          = callbacksPtr;
+        fData->callbacksPtr = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
+        fData->requestParameterValueChangeCallbackFunc = requestParameterValueChangeCall;
     }
 
     ~PluginExporter()

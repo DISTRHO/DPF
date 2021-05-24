@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -106,6 +106,18 @@ void Plugin::setLatency(uint32_t frames) noexcept
 bool Plugin::writeMidiEvent(const MidiEvent& midiEvent) noexcept
 {
     return pData->writeMidiCallback(midiEvent);
+}
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+bool Plugin::canRequestParameterValueChanges() const noexcept
+{
+    return pData->requestParameterValueChangeCallbackFunc != nullptr;
+}
+
+bool Plugin::requestParameterValueChange(const uint32_t index, const float value) noexcept
+{
+    return pData->requestParameterValueChangeCallback(index, value);
 }
 #endif
 

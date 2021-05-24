@@ -488,20 +488,20 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_URI "urn:distrho:name"
 
 /**
-   Wherever the plugin has a custom %UI.
+   Whether the plugin has a custom %UI.
    @see DISTRHO_UI_USE_NANOVG
    @see UI
  */
 #define DISTRHO_PLUGIN_HAS_UI 1
 
 /**
-   Wherever the plugin processing is realtime-safe.@n
+   Whether the plugin processing is realtime-safe.@n
    TODO - list rtsafe requirements
  */
 #define DISTRHO_PLUGIN_IS_RT_SAFE 1
 
 /**
-   Wherever the plugin is a synth.@n
+   Whether the plugin is a synth.@n
    @ref DISTRHO_PLUGIN_WANT_MIDI_INPUT is automatically enabled when this is too.
    @see DISTRHO_PLUGIN_WANT_MIDI_INPUT
  */
@@ -516,39 +516,47 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0
 
 /**
-   Wherever the plugin introduces latency during audio or midi processing.
+   Whether the plugin introduces latency during audio or midi processing.
    @see Plugin::setLatency(uint32_t)
  */
 #define DISTRHO_PLUGIN_WANT_LATENCY 1
 
 /**
-   Wherever the plugin wants MIDI input.@n
+   Whether the plugin wants MIDI input.@n
    This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.
  */
 #define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1
 
 /**
-   Wherever the plugin wants MIDI output.
+   Whether the plugin wants MIDI output.
    @see Plugin::writeMidiEvent(const MidiEvent&)
  */
 #define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1
 
 /**
-   Wherever the plugin provides its own internal programs.
+   Whether the plugin wants to change its own parameter inputs.@n
+   Not all hosts or plugin formats support this,
+   so Plugin::canRequestParameterValueChanges() can be used to query support at runtime.
+   @see Plugin::requestParameterValueChange(uint32_t, float)
+ */
+#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 1
+
+/**
+   Whether the plugin provides its own internal programs.
    @see Plugin::initProgramName(uint32_t, String&)
    @see Plugin::loadProgram(uint32_t)
  */
 #define DISTRHO_PLUGIN_WANT_PROGRAMS 1
 
 /**
-   Wherever the plugin uses internal non-parameter data.
+   Whether the plugin uses internal non-parameter data.
    @see Plugin::initState(uint32_t, String&, String&)
    @see Plugin::setState(const char*, const char*)
  */
 #define DISTRHO_PLUGIN_WANT_STATE 1
 
 /**
-   Wherever the plugin implements the full state API.
+   Whether the plugin implements the full state API.
    When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project.
    This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters.
    Most simple effects and synths will not need this.
@@ -558,13 +566,13 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_FULL_STATE 1
 
 /**
-   Wherever the plugin wants time position information from the host.
+   Whether the plugin wants time position information from the host.
    @see Plugin::getTimePosition()
  */
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
 
 /**
-   Wherever the %UI uses a custom toolkit implementation based on OpenGL.@n
+   Whether the %UI uses a custom toolkit implementation based on OpenGL.@n
    When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.
  */
 #define DISTRHO_UI_USE_CUSTOM 1
@@ -586,13 +594,13 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_UI_CUSTOM_WIDGET_TYPE
 
 /**
-   Wherever the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
+   Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
    When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.
  */
 #define DISTRHO_UI_USE_NANOVG 1
 
 /**
-   Wherever the %UI is resizable to any size by the user.@n
+   Whether the %UI is resizable to any size by the user.@n
    By default this is false, and resizing is only allowed under the plugin UI control,@n
    Enabling this options makes it possible for the user to resize the plugin UI at anytime.
    @see UI::setGeometryConstraints(uint, uint, bool, bool)

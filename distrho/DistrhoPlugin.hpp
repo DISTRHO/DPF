@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -744,6 +744,22 @@ public:
       Returns false when the host buffer is full, in which case do not call this again until the next run().
     */
     bool writeMidiEvent(const MidiEvent& midiEvent) noexcept;
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+   /**
+      Check if parameter value change requests will work with the current plugin host.
+      @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.
+    */
+    bool canRequestParameterValueChanges() const noexcept;
+
+   /**
+      Request a parameter value change from the host.
+      This function can fail, for example if the host is busy with the parameter for read-only automation.
+      Some hosts simply do not have this functionality, which can be verified with canRequestParameterValueChanges().
+      @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.
+    */
+    bool requestParameterValueChange(uint32_t index, float value) noexcept;
 #endif
 
 protected:

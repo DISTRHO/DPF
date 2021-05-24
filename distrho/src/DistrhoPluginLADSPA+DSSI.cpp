@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,6 +16,9 @@
 
 #include "DistrhoPluginInternal.hpp"
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+# error Cannot use parameter value change request with LADSPA or DSSI
+#endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 # error Cannot use MIDI Output with LADSPA or DSSI
 #endif
@@ -47,7 +50,7 @@ class PluginLadspaDssi
 {
 public:
     PluginLadspaDssi()
-        : fPlugin(nullptr, nullptr),
+        : fPlugin(nullptr, nullptr, nullptr),
           fPortControls(nullptr),
           fLastControlValues(nullptr)
     {
@@ -550,7 +553,7 @@ static const struct DescriptorInitializer
         // Create dummy plugin to get data from
         d_lastBufferSize = 512;
         d_lastSampleRate = 44100.0;
-        const PluginExporter plugin(nullptr, nullptr);
+        const PluginExporter plugin(nullptr, nullptr, nullptr);
         d_lastBufferSize = 0;
         d_lastSampleRate = 0.0;
 

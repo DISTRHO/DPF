@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,10 @@
 # include <signal.h>
 #endif
 
+// TODO
+#undef DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 0
+
 // -----------------------------------------------------------------------
 
 START_NAMESPACE_DISTRHO
@@ -40,6 +44,9 @@ static const setStateFunc setStateCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
@@ -90,7 +97,7 @@ class PluginJack
 {
 public:
     PluginJack(jack_client_t* const client)
-        : fPlugin(this, writeMidiCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this, 0,
               nullptr, // edit param
@@ -472,18 +479,6 @@ protected:
     }
 #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    bool writeMidi(const MidiEvent& midiEvent)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fPortMidiOutBuffer != nullptr, false);
-
-        return jack_midi_event_write(fPortMidiOutBuffer,
-                                     midiEvent.frame,
-                                     midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
-                                     midiEvent.size) == 0;
-    }
-#endif
-
     // NOTE: no trigger support for JACK, simulate it here
     void updateParameterTriggers()
     {
@@ -584,7 +579,30 @@ private:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(const uint32_t index, const float value)
+    {
+        // TODO implementation
+        return false;
+    }
+
+    static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)
+    {
+        return thisPtr->requestParameterValueChange(index, value);
+    }
+#endif
+
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidi(const MidiEvent& midiEvent)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPortMidiOutBuffer != nullptr, false);
+
+        return jack_midi_event_write(fPortMidiOutBuffer,
+                                     midiEvent.frame,
+                                     midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
+                                     midiEvent.size) == 0;
+    }
+
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
     {
         return thisPtr->writeMidi(midiEvent);

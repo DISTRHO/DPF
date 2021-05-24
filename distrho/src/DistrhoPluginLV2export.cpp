@@ -226,7 +226,7 @@ void lv2_generate_ttl(const char* const basename)
     // Dummy plugin to get data from
     d_lastBufferSize = 512;
     d_lastSampleRate = 44100.0;
-    PluginExporter plugin(nullptr, nullptr);
+    PluginExporter plugin(nullptr, nullptr, nullptr);
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 

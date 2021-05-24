@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,6 +31,7 @@
 #include "lv2/worker.h"
 #include "lv2/lv2_kxstudio_properties.h"
 #include "lv2/lv2_programs.h"
+#include "lv2/control-input-port-change-request.h"
 
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
 # include "libmodla.h"
@@ -61,6 +62,9 @@ typedef std::map<const LV2_URID, String> UridToStringMap;
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -70,8 +74,9 @@ public:
     PluginLv2(const double sampleRate,
               const LV2_URID_Map* const uridMap,
               const LV2_Worker_Schedule* const worker,
+              const LV2_ControlInputPort_Change_Request* const ctrlInPortChangeReq,
               const bool usingNominal)
-        : fPlugin(this, writeMidiCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fUsingNominal(usingNominal),
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
           fRunCount(0),
@@ -81,7 +86,8 @@ public:
           fSampleRate(sampleRate),
           fURIDs(uridMap),
           fUridMap(uridMap),
-          fWorker(worker)
+          fWorker(worker),
+          fCtrlInPortChangeReq(ctrlInPortChangeReq)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -1174,6 +1180,7 @@ private:
     // LV2 features
     const LV2_URID_Map* const fUridMap;
     const LV2_Worker_Schedule* const fWorker;
+    const LV2_ControlInputPort_Change_Request* const fCtrlInPortChangeReq;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     StringToStringMap fStateMap;
@@ -1231,6 +1238,20 @@ private:
 #endif
     }
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(const uint32_t index, const float value)
+    {
+        if (fCtrlInPortChangeReq == nullptr)
+            return false;
+        return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle, index, value);
+    }
+
+    static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
+    {
+        return (((PluginLv2*)ptr)->requestParameterValueChange(index, value) == 0);
+    }
+#endif
+
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
@@ -1271,6 +1292,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     const LV2_Options_Option* options = nullptr;
     const LV2_URID_Map*       uridMap = nullptr;
     const LV2_Worker_Schedule* worker = nullptr;
+    const LV2_ControlInputPort_Change_Request* ctrlInPortChangeReq = nullptr;
 
     for (int i=0; features[i] != nullptr; ++i)
     {
@@ -1280,6 +1302,8 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
             uridMap = (const LV2_URID_Map*)features[i]->data;
         else if (std::strcmp(features[i]->URI, LV2_WORKER__schedule) == 0)
             worker = (const LV2_Worker_Schedule*)features[i]->data;
+        else if (std::strcmp(features[i]->URI, LV2_CONTROL_INPUT_PORT_CHANGE_REQUEST_URI) == 0)
+            ctrlInPortChangeReq = (const LV2_ControlInputPort_Change_Request*)features[i]->data;
     }
 
     if (options == nullptr)
@@ -1344,7 +1368,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
 
     d_lastSampleRate = sampleRate;
 
-    return new PluginLv2(sampleRate, uridMap, worker, usingNominal);
+    return new PluginLv2(sampleRate, uridMap, worker, ctrlInPortChangeReq, usingNominal);
 }
 
 #define instancePtr ((PluginLv2*)instance)
