@@ -528,7 +528,7 @@ struct MidiEvent {
    The @a playing and @a frame values are always valid.@n
    BBT values are only valid when @a bbt.valid is true.
 
-   This struct is inspired by the JACK Transport API.
+   This struct is inspired by the [JACK Transport API](https://jackaudio.org/api/structjack__position__t.html).
  */
 struct TimePosition {
    /**
