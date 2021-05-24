@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -608,11 +608,13 @@ void lv2_generate_ttl(const char* const basename)
 
                             pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
 
-                            if (plugin.getParameterHints(i) & kParameterIsInteger) {
-                                const int roundedValue = (int)(enumValue.value + 0.5f);
+                            if (plugin.getParameterHints(i) & kParameterIsInteger)
+                            {
+                                const int roundedValue = (int)(enumValue.value + enumValue.value < 0.0f ? -0.5f : 0.5f);
                                 pluginString += "            rdf:value " + String(roundedValue) + " ;\n";
                             }
-                            else {
+                            else
+                            {
                                 pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
                             }
 
