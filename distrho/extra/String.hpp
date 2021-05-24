@@ -651,14 +651,18 @@ public:
             "abcdefghijklmnopqrstuvwxyz"
             "0123456789+/";
 
+#ifndef _MSC_VER
         const std::size_t kTmpBufSize = std::min(d_nextPowerOf2(static_cast<uint32_t>(dataSize/3)), 65536U);
+#else
+        constexpr std::size_t kTmpBufSize = 65536U;
+#endif
 
         const uchar* bytesToEncode((const uchar*)data);
 
         uint i=0, j=0;
         uint charArray3[3], charArray4[4];
 
-        char strBuf[kTmpBufSize+1];
+        char strBuf[kTmpBufSize + 1];
         strBuf[kTmpBufSize] = '\0';
         std::size_t strBufIndex = 0;
 

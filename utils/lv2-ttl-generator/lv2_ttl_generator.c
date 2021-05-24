@@ -15,6 +15,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifdef _WIN32
@@ -30,6 +31,11 @@
 
 typedef void (*TTL_Generator_Function)(const char* basename);
 
+static int isPathSeparator(char c);
+static char* makeNormalPath(const char* path);
+
+// TODO support Unicode paths on the Windows platform
+
 int main(int argc, char* argv[])
 {
     if (argc != 2)
@@ -38,10 +44,12 @@ int main(int argc, char* argv[])
         return 1;
     }
 
+    const char* path = argv[1];
+
 #ifdef TTL_GENERATOR_WINDOWS
-    const HMODULE handle = LoadLibraryA(argv[1]);
+    const HMODULE handle = LoadLibraryA(path);
 #else
-    void* const handle = dlopen(argv[1], RTLD_LAZY);
+    void* const handle = dlopen(path, RTLD_LAZY);
 #endif
 
     if (! handle)
@@ -62,31 +70,32 @@ int main(int argc, char* argv[])
 
     if (ttlFn != NULL)
     {
-        char basename[strlen(argv[1])+1];
+        // convert the paths to a normalized form, such that path separators are
+        // replaced with '/', and duplicate separators are removed
+        char* normalPath = makeNormalPath(path);
 
-#ifdef TTL_GENERATOR_WINDOWS
-        char* base2 = strrchr(argv[1], '\\');
-#else
-        char* base2 = strrchr(argv[1], '/');
-#endif
-        if (base2 != NULL)
-        {
-            strcpy(basename, base2+1);
-            basename[strrchr(base2, '.')-base2-1] = '\0';
-        }
-        else if (argv[1][0] == '.' && argv[1][1] == '/')
-        {
-            strcpy(basename, argv[1]+2);
-            basename[strrchr(basename, '.')-basename] = '\0';
-        }
+        // get rid of any "./" prefixes
+        path = normalPath;
+        while (path[0] == '.' && path[1] == '/')
+            path += 2;
+
+        // extract the file name part
+        char* basename = strrchr(path, '/');
+        if (basename != NULL)
+            basename += 1;
         else
-        {
-            strcpy(basename, argv[1]);
-        }
+            basename = (char*)path;
 
-        printf("Generate ttl data for '%s', basename: '%s'\n", argv[1], basename);
+        // remove the file extension
+        char* dotPos = strrchr(basename, '.');
+        if (dotPos)
+            *dotPos = '\0';
+
+        printf("Generate ttl data for '%s', basename: '%s'\n", path, basename);
 
         ttlFn(basename);
+
+        free(normalPath);
     }
     else
         printf("Failed to find 'lv2_generate_ttl' function\n");
@@ -98,4 +107,32 @@ int main(int argc, char* argv[])
 #endif
 
     return 0;
+}
+
+static int isPathSeparator(char c)
+{
+#ifdef TTL_GENERATOR_WINDOWS
+    return c == '/' || c == '\\';
+#else
+    return c == '/';
+#endif
+}
+
+static char* makeNormalPath(const char* path)
+{
+    size_t i, j;
+    size_t len = strlen(path);
+    char* result = (char*)malloc(len + 1);
+    int isSep, wasSep = 0;
+    for (i = 0, j = 0; i < len; ++i)
+    {
+        isSep = isPathSeparator(path[i]);
+        if (!isSep)
+            result[j++] = path[i];
+        else if (!wasSep)
+            result[j++] = '/';
+        wasSep = isSep;
+    }
+    result[j] = '\0';
+    return result;
 }
