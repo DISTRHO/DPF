@@ -30,6 +30,14 @@
 extern "C" {
 #endif
 
+#ifndef LADSPA_PLUGIN_EXPORT
+#   ifdef _WIN32
+#       define LADSPA_PLUGIN_EXPORT __declspec(dllexport)
+#   else
+#       define LADSPA_PLUGIN_EXPORT __attribute__((visibility("default")))
+#   endif
+#endif
+
 /*****************************************************************************/
 
 /* Overview: 
@@ -586,7 +594,7 @@ typedef struct _LADSPA_Descriptor {
    returning NULL, so the plugin count can be determined by checking
    for the least index that results in NULL being returned. */
 
-const LADSPA_Descriptor * ladspa_descriptor(unsigned long Index);
+LADSPA_PLUGIN_EXPORT const LADSPA_Descriptor * ladspa_descriptor(unsigned long Index);
 
 /* Datatype corresponding to the ladspa_descriptor() function. */
 typedef const LADSPA_Descriptor * 

@@ -293,7 +293,8 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
     COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR}
     "$<TARGET_FILE:lv2_ttl_generator>"
     "$<TARGET_FILE:${NAME}-lv2>"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2")
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2"
+    DEPENDS lv2_ttl_generator)
 endfunction()
 
 # dpf__build_vst2
@@ -488,6 +489,22 @@ function(dpf__add_dgl_system_libs)
     #  target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_XCURSOR")
     #endif()
    endif()
+
+   if(MSVC)
+     file(MAKE_DIRECTORY "${DPF_ROOT_DIR}/khronos/GL")
+     foreach(_gl_header "glext.h")
+       if(NOT EXISTS "${DPF_ROOT_DIR}/khronos/GL/${_gl_header}")
+         file(DOWNLOAD "https://www.khronos.org/registry/OpenGL/api/GL/${_gl_header}" "${DPF_ROOT_DIR}/khronos/GL/${_gl_header}" SHOW_PROGRESS)
+       endif()
+     endforeach()
+     foreach(_khr_header "khrplatform.h")
+       if(NOT EXISTS "${DPF_ROOT_DIR}/khronos/KHR/${_khr_header}")
+         file(DOWNLOAD "https://www.khronos.org/registry/EGL/api/KHR/${_khr_header}" "${DPF_ROOT_DIR}/khronos/KHR/${_khr_header}" SHOW_PROGRESS)
+       endif()
+     endforeach()
+     target_include_directories(dgl-system-libs-definitions INTERFACE "${DPF_ROOT_DIR}/khronos")
+   endif()
+
   target_link_libraries(dgl-system-libs INTERFACE dgl-system-libs-definitions)
 endfunction()
 
@@ -498,14 +515,7 @@ endfunction()
 #
 function(dpf__add_executable NAME)
   add_executable("${NAME}" ${ARGN})
-  set_target_properties("${NAME}" PROPERTIES
-    POSITION_INDEPENDENT_CODE TRUE
-    C_VISIBILITY_PRESET "hidden"
-    CXX_VISIBILITY_PRESET "hidden"
-    VISIBILITY_INLINES_HIDDEN TRUE)
-  if (MINGW)
-    target_compile_options("${NAME}" PUBLIC "-mstackrealign")
-  endif()
+  dpf__set_target_defaults("${NAME}")
 endfunction()
 
 # dpf__add_module
@@ -515,17 +525,7 @@ endfunction()
 #
 function(dpf__add_module NAME)
   add_library("${NAME}" MODULE ${ARGN})
-  set_target_properties("${NAME}" PROPERTIES
-    POSITION_INDEPENDENT_CODE TRUE
-    C_VISIBILITY_PRESET "hidden"
-    CXX_VISIBILITY_PRESET "hidden"
-    VISIBILITY_INLINES_HIDDEN TRUE)
-  if ((NOT WIN32 AND NOT APPLE) OR MINGW)
-    target_link_libraries("${NAME}" PRIVATE "-Wl,--no-undefined")
-  endif()
-  if (MINGW)
-    target_compile_options("${NAME}" PUBLIC "-mstackrealign")
-  endif()
+  dpf__set_target_defaults("${NAME}")
 endfunction()
 
 # dpf__add_static_library
@@ -535,13 +535,29 @@ endfunction()
 #
 function(dpf__add_static_library NAME)
   add_library("${NAME}" STATIC ${ARGN})
+  dpf__set_target_defaults("${NAME}")
+endfunction()
+
+# dpf__set_target_defaults
+# ------------------------------------------------------------------------------
+#
+# Set default properties which must apply to all DPF-defined targets.
+#
+function(dpf__set_target_defaults NAME)
   set_target_properties("${NAME}" PROPERTIES
     POSITION_INDEPENDENT_CODE TRUE
     C_VISIBILITY_PRESET "hidden"
     CXX_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN TRUE)
+  if(WIN32)
+    target_compile_definitions("${NAME}" PUBLIC "NOMINMAX")
+  endif()
   if (MINGW)
     target_compile_options("${NAME}" PUBLIC "-mstackrealign")
+  endif()
+  if (MSVC)
+    target_compile_options("${NAME}" PUBLIC "/UTF-8")
+    target_compile_definitions("${NAME}" PUBLIC "_CRT_SECURE_NO_WARNINGS")
   endif()
 endfunction()
 
@@ -597,7 +613,7 @@ function(dpf__add_lv2_ttl_generator)
     return()
   endif()
   add_executable(lv2_ttl_generator "${DPF_ROOT_DIR}/utils/lv2-ttl-generator/lv2_ttl_generator.c")
-  if(NOT WINDOWS AND NOT APPLE AND NOT HAIKU)
+  if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
     target_link_libraries(lv2_ttl_generator "dl")
   endif()
 endfunction()

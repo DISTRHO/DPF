@@ -289,7 +289,7 @@ protected:
 
         // reserve atom space
         const size_t atomSize = sizeof(LV2_Atom) + msgSize;
-        char         atomBuf[atomSize];
+        char*        atomBuf = (char*)alloca(atomSize);
         std::memset(atomBuf, 0, atomSize);
 
         // set atom info

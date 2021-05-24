@@ -22,6 +22,11 @@
 
 #include <algorithm>
 
+#if defined(_MSC_VER)
+#include <basetsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -658,7 +663,7 @@ public:
         uint i=0, j=0;
         uint charArray3[3], charArray4[4];
 
-        char strBuf[kTmpBufSize+1];
+        char* strBuf = (char*)malloc(kTmpBufSize + 1);
         strBuf[kTmpBufSize] = '\0';
         std::size_t strBufIndex = 0;
 
@@ -711,6 +716,8 @@ public:
             strBuf[strBufIndex] = '\0';
             ret += strBuf;
         }
+
+        free(strBuf);
 
         return ret;
     }

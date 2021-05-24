@@ -74,7 +74,7 @@
 #if defined(__GNUC__)
 # define DISTRHO_DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
-# define DISTRHO_DEPRECATED __declspec(deprecated)
+# define DISTRHO_DEPRECATED [[deprecated]] // Note: __declspec(deprecated) it not applicable to enum members
 #else
 # define DISTRHO_DEPRECATED
 #endif
