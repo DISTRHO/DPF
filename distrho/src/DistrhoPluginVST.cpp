@@ -1286,6 +1286,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         // set valid but dummy values
         d_lastBufferSize = 512;
         d_lastSampleRate = 44100.0;
+        d_lastCanRequestParameterValueChanges = true;
     }
 
     // Create dummy plugin to get data from
@@ -1296,6 +1297,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         // unset
         d_lastBufferSize = 0;
         d_lastSampleRate = 0.0;
+        d_lastCanRequestParameterValueChanges = false;
 
         *(PluginExporter**)ptr = &plugin;
         return 0;
@@ -1317,6 +1319,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
             d_lastBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
             d_lastSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+            d_lastCanRequestParameterValueChanges = true;
 
             // some hosts are not ready at this point or return 0 buffersize/samplerate
             if (d_lastBufferSize == 0)

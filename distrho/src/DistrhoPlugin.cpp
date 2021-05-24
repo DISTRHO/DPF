@@ -23,6 +23,7 @@ START_NAMESPACE_DISTRHO
 
 uint32_t d_lastBufferSize = 0;
 double   d_lastSampleRate = 0.0;
+bool     d_lastCanRequestParameterValueChanges = false;
 
 /* ------------------------------------------------------------------------------------------------------------
  * Static fallback data, see DistrhoPluginInternal.hpp */
@@ -112,7 +113,7 @@ bool Plugin::writeMidiEvent(const MidiEvent& midiEvent) noexcept
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 bool Plugin::canRequestParameterValueChanges() const noexcept
 {
-    return pData->requestParameterValueChangeCallbackFunc != nullptr;
+    return pData->canRequestParameterValueChanges;
 }
 
 bool Plugin::requestParameterValueChange(const uint32_t index, const float value) noexcept

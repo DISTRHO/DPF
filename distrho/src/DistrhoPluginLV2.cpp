@@ -1367,6 +1367,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     }
 
     d_lastSampleRate = sampleRate;
+    d_lastCanRequestParameterValueChanges = ctrlInPortChangeReq != nullptr;
 
     return new PluginLv2(sampleRate, uridMap, worker, ctrlInPortChangeReq, usingNominal);
 }

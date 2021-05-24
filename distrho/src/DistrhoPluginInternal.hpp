@@ -31,6 +31,7 @@ static const uint32_t kMaxMidiEvents = 512;
 
 extern uint32_t d_lastBufferSize;
 extern double   d_lastSampleRate;
+extern bool     d_lastCanRequestParameterValueChanges;
 
 // -----------------------------------------------------------------------
 // DSP callbacks
@@ -78,6 +79,7 @@ struct Plugin::PrivateData {
 
     uint32_t bufferSize;
     double   sampleRate;
+    bool     canRequestParameterValueChanges;
 
     PrivateData() noexcept
         : isProcessing(false),
@@ -103,7 +105,8 @@ struct Plugin::PrivateData {
           writeMidiCallbackFunc(nullptr),
           requestParameterValueChangeCallbackFunc(nullptr),
           bufferSize(d_lastBufferSize),
-          sampleRate(d_lastSampleRate)
+          sampleRate(d_lastSampleRate),
+          canRequestParameterValueChanges(d_lastCanRequestParameterValueChanges)
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
