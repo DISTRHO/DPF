@@ -426,6 +426,7 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
     return puglStopTimer(view, (uintptr_t)callback) == PUGL_SUCCESS;
 }
 
+#ifndef DGL_FILE_BROWSER_DISABLED
 // -----------------------------------------------------------------------
 // file handling
 
@@ -536,6 +537,7 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 
     return false;
 }
+#endif
 
 // -----------------------------------------------------------------------
 // modal handling

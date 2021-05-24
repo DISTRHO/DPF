@@ -143,8 +143,10 @@ struct Window::PrivateData : IdleCallback {
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs);
     bool removeIdleCallback(IdleCallback* callback);
 
+#ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
     bool openFileBrowser(const Window::FileBrowserOptions& options);
+#endif
 
     // modal handling
     void startModal();
