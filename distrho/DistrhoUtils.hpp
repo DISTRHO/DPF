@@ -94,12 +94,12 @@ static inline
 void d_debug(const char* const fmt, ...) noexcept
 {
     try {
-        ::va_list args;
-        ::va_start(args, fmt);
+        va_list args;
+        va_start(args, fmt);
         std::fprintf(stdout, "\x1b[30;1m");
         std::vfprintf(stdout, fmt, args);
         std::fprintf(stdout, "\x1b[0m\n");
-        ::va_end(args);
+        va_end(args);
     } catch (...) {}
 }
 #endif
@@ -111,11 +111,11 @@ static inline
 void d_stdout(const char* const fmt, ...) noexcept
 {
     try {
-        ::va_list args;
-        ::va_start(args, fmt);
+        va_list args;
+        va_start(args, fmt);
         std::vfprintf(stdout, fmt, args);
         std::fprintf(stdout, "\n");
-        ::va_end(args);
+        va_end(args);
     } catch (...) {}
 }
 
@@ -126,11 +126,11 @@ static inline
 void d_stderr(const char* const fmt, ...) noexcept
 {
     try {
-        ::va_list args;
-        ::va_start(args, fmt);
+        va_list args;
+        va_start(args, fmt);
         std::vfprintf(stderr, fmt, args);
         std::fprintf(stderr, "\n");
-        ::va_end(args);
+        va_end(args);
     } catch (...) {}
 }
 
@@ -141,12 +141,12 @@ static inline
 void d_stderr2(const char* const fmt, ...) noexcept
 {
     try {
-        ::va_list args;
-        ::va_start(args, fmt);
+        va_list args;
+        va_start(args, fmt);
         std::fprintf(stderr, "\x1b[31m");
         std::vfprintf(stderr, fmt, args);
         std::fprintf(stderr, "\x1b[0m\n");
-        ::va_end(args);
+        va_end(args);
     } catch (...) {}
 }
 
