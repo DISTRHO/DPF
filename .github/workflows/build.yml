@@ -14,7 +14,7 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build_for_linux:
+  cmake_linux:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
@@ -40,9 +40,45 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       run: |
         cmake "$GITHUB_WORKSPACE" -G Ninja \
-          -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
-          -DDPF_EXAMPLES=ON
+          -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
     - name: Build all
       shell: bash
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config "$BUILD_TYPE" -j 2
+    - name: Display built files
+      shell: bash
+      working-directory: ${{runner.workspace}}/build/bin
+      run: ls -lFR
+    - uses: actions/upload-artifact@v2
+      with:
+        name: Linux artifacts
+        path: ${{runner.workspace}}/build/bin/
+
+  cmake_macos:
+    runs-on: macos-10.15
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Create Build Environment
+      shell: bash
+      working-directory: ${{runner.workspace}}
+      run: cmake -E make_directory build
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: |
+        cmake "$GITHUB_WORKSPACE" \
+          -DCMAKE_BUILD_TYPE="$BUILD_TYPE"
+    - name: Build all
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake --build . --config "$BUILD_TYPE" -j 2
+    - name: Display built files
+      shell: bash
+      working-directory: ${{runner.workspace}}/build/bin
+      run: ls -lFR
+    - uses: actions/upload-artifact@v2
+      with:
+        name: macOS artifacts
+        path: ${{runner.workspace}}/build/bin/
