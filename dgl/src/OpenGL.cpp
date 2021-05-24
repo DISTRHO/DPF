@@ -14,6 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef _MSC_VER
+// instantiated template classes whose methods are defined elsewhere
+# pragma warning(disable:4661)
+#endif
+
 #include "../OpenGL.hpp"
 #include "../Color.hpp"
 #include "../ImageWidgets.hpp"
