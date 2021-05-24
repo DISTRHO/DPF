@@ -32,8 +32,9 @@ public:
         // clear all parameters
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
 
-        // we can know buffer-size right at the start
+        // we can know some things right at the start
         fParameters[kParameterBufferSize] = getBufferSize();
+        fParameters[kParameterCanRequestParameterValueChanges] = canRequestParameterValueChanges();
     }
 
 protected:
@@ -119,11 +120,16 @@ protected:
             parameter.name   = "BufferSize";
             parameter.symbol = "buffer_size";
             break;
-        case kParameterTimePlaying:
+        case kParameterCanRequestParameterValueChanges:
+            parameter.name   = "Parameter Changes";
+            parameter.symbol = "parameter_changes";
             parameter.hints |= kParameterIsBoolean;
+            parameter.ranges.max = 1.0f;
+            break;
+        case kParameterTimePlaying:
             parameter.name   = "TimePlaying";
             parameter.symbol = "time_playing";
-            parameter.ranges.min = 0.0f;
+            parameter.hints |= kParameterIsBoolean;
             parameter.ranges.max = 1.0f;
             break;
         case kParameterTimeFrame:
@@ -131,10 +137,9 @@ protected:
             parameter.symbol = "time_frame";
             break;
         case kParameterTimeValidBBT:
-            parameter.hints |= kParameterIsBoolean;
             parameter.name   = "TimeValidBBT";
             parameter.symbol = "time_validbbt";
-            parameter.ranges.min = 0.0f;
+            parameter.hints |= kParameterIsBoolean;
             parameter.ranges.max = 1.0f;
             break;
         case kParameterTimeBar:

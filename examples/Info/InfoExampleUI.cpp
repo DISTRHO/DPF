@@ -26,15 +26,17 @@ START_NAMESPACE_DISTRHO
 
 class InfoExampleUI : public UI
 {
+    static const uint kInitialWidth = 405;
+    static const uint kInitialHeight = 256;
+
 public:
     InfoExampleUI()
-        : UI(405, 256),
+        : UI(kInitialWidth, kInitialHeight),
+          fSampleRate(getSampleRate()),
           fScale(1.0f)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
         std::memset(fStrBuf, 0, sizeof(char)*(0xff+1));
-
-        fSampleRate = getSampleRate();
 
 #ifdef DGL_NO_SHARED_RESOURCES
         createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
@@ -42,7 +44,7 @@ public:
         loadSharedResources();
 #endif
 
-        setGeometryConstraints(405, 256, true);
+        setGeometryConstraints(kInitialWidth, kInitialHeight, true);
     }
 
 protected:
@@ -97,7 +99,7 @@ protected:
         drawRight(x, y, getTextBufFloat(fSampleRate));
         y+=lineHeight;
 
-        // nothing
+        // separator
         y+=lineHeight;
 
         // time stuff
@@ -111,6 +113,14 @@ protected:
 
         drawLeft(x, y, "Time:");
         drawRight(x, y, getTextBufTime(fParameters[kParameterTimeFrame]));
+        y+=lineHeight;
+
+        // separator
+        y+=lineHeight;
+
+        // param changes
+        drawLeft(x, y, "Param Changes:", 20);
+        drawRight(x, y, (fParameters[kParameterCanRequestParameterValueChanges] > 0.5f) ? "Yes" : "No", 40);
         y+=lineHeight;
 
         // BBT
@@ -134,7 +144,7 @@ protected:
         y+=lineHeight;
 
         drawLeft(x, y, "Tick:");
-        drawRight(x, y, getTextBufInt(fParameters[kParameterTimeTick]));
+        drawRight(x, y, getTextBufFloatExtra(fParameters[kParameterTimeTick]));
         y+=lineHeight;
 
         drawLeft(x, y, "Bar Start Tick:");
@@ -161,7 +171,7 @@ protected:
 
     void onResize(const ResizeEvent& ev) override
     {
-        fScale = static_cast<float>(ev.size.getHeight())/256.0f;
+        fScale = static_cast<float>(ev.size.getHeight())/static_cast<float>(kInitialHeight);
 
         UI::onResize(ev);
     }
@@ -192,6 +202,12 @@ private:
         return fStrBuf;
     }
 
+    const char* getTextBufFloatExtra(const float value)
+    {
+        std::snprintf(fStrBuf, 0xff, "%.2f", value + 0.001f);
+        return fStrBuf;
+    }
+
     const char* getTextBufTime(const uint64_t frame)
     {
         const uint32_t time = frame / uint64_t(fSampleRate);
@@ -203,21 +219,25 @@ private:
     }
 
     // helpers for drawing text
-    void drawLeft(const float x, const float y, const char* const text)
+    void drawLeft(float x, const float y, const char* const text, const int offset = 0)
     {
+        const float width = (100.0f + offset) * fScale;
+        x += offset * fScale;
         beginPath();
         fillColor(200, 200, 200);
         textAlign(ALIGN_RIGHT|ALIGN_TOP);
-        textBox(x, y, 100 * fScale, text);
+        textBox(x, y, width, text);
         closePath();
     }
 
-    void drawRight(const float x, const float y, const char* const text)
+    void drawRight(float x, const float y, const char* const text, const int offset = 0)
     {
+        const float width = (100.0f + offset) * fScale;
+        x += offset * fScale;
         beginPath();
         fillColor(255, 255, 255);
         textAlign(ALIGN_LEFT|ALIGN_TOP);
-        textBox(x + (105 * fScale), y, 100 * fScale, text);
+        textBox(x + (105 * fScale), y, width, text);
         closePath();
     }
 
