@@ -135,6 +135,8 @@ function(dpf_add_plugin NAME)
   if(_dgl_library)
     dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})
     target_link_libraries("${NAME}-ui" PUBLIC "${NAME}" ${_dgl_library})
+    # add the files containing Objective-C classes, recompiled under namespace
+    dpf__add_plugin_specific_ui_sources("${NAME}-ui")
   else()
     add_library("${NAME}-ui" INTERFACE)
   endif()
@@ -347,13 +349,13 @@ function(dpf__add_dgl_cairo)
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else()
-    target_sources(dgl-cairo PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
+    #target_sources(dgl-opengl PRIVATE
+    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl")
-  target_include_directories(dgl-cairo PRIVATE
+  target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
 
   dpf__add_dgl_system_libs()
@@ -403,14 +405,18 @@ function(dpf__add_dgl_opengl)
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else()
-    target_sources(dgl-opengl PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
+    #target_sources(dgl-opengl PRIVATE
+    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl")
-  target_include_directories(dgl-opengl PRIVATE
+  target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-opengl PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
@@ -420,6 +426,25 @@ function(dpf__add_dgl_opengl)
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_plugin_specific_ui_sources
+# ------------------------------------------------------------------------------
+#
+# Compile plugin-specific UI sources into the target designated by the given
+# name. There are some special considerations here:
+# - On most platforms, sources can be compiled only once, as part of DGL;
+# - On macOS, for any sources which define Objective-C interfaces, these must
+#   be recompiled for each plugin under a unique namespace. In this case, the
+#   name must be a plugin-specific identifier, and it will be used for computing
+#   the unique ID along with the project version.
+function(dpf__add_plugin_specific_ui_sources NAME)
+  if(APPLE)
+    target_sources("${NAME}" PRIVATE
+      "${DPF_ROOT_DIR}/distrho/DistrhoUI_macOS.mm")
+    string(SHA256 _hash "${NAME}:${PROJECT_VERSION}")
+    target_compile_definitions("${NAME}" PUBLIC "PUGL_NAMESPACE=${_hash}")
+  endif()
 endfunction()
 
 # dpf__add_dgl_system_libs
@@ -439,7 +464,8 @@ function(dpf__add_dgl_system_libs)
     target_link_libraries(dgl-system-libs INTERFACE "gdi32" "comdlg32")
   elseif(APPLE)
     find_library(APPLE_COCOA_FRAMEWORK "Cocoa")
-    target_link_libraries(dgl-system-libs INTERFACE "${APPLE_COCOA_FRAMEWORK}")
+    find_library(APPLE_COREVIDEO_FRAMEWORK "CoreVideo")
+    target_link_libraries(dgl-system-libs INTERFACE "${APPLE_COCOA_FRAMEWORK}" "${APPLE_COREVIDEO_FRAMEWORK}")
   else()
     find_package(X11 REQUIRED)
     target_include_directories(dgl-system-libs INTERFACE "${X11_INCLUDE_DIR}")
