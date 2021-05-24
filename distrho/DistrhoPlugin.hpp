@@ -336,7 +336,7 @@ struct ParameterEnumerationValues {
 
    /**
       Array of @ParameterEnumerationValue items.@n
-      This pointer must be null or have been allocated on the heap with `new`.
+      This pointer must be null or have been allocated on the heap with `new ParameterEnumerationValue[count]`.
     */
     const ParameterEnumerationValue* values;
 
@@ -750,6 +750,7 @@ public:
    /**
       Check if parameter value change requests will work with the current plugin host.
       @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.
+      @see requestParameterValueChange(uint32_t, float)
     */
     bool canRequestParameterValueChanges() const noexcept;
 
