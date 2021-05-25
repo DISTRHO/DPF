@@ -46,12 +46,12 @@ public:
 
     uint32_t getVersion() const
     {
-        return 0;
+        return d_version(1, 0, 0);
     }
 
     int64_t getUniqueId() const
     {
-        return 0;
+        return d_cconst('d', 'C', 'a', 'i');
     }
 
     void initParameter(uint32_t index, Parameter& parameter)
