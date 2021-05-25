@@ -366,7 +366,12 @@ function(dpf__add_dgl_cairo)
   target_compile_definitions(dgl-cairo-definitions INTERFACE "DGL_CAIRO" "HAVE_CAIRO")
 
   target_include_directories(dgl-cairo PUBLIC ${CAIRO_INCLUDE_DIRS})
-  target_link_libraries(dgl-cairo PRIVATE dgl-cairo-definitions ${CAIRO_LIBRARIES})
+  if(MINGW)
+    target_link_libraries(dgl-cairo PRIVATE ${CAIRO_STATIC_LIBRARIES})
+  else()
+    target_link_libraries(dgl-cairo PRIVATE ${CAIRO_LIBRARIES})
+  endif()
+  target_link_libraries(dgl-cairo PRIVATE dgl-cairo-definitions)
 endfunction()
 
 # dpf__add_dgl_opengl
@@ -516,6 +521,9 @@ endfunction()
 function(dpf__add_executable NAME)
   add_executable("${NAME}" ${ARGN})
   dpf__set_target_defaults("${NAME}")
+  if(MINGW)
+    target_link_libraries("${NAME}" PRIVATE "-static")
+  endif()
 endfunction()
 
 # dpf__add_module
@@ -526,6 +534,9 @@ endfunction()
 function(dpf__add_module NAME)
   add_library("${NAME}" MODULE ${ARGN})
   dpf__set_target_defaults("${NAME}")
+  if(MINGW)
+    target_link_libraries("${NAME}" PRIVATE "-static")
+  endif()
 endfunction()
 
 # dpf__add_static_library
