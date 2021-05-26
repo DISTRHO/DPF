@@ -503,7 +503,6 @@ public:
 
     // -------------------------------------------------------------------
 
-protected:
     /*
      * Tie this ring buffer control to a ring buffer struct, optionally clearing its data.
      */
@@ -519,6 +518,7 @@ protected:
 
     // -------------------------------------------------------------------
 
+protected:
     /** @internal try reading from the buffer, can fail. */
     bool tryRead(void* const buf, const uint32_t size) noexcept
     {

@@ -27,6 +27,7 @@
 # define DISTRHO_UI_USER_RESIZABLE 0
 # define DISTRHO_UI_IS_STANDALONE false
 # include "DistrhoUIInternal.hpp"
+# include "../extra/RingBuffer.hpp"
 #endif
 
 #ifndef __cdecl
@@ -110,27 +111,44 @@ void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
 
 // -----------------------------------------------------------------------
 
-struct ParameterCheckHelper
+struct ParameterAndNotesHelper
 {
-    bool* parameterChecks;
     float* parameterValues;
+#if DISTRHO_PLUGIN_HAS_UI
+    bool* parameterChecks;
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    SmallStackBuffer notesRingBuffer;
+# endif
+#endif
 
-    ParameterCheckHelper()
-        : parameterChecks(nullptr),
-          parameterValues(nullptr) {}
-
-    virtual ~ParameterCheckHelper()
+    ParameterAndNotesHelper()
+        : parameterValues(nullptr)
+#if DISTRHO_PLUGIN_HAS_UI
+        , parameterChecks(nullptr)
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , notesRingBuffer(StackBuffer_INIT)
+# endif
+#endif
     {
-        if (parameterChecks != nullptr)
-        {
-            delete[] parameterChecks;
-            parameterChecks = nullptr;
-        }
+#ifndef DISTRHO_PROPER_CPP11_SUPPORT
+        std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
+#endif
+    }
+
+    virtual ~ParameterAndNotesHelper()
+    {
         if (parameterValues != nullptr)
         {
             delete[] parameterValues;
             parameterValues = nullptr;
         }
+#if DISTRHO_PLUGIN_HAS_UI
+        if (parameterChecks != nullptr)
+        {
+            delete[] parameterChecks;
+            parameterChecks = nullptr;
+        }
+#endif
     }
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -141,12 +159,19 @@ struct ParameterCheckHelper
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
 
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static const setStateFunc setStateCallback = nullptr;
+#endif
+
 class UIVst
 {
 public:
     UIVst(const audioMasterCallback audioMaster,
           AEffect* const effect,
-          ParameterCheckHelper* const uiHelper,
+          ParameterAndNotesHelper* const uiHelper,
           PluginExporter* const plugin,
           const intptr_t winId, const float scaleFactor)
         : fAudioMaster(audioMaster),
@@ -162,9 +187,17 @@ public:
               nullptr, // TODO file request
               nullptr,
               plugin->getInstancePointer(),
-              scaleFactor),
-          fKeyboardModifiers(0)
+              scaleFactor)
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        , fKeyboardModifiers(0)
+# endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , fNotesRingBuffer()
+# endif
     {
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
+# endif
     }
 
     // -------------------------------------------------------------------
@@ -352,45 +385,46 @@ protected:
         hostCallback(audioMasterAutomate, index, 0, nullptr, perValue);
     }
 
-    void setState(const char* const key, const char* const value)
-    {
-# if DISTRHO_PLUGIN_WANT_STATE
-        fUiHelper->setStateFromUI(key, value);
-# else
-        return; // unused
-        (void)key;
-        (void)value;
-# endif
-    }
-
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-# if 0 //DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        // TODO
-# else
-        return; // unused
-        (void)channel;
-        (void)note;
-        (void)velocity;
-# endif
-    }
-
     void setSize(const uint width, const uint height)
     {
         fUI.setWindowSize(width, height);
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fNotesRingBuffer.writeCustomData(midiData, 3);
+        fNotesRingBuffer.commitWrite();
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        fUiHelper->setStateFromUI(key, value);
+    }
+# endif
+
 private:
     // Vst stuff
     const audioMasterCallback fAudioMaster;
     AEffect* const fEffect;
-    ParameterCheckHelper* const fUiHelper;
+    ParameterAndNotesHelper* const fUiHelper;
     PluginExporter* const fPlugin;
 
     // Plugin UI
     UIExporter fUI;
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     uint16_t fKeyboardModifiers;
+# endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
+# endif
 
     // -------------------------------------------------------------------
     // Callbacks
@@ -407,28 +441,32 @@ private:
         handlePtr->setParameterValue(rindex, value);
     }
 
-    static void setStateCallback(void* ptr, const char* key, const char* value)
-    {
-        handlePtr->setState(key, value);
-    }
-
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
-    {
-        handlePtr->sendNote(channel, note, velocity);
-    }
-
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
         handlePtr->setSize(width, height);
     }
 
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+        handlePtr->sendNote(channel, note, velocity);
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        handlePtr->setState(key, value);
+    }
+# endif
+
     #undef handlePtr
 };
-#endif
+#endif // DISTRHO_PLUGIN_HAS_UI
 
 // -----------------------------------------------------------------------
 
-class PluginVst : public ParameterCheckHelper
+class PluginVst : public ParameterAndNotesHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
@@ -438,6 +476,16 @@ public:
     {
         std::memset(fProgramName, 0, sizeof(char)*(32+1));
         std::strcpy(fProgramName, "Default");
+
+        const uint32_t parameterCount = fPlugin.getParameterCount();
+
+        if (parameterCount != 0)
+        {
+            parameterValues = new float[parameterCount];
+
+            for (uint32_t i=0; i < parameterCount; ++i)
+                parameterValues[i] = NAN;
+        }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fMidiEventCount = 0;
@@ -451,17 +499,12 @@ public:
         fVstRect.right   = 0;
         fLastScaleFactor = 1.0f;
 
-        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        if (parameterCount != 0)
         {
-            parameterChecks = new bool[paramCount];
-            parameterValues = new float[paramCount];
-
-            for (uint32_t i=0; i < paramCount; ++i)
-            {
-                parameterChecks[i] = false;
-                parameterValues[i] = NAN;
-            }
+            parameterChecks = new bool[parameterCount];
+            memset(parameterChecks, 0, sizeof(bool)*parameterCount);
         }
+
 # if DISTRHO_OS_MAC
 #  ifdef __LP64__
         fUsingNsView = true;
@@ -472,6 +515,10 @@ public:
         fUsingNsView = false;
 #  endif
 # endif // DISTRHO_OS_MAC
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&notesRingBuffer, true);
+# endif
 #endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -1066,6 +1113,28 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# if DISTRHO_PLUGIN_HAS_UI
+        if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            uint32_t frame = fMidiEventCount != 0 ? fMidiEvents[fMidiEventCount-1].frame : 0;
+
+            while (fNotesRingBuffer.isDataAvailableForReading())
+            {
+                if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                    break;
+
+                MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+                midiEvent.frame = frame;
+                midiEvent.size  = 3;
+                std::memcpy(midiEvent.data, midiData, 3);
+
+                if (fMidiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
+# endif
+
         fPlugin.run(inputs, outputs, sampleFrames, fMidiEvents, fMidiEventCount);
         fMidiEventCount = 0;
 #else
@@ -1106,6 +1175,9 @@ private:
     float  fLastScaleFactor;
 # if DISTRHO_OS_MAC
     bool fUsingNsView;
+# endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
 # endif
 #endif
 
