@@ -152,9 +152,8 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
    /**
-      sendNote.
-      @TODO Document this.
-      @note Work in progress. Implemented for DSSI and LV2 formats.
+      Send a single MIDI note from the UI to the plugin DSP side.@n
+      A note with zero velocity will be sent as note-off (MIDI 0x80), otherwise note-on (MIDI 0x90).
     */
     void sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
 #endif
