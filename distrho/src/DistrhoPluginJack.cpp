@@ -19,6 +19,7 @@
 #if DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_UI_IS_STANDALONE true
 # include "DistrhoUIInternal.hpp"
+# include "../extra/RingBuffer.hpp"
 #else
 # include "../extra/Sleep.hpp"
 #endif
@@ -31,14 +32,13 @@
 # include <signal.h>
 #endif
 
-// TODO
-#undef DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 0
-
 // -----------------------------------------------------------------------
 
 START_NAMESPACE_DISTRHO
 
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_STATE
 static const setStateFunc setStateCallback = nullptr;
 #endif
@@ -103,7 +103,7 @@ public:
               nullptr, // edit param
               setParameterValueCallback,
               setStateCallback,
-              nullptr, // send note
+              sendNoteCallback,
               setSizeCallback,
               nullptr, // file request
               nullptr, // bundle
@@ -356,24 +356,46 @@ protected:
         fPlugin.setTimePosition(fTimePosition);
 #endif
 
-        void* const midiBuf = jack_port_get_buffer(fPortEventsIn, nframes);
+        updateParameterTriggers();
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fPortMidiOutBuffer = jack_port_get_buffer(fPortMidiOut, nframes);
         jack_midi_clear_buffer(fPortMidiOutBuffer);
 #endif
 
-        if (const uint32_t eventCount = jack_midi_get_event_count(midiBuf))
-        {
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            uint32_t  midiEventCount = 0;
-            MidiEvent midiEvents[eventCount];
+        uint32_t  midiEventCount = 0;
+        MidiEvent midiEvents[512];
+
+# if DISTRHO_PLUGIN_HAS_UI
+        while (fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                break;
+
+            MidiEvent& midiEvent(midiEvents[midiEventCount++]);
+            midiEvent.frame = 0;
+            midiEvent.size  = 3;
+            std::memcpy(midiEvent.data, midiData, 3);
+
+            if (midiEventCount == 512)
+                break;
+        }
+# endif
+#else
+        static const uint32_t midiEventCount = 0;
 #endif
+
+        void* const midiInBuf = jack_port_get_buffer(fPortEventsIn, nframes);
+
+        if (const uint32_t eventCount = std::max(512u - midiEventCount, jack_midi_get_event_count(midiInBuf)))
+        {
             jack_midi_event_t jevent;
 
             for (uint32_t i=0; i < eventCount; ++i)
             {
-                if (jack_midi_event_get(&jevent, midiBuf, i) != 0)
+                if (jack_midi_event_get(&jevent, midiInBuf, i) != 0)
                     break;
 
                 // Check if message is control change on channel 1
@@ -428,16 +450,10 @@ protected:
                     std::memcpy(midiEvent.data, jevent.buffer, midiEvent.size);
 #endif
             }
+        }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);
-#endif
-        }
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        else
-        {
-            fPlugin.run(audioIns, audioOuts, nframes, nullptr, 0);
-        }
+        fPlugin.run(audioIns, audioOuts, nframes, midiEvents, midiEventCount);
 #else
         fPlugin.run(audioIns, audioOuts, nframes);
 #endif
@@ -445,8 +461,6 @@ protected:
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fPortMidiOutBuffer = nullptr;
 #endif
-
-        updateParameterTriggers();
     }
 
     void jackShutdown()
@@ -460,24 +474,36 @@ protected:
 
     // -------------------------------------------------------------------
 
+#if DISTRHO_PLUGIN_HAS_UI
     void setParameterValue(const uint32_t index, const float value)
     {
         fPlugin.setParameterValue(index, value);
     }
 
-#if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char* const key, const char* const value)
-    {
-        fPlugin.setState(key, value);
-    }
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI
     void setSize(const uint width, const uint height)
     {
         fUI.setWindowSize(width, height);
     }
-#endif
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fNotesRingBuffer.writeCustomData(midiData, 3);
+        fNotesRingBuffer.commitWrite();
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        fPlugin.setState(key, value);
+    }
+# endif
+#endif // DISTRHO_PLUGIN_HAS_UI
 
     // NOTE: no trigger support for JACK, simulate it here
     void updateParameterTriggers()
@@ -530,6 +556,9 @@ private:
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
     int fProgramChanged;
 # endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    SmallStackRingBuffer fNotesRingBuffer;
+# endif
 #endif
 
     // -------------------------------------------------------------------
@@ -560,30 +589,42 @@ private:
         thisPtr->jackShutdown();
     }
 
+#if DISTRHO_PLUGIN_HAS_UI
     static void setParameterValueCallback(void* ptr, uint32_t index, float value)
     {
         thisPtr->setParameterValue(index, value);
     }
 
-#if DISTRHO_PLUGIN_WANT_STATE
-    static void setStateCallback(void* ptr, const char* key, const char* value)
-    {
-        thisPtr->setState(key, value);
-    }
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI
     static void setSizeCallback(void* ptr, uint width, uint height)
     {
         thisPtr->setSize(width, height);
     }
-#endif
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+        thisPtr->sendNote(channel, note, velocity);
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        thisPtr->setState(key, value);
+    }
+# endif
+#endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
-        // TODO implementation
-        return false;
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), false);
+
+        fPlugin.setParameterValue(index, value);
+# if DISTRHO_PLUGIN_HAS_UI
+        fParametersChanged[index] = true;
+# endif
+        return true;
     }
 
     static bool requestParameterValueChangeCallback(void* ptr, const uint32_t index, const float value)

@@ -756,6 +756,7 @@ public:
 
    /**
       Request a parameter value change from the host.
+      If successful, this function will automatically trigger a parameter update on the UI side as well.
       This function can fail, for example if the host is busy with the parameter for read-only automation.
       Some hosts simply do not have this functionality, which can be verified with canRequestParameterValueChanges().
       @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.

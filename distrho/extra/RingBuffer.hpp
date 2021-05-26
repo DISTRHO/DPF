@@ -591,7 +591,7 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, false);
         DISTRHO_SAFE_ASSERT_RETURN(buf != nullptr, false);
         DISTRHO_SAFE_ASSERT_RETURN(size > 0, false);
-        CARLA_SAFE_ASSERT_UINT2_RETURN(size < buffer->size, size, buffer->size, false);
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(size < buffer->size, size, buffer->size, false);
 
         const uint8_t* const bytebuf(static_cast<const uint8_t*>(buf));
 
