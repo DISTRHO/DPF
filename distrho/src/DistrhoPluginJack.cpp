@@ -25,8 +25,11 @@
 #endif
 
 #include "jack/jack.h"
+#include "jack/metadata.h"
 #include "jack/midiport.h"
 #include "jack/transport.h"
+#include "jack/uuid.h"
+#include "lv2/lv2.h"
 
 #ifndef DISTRHO_OS_WINDOWS
 # include <signal.h>
@@ -119,15 +122,18 @@ public:
 # if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
         {
-            std::snprintf(strBuf, 0xff, "in%i", i+1);
-            fPortAudioIns[i] = jack_port_register(fClient, strBuf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            const AudioPort& port(fPlugin.getAudioPort(true, i));
+            fPortAudioIns[i] = jack_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            setAudioPortMetadata(port, fPortAudioIns[i], i);
         }
 # endif
 # if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
             std::snprintf(strBuf, 0xff, "out%i", i+1);
-            fPortAudioOuts[i] = jack_port_register(fClient, strBuf, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            const AudioPort& port(fPlugin.getAudioPort(false, i));
+            fPortAudioOuts[i] = jack_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            setAudioPortMetadata(port, fPortAudioOuts[i], i);
         }
 # endif
 #endif
@@ -560,6 +566,77 @@ private:
     SmallStackRingBuffer fNotesRingBuffer;
 # endif
 #endif
+
+    void setAudioPortMetadata(const AudioPort& port, jack_port_t* const jackport, const uint32_t index)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(jackport != nullptr,);
+
+        const jack_uuid_t uuid = jack_port_uuid(jackport);
+
+        if (jack_uuid_empty(uuid))
+            return;
+
+        jack_set_property(fClient, uuid, JACK_METADATA_PRETTY_NAME, port.name, "text/plain");
+
+        {
+            char strBuf[0xff];
+            snprintf(strBuf, sizeof(0xff)-1, "%u", index);
+            jack_set_property(fClient, uuid, JACK_METADATA_ORDER, strBuf, "http://www.w3.org/2001/XMLSchema#integer");
+        }
+
+        if (port.hints & kAudioPortIsCV)
+        {
+            jack_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "CV", "text/plain");
+        }
+        else
+        {
+            jack_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "AUDIO", "text/plain");
+            return;
+        }
+
+        // set cv ranges
+        const bool cvPortScaled = port.hints & kCVPortHasScaledRange;
+
+        if (port.hints & kCVPortHasBipolarRange)
+        {
+            if (cvPortScaled)
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-5", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "5", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+            else
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+        }
+        else if (port.hints & kCVPortHasNegativeUnipolarRange)
+        {
+            if (cvPortScaled)
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-10", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+            else
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+        }
+        else if (port.hints & kCVPortHasPositiveUnipolarRange)
+        {
+            if (cvPortScaled)
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "10", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+            else
+            {
+                jack_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jack_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
+            }
+        }
+    }
 
     // -------------------------------------------------------------------
     // Callbacks

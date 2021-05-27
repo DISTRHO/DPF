@@ -22,6 +22,7 @@
 #include "lv2/instance-access.h"
 #include "lv2/midi.h"
 #include "lv2/options.h"
+#include "lv2/parameters.h"
 #include "lv2/patch.h"
 #include "lv2/port-props.h"
 #include "lv2/presets.h"
@@ -332,9 +333,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix doap:  <http://usefulinc.com/ns/doap#> .\n";
         pluginString += "@prefix foaf:  <http://xmlns.com/foaf/0.1/> .\n";
         pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
-#ifdef DISTRHO_PLUGIN_BRAND
         pluginString += "@prefix mod:   <http://moddevices.com/ns/mod#> .\n";
-#endif
         pluginString += "@prefix opts:  <" LV2_OPTIONS_PREFIX "> .\n";
         pluginString += "@prefix patch: <" LV2_PATCH_PREFIX "> .\n";
         pluginString += "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
@@ -410,13 +409,16 @@ void lv2_generate_ttl(const char* const basename)
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i, ++portIndex)
             {
                 const AudioPort& port(plugin.getAudioPort(true, i));
+                const bool cvPortScaled = port.hints & kCVPortHasScaledRange;
 
                 if (i == 0)
                     pluginString += "    lv2:port [\n";
                 else
                     pluginString += "    [\n";
 
-                if (port.hints & kAudioPortIsCV)
+                if (cvPortScaled)
+                    pluginString += "        a lv2:InputPort, lv2:CVPort, mod:CVPort ;\n";
+                else if (port.hints & kAudioPortIsCV)
                     pluginString += "        a lv2:InputPort, lv2:CVPort ;\n";
                 else
                     pluginString += "        a lv2:InputPort, lv2:AudioPort ;\n";
@@ -427,6 +429,47 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
+
+                // set ranges
+                if (port.hints & kCVPortHasBipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum -5.0 ;\n";
+                        pluginString += "        lv2:maximum 5.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum -1.0 ;\n";
+                        pluginString += "        lv2:maximum 1.0 ;\n";
+                    }
+                }
+                else if (port.hints & kCVPortHasNegativeUnipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum -10.0 ;\n";
+                        pluginString += "        lv2:maximum 0.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum -1.0 ;\n";
+                        pluginString += "        lv2:maximum 0.0 ;\n";
+                    }
+                }
+                else if (port.hints & kCVPortHasPositiveUnipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum 0.0 ;\n";
+                        pluginString += "        lv2:maximum 10.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum 0.0 ;\n";
+                        pluginString += "        lv2:maximum 1.0 ;\n";
+                    }
+                }
 
                 if (i+1 == DISTRHO_PLUGIN_NUM_INPUTS)
                     pluginString += "    ] ;\n";
@@ -440,13 +483,16 @@ void lv2_generate_ttl(const char* const basename)
             for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i, ++portIndex)
             {
                 const AudioPort& port(plugin.getAudioPort(false, i));
+                const bool cvPortScaled = port.hints & kCVPortHasScaledRange;
 
                 if (i == 0)
                     pluginString += "    lv2:port [\n";
                 else
                     pluginString += "    [\n";
 
-                if (port.hints & kAudioPortIsCV)
+                if (cvPortScaled)
+                    pluginString += "        a lv2:OutputPort, lv2:CVPort, mod:CVPort ;\n";
+                else if (port.hints & kAudioPortIsCV)
                     pluginString += "        a lv2:OutputPort, lv2:CVPort ;\n";
                 else
                     pluginString += "        a lv2:OutputPort, lv2:AudioPort ;\n";
@@ -457,6 +503,47 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
+
+                // set ranges
+                if (port.hints & kCVPortHasBipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum -5.0 ;\n";
+                        pluginString += "        lv2:maximum 5.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum -1.0 ;\n";
+                        pluginString += "        lv2:maximum 1.0 ;\n";
+                    }
+                }
+                else if (port.hints & kCVPortHasNegativeUnipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum -10.0 ;\n";
+                        pluginString += "        lv2:maximum 0.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum -1.0 ;\n";
+                        pluginString += "        lv2:maximum 0.0 ;\n";
+                    }
+                }
+                else if (port.hints & kCVPortHasPositiveUnipolarRange)
+                {
+                    if (cvPortScaled)
+                    {
+                        pluginString += "        lv2:minimum 0.0 ;\n";
+                        pluginString += "        lv2:maximum 10.0 ;\n";
+                    }
+                    else
+                    {
+                        pluginString += "        lv2:minimum 0.0 ;\n";
+                        pluginString += "        lv2:maximum 1.0 ;\n";
+                    }
+                }
 
                 if (i+1 == DISTRHO_PLUGIN_NUM_OUTPUTS)
                     pluginString += "    ] ;\n";
