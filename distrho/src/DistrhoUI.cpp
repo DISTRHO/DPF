@@ -20,71 +20,38 @@
 # include "src/TopLevelWidgetPrivateData.hpp"
 #endif
 
-#include "NanoVG.hpp"
-
 START_NAMESPACE_DISTRHO
 
 /* ------------------------------------------------------------------------------------------------------------
- * Static data, see DistrhoUIInternal.hpp and DistrhoUIPrivateData.hpp  */
+ * Static data, see DistrhoUIInternal.hpp */
 
-double      d_lastUiSampleRate = 0.0;
-void*       d_lastUiDspPtr     = nullptr;
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-const char* g_nextBundlePath   = nullptr;
-double      g_nextScaleFactor  = 1.0;
-uintptr_t   g_nextWindowId     = 0;
-#else
-Window*     d_lastUiWindow     = nullptr;
+uintptr_t   g_nextWindowId    = 0;
+double      g_nextScaleFactor = 1.0;
+const char* g_nextBundlePath  = nullptr;
 #endif
 
-// -----------------------------------------------------------------------------------------------------------
+/* ------------------------------------------------------------------------------------------------------------
+ * UI::PrivateData special handling */
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI* createUiWrapper(void* const dspPtr, const uintptr_t winId, const double scaleFactor, const char* const bundlePath)
+UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
+
+PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
 {
-    d_lastUiDspPtr    = dspPtr;
-    g_nextWindowId    = winId;
-    g_nextScaleFactor = scaleFactor;
-    g_nextBundlePath  = bundlePath;
-    UI* const ret     = createUI();
-    d_lastUiDspPtr    = nullptr;
-    g_nextWindowId    = 0;
-    g_nextScaleFactor = 1.0;
-    g_nextBundlePath  = nullptr;
-    return ret;
+    UI::PrivateData* const pData = s_nextPrivateData;
+    pData->window = new PluginWindow(ui, pData, width, height);
+    return pData->window.getObject();
 }
-#else
-UI* createUiWrapper(void* const dspPtr, Window* const window)
-{
-    d_lastUiDspPtr = dspPtr;
-    d_lastUiWindow = window;
-    UI* const ret  = createUI();
-    d_lastUiDspPtr = nullptr;
-    d_lastUiWindow = nullptr;
-    return ret;
-}
-#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-UI::UI(uint width, uint height)
-    : UIWidget(width, height),
-      uiData(new PrivateData()) {}
-#else
-UI::UI(uint width, uint height)
-    : UIWidget(*d_lastUiWindow),
-      uiData(new PrivateData())
-{
-    if (width > 0 && height > 0)
-        setSize(width, height);
-}
-#endif
+UI::UI(const uint width, const uint height)
+    : UIWidget(UI::PrivateData::createNextWindow(this, width, height)),
+      uiData(UI::PrivateData::s_nextPrivateData) {}
 
 UI::~UI()
 {
-    delete uiData;
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -166,22 +133,22 @@ uintptr_t UI::getNextWindowId() noexcept
     return g_nextWindowId;
 }
 # endif
-#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks (optional) */
 
-void UI::sampleRateChanged(double) {}
+void UI::sampleRateChanged(double)
+{
+}
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
-# ifndef DGL_FILE_BROWSER_DISABLED
-void UI::uiFileBrowserSelected(const char*)
+void UI::uiFocus(bool, CrossingMode)
 {
 }
-# endif
 
 void UI::uiReshape(uint, uint)
 {
@@ -189,33 +156,32 @@ void UI::uiReshape(uint, uint)
     pData->fallbackOnResize();
 }
 
+# ifndef DGL_FILE_BROWSER_DISABLED
+void UI::uiFileBrowserSelected(const char*)
+{
+}
+# endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
-void UI::onResize(const ResizeEvent& ev)
-{
-    if (uiData->resizeInProgress)
-        return;
-
-    UIWidget::onResize(ev);
-
-    const uint width = ev.size.getWidth();
-    const uint height = ev.size.getHeight();
-
-    /*
-    pData->window.setSize(width, height);
-    */
-    uiData->setSizeCallback(width, height);
-}
+// void UI::onResize(const ResizeEvent& ev)
+// {
+//     if (uiData->resizeInProgress)
+//         return;
+//
+//     UIWidget::onResize(ev);
+//
+//     const uint width = ev.size.getWidth();
+//     const uint height = ev.size.getHeight();
+//
+//     /*
+//     pData->window.setSize(width, height);
+//     */
+//     uiData->setSizeCallback(width, height);
+// }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
-
-// -----------------------------------------------------------------------
-// Possible template data types
-
-// template class NanoBaseWidget<SubWidget>;
-// template class NanoBaseWidget<TopLevelWidget>;
-// template class NanoBaseWidget<StandaloneWindow>;

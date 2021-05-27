@@ -146,6 +146,9 @@ public:
     ObjectType* get() const noexcept        { return object; }
 
     /** Returns the object that this ScopedPointer refers to. */
+    ObjectType& getObject() const noexcept  { return *object; }
+
+    /** Returns the object that this ScopedPointer refers to. */
     ObjectType& operator*() const noexcept  { return *object; }
 
     /** Lets you access methods and properties of the object that this ScopedPointer refers to. */

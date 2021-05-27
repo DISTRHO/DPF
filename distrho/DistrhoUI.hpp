@@ -237,25 +237,45 @@ protected:
     * UI Callbacks (optional) */
 
    /**
-      uiIdle.
-      @TODO Document this.
+      UI idle function, called to give idle time to the plugin UI directly from the host.
+      This is called right after OS event handling and Window idle events (within the same cycle).
+      There are no guarantees in terms of timing.
+      @see addIdleCallback(IdleCallback*, uint).
     */
     virtual void uiIdle() {}
 
+   /**
+      Windows focus function, called when the window gains or loses the keyboard focus.
+      This function is for plugin UIs to be able to override Window::onFocus(bool, CrossingMode).
+
+      The default implementation does nothing.
+    */
+    virtual void uiFocus(bool focus, CrossingMode mode);
+
+   /**
+      Window reshape function, called when the window is resized.
+      This function is for plugin UIs to be able to override Window::onReshape(uint, uint).
+
+      The plugin UI size will be set right after this function.
+      The default implementation sets up drawing context where necessary.
+
+      You should almost never need to override this function.
+      The most common exception is custom OpenGL setup, but only really needed for custom OpenGL drawing code.
+    */
+    virtual void uiReshape(uint width, uint height);
+
 # ifndef DGL_FILE_BROWSER_DISABLED
    /**
-      File browser selected function.
-      @see Window::onFileSelected(const char*)
+      Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().
+      This function is for plugin UIs to be able to override Window::onFileSelected(const char*).
+
+      This action happens after the user confirms the action, so the file browser dialog will be closed at this point.
+      The default implementation does nothing.
+
+      If you need to use files as plugin state, please setup and use DISTRHO_PLUGIN_WANT_STATEFILES instead.
     */
     virtual void uiFileBrowserSelected(const char* filename);
 # endif
-
-   /**
-      OpenGL window reshape function, called when parent window is resized.
-      You can reimplement this function for a custom OpenGL state.
-      @see Window::onReshape(uint,uint)
-    */
-    virtual void uiReshape(uint width, uint height);
 
    /* --------------------------------------------------------------------------------------------------------
     * UI Resize Handling, internal */
@@ -265,7 +285,7 @@ protected:
       This is overriden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
-    void onResize(const ResizeEvent& ev) override;
+//     void onResize(const ResizeEvent& ev) override;
 #endif
 
     // -------------------------------------------------------------------------------------------------------
@@ -273,8 +293,8 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const uiData;
+    friend class PluginWindow;
     friend class UIExporter;
-    friend class UIExporterWindow;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

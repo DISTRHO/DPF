@@ -14,7 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#define DISTRHO_UI_IS_STANDALONE false
 #include "DistrhoUIInternal.hpp"
 
 #include "../extra/String.hpp"
@@ -73,10 +72,11 @@ public:
           const LV2UI_Write_Function writeFunc,
           LV2UI_Widget* const widget,
           void* const dspPtr,
+          const float sampleRate,
           const float scaleFactor,
           const uint32_t bgColor,
           const uint32_t fgColor)
-        : fUI(this, winId,
+        : fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
               setStateCallback,
@@ -208,7 +208,8 @@ public:
 
     int lv2ui_resize(uint width, uint height)
     {
-        fUI.setWindowSize(width, height, true);
+        // FIXME
+        // fUI.setWindowSize(width, height, true);
         return 0;
     }
 
@@ -526,6 +527,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
 #endif
 
     const intptr_t winId = (intptr_t)parentId;
+    float sampleRate = 0.0f;
     float scaleFactor = 1.0f;
     uint32_t bgColor = 0;
     uint32_t fgColor = 0xffffffff;
@@ -544,7 +546,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
             /**/ if (options[i].key == uridSampleRate)
             {
                 if (options[i].type == uridAtomFloat)
-                    d_lastUiSampleRate = *(const float*)options[i].value;
+                    sampleRate = *(const float*)options[i].value;
                 else
                     d_stderr("Host provides UI sample-rate but has wrong value type");
             }
@@ -572,15 +574,15 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
         }
     }
 
-    if (d_lastUiSampleRate < 1.0)
+    if (sampleRate < 1.0)
     {
         d_stdout("WARNING: this host does not send sample-rate information for LV2 UIs, using 44100 as fallback (this could be wrong)");
-        d_lastUiSampleRate = 44100.0;
+        sampleRate = 44100.0;
     }
 
     return new UiLv2(bundlePath, winId, options, uridMap, features,
                      controller, writeFunction, widget, instance,
-                     scaleFactor, bgColor, fgColor);
+                     sampleRate, scaleFactor, bgColor, fgColor);
 }
 
 #define uiPtr ((UiLv2*)ui)

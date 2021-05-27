@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,14 +18,22 @@
 #define DISTRHO_UI_PRIVATE_DATA_HPP_INCLUDED
 
 #include "../DistrhoUI.hpp"
+#include "../../dgl/Application.hpp"
+
+#ifndef DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# include "../../dgl/Window.hpp"
+#endif
+
+#if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_DSSI)
+# define DISTRHO_UI_IS_STANDALONE true
+#else
+# define DISTRHO_UI_IS_STANDALONE false
+#endif
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
-// Static data, see DistrhoUI.cpp
-
-extern double d_lastUiSampleRate;
-extern void*  d_lastUiDspPtr;
+using DGL_NAMESPACE::Application;
+using DGL_NAMESPACE::Window;
 
 // -----------------------------------------------------------------------
 // UI callbacks
@@ -38,23 +46,50 @@ typedef void (*setSizeFunc)     (void* ptr, uint width, uint height);
 typedef bool (*fileRequestFunc) (void* ptr, const char* key);
 
 // -----------------------------------------------------------------------
+// Plugin Application, will set class name based on plugin details
+
+class PluginApplication : public Application
+{
+public:
+    explicit PluginApplication()
+        : Application(DISTRHO_UI_IS_STANDALONE)
+    {
+        const char* const className = (
+#ifdef DISTRHO_PLUGIN_BRAND
+            DISTRHO_PLUGIN_BRAND
+#else
+            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
+#endif
+            "-" DISTRHO_PLUGIN_NAME
+        );
+        setClassName(className);
+    }
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
+};
+
+class PluginWindow;
+
+// -----------------------------------------------------------------------
 // UI private data
 
 struct UI::PrivateData {
+    // DGL
+    PluginApplication app;
+    ScopedPointer<PluginWindow> window;
+
     // DSP
     double   sampleRate;
     uint32_t parameterOffset;
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     void*    dspPtr;
-#endif
 
     // UI
-    bool automaticallyScale;
-    bool resizeInProgress;
-    uint minWidth;
-    uint minHeight;
     uint bgColor;
     uint fgColor;
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    double scaleFactor;
+    uintptr_t winId;
+#endif
 
     // Callbacks
     void*           callbacksPtr;
@@ -66,17 +101,19 @@ struct UI::PrivateData {
     fileRequestFunc fileRequestCallbackFunc;
 
     PrivateData() noexcept
-        : sampleRate(d_lastUiSampleRate),
-          parameterOffset(0),
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-          dspPtr(d_lastUiDspPtr),
+        : app(),
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+          window(nullptr),
 #endif
-          automaticallyScale(false),
-          resizeInProgress(false),
-          minWidth(0),
-          minHeight(0),
+          sampleRate(0),
+          parameterOffset(0),
+          dspPtr(nullptr),
           bgColor(0),
-          fgColor(0),
+          fgColor(0xffffffff),
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+          scaleFactor(1.0),
+          winId(0),
+#endif
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
@@ -85,8 +122,6 @@ struct UI::PrivateData {
           setSizeCallbackFunc(nullptr),
           fileRequestCallbackFunc(nullptr)
     {
-        DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
-
 #if defined(DISTRHO_PLUGIN_TARGET_DSSI) || defined(DISTRHO_PLUGIN_TARGET_LV2)
         parameterOffset += DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS;
 # if DISTRHO_PLUGIN_WANT_LATENCY
@@ -143,7 +178,84 @@ struct UI::PrivateData {
 
         return false;
     }
+
+    static UI::PrivateData* s_nextPrivateData;
+    static PluginWindow& createNextWindow(UI* ui, uint width, uint height);
 };
+
+// -----------------------------------------------------------------------
+// Plugin Window, will pass some Window events to UI
+
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+// TODO external ui stuff
+class PluginWindow
+{
+    UI* const ui;
+
+public:
+    explicit PluginWindow(UI* const uiPtr, UI::PrivateData* const pData, const uint width, const uint height)
+        : Window(pData->app, pData->winId, pData->scaleFactor, width, height, DISTRHO_UI_USER_RESIZABLE),
+          ui(uiPtr) {}
+
+    uint getWidth() const noexcept
+    {
+        return ui->getWidth();
+    }
+
+    uint getHeight() const noexcept
+    {
+        return ui->getHeight();
+    }
+
+    bool isVisible() const noexcept
+    {
+        return ui->isRunning();
+    }
+
+    uintptr_t getNativeWindowHandle() const noexcept
+    {
+        return 0;
+    }
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
+};
+#else
+class PluginWindow : public Window
+{
+    UI* const ui;
+
+public:
+    explicit PluginWindow(UI* const uiPtr, UI::PrivateData* const pData, const uint width, const uint height)
+        : Window(pData->app, pData->winId, width, height, pData->scaleFactor, DISTRHO_UI_USER_RESIZABLE),
+          ui(uiPtr) {}
+
+protected:
+    void onFocus(const bool focus, const CrossingMode mode) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiFocus(focus, mode);
+    }
+
+    void onReshape(const uint width, const uint height) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiReshape(width, height);
+    }
+
+# ifndef DGL_FILE_BROWSER_DISABLED
+    void onFileSelected(const char* const filename) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiFileBrowserSelected(filename);
+    }
+# endif
+
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
+};
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------
 
