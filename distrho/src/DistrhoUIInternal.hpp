@@ -210,10 +210,6 @@ public:
         }
     }
 
-    void exec_idle()
-    {
-    }
-
     bool idle()
     {
         return true;
@@ -231,6 +227,7 @@ public:
         ui->terminateAndWaitForProcess();
     }
 #else
+# if DISTRHO_UI_IS_STANDALONE
     void exec(IdleCallback* const cb)
     {
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
@@ -240,17 +237,26 @@ public:
         uiData->app.exec();
     }
 
-    void focus()
+    void exec_idle()
     {
-        uiData->window->focus();
-    }
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, );
 
-    bool idle()
+        ui->uiIdle();
+    }
+# else
+    bool plugin_idle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, false);
 
+        uiData->app.idle();
         ui->uiIdle();
         return ! uiData->app.isQuiting();
+    }
+# endif
+
+    void focus()
+    {
+        uiData->window->focus();
     }
 
     void quit()
@@ -258,8 +264,8 @@ public:
         uiData->window->close();
         uiData->app.quit();
     }
-
 #endif
+
     // -------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI

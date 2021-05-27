@@ -93,7 +93,7 @@ struct OscData {
 
 // -----------------------------------------------------------------------
 
-class UIDssi
+class UIDssi : public IdleCallback
 {
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle, const double sampleRate)
@@ -111,17 +111,19 @@ public:
             fOscData.send_exiting();
     }
 
-    void exec()
+    void exec_start()
     {
-        for (;;)
-        {
-            fOscData.idle();
+        fUI.exec(this);
+    }
 
-            if (fHostClosed || ! fUI.idle())
-                break;
+    void idleCallback() override
+    {
+        fOscData.idle();
 
-            d_msleep(30);
-        }
+        if (fHostClosed)
+            return;
+
+        fUI.exec_idle();
     }
 
     // -------------------------------------------------------------------
@@ -393,7 +395,7 @@ int main(int argc, char* argv[])
 
         initUiIfNeeded();
         globalUI->dssiui_show(true);
-        globalUI->exec();
+        globalUI->exec_start();
 
         delete globalUI;
         globalUI = nullptr;
@@ -492,7 +494,7 @@ int main(int argc, char* argv[])
     {
         initUiIfNeeded();
 
-        globalUI->exec();
+        globalUI->exec_start();
 
         delete globalUI;
         globalUI = nullptr;

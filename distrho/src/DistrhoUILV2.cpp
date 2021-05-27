@@ -191,9 +191,9 @@ public:
     int lv2ui_idle()
     {
         if (fWinIdWasNull)
-            return (fUI.idle() && fUI.isVisible()) ? 0 : 1;
+            return (fUI.plugin_idle() && fUI.isVisible()) ? 0 : 1;
 
-        return fUI.idle() ? 0 : 1;
+        return fUI.plugin_idle() ? 0 : 1;
     }
 
     int lv2ui_show()

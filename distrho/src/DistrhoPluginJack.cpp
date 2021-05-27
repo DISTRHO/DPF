@@ -302,7 +302,7 @@ protected:
             }
         }
 
-        fUI.idle();
+        fUI.exec_idle();
     }
 #endif
 

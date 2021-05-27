@@ -212,7 +212,7 @@ public:
             }
         }
 
-        fUI.idle();
+        fUI.plugin_idle();
     }
 
     int16_t getWidth() const
