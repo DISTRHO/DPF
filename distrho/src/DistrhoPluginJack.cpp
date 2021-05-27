@@ -35,6 +35,14 @@
 # include <signal.h>
 #endif
 
+#ifndef JACK_METADATA_ORDER
+# define JACK_METADATA_ORDER "http://jackaudio.org/metadata/order"
+#endif
+
+#ifndef JACK_METADATA_SIGNAL_TYPE
+# define JACK_METADATA_SIGNAL_TYPE "http://jackaudio.org/metadata/signal-type"
+#endif
+
 // -----------------------------------------------------------------------
 
 START_NAMESPACE_DISTRHO
