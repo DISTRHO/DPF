@@ -24,6 +24,7 @@ examples: dgl
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
+	$(MAKE) all -C examples/Metronome
 	$(MAKE) all -C examples/MidiThrough
 	$(MAKE) all -C examples/Parameters
 	$(MAKE) all -C examples/SendNote
@@ -66,6 +67,7 @@ clean:
 	$(MAKE) clean -C examples/Info
 	$(MAKE) clean -C examples/Latency
 	$(MAKE) clean -C examples/Meters
+	$(MAKE) clean -C examples/Metronome
 	$(MAKE) clean -C examples/MidiThrough
 	$(MAKE) clean -C examples/Parameters
 	$(MAKE) clean -C examples/SendNote
