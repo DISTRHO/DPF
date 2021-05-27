@@ -46,13 +46,15 @@ public:
       - Single-pole IIR low-pass filter - which is the correct formula for the decay coefficient?
         https://dsp.stackexchange.com/questions/54086/single-pole-iir-low-pass-filter-which-is-the-correct-formula-for-the-decay-coe
      */
-    void setCutoff(float sampleRate, float cutoffHz) {
+    void setCutoff(const float sampleRate, const float cutoffHz)
+    {
         double omega_c = 2.0 * M_PI * cutoffHz / sampleRate;
         double y = 1.0 - std::cos(omega_c);
         kp = float(-y + std::sqrt((y + 2.0) * y));
     }
 
-    float process(float input) {
+    inline float process(const float input)
+    {
         return value += kp * (input - value);
     }
 };
@@ -77,6 +79,7 @@ public:
           cent(0),
           decayTime(0.2f)
     {
+        sampleRateChanged(sampleRate);
     }
 
 protected:
@@ -158,7 +161,7 @@ protected:
         case 0:
             parameter.name = "Gain";
             parameter.hints |= kParameterIsLogarithmic;
-            parameter.ranges.min = 0.0f;
+            parameter.ranges.min = 0.001f;
             parameter.ranges.max = 1.0f;
             parameter.ranges.def = 0.5f;
             break;
@@ -237,6 +240,17 @@ protected:
     * Process */
 
    /**
+      Activate this plugin.
+      We use this to reset our filter states.
+    */
+   void activate() override
+   {
+        deltaPhaseSmoother.value = 0.0f;
+        envelopeSmoother.value = 0.0f;
+        gainSmoother.value = gain;
+   }
+
+   /**
       Run/process function for plugins without MIDI input.
       `inputs` is commented out because this plugin has no inputs.
     */
@@ -274,8 +288,8 @@ protected:
                 phase = 0.0f;
 
                 deltaPhaseSmoother.value = deltaPhase;
-                gainSmoother.value = 1.0f;
                 envelopeSmoother.value = 0.0f;
+                gainSmoother.value = 0.0f;
             }
 
             for (uint32_t i = 0; i < frames; ++i)
@@ -336,8 +350,8 @@ private:
     float decay;      // Coefficient to decay envelope in a frame.
 
     Smoother deltaPhaseSmoother;
-    Smoother gainSmoother;
     Smoother envelopeSmoother;
+    Smoother gainSmoother;
 
     // Parameters.
     float gain;

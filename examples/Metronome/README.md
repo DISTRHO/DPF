@@ -2,7 +2,7 @@
 
 This example will show tempo sync in DPF.<br/>
 
-This plugin will output sine wave at the start of every beat.<br/>
+This plugin will output a sine wave at the start of every beat.<br/>
 The pitch of sine wave is 1 octave higher at the start of every bar.<br/>
 
 4 parameters are avaialble:
@@ -17,15 +17,15 @@ To calculate frames to the next beat from the start of current audio buffer, fol
 ```c++
 const TimePosition& timePos(getTimePosition());
 
-if (timePos.bbt.valid) {
+if (timePos.bbt.valid)
+{
     double secondsPerBeat = 60.0 / timePos.bbt.beatsPerMinute;
     double framesPerBeat  = sampleRate * secondsPerBeat;
     double beatFraction   = timePos.bbt.tick / timePos.bbt.ticksPerBeat;
 
-    uint32_t framesToNextBeat = beatFraction == 0.0
-        ? 0
-        : static_cast<uint32_t>(framesPerBeat * (1.0 - beatFraction));
-
+    uint32_t framesToNextBeat = d_isZero(beatFraction)
+                              ? 0
+                              : static_cast<uint32_t>(framesPerBeat * (1.0 - beatFraction));
     // ...
 }
 ```
