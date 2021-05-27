@@ -141,7 +141,7 @@ public:
             std::snprintf(strBuf, 0xff, "out%i", i+1);
             const AudioPort& port(fPlugin.getAudioPort(false, i));
             fPortAudioOuts[i] = jack_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
-            setAudioPortMetadata(port, fPortAudioOuts[i], i);
+            setAudioPortMetadata(port, fPortAudioOuts[i], DISTRHO_PLUGIN_NUM_INPUTS+i);
         }
 # endif
 #endif
