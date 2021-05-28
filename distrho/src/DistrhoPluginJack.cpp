@@ -788,6 +788,7 @@ int main()
 
     d_lastBufferSize = jack_get_buffer_size(client);
     d_lastSampleRate = jack_get_sample_rate(client);
+    d_lastCanRequestParameterValueChanges = true;
 
     const PluginJack p(client);
 
