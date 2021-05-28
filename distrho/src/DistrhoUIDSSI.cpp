@@ -98,7 +98,7 @@ class UIDssi : public IdleCallback
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle, const double sampleRate)
         : fUI(this, 0, sampleRate, nullptr,
-              setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, nullptr),
+              setParameterCallback, setStateCallback, sendNoteCallback, nullptr, nullptr),
           fHostClosed(false),
           fOscData(oscData)
     {
@@ -208,11 +208,6 @@ protected:
     }
 #endif
 
-    void setSize(const uint width, const uint height)
-    {
-        fUI.setWindowSize(width, height);
-    }
-
 private:
     UIExporter fUI;
     bool fHostClosed;
@@ -240,11 +235,6 @@ private:
         uiPtr->sendNote(channel, note, velocity);
     }
 #endif
-
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        uiPtr->setSize(width, height);
-    }
 
     #undef uiPtr
 };

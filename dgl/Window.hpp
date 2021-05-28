@@ -387,6 +387,13 @@ protected:
     */
     virtual void onReshape(uint width, uint height);
 
+   /**
+      A function called when scale factor requested for this window changes.
+      The default implementation does nothing.
+      WARNING function needs a proper name
+    */
+    virtual void onScaleFactorChanged(double scaleFactor);
+
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
       A function called when a path is selected by the user, as triggered by openFileBrowser().

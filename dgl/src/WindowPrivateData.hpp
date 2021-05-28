@@ -67,8 +67,9 @@ struct Window::PrivateData : IdleCallback {
     bool autoScaling;
     double autoScaleFactor;
 
-    /** Pugl minWidth, minHeight access. */
+    /** Pugl geometry constraints access. */
     uint minWidth, minHeight;
+    bool keepAspectRatio;
 
 #ifdef DISTRHO_OS_WINDOWS
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */

@@ -30,6 +30,11 @@
 # define DISTRHO_UI_IS_STANDALONE 0
 #endif
 
+#if defined(DISTRHO_PLUGIN_TARGET_VST)
+# undef DISTRHO_UI_USER_RESIZABLE
+# define DISTRHO_UI_USER_RESIZABLE 0
+#endif
+
 START_NAMESPACE_DISTRHO
 
 using DGL_NAMESPACE::Application;
@@ -242,6 +247,13 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
         ui->uiReshape(width, height);
+    }
+
+    void onScaleFactorChanged(const double scaleFactor) override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiScaleFactorChanged(scaleFactor);
     }
 
 # ifndef DGL_FILE_BROWSER_DISABLED

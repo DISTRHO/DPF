@@ -136,9 +136,35 @@ void Window::setHeight(const uint height)
     setSize(getWidth(), height);
 }
 
-void Window::setSize(const uint width, const uint height)
+void Window::setSize(uint width, uint height)
 {
     DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
+
+    if (pData->isEmbed)
+    {
+        // handle geometry constraints here
+        if (width < pData->minWidth)
+            width = pData->minWidth;
+        if (height < pData->minHeight)
+            height = pData->minHeight;
+        if (pData->keepAspectRatio)
+        {
+            const double ratio = static_cast<double>(pData->minWidth)
+                               / static_cast<double>(pData->minHeight);
+            const double reqRatio = static_cast<double>(width)
+                                  / static_cast<double>(height);
+
+            if (d_isNotEqual(ratio, reqRatio))
+            {
+                // fix width
+                if (reqRatio > ratio)
+                    width = height * ratio;
+                // fix height
+                else
+                    height = width / ratio;
+            }
+        }
+    }
 
     // FIXME add default and min props for this
     if (pData->minWidth == 0 && pData->minHeight == 0)
@@ -250,8 +276,7 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     DISTRHO_SAFE_ASSERT_RETURN(minimumHeight > 0,);
 
     if (pData->isEmbed) {
-        // Did you forget to set DISTRHO_UI_USER_RESIZABLE ?
-        DISTRHO_SAFE_ASSERT_RETURN(isResizable(),);
+        // nothing to do here
     } else if (! isResizable()) {
         setResizable(true);
     }
@@ -259,6 +284,7 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     pData->minWidth = minimumWidth;
     pData->minHeight = minimumHeight;
     pData->autoScaling = automaticallyScale;
+    pData->keepAspectRatio = keepAspectRatio;
 
     const double scaleFactor = pData->scaleFactor;
 
@@ -288,6 +314,10 @@ void Window::onFocus(bool, CrossingMode)
 void Window::onReshape(uint, uint)
 {
     puglFallbackOnResize(pData->view);
+}
+
+void Window::onScaleFactorChanged(double)
+{
 }
 
 #ifndef DGL_FILE_BROWSER_DISABLED

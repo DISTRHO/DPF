@@ -208,7 +208,7 @@ public:
 
     int lv2ui_resize(uint width, uint height)
     {
-        // FIXME
+        // this comes from the host
         // fUI.setWindowSize(width, height, true);
         return 0;
     }
@@ -334,7 +334,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setWindowSize(width, height);
+        // fUI.setWindowSize(width, height);
 
         if (fUiResize != nullptr && ! fWinIdWasNull)
             fUiResize->ui_resize(fUiResize->handle, width, height);

@@ -116,7 +116,7 @@ public:
               setParameterValueCallback,
               setStateCallback,
               sendNoteCallback,
-              setSizeCallback,
+              nullptr, // window size
               nullptr, // file request
               nullptr, // bundle
               fPlugin.getInstancePointer(),
@@ -495,11 +495,6 @@ protected:
         fPlugin.setParameterValue(index, value);
     }
 
-    void setSize(const uint width, const uint height)
-    {
-        fUI.setWindowSize(width, height);
-    }
-
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
@@ -679,11 +674,6 @@ private:
     static void setParameterValueCallback(void* ptr, uint32_t index, float value)
     {
         thisPtr->setParameterValue(index, value);
-    }
-
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        thisPtr->setSize(width, height);
     }
 
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT

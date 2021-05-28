@@ -88,6 +88,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+      keepAspectRatio(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -110,6 +111,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+      keepAspectRatio(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -136,6 +138,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+      keepAspectRatio(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -167,6 +170,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
+      keepAspectRatio(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif

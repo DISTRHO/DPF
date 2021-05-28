@@ -156,6 +156,10 @@ void UI::uiReshape(uint, uint)
     pData->fallbackOnResize();
 }
 
+void UI::uiScaleFactorChanged(double)
+{
+}
+
 # ifndef DGL_FILE_BROWSER_DISABLED
 void UI::uiFileBrowserSelected(const char*)
 {
@@ -165,21 +169,14 @@ void UI::uiFileBrowserSelected(const char*)
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
-// void UI::onResize(const ResizeEvent& ev)
-// {
-//     if (uiData->resizeInProgress)
-//         return;
-//
-//     UIWidget::onResize(ev);
-//
-//     const uint width = ev.size.getWidth();
-//     const uint height = ev.size.getHeight();
-//
-//     /*
-//     pData->window.setSize(width, height);
-//     */
-//     uiData->setSizeCallback(width, height);
-// }
+void UI::onResize(const ResizeEvent& ev)
+{
+    UIWidget::onResize(ev);
+
+    const uint width = ev.size.getWidth();
+    const uint height = ev.size.getHeight();
+    uiData->setSizeCallback(width, height);
+}
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------------------------------------------

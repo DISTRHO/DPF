@@ -264,6 +264,15 @@ protected:
     */
     virtual void uiReshape(uint width, uint height);
 
+   /**
+      Window scale factor function, called when the scale factor changes.
+      This function is for plugin UIs to be able to override Window::onScaleFactorChanged(double).
+
+      The default implementation does nothing.
+      WARNING function needs a proper name
+    */
+    virtual void uiScaleFactorChanged(double scaleFactor);
+
 # ifndef DGL_FILE_BROWSER_DISABLED
    /**
       Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().
@@ -285,7 +294,7 @@ protected:
       This is overriden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
-//     void onResize(const ResizeEvent& ev) override;
+    void onResize(const ResizeEvent& ev) override;
 #endif
 
     // -------------------------------------------------------------------------------------------------------

@@ -23,8 +23,6 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-# undef DISTRHO_UI_USER_RESIZABLE
-# define DISTRHO_UI_USER_RESIZABLE 0
 # include "DistrhoUIInternal.hpp"
 # include "../extra/RingBuffer.hpp"
 #endif
@@ -386,7 +384,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setWindowSize(width, height);
+        // fUI.setWindowSize(width, height);
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
