@@ -28,13 +28,12 @@ TopLevelWidget::PrivateData::PrivateData(TopLevelWidget* const s, Window& w)
       selfw(s),
       window(w)
 {
-    window.pData->topLevelWidget = self;
+    window.pData->topLevelWidgets.push_back(self);
 }
 
 TopLevelWidget::PrivateData::~PrivateData()
 {
-    // FIXME?
-    window.pData->topLevelWidget = nullptr;
+    window.pData->topLevelWidgets.remove(self);
 }
 
 bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)

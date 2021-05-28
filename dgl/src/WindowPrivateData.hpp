@@ -23,6 +23,8 @@
 
 #include "pugl.hpp"
 
+#include <list>
+
 START_NAMESPACE_DGL
 
 class TopLevelWidget;
@@ -45,8 +47,8 @@ struct Window::PrivateData : IdleCallback {
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(void*)];
 
-    /** The top-level widget associated with this Window. */
-    TopLevelWidget* topLevelWidget;
+    /** The top-level widgets associated with this Window. */
+    std::list<TopLevelWidget*> topLevelWidgets;
 
     /** Whether this Window is closed (not visible or counted in the Application it is tied to).
         Defaults to true unless embed (embed windows are never closed). */

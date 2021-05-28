@@ -51,6 +51,12 @@ START_NAMESPACE_DGL
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
 
+#define FOR_EACH_TOP_LEVEL_WIDGET(it) \
+  for (std::list<TopLevelWidget*>::iterator it = topLevelWidgets.begin(); it != topLevelWidgets.end(); ++it)
+
+#define FOR_EACH_TOP_LEVEL_WIDGET_INV(rit) \
+  for (std::list<TopLevelWidget*>::reverse_iterator rit = topLevelWidgets.rbegin(); rit != topLevelWidgets.rend(); ++rit)
+
 // -----------------------------------------------------------------------
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -73,7 +79,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
-      topLevelWidget(nullptr),
+      topLevelWidgets(),
       isClosed(true),
       isVisible(false),
       isEmbed(false),
@@ -95,7 +101,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
-      topLevelWidget(nullptr),
+      topLevelWidgets(),
       isClosed(true),
       isVisible(false),
       isEmbed(false),
@@ -121,7 +127,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
-      topLevelWidget(nullptr),
+      topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
@@ -152,7 +158,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
-      topLevelWidget(nullptr),
+      topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
@@ -642,8 +648,12 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
     self->onReshape(uwidth, uheight);
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->setSize(uwidth, uheight);
+    FOR_EACH_TOP_LEVEL_WIDGET(it)
+    {
+        TopLevelWidget* const widget(*it);
+
+        widget->setSize(uwidth, uheight);
+    }
 #endif
 
     // always repaint after a resize
@@ -657,8 +667,13 @@ void Window::PrivateData::onPuglExpose()
     puglOnDisplayPrepare(view);
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->display();
+    FOR_EACH_TOP_LEVEL_WIDGET(it)
+    {
+        TopLevelWidget* const widget(*it);
+
+        if (widget->isVisible())
+            widget->pData->display();
+    }
 #endif
 }
 
@@ -711,8 +726,13 @@ void Window::PrivateData::onPuglKey(const Widget::KeyboardEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->keyboardEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->keyboardEvent(ev))
+            break;
+    }
 #endif
 }
 
@@ -724,8 +744,13 @@ void Window::PrivateData::onPuglSpecial(const Widget::SpecialEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->specialEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->specialEvent(ev))
+            break;
+    }
 #endif
 }
 
@@ -737,8 +762,13 @@ void Window::PrivateData::onPuglText(const Widget::CharacterInputEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->characterInputEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->characterInputEvent(ev))
+            break;
+    }
 #endif
 }
 
@@ -750,8 +780,13 @@ void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->mouseEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->mouseEvent(ev))
+            break;
+    }
 #endif
 }
 
@@ -763,8 +798,13 @@ void Window::PrivateData::onPuglMotion(const Widget::MotionEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->motionEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->motionEvent(ev))
+            break;
+    }
 #endif
 }
 
@@ -776,8 +816,13 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
         return modal.child->focus();
 
 #ifndef DPF_TEST_WINDOW_CPP
-    if (topLevelWidget != nullptr)
-        topLevelWidget->pData->scrollEvent(ev);
+    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
+    {
+        TopLevelWidget* const widget(*rit);
+
+        if (widget->isVisible() && widget->pData->scrollEvent(ev))
+            break;
+    }
 #endif
 }
 
