@@ -652,7 +652,15 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
     {
         TopLevelWidget* const widget(*it);
 
-        widget->setSize(uwidth, uheight);
+        /* Some special care here, we call Widget::setSize instead of the TopLevelWidget one.
+         * This is because we want TopLevelWidget::setSize to handle both window and widget size,
+         * but we dont want to change window size here, because we are the window..
+         *
+         * So we just call the Widget specific method manually.
+         * Alternatively, we could expose a resize function on the pData, like done with the display function.
+         * But there is nothing extra we need to do in there, so this works fine.
+         */
+        ((Widget*)widget)->setSize(uwidth, uheight);
     }
 #endif
 

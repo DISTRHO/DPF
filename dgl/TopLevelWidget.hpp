@@ -66,6 +66,37 @@ public:
     */
     Window& getWindow() const noexcept;
 
+   /**
+      Check if this top-level widget's window is resizable (by the user or window manager).
+      For situations where this top-level widget is an embed plugin UI and the plugin host does not support resizing,
+      this function can return false where it normally returns true.
+
+      You might want to add a resize handle for such cases, so the user is still allowed to resize the window.
+      (programatically resizing a window is always possible, but the same is not true for the window manager)
+    */
+    bool isResizable() const noexcept;
+
+   /**
+      Set width of this widget's window.
+      @note This will not change the widget's size right away, but be pending on OS resizing the window
+    */
+    void setWidth(uint width);
+
+   /**
+      Set height of this widget's window.
+    */
+    void setHeight(uint height);
+
+   /**
+      Set size of this widget's window, using @a width and @a height values.
+    */
+    void setSize(uint width, uint height);
+
+   /**
+      Set size of this widget's window.
+    */
+    void setSize(const Size<uint>& size);
+
     // TODO group stuff after here, convenience functions present in Window class
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
     bool removeIdleCallback(IdleCallback* callback);

@@ -185,7 +185,7 @@ public:
     void close();
 
    /**
-      Check if this window is resizable.
+      Check if this window is resizable (by the user or window manager).
       @see setResizable
     */
     bool isResizable() const noexcept;

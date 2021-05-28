@@ -96,8 +96,7 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     pData->absolutePos = pos;
     onPositionChanged(ev);
 
-    // repaint the bounds of parent
-    pData->parentWidget->repaint();
+    repaint();
 }
 
 Widget* SubWidget::getParentWidget() const noexcept
