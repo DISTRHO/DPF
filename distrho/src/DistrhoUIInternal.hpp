@@ -301,16 +301,7 @@ public:
 #else
     void setWindowTitle(const char* const uiTitle)
     {
-//         glWindow.setTitle(uiTitle);
-    }
-
-    void setWindowSize(const uint width, const uint height)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(! changingSizeRecursionCheck,);
-
-        changingSizeRecursionCheck = true;
-//         glWindow.setSize(width, height);
-        changingSizeRecursionCheck = false;
+        uiData->window->setTitle(uiTitle);
     }
 
     void setWindowTransientWinId(const uintptr_t /*winId*/)
@@ -322,10 +313,9 @@ public:
 
     bool setWindowVisible(const bool yesNo)
     {
-//         glWindow.setVisible(yesNo);
+        uiData->window->setVisible(yesNo);
 
-//         return ! glApp.isQuiting();
-        return true;
+        return ! uiData->app.isQuiting();
     }
 
     bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/, const uint16_t /*mods*/)

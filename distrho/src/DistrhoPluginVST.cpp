@@ -668,7 +668,7 @@ public:
             }
             else
             {
-                UIExporter tmpUI(nullptr, 0,fPlugin.getSampleRate(),
+                UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();

@@ -145,8 +145,10 @@ void Window::setSize(uint width, uint height)
         // handle geometry constraints here
         if (width < pData->minWidth)
             width = pData->minWidth;
+
         if (height < pData->minHeight)
             height = pData->minHeight;
+
         if (pData->keepAspectRatio)
         {
             const double ratio = static_cast<double>(pData->minWidth)
@@ -165,10 +167,6 @@ void Window::setSize(uint width, uint height)
             }
         }
     }
-
-    // FIXME add default and min props for this
-    if (pData->minWidth == 0 && pData->minHeight == 0)
-        puglSetDefaultSize(pData->view, static_cast<int>(width), static_cast<int>(height));
 
     puglSetWindowSize(pData->view, width, height);
 }

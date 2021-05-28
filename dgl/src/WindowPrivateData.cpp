@@ -145,10 +145,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       modal()
 {
     if (isEmbed)
-    {
-        // puglSetDefaultSize(DEFAULT_WIDTH, DEFAULT_HEIGHT, height);
         puglSetParentWindow(view, parentWindowHandle);
-    }
 
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
 }
@@ -177,10 +174,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       modal()
 {
     if (isEmbed)
-    {
-        puglSetDefaultSize(view, static_cast<int>(width), static_cast<int>(height));
         puglSetParentWindow(view, parentWindowHandle);
-    }
 
     initPre(width, height, resizable);
 }
@@ -226,6 +220,9 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
 
     puglSetMatchingBackendForCurrentBuild(view);
 
+    puglClearMinSize(view);
+    puglSetWindowSize(view, width, height);
+
     puglSetHandle(view, this);
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
@@ -233,11 +230,6 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
-
-    PuglRect rect = puglGetFrame(view);
-    rect.width = width;
-    rect.height = height;
-    puglSetFrame(view, rect);
 }
 
 void Window::PrivateData::initPost()
@@ -303,7 +295,6 @@ void Window::PrivateData::show()
 
         // FIXME
         PuglRect rect = puglGetFrame(view);
-        puglSetDefaultSize(view, static_cast<int>(rect.width), static_cast<int>(rect.height));
         puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -562,10 +553,6 @@ void Window::PrivateData::startModal()
     // make parent give focus to us
     modal.parent->modal.child = this;
 
-    // FIXME?
-    PuglRect rect = puglGetFrame(view);
-    puglSetDefaultSize(view, static_cast<int>(rect.width), static_cast<int>(rect.height));
-
     // make sure both parent and ourselves are visible
     modal.parent->show();
     show();
@@ -659,8 +646,8 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
         /* Some special care here, we call Widget::setSize instead of the TopLevelWidget one.
          * This is because we want TopLevelWidget::setSize to handle both window and widget size,
          * but we dont want to change window size here, because we are the window..
-         *
          * So we just call the Widget specific method manually.
+         *
          * Alternatively, we could expose a resize function on the pData, like done with the display function.
          * But there is nothing extra we need to do in there, so this works fine.
          */
@@ -674,7 +661,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 
 void Window::PrivateData::onPuglExpose()
 {
-    DGL_DBGp("PUGL: onPuglExpose : %p\n", topLevelWidget);
+    DGL_DBGp("PUGL: onPuglExpose\n");
 
     puglOnDisplayPrepare(view);
 
