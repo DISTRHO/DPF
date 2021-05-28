@@ -61,6 +61,11 @@ protected:
     */
     void parameterChanged(uint32_t index, float value) override
     {
+        // some hosts send parameter change events for output parameters even when nothing changed
+        // we catch that here in order to prevent excessive repaints
+        if (d_isEqual(fParameters[index], value))
+            return;
+
         fParameters[index] = value;
         repaint();
     }
@@ -128,7 +133,7 @@ protected:
         y+=lineHeight;
 
         // resizable
-        drawLeft(x, y, "UI resizable:", 20);
+        drawLeft(x, y, "Host resizable:", 20);
         drawRight(x, y, fResizable ? "Yes" : "No", 40);
         y+=lineHeight;
 
