@@ -57,6 +57,15 @@ UI::~UI()
 /* ------------------------------------------------------------------------------------------------------------
  * Host state */
 
+bool UI::isResizable() const noexcept
+{
+#if DISTRHO_UI_USER_RESIZABLE
+    return uiData->window->isResizable();
+#else
+    return false;
+#endif
+}
+
 uint UI::getBackgroundColor() const noexcept
 {
     return uiData->bgColor;

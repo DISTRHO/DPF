@@ -40,11 +40,6 @@ Window& TopLevelWidget::getWindow() const noexcept
     return pData->window;
 }
 
-bool TopLevelWidget::isResizable() const noexcept
-{
-    return pData->window.isResizable();
-}
-
 void TopLevelWidget::setWidth(const uint width)
 {
     pData->window.setWidth(width);
