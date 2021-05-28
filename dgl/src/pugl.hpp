@@ -46,6 +46,10 @@ PUGL_BEGIN_DECLS
 PUGL_API void
 puglBackendEnter(PuglView* view);
 
+// clear minimum size to 0
+PUGL_API void
+puglClearMinSize(PuglView* view);
+
 // missing in pugl, directly returns title char* pointer
 PUGL_API const char*
 puglGetWindowTitle(const PuglView* view);
@@ -62,7 +66,7 @@ puglSetMatchingBackendForCurrentBuild(PuglView* view);
 PUGL_API PuglStatus
 puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect);
 
-// set window size without changing frame x/y position
+// set window size with default size and without changing frame x/y position
 PUGL_API PuglStatus
 puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
 

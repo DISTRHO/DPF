@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,11 +14,9 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoPluginInfo.h"
-
 #include "DistrhoUI.hpp"
 
-#include "Window.hpp"
+#include "ResizeHandle.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -33,7 +31,9 @@ public:
     InfoExampleUI()
         : UI(kInitialWidth, kInitialHeight),
           fSampleRate(getSampleRate()),
-          fScale(1.0f)
+          fResizable(isResizable()),
+          fScale(1.0f),
+          fResizeHandle(this)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
         std::memset(fStrBuf, 0, sizeof(char)*(0xff+1));
@@ -45,6 +45,10 @@ public:
 #endif
 
         setGeometryConstraints(kInitialWidth, kInitialHeight, true);
+
+        // no need to show resize handle if window is user-resizable
+        if (fResizable)
+            fResizeHandle.hide();
     }
 
 protected:
@@ -57,6 +61,11 @@ protected:
     */
     void parameterChanged(uint32_t index, float value) override
     {
+        // some hosts send parameter change events for output parameters even when nothing changed
+        // we catch that here in order to prevent excessive repaints
+        if (d_isEqual(fParameters[index], value))
+            return;
+
         fParameters[index] = value;
         repaint();
     }
@@ -123,6 +132,11 @@ protected:
         drawRight(x, y, (fParameters[kParameterCanRequestParameterValueChanges] > 0.5f) ? "Yes" : "No", 40);
         y+=lineHeight;
 
+        // resizable
+        drawLeft(x, y, "Host resizable:", 20);
+        drawRight(x, y, fResizable ? "Yes" : "No", 40);
+        y+=lineHeight;
+
         // BBT
         x = 200.0f * fScale;
         y = 15.0f * fScale;
@@ -184,7 +198,9 @@ private:
     double fSampleRate;
 
     // UI stuff
+    bool fResizable;
     float fScale;
+    ResizeHandle fResizeHandle;
 
     // temp buf for text
     char fStrBuf[0xff+1];

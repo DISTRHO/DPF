@@ -23,9 +23,6 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_UI
-# undef DISTRHO_UI_USER_RESIZABLE
-# define DISTRHO_UI_USER_RESIZABLE 0
-# define DISTRHO_UI_IS_STANDALONE false
 # include "DistrhoUIInternal.hpp"
 # include "../extra/RingBuffer.hpp"
 #endif
@@ -178,7 +175,7 @@ public:
           fEffect(effect),
           fUiHelper(uiHelper),
           fPlugin(plugin),
-          fUI(this, winId,
+          fUI(this, winId, plugin->getSampleRate(),
               editParameterCallback,
               setParameterCallback,
               setStateCallback,
@@ -213,7 +210,7 @@ public:
             }
         }
 
-        fUI.idle();
+        fUI.plugin_idle();
     }
 
     int16_t getWidth() const
@@ -387,7 +384,7 @@ protected:
 
     void setSize(const uint width, const uint height)
     {
-        fUI.setWindowSize(width, height);
+        // fUI.setWindowSize(width, height);
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
@@ -671,9 +668,7 @@ public:
             }
             else
             {
-                d_lastUiSampleRate = fPlugin.getSampleRate();
-
-                UIExporter tmpUI(nullptr, 0,
+                UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
@@ -694,8 +689,6 @@ public:
                     return 0;
                 }
 # endif
-                d_lastUiSampleRate = fPlugin.getSampleRate();
-
                 fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, fLastScaleFactor);
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE

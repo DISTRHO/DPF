@@ -185,7 +185,7 @@ public:
     void close();
 
    /**
-      Check if this window is resizable.
+      Check if this window is resizable (by the user or window manager).
       @see setResizable
     */
     bool isResizable() const noexcept;
@@ -367,6 +367,10 @@ protected:
       A function called when the window is attempted to be closed.
       Returning true closes the window, which is the default behaviour.
       Override this method and return false to prevent the window from being closed by the user.
+
+      This method is not used for embed windows, and not even made available in DISTRHO_NAMESPACE::UI.
+      For embed windows, closing is handled by the host/parent process and we have no control over it.
+      As such, a close action on embed windows will always succeed and cannot be cancelled.
     */
     virtual bool onClose();
 
@@ -382,6 +386,13 @@ protected:
       The default implementation sets up drawing context where necessary.
     */
     virtual void onReshape(uint width, uint height);
+
+   /**
+      A function called when scale factor requested for this window changes.
+      The default implementation does nothing.
+      WARNING function needs a proper name
+    */
+    virtual void onScaleFactorChanged(double scaleFactor);
 
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**

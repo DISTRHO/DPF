@@ -46,6 +46,8 @@ void Widget::setVisible(bool visible)
 
     pData->visible = visible;
     repaint();
+
+    // FIXME check case of hiding a previously visible widget, does it trigger a repaint?
 }
 
 void Widget::show()

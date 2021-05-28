@@ -235,6 +235,155 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// Resize handle widget
+
+class ResizeHandle : public TopLevelWidget
+{
+    Rectangle<uint> area;
+    Line<double> l1, l2, l3;
+    uint baseSize;
+
+    // event handling state
+    bool resizing;
+    Point<double> lastResizePoint;
+    Size<double> resizingSize;
+
+public:
+    explicit ResizeHandle(TopLevelWidget* const tlw)
+        : TopLevelWidget(tlw->getWindow()),
+          baseSize(16),
+          resizing(false)
+    {
+        resetArea();
+    }
+
+    explicit ResizeHandle(Window& window)
+        : TopLevelWidget(window),
+          baseSize(16),
+          resizing(false)
+    {
+        resetArea();
+    }
+
+    void setBaseSize(const uint size)
+    {
+        baseSize = std::max(16u, size);
+        resetArea();
+    }
+
+protected:
+    void onDisplay() override
+    {
+        const GraphicsContext& context(getGraphicsContext());
+        const double offset = getScaleFactor();
+
+        // draw white lines, 1px wide
+        Color(1.0f, 1.0f, 1.0f).setFor(context);
+        l1.draw(context, 1);
+        l2.draw(context, 1);
+        l3.draw(context, 1);
+
+        // draw black lines, offset by 1px and 2px wide
+        Color(0.0f, 0.0f, 0.0f).setFor(context);
+        Line<double> l1b(l1), l2b(l2), l3b(l3);
+        l1b.moveBy(offset, offset);
+        l2b.moveBy(offset, offset);
+        l3b.moveBy(offset, offset);
+        l1b.draw(context, 1);
+        l2b.draw(context, 1);
+        l3b.draw(context, 1);
+    }
+
+    bool onMouse(const MouseEvent& ev) override
+    {
+        if (ev.button != 1)
+            return false;
+
+        if (ev.press && area.contains(ev.pos))
+        {
+            resizing = true;
+            resizingSize = Size<double>(getWidth(), getHeight());
+            lastResizePoint = ev.pos;
+            return true;
+        }
+
+        if (resizing && ! ev.press)
+        {
+            resizing = false;
+            return true;
+        }
+
+        return false;
+    }
+
+    bool onMotion(const MotionEvent& ev) override
+    {
+        if (! resizing)
+            return false;
+
+        const Size<double> offset(ev.pos.getX() - lastResizePoint.getX(),
+                                  ev.pos.getY() - lastResizePoint.getY());
+
+        resizingSize += offset;
+        lastResizePoint = ev.pos;
+
+        // TODO min width, min height
+        const uint minWidth = 16;
+        const uint minHeight = 16;
+
+        if (resizingSize.getWidth() < minWidth)
+            resizingSize.setWidth(minWidth);
+        if (resizingSize.getHeight() < minHeight)
+            resizingSize.setHeight(minHeight);
+
+        setSize(resizingSize.getWidth(), resizingSize.getHeight());
+        return true;
+    }
+
+    void onResize(const ResizeEvent& ev) override
+    {
+        TopLevelWidget::onResize(ev);
+        resetArea();
+    }
+
+private:
+    void resetArea()
+    {
+        const double scaleFactor = getScaleFactor();
+        const uint margin = 0.0 * scaleFactor;
+        const uint size = baseSize * scaleFactor;
+
+        area = Rectangle<uint>(getWidth() - size - margin,
+                               getHeight() - size - margin,
+                               size, size);
+
+        recreateLines(area.getX(), area.getY(), size);
+    }
+
+    void recreateLines(const uint x, const uint y, const uint size)
+    {
+        uint linesize = size;
+        uint offset = 0;
+
+        // 1st line, full diagonal size
+        l1.setStartPos(x + size, y);
+        l1.setEndPos(x, y + size);
+
+        // 2nd line, bit more to the right and down, cropped
+        offset += size / 3;
+        linesize -= size / 3;
+        l2.setStartPos(x + linesize + offset, y + offset);
+        l2.setEndPos(x + offset, y + linesize + offset);
+
+        // 3rd line, even more right and down
+        offset += size / 3;
+        linesize -= size / 3;
+        l3.setStartPos(x + linesize + offset, y + offset);
+        l3.setEndPos(x + offset, y + linesize + offset);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // Main Demo Window, having a left-side tab-like widget and main area for current widget
 
 class DemoWindow : public StandaloneWindow,
@@ -263,6 +412,7 @@ public:
           wText(this),
 #endif
           wLeft(this, this),
+          resizer(this),
           curWidget(nullptr)
     {
         wColor.hide();
@@ -350,6 +500,7 @@ private:
     ExampleTextSubWidget wText;
 #endif
     LeftSideWidget wLeft;
+    ResizeHandle resizer;
 
     Widget* curWidget;
 };

@@ -17,7 +17,6 @@
 #include "DistrhoPluginInternal.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_UI_IS_STANDALONE true
 # include "DistrhoUIInternal.hpp"
 # include "../extra/RingBuffer.hpp"
 #else
@@ -110,12 +109,14 @@ public:
     PluginJack(jack_client_t* const client)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
 #if DISTRHO_PLUGIN_HAS_UI
-          fUI(this, 0,
+          fUI(this,
+              0, // winId
+              d_lastSampleRate,
               nullptr, // edit param
               setParameterValueCallback,
               setStateCallback,
               sendNoteCallback,
-              setSizeCallback,
+              nullptr, // window size
               nullptr, // file request
               nullptr, // bundle
               fPlugin.getInstancePointer(),
@@ -494,11 +495,6 @@ protected:
         fPlugin.setParameterValue(index, value);
     }
 
-    void setSize(const uint width, const uint height)
-    {
-        fUI.setWindowSize(width, height);
-    }
-
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
@@ -680,11 +676,6 @@ private:
         thisPtr->setParameterValue(index, value);
     }
 
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        thisPtr->setSize(width, height);
-    }
-
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
     {
@@ -797,9 +788,7 @@ int main()
 
     d_lastBufferSize = jack_get_buffer_size(client);
     d_lastSampleRate = jack_get_sample_rate(client);
-#if DISTRHO_PLUGIN_HAS_UI
-    d_lastUiSampleRate = d_lastSampleRate;
-#endif
+    d_lastCanRequestParameterValueChanges = true;
 
     const PluginJack p(client);
 

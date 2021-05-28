@@ -40,6 +40,26 @@ Window& TopLevelWidget::getWindow() const noexcept
     return pData->window;
 }
 
+void TopLevelWidget::setWidth(const uint width)
+{
+    pData->window.setWidth(width);
+}
+
+void TopLevelWidget::setHeight(const uint height)
+{
+    pData->window.setHeight(height);
+}
+
+void TopLevelWidget::setSize(const uint width, const uint height)
+{
+    pData->window.setSize(width, height);
+}
+
+void TopLevelWidget::setSize(const Size<uint>& size)
+{
+    pData->window.setSize(size);
+}
+
 bool TopLevelWidget::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
     return pData->window.addIdleCallback(callback, timerFrequencyInMs);

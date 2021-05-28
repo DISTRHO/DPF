@@ -152,9 +152,18 @@ START_NAMESPACE_DGL
 // --------------------------------------------------------------------------------------------------------------------
 // expose backend enter
 
-void puglBackendEnter(PuglView* view)
+void puglBackendEnter(PuglView* const view)
 {
     view->backend->enter(view, NULL);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// clear minimum size to 0
+
+void puglClearMinSize(PuglView* const view)
+{
+    view->minWidth  = 0;
+    view->minHeight = 0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -237,10 +246,13 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// set window size without changing frame x/y position
+// set window size with default size and without changing frame x/y position
 
 PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint height)
 {
+    view->defaultWidth  = width;
+    view->defaultHeight = height;
+
 #if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
     // keep upstream behaviour
     const PuglRect frame = { view->frame.x, view->frame.y, (double)width, (double)height };
@@ -271,8 +283,30 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
     // matches upstream pugl, except we use XResizeWindow instead of XMoveResizeWindow
     if (view->impl->win)
     {
-        if (! XResizeWindow(view->world->impl->display, view->impl->win, width, height))
+        Display* const display = view->world->impl->display;
+
+        if (! XResizeWindow(display, view->impl->win, width, height))
             return PUGL_UNKNOWN_ERROR;
+
+#if 0
+        // custom handling for embed non-resizable windows
+        if (view->parent != 0 && ! view->hints[PUGL_RESIZABLE])
+        {
+            XSizeHints sizeHints = {};
+            sizeHints.flags       = PSize | PBaseSize | PMinSize | PMaxSize;
+            sizeHints.width       = static_cast<int>(width);
+            sizeHints.height      = static_cast<int>(height);
+            sizeHints.base_width  = width;
+            sizeHints.base_height = height;
+            sizeHints.min_width   = width;
+            sizeHints.min_height  = height;
+            sizeHints.max_width   = width;
+            sizeHints.max_height  = height;
+            XSetNormalHints(display, view->impl->win, &sizeHints);
+        }
+#endif
+
+        updateSizeHints(view);
     }
 #endif
 

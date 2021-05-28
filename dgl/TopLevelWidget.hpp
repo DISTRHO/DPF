@@ -66,6 +66,27 @@ public:
     */
     Window& getWindow() const noexcept;
 
+   /**
+      Set width of this widget's window.
+      @note This will not change the widget's size right away, but be pending on OS resizing the window
+    */
+    void setWidth(uint width);
+
+   /**
+      Set height of this widget's window.
+    */
+    void setHeight(uint height);
+
+   /**
+      Set size of this widget's window, using @a width and @a height values.
+    */
+    void setSize(uint width, uint height);
+
+   /**
+      Set size of this widget's window.
+    */
+    void setSize(const Size<uint>& size);
+
     // TODO group stuff after here, convenience functions present in Window class
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
     bool removeIdleCallback(IdleCallback* callback);

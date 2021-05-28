@@ -32,15 +32,15 @@ examples: dgl
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
-ifneq ($(MACOS_OR_WINDOWS),true)
-	# ExternalUI is WIP
-	$(MAKE) all -C examples/ExternalUI
-	install -d bin/d_extui-dssi
-	install -d bin/d_extui.lv2
-	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.sh
-	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui-dssi/d_extui.sh
-	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
-endif
+# ifneq ($(MACOS_OR_WINDOWS),true)
+# 	# ExternalUI is WIP
+# 	$(MAKE) all -C examples/ExternalUI
+# 	install -d bin/d_extui-dssi
+# 	install -d bin/d_extui.lv2
+# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.sh
+# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui-dssi/d_extui.sh
+# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
+# endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator
