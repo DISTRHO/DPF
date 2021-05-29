@@ -123,6 +123,11 @@ void SubWidget::setNeedsFullViewportDrawing(const bool needsFullViewportForDrawi
     pData->needsFullViewportForDrawing = needsFullViewportForDrawing;
 }
 
+void SubWidget::setSkipDrawing(const bool skipDrawing)
+{
+    pData->skipDrawing = skipDrawing;
+}
+
 void SubWidget::onPositionChanged(const PositionChangedEvent&)
 {
 }

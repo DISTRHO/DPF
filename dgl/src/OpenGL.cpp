@@ -570,6 +570,9 @@ template class ImageBaseSwitch<OpenGLImage>;
 
 void SubWidget::PrivateData::display(const uint width, const uint height, const double autoScaleFactor)
 {
+    if (skipDrawing)
+        return;
+
     bool needsDisableScissor = false;
 
     if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))

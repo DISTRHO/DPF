@@ -35,7 +35,6 @@ START_NAMESPACE_DGL
 // -----------------------------------------------------------------------
 // Forward class names
 
-class BlendishWidget;
 class NanoVG;
 
 // -----------------------------------------------------------------------
@@ -862,7 +861,6 @@ private:
     NVGcontext* const fContext;
     bool fInFrame;
     bool fIsSubWidget;
-    friend class BlendishWidget;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoVG)
 };

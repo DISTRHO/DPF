@@ -126,6 +126,11 @@ public:
     */
     void setNeedsFullViewportDrawing(bool needsFullViewportForDrawing = true);
 
+   /**
+      Indicate that this subwidget should not be drawn on screen, typically because it is managed by something else.
+    */
+    void setSkipDrawing(bool skipDrawing = true);
+
 protected:
    /**
       A function called when the subwidget's absolute position is changed.
