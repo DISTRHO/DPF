@@ -61,6 +61,7 @@ public:
     { return Window::addIdleCallback(callback, timerFrequencyInMs); }
     bool removeIdleCallback(IdleCallback* callback) { return Window::removeIdleCallback(callback); }
     const GraphicsContext& getGraphicsContext() const noexcept { return Window::getGraphicsContext(); }
+    double getScaleFactor() const noexcept { return Window::getScaleFactor(); }
     void setGeometryConstraints(uint minimumWidth, uint minimumHeight,
                                 bool keepAspectRatio = false, bool automaticallyScale = false)
     { Window::setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale); }
