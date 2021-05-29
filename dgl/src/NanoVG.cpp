@@ -945,7 +945,7 @@ NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parent, int flags)
     : SubWidget(parent),
       NanoVG(flags)
 {
-    pData->needsViewportScaling = true;
+    setNeedsViewportScaling();
 }
 
 template class NanoBaseWidget<SubWidget>;

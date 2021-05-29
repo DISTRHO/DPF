@@ -123,6 +123,11 @@ void SubWidget::setNeedsFullViewportDrawing(const bool needsFullViewportForDrawi
     pData->needsFullViewportForDrawing = needsFullViewportForDrawing;
 }
 
+void SubWidget::setNeedsViewportScaling(const bool needsViewportScaling)
+{
+    pData->needsViewportScaling = needsViewportScaling;
+}
+
 void SubWidget::setSkipDrawing(const bool skipDrawing)
 {
     pData->skipDrawing = skipDrawing;

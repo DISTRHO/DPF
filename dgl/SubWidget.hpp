@@ -127,6 +127,11 @@ public:
     void setNeedsFullViewportDrawing(bool needsFullViewportForDrawing = true);
 
    /**
+      Indicate that this subwidget will always draw at its own internal size and needs scaling to fit target size.
+    */
+    void setNeedsViewportScaling(bool needsViewportScaling = true);
+
+   /**
       Indicate that this subwidget should not be drawn on screen, typically because it is managed by something else.
     */
     void setSkipDrawing(bool skipDrawing = true);
@@ -141,7 +146,6 @@ private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Widget;
-    template <class BaseWidget> friend class NanoBaseWidget;
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SubWidget)
 };
 
