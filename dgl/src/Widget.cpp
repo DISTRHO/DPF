@@ -162,34 +162,37 @@ void Widget::setId(uint id) noexcept
     pData->id = id;
 }
 
-bool Widget::onKeyboard(const KeyboardEvent&)
+bool Widget::onKeyboard(const KeyboardEvent& ev)
 {
-    return false;
+    return pData->giveKeyboardEventForSubWidgets(ev);
 }
 
-bool Widget::onSpecial(const SpecialEvent&)
+bool Widget::onSpecial(const SpecialEvent& ev)
 {
-    return false;
+    return pData->giveSpecialEventForSubWidgets(ev);
 }
 
-bool Widget::onCharacterInput(const CharacterInputEvent&)
+bool Widget::onCharacterInput(const CharacterInputEvent& ev)
 {
-    return false;
+    return pData->giveCharacterInputEventForSubWidgets(ev);
 }
 
-bool Widget::onMouse(const MouseEvent&)
+bool Widget::onMouse(const MouseEvent& ev)
 {
-    return false;
+    MouseEvent rev = ev;
+    return pData->giveMouseEventForSubWidgets(rev);
 }
 
-bool Widget::onMotion(const MotionEvent&)
+bool Widget::onMotion(const MotionEvent& ev)
 {
-    return false;
+    MotionEvent rev = ev;
+    return pData->giveMotionEventForSubWidgets(rev);
 }
 
-bool Widget::onScroll(const ScrollEvent&)
+bool Widget::onScroll(const ScrollEvent& ev)
 {
-    return false;
+    ScrollEvent rev = ev;
+    return pData->giveScrollEventForSubWidgets(rev);
 }
 
 void Widget::onResize(const ResizeEvent&)
