@@ -97,13 +97,6 @@ public:
           fURIDs(uridMap),
           fWinIdWasNull(winId == 0)
     {
-#if ! DISTRHO_UI_USER_RESIZABLE
-        // this is not needed, hosts can query child window size
-        // it is best for them to do so anyway, since properties other than current-size are important (like ratio)
-        if (fUiResize != nullptr && winId != 0)
-            fUiResize->ui_resize(fUiResize->handle, fUI.getWidth(), fUI.getHeight());
-#endif
-
         if (widget != nullptr)
             *widget = (LV2UI_Widget)fUI.getNativeWindowHandle();
 
