@@ -56,7 +56,7 @@ public:
       idle() is called at regular intervals.
       @note This function is meant for standalones only, *never* call this from plugins.
     */
-    void exec(uint idleTimeInMs = 10);
+    void exec(uint idleTimeInMs = 30);
 
    /**
       Quit the application.

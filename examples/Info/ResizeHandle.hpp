@@ -112,8 +112,12 @@ protected:
 
         if (resizingSize.getWidth() < minWidth)
             resizingSize.setWidth(minWidth);
+        if (resizingSize.getWidth() > 16384)
+            resizingSize.setWidth(16384);
         if (resizingSize.getHeight() < minHeight)
             resizingSize.setHeight(minHeight);
+        if (resizingSize.getHeight() > 16384)
+            resizingSize.setHeight(16384);
 
         setSize(resizingSize.getWidth(), resizingSize.getHeight());
         return true;
