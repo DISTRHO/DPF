@@ -291,23 +291,6 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
         if (! XResizeWindow(display, view->impl->win, width, height))
             return PUGL_UNKNOWN_ERROR;
 
-#if 0
-        // custom handling for embed non-resizable windows
-        if (view->parent != 0 && ! view->hints[PUGL_RESIZABLE])
-        {
-            XSizeHints sizeHints = {};
-            sizeHints.flags       = PSize | PBaseSize | PMinSize | PMaxSize;
-            sizeHints.width       = static_cast<int>(width);
-            sizeHints.height      = static_cast<int>(height);
-            sizeHints.base_width  = width;
-            sizeHints.base_height = height;
-            sizeHints.min_width   = width;
-            sizeHints.min_height  = height;
-            sizeHints.max_width   = width;
-            sizeHints.max_height  = height;
-            XSetNormalHints(display, view->impl->win, &sizeHints);
-        }
-#endif
         if (const PuglStatus status = updateSizeHints(view))
             return status;
 

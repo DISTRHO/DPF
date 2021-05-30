@@ -131,7 +131,6 @@ static const char* const lv2ManifestUiExtensionData[] =
     "opts:interface",
     "ui:idleInterface",
     "ui:showInterface",
-    "ui:resize",
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     LV2_PROGRAMS__UIInterface,
 #endif
@@ -145,7 +144,6 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
     "ui:noUserResize",
 # endif
     "ui:parent",
-    "ui:resize",
     "ui:touch",
 #endif
 #if DISTRHO_PLUGIN_WANT_STATEFILES

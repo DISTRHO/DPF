@@ -81,7 +81,7 @@ public:
               setParameterCallback,
               setStateCallback,
               sendNoteCallback,
-              setSizeCallback,
+              nullptr, // resize is very messy, hosts can do it without extensions
               fileRequestCallback,
               bundlePath,
               dspPtr,
@@ -90,7 +90,6 @@ public:
               fgColor),
           fUridMap(uridMap),
           fUiRequestValue(getLv2Feature<LV2UI_Request_Value>(features, LV2_UI__requestValue)),
-          fUiResize(getLv2Feature<LV2UI_Resize>(features, LV2_UI__resize)),
           fUiTouch(getLv2Feature<LV2UI_Touch>(features, LV2_UI__touch)),
           fController(controller),
           fWriteFunction(writeFunc),
@@ -322,14 +321,6 @@ protected:
     }
 #endif
 
-    void setSize(const uint width, const uint height)
-    {
-        // report window size change to host.
-        // at the moment no lv2 hosts automatically adapt to child window size changes, so this is still needed
-        if (fUiResize != nullptr && ! fWinIdWasNull)
-            fUiResize->ui_resize(fUiResize->handle, width, height);
-    }
-
     bool fileRequest(const char* const key)
     {
         d_stdout("UI file request %s %p", key, fUiRequestValue);
@@ -355,7 +346,6 @@ private:
     // LV2 features
     const LV2_URID_Map*        const fUridMap;
     const LV2UI_Request_Value* const fUiRequestValue;
-    const LV2UI_Resize*        const fUiResize;
     const LV2UI_Touch*         const fUiTouch;
 
     // LV2 UI stuff
@@ -422,11 +412,6 @@ private:
         uiPtr->sendNote(channel, note, velocity);
     }
 #endif
-
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        uiPtr->setSize(width, height);
-    }
 
     static bool fileRequestCallback(void* ptr, const char* key)
     {
