@@ -575,21 +575,33 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
 
     bool needsDisableScissor = false;
 
-    if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
+    if (needsViewportScaling)
+    {
+        // limit viewport to widget bounds
+        const int x = absolutePos.getX();
+        const int w = static_cast<int>(self->getWidth());
+        const int h = static_cast<int>(self->getHeight());
+
+        if (viewportScaleFactor != 0.0)
+        {
+            glViewport(x,
+                       -static_cast<int>(height * viewportScaleFactor - height + absolutePos.getY() + 0.5),
+                       static_cast<int>(width * viewportScaleFactor + 0.5),
+                       static_cast<int>(height * viewportScaleFactor + 0.5));
+        }
+        else
+        {
+            const int y = static_cast<int>(height - self->getHeight()) - absolutePos.getY();
+            glViewport(x, y, w, h);
+        }
+    }
+    else if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
     {
         // full viewport size
         glViewport(0,
-                   -static_cast<int>(height * autoScaleFactor - height + 0.5),
-                   static_cast<int>(width * autoScaleFactor + 0.5),
-                   static_cast<int>(height * autoScaleFactor + 0.5));
-    }
-    else if (needsViewportScaling)
-    {
-        // limit viewport to widget bounds
-        glViewport(absolutePos.getX(),
-                   static_cast<int>(height - self->getHeight()) - absolutePos.getY(),
-                   static_cast<int>(self->getWidth()),
-                   static_cast<int>(self->getHeight()));
+                   -static_cast<int>(height - height + 0.5),
+                   static_cast<int>(width + 0.5),
+                   static_cast<int>(height + 0.5));
     }
     else
     {

@@ -30,7 +30,8 @@ struct SubWidget::PrivateData {
     Point<int> absolutePos;
     bool needsFullViewportForDrawing; // needed for widgets drawing out of bounds
     bool needsViewportScaling; // needed for NanoVG
-    bool skipDrawing;
+    bool skipDrawing; // for context reuse in NanoVG based guis
+    double viewportScaleFactor; // auto-scaling for NanoVG
 
     explicit PrivateData(SubWidget* const s, Widget* const pw);
     ~PrivateData();

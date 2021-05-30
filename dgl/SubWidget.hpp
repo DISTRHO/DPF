@@ -129,7 +129,7 @@ public:
    /**
       Indicate that this subwidget will always draw at its own internal size and needs scaling to fit target size.
     */
-    void setNeedsViewportScaling(bool needsViewportScaling = true);
+    void setNeedsViewportScaling(bool needsViewportScaling = true, double autoScaleFactor = 0.0);
 
    /**
       Indicate that this subwidget should not be drawn on screen, typically because it is managed by something else.
