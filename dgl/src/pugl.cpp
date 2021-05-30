@@ -239,7 +239,10 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
 #else
-    return updateSizeHints(view);
+    if (const PuglStatus status = updateSizeHints(view))
+        return status;
+
+    XFlush(view->impl->display);
 #endif
 
     return PUGL_SUCCESS;
@@ -283,7 +286,7 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
     // matches upstream pugl, except we use XResizeWindow instead of XMoveResizeWindow
     if (view->impl->win)
     {
-        Display* const display = view->world->impl->display;
+        Display* const display = view->impl->display;
 
         if (! XResizeWindow(display, view->impl->win, width, height))
             return PUGL_UNKNOWN_ERROR;
@@ -305,8 +308,10 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
             XSetNormalHints(display, view->impl->win, &sizeHints);
         }
 #endif
+        if (const PuglStatus status = updateSizeHints(view))
+            return status;
 
-        updateSizeHints(view);
+        XFlush(display);
     }
 #endif
 
