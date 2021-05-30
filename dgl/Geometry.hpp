@@ -219,6 +219,8 @@ public:
     Size<T>& operator-=(const Size<T>& size) noexcept;
     Size<T>& operator*=(double m) noexcept;
     Size<T>& operator/=(double d) noexcept;
+    Size<T> operator*(double m) const noexcept;
+    Size<T> operator/(double m) const noexcept;
     bool operator==(const Size<T>& size) const noexcept;
     bool operator!=(const Size<T>& size) const noexcept;
 

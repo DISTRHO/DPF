@@ -325,6 +325,22 @@ Size<T>& Size<T>::operator/=(double d) noexcept
 }
 
 template<typename T>
+Size<T> Size<T>::operator*(const double m) const noexcept
+{
+    Size<T> size(fWidth, fHeight);
+    size *= m;
+    return size;
+}
+
+template<typename T>
+Size<T> Size<T>::operator/(const double m) const noexcept
+{
+    Size<T> size(fWidth, fHeight);
+    size /= m;
+    return size;
+}
+
+template<typename T>
 bool Size<T>::operator==(const Size<T>& size) const noexcept
 {
     return (fWidth == size.fWidth && fHeight == size.fHeight);
