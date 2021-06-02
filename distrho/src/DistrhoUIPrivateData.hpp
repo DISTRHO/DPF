@@ -94,6 +94,9 @@ struct UI::PrivateData {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     double scaleFactor;
     uintptr_t winId;
+# ifndef DGL_FILE_BROWSER_DISABLED
+    char* uiStateFileKeyRequest;
+# endif
 #endif
 
     // Callbacks
@@ -118,6 +121,9 @@ struct UI::PrivateData {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
           scaleFactor(1.0),
           winId(0),
+# ifndef DGL_FILE_BROWSER_DISABLED
+          uiStateFileKeyRequest(nullptr),
+# endif
 #endif
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
@@ -142,6 +148,11 @@ struct UI::PrivateData {
 #  endif
 # endif
 #endif
+    }
+
+    ~PrivateData() noexcept
+    {
+        std::free(uiStateFileKeyRequest);
     }
 
     void editParamCallback(const uint32_t rindex, const bool started)
@@ -174,15 +185,8 @@ struct UI::PrivateData {
             setSizeCallbackFunc(callbacksPtr, width, height);
     }
 
-    bool fileRequestCallback(const char* key)
-    {
-        if (fileRequestCallbackFunc != nullptr)
-            return fileRequestCallbackFunc(callbacksPtr, key);
-
-        // TODO use old style DPF dialog here
-
-        return false;
-    }
+    // implemented below, after PluginWindow
+    bool fileRequestCallback(const char* const key);
 
     static UI::PrivateData* s_nextPrivateData;
     static PluginWindow& createNextWindow(UI* ui, uint width, uint height);
@@ -261,6 +265,16 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
+#  if DISTRHO_PLUGIN_WANT_STATEFILES
+        if (char* const key = ui->uiData->uiStateFileKeyRequest)
+        {
+            ui->uiData->uiStateFileKeyRequest = nullptr;
+            ui->stateChanged(key, filename);
+            std::free(key);
+            return;
+        }
+#  endif
+
         ui->uiFileBrowserSelected(filename);
     }
 # endif
@@ -268,6 +282,31 @@ protected:
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+
+// -----------------------------------------------------------------------
+// UI private data fileRequestCallback, which requires PluginWindow definitions
+
+inline bool UI::PrivateData::fileRequestCallback(const char* const key)
+{
+    if (fileRequestCallbackFunc != nullptr)
+        return fileRequestCallbackFunc(callbacksPtr, key);
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
+    std::free(uiStateFileKeyRequest);
+    uiStateFileKeyRequest = strdup(key);
+    DISTRHO_SAFE_ASSERT_RETURN(uiStateFileKeyRequest != nullptr, false);
+
+    char title[0xff];
+    snprintf(title, sizeof(title)-1u, DISTRHO_PLUGIN_NAME ": %s", key);
+    title[sizeof(title)-1u] = '\0';
+
+    Window::FileBrowserOptions opts;
+    opts.title = title;
+    return window->openFileBrowser(opts);
+#endif
+
+    return false;
+}
 
 // -----------------------------------------------------------------------
 
