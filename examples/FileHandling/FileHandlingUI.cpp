@@ -183,12 +183,20 @@ protected:
     {
         fScale = static_cast<float>(ev.size.getHeight())/kInitialHeight;
 
+        fButton1.setAbsolutePos(5*fScale, 5*fScale);
+        fButton2.setAbsolutePos(5*fScale, 105*fScale);
+        fButton3.setAbsolutePos(5*fScale, 205*fScale);
+
+        fButton1.setSize(100*fScale, 30*fScale);
+        fButton2.setSize(100*fScale, 30*fScale);
+        fButton3.setSize(100*fScale, 30*fScale);
+
         UI::onResize(ev);
     }
 
     void buttonClicked(Button* const button, bool) override
     {
-        States stateId = kStateCount;
+        States stateId;
 
         /**/ if (button == &fButton1)
             stateId = kStateFile1;
@@ -196,8 +204,7 @@ protected:
             stateId = kStateFile2;
         else if (button == &fButton3)
             stateId = kStateFile3;
-
-        if (stateId == kStateCount)
+        else
             return;
 
         requestStateFile(kStateKeys[stateId]);

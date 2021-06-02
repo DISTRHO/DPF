@@ -21,6 +21,7 @@ dgl:
 
 examples: dgl
 	$(MAKE) all -C examples/CVPort
+	$(MAKE) all -C examples/FileHandling
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
 	$(MAKE) all -C examples/Meters
@@ -64,6 +65,7 @@ clean:
 	$(MAKE) clean -C dgl
 	$(MAKE) clean -C examples/CVPort
 	$(MAKE) clean -C examples/CairoUI
+	$(MAKE) clean -C examples/FileHandling
 	$(MAKE) clean -C examples/Info
 	$(MAKE) clean -C examples/Latency
 	$(MAKE) clean -C examples/Meters
