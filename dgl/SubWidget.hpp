@@ -122,6 +122,12 @@ public:
     void repaint() noexcept override;
 
    /**
+      Bring this widget to the "front" of the parent widget.
+      Makes the widget behave as if it was the last to be registered on the parent widget, thus being "in front".
+    */
+    virtual void toFront();
+
+   /**
       Indicate that this subwidget will draw out of bounds, and thus needs the entire viewport available for drawing.
     */
     void setNeedsFullViewportDrawing(bool needsFullViewportForDrawing = true);

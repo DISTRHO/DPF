@@ -156,37 +156,43 @@ public:
    /**
       Mouse press or release event.
 
-      @a button The button number starting from 1 (1 = left, 2 = middle, 3 = right).
-      @a press  True if the button was pressed, false if released.
-      @a pos    The widget-relative coordinates of the pointer.
+      @a button      The button number starting from 1 (1 = left, 2 = middle, 3 = right).
+      @a press       True if the button was pressed, false if released.
+      @a pos         The widget-relative coordinates of the pointer.
+      @a absolutePos The absolute coordinates of the pointer.
       @see onMouse
     */
     struct MouseEvent : BaseEvent {
         uint button;
         bool press;
         Point<double> pos;
+        Point<double> absolutePos;
 
         /** Constuctor */
         MouseEvent() noexcept
             : BaseEvent(),
               button(0),
               press(false),
-              pos(0.0, 0.0) {}
+              pos(0.0, 0.0),
+              absolutePos(0.0, 0.0) {}
     };
 
    /**
       Mouse motion event.
 
-      @a pos The widget-relative coordinates of the pointer.
+      @a pos         The widget-relative coordinates of the pointer.
+      @a absolutePos The absolute coordinates of the pointer.
       @see onMotion
     */
     struct MotionEvent : BaseEvent {
         Point<double> pos;
+        Point<double> absolutePos;
 
         /** Constuctor */
         MotionEvent() noexcept
             : BaseEvent(),
-              pos(0.0, 0.0) {}
+              pos(0.0, 0.0),
+              absolutePos(0.0, 0.0) {}
     };
 
    /**
@@ -198,13 +204,15 @@ public:
       Some systems and devices support finer resolution and/or higher values for fast scrolls,
       so programs should handle any value gracefully.
 
-      @a pos       The widget-relative coordinates of the pointer.
-      @a delta     The scroll distance.
-      @a direction The direction of the scroll or "smooth".
+      @a pos         The widget-relative coordinates of the pointer.
+      @a absolutePos The absolute coordinates of the pointer.
+      @a delta       The scroll distance.
+      @a direction   The direction of the scroll or "smooth".
       @see onScroll
     */
     struct ScrollEvent : BaseEvent {
         Point<double> pos;
+        Point<double> absolutePos;
         Point<double> delta;
         ScrollDirection direction;
 
@@ -212,6 +220,7 @@ public:
         ScrollEvent() noexcept
             : BaseEvent(),
               pos(0.0, 0.0),
+              absolutePos(0.0, 0.0),
               delta(0.0, 0.0),
               direction(kScrollSmooth) {}
     };

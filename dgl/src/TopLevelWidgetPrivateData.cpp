@@ -92,6 +92,8 @@ bool TopLevelWidget::PrivateData::mouseEvent(const MouseEvent& ev)
 
         rev.pos.setX(ev.pos.getX() / autoScaleFactor);
         rev.pos.setY(ev.pos.getY() / autoScaleFactor);
+        rev.absolutePos.setX(ev.absolutePos.getX() / autoScaleFactor);
+        rev.absolutePos.setY(ev.absolutePos.getY() / autoScaleFactor);
     }
 
     // give top-level widget chance to catch this event first
@@ -116,6 +118,8 @@ bool TopLevelWidget::PrivateData::motionEvent(const MotionEvent& ev)
 
         rev.pos.setX(ev.pos.getX() / autoScaleFactor);
         rev.pos.setY(ev.pos.getY() / autoScaleFactor);
+        rev.absolutePos.setX(ev.absolutePos.getX() / autoScaleFactor);
+        rev.absolutePos.setY(ev.absolutePos.getY() / autoScaleFactor);
     }
 
     // give top-level widget chance to catch this event first
@@ -140,6 +144,8 @@ bool TopLevelWidget::PrivateData::scrollEvent(const ScrollEvent& ev)
 
         rev.pos.setX(ev.pos.getX() / autoScaleFactor);
         rev.pos.setY(ev.pos.getY() / autoScaleFactor);
+        rev.absolutePos.setX(ev.absolutePos.getX() / autoScaleFactor);
+        rev.absolutePos.setY(ev.absolutePos.getY() / autoScaleFactor);
         rev.delta.setX(ev.delta.getX() / autoScaleFactor);
         rev.delta.setY(ev.delta.getY() / autoScaleFactor);
     }

@@ -945,6 +945,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.button = event->button.button;
         ev.press  = event->type == PUGL_BUTTON_PRESS;
         ev.pos    = Point<double>(event->button.x, event->button.y);
+        ev.absolutePos = ev.pos;
         pData->onPuglMouse(ev);
         break;
     }
@@ -957,6 +958,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.flags = event->motion.flags;
         ev.time  = static_cast<uint>(event->motion.time * 1000.0 + 0.5);
         ev.pos   = Point<double>(event->motion.x, event->motion.y);
+        ev.absolutePos = ev.pos;
         pData->onPuglMotion(ev);
         break;
     }
@@ -971,6 +973,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.pos       = Point<double>(event->scroll.x, event->scroll.y);
         ev.delta     = Point<double>(event->scroll.dx, event->scroll.dy);
         ev.direction = static_cast<ScrollDirection>(event->scroll.direction);
+        ev.absolutePos = ev.pos;
         pData->onPuglScroll(ev);
         break;
     }

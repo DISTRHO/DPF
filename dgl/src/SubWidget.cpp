@@ -15,6 +15,7 @@
  */
 
 #include "SubWidgetPrivateData.hpp"
+#include "WidgetPrivateData.hpp"
 #include "../TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
@@ -116,6 +117,14 @@ void SubWidget::repaint() noexcept
         else
             topw->repaint(getConstrainedAbsoluteArea());
     }
+}
+
+void SubWidget::toFront()
+{
+    std::list<SubWidget*>& subwidgets(pData->parentWidget->pData->subWidgets);
+
+    subwidgets.remove(this);
+    subwidgets.push_back(this);
 }
 
 void SubWidget::setNeedsFullViewportDrawing(const bool needsFullViewportForDrawing)
