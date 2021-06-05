@@ -641,7 +641,12 @@ void lv2_generate_ttl(const char* const basename)
                 if (! designated)
                 {
                     // name and symbol
-                    pluginString += "        lv2:name \"\"\"" + plugin.getParameterName(i) + "\"\"\" ;\n";
+                    const String& paramName(plugin.getParameterName(i));
+
+                    if (paramName.contains('"'))
+                        pluginString += "        lv2:name \"\"\"" + paramName + "\"\"\" ;\n";
+                    else
+                        pluginString += "        lv2:name \"" + paramName + "\" ;\n";
 
                     String symbol(plugin.getParameterSymbol(i));
 
@@ -691,12 +696,15 @@ void lv2_generate_ttl(const char* const basename)
                             else
                                 pluginString += "        [\n";
 
-                            pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
+                            if (enumValue.label.contains('"'))
+                                pluginString += "            rdfs:label  \"\"\"" + enumValue.label + "\"\"\" ;\n";
+                            else
+                                pluginString += "            rdfs:label  \"" + enumValue.label + "\" ;\n";
 
                             if (plugin.getParameterHints(i) & kParameterIsInteger)
                             {
-                                const int roundedValue = (int)(enumValue.value + enumValue.value < 0.0f ? -0.5f : 0.5f);
-                                pluginString += "            rdf:value " + String(roundedValue) + " ;\n";
+                                const int rounded = (int)(enumValue.value + (enumValue.value < 0.0f ? -0.5f : 0.5f));
+                                pluginString += "            rdf:value " + String(rounded) + " ;\n";
                             }
                             else
                             {
@@ -795,7 +803,12 @@ void lv2_generate_ttl(const char* const basename)
             const String comment(plugin.getDescription());
 
             if (comment.isNotEmpty())
-                pluginString += "    rdfs:comment \"\"\"" + comment + "\"\"\" ;\n\n";
+            {
+                if (comment.contains('"'))
+                    pluginString += "    rdfs:comment \"" + comment + "\" ;\n\n";
+                else
+                    pluginString += "    rdfs:comment \"" + comment + "\" ;\n\n";
+            }
         }
 
 #ifdef DISTRHO_PLUGIN_BRAND
@@ -805,24 +818,39 @@ void lv2_generate_ttl(const char* const basename)
 #endif
 
         // name
-        pluginString += "    doap:name \"\"\"" + String(plugin.getName()) + "\"\"\" ;\n";
+        {
+            const String name(plugin.getName());
+
+            if (name.contains('"'))
+                pluginString += "    doap:name \"\"\"" + name + "\"\"\" ;\n";
+            else
+                pluginString += "    doap:name \"" + name + "\" ;\n";
+        }
 
         // license
         {
             const String license(plugin.getLicense());
 
+            // TODO always convert to URL, do best-guess based on known licenses
             if (license.contains("://"))
                 pluginString += "    doap:license <" +  license + "> ;\n\n";
-            else
+            else if (license.contains('"'))
                 pluginString += "    doap:license \"\"\"" +  license + "\"\"\" ;\n\n";
+            else
+                pluginString += "    doap:license \"" +  license + "\" ;\n\n";
         }
 
         // developer
         {
             const String homepage(plugin.getHomePage());
+            const String maker(plugin.getMaker());
 
             pluginString += "    doap:maintainer [\n";
-            pluginString += "        foaf:name \"\"\"" + String(plugin.getMaker()) + "\"\"\" ;\n";
+
+            if (maker.contains('"'))
+                pluginString += "        foaf:name \"\"\"" + maker + "\"\"\" ;\n";
+            else
+                pluginString += "        foaf:name \"" + maker + "\" ;\n";
 
             if (homepage.isNotEmpty())
                 pluginString += "        foaf:homepage <" + homepage + "> ;\n";
