@@ -48,7 +48,13 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, const uint width, 
 
 UI::UI(const uint width, const uint height)
     : UIWidget(UI::PrivateData::createNextWindow(this, width, height)),
-      uiData(UI::PrivateData::s_nextPrivateData) {}
+      uiData(UI::PrivateData::s_nextPrivateData)
+{
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    if (width > 0 && height > 0)
+        Widget::setSize(width, height);
+#endif
+}
 
 UI::~UI()
 {

@@ -68,25 +68,25 @@ public:
 
    /**
       Set width of this widget's window.
-      @note This will not change the widget's size right away, but be pending on OS resizing the window
+      @note This will not change the widget's size right away, but be pending on the OS resizing the window
     */
     void setWidth(uint width);
 
    /**
       Set height of this widget's window.
-      @note This will not change the widget's size right away, but be pending on OS resizing the window
+      @note This will not change the widget's size right away, but be pending on the OS resizing the window
     */
     void setHeight(uint height);
 
    /**
       Set size of this widget's window, using @a width and @a height values.
-      @note This will not change the widget's size right away, but be pending on OS resizing the window
+      @note This will not change the widget's size right away, but be pending on the OS resizing the window
     */
     void setSize(uint width, uint height);
 
    /**
       Set size of this widget's window.
-      @note This will not change the widget's size right away, but be pending on OS resizing the window
+      @note This will not change the widget's size right away, but be pending on the OS resizing the window
     */
     void setSize(const Size<uint>& size);
 
