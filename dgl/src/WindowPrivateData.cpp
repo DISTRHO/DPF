@@ -176,7 +176,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
     if (isEmbed)
         puglSetParentWindow(view, parentWindowHandle);
 
-    initPre(width, height, resizable);
+    initPre(width != 0 ? width : DEFAULT_WIDTH, height != 0 ? height : DEFAULT_HEIGHT, resizable);
 }
 
 Window::PrivateData::~PrivateData()
