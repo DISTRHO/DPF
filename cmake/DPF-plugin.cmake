@@ -92,7 +92,7 @@ include(CMakeParseArguments)
 function(dpf_add_plugin NAME)
   set(options MONOLITHIC)
   set(oneValueArgs UI_TYPE)
-  set(multiValueArgs TARGETS FILES_DSP FILES_UI)
+  set(multiValueArgs TARGETS FILES_DSP FILES_UI FILES_COMMON)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if("${_dpf_plugin_UI_TYPE}" STREQUAL "")
