@@ -161,7 +161,7 @@ void UI::sampleRateChanged(double)
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
-void UI::uiFocus(bool, CrossingMode)
+void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }
 

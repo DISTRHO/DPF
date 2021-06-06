@@ -195,7 +195,7 @@ public:
     // -------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    void exec(IdleCallback* const cb)
+    void exec(DGL_NAMESPACE::IdleCallback* const cb)
     {
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
@@ -228,7 +228,7 @@ public:
     }
 #else
 # if DISTRHO_UI_IS_STANDALONE
-    void exec(IdleCallback* const cb)
+    void exec(DGL_NAMESPACE::IdleCallback* const cb)
     {
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
 

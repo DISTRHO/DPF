@@ -93,7 +93,7 @@ struct OscData {
 
 // -----------------------------------------------------------------------
 
-class UIDssi : public IdleCallback
+class UIDssi : public DGL_NAMESPACE::IdleCallback
 {
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle, const double sampleRate)

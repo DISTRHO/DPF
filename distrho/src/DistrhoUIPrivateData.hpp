@@ -239,7 +239,7 @@ public:
           ui(uiPtr) {}
 
 protected:
-    void onFocus(const bool focus, const CrossingMode mode) override
+    void onFocus(const bool focus, const DGL_NAMESPACE::CrossingMode mode) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
