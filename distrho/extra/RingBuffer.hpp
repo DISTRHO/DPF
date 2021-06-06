@@ -709,6 +709,7 @@ public:
 
         heapBuffer.size = p2size;
         setRingBuffer(&heapBuffer, true);
+        return true;
     }
 
     /** Delete the previously allocated buffer. */
