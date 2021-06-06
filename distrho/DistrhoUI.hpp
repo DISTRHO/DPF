@@ -259,7 +259,7 @@ protected:
 
       The default implementation does nothing.
     */
-    virtual void uiFocus(bool focus, CrossingMode mode);
+    virtual void uiFocus(bool focus, DGL_NAMESPACE::CrossingMode mode);
 
    /**
       Window reshape function, called when the window is resized.

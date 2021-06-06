@@ -100,7 +100,7 @@ static void initSignalHandler()
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_UI
-class PluginJack : public IdleCallback
+class PluginJack : public DGL_NAMESPACE::IdleCallback
 #else
 class PluginJack
 #endif
