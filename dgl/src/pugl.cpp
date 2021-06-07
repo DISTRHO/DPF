@@ -110,6 +110,8 @@ START_NAMESPACE_DGL
 #  define PuglWrapperView DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWrapperView)
 #  define PuglWindow      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWindow)
 # endif
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wdeprecated-declarations"
 # import "pugl-upstream/src/mac.m"
 # import "pugl-upstream/src/mac_stub.m"
 # ifdef DGL_CAIRO
@@ -121,6 +123,7 @@ START_NAMESPACE_DGL
 # ifdef DGL_VULKAN
 #  import "pugl-upstream/src/mac_vulkan.m"
 # endif
+# pragma clang diagnostic pop
 #elif defined(DISTRHO_OS_WINDOWS)
 # include "pugl-upstream/src/win.c"
 # include "pugl-upstream/src/win_stub.c"

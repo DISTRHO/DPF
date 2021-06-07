@@ -45,9 +45,6 @@ class UIExporter
     UI* ui;
     UI::PrivateData* uiData;
 
-    // prevent resize recursion
-    bool changingSizeRecursionCheck;
-
     // -------------------------------------------------------------------
 
 public:
@@ -66,8 +63,7 @@ public:
                const uint32_t bgColor = 0,
                const uint32_t fgColor = 0xffffffff)
         : ui(nullptr),
-          uiData(new UI::PrivateData()),
-          changingSizeRecursionCheck(false)
+          uiData(new UI::PrivateData())
     {
         uiData->sampleRate = sampleRate;
         uiData->dspPtr = dspPtr;
