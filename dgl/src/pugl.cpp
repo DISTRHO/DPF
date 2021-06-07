@@ -161,6 +161,14 @@ void puglBackendEnter(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// expose backend leave
+
+void puglBackendLeave(PuglView* const view)
+{
+    view->backend->leave(view, NULL);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // clear minimum size to 0
 
 void puglClearMinSize(PuglView* const view)

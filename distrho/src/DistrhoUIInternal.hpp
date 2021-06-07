@@ -96,6 +96,8 @@ public:
         g_nextWindowId    = 0;
         g_nextScaleFactor = 0.0;
         g_nextBundlePath  = nullptr;
+#else
+        uiData->window->leaveContext();
 #endif
         UI::PrivateData::s_nextPrivateData = nullptr;
 

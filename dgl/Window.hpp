@@ -362,6 +362,9 @@ public:
     DISTRHO_DEPRECATED_BY("runAsModal(bool)")
     inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
+    // TESTING, DO NOT USE
+    void leaveContext();
+
 protected:
    /**
       A function called when the window is attempted to be closed.

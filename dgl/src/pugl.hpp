@@ -46,6 +46,10 @@ PUGL_BEGIN_DECLS
 PUGL_API void
 puglBackendEnter(PuglView* view);
 
+// expose backend leave
+PUGL_API void
+puglBackendLeave(PuglView* view);
+
 // clear minimum size to 0
 PUGL_API void
 puglClearMinSize(PuglView* view);

@@ -265,6 +265,11 @@ void Window::runAsModal(bool blockWait)
     pData->runAsModal(blockWait);
 }
 
+void Window::leaveContext()
+{
+    pData->leaveContext();
+}
+
 void Window::setGeometryConstraints(const uint minimumWidth,
                                     const uint minimumHeight,
                                     const bool keepAspectRatio,

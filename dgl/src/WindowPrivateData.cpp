@@ -618,6 +618,14 @@ void Window::PrivateData::runAsModal(const bool blockWait)
 }
 
 // -----------------------------------------------------------------------
+// TESTING
+
+void Window::PrivateData::leaveContext()
+{
+    puglBackendLeave(view);
+}
+
+// -----------------------------------------------------------------------
 // pugl events
 
 void Window::PrivateData::onPuglConfigure(const double width, const double height)
