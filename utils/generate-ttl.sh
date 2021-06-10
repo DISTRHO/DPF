@@ -2,9 +2,7 @@
 
 set -e
 
-if [ -d bin ]; then
-  cd bin
-else
+if [ ! -d bin ]; then
   echo "Please run this script from the source root folder"
   exit
 fi
@@ -15,7 +13,7 @@ if [ -f "${PWD}/lv2_ttl_generator.exe" ]; then
   GEN="${PWD}/lv2_ttl_generator.exe"
   EXT=dll
 else
-  GEN="${PWD}/lv2_ttl_generator"
+  GEN="$(realpath ${PWD}/lv2_ttl_generator)"
   if [ -d /Library/Audio ]; then
     EXT=dylib
   else
@@ -23,6 +21,7 @@ else
   fi
 fi
 
+cd bin
 FOLDERS=`find . -type d -name \*.lv2`
 
 for i in ${FOLDERS}; do
