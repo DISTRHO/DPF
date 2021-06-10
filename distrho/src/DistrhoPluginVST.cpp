@@ -1446,6 +1446,8 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
 
+                DISTRHO_NAMESPACE::strncpy(properties->label, plugin.getParameterName(index), VestigeMaxLabelLen);
+
                 const uint32_t hints = plugin.getParameterHints(index);
 
                 if (hints & kParameterIsOutput)
