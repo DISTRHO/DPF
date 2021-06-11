@@ -1446,8 +1446,18 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
 
+                // full name
                 DISTRHO_NAMESPACE::strncpy(properties->label, plugin.getParameterName(index), VestigeMaxLabelLen);
 
+                // short name
+                const String& shortName(plugin.getParameterShortName(index));
+
+                if (shortName.isNotEmpty())
+                    DISTRHO_NAMESPACE::strncpy(properties->shortLabel,
+                                               plugin.getParameterShortName(index),
+                                               VestigeMaxShortLabelLen);
+
+                // parameter hints
                 const uint32_t hints = plugin.getParameterHints(index);
 
                 if (hints & kParameterIsOutput)
@@ -1460,9 +1470,8 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
                 if (hints & kParameterIsInteger)
                 {
-                    properties->flags |= kVstParameterUsesIntegerMinMax;
                     const ParameterRanges& ranges(plugin.getParameterRanges(index));
-
+                    properties->flags |= kVstParameterUsesIntegerMinMax;
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
                 }
