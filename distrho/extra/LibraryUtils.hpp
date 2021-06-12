@@ -20,6 +20,7 @@
 #include "../DistrhoUtils.hpp"
 
 #ifdef DISTRHO_OS_WINDOWS
+# include <windows.h>
 typedef HMODULE lib_t;
 #else
 # include <dlfcn.h>
