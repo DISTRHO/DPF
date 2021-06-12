@@ -23,7 +23,7 @@
 # include "../extra/Sleep.hpp"
 #endif
 
-#include "jackbridge/JackBridge1.cpp"
+#include "jackbridge/JackBridge.cpp"
 #include "lv2/lv2.h"
 
 #ifndef DISTRHO_OS_WINDOWS
@@ -714,10 +714,10 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPortMidiOutBuffer != nullptr, false);
 
-        return jack_midi_event_write(fPortMidiOutBuffer,
-                                     midiEvent.frame,
-                                     midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
-                                     midiEvent.size) == 0;
+        return jackbridge_midi_event_write(fPortMidiOutBuffer,
+                                           midiEvent.frame,
+                                           midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
+                                           midiEvent.size) == 0;
     }
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)

@@ -245,8 +245,10 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for optional libraries
 
-HAVE_JACK  = $(shell $(PKG_CONFIG) --exists jack && echo true)
 HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
+
+# backwards compat
+HAVE_JACK = true
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Generic DGL stuff
@@ -354,11 +356,6 @@ endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set optional libraries specific stuff
-
-ifeq ($(HAVE_JACK),true)
-JACK_FLAGS   = $(shell $(PKG_CONFIG) --cflags jack)
-JACK_LIBS    = $(shell $(PKG_CONFIG) --libs jack)
-endif
 
 ifeq ($(HAVE_LIBLO),true)
 LIBLO_FLAGS  = $(shell $(PKG_CONFIG) --cflags liblo)

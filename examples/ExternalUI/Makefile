@@ -31,10 +31,7 @@ endif
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(HAVE_JACK),true)
 TARGETS += jack
-endif
-
 TARGETS += dssi
 TARGETS += lv2_sep
 

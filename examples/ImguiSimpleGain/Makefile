@@ -34,9 +34,7 @@ LINK_FLAGS += $(shell $(PKG_CONFIG) glew --libs)
 
 ifeq ($(HAVE_OPENGL),true)
 
-ifeq ($(HAVE_JACK),true)
 TARGETS += jack
-endif # HAVE_JACK
 
 ifneq ($(MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_LIBLO),true)

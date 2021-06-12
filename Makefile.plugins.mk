@@ -41,13 +41,12 @@ endif
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
 
-ifeq ($(HAVE_JACK),true)
-BASE_FLAGS += -DHAVE_JACK
-endif
-
 ifeq ($(HAVE_LIBLO),true)
 BASE_FLAGS += -DHAVE_LIBLO
 endif
+
+# backwards compat
+BASE_FLAGS += -DHAVE_JACK
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set files to build
@@ -214,7 +213,7 @@ $(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(JACK_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
 
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)
@@ -233,7 +232,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(JACK_LIBS) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
