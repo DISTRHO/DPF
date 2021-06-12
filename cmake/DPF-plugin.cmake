@@ -173,16 +173,6 @@ endfunction()
 # Add build rules for a JACK program.
 #
 function(dpf__build_jack NAME DGL_LIBRARY)
-  find_package(PkgConfig)
-  pkg_check_modules(JACK "jack")
-  if(NOT JACK_FOUND)
-    dpf__warn_once_only(missing_jack
-      "JACK is not found, skipping the `jack` plugin targets")
-    return()
-  endif()
-
-  link_directories(${JACK_LIBRARY_DIRS})
-
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
@@ -193,8 +183,10 @@ function(dpf__build_jack NAME DGL_LIBRARY)
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
 
-  target_include_directories("${NAME}-jack" PRIVATE ${JACK_INCLUDE_DIRS})
-  target_link_libraries("${NAME}-jack" PRIVATE ${JACK_LIBRARIES})
+  # Note: libjack will be linked at runtime
+  if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
+    target_link_libraries("${NAME}-jack" PRIVATE "dl")
+  endif()
 endfunction()
 
 # dpf__build_ladspa
@@ -625,7 +617,7 @@ function(dpf__add_lv2_ttl_generator)
   endif()
   add_executable(lv2_ttl_generator "${DPF_ROOT_DIR}/utils/lv2-ttl-generator/lv2_ttl_generator.c")
   if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
-    target_link_libraries(lv2_ttl_generator "dl")
+    target_link_libraries(lv2_ttl_generator PRIVATE "dl")
   endif()
 endfunction()
 
