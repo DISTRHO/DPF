@@ -45,6 +45,10 @@ ifeq ($(HAVE_LIBLO),true)
 BASE_FLAGS += -DHAVE_LIBLO
 endif
 
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+JACK_LIBS = -ldl
+endif
+
 # backwards compat
 BASE_FLAGS += -DHAVE_JACK
 
@@ -232,7 +236,7 @@ $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating JACK standalone for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(JACK_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # LADSPA
