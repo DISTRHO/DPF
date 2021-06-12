@@ -104,6 +104,12 @@ The plugin will be treated as an effect, but it will not change the host audio."
    /* --------------------------------------------------------------------------------------------------------
     * Init */
 
+    enum {
+        kPortGroupTop = 0,
+        kPortGroupMiddle,
+        kPortGroupBottom
+    };
+
    /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
@@ -137,30 +143,39 @@ The plugin will be treated as an effect, but it will not change the host audio."
         {
         case 0:
             parameter.name = "top-left";
+            parameter.groupId = kPortGroupTop;
             break;
         case 1:
             parameter.name = "top-center";
+            parameter.groupId = kPortGroupTop;
             break;
         case 2:
             parameter.name = "top-right";
+            parameter.groupId = kPortGroupTop;
             break;
         case 3:
             parameter.name = "middle-left";
+            parameter.groupId = kPortGroupMiddle;
             break;
         case 4:
             parameter.name = "middle-center";
+            parameter.groupId = kPortGroupMiddle;
             break;
         case 5:
             parameter.name = "middle-right";
+            parameter.groupId = kPortGroupMiddle;
             break;
         case 6:
             parameter.name = "bottom-left";
+            parameter.groupId = kPortGroupBottom;
             break;
         case 7:
             parameter.name = "bottom-center";
+            parameter.groupId = kPortGroupBottom;
             break;
         case 8:
             parameter.name = "bottom-right";
+            parameter.groupId = kPortGroupBottom;
             break;
         }
 
@@ -169,6 +184,29 @@ The plugin will be treated as an effect, but it will not change the host audio."
         */
         parameter.symbol = parameter.name;
         parameter.symbol.replace('-', '_');
+    }
+
+   /**
+      Initialize the port group @a groupId.@n
+      This function will be called once,
+      shortly after the plugin is created and all audio ports and parameters have been enumerated.
+    */
+    void initPortGroup(uint32_t groupId, PortGroup& portGroup) override
+    {
+        switch (groupId) {
+        case kPortGroupTop:
+            portGroup.name = "Top";
+            portGroup.symbol = "top";
+            break;
+        case kPortGroupMiddle:
+            portGroup.name = "Middle";
+            portGroup.symbol = "middle";
+            break;
+        case kPortGroupBottom:
+            portGroup.name = "Bottom";
+            portGroup.symbol = "bottom";
+            break;
+        }
     }
 
    /**

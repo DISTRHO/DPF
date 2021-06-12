@@ -138,6 +138,56 @@ static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
  */
 
 /**
+   Parameter designation.@n
+   Allows a parameter to be specially designated for a task, like bypass.
+
+   Each designation is unique, there must be only one parameter that uses it.@n
+   The use of designated parameters is completely optional.
+
+   @note Designated parameters have strict ranges.
+   @see ParameterRanges::adjustForDesignation()
+ */
+enum ParameterDesignation {
+   /**
+     Null or unset designation.
+    */
+    kParameterDesignationNull = 0,
+
+   /**
+     Bypass designation.@n
+     When on (> 0.5f), it means the plugin must run in a bypassed state.
+    */
+    kParameterDesignationBypass = 1
+};
+
+/**
+   Predefined Port Groups Ids.
+
+   This enumeration provides a few commonly used groups for convenient use in plugins.
+   For preventing conflicts with user code, negative values are used here.
+   When rolling your own port groups, you MUST start their group ids from 0 and they MUST be sequential.
+
+   @see PortGroup
+ */
+enum PredefinedPortGroupsIds {
+   /**
+     Null or unset port group.
+    */
+    kPortGroupNone = (uint32_t)-1,
+
+   /**
+     A single channel audio group.
+    */
+    kPortGroupMono = (uint32_t)-2,
+
+   /**
+     A 2-channel discrete stereo audio group,
+     where the 1st audio port is the left channel and the 2nd port is the right channel.
+    */
+    kPortGroupStereo = (uint32_t)-3
+};
+
+/**
    Audio Port.
 
    Can be used as CV port by specifying kAudioPortIsCV in hints,@n
@@ -166,35 +216,23 @@ struct AudioPort {
     String symbol;
 
    /**
+      The group id that this audio/cv port belongs to.
+      No group is assigned by default.
+
+      You can use a group from PredefinedPortGroups or roll your own.@n
+      When rolling your own port groups, you MUST start their group ids from 0 and they MUST be sequential.
+      @see PortGroup, Plugin::initPortGroup
+    */
+    uint32_t groupId;
+
+   /**
       Default constructor for a regular audio port.
     */
     AudioPort() noexcept
         : hints(0x0),
           name(),
-          symbol() {}
-};
-
-/**
-   Parameter designation.@n
-   Allows a parameter to be specially designated for a task, like bypass.
-
-   Each designation is unique, there must be only one parameter that uses it.@n
-   The use of designated parameters is completely optional.
-
-   @note Designated parameters have strict ranges.
-   @see ParameterRanges::adjustForDesignation()
- */
-enum ParameterDesignation {
-   /**
-     Null or unset designation.
-    */
-    kParameterDesignationNull = 0,
-
-   /**
-     Bypass designation.@n
-     When on (> 0.5f), it means the plugin must run in a bypassed state.
-    */
-    kParameterDesignationBypass = 1
+          symbol(),
+          groupId(kPortGroupNone) {}
 };
 
 /**
@@ -472,6 +510,16 @@ struct Parameter {
     uint8_t midiCC;
 
    /**
+      The group id that this parameter belongs to.
+      No group is assigned by default.
+
+      You can use a group from PredefinedPortGroups or roll your own.@n
+      When rolling your own port groups, you MUST start their group ids from 0 and they MUST be sequential.
+      @see PortGroup, Plugin::initPortGroup
+    */
+    uint32_t groupId;
+
+   /**
       Default constructor for a null parameter.
     */
     Parameter() noexcept
@@ -483,7 +531,8 @@ struct Parameter {
           ranges(),
           enumValues(),
           designation(kParameterDesignationNull),
-          midiCC(0) {}
+          midiCC(0),
+          groupId(kPortGroupNone) {}
 
    /**
       Constructor using custom values.
@@ -497,7 +546,8 @@ struct Parameter {
           ranges(def, min, max),
           enumValues(),
           designation(kParameterDesignationNull),
-          midiCC(0) {}
+          midiCC(0),
+          groupId(kPortGroupNone) {}
 
    /**
       Initialize a parameter for a specific designation.
@@ -517,12 +567,47 @@ struct Parameter {
             symbol     = "dpf_bypass";
             unit       = "";
             midiCC     = 0;
+            groupId    = kPortGroupNone;
             ranges.def = 0.0f;
             ranges.min = 0.0f;
             ranges.max = 1.0f;
             break;
         }
     }
+};
+
+/**
+   Port Group.@n
+   Allows to group together audio/cv ports or parameters.
+
+   Each unique group MUST have an unique symbol and a name.
+   A group can be applied to both inputs and outputs (at the same time).
+   The same group cannot be used in audio ports and parameters.
+
+   An audio port group logically combines ports which should be considered part of the same stream.@n
+   For example, two audio ports in a group may form a stereo stream.
+
+   A parameter group provides meta-data to the host to indicate that some parameters belong together.
+
+   The use of port groups is completely optional.
+
+   @see Plugin::initPortGroup, AudioPort::group, Parameter::group
+ */
+struct PortGroup {
+   /**
+      The name of this port group.@n
+      A port group name can contain any character, but hosts might have a hard time with non-ascii ones.@n
+      The name doesn't have to be unique within a plugin instance, but it's recommended.
+    */
+    String name;
+
+   /**
+      The symbol of this port group.@n
+      A port group symbol is a short restricted name used as a machine and human readable identifier.@n
+      The first character must be one of _, a-z or A-Z and subsequent characters can be from _, a-z, A-Z and 0-9.
+      @note Port group symbols MUST be unique within a plugin instance.
+    */
+    String symbol;
 };
 
 /**
@@ -859,6 +944,13 @@ protected:
       This function will be called once, shortly after the plugin is created.
     */
     virtual void initParameter(uint32_t index, Parameter& parameter) = 0;
+
+   /**
+      Initialize the port group @a groupId.@n
+      This function will be called once,
+      shortly after the plugin is created and all audio ports and parameters have been enumerated.
+    */
+    virtual void initPortGroup(uint32_t groupId, PortGroup& portGroup);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
    /**

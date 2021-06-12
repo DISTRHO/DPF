@@ -24,6 +24,7 @@
 #include "lv2/options.h"
 #include "lv2/parameters.h"
 #include "lv2/patch.h"
+#include "lv2/port-groups.h"
 #include "lv2/port-props.h"
 #include "lv2/presets.h"
 #include "lv2/resize-port.h"
@@ -333,6 +334,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
         pluginString += "@prefix mod:   <http://moddevices.com/ns/mod#> .\n";
         pluginString += "@prefix opts:  <" LV2_OPTIONS_PREFIX "> .\n";
+        pluginString += "@prefix pg:    <" LV2_PORT_GROUPS_PREFIX "> .\n";
         pluginString += "@prefix patch: <" LV2_PATCH_PREFIX "> .\n";
         pluginString += "@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n";
         pluginString += "@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n";
@@ -428,6 +430,10 @@ void lv2_generate_ttl(const char* const basename)
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
+                if (port.groupId != kPortGroupNone)
+                    pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
+                                    + plugin.getPortGroupSymbolForId(port.groupId) + "> ;\n";
+
                 // set ranges
                 if (port.hints & kCVPortHasBipolarRange)
                 {
@@ -501,6 +507,10 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
+
+                if (port.groupId != kPortGroupNone)
+                    pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
+                                    + plugin.getPortGroupSymbolForId(port.groupId) + "> ;\n";
 
                 // set ranges
                 if (port.hints & kCVPortHasBipolarRange)
@@ -789,6 +799,15 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__expensive "> ,\n";
                         pluginString += "                         <" LV2_KXSTUDIO_PROPERTIES__NonAutomable "> ;\n";
                     }
+
+                    // TODO midiCC
+
+                    // group
+                    const uint32_t groupId = plugin.getParameterGroupId(i);
+
+                    if (groupId != kPortGroupNone)
+                        pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
+                                        + plugin.getPortGroupSymbolForId(groupId) + "> ;\n";
                 } // ! designated
 
                 if (i+1 == count)
@@ -871,6 +890,57 @@ void lv2_generate_ttl(const char* const basename)
 
             pluginString += "    lv2:microVersion " + String(microVersion) + " ;\n";
             pluginString += "    lv2:minorVersion " + String(minorVersion) + " .\n";
+        }
+
+        // port groups
+        if (const uint32_t portGroupCount = plugin.getPortGroupCount())
+        {
+            bool isInput, isOutput;
+
+            for (uint32_t i = 0; i < portGroupCount; ++i)
+            {
+                const PortGroupWithId& portGroup(plugin.getPortGroupByIndex(i));
+                DISTRHO_SAFE_ASSERT_CONTINUE(portGroup.groupId != kPortGroupNone);
+                DISTRHO_SAFE_ASSERT_CONTINUE(portGroup.symbol.isNotEmpty());
+
+                pluginString += "\n<" DISTRHO_PLUGIN_URI "#portGroup_" + portGroup.symbol + ">\n";
+                isInput = isOutput = false;
+
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+                for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS && !isInput; ++i)
+                    isInput = plugin.getAudioPort(true, i).groupId == portGroup.groupId;
+#endif
+
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+                for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS && !isOutput; ++i)
+                    isOutput = plugin.getAudioPort(false, i).groupId == portGroup.groupId;
+#endif
+
+                for (uint32_t i=0, count=plugin.getParameterCount(); i < count && (!isInput || !isOutput); ++i)
+                {
+                    if (plugin.getParameterGroupId(i) == portGroup.groupId)
+                    {
+                        isInput = isInput || plugin.isParameterInput(i);
+                        isOutput = isOutput || plugin.isParameterOutput(i);
+                    }
+                }
+
+                pluginString += "    a ";
+                if (isInput && !isOutput)
+                    pluginString += "pg:InputGroup";
+                else if (isOutput && !isInput)
+                    pluginString += "pg:OutputGroup";
+                else
+                    pluginString += "pg:Group";
+                pluginString += " ;\n";
+
+#if 0
+                pluginString += "    rdfs:label \"" + portGroup.name + "\" ;\n";
+#else
+                pluginString += "    lv2:name \"" + portGroup.name + "\" ;\n";
+#endif
+                pluginString += "    lv2:symbol \"" + portGroup.symbol + "\" .\n";
+            }
         }
 
         pluginFile << pluginString << std::endl;

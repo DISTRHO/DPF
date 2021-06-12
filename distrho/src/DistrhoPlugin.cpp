@@ -32,6 +32,7 @@ const String                     PluginExporter::sFallbackString;
 const AudioPort                  PluginExporter::sFallbackAudioPort;
 const ParameterRanges            PluginExporter::sFallbackRanges;
 const ParameterEnumerationValues PluginExporter::sFallbackEnumValues;
+const PortGroupWithId            PluginExporter::sFallbackPortGroup;
 
 /* ------------------------------------------------------------------------------------------------------------
  * Plugin */
@@ -141,6 +142,11 @@ void Plugin::initAudioPort(bool input, uint32_t index, AudioPort& port)
         port.symbol  = input ? "audio_in_" : "audio_out_";
         port.symbol += String(index+1);
     }
+}
+
+void Plugin::initPortGroup(const uint32_t groupId, PortGroup& portGroup)
+{
+    fillInPredefinedPortGroupData(groupId, portGroup);
 }
 
 /* ------------------------------------------------------------------------------------------------------------
