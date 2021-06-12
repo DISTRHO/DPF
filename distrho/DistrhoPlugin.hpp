@@ -109,9 +109,12 @@ static const uint32_t kParameterIsLogarithmic = 0x08;
    Parameter is of output type.@n
    When unset, parameter is assumed to be of input type.
 
-   Parameter inputs are changed by the host and must not be changed by the plugin.@n
-   The only exception being when changing programs, see Plugin::loadProgram().@n
+   Parameter inputs are changed by the host and typically should not be changed by the plugin.@n
+   One exception is when changing programs, see Plugin::loadProgram().@n
+   The other exception is with parameter change requests, see Plugin::requestParameterValueChange().@n
    Outputs are changed by the plugin and never modified by the host.
+
+   If you are targetting VST2, make sure to order your parameters so that all inputs are before any outputs.
  */
 static const uint32_t kParameterIsOutput = 0x10;
 
