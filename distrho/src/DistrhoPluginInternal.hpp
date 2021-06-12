@@ -18,7 +18,6 @@
 #define DISTRHO_PLUGIN_INTERNAL_HPP_INCLUDED
 
 #include "../DistrhoPlugin.hpp"
-#include "DistrhoDefines.h"
 
 #include <set>
 
