@@ -23,11 +23,7 @@
 # include "../extra/Sleep.hpp"
 #endif
 
-#include "jack/jack.h"
-#include "jack/metadata.h"
-#include "jack/midiport.h"
-#include "jack/transport.h"
-#include "jack/uuid.h"
+#include "jackbridge/JackBridge1.cpp"
 #include "lv2/lv2.h"
 
 #ifndef DISTRHO_OS_WINDOWS
@@ -36,6 +32,10 @@
 
 #ifndef JACK_METADATA_ORDER
 # define JACK_METADATA_ORDER "http://jackaudio.org/metadata/order"
+#endif
+
+#ifndef JACK_METADATA_PRETTY_NAME
+# define JACK_METADATA_PRETTY_NAME "http://jackaudio.org/metadata/pretty-name"
 #endif
 
 #ifndef JACK_METADATA_SIGNAL_TYPE
@@ -132,7 +132,7 @@ public:
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
         {
             const AudioPort& port(fPlugin.getAudioPort(true, i));
-            fPortAudioIns[i] = jack_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            fPortAudioIns[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
             setAudioPortMetadata(port, fPortAudioIns[i], i);
         }
 # endif
@@ -141,16 +141,16 @@ public:
         {
             std::snprintf(strBuf, 0xff, "out%i", i+1);
             const AudioPort& port(fPlugin.getAudioPort(false, i));
-            fPortAudioOuts[i] = jack_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            fPortAudioOuts[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
             setAudioPortMetadata(port, fPortAudioOuts[i], DISTRHO_PLUGIN_NUM_INPUTS+i);
         }
 # endif
 #endif
 
-        fPortEventsIn = jack_port_register(fClient, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
+        fPortEventsIn = jackbridge_port_register(fClient, "events-in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput, 0);
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fPortMidiOut = jack_port_register(fClient, "midi-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
+        fPortMidiOut = jackbridge_port_register(fClient, "midi-out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput, 0);
         fPortMidiOutBuffer = nullptr;
 #endif
 
@@ -193,17 +193,17 @@ public:
 #endif
         }
 
-        jack_set_buffer_size_callback(fClient, jackBufferSizeCallback, this);
-        jack_set_sample_rate_callback(fClient, jackSampleRateCallback, this);
-        jack_set_process_callback(fClient, jackProcessCallback, this);
-        jack_on_shutdown(fClient, jackShutdownCallback, this);
+        jackbridge_set_buffer_size_callback(fClient, jackBufferSizeCallback, this);
+        jackbridge_set_sample_rate_callback(fClient, jackSampleRateCallback, this);
+        jackbridge_set_process_callback(fClient, jackProcessCallback, this);
+        jackbridge_on_shutdown(fClient, jackShutdownCallback, this);
 
         fPlugin.activate();
 
-        jack_activate(fClient);
+        jackbridge_activate(fClient);
 
 #if DISTRHO_PLUGIN_HAS_UI
-        if (const char* const name = jack_get_client_name(fClient))
+        if (const char* const name = jackbridge_get_client_name(fClient))
             fUI.setWindowTitle(name);
         else
             fUI.setWindowTitle(fPlugin.getName());
@@ -218,7 +218,7 @@ public:
     ~PluginJack()
     {
         if (fClient != nullptr)
-            jack_deactivate(fClient);
+            jackbridge_deactivate(fClient);
 
         if (fLastOutputValues != nullptr)
         {
@@ -240,17 +240,17 @@ public:
             return;
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        jack_port_unregister(fClient, fPortMidiOut);
+        jackbridge_port_unregister(fClient, fPortMidiOut);
         fPortMidiOut = nullptr;
 #endif
 
-        jack_port_unregister(fClient, fPortEventsIn);
+        jackbridge_port_unregister(fClient, fPortEventsIn);
         fPortEventsIn = nullptr;
 
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
         {
-            jack_port_unregister(fClient, fPortAudioIns[i]);
+            jackbridge_port_unregister(fClient, fPortAudioIns[i]);
             fPortAudioIns[i] = nullptr;
         }
 #endif
@@ -258,12 +258,12 @@ public:
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
-            jack_port_unregister(fClient, fPortAudioOuts[i]);
+            jackbridge_port_unregister(fClient, fPortAudioOuts[i]);
             fPortAudioOuts[i] = nullptr;
         }
 #endif
 
-        jack_client_close(fClient);
+        jackbridge_client_close(fClient);
     }
 
     // -------------------------------------------------------------------
@@ -322,7 +322,7 @@ protected:
         const float* audioIns[DISTRHO_PLUGIN_NUM_INPUTS];
 
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-            audioIns[i] = (const float*)jack_port_get_buffer(fPortAudioIns[i], nframes);
+            audioIns[i] = (const float*)jackbridge_port_get_buffer(fPortAudioIns[i], nframes);
 #else
         static const float** audioIns = nullptr;
 #endif
@@ -331,20 +331,20 @@ protected:
         float* audioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];
 
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-            audioOuts[i] = (float*)jack_port_get_buffer(fPortAudioOuts[i], nframes);
+            audioOuts[i] = (float*)jackbridge_port_get_buffer(fPortAudioOuts[i], nframes);
 #else
         static float** audioOuts = nullptr;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         jack_position_t pos;
-        fTimePosition.playing = (jack_transport_query(fClient, &pos) == JackTransportRolling);
+        fTimePosition.playing = (jackbridge_transport_query(fClient, &pos) == JackTransportRolling);
 
         if (pos.unique_1 == pos.unique_2)
         {
             fTimePosition.frame = pos.frame;
 
-            if (pos.valid & JackTransportBBT)
+            if (pos.valid & JackPositionBBT)
             {
                 fTimePosition.bbt.valid = true;
 
@@ -374,8 +374,8 @@ protected:
         updateParameterTriggers();
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fPortMidiOutBuffer = jack_port_get_buffer(fPortMidiOut, nframes);
-        jack_midi_clear_buffer(fPortMidiOutBuffer);
+        fPortMidiOutBuffer = jackbridge_port_get_buffer(fPortMidiOut, nframes);
+        jackbridge_midi_clear_buffer(fPortMidiOutBuffer);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -402,15 +402,15 @@ protected:
         static const uint32_t midiEventCount = 0;
 #endif
 
-        void* const midiInBuf = jack_port_get_buffer(fPortEventsIn, nframes);
+        void* const midiInBuf = jackbridge_port_get_buffer(fPortEventsIn, nframes);
 
-        if (const uint32_t eventCount = std::max(512u - midiEventCount, jack_midi_get_event_count(midiInBuf)))
+        if (const uint32_t eventCount = std::max(512u - midiEventCount, jackbridge_midi_get_event_count(midiInBuf)))
         {
             jack_midi_event_t jevent;
 
             for (uint32_t i=0; i < eventCount; ++i)
             {
-                if (jack_midi_event_get(&jevent, midiInBuf, i) != 0)
+                if (jackbridge_midi_event_get(&jevent, midiInBuf, i) != 0)
                     break;
 
                 // Check if message is control change on channel 1
@@ -575,26 +575,26 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(jackport != nullptr,);
 
-        const jack_uuid_t uuid = jack_port_uuid(jackport);
+        const jack_uuid_t uuid = jackbridge_port_uuid(jackport);
 
-        if (jack_uuid_empty(uuid))
+        if (uuid == JACK_UUID_EMPTY_INITIALIZER)
             return;
 
-        jack_set_property(fClient, uuid, JACK_METADATA_PRETTY_NAME, port.name, "text/plain");
+        jackbridge_set_property(fClient, uuid, JACK_METADATA_PRETTY_NAME, port.name, "text/plain");
 
         {
             char strBuf[0xff];
             snprintf(strBuf, sizeof(0xff)-1, "%u", index);
-            jack_set_property(fClient, uuid, JACK_METADATA_ORDER, strBuf, "http://www.w3.org/2001/XMLSchema#integer");
+            jackbridge_set_property(fClient, uuid, JACK_METADATA_ORDER, strBuf, "http://www.w3.org/2001/XMLSchema#integer");
         }
 
         if (port.hints & kAudioPortIsCV)
         {
-            jack_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "CV", "text/plain");
+            jackbridge_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "CV", "text/plain");
         }
         else
         {
-            jack_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "AUDIO", "text/plain");
+            jackbridge_set_property(fClient, uuid, JACK_METADATA_SIGNAL_TYPE, "AUDIO", "text/plain");
             return;
         }
 
@@ -605,39 +605,39 @@ private:
         {
             if (cvPortScaled)
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-5", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "5", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "-5", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "5", "http://www.w3.org/2001/XMLSchema#integer");
             }
             else
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
             }
         }
         else if (port.hints & kCVPortHasNegativeUnipolarRange)
         {
             if (cvPortScaled)
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-10", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "-10", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
             }
             else
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "-1", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "0", "http://www.w3.org/2001/XMLSchema#integer");
             }
         }
         else if (port.hints & kCVPortHasPositiveUnipolarRange)
         {
             if (cvPortScaled)
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "10", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "10", "http://www.w3.org/2001/XMLSchema#integer");
             }
             else
             {
-                jack_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
-                jack_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__minimum, "0", "http://www.w3.org/2001/XMLSchema#integer");
+                jackbridge_set_property(fClient, uuid, LV2_CORE__maximum, "1", "http://www.w3.org/2001/XMLSchema#integer");
             }
         }
     }
@@ -738,7 +738,7 @@ int main()
     USE_NAMESPACE_DISTRHO;
 
     jack_status_t  status = jack_status_t(0x0);
-    jack_client_t* client = jack_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
+    jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
 
     if (client == nullptr)
     {
@@ -786,8 +786,8 @@ int main()
 
     initSignalHandler();
 
-    d_lastBufferSize = jack_get_buffer_size(client);
-    d_lastSampleRate = jack_get_sample_rate(client);
+    d_lastBufferSize = jackbridge_get_buffer_size(client);
+    d_lastSampleRate = jackbridge_get_sample_rate(client);
     d_lastCanRequestParameterValueChanges = true;
 
     const PluginJack p(client);
