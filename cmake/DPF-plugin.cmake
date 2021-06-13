@@ -596,13 +596,6 @@ endfunction()
 #
 function(dpf__add_plugin_target_definition NAME TARGET)
   string(TOUPPER "${TARGET}" _upperTarget)
-
-  # resolve the alias into the proper name
-  # the name "vst2" is new, "vst" is legacy
-  if(_upperTarget STREQUAL "VST2")
-    set(_upperTarget "VST")
-  endif()
-
   target_compile_definitions("${NAME}" PRIVATE "DISTRHO_PLUGIN_TARGET_${_upperTarget}")
 endfunction()
 
