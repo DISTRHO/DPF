@@ -4,7 +4,6 @@ cache:
     - ${HOME}/debs
 
 jobs:
-  # linux native build
   - name: "Linux native"
     os: linux
     compiler: gcc
@@ -13,13 +12,33 @@ jobs:
       - TARGET="linux"
     services:
       - xvfb
+    script:
+      - sh ${TRAVIS_BUILD_DIR}/.travis/script-linux.sh
+
+  - name: "win32 cross-compilation"
+    os: linux
+    compiler: gcc
+    dist: bionic
+    env:
+      - TARGET="win32"
+    services:
+      - xvfb
+    script:
+      - sh ${TRAVIS_BUILD_DIR}/.travis/script-win32.sh
+
+  - name: "win64 cross-compilation"
+    os: linux
+    compiler: gcc
+    dist: bionic
+    env:
+      - TARGET="win32"
+    services:
+      - xvfb
+    script:
+      - sh ${TRAVIS_BUILD_DIR}/.travis/script-win64.sh
 
 before_install:
   - bash ${TRAVIS_BUILD_DIR}/.travis/before_install.sh
 
 install:
   - bash ${TRAVIS_BUILD_DIR}/.travis/install.sh
-
-script:
-  - make
-  - make -C tests

@@ -11,6 +11,9 @@ echo "==============> Normal build"
 make clean >/dev/null
 make
 
+echo "==============> Run automated tests"
+make -C tests run
+
 echo "==============> No namespace build"
 make clean >/dev/null
 make CXXFLAGS="${_FLAGS} -DDONT_SET_USING_DISTRHO_NAMESPACE -DDONT_SET_USING_DGL_NAMESPACE"
