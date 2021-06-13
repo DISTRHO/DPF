@@ -27,6 +27,9 @@ START_NAMESPACE_DISTRHO
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+#endif
 
 // custom v3_tuid compatible type
 typedef uint32_t dpf_tuid[4];
@@ -73,7 +76,7 @@ class PluginVst3
 {
 public:
     PluginVst3()
-        : fPlugin(this, writeMidiCallback)
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback)
     {
     }
 
@@ -83,6 +86,19 @@ private:
 
     // VST3 stuff
     // TODO
+
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(uint32_t, float)
+    {
+        // TODO
+        return true;
+    }
+
+    static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
+    {
+        return ((PluginVst*)ptr)->requestParameterValueChange(index, value);
+    }
+#endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
@@ -169,7 +185,7 @@ static void gPluginInit()
 
     d_lastBufferSize = 512;
     d_lastSampleRate = 44100.0;
-    gPluginInfo = new PluginExporter(nullptr, nullptr);
+    gPluginInfo = new PluginExporter(nullptr, nullptr, nullptr);
     d_lastBufferSize = 0;
     d_lastSampleRate = 0.0;
 

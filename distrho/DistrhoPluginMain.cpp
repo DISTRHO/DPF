@@ -25,8 +25,8 @@
 #elif defined(DISTRHO_PLUGIN_TARGET_LV2)
 # include "src/DistrhoPluginLV2.cpp"
 # include "src/DistrhoPluginLV2export.cpp"
-#elif defined(DISTRHO_PLUGIN_TARGET_VST)
-# include "src/DistrhoPluginVST.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_VST2)
+# include "src/DistrhoPluginVST2.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
 # include "src/DistrhoPluginVST3.cpp"
 #else
