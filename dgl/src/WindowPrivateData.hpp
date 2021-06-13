@@ -151,6 +151,9 @@ struct Window::PrivateData : IdleCallback {
 #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
     bool openFileBrowser(const Window::FileBrowserOptions& options);
+# ifdef DISTRHO_OS_MAC
+    static void openPanelCallback(PuglView* view, const char* path);
+# endif
 #endif
 
     // modal handling

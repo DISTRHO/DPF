@@ -342,6 +342,49 @@ void puglFallbackOnResize(PuglView* const view)
 #endif
 }
 
+#ifdef DISTRHO_OS_MAC
+// --------------------------------------------------------------------------------------------------------------------
+// macOS specific, setup file browser dialog
+
+bool puglMacOSFilePanelOpen(PuglView* const view,
+                            const char* const startDir, const char* const title, const uint flags,
+                            openPanelCallback callback)
+{
+    PuglInternals* impl = view->impl;
+
+    NSOpenPanel* const panel = [NSOpenPanel openPanel];
+
+    // TODO flags
+    [panel setCanChooseFiles:YES];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:NO];
+
+    [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
+
+    NSString* titleString = [[NSString alloc]
+        initWithBytes:title
+               length:strlen(title)
+             encoding:NSUTF8StringEncoding];
+    [panel setTitle:titleString];
+
+    [panel beginSheetModalForWindow:(impl->window ? impl->window : [view->impl->wrapperView window])
+                  completionHandler:^(NSInteger result)
+    {
+        if (result == NSModalResponseOK && [[panel URL] isFileURL])
+        {
+            NSString* const path = [[panel URL] path];
+            callback(view, [path UTF8String]);
+        }
+        else
+        {
+            callback(view, nullptr);
+        }
+   }];
+
+    return true;
+}
+#endif
+
 #ifdef DISTRHO_OS_WINDOWS
 // --------------------------------------------------------------------------------------------------------------------
 // win32 specific, call ShowWindow with SW_RESTORE

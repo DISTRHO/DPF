@@ -392,7 +392,6 @@ void Window::PrivateData::idleCallback()
     char* path;
     if (sofdFileDialogGetPath(&path))
     {
-        // TODO ignore null path??
         self->onFileSelected(path);
         sofdFileDialogFree(path);
     }
@@ -481,7 +480,13 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     // --------------------------------------------------------------------------
     // show
 
-#ifdef DISTRHO_OS_WINDOWS
+# ifdef DISTRHO_OS_MAC
+    uint flags = 0x0;
+    // TODO flags
+    return puglMacOSFilePanelOpen(view, startDir, title, flags, openPanelCallback);
+# endif
+
+# ifdef DISTRHO_OS_WINDOWS
     // the old and compatible dialog API
     OPENFILENAMEW ofn;
     memset(&ofn, 0, sizeof(ofn));
@@ -528,16 +533,24 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
         win32SelectedFile = kWin32SelectedFileCancelled;
 
     return true;
-#endif
-#ifdef HAVE_X11
+# endif
+
+# ifdef HAVE_X11
     uint flags = 0x0;
     // TODO flags
     return sofdFileDialogShow(view, startDir, title, flags, options.width, options.height);
-#endif
+# endif
 
     return false;
 }
-#endif
+
+# ifdef DISTRHO_OS_MAC
+void Window::PrivateData::openPanelCallback(PuglView* const view, const char* const path)
+{
+    ((Window::PrivateData*)puglGetHandle(view))->self->onFileSelected(path);
+}
+# endif
+#endif // ! DGL_FILE_BROWSER_DISABLED
 
 // -----------------------------------------------------------------------
 // modal handling

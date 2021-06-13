@@ -82,6 +82,12 @@ puglOnDisplayPrepare(PuglView* view);
 PUGL_API void
 puglFallbackOnResize(PuglView* view);
 
+#ifdef DISTRHO_OS_MAC
+// macOS specific, setup file browser dialog
+typedef void (*openPanelCallback)(PuglView* view, const char* path);
+bool puglMacOSFilePanelOpen(PuglView* view, const char* startDir, const char* title, uint flags, openPanelCallback callback);
+#endif
+
 #ifdef DISTRHO_OS_WINDOWS
 // win32 specific, call ShowWindow with SW_RESTORE
 PUGL_API void
