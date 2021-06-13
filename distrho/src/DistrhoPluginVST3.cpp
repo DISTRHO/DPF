@@ -302,6 +302,7 @@ const void* GetPluginFactory(void);
 
 const void* GetPluginFactory(void)
 {
+    USE_NAMESPACE_DISTRHO;
     static const struct v3_plugin_factory_2* const factory = (v3_plugin_factory_2*)&dpf_factory;
     return &factory;
 }
@@ -309,41 +310,38 @@ const void* GetPluginFactory(void)
 // --------------------------------------------------------------------------------------------------------------------
 // OS specific module load
 
-#ifdef DISTRHO_OS_MAC
-DISTRHO_PLUGIN_EXPORT bool bundleEntry(CFBundleRef);
-DISTRHO_PLUGIN_EXPORT bool bundleExit(void);
-bool bundleEntry(CFBundleRef)
-{
-    gPluginInit();
-    return true;
-}
-bool bundleExit(void)
-{
-    gPluginInfo = nullptr;
-    return true;
-}
+#if defined(DISTRHO_OS_MAC)
+# define ENTRYFNNAME bundleEntry
+# define EXITFNNAME bundleExit
+#elif defined(DISTRHO_OS_WINDOWS)
+# define ENTRYFNNAME InitDll
+# define EXITFNNAME ExitDll
 #else
-# ifdef DISTRHO_OS_WINDOWS
-#  define ENTRYFNNAME InitDll
-#  define EXITFNNAME ExitDll
-# else
-#  define ENTRYFNNAME ModuleEntry
-#  define EXITFNNAME ModuleExit
-# endif
-DISTRHO_PLUGIN_EXPORT bool ENTRYFNNAME(void*);
-DISTRHO_PLUGIN_EXPORT bool EXITFNNAME(void);
+# define ENTRYFNNAME ModuleEntry
+# define EXITFNNAME ModuleExit
+#endif
+
+DISTRHO_PLUGIN_EXPORT
+bool ENTRYFNNAME(void*);
+
 bool ENTRYFNNAME(void*)
 {
+    USE_NAMESPACE_DISTRHO;
     gPluginInit();
     return true;
 }
+
+DISTRHO_PLUGIN_EXPORT
+bool EXITFNNAME(void);
+
 bool EXITFNNAME(void)
 {
+    USE_NAMESPACE_DISTRHO;
     gPluginInfo = nullptr;
     return true;
 }
-# undef ENTRYFNNAME
-# undef EXITFNNAME
-#endif
+
+#undef ENTRYFNNAME
+#undef EXITFNNAME
 
 // --------------------------------------------------------------------------------------------------------------------

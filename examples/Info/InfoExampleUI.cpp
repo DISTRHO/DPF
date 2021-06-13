@@ -20,6 +20,8 @@
 
 START_NAMESPACE_DISTRHO
 
+using DGL_NAMESPACE::ResizeHandle;
+
 // -----------------------------------------------------------------------------------------------------------
 
 class InfoExampleUI : public UI

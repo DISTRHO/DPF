@@ -25,9 +25,9 @@
 
 #include <string>
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
-class Button : public NanoWidget
+class Button : public NanoSubWidget
 {
 public:
     class Callback
@@ -55,6 +55,6 @@ private:
     DISTRHO_LEAK_DETECTOR(Button)
 };
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL
 
 #endif

@@ -20,13 +20,10 @@
 START_NAMESPACE_DISTRHO
 
 /**
-  We need the Color class from DGL.
+  We need a few classes from DGL.
  */
 using DGL_NAMESPACE::Color;
-
-/**
-  We need the rectangle class from DGL.
- */
+using DGL_NAMESPACE::GraphicsContext;
 using DGL_NAMESPACE::Rectangle;
 
 // -----------------------------------------------------------------------------------------------------------

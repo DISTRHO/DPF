@@ -20,7 +20,7 @@
 #include "NanoButton.hpp"
 #include "Window.hpp"
 
-START_NAMESPACE_DISTRHO
+START_NAMESPACE_DGL
 
 Button::Button(Widget *parent, Callback *cb)
     : NanoWidget(parent),
@@ -101,4 +101,4 @@ bool Button::onMouse(const MouseEvent &ev)
     return false;
 }
 
-END_NAMESPACE_DISTRHO
+END_NAMESPACE_DGL

@@ -23,6 +23,8 @@
 
 START_NAMESPACE_DISTRHO
 
+using DGL_NAMESPACE::Button;
+
 const char* kStateKeys[kStateCount] = {
     "file1",
     "file2",

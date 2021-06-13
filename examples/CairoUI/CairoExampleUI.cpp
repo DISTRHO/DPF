@@ -23,6 +23,14 @@
 
 START_NAMESPACE_DISTRHO
 
+/**
+  We need a few classes from DGL.
+ */
+using DGL_NAMESPACE::CairoGraphicsContext;
+using DGL_NAMESPACE::CairoImage;
+using DGL_NAMESPACE::CairoImageButton;
+using DGL_NAMESPACE::CairoImageKnob;
+
 class CairoExampleUI : public UI
 {
 public:
