@@ -25,6 +25,24 @@ START_NAMESPACE_DGL
 
 typedef std::list<DGL_NAMESPACE::Window*>::reverse_iterator WindowListReverseIterator;
 
+static ThreadHandle getCurrentThreadHandle() noexcept
+{
+#ifdef DISTRHO_OS_WINDOWS
+    return GetCurrentThread();
+#else
+    return pthread_self();
+#endif
+}
+
+static bool isThisMainThread(const ThreadHandle mainThreadHandle) noexcept
+{
+#ifdef DISTRHO_OS_WINDOWS
+    return GetCurrentThread() == mainThreadHandle; // IsGUIThread ?
+#else
+    return pthread_equal(getCurrentThreadHandle(), mainThreadHandle) != 0;
+#endif
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 
 Application::PrivateData::PrivateData(const bool standalone)
@@ -35,6 +53,7 @@ Application::PrivateData::PrivateData(const bool standalone)
       isQuittingInNextCycle(false),
       isStarting(true),
       visibleWindows(0),
+      mainThreadHandle(getCurrentThreadHandle()),
       windows(),
       idleCallbacks()
 {
@@ -108,10 +127,13 @@ void Application::PrivateData::quit()
 {
     DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
 
-    if (! isQuittingInNextCycle)
+    if (! isThisMainThread(mainThreadHandle))
     {
-        isQuittingInNextCycle = true;
-        return;
+        if (! isQuittingInNextCycle)
+        {
+            isQuittingInNextCycle = true;
+            return;
+        }
     }
 
     isQuitting = true;

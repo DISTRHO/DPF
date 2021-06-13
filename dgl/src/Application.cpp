@@ -50,7 +50,7 @@ void Application::quit()
 
 bool Application::isQuiting() const noexcept
 {
-    return pData->isQuitting;
+    return pData->isQuitting || pData->isQuittingInNextCycle;
 }
 
 void Application::addIdleCallback(IdleCallback* const callback)
