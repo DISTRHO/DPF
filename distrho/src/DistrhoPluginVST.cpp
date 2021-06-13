@@ -1378,7 +1378,8 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             DISTRHO_SAFE_ASSERT_RETURN(obj->audioMaster != nullptr, 0);
 
             // some hosts call effOpen twice
-            DISTRHO_SAFE_ASSERT_RETURN(obj->plugin == nullptr, 1);
+            if (obj->plugin != nullptr)
+                return 1;
 
             audioMasterCallback audioMaster = (audioMasterCallback)obj->audioMaster;
 
