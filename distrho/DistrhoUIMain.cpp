@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -24,7 +24,7 @@
 # include "src/DistrhoUIDSSI.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_LV2)
 # include "src/DistrhoUILV2.cpp"
-#elif defined(DISTRHO_PLUGIN_TARGET_VST)
+#elif defined(DISTRHO_PLUGIN_TARGET_VST2)
 // nothing
 #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
 // nothing
