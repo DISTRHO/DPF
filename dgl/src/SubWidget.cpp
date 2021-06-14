@@ -32,9 +32,9 @@ SubWidget::~SubWidget()
 }
 
 template<typename T>
-bool SubWidget::contains(T x, T y) const noexcept
+bool SubWidget::contains(const T x, const T y) const noexcept
 {
-    return Rectangle<double>(0, 0, getWidth(), getHeight()).contains(x, y);
+    return Rectangle<double>(0, 0, getWidth()-pData->margin.getX(), getHeight()-pData->margin.getY()).contains(x, y);
 }
 
 template<typename T>
@@ -70,17 +70,17 @@ Rectangle<uint> SubWidget::getConstrainedAbsoluteArea() const noexcept
                            getSize());
 }
 
-void SubWidget::setAbsoluteX(int x) noexcept
+void SubWidget::setAbsoluteX(const int x) noexcept
 {
     setAbsolutePos(Point<int>(x, getAbsoluteY()));
 }
 
-void SubWidget::setAbsoluteY(int y) noexcept
+void SubWidget::setAbsoluteY(const int y) noexcept
 {
     setAbsolutePos(Point<int>(getAbsoluteX(), y));
 }
 
-void SubWidget::setAbsolutePos(int x, int y) noexcept
+void SubWidget::setAbsolutePos(const int x, const int y) noexcept
 {
     setAbsolutePos(Point<int>(x, y));
 }
@@ -98,6 +98,21 @@ void SubWidget::setAbsolutePos(const Point<int>& pos) noexcept
     onPositionChanged(ev);
 
     repaint();
+}
+
+Point<int> SubWidget::getMargin() const noexcept
+{
+    return pData->margin;
+}
+
+void SubWidget::setMargin(const int x, const int y) noexcept
+{
+    pData->margin = Point<int>(x, y);
+}
+
+void SubWidget::setMargin(const Point<int>& offset) noexcept
+{
+    pData->margin = offset;
 }
 
 Widget* SubWidget::getParentWidget() const noexcept

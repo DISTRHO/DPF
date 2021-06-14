@@ -112,6 +112,22 @@ public:
     void setAbsolutePos(const Point<int>& pos) noexcept;
 
    /**
+      Get the margin currently in use for widget coordinates.
+      By default this value is (0,0).
+    */
+    Point<int> getMargin() const noexcept;
+
+   /**
+      Set a margin to be used for widget coordinates using @a x and @a y values.
+    */
+    void setMargin(int x, int y) noexcept;
+
+   /**
+      Set a margin to be used for widget coordinates.
+    */
+    void setMargin(const Point<int>& offset) noexcept;
+
+   /**
       Get parent Widget, as passed in the constructor.
     */
     Widget* getParentWidget() const noexcept;

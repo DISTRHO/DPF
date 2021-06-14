@@ -152,8 +152,8 @@ bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
         if (! widget->isVisible())
             continue;
 
-        ev.pos = Point<double>(x - widget->getAbsoluteX(),
-                               y - widget->getAbsoluteY());
+        ev.pos = Point<double>(x - widget->getAbsoluteX() + widget->getMargin().getX(),
+                               y - widget->getAbsoluteY() + widget->getMargin().getY());
 
         if (widget->onMouse(ev))
             return true;
@@ -191,8 +191,8 @@ bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
         if (! widget->isVisible())
             continue;
 
-        ev.pos = Point<double>(x - widget->getAbsoluteX(),
-                               y - widget->getAbsoluteY());
+        ev.pos = Point<double>(x - widget->getAbsoluteX() + widget->getMargin().getX(),
+                               y - widget->getAbsoluteY() + widget->getMargin().getY());
 
         if (widget->onMotion(ev))
             return true;
@@ -230,8 +230,8 @@ bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
         if (! widget->isVisible())
             continue;
 
-        ev.pos = Point<double>(x - widget->getAbsoluteX(),
-                               y - widget->getAbsoluteY());
+        ev.pos = Point<double>(x - widget->getAbsoluteX() + widget->getMargin().getX(),
+                               y - widget->getAbsoluteY() + widget->getMargin().getY());
 
         if (widget->onScroll(ev))
             return true;
