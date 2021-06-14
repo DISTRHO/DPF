@@ -89,6 +89,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2a70c4ec55d74d9bc26862975d8df8a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0467eef817ac130cbbe1c0fbe09660c6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a0467eef817ac130cbbe1c0fbe09660c6">writeMidiEvent</a> (const <a class="el" href="structMidiEvent.html">MidiEvent</a> &amp;midiEvent) noexcept</td></tr>
 <tr class="separator:a0467eef817ac130cbbe1c0fbe09660c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a581614e1d301ee613a988855c61b2517"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a581614e1d301ee613a988855c61b2517">canRequestParameterValueChanges</a> () const noexcept</td></tr>
+<tr class="separator:a581614e1d301ee613a988855c61b2517"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae65d8603022c09d1ce2ee5cf568de70f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae65d8603022c09d1ce2ee5cf568de70f">requestParameterValueChange</a> (uint32_t index, float value) noexcept</td></tr>
+<tr class="separator:ae65d8603022c09d1ce2ee5cf568de70f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb5a3632da5a5c4110172a3a78e1fd32"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#acb5a3632da5a5c4110172a3a78e1fd32">Plugin</a> (uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)</td></tr>
 <tr class="separator:acb5a3632da5a5c4110172a3a78e1fd32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89814b8f0b1c91e49140d42eb8331383"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a89814b8f0b1c91e49140d42eb8331383">~Plugin</a> ()</td></tr>
@@ -485,6 +489,70 @@ This function should only be called in the constructor, <a class="el" href="clas
 <p>Write a MIDI output event.<br  />
 This function must only be called during <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>.<br  />
 Returns false when the host buffer is full, in which case do not call this again until the next <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a>. </p>
+
+</div>
+</div>
+<a id="a581614e1d301ee613a988855c61b2517"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a581614e1d301ee613a988855c61b2517">&#9670;&nbsp;</a></span>canRequestParameterValueChanges()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Plugin::canRequestParameterValueChanges </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if parameter value change requests will work with the current plugin host. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled. </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae65d8603022c09d1ce2ee5cf568de70f">requestParameterValueChange(uint32_t, float)</a> </dd></dl>
+
+</div>
+</div>
+<a id="ae65d8603022c09d1ce2ee5cf568de70f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae65d8603022c09d1ce2ee5cf568de70f">&#9670;&nbsp;</a></span>requestParameterValueChange()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Plugin::requestParameterValueChange </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>index</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Request a parameter value change from the host. If successful, this function will automatically trigger a parameter update on the <a class="el" href="classUI.html">UI</a> side as well. This function can fail, for example if the host is busy with the parameter for read-only automation. Some hosts simply do not have this functionality, which can be verified with <a class="el" href="classPlugin.html#a581614e1d301ee613a988855c61b2517">canRequestParameterValueChanges()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled. </dd></dl>
 
 </div>
 </div>
@@ -2090,7 +2158,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:30:38 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['parameterdesignation_935',['ParameterDesignation',['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPlugin.hpp'],['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPluginLV2.hpp']]],
-  ['predefinedportgroupsids_936',['PredefinedPortGroupsIds',['../group__BasePluginStructs.html#ga177ca6eb2528109ec4a130a643e8c70a',1,'DistrhoPlugin.hpp']]]
+  ['parameterdesignation_939',['ParameterDesignation',['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPlugin.hpp'],['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPluginLV2.hpp']]],
+  ['predefinedportgroupsids_940',['PredefinedPortGroupsIds',['../group__BasePluginStructs.html#ga177ca6eb2528109ec4a130a643e8c70a',1,'DistrhoPlugin.hpp']]]
 ];

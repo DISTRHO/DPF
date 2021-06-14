@@ -937,7 +937,7 @@ $(function() {
 <div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="comment">      @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.</span></div>
 <div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;<span class="comment">      @see requestParameterValueChange(uint32_t, float)</span></div>
 <div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;    <span class="keywordtype">bool</span> canRequestParameterValueChanges() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlugin.html#a581614e1d301ee613a988855c61b2517">canRequestParameterValueChanges</a>() <span class="keyword">const</span> noexcept;</div>
 <div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;<span class="comment">      Request a parameter value change from the host.</span></div>
@@ -946,7 +946,7 @@ $(function() {
 <div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;<span class="comment">      Some hosts simply do not have this functionality, which can be verified with canRequestParameterValueChanges().</span></div>
 <div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;<span class="comment">      @note This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled.</span></div>
 <div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    <span class="keywordtype">bool</span> requestParameterValueChange(uint32_t index, <span class="keywordtype">float</span> value) noexcept;</div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classPlugin.html#ae65d8603022c09d1ce2ee5cf568de70f">requestParameterValueChange</a>(uint32_t index, <span class="keywordtype">float</span> value) noexcept;</div>
 <div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160; </div>
 <div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;<span class="keyword">protected</span>:</div>
@@ -1227,6 +1227,7 @@ $(function() {
 <div class="ttc" id="astructParameter_html_ad959d31bcfaa056908406bbf37c134bf"><div class="ttname"><a href="structParameter.html#ad959d31bcfaa056908406bbf37c134bf">Parameter::initDesignation</a></div><div class="ttdeci">void initDesignation(ParameterDesignation d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:555</div></div>
 <div class="ttc" id="aclassPlugin_html_a9f6c8ad6b054056649d0250e527e1297"><div class="ttname"><a href="classPlugin.html#a9f6c8ad6b054056649d0250e527e1297">Plugin::bufferSizeChanged</a></div><div class="ttdeci">virtual void bufferSizeChanged(uint32_t newBufferSize)</div></div>
 <div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:457</div></div>
+<div class="ttc" id="aclassPlugin_html_a581614e1d301ee613a988855c61b2517"><div class="ttname"><a href="classPlugin.html#a581614e1d301ee613a988855c61b2517">Plugin::canRequestParameterValueChanges</a></div><div class="ttdeci">bool canRequestParameterValueChanges() const noexcept</div></div>
 <div class="ttc" id="astructParameter_html_a12ced87d6d832deccb6c8ce2c8313b2e"><div class="ttname"><a href="structParameter.html#a12ced87d6d832deccb6c8ce2c8313b2e">Parameter::Parameter</a></div><div class="ttdeci">Parameter() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:525</div></div>
 <div class="ttc" id="astructParameterRanges_html_adb9b2712df3401eb0c5e11362d865d4e"><div class="ttname"><a href="structParameterRanges.html#adb9b2712df3401eb0c5e11362d865d4e">ParameterRanges::ParameterRanges</a></div><div class="ttdeci">ParameterRanges() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:264</div></div>
 <div class="ttc" id="astructTimePosition_1_1BarBeatTick_html_af4be3edce420539cbb21bc1b0278201c"><div class="ttname"><a href="structTimePosition_1_1BarBeatTick.html#af4be3edce420539cbb21bc1b0278201c">TimePosition::BarBeatTick::beat</a></div><div class="ttdeci">int32_t beat</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:680</div></div>
@@ -1291,12 +1292,13 @@ $(function() {
 <div class="ttc" id="astructAudioPort_html_adb3b58f79131b653d6b2adfa3ea07e5c"><div class="ttname"><a href="structAudioPort.html#adb3b58f79131b653d6b2adfa3ea07e5c">AudioPort::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:208</div></div>
 <div class="ttc" id="astructParameter_html_a1a47c46f3588b8a940d87fd4d69810ab"><div class="ttname"><a href="structParameter.html#a1a47c46f3588b8a940d87fd4d69810ab">Parameter::shortName</a></div><div class="ttdeci">String shortName</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:464</div></div>
 <div class="ttc" id="astructMidiEvent_html_aba54410d44eef48c10516f29452ef3a9"><div class="ttname"><a href="structMidiEvent.html#aba54410d44eef48c10516f29452ef3a9">MidiEvent::data</a></div><div class="ttdeci">uint8_t data[kDataSize]</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:636</div></div>
+<div class="ttc" id="aclassPlugin_html_ae65d8603022c09d1ce2ee5cf568de70f"><div class="ttname"><a href="classPlugin.html#ae65d8603022c09d1ce2ee5cf568de70f">Plugin::requestParameterValueChange</a></div><div class="ttdeci">bool requestParameterValueChange(uint32_t index, float value) noexcept</div></div>
 <div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:450</div></div>
 <div class="ttc" id="astructParameterRanges_html"><div class="ttname"><a href="structParameterRanges.html">ParameterRanges</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:245</div></div>
 <div class="ttc" id="astructTimePosition_html_aee816daeed95cf309ded1087a0c800ae"><div class="ttname"><a href="structTimePosition.html#aee816daeed95cf309ded1087a0c800ae">TimePosition::TimePosition</a></div><div class="ttdeci">TimePosition() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:750</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:30:38 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
