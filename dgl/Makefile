@@ -109,6 +109,11 @@ endif
 
 all: $(TARGETS)
 
+cairo:  ../build/libdgl-cairo.a
+opengl: ../build/libdgl-opengl.a
+stub:   ../build/libdgl-stub.a
+vulkan: ../build/libdgl-vulkan.a
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/libdgl-cairo.a: $(OBJS_cairo)

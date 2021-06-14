@@ -114,6 +114,14 @@ ifeq ($(UI_TYPE),)
 UI_TYPE = opengl
 endif
 
+ifeq ($(UI_TYPE),generic)
+ifeq ($(HAVE_OPENGL),true)
+UI_TYPE = opengl
+else ifeq ($(HAVE_CAIRO),true)
+UI_TYPE = cairo
+endif
+endif
+
 ifeq ($(UI_TYPE),cairo)
 ifeq ($(HAVE_CAIRO),true)
 DGL_FLAGS += -DDGL_CAIRO
@@ -211,6 +219,21 @@ $(BUILD_DIR)/%.cpp.o: %.cpp
 clean:
 	rm -rf $(BUILD_DIR)
 	rm -rf $(TARGET_DIR)/$(NAME) $(TARGET_DIR)/$(NAME)-* $(TARGET_DIR)/$(NAME).lv2
+
+# ---------------------------------------------------------------------------------------------------------------------
+# DGL
+
+$(DPF_PATH)/build/libdgl-cairo.a:
+	$(MAKE) -C $(DPF_PATH)/dgl cairo
+
+$(DPF_PATH)/build/libdgl-opengl.a:
+	$(MAKE) -C $(DPF_PATH)/dgl opengl
+
+$(DPF_PATH)/build/libdgl-stub.a:
+	$(MAKE) -C $(DPF_PATH)/dgl stub
+
+$(DPF_PATH)/build/libdgl-vulkan.a:
+	$(MAKE) -C $(DPF_PATH)/dgl vulkan
 
 # ---------------------------------------------------------------------------------------------------------------------
 
