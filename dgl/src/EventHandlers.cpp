@@ -60,13 +60,13 @@ struct ButtonEventHandler::PrivateData {
             // cursor was moved outside the button bounds, ignore click
             if (! widget->contains(ev.pos))
             {
-                self->stateChanged(static_cast<State>(state2), static_cast<State>(state));
+                self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
                 widget->repaint();
                 return true;
             }
 
             // still on bounds, register click
-            self->stateChanged(static_cast<State>(state2), static_cast<State>(state));
+            self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
             widget->repaint();
 
             if (checkable)
@@ -84,7 +84,7 @@ struct ButtonEventHandler::PrivateData {
             const int state2 = state;
             button = static_cast<int>(ev.button);
             state |= kButtonStateActive;
-            self->stateChanged(static_cast<State>(state2), static_cast<State>(state));
+            self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
             widget->repaint();
             return true;
         }
@@ -111,7 +111,7 @@ struct ButtonEventHandler::PrivateData {
                 const int state2 = state;
                 state |= kButtonStateHover;
                 ret = widget->contains(oldMotionPos);
-                self->stateChanged(static_cast<State>(state2), static_cast<State>(state));
+                self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
                 widget->repaint();
             }
         }
@@ -123,7 +123,7 @@ struct ButtonEventHandler::PrivateData {
                 const int state2 = state;
                 state &= ~kButtonStateHover;
                 ret = widget->contains(oldMotionPos);
-                self->stateChanged(static_cast<State>(state2), static_cast<State>(state));
+                self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
                 widget->repaint();
             }
         }
@@ -221,6 +221,11 @@ bool ButtonEventHandler::motionEvent(const Widget::MotionEvent& ev)
 ButtonEventHandler::State ButtonEventHandler::getState() const noexcept
 {
     return static_cast<State>(pData->state);
+}
+
+void ButtonEventHandler::clearState() noexcept
+{
+    pData->state = kButtonStateDefault;
 }
 
 void ButtonEventHandler::stateChanged(State, State)

@@ -59,6 +59,7 @@ public:
 
 protected:
      State getState() const noexcept;
+     void clearState() noexcept;
 
      virtual void stateChanged(State state, State oldState);
 
