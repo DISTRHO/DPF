@@ -17,6 +17,7 @@
 #ifndef DGL_IMAGE_BASE_WIDGETS_HPP_INCLUDED
 #define DGL_IMAGE_BASE_WIDGETS_HPP_INCLUDED
 
+#include "EventHandlers.hpp"
 #include "StandaloneWindow.hpp"
 #include "SubWidget.hpp"
 
@@ -47,7 +48,8 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
-class ImageBaseButton : public SubWidget
+class ImageBaseButton : public SubWidget,
+                        public ButtonEventHandler
 {
 public:
     class Callback

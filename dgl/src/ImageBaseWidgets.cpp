@@ -89,17 +89,24 @@ bool ImageBaseAboutWindow<ImageType>::onMouse(const MouseEvent& ev)
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
-struct ImageBaseButton<ImageType>::PrivateData {
-    ButtonImpl<ImageType> impl;
+struct ImageBaseButton<ImageType>::PrivateData : public ButtonEventHandler::Callback {
+    ImageBaseButton<ImageType>::Callback* callback;
     ImageType imageNormal;
     ImageType imageHover;
     ImageType imageDown;
 
-    PrivateData(ImageBaseButton<ImageType>* const s, const ImageType& normal, const ImageType& hover, const ImageType& down)
-        : impl(s),
+    PrivateData(const ImageType& normal, const ImageType& hover, const ImageType& down)
+        : callback(nullptr),
           imageNormal(normal),
           imageHover(hover),
           imageDown(down) {}
+
+    void buttonClicked(SubWidget* widget, int button) override
+    {
+        if (callback != nullptr)
+            if (ImageBaseButton* const imageButton = dynamic_cast<ImageBaseButton*>(widget))
+                callback->imageButtonClicked(imageButton, button);
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
@@ -109,28 +116,34 @@ struct ImageBaseButton<ImageType>::PrivateData {
 template <class ImageType>
 ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& image)
     : SubWidget(parentWidget),
-      pData(new PrivateData(this, image, image, image))
+      ButtonEventHandler(this),
+      pData(new PrivateData(image, image, image))
 {
+    ButtonEventHandler::setCallback(pData);
     setSize(image.getSize());
 }
 
 template <class ImageType>
 ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageDown)
     : SubWidget(parentWidget),
-      pData(new PrivateData(this, imageNormal, imageNormal, imageDown))
+      ButtonEventHandler(this),
+      pData(new PrivateData(imageNormal, imageNormal, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageDown.getSize());
 
+    ButtonEventHandler::setCallback(pData);
     setSize(imageNormal.getSize());
 }
 
 template <class ImageType>
 ImageBaseButton<ImageType>::ImageBaseButton(Widget* const parentWidget, const ImageType& imageNormal, const ImageType& imageHover, const ImageType& imageDown)
     : SubWidget(parentWidget),
-      pData(new PrivateData(this, imageNormal, imageHover, imageDown))
+      ButtonEventHandler(this),
+      pData(new PrivateData(imageNormal, imageHover, imageDown))
 {
     DISTRHO_SAFE_ASSERT(imageNormal.getSize() == imageHover.getSize() && imageHover.getSize() == imageDown.getSize());
 
+    ButtonEventHandler::setCallback(pData);
     setSize(imageNormal.getSize());
 }
 
@@ -143,7 +156,7 @@ ImageBaseButton<ImageType>::~ImageBaseButton()
 template <class ImageType>
 void ImageBaseButton<ImageType>::setCallback(Callback* callback) noexcept
 {
-    pData->impl.callback_img = callback;
+    pData->callback = callback;
 }
 
 template <class ImageType>
@@ -151,30 +164,30 @@ void ImageBaseButton<ImageType>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
 
-    switch (pData->impl.state)
-    {
-    case ButtonImpl<ImageType>::kStateDown:
+    const State state = ButtonEventHandler::getState();
+
+    if (state & kButtonStateActive)
         pData->imageDown.draw(context);
-        break;
-    case ButtonImpl<ImageType>::kStateHover:
+    else if (state & kButtonStateHover)
         pData->imageHover.draw(context);
-        break;
-    default:
+    else
         pData->imageNormal.draw(context);
-        break;
-    }
 }
 
 template <class ImageType>
 bool ImageBaseButton<ImageType>::onMouse(const MouseEvent& ev)
 {
-    return pData->impl.onMouse(ev);
+    if (SubWidget::onMouse(ev))
+        return true;
+    return ButtonEventHandler::mouseEvent(ev);
 }
 
 template <class ImageType>
 bool ImageBaseButton<ImageType>::onMotion(const MotionEvent& ev)
 {
-    return pData->impl.onMotion(ev);
+    if (SubWidget::onMotion(ev))
+        return true;
+    return ButtonEventHandler::motionEvent(ev);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

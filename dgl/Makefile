@@ -27,6 +27,7 @@ OBJS_common = \
 	../build/dgl/Application.cpp.o \
 	../build/dgl/ApplicationPrivateData.cpp.o \
 	../build/dgl/Color.cpp.o \
+	../build/dgl/EventHandlers.cpp.o \
 	../build/dgl/Geometry.cpp.o \
 	../build/dgl/ImageBase.cpp.o \
 	../build/dgl/ImageBaseWidgets.cpp.o \
@@ -39,7 +40,6 @@ OBJS_common = \
 	../build/dgl/WidgetPrivateData.cpp.o \
 	../build/dgl/Window.cpp.o \
 	../build/dgl/WindowPrivateData.cpp.o
-# 	../build/dgl/WindowFileBrowser.cpp.o
 
 # ---------------------------------------------------------------------------------------------------------------------
 

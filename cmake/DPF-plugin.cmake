@@ -326,6 +326,7 @@ function(dpf__add_dgl_cairo)
     "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
