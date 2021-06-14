@@ -80,8 +80,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a20573928a0d53fb96d929513bc5acde6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac8382754f04f4de15768981459a28e3a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#ac8382754f04f4de15768981459a28e3a">idle</a> ()</td></tr>
 <tr class="separator:ac8382754f04f4de15768981459a28e3a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a866d2145b9aa35bb7f88b1b9fd0aa9cc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a866d2145b9aa35bb7f88b1b9fd0aa9cc">exec</a> (uint idleTimeInMs=10)</td></tr>
-<tr class="separator:a866d2145b9aa35bb7f88b1b9fd0aa9cc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a805dd37af3b9adfc1d0ee1e734ad81e3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a805dd37af3b9adfc1d0ee1e734ad81e3">exec</a> (uint idleTimeInMs=30)</td></tr>
+<tr class="separator:a805dd37af3b9adfc1d0ee1e734ad81e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af77b716ee803aecb2ce1674695dc3986"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#af77b716ee803aecb2ce1674695dc3986">quit</a> ()</td></tr>
 <tr class="separator:af77b716ee803aecb2ce1674695dc3986"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e5fe58c9cdc488a34d61cf95b55fdc7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a7e5fe58c9cdc488a34d61cf95b55fdc7">isQuiting</a> () const noexcept</td></tr>
@@ -90,6 +90,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad6aab76a79b7b3c2883785040b46017a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a082f532e2922924c6c72517f9272f67d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a082f532e2922924c6c72517f9272f67d">removeIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
 <tr class="separator:a082f532e2922924c6c72517f9272f67d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a203d22d1ce0c0de90c2379f6bc839815"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a203d22d1ce0c0de90c2379f6bc839815">setClassName</a> (const char *name)</td></tr>
+<tr class="separator:a203d22d1ce0c0de90c2379f6bc839815"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -166,8 +168,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 
 </div>
 </div>
-<a id="a866d2145b9aa35bb7f88b1b9fd0aa9cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a866d2145b9aa35bb7f88b1b9fd0aa9cc">&#9670;&nbsp;</a></span>exec()</h2>
+<a id="a805dd37af3b9adfc1d0ee1e734ad81e3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a805dd37af3b9adfc1d0ee1e734ad81e3">&#9670;&nbsp;</a></span>exec()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -176,7 +178,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
           <td class="memname">void Application::exec </td>
           <td>(</td>
           <td class="paramtype">uint&#160;</td>
-          <td class="paramname"><em>idleTimeInMs</em> = <code>10</code></td><td>)</td>
+          <td class="paramname"><em>idleTimeInMs</em> = <code>30</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -267,13 +269,34 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 
 </div>
 </div>
+<a id="a203d22d1ce0c0de90c2379f6bc839815"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a203d22d1ce0c0de90c2379f6bc839815">&#9670;&nbsp;</a></span>setClassName()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Application::setClassName </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>name</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the class name of the application.</p>
+<p>This is a stable identifier for the application, used as the window class/instance name on X11 and Windows. It is not displayed to the user, but can be used in scripts and by window managers, so it should be the same for every instance of the application, but different from other applications.</p>
+<p>Plugins created with DPF have their class name automatically set based on DGL_NAMESPACE and plugin name. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>dgl/<a class="el" href="Application_8hpp_source.html">Application.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

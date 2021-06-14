@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['valid_816',['valid',['../structTimePosition_1_1BarBeatTick.html#a45a05047e923285af0fbeacb371e3f4e',1,'TimePosition::BarBeatTick']]],
-  ['value_817',['value',['../structParameterEnumerationValue.html#a292f282837daa791205027d998907ae9',1,'ParameterEnumerationValue']]],
-  ['values_818',['values',['../structParameterEnumerationValues.html#ae51423cab5df1353194e4835a9a1f31d',1,'ParameterEnumerationValues']]]
+  ['tail_923',['tail',['../structHeapBuffer.html#abd05cbae44531a412352ed52c8a50aec',1,'HeapBuffer']]],
+  ['tick_924',['tick',['../structTimePosition_1_1BarBeatTick.html#aecb8a1a98db84c6d03c39278f86a0324',1,'TimePosition::BarBeatTick']]],
+  ['ticksperbeat_925',['ticksPerBeat',['../structTimePosition_1_1BarBeatTick.html#ab8cfc3f2709a79e733e58556712da062',1,'TimePosition::BarBeatTick']]],
+  ['title_926',['title',['../structWindow_1_1FileBrowserOptions.html#a7d035823a9138df917f7460d06a33a00',1,'Window::FileBrowserOptions']]]
 ];

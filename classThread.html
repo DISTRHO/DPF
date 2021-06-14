@@ -79,9 +79,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isThreadRunning</b> (
 <tr class="memitem:a261ed6f5073b681129d6892b645aeac9"><td class="memItemLeft" align="right" valign="top"><a id="a261ed6f5073b681129d6892b645aeac9"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>shouldThreadExit</b> () const noexcept</td></tr>
 <tr class="separator:a261ed6f5073b681129d6892b645aeac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7dcfd73e108cf2288e53d2c130a5e9d1"><td class="memItemLeft" align="right" valign="top"><a id="a7dcfd73e108cf2288e53d2c130a5e9d1"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>startThread</b> () noexcept</td></tr>
-<tr class="separator:a7dcfd73e108cf2288e53d2c130a5e9d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a054398add0c09bb9134686c40be10590"><td class="memItemLeft" align="right" valign="top"><a id="a054398add0c09bb9134686c40be10590"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>startThread</b> (const bool withRealtimePriority=false) noexcept</td></tr>
+<tr class="separator:a054398add0c09bb9134686c40be10590"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35a7bf228734d406243d7c52739f5c93"><td class="memItemLeft" align="right" valign="top"><a id="a35a7bf228734d406243d7c52739f5c93"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>stopThread</b> (const int timeOutMilliseconds) noexcept</td></tr>
 <tr class="separator:a35a7bf228734d406243d7c52739f5c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -91,6 +91,9 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>signalThreadShouldExi
 <tr class="memitem:a04ae21de0884d0814efe13de1ff475be"><td class="memItemLeft" align="right" valign="top"><a id="a04ae21de0884d0814efe13de1ff475be"></a>
 const <a class="el" href="classString.html">String</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getThreadName</b> () const noexcept</td></tr>
 <tr class="separator:a04ae21de0884d0814efe13de1ff475be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a980c9dcf4c4c2b9e64bf2269fc3623e5"><td class="memItemLeft" align="right" valign="top"><a id="a980c9dcf4c4c2b9e64bf2269fc3623e5"></a>
+pthread_t&#160;</td><td class="memItemRight" valign="bottom"><b>getThreadId</b> () const noexcept</td></tr>
+<tr class="separator:a980c9dcf4c4c2b9e64bf2269fc3623e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -113,7 +116,7 @@ virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>run</b> ()=0<
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:32 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

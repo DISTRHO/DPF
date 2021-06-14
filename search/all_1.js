@@ -12,6 +12,10 @@ var searchData=
   ['beginframe_18',['beginFrame',['../classNanoVG.html#ac8d53f7131f5f883042bd48a1b910f5f',1,'NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor=1.0f)'],['../classNanoVG.html#a7758435376f2f223e38c6187cbf79096',1,'NanoVG::beginFrame(Widget *const widget)']]],
   ['beginpath_19',['beginPath',['../classNanoVG.html#a1cd7ee075338cbd5069e0862dff70b41',1,'NanoVG']]],
   ['bezierto_20',['bezierTo',['../classNanoVG.html#a44831e8c0c5e457eda688c9141e10f68',1,'NanoVG']]],
-  ['boxgradient_21',['boxGradient',['../classNanoVG.html#a1496424cb5a9e40844ebb4d8dad83799',1,'NanoVG']]],
-  ['buffersizechanged_22',['bufferSizeChanged',['../classPlugin.html#a9f6c8ad6b054056649d0250e527e1297',1,'Plugin::bufferSizeChanged(uint32_t newBufferSize)'],['../classPlugin.html#a9f6c8ad6b054056649d0250e527e1297',1,'Plugin::bufferSizeChanged(uint32_t newBufferSize)']]]
+  ['bigstackbuffer_21',['BigStackBuffer',['../structBigStackBuffer.html',1,'']]],
+  ['boxgradient_22',['boxGradient',['../classNanoVG.html#a1496424cb5a9e40844ebb4d8dad83799',1,'NanoVG']]],
+  ['buf_23',['buf',['../structHeapBuffer.html#afbaf206237e4898a306025676dce0987',1,'HeapBuffer']]],
+  ['buffersizechanged_24',['bufferSizeChanged',['../classPlugin.html#a9f6c8ad6b054056649d0250e527e1297',1,'Plugin::bufferSizeChanged(uint32_t newBufferSize)'],['../classPlugin.html#a9f6c8ad6b054056649d0250e527e1297',1,'Plugin::bufferSizeChanged(uint32_t newBufferSize)']]],
+  ['buttons_25',['Buttons',['../structWindow_1_1FileBrowserOptions_1_1Buttons.html',1,'Window::FileBrowserOptions::Buttons'],['../structWindow_1_1FileBrowserOptions_1_1Buttons.html#a0483d4ab39bdec4f6e69699fb3c272dd',1,'Window::FileBrowserOptions::Buttons::Buttons()']]],
+  ['buttonstate_26',['ButtonState',['../structWindow_1_1FileBrowserOptions.html#a1e10c3a7c2c7b38d9476d24d73001504',1,'Window::FileBrowserOptions']]]
 ];

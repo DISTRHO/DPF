@@ -93,6 +93,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af5c5c403ba231c14b3a41684bef45648"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3ceb7af6e9372a139d40a5859dfd0e4d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classWindow.html">Window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a3ceb7af6e9372a139d40a5859dfd0e4d">getWindow</a> () const noexcept</td></tr>
 <tr class="separator:a3ceb7af6e9372a139d40a5859dfd0e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a95eb3bb76704737ef9cf405e800617"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a4a95eb3bb76704737ef9cf405e800617">setWidth</a> (uint width)</td></tr>
+<tr class="separator:a4a95eb3bb76704737ef9cf405e800617"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a607afeaa7fc1bd6cf52ef3138c38360f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a607afeaa7fc1bd6cf52ef3138c38360f">setHeight</a> (uint height)</td></tr>
+<tr class="separator:a607afeaa7fc1bd6cf52ef3138c38360f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a41fa486da289fb082bb840aaaad72a08"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a41fa486da289fb082bb840aaaad72a08">setSize</a> (uint width, uint height)</td></tr>
+<tr class="separator:a41fa486da289fb082bb840aaaad72a08"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94f526903d739bf2e812fb785fc66aae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a94f526903d739bf2e812fb785fc66aae">setSize</a> (const <a class="el" href="classSize.html">Size</a>&lt; uint &gt; &amp;size)</td></tr>
+<tr class="separator:a94f526903d739bf2e812fb785fc66aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5569262e4859b2b59832af4fb8409ddc"><td class="memItemLeft" align="right" valign="top"><a id="a5569262e4859b2b59832af4fb8409ddc"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>addIdleCallback</b> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback, uint timerFrequencyInMs=0)</td></tr>
 <tr class="separator:a5569262e4859b2b59832af4fb8409ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -298,6 +306,92 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
+<a id="a4a95eb3bb76704737ef9cf405e800617"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a95eb3bb76704737ef9cf405e800617">&#9670;&nbsp;</a></span>setWidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TopLevelWidget::setWidth </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set width of this widget's window. </p><dl class="section note"><dt>Note</dt><dd>This will not change the widget's size right away, but be pending on the OS resizing the window </dd></dl>
+
+</div>
+</div>
+<a id="a607afeaa7fc1bd6cf52ef3138c38360f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a607afeaa7fc1bd6cf52ef3138c38360f">&#9670;&nbsp;</a></span>setHeight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TopLevelWidget::setHeight </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set height of this widget's window. </p><dl class="section note"><dt>Note</dt><dd>This will not change the widget's size right away, but be pending on the OS resizing the window </dd></dl>
+
+</div>
+</div>
+<a id="a41fa486da289fb082bb840aaaad72a08"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a41fa486da289fb082bb840aaaad72a08">&#9670;&nbsp;</a></span>setSize() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TopLevelWidget::setSize </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set size of this widget's window, using <em>width</em> and <em>height</em> values. </p><dl class="section note"><dt>Note</dt><dd>This will not change the widget's size right away, but be pending on the OS resizing the window </dd></dl>
+
+</div>
+</div>
+<a id="a94f526903d739bf2e812fb785fc66aae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94f526903d739bf2e812fb785fc66aae">&#9670;&nbsp;</a></span>setSize() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TopLevelWidget::setSize </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classSize.html">Size</a>&lt; uint &gt; &amp;&#160;</td>
+          <td class="paramname"><em>size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set size of this widget's window. </p><dl class="section note"><dt>Note</dt><dd>This will not change the widget's size right away, but be pending on the OS resizing the window </dd></dl>
+
+</div>
+</div>
 <a id="ad03702ffcbafa87ec546994891d4cd8a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad03702ffcbafa87ec546994891d4cd8a">&#9670;&nbsp;</a></span>repaint()</h2>
 
@@ -332,7 +426,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:32 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

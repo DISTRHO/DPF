@@ -81,6 +81,8 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameter.html">Parameter</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structPortGroup.html">PortGroup</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structMidiEvent.html">MidiEvent</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structTimePosition.html">TimePosition</a></td></tr>
@@ -94,6 +96,11 @@ Enumerations</h2></td></tr>
 <a class="el" href="group__BasePluginStructs.html#gga9a7e733c40008f92e96e2ccf24f890dea0623d4fc45bc45f4afad0f752955c50b">kParameterDesignationBypass</a> = 1
  }</td></tr>
 <tr class="separator:ga9a7e733c40008f92e96e2ccf24f890de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga177ca6eb2528109ec4a130a643e8c70a"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__BasePluginStructs.html#ga177ca6eb2528109ec4a130a643e8c70a">PredefinedPortGroupsIds</a> { <a class="el" href="group__BasePluginStructs.html#gga177ca6eb2528109ec4a130a643e8c70aaea27aed9948a2aaf4978941c96df3932">kPortGroupNone</a> = (uint32_t)-1, 
+<a class="el" href="group__BasePluginStructs.html#gga177ca6eb2528109ec4a130a643e8c70aa0f890fe6310b119745b6c6cb409c5fe9">kPortGroupMono</a> = (uint32_t)-2, 
+<a class="el" href="group__BasePluginStructs.html#gga177ca6eb2528109ec4a130a643e8c70aaeefc1b206ffdedf67376156cf6e5d114">kPortGroupStereo</a> = (uint32_t)-3
+ }</td></tr>
+<tr class="separator:ga177ca6eb2528109ec4a130a643e8c70a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9a7e733c40008f92e96e2ccf24f890de"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de">ParameterDesignation</a> { <a class="el" href="group__BasePluginStructs.html#gga9a7e733c40008f92e96e2ccf24f890deaee7f64d019ddec5f802c9d53eb033401">kParameterDesignationNull</a> = 0, 
 <a class="el" href="group__BasePluginStructs.html#gga9a7e733c40008f92e96e2ccf24f890dea0623d4fc45bc45f4afad0f752955c50b">kParameterDesignationBypass</a> = 1, 
 <a class="el" href="group__BasePluginStructs.html#gga9a7e733c40008f92e96e2ccf24f890deaee7f64d019ddec5f802c9d53eb033401">kParameterDesignationNull</a> = 0, 
@@ -135,6 +142,31 @@ When on (&gt; 0.5f), it means the plugin must run in a bypassed state. </p>
 
 </div>
 </div>
+<a id="ga177ca6eb2528109ec4a130a643e8c70a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga177ca6eb2528109ec4a130a643e8c70a">&#9670;&nbsp;</a></span>PredefinedPortGroupsIds</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="group__BasePluginStructs.html#ga177ca6eb2528109ec4a130a643e8c70a">PredefinedPortGroupsIds</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Predefined Port Groups Ids.</p>
+<p>This enumeration provides a few commonly used groups for convenient use in plugins. For preventing conflicts with user code, negative values are used here. When rolling your own port groups, you MUST start their group ids from 0 and they MUST be sequential.</p>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="structPortGroup.html">PortGroup</a> </dd></dl>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="gga177ca6eb2528109ec4a130a643e8c70aaea27aed9948a2aaf4978941c96df3932"></a>kPortGroupNone&#160;</td><td class="fielddoc"><p>Null or unset port group. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga177ca6eb2528109ec4a130a643e8c70aa0f890fe6310b119745b6c6cb409c5fe9"></a>kPortGroupMono&#160;</td><td class="fielddoc"><p>A single channel audio group. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="gga177ca6eb2528109ec4a130a643e8c70aaeefc1b206ffdedf67376156cf6e5d114"></a>kPortGroupStereo&#160;</td><td class="fielddoc"><p>A 2-channel discrete stereo audio group, where the 1st audio port is the left channel and the 2nd port is the right channel. </p>
+</td></tr>
+</table>
+
+</div>
+</div>
 <a id="ga9a7e733c40008f92e96e2ccf24f890de"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga9a7e733c40008f92e96e2ccf24f890de">&#9670;&nbsp;</a></span>ParameterDesignation <span class="overload">[2/2]</span></h2>
 
@@ -170,7 +202,7 @@ When on (&gt; 0.5f), it means the plugin must run in a bypassed state. </p>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

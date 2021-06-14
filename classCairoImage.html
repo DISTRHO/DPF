@@ -94,13 +94,17 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a36abbee6a47fc3447f00270aa16a82b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a861bdbb5cd592feaef43e2202397deed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCairoImage.html#a861bdbb5cd592feaef43e2202397deed">loadFromMemory</a> (const char *rawData, const <a class="el" href="classSize.html">Size</a>&lt; uint &gt; &amp;size, ImageFormat format=kImageFormatBGRA) noexcept override</td></tr>
 <tr class="separator:a861bdbb5cd592feaef43e2202397deed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94c1707943b9874e362e11473bdcf768"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCairoImage.html#a94c1707943b9874e362e11473bdcf768">loadFromPNG</a> (const char *pngData, uint dataSize) noexcept</td></tr>
+<tr class="separator:a94c1707943b9874e362e11473bdcf768"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa60a5e3b68032170e8e59fb506c7d3b7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCairoImage.html#aa60a5e3b68032170e8e59fb506c7d3b7">drawAt</a> (const <a class="el" href="structGraphicsContext.html">GraphicsContext</a> &amp;context, const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;pos) override</td></tr>
 <tr class="separator:aa60a5e3b68032170e8e59fb506c7d3b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ce76c4866b396a771caafa80acf162b"><td class="memItemLeft" align="right" valign="top">cairo_surface_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCairoImage.html#a5ce76c4866b396a771caafa80acf162b">getSurface</a> () const noexcept</td></tr>
+<tr class="separator:a5ce76c4866b396a771caafa80acf162b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5f422a5a77f4639a907f8e5dde29ef7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classCairoImage.html">CairoImage</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCairoImage.html#af5f422a5a77f4639a907f8e5dde29ef7">operator=</a> (const <a class="el" href="classCairoImage.html">CairoImage</a> &amp;image) noexcept</td></tr>
 <tr class="separator:af5f422a5a77f4639a907f8e5dde29ef7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16d253efabc2a7132bd44a000178480b"><td class="memItemLeft" align="right" valign="top"><a id="a16d253efabc2a7132bd44a000178480b"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>loadFromMemory</b> (const char *rawData, uint w, uint h, ImageFormat format=kImageFormatBGRA)</td></tr>
-<tr class="separator:a16d253efabc2a7132bd44a000178480b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d952fe7065dfbf079053a30463214e8"><td class="memItemLeft" align="right" valign="top"><a id="a9d952fe7065dfbf079053a30463214e8"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>loadFromMemory</b> (const char *rdata, uint w, uint h, ImageFormat fmt=kImageFormatBGRA)</td></tr>
+<tr class="separator:a9d952fe7065dfbf079053a30463214e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad41816f9a994a98c4a23efaf75797402"><td class="memItemLeft" align="right" valign="top"><a id="ad41816f9a994a98c4a23efaf75797402"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>draw</b> (const <a class="el" href="structGraphicsContext.html">GraphicsContext</a> &amp;context)</td></tr>
 <tr class="separator:ad41816f9a994a98c4a23efaf75797402"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -344,9 +348,46 @@ ImageFormat&#160;</td><td class="memItemRight" valign="bottom"><b>format</b></td
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Load image data from memory. </p><dl class="section note"><dt>Note</dt><dd><em>rawData</em> must remain valid for the lifetime of this Image. </dd></dl>
+<p>Load raw image data from memory. </p><dl class="section note"><dt>Note</dt><dd><em>rawData</em> must remain valid for the lifetime of this Image. </dd></dl>
 
 <p>Reimplemented from <a class="el" href="classImageBase.html#a2c922b2ba7133937e74e1629fdde4f0e">ImageBase</a>.</p>
+
+</div>
+</div>
+<a id="a94c1707943b9874e362e11473bdcf768"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94c1707943b9874e362e11473bdcf768">&#9670;&nbsp;</a></span>loadFromPNG()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void CairoImage::loadFromPNG </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>pngData</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>dataSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Load PNG image from memory. Image size is read from PNG contents. </p><dl class="section note"><dt>Note</dt><dd><em>pngData</em> must remain valid for the lifetime of this Image. </dd></dl>
 
 </div>
 </div>
@@ -389,6 +430,32 @@ ImageFormat&#160;</td><td class="memItemRight" valign="bottom"><b>format</b></td
 
 </div>
 </div>
+<a id="a5ce76c4866b396a771caafa80acf162b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ce76c4866b396a771caafa80acf162b">&#9670;&nbsp;</a></span>getSurface()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">cairo_surface_t* CairoImage::getSurface </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the cairo surface currently associated with this image. FIXME might be removed </p>
+
+</div>
+</div>
 <a id="af5f422a5a77f4639a907f8e5dde29ef7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af5f422a5a77f4639a907f8e5dde29ef7">&#9670;&nbsp;</a></span>operator=()</h2>
 
@@ -422,7 +489,7 @@ ImageFormat&#160;</td><td class="memItemRight" valign="bottom"><b>format</b></td
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

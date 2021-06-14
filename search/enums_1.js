@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['parameterdesignation_820',['ParameterDesignation',['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPlugin.hpp'],['../group__BasePluginStructs.html#ga9a7e733c40008f92e96e2ccf24f890de',1,'ParameterDesignation():&#160;DistrhoPluginLV2.hpp']]]
+  ['createflags_934',['CreateFlags',['../classNanoVG.html#a54ec9a68401121aab78976df6d3891a9',1,'NanoVG']]]
 ];

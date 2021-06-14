@@ -78,11 +78,11 @@ Inheritance diagram for SubWidget:</div>
  <div class="center">
   <img src="classSubWidget.png" usemap="#SubWidget_map" alt=""/>
   <map id="SubWidget_map" name="SubWidget_map">
-<area href="classWidget.html" alt="Widget" shape="rect" coords="304,0,497,24"/>
-<area href="classImageBaseButton.html" alt="ImageBaseButton&lt; ImageType &gt;" shape="rect" coords="0,112,193,136"/>
-<area href="classImageKnob.html" alt="ImageKnob" shape="rect" coords="203,112,396,136"/>
-<area href="classImageSlider.html" alt="ImageSlider" shape="rect" coords="406,112,599,136"/>
-<area href="classImageSwitch.html" alt="ImageSwitch" shape="rect" coords="609,112,802,136"/>
+<area href="classWidget.html" alt="Widget" shape="rect" coords="307,0,502,24"/>
+<area href="classImageBaseButton.html" alt="ImageBaseButton&lt; ImageType &gt;" shape="rect" coords="0,112,195,136"/>
+<area href="classImageBaseKnob.html" alt="ImageBaseKnob&lt; ImageType &gt;" shape="rect" coords="205,112,400,136"/>
+<area href="classImageBaseSlider.html" alt="ImageBaseSlider&lt; ImageType &gt;" shape="rect" coords="410,112,605,136"/>
+<area href="classImageBaseSwitch.html" alt="ImageBaseSwitch&lt; ImageType &gt;" shape="rect" coords="615,112,810,136"/>
   </map>
 </div></div>
 <table class="memberdecls">
@@ -120,8 +120,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2d658e71ccb9502b8409a08782d8b345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a13910739dc797b600502e2dfa7daef87"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#a13910739dc797b600502e2dfa7daef87">repaint</a> () noexcept override</td></tr>
 <tr class="separator:a13910739dc797b600502e2dfa7daef87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3426cbcf0104c8a5c9996e3efff75381"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#a3426cbcf0104c8a5c9996e3efff75381">toFront</a> ()</td></tr>
+<tr class="separator:a3426cbcf0104c8a5c9996e3efff75381"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a926884690b66c762f7bdb1196c58522b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#a926884690b66c762f7bdb1196c58522b">setNeedsFullViewportDrawing</a> (bool needsFullViewportForDrawing=true)</td></tr>
 <tr class="separator:a926884690b66c762f7bdb1196c58522b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cd703976adf24decbb66dd3dbc1db8b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#a5cd703976adf24decbb66dd3dbc1db8b">setNeedsViewportScaling</a> (bool needsViewportScaling=true, double autoScaleFactor=0.0)</td></tr>
+<tr class="separator:a5cd703976adf24decbb66dd3dbc1db8b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb38f61c0205d7832ddfd090f7f60f2a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#adb38f61c0205d7832ddfd090f7f60f2a">setSkipDrawing</a> (bool skipDrawing=true)</td></tr>
+<tr class="separator:adb38f61c0205d7832ddfd090f7f60f2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classWidget"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classWidget')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classWidget.html">Widget</a></td></tr>
 <tr class="memitem:a714cf798aadb4d615f6f60a355382c02 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">~Widget</a> ()</td></tr>
 <tr class="separator:a714cf798aadb4d615f6f60a355382c02 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -193,10 +199,6 @@ Friends</h2></td></tr>
 <tr class="memitem:a29fa75ce3911bef8c5f4414f6f0242b8"><td class="memItemLeft" align="right" valign="top"><a id="a29fa75ce3911bef8c5f4414f6f0242b8"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>Widget</b></td></tr>
 <tr class="separator:a29fa75ce3911bef8c5f4414f6f0242b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a28ec56d5f81b689b3dc17138f32aa7eb"><td class="memTemplParams" colspan="2"><a id="a28ec56d5f81b689b3dc17138f32aa7eb"></a>
-template&lt;class BaseWidget &gt; </td></tr>
-<tr class="memitem:a28ec56d5f81b689b3dc17138f32aa7eb"><td class="memTemplItemLeft" align="right" valign="top">class&#160;</td><td class="memTemplItemRight" valign="bottom"><b>NanoBaseWidget</b></td></tr>
-<tr class="separator:a28ec56d5f81b689b3dc17138f32aa7eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Sub-Widget class.</p>
@@ -629,6 +631,32 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a id="a3426cbcf0104c8a5c9996e3efff75381"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3426cbcf0104c8a5c9996e3efff75381">&#9670;&nbsp;</a></span>toFront()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void SubWidget::toFront </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Bring this widget to the "front" of the parent widget. Makes the widget behave as if it was the last to be registered on the parent widget, thus being "in front". </p>
+
+</div>
+</div>
 <a id="a926884690b66c762f7bdb1196c58522b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a926884690b66c762f7bdb1196c58522b">&#9670;&nbsp;</a></span>setNeedsFullViewportDrawing()</h2>
 
@@ -645,6 +673,54 @@ template&lt;typename T &gt; </div>
       </table>
 </div><div class="memdoc">
 <p>Indicate that this subwidget will draw out of bounds, and thus needs the entire viewport available for drawing. </p>
+
+</div>
+</div>
+<a id="a5cd703976adf24decbb66dd3dbc1db8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cd703976adf24decbb66dd3dbc1db8b">&#9670;&nbsp;</a></span>setNeedsViewportScaling()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SubWidget::setNeedsViewportScaling </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>needsViewportScaling</em> = <code>true</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>autoScaleFactor</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Indicate that this subwidget will always draw at its own internal size and needs scaling to fit target size. </p>
+
+</div>
+</div>
+<a id="adb38f61c0205d7832ddfd090f7f60f2a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb38f61c0205d7832ddfd090f7f60f2a">&#9670;&nbsp;</a></span>setSkipDrawing()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SubWidget::setSkipDrawing </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>skipDrawing</em> = <code>true</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Indicate that this subwidget should not be drawn on screen, typically because it is managed by something else. </p>
 
 </div>
 </div>
@@ -681,7 +757,7 @@ template&lt;typename T &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:32 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['keyboardevent_429',['KeyboardEvent',['../structWidget_1_1KeyboardEvent.html',1,'Widget']]]
+  ['heapbuffer_483',['HeapBuffer',['../structHeapBuffer.html',1,'']]],
+  ['heapringbuffer_484',['HeapRingBuffer',['../classHeapRingBuffer.html',1,'']]],
+  ['hugestackbuffer_485',['HugeStackBuffer',['../structHugeStackBuffer.html',1,'']]]
 ];

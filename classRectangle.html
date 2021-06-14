@@ -129,6 +129,9 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a08b0741e6259e88552106136cdbff489"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4420a73414a0fd1b85abd468a2c890d3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRectangle.html#a4420a73414a0fd1b85abd468a2c890d3">contains</a> (const <a class="el" href="classPoint.html">Point</a>&lt; T &gt; &amp;pos) const noexcept</td></tr>
 <tr class="separator:a4420a73414a0fd1b85abd468a2c890d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa39ae4cb4a8c27f91db466fa12aef254"><td class="memTemplParams" colspan="2">template&lt;typename T2 &gt; </td></tr>
+<tr class="memitem:aa39ae4cb4a8c27f91db466fa12aef254"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classRectangle.html#aa39ae4cb4a8c27f91db466fa12aef254">contains</a> (const <a class="el" href="classPoint.html">Point</a>&lt; T2 &gt; &amp;pos) const noexcept</td></tr>
+<tr class="separator:aa39ae4cb4a8c27f91db466fa12aef254"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a71d17fdf110e4ed2350d2a5fe248e540"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRectangle.html#a71d17fdf110e4ed2350d2a5fe248e540">containsX</a> (const T &amp;x) const noexcept</td></tr>
 <tr class="separator:a71d17fdf110e4ed2350d2a5fe248e540"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a38b56f4f8b38597fd34f68c677de2559"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classRectangle.html#a38b56f4f8b38597fd34f68c677de2559">containsY</a> (const T &amp;y) const noexcept</td></tr>
@@ -1025,7 +1028,7 @@ template&lt;typename T &gt; </div>
 </div>
 </div>
 <a id="a08b0741e6259e88552106136cdbff489"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a08b0741e6259e88552106136cdbff489">&#9670;&nbsp;</a></span>contains() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a08b0741e6259e88552106136cdbff489">&#9670;&nbsp;</a></span>contains() <span class="overload">[1/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1064,7 +1067,7 @@ template&lt;typename T &gt; </div>
 </div>
 </div>
 <a id="a4420a73414a0fd1b85abd468a2c890d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4420a73414a0fd1b85abd468a2c890d3">&#9670;&nbsp;</a></span>contains() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a4420a73414a0fd1b85abd468a2c890d3">&#9670;&nbsp;</a></span>contains() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1089,6 +1092,37 @@ template&lt;typename T &gt; </div>
 </table>
 </div><div class="memdoc">
 <p>Check if this rectangle contains the point <em>pos</em>. </p>
+
+</div>
+</div>
+<a id="aa39ae4cb4a8c27f91db466fa12aef254"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa39ae4cb4a8c27f91db466fa12aef254">&#9670;&nbsp;</a></span>contains() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<div class="memtemplate">
+template&lt;typename T2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool <a class="el" href="classRectangle.html">Rectangle</a>&lt; T &gt;::contains </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPoint.html">Point</a>&lt; T2 &gt; &amp;&#160;</td>
+          <td class="paramname"><em>pos</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if this rectangle contains the point <em>pos</em> of another type. </p>
 
 </div>
 </div>
@@ -1362,7 +1396,7 @@ DEPRECATED Please use <a class="el" href="classRectangle.html#ab07a01fb85e96f8f7
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:32 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

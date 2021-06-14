@@ -85,6 +85,8 @@ Public Attributes</h2></td></tr>
 <tr class="separator:adb3b58f79131b653d6b2adfa3ea07e5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2bda30f97a1b63cbeb9f11f718d3d30"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classString.html">String</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structAudioPort.html#af2bda30f97a1b63cbeb9f11f718d3d30">symbol</a></td></tr>
 <tr class="separator:af2bda30f97a1b63cbeb9f11f718d3d30"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80aba3da64389d738bd8ae68bcedb4f4"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structAudioPort.html#a80aba3da64389d738bd8ae68bcedb4f4">groupId</a></td></tr>
+<tr class="separator:a80aba3da64389d738bd8ae68bcedb4f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Audio Port.</p>
@@ -167,13 +169,30 @@ The first character must be one of _, a-z or A-Z and subsequent characters can b
 
 </div>
 </div>
+<a id="a80aba3da64389d738bd8ae68bcedb4f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80aba3da64389d738bd8ae68bcedb4f4">&#9670;&nbsp;</a></span>groupId</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint32_t AudioPort::groupId</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The group id that this audio/cv port belongs to. No group is assigned by default.</p>
+<p>You can use a group from PredefinedPortGroups or roll your own.<br  />
+When rolling your own port groups, you MUST start their group ids from 0 and they MUST be sequential. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="structPortGroup.html">PortGroup</a>, <a class="el" href="classPlugin.html#a71b876c8157b087b3552960f2877a44d">Plugin::initPortGroup</a> </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>distrho/<a class="el" href="DistrhoPlugin_8hpp_source.html">DistrhoPlugin.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

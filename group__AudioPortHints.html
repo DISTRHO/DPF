@@ -77,6 +77,14 @@ Variables</h2></td></tr>
 <tr class="separator:ga92c8a0135d1b6dacd22df25295c15ff3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gafbf1a5255d0a19f35ae21480ab2c7433"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__AudioPortHints.html#gafbf1a5255d0a19f35ae21480ab2c7433">kAudioPortIsSidechain</a> = 0x2</td></tr>
 <tr class="separator:gafbf1a5255d0a19f35ae21480ab2c7433"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga7133899b77b31caa1eae3fe77409e69e"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__AudioPortHints.html#ga7133899b77b31caa1eae3fe77409e69e">kCVPortHasBipolarRange</a> = 0x10</td></tr>
+<tr class="separator:ga7133899b77b31caa1eae3fe77409e69e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gafa444d8a3d5244e107c2ddb19f60105d"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__AudioPortHints.html#gafa444d8a3d5244e107c2ddb19f60105d">kCVPortHasNegativeUnipolarRange</a> = 0x20</td></tr>
+<tr class="separator:gafa444d8a3d5244e107c2ddb19f60105d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0919fac232ec9c6999057b09d54e3919"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__AudioPortHints.html#ga0919fac232ec9c6999057b09d54e3919">kCVPortHasPositiveUnipolarRange</a> = 0x40</td></tr>
+<tr class="separator:ga0919fac232ec9c6999057b09d54e3919"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gae36eb55fe0813af0dd6cdfe4f7baae97"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__AudioPortHints.html#gae36eb55fe0813af0dd6cdfe4f7baae97">kCVPortHasScaledRange</a> = 0x80</td></tr>
+<tr class="separator:gae36eb55fe0813af0dd6cdfe4f7baae97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>Various audio port hints. </p>
@@ -128,10 +136,103 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="ga7133899b77b31caa1eae3fe77409e69e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga7133899b77b31caa1eae3fe77409e69e">&#9670;&nbsp;</a></span>kCVPortHasBipolarRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t kCVPortHasBipolarRange = 0x10</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>CV port has bipolar range (-1 to +1, or -5 to +5 if scaled). This is merely a hint to tell the host what value range to expect. </p>
+
+</div>
+</div>
+<a id="gafa444d8a3d5244e107c2ddb19f60105d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gafa444d8a3d5244e107c2ddb19f60105d">&#9670;&nbsp;</a></span>kCVPortHasNegativeUnipolarRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t kCVPortHasNegativeUnipolarRange = 0x20</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>CV port has negative unipolar range (0 to +1, or 0 to +10 if scaled). This is merely a hint to tell the host what value range to expect. </p>
+
+</div>
+</div>
+<a id="ga0919fac232ec9c6999057b09d54e3919"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0919fac232ec9c6999057b09d54e3919">&#9670;&nbsp;</a></span>kCVPortHasPositiveUnipolarRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t kCVPortHasPositiveUnipolarRange = 0x40</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>CV port has positive unipolar range (-1 to 0, or -10 to 0 if scaled). This is merely a hint to tell the host what value range to expect. </p>
+
+</div>
+</div>
+<a id="gae36eb55fe0813af0dd6cdfe4f7baae97"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gae36eb55fe0813af0dd6cdfe4f7baae97">&#9670;&nbsp;</a></span>kCVPortHasScaledRange</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t kCVPortHasScaledRange = 0x80</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>CV port has scaled range to match real values (-5 to +5v bipolar, +/-10 to 0v unipolar). One range flag is required if this flag is set.</p>
+<p>When enabled, this makes the port a mod:CVPort, compatible with the MOD Devices platform. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

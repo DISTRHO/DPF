@@ -132,18 +132,19 @@ $(function() {
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;    { <span class="keywordflow">return</span> <a class="code" href="classWindow.html#ad17a7f53a62673982f4861cdc27fd54e">Window::addIdleCallback</a>(callback, timerFrequencyInMs); }</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    <span class="keywordtype">bool</span> removeIdleCallback(<a class="code" href="structIdleCallback.html">IdleCallback</a>* callback) { <span class="keywordflow">return</span> <a class="code" href="classWindow.html#a5c5c4f53c53cb081b39a40d5ce9afd65">Window::removeIdleCallback</a>(callback); }</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;    <span class="keyword">const</span> <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; getGraphicsContext() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWindow.html#aa73a74df08f29d576e18cf1d61ea9897">Window::getGraphicsContext</a>(); }</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">void</span> setGeometryConstraints(uint minimumWidth, uint minimumHeight,</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                <span class="keywordtype">bool</span> keepAspectRatio = <span class="keyword">false</span>, <span class="keywordtype">bool</span> automaticallyScale = <span class="keyword">false</span>)</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    { <a class="code" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">Window::setGeometryConstraints</a>(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale); }</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160; </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classStandaloneWindow.html">StandaloneWindow</a>)</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;};</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="preprocessor">#endif // DGL_STANDALONE_WINDOW_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="keywordtype">double</span> getScaleFactor() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWindow.html#a77774c8ce4b01113fcd525079f9b8787">Window::getScaleFactor</a>(); }</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keywordtype">void</span> setGeometryConstraints(uint minimumWidth, uint minimumHeight,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                <span class="keywordtype">bool</span> keepAspectRatio = <span class="keyword">false</span>, <span class="keywordtype">bool</span> automaticallyScale = <span class="keyword">false</span>)</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    { <a class="code" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">Window::setGeometryConstraints</a>(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale); }</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classStandaloneWindow.html">StandaloneWindow</a>)</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;};</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; </div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160; </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="preprocessor">#endif // DGL_STANDALONE_WINDOW_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassWindow_html_a13f314cfd5c9048ec8ea0b88b611f54d"><div class="ttname"><a href="classWindow.html#a13f314cfd5c9048ec8ea0b88b611f54d">Window::setHeight</a></div><div class="ttdeci">void setHeight(uint height)</div></div>
 <div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:154</div></div>
@@ -151,6 +152,7 @@ $(function() {
 <div class="ttc" id="aclassWindow_html_a6be53a737e7dfcc74167962437e93b8f"><div class="ttname"><a href="classWindow.html#a6be53a737e7dfcc74167962437e93b8f">Window::isVisible</a></div><div class="ttdeci">bool isVisible() const noexcept</div></div>
 <div class="ttc" id="aclassWindow_html_aece9e08d0c4d3b6ec02cbb804583c175"><div class="ttname"><a href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">Window::setGeometryConstraints</a></div><div class="ttdeci">void setGeometryConstraints(uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false)</div></div>
 <div class="ttc" id="aclassWindow_html"><div class="ttname"><a href="classWindow.html">Window</a></div><div class="ttdef"><b>Definition:</b> Window.hpp:50</div></div>
+<div class="ttc" id="aclassWindow_html_a77774c8ce4b01113fcd525079f9b8787"><div class="ttname"><a href="classWindow.html#a77774c8ce4b01113fcd525079f9b8787">Window::getScaleFactor</a></div><div class="ttdeci">double getScaleFactor() const noexcept</div></div>
 <div class="ttc" id="aclassSize_html"><div class="ttname"><a href="classSize.html">Size&lt; uint &gt;</a></div></div>
 <div class="ttc" id="aclassApplication_html"><div class="ttname"><a href="classApplication.html">Application</a></div><div class="ttdef"><b>Definition:</b> Application.hpp:34</div></div>
 <div class="ttc" id="aclassStandaloneWindow_html_a645f7c56f44d9a8a72e81595b28650e2"><div class="ttname"><a href="classStandaloneWindow.html#a645f7c56f44d9a8a72e81595b28650e2">StandaloneWindow::isVisible</a></div><div class="ttdeci">bool isVisible() const noexcept</div><div class="ttdef"><b>Definition:</b> StandaloneWindow.hpp:48</div></div>
@@ -173,7 +175,7 @@ $(function() {
 <div class="ttc" id="aclassWindow_html_a4626829d3cb9d01285f739d2bbc69b74"><div class="ttname"><a href="classWindow.html#a4626829d3cb9d01285f739d2bbc69b74">Window::hide</a></div><div class="ttdeci">void hide()</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

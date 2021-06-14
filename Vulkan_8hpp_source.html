@@ -159,8 +159,8 @@ $(function() {
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <a class="code" href="classVulkanImage.html">VulkanImage</a>&amp; <a class="code" href="classVulkanImage.html#ae99740f2a1bdaa98e67c8fcfbdec9423">operator=</a>(<span class="keyword">const</span> <a class="code" href="classVulkanImage.html">VulkanImage</a>&amp; image) noexcept;</div>
 <div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="comment">// FIXME this should not be needed</span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classVulkanImage.html#afdf45f3e60f4a5a4805402b312bc8d5f">loadFromMemory</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* rawData, uint w, uint h, ImageFormat format = kImageFormatBGRA)</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    { <a class="code" href="classVulkanImage.html#afdf45f3e60f4a5a4805402b312bc8d5f">loadFromMemory</a>(rawData, <a class="code" href="classSize.html">Size&lt;uint&gt;</a>(w, h), format); };</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classVulkanImage.html#afdf45f3e60f4a5a4805402b312bc8d5f">loadFromMemory</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* rdata, uint w, uint h, ImageFormat fmt = kImageFormatBGRA)</div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    { <a class="code" href="classVulkanImage.html#afdf45f3e60f4a5a4805402b312bc8d5f">loadFromMemory</a>(rdata, <a class="code" href="classSize.html">Size&lt;uint&gt;</a>(w, h), fmt); };</div>
 <div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> draw(<span class="keyword">const</span> <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context)</div>
 <div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    { <a class="code" href="classVulkanImage.html#a35ba9f546320a8b51c76f09f0d80845f">drawAt</a>(context, <a class="code" href="classPoint.html">Point&lt;int&gt;</a>(0, 0)); };</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> <a class="code" href="classVulkanImage.html#a35ba9f546320a8b51c76f09f0d80845f">drawAt</a>(<span class="keyword">const</span> <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context, <span class="keywordtype">int</span> x, <span class="keywordtype">int</span> y)</div>
@@ -186,7 +186,7 @@ $(function() {
 <div class="ttc" id="aclassVulkanImage_html_aaa625bb7cbad92de916c0d6877033a42"><div class="ttname"><a href="classVulkanImage.html#aaa625bb7cbad92de916c0d6877033a42">VulkanImage::VulkanImage</a></div><div class="ttdeci">VulkanImage()</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

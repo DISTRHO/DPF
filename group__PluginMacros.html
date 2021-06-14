@@ -95,6 +95,8 @@ Macros</h2></td></tr>
 <tr class="separator:gadf2e2eb7550e4116001c816adfb04a70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga548522eb91344a45841a5a95ff4f8073"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073">DISTRHO_PLUGIN_WANT_MIDI_OUTPUT</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ga548522eb91344a45841a5a95ff4f8073"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga5a33bc5567795bdbbaab32313fabc652"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga5a33bc5567795bdbbaab32313fabc652">DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:ga5a33bc5567795bdbbaab32313fabc652"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad95e24b17f196260cee15255fdb5b677"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:gad95e24b17f196260cee15255fdb5b677"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga255f43cc0997af8b56abcca260c875e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">DISTRHO_PLUGIN_WANT_STATE</a>&#160;&#160;&#160;1</td></tr>
@@ -203,7 +205,7 @@ This is used to identify your plugin before a <a class="el" href="classPlugin.ht
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin has a custom UI. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">DISTRHO_UI_USE_NANOVG</a> </dd>
+<p>Whether the plugin has a custom UI. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">DISTRHO_UI_USE_NANOVG</a> </dd>
 <dd>
 <a class="el" href="classUI.html">UI</a> </dd></dl>
 
@@ -220,7 +222,7 @@ This is used to identify your plugin before a <a class="el" href="classPlugin.ht
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin processing is realtime-safe.<br  />
+<p>Whether the plugin processing is realtime-safe.<br  />
 TODO - list rtsafe requirements </p>
 
 </div>
@@ -236,7 +238,7 @@ TODO - list rtsafe requirements </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin is a synth.<br  />
+<p>Whether the plugin is a synth.<br  />
 <a class="el" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">DISTRHO_PLUGIN_WANT_MIDI_INPUT</a> is automatically enabled when this is too. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">DISTRHO_PLUGIN_WANT_MIDI_INPUT</a> </dd></dl>
 
 </div>
@@ -268,7 +270,7 @@ TODO - list rtsafe requirements </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin introduces latency during audio or midi processing. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">Plugin::setLatency(uint32_t)</a> </dd></dl>
+<p>Whether the plugin introduces latency during audio or midi processing. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">Plugin::setLatency(uint32_t)</a> </dd></dl>
 
 </div>
 </div>
@@ -283,7 +285,7 @@ TODO - list rtsafe requirements </p>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin wants MIDI input.<br  />
+<p>Whether the plugin wants MIDI input.<br  />
 This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72">DISTRHO_PLUGIN_IS_SYNTH</a> is true. </p>
 
 </div>
@@ -299,7 +301,23 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin wants MIDI output. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a0467eef817ac130cbbe1c0fbe09660c6">Plugin::writeMidiEvent(const MidiEvent&amp;)</a> </dd></dl>
+<p>Whether the plugin wants MIDI output. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a0467eef817ac130cbbe1c0fbe09660c6">Plugin::writeMidiEvent(const MidiEvent&amp;)</a> </dd></dl>
+
+</div>
+</div>
+<a id="ga5a33bc5567795bdbbaab32313fabc652"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga5a33bc5567795bdbbaab32313fabc652">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the plugin wants to change its own parameter inputs.<br  />
+Not all hosts or plugin formats support this, so Plugin::canRequestParameterValueChanges() can be used to query support at runtime. </p><dl class="section see"><dt>See also</dt><dd>Plugin::requestParameterValueChange(uint32_t, float) </dd></dl>
 
 </div>
 </div>
@@ -314,7 +332,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin provides its own internal programs. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> </dd>
+<p>Whether the plugin provides its own internal programs. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> </dd>
 <dd>
 <a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram(uint32_t)</a> </dd></dl>
 
@@ -331,7 +349,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">Plugin::initState(uint32_t, String&amp;, String&amp;)</a> </dd>
+<p>Whether the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">Plugin::initState(uint32_t, String&amp;, String&amp;)</a> </dd>
 <dd>
 <a class="el" href="classPlugin.html#ad25ed64a2f00f48c86d2ae0016ea3e59">Plugin::setState(const char*, const char*)</a> </dd></dl>
 
@@ -348,7 +366,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin implements the full state API. When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project. This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters. Most simple effects and synths will not need this. </p><dl class="section note"><dt>Note</dt><dd>this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes. </dd></dl>
+<p>Whether the plugin implements the full state API. When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project. This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters. Most simple effects and synths will not need this. </p><dl class="section note"><dt>Note</dt><dd>this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes. </dd></dl>
 <dl class="section see"><dt>See also</dt><dd>Plugin::getState(const char*) </dd></dl>
 
 </div>
@@ -364,7 +382,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the plugin wants time position information from the host. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">Plugin::getTimePosition()</a> </dd></dl>
+<p>Whether the plugin wants time position information from the host. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">Plugin::getTimePosition()</a> </dd></dl>
 
 </div>
 </div>
@@ -379,7 +397,7 @@ This is automatically enabled if <a class="el" href="group__PluginMacros.html#ga
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the UI uses a custom toolkit implementation based on OpenGL.<br  />
+<p>Whether the UI uses a custom toolkit implementation based on OpenGL.<br  />
 When enabled, the macros <a class="el" href="group__PluginMacros.html#gaf978778ddb34e3663a5c0bd128067e10">DISTRHO_UI_CUSTOM_INCLUDE_PATH</a> and <a class="el" href="group__PluginMacros.html#gaf6377f757b9796bd37f7be4e605ccd4a">DISTRHO_UI_CUSTOM_WIDGET_TYPE</a> are required. </p>
 
 </div>
@@ -425,7 +443,7 @@ When enabled, the macros <a class="el" href="group__PluginMacros.html#gaf978778d
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the UI uses <a class="el" href="classNanoVG.html">NanoVG</a> for drawing instead of the default raw OpenGL calls.<br  />
+<p>Whether the UI uses <a class="el" href="classNanoVG.html">NanoVG</a> for drawing instead of the default raw OpenGL calls.<br  />
 When enabled your UI instance will subclass NanoWidget instead of <a class="el" href="classWidget.html">Widget</a>. </p>
 
 </div>
@@ -441,7 +459,7 @@ When enabled your UI instance will subclass NanoWidget instead of <a class="el" 
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the UI is resizable to any size by the user.<br  />
+<p>Whether the UI is resizable to any size by the user.<br  />
 By default this is false, and resizing is only allowed under the plugin <a class="el" href="classUI.html">UI</a> control,<br  />
 Enabling this options makes it possible for the user to resize the plugin <a class="el" href="classUI.html">UI</a> at anytime. </p><dl class="section see"><dt>See also</dt><dd>UI::setGeometryConstraints(uint, uint, bool, bool) </dd></dl>
 
@@ -466,7 +484,7 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:31 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:11 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

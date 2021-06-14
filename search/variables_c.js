@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['ranges_808',['ranges',['../structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db',1,'Parameter']]],
-  ['restrictedmode_809',['restrictedMode',['../structParameterEnumerationValues.html#a014ebcacbe68c3f77f2f8ac9ffe3cd6f',1,'ParameterEnumerationValues']]]
+  ['outputs_913',['outputs',['../classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef',1,'AudioMidiSyncHelper']]]
 ];

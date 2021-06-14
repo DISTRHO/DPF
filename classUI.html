@@ -86,6 +86,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ad3425075e4a23234a8568d1893b54f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47e7b6111faba049dfee4738d067cc42"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a47e7b6111faba049dfee4738d067cc42">~UI</a> ()</td></tr>
 <tr class="separator:a47e7b6111faba049dfee4738d067cc42"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8fe940d56a0c283095e28bbc5806af31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a8fe940d56a0c283095e28bbc5806af31">isResizable</a> () const noexcept</td></tr>
+<tr class="separator:a8fe940d56a0c283095e28bbc5806af31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3c47bc4cb3dcc558bbd05791d1cc83f5"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3c47bc4cb3dcc558bbd05791d1cc83f5">getBackgroundColor</a> () const noexcept</td></tr>
 <tr class="separator:a3c47bc4cb3dcc558bbd05791d1cc83f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a607ea9f2978605808d8ef5dc3531fae7"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a607ea9f2978605808d8ef5dc3531fae7">getForegroundColor</a> () const noexcept</td></tr>
@@ -125,12 +127,12 @@ Protected Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
+<tr class="memitem:a248da0691bb4a09193e912d67ab7552e"><td class="memItemLeft" align="right" valign="top"><a id="a248da0691bb4a09193e912d67ab7552e"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginWindow</b></td></tr>
+<tr class="separator:a248da0691bb4a09193e912d67ab7552e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf9db2e4a604d26b79f28734659b7409"><td class="memItemLeft" align="right" valign="top"><a id="aaf9db2e4a604d26b79f28734659b7409"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td></tr>
 <tr class="separator:aaf9db2e4a604d26b79f28734659b7409"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a09076cbeb5a44f946ba377c83859bfd3"><td class="memItemLeft" align="right" valign="top"><a id="a09076cbeb5a44f946ba377c83859bfd3"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b></td></tr>
-<tr class="separator:a09076cbeb5a44f946ba377c83859bfd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>DPF <a class="el" href="classUI.html">UI</a> class from where <a class="el" href="classUI.html">UI</a> instances are created.</p>
@@ -192,6 +194,33 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a8fe940d56a0c283095e28bbc5806af31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8fe940d56a0c283095e28bbc5806af31">&#9670;&nbsp;</a></span>isResizable()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool UI::isResizable </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if this <a class="el" href="classUI.html">UI</a> window is resizable (by the user or window manager). There are situations where an <a class="el" href="classUI.html">UI</a> supports resizing but the plugin host does not, so this could return false.</p>
+<p>You might want to add a resize handle for such cases, so the user is still allowed to resize the window. (programatically resizing a window is always possible, but the same is not true for the window manager) </p>
+
+</div>
+</div>
 <a id="a3c47bc4cb3dcc558bbd05791d1cc83f5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3c47bc4cb3dcc558bbd05791d1cc83f5">&#9670;&nbsp;</a></span>getBackgroundColor()</h2>
 
@@ -396,7 +425,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporterWindow</b>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>sendNote. @TODO Document this. </p><dl class="section note"><dt>Note</dt><dd>Work in progress. Implemented for DSSI and LV2 formats. </dd></dl>
+<p>Send a single MIDI note from the <a class="el" href="classUI.html">UI</a> to the plugin DSP side.<br  />
+A note with zero velocity will be sent as note-off (MIDI 0x80), otherwise note-on (MIDI 0x90). </p>
 
 </div>
 </div>
@@ -641,7 +671,7 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue May 18 2021 11:26:32 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Jun 14 2021 12:26:12 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

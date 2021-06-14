@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['tick_813',['tick',['../structTimePosition_1_1BarBeatTick.html#ad38d7364a5441f1f49c3538f5691a299',1,'TimePosition::BarBeatTick']]],
-  ['ticksperbeat_814',['ticksPerBeat',['../structTimePosition_1_1BarBeatTick.html#ab8cfc3f2709a79e733e58556712da062',1,'TimePosition::BarBeatTick']]]
+  ['ranges_915',['ranges',['../structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db',1,'Parameter']]],
+  ['restrictedmode_916',['restrictedMode',['../structParameterEnumerationValues.html#a014ebcacbe68c3f77f2f8ac9ffe3cd6f',1,'ParameterEnumerationValues']]]
 ];
