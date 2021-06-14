@@ -208,15 +208,6 @@ void ButtonEventHandler::setCallback(Callback* const callback) noexcept
     pData->callback = callback;
 }
 
-ButtonEventHandler::State ButtonEventHandler::getState() const noexcept
-{
-    return static_cast<State>(pData->state);
-}
-
-void ButtonEventHandler::stateChanged(State, State)
-{
-}
-
 bool ButtonEventHandler::mouseEvent(const Widget::MouseEvent& ev)
 {
     return pData->mouseEvent(ev);
@@ -225,6 +216,15 @@ bool ButtonEventHandler::mouseEvent(const Widget::MouseEvent& ev)
 bool ButtonEventHandler::motionEvent(const Widget::MotionEvent& ev)
 {
     return pData->motionEvent(ev);
+}
+
+ButtonEventHandler::State ButtonEventHandler::getState() const noexcept
+{
+    return static_cast<State>(pData->state);
+}
+
+void ButtonEventHandler::stateChanged(State, State)
+{
 }
 
 // --------------------------------------------------------------------------------------------------------------------
