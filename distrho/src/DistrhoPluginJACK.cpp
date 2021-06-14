@@ -404,7 +404,7 @@ protected:
 
         void* const midiInBuf = jackbridge_port_get_buffer(fPortEventsIn, nframes);
 
-        if (const uint32_t eventCount = std::max(512u - midiEventCount, jackbridge_midi_get_event_count(midiInBuf)))
+        if (const uint32_t eventCount = std::min(512u - midiEventCount, jackbridge_midi_get_event_count(midiInBuf)))
         {
             jack_midi_event_t jevent;
 
