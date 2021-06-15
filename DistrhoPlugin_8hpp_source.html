@@ -122,20 +122,20 @@ $(function() {
 <div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="group__AudioPortHints.html#ga7133899b77b31caa1eae3fe77409e69e">   51</a></span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> uint32_t <a class="code" href="group__AudioPortHints.html#ga7133899b77b31caa1eae3fe77409e69e">kCVPortHasBipolarRange</a> = 0x10;</div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">   CV port has negative unipolar range (0 to +1, or 0 to +10 if scaled).</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">   CV port has negative unipolar range (-1 to 0, or -10 to 0 if scaled).</span></div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">   This is merely a hint to tell the host what value range to expect.</span></div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00057"></a><span class="lineno"><a class="line" href="group__AudioPortHints.html#gafa444d8a3d5244e107c2ddb19f60105d">   57</a></span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> uint32_t <a class="code" href="group__AudioPortHints.html#gafa444d8a3d5244e107c2ddb19f60105d">kCVPortHasNegativeUnipolarRange</a> = 0x20;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">   CV port has positive unipolar range (-1 to 0, or -10 to 0 if scaled).</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">   CV port has positive unipolar range (0 to +1, or 0 to +10 if scaled).</span></div>
 <div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">   This is merely a hint to tell the host what value range to expect.</span></div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="group__AudioPortHints.html#ga0919fac232ec9c6999057b09d54e3919">   63</a></span>&#160;<span class="keyword">static</span> <span class="keyword">const</span> uint32_t <a class="code" href="group__AudioPortHints.html#ga0919fac232ec9c6999057b09d54e3919">kCVPortHasPositiveUnipolarRange</a> = 0x40;</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">/**</span></div>
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">   CV port has scaled range to match real values (-5 to +5v bipolar, +/-10 to 0v unipolar).</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">   One range flag is required if this flag is set.</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">   One other range flag is required if this flag is set.</span></div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">   When enabled, this makes the port a mod:CVPort, compatible with the MOD Devices platform.</span></div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment"> */</span></div>
@@ -1298,7 +1298,7 @@ $(function() {
 <div class="ttc" id="astructTimePosition_html_aee816daeed95cf309ded1087a0c800ae"><div class="ttname"><a href="structTimePosition.html#aee816daeed95cf309ded1087a0c800ae">TimePosition::TimePosition</a></div><div class="ttdeci">TimePosition() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:750</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Jun 14 2021 12:30:38 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Tue Jun 15 2021 12:29:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
