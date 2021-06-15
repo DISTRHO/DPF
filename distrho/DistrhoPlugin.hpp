@@ -51,20 +51,20 @@ static const uint32_t kAudioPortIsSidechain = 0x2;
 static const uint32_t kCVPortHasBipolarRange = 0x10;
 
 /**
-   CV port has negative unipolar range (0 to +1, or 0 to +10 if scaled).
+   CV port has negative unipolar range (-1 to 0, or -10 to 0 if scaled).
    This is merely a hint to tell the host what value range to expect.
  */
 static const uint32_t kCVPortHasNegativeUnipolarRange = 0x20;
 
 /**
-   CV port has positive unipolar range (-1 to 0, or -10 to 0 if scaled).
+   CV port has positive unipolar range (0 to +1, or 0 to +10 if scaled).
    This is merely a hint to tell the host what value range to expect.
  */
 static const uint32_t kCVPortHasPositiveUnipolarRange = 0x40;
 
 /**
    CV port has scaled range to match real values (-5 to +5v bipolar, +/-10 to 0v unipolar).
-   One range flag is required if this flag is set.
+   One other range flag is required if this flag is set.
 
    When enabled, this makes the port a mod:CVPort, compatible with the MOD Devices platform.
  */
