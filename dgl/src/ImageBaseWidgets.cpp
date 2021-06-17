@@ -16,7 +16,6 @@
 
 #include "../ImageBaseWidgets.hpp"
 #include "../Color.hpp"
-#include "Common.hpp"
 
 START_NAMESPACE_DGL
 
@@ -193,108 +192,131 @@ bool ImageBaseButton<ImageType>::onMotion(const MotionEvent& ev)
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
-ImageBaseKnob<ImageType>::PrivateData::PrivateData(const ImageType& img, const Orientation o)
-    : image(img),
-        minimum(0.0f),
-        maximum(1.0f),
-        step(0.0f),
-        value(0.5f),
-        valueDef(value),
-        valueTmp(value),
-        usingDefault(false),
-        usingLog(false),
-        orientation(o),
-        rotationAngle(0),
-        dragging(false),
-        lastX(0.0),
-        lastY(0.0),
-        callback(nullptr),
-        alwaysRepaint(false),
-        isImgVertical(img.getHeight() > img.getWidth()),
-        imgLayerWidth(isImgVertical ? img.getWidth() : img.getHeight()),
-        imgLayerHeight(imgLayerWidth),
-        imgLayerCount(isImgVertical ? img.getHeight()/imgLayerHeight : img.getWidth()/imgLayerWidth),
-        isReady(false)
-{
-    init();
-}
+struct ImageBaseKnob<ImageType>::PrivateData : public KnobEventHandler::Callback {
+    ImageBaseKnob<ImageType>::Callback* callback;
+    ImageType image;
 
-template <class ImageType>
-ImageBaseKnob<ImageType>::PrivateData::PrivateData(PrivateData* const other)
-    : image(other->image),
-        minimum(other->minimum),
-        maximum(other->maximum),
-        step(other->step),
-        value(other->value),
-        valueDef(other->valueDef),
-        valueTmp(value),
-        usingDefault(other->usingDefault),
-        usingLog(other->usingLog),
-        orientation(other->orientation),
-        rotationAngle(other->rotationAngle),
-        dragging(false),
-        lastX(0.0),
-        lastY(0.0),
-        callback(other->callback),
-        alwaysRepaint(other->alwaysRepaint),
-        isImgVertical(other->isImgVertical),
-        imgLayerWidth(other->imgLayerWidth),
-        imgLayerHeight(other->imgLayerHeight),
-        imgLayerCount(other->imgLayerCount),
-        isReady(false)
-{
-    init();
-}
+    int rotationAngle;
 
-template <class ImageType>
-void ImageBaseKnob<ImageType>::PrivateData::assignFrom(PrivateData* const other)
-{
-    cleanup();
-    image          = other->image;
-    minimum        = other->minimum;
-    maximum        = other->maximum;
-    step           = other->step;
-    value          = other->value;
-    valueDef       = other->valueDef;
-    valueTmp       = value;
-    usingDefault   = other->usingDefault;
-    usingLog       = other->usingLog;
-    orientation    = other->orientation;
-    rotationAngle  = other->rotationAngle;
-    dragging       = false;
-    lastX          = 0.0;
-    lastY          = 0.0;
-    callback       = other->callback;
-    alwaysRepaint  = other->alwaysRepaint;
-    isImgVertical  = other->isImgVertical;
-    imgLayerWidth  = other->imgLayerWidth;
-    imgLayerHeight = other->imgLayerHeight;
-    imgLayerCount  = other->imgLayerCount;
-    isReady        = false;
-    init();
-}
+    bool alwaysRepaint;
+    bool isImgVertical;
+    uint imgLayerWidth;
+    uint imgLayerHeight;
+    uint imgLayerCount;
+    bool isReady;
+
+    union {
+        uint glTextureId;
+        void* cairoSurface;
+    };
+
+    explicit PrivateData(const ImageType& img)
+        : callback(nullptr),
+          image(img),
+          rotationAngle(0),
+          alwaysRepaint(false),
+          isImgVertical(img.getHeight() > img.getWidth()),
+          imgLayerWidth(isImgVertical ? img.getWidth() : img.getHeight()),
+          imgLayerHeight(imgLayerWidth),
+          imgLayerCount(isImgVertical ? img.getHeight()/imgLayerHeight : img.getWidth()/imgLayerWidth),
+          isReady(false)
+    {
+        init();
+    }
+
+    explicit PrivateData(PrivateData* const other)
+        : callback(other->callback),
+          image(other->image),
+          rotationAngle(other->rotationAngle),
+          alwaysRepaint(other->alwaysRepaint),
+          isImgVertical(other->isImgVertical),
+          imgLayerWidth(other->imgLayerWidth),
+          imgLayerHeight(other->imgLayerHeight),
+          imgLayerCount(other->imgLayerCount),
+          isReady(false)
+    {
+        init();
+    }
+
+    void assignFrom(PrivateData* const other)
+    {
+        cleanup();
+        image          = other->image;
+        rotationAngle  = other->rotationAngle;
+        callback       = other->callback;
+        alwaysRepaint  = other->alwaysRepaint;
+        isImgVertical  = other->isImgVertical;
+        imgLayerWidth  = other->imgLayerWidth;
+        imgLayerHeight = other->imgLayerHeight;
+        imgLayerCount  = other->imgLayerCount;
+        isReady        = false;
+        init();
+    }
+
+    ~PrivateData()
+    {
+        cleanup();
+    }
+
+    void knobDragStarted(SubWidget* const widget) override
+    {
+        if (callback != nullptr)
+            if (ImageBaseKnob* const imageKnob = dynamic_cast<ImageBaseKnob*>(widget))
+                callback->imageKnobDragStarted(imageKnob);
+    }
+
+    void knobDragFinished(SubWidget* const widget) override
+    {
+        if (callback != nullptr)
+            if (ImageBaseKnob* const imageKnob = dynamic_cast<ImageBaseKnob*>(widget))
+                callback->imageKnobDragFinished(imageKnob);
+    }
+
+    void knobValueChanged(SubWidget* const widget, const float value) override
+    {
+        if (rotationAngle == 0 || alwaysRepaint)
+            isReady = false;
+
+        if (callback != nullptr)
+            if (ImageBaseKnob* const imageKnob = dynamic_cast<ImageBaseKnob*>(widget))
+                callback->imageKnobValueChanged(imageKnob, value);
+    }
+
+    // implemented independently per graphics backend
+    void init();
+    void cleanup();
+
+    DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
-ImageBaseKnob<ImageType>::ImageBaseKnob(Widget* const parentWidget, const ImageType& image, const Orientation orientation) noexcept
+ImageBaseKnob<ImageType>::ImageBaseKnob(Widget* const parentWidget,
+                                        const ImageType& image,
+                                        const Orientation orientation) noexcept
     : SubWidget(parentWidget),
-      pData(new PrivateData(image, orientation))
+      KnobEventHandler(this),
+      pData(new PrivateData(image))
 {
+    setOrientation(orientation);
     setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
 
 template <class ImageType>
 ImageBaseKnob<ImageType>::ImageBaseKnob(const ImageBaseKnob<ImageType>& imageKnob)
     : SubWidget(imageKnob.getParentWidget()),
+      KnobEventHandler(this, imageKnob),
       pData(new PrivateData(imageKnob.pData))
 {
+    setOrientation(imageKnob.getOrientation());
     setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
 
 template <class ImageType>
 ImageBaseKnob<ImageType>& ImageBaseKnob<ImageType>::operator=(const ImageBaseKnob<ImageType>& imageKnob)
 {
+    KnobEventHandler::operator=(imageKnob);
     pData->assignFrom(imageKnob.pData);
     setSize(pData->imgLayerWidth, pData->imgLayerHeight);
     return *this;
@@ -307,113 +329,9 @@ ImageBaseKnob<ImageType>::~ImageBaseKnob()
 }
 
 template <class ImageType>
-float ImageBaseKnob<ImageType>::getValue() const noexcept
-{
-    return pData->value;
-}
-
-// NOTE: value is assumed to be scaled if using log
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setDefault(float value) noexcept
-{
-    pData->valueDef = value;
-    pData->usingDefault = true;
-}
-
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setRange(float min, float max) noexcept
-{
-    DISTRHO_SAFE_ASSERT_RETURN(max > min,);
-
-    if (pData->value < min)
-    {
-        pData->value = min;
-        repaint();
-
-        if (pData->callback != nullptr)
-        {
-            try {
-                pData->callback->imageKnobValueChanged(this, pData->value);
-            } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setRange < min");
-        }
-    }
-    else if (pData->value > max)
-    {
-        pData->value = max;
-        repaint();
-
-        if (pData->callback != nullptr)
-        {
-            try {
-                pData->callback->imageKnobValueChanged(this, pData->value);
-            } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setRange > max");
-        }
-    }
-
-    pData->minimum = min;
-    pData->maximum = max;
-}
-
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setStep(float step) noexcept
-{
-    pData->step = step;
-}
-
-// NOTE: value is assumed to be scaled if using log
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setValue(float value, bool sendCallback) noexcept
-{
-    if (d_isEqual(pData->value, value))
-        return;
-
-    pData->value = value;
-
-    if (d_isZero(pData->step))
-        pData->valueTmp = value;
-
-    if (pData->rotationAngle == 0 || pData->alwaysRepaint)
-        pData->isReady = false;
-
-    repaint();
-
-    if (sendCallback && pData->callback != nullptr)
-    {
-        try {
-            pData->callback->imageKnobValueChanged(this, pData->value);
-        } DISTRHO_SAFE_EXCEPTION("ImageBaseKnob<ImageType>::setValue");
-    }
-}
-
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setUsingLogScale(bool yesNo) noexcept
-{
-    pData->usingLog = yesNo;
-}
-
-template <class ImageType>
 void ImageBaseKnob<ImageType>::setCallback(Callback* callback) noexcept
 {
     pData->callback = callback;
-}
-
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setOrientation(Orientation orientation) noexcept
-{
-    if (pData->orientation == orientation)
-        return;
-
-    pData->orientation = orientation;
-}
-
-template <class ImageType>
-void ImageBaseKnob<ImageType>::setRotationAngle(int angle)
-{
-    if (pData->rotationAngle == angle)
-        return;
-
-    pData->rotationAngle = angle;
-    pData->isReady = false;
 }
 
 template <class ImageType>
@@ -432,132 +350,37 @@ void ImageBaseKnob<ImageType>::setImageLayerCount(uint count) noexcept
 }
 
 template <class ImageType>
+void ImageBaseKnob<ImageType>::setRotationAngle(int angle)
+{
+    if (pData->rotationAngle == angle)
+        return;
+
+    pData->rotationAngle = angle;
+    pData->isReady = false;
+}
+
+template <class ImageType>
 bool ImageBaseKnob<ImageType>::onMouse(const MouseEvent& ev)
 {
-    if (ev.button != 1)
-        return false;
-
-    if (ev.press)
-    {
-        if (! contains(ev.pos))
-            return false;
-
-        if ((ev.mod & kModifierShift) != 0 && pData->usingDefault)
-        {
-            setValue(pData->valueDef, true);
-            pData->valueTmp = pData->value;
-            return true;
-        }
-
-        pData->dragging = true;
-        pData->lastX = ev.pos.getX();
-        pData->lastY = ev.pos.getY();
-
-        if (pData->callback != nullptr)
-            pData->callback->imageKnobDragStarted(this);
-
+    if (SubWidget::onMouse(ev))
         return true;
-    }
-    else if (pData->dragging)
-    {
-        if (pData->callback != nullptr)
-            pData->callback->imageKnobDragFinished(this);
-
-        pData->dragging = false;
-        return true;
-    }
-
-    return false;
+    return KnobEventHandler::mouseEvent(ev);
 }
 
 template <class ImageType>
 bool ImageBaseKnob<ImageType>::onMotion(const MotionEvent& ev)
 {
-    if (! pData->dragging)
-        return false;
-
-    bool doVal = false;
-    float d, value = 0.0f;
-
-    if (pData->orientation == ImageBaseKnob<ImageType>::Horizontal)
-    {
-        if (const double movX = ev.pos.getX() - pData->lastX)
-        {
-            d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-            value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movX));
-            doVal = true;
-        }
-    }
-    else if (pData->orientation == ImageBaseKnob<ImageType>::Vertical)
-    {
-        if (const double movY = pData->lastY - ev.pos.getY())
-        {
-            d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-            value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp) + (float(pData->maximum - pData->minimum) / d * float(movY));
-            doVal = true;
-        }
-    }
-
-    if (! doVal)
-        return false;
-
-    if (pData->usingLog)
-        value = pData->logscale(value);
-
-    if (value < pData->minimum)
-    {
-        pData->valueTmp = value = pData->minimum;
-    }
-    else if (value > pData->maximum)
-    {
-        pData->valueTmp = value = pData->maximum;
-    }
-    else if (d_isNotZero(pData->step))
-    {
-        pData->valueTmp = value;
-        const float rest = std::fmod(value, pData->step);
-        value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
-    }
-
-    setValue(value, true);
-
-    pData->lastX = ev.pos.getX();
-    pData->lastY = ev.pos.getY();
-
-    return true;
+    if (SubWidget::onMotion(ev))
+        return true;
+    return KnobEventHandler::motionEvent(ev);
 }
 
 template <class ImageType>
 bool ImageBaseKnob<ImageType>::onScroll(const ScrollEvent& ev)
 {
-    if (! contains(ev.pos))
-        return false;
-
-    const float dir   = (ev.delta.getY() > 0.f) ? 1.f : -1.f;
-    const float d     = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
-    float       value = (pData->usingLog ? pData->invlogscale(pData->valueTmp) : pData->valueTmp)
-                      + ((pData->maximum - pData->minimum) / d * 10.f * dir);
-
-    if (pData->usingLog)
-        value = pData->logscale(value);
-
-    if (value < pData->minimum)
-    {
-        pData->valueTmp = value = pData->minimum;
-    }
-    else if (value > pData->maximum)
-    {
-        pData->valueTmp = value = pData->maximum;
-    }
-    else if (d_isNotZero(pData->step))
-    {
-        pData->valueTmp = value;
-        const float rest = std::fmod(value, pData->step);
-        value = value - rest + (rest > pData->step/2.0f ? pData->step : 0.0f);
-    }
-
-    setValue(value, true);
-    return true;
+    if (SubWidget::onScroll(ev))
+        return true;
+    return KnobEventHandler::scrollEvent(ev);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

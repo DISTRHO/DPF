@@ -24,7 +24,6 @@
 #include "../Color.hpp"
 #include "../ImageBaseWidgets.hpp"
 
-#include "Common.hpp"
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -657,8 +656,7 @@ void ImageBaseKnob<CairoImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
     cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
-    const double normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
-        / (pData->maximum - pData->minimum);
+    const double normValue = getNormalizedValue();
 
     cairo_surface_t* surface = (cairo_surface_t*)pData->cairoSurface;
 

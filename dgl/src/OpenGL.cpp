@@ -23,7 +23,6 @@
 #include "../Color.hpp"
 #include "../ImageWidgets.hpp"
 
-#include "Common.hpp"
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
 #include "WidgetPrivateData.hpp"
@@ -486,8 +485,7 @@ template <>
 void ImageBaseKnob<OpenGLImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
-    const float normValue = ((pData->usingLog ? pData->invlogscale(pData->value) : pData->value) - pData->minimum)
-        / (pData->maximum - pData->minimum);
+    const float normValue = getNormalizedValue();
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, pData->glTextureId);

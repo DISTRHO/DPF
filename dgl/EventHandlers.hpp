@@ -54,8 +54,8 @@ public:
 
     void setCallback(Callback* callback) noexcept;
 
-     bool mouseEvent(const Widget::MouseEvent& ev);
-     bool motionEvent(const Widget::MotionEvent& ev);
+    bool mouseEvent(const Widget::MouseEvent& ev);
+    bool motionEvent(const Widget::MotionEvent& ev);
 
 protected:
      State getState() const noexcept;
@@ -63,11 +63,84 @@ protected:
 
      virtual void stateChanged(State state, State oldState);
 
+    void setInternalCallback(Callback* callback) noexcept;
+    void triggerUserCallback(SubWidget* widget, int button);
+
 private:
     struct PrivateData;
     PrivateData* const pData;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(ButtonEventHandler)
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+class KnobEventHandler
+{
+public:
+    enum Orientation {
+        Horizontal,
+        Vertical
+    };
+
+    // NOTE hover not implemented yet
+    enum State {
+        kKnobStateDefault = 0x0,
+        kKnobStateHover = 0x1,
+        kKnobStateDragging = 0x2,
+        kKnobStateDraggingHover = kKnobStateDragging|kKnobStateHover
+    };
+
+    class Callback
+    {
+    public:
+        virtual ~Callback() {}
+        virtual void knobDragStarted(SubWidget* widget) = 0;
+        virtual void knobDragFinished(SubWidget* widget) = 0;
+        virtual void knobValueChanged(SubWidget* widget, float value) = 0;
+    };
+
+    explicit KnobEventHandler(SubWidget* self);
+    explicit KnobEventHandler(SubWidget* self, const KnobEventHandler& other);
+    KnobEventHandler& operator=(const KnobEventHandler& other);
+    ~KnobEventHandler();
+
+    // returns raw value, is assumed to be scaled if using log
+    float getValue() const noexcept;
+
+    // NOTE: value is assumed to be scaled if using log
+    void setValue(float value, bool sendCallback = false) noexcept;
+
+    // returns 0-1 ranged value, already with log scale as needed
+    float getNormalizedValue() const noexcept;
+
+    // NOTE: value is assumed to be scaled if using log
+    void setDefault(float def) noexcept;
+
+    // NOTE: value is assumed to be scaled if using log
+    void setRange(float min, float max) noexcept;
+
+    void setStep(float step) noexcept;
+
+    void setUsingLogScale(bool yesNo) noexcept;
+
+    Orientation getOrientation() const noexcept;
+    void setOrientation(const Orientation orientation) noexcept;
+
+    void setCallback(Callback* callback) noexcept;
+
+    bool mouseEvent(const Widget::MouseEvent& ev);
+    bool motionEvent(const Widget::MotionEvent& ev);
+    bool scrollEvent(const Widget::ScrollEvent& ev);
+
+protected:
+     State getState() const noexcept;
+
+private:
+    struct PrivateData;
+    PrivateData* const pData;
+
+    DISTRHO_LEAK_DETECTOR(KnobEventHandler)
 };
 
 // --------------------------------------------------------------------------------------------------------------------
