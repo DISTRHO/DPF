@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # function not available on some systems
-if ! which realpath >/dev/null 2>&1; then
+if ! which realpath &>/dev/null; then
     function realpath() {
         [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
     }
