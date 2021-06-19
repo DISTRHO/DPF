@@ -290,7 +290,7 @@ struct KnobEventHandler::PrivateData {
           valueTmp(value),
           usingDefault(false),
           usingLog(false),
-          orientation(Horizontal),
+          orientation(Vertical),
           state(kKnobStateDefault),
           lastX(0.0),
           lastY(0.0) {}
