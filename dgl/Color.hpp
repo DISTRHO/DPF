@@ -66,6 +66,11 @@ struct Color {
     Color(const Color& color1, const Color& color2, float u) noexcept;
 
    /**
+      Create a new color based on this one but with a different alpha value.
+    */
+    Color withAlpha(float alpha) noexcept;
+
+   /**
       Create a color specified by hue, saturation and lightness.
       Values must in [0..1] range.
     */

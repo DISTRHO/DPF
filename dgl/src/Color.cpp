@@ -114,6 +114,13 @@ Color::Color(const Color& color1, const Color& color2, const float u) noexcept
     interpolate(color2, u);
 }
 
+Color Color::withAlpha(const float alpha) noexcept
+{
+    Color color(*this);
+    color.alpha = alpha;
+    return color;
+}
+
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
     float m1, m2;
