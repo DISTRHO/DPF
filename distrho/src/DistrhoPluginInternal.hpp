@@ -70,6 +70,7 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
         break;
     }
 }
+
 // -----------------------------------------------------------------------
 // Plugin private data
 
