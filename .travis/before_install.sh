@@ -13,11 +13,6 @@ if [ "${TARGET}" = "win32" ] || [ "${TARGET}" = "win64" ]; then
     sudo dpkg --add-architecture i386
 fi
 
-sudo add-apt-repository -y ppa:kxstudio-debian/kxstudio
-sudo add-apt-repository -y ppa:kxstudio-debian/mingw
-sudo add-apt-repository -y ppa:kxstudio-debian/toolchain
-sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-
 sudo apt-get update -qq
-sudo apt-get install kxstudio-repos
-sudo apt-get update -qq
+sudo apt-get install -y -o APT::Immediate-Configure=false libc6 libc6:i386 libgcc-s1:i386
+sudo apt-get install -y -f
