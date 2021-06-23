@@ -794,7 +794,10 @@ void lv2_generate_ttl(const char* const basename)
                             pluginString += "            a unit:Unit ;\n";
                             pluginString += "            rdfs:label  \"" + unit + "\" ;\n";
                             pluginString += "            unit:symbol \"" + unit + "\" ;\n";
-                            pluginString += "            unit:render \"%f " + unit + "\" ;\n";
+                            if (plugin.getParameterHints(i) & kParameterIsInteger)
+                                pluginString += "            unit:render \"%d " + unit + "\" ;\n";
+                            else
+                                pluginString += "            unit:render \"%f " + unit + "\" ;\n";
                             pluginString += "        ] ;\n";
                         }
                     }
