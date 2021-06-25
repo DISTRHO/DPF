@@ -152,7 +152,9 @@ struct UI::PrivateData {
 
     ~PrivateData() noexcept
     {
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
         std::free(uiStateFileKeyRequest);
+#endif
     }
 
     void editParamCallback(const uint32_t rindex, const bool started)
