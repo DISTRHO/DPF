@@ -152,7 +152,7 @@ struct UI::PrivateData {
 
     ~PrivateData() noexcept
     {
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
         std::free(uiStateFileKeyRequest);
 #endif
     }
