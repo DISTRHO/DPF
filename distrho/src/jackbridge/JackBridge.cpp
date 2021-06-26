@@ -314,9 +314,7 @@ struct JackBridge {
     jacksym_set_thread_creator set_thread_creator_ptr;
 #endif
 
-#ifdef RTAUDIO_API_TYPE
     static bool usingRtAudio;
-#endif
 
     JackBridge()
         : lib(nullptr),
@@ -721,6 +719,8 @@ struct JackBridge {
     DISTRHO_DECLARE_NON_COPYABLE(JackBridge);
 };
 
+bool JackBridge::usingRtAudio = false;
+
 // -----------------------------------------------------------------------------
 
 static JackBridge& getBridgeInstance() noexcept
@@ -941,12 +941,6 @@ struct WineBridge {
 };
 
 #endif // __WINE__ && ! JACKBRIDGE_DIRECT
-
-// -----------------------------------------------------------------------------
-
-#ifdef RTAUDIO_API_TYPE
-bool JackBridge::usingRtAudio = false;
-#endif
 
 // -----------------------------------------------------------------------------
 
