@@ -863,8 +863,8 @@ void lv2_generate_ttl(const char* const basename)
 
             if (comment.isNotEmpty())
             {
-                if (comment.contains('"'))
-                    pluginString += "    rdfs:comment \"" + comment + "\" ;\n\n";
+                if (comment.contains('"') || comment.contains('\n'))
+                    pluginString += "    rdfs:comment \"\"\"" + comment + "\"\"\" ;\n\n";
                 else
                     pluginString += "    rdfs:comment \"" + comment + "\" ;\n\n";
             }
