@@ -59,18 +59,14 @@ struct ButtonEventHandler::PrivateData {
             const int state2 = state;
             state &= ~kButtonStateActive;
 
-            // cursor was moved outside the button bounds, ignore click
-            if (! widget->contains(ev.pos))
-            {
-                self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
-                widget->repaint();
-                return true;
-            }
-
-            // still on bounds, register click
             self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
             widget->repaint();
 
+            // cursor was moved outside the button bounds, ignore click
+            if (! widget->contains(ev.pos))
+                return true;
+
+            // still on bounds, register click
             if (checkable)
                 checked = !checked;
 
@@ -215,6 +211,11 @@ void ButtonEventHandler::setCheckable(const bool checkable) noexcept
         return;
 
     pData->checkable = checkable;
+}
+
+Point<double> ButtonEventHandler::getLastMotionPosition() const noexcept
+{
+    return pData->oldMotionPos;
 }
 
 void ButtonEventHandler::setCallback(Callback* const callback) noexcept

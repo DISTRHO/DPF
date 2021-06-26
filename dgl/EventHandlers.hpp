@@ -52,16 +52,18 @@ public:
     bool isCheckable() const noexcept;
     void setCheckable(bool checkable) noexcept;
 
+    Point<double> getLastMotionPosition() const noexcept;
+
     void setCallback(Callback* callback) noexcept;
 
     bool mouseEvent(const Widget::MouseEvent& ev);
     bool motionEvent(const Widget::MotionEvent& ev);
 
 protected:
-     State getState() const noexcept;
-     void clearState() noexcept;
+    State getState() const noexcept;
+    void clearState() noexcept;
 
-     virtual void stateChanged(State state, State oldState);
+    virtual void stateChanged(State state, State oldState);
 
     void setInternalCallback(Callback* callback) noexcept;
     void triggerUserCallback(SubWidget* widget, int button);
