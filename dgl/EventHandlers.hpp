@@ -52,6 +52,7 @@ public:
     bool isCheckable() const noexcept;
     void setCheckable(bool checkable) noexcept;
 
+    Point<double> getLastClickPosition() const noexcept;
     Point<double> getLastMotionPosition() const noexcept;
 
     void setCallback(Callback* callback) noexcept;

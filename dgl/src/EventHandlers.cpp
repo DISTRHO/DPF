@@ -32,7 +32,8 @@ struct ButtonEventHandler::PrivateData {
     bool checkable;
     bool checked;
 
-    Point<double> oldMotionPos;
+    Point<double> lastClickPos;
+    Point<double> lastMotionPos;
 
     PrivateData(ButtonEventHandler* const s, SubWidget* const w)
         : self(s),
@@ -43,10 +44,13 @@ struct ButtonEventHandler::PrivateData {
           state(kButtonStateDefault),
           checkable(false),
           checked(false),
-          oldMotionPos(0, 0) {}
+          lastClickPos(0, 0),
+          lastMotionPos(0, 0)  {}
 
     bool mouseEvent(const Widget::MouseEvent& ev)
     {
+        lastClickPos = ev.pos;
+
         // button was released, handle it now
         if (button != -1 && ! ev.press)
         {
@@ -97,7 +101,7 @@ struct ButtonEventHandler::PrivateData {
         // keep pressed
         if (button != -1)
         {
-            oldMotionPos = ev.pos;
+            lastMotionPos = ev.pos;
             return true;
         }
 
@@ -110,7 +114,7 @@ struct ButtonEventHandler::PrivateData {
             {
                 const int state2 = state;
                 state |= kButtonStateHover;
-                ret = widget->contains(oldMotionPos);
+                ret = widget->contains(lastMotionPos);
                 self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
                 widget->repaint();
             }
@@ -122,13 +126,13 @@ struct ButtonEventHandler::PrivateData {
             {
                 const int state2 = state;
                 state &= ~kButtonStateHover;
-                ret = widget->contains(oldMotionPos);
+                ret = widget->contains(lastMotionPos);
                 self->stateChanged(static_cast<State>(state), static_cast<State>(state2));
                 widget->repaint();
             }
         }
 
-        oldMotionPos = ev.pos;
+        lastMotionPos = ev.pos;
         return ret;
     }
 
@@ -213,9 +217,14 @@ void ButtonEventHandler::setCheckable(const bool checkable) noexcept
     pData->checkable = checkable;
 }
 
+Point<double> ButtonEventHandler::getLastClickPosition() const noexcept
+{
+    return pData->lastClickPos;
+}
+
 Point<double> ButtonEventHandler::getLastMotionPosition() const noexcept
 {
-    return pData->oldMotionPos;
+    return pData->lastMotionPos;
 }
 
 void ButtonEventHandler::setCallback(Callback* const callback) noexcept
