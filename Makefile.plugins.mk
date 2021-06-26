@@ -49,6 +49,10 @@ ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
 JACK_LIBS = -ldl
 endif
 
+ifeq ($(MACOS),true)
+JACK_LIBS += -framework CoreAudio
+endif
+
 # backwards compat
 BASE_FLAGS += -DHAVE_JACK
 
