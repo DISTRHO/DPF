@@ -41,16 +41,36 @@ endif
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
 
+ifeq ($(HAVE_ALSA),true)
+BASE_FLAGS += -DHAVE_ALSA
+endif
+
 ifeq ($(HAVE_LIBLO),true)
 BASE_FLAGS += -DHAVE_LIBLO
 endif
 
-ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
-JACK_LIBS = -ldl
+ifeq ($(HAVE_PULSEAUDIO),true)
+BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
 ifeq ($(MACOS),true)
-JACK_LIBS += -framework CoreAudio
+JACK_LIBS  += -framework CoreAudio
+else ifeq ($(WINDOWS),true)
+# TODO
+JACK_LIBS  +=
+else ifneq ($(HAIKU),true)
+JACK_LIBS   = -ldl
+ifeq ($(HAVE_ALSA),true)
+JACK_FLAGS += $(ALSA_FLAGS)
+JACK_LIBS  += $(ALSA_LIBS)
+endif
+ifeq ($(HAVE_PULSEAUDIO),true)
+JACK_FLAGS += $(PULSEAUDIO_FLAGS)
+JACK_LIBS  += $(PULSEAUDIO_LIBS)
+endif
+ifeq ($(HAVE_RTAUDIO),true)
+JACK_LIBS  += -lpthread
+endif # !HAIKU
 endif
 
 # backwards compat
@@ -261,7 +281,7 @@ $(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK $(JACK_FLAGS) -c -o $@
 
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 	-@mkdir -p $(BUILD_DIR)

@@ -33,16 +33,11 @@
 #include "../../extra/LibraryUtils.hpp"
 
 // in case JACK fails, we fallback to RtAudio's native API
-#ifdef DISTRHO_OS_MAC
-# define __MACOSX_CORE__
-# define RTAUDIO_API_TYPE MACOSX_CORE
+#include "RtAudioBridge.hpp"
+#ifdef RTAUDIO_API_TYPE
 # define Point CorePoint /* fix conflict between DGL and macOS Point name */
 # include "rtaudio/RtAudio.cpp"
 # undef Point
-#endif
-
-#ifdef RTAUDIO_API_TYPE
-# include "../../extra/ScopedPointer.hpp"
 #endif
 
 // -----------------------------------------------------------------------------
@@ -315,6 +310,9 @@ struct JackBridge {
 #endif
 
     static bool usingRtAudio;
+#ifdef RTAUDIO_API_TYPE
+    static RtAudioBridge rtAudio;
+#endif
 
     JackBridge()
         : lib(nullptr),
@@ -569,157 +567,13 @@ struct JackBridge {
         }
     }
 
-#ifdef RTAUDIO_API_TYPE
-    // TESTING, later on put this on separate file
-    // TODO add MIDI support
-    ScopedPointer<RtAudio> rtAudioPtr;
-    uint rtAudioBufferFrames = 0;
-    JackProcessCallback rtAudioProcessCallback = nullptr;
-    void* rtAudioProcessCallbackArg = nullptr;
-    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
-
-    uint numAudioIns = 0;
-    uint numAudioOuts = 0;
-    uint numMidiIns = 0;
-    uint numMidiOuts = 0;
-
-    bool initRtAudio()
-    {
-        ScopedPointer<RtAudio> rtAudio;
-
-        try {
-            rtAudio = new RtAudio(RtAudio::RTAUDIO_API_TYPE);
-        } DISTRHO_SAFE_EXCEPTION_RETURN("new RtAudio()", false);
-
-        uint bufferFrames = 512;
-
-        RtAudio::StreamParameters inParams;
-        inParams.deviceId = rtAudio->getDefaultInputDevice();
-        inParams.nChannels = DISTRHO_PLUGIN_NUM_INPUTS;
-
-        RtAudio::StreamParameters outParams;
-        outParams.deviceId = rtAudio->getDefaultOutputDevice();
-        outParams.nChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
-
-        RtAudio::StreamOptions opts;
-        opts.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_ALSA_USE_DEFAULT;
-
-        try {
-            rtAudio->openStream(&outParams, &inParams, RTAUDIO_FLOAT32, 48000, &bufferFrames, RtAudioCallback, this, &opts, nullptr);
-        } DISTRHO_SAFE_EXCEPTION_RETURN("rtAudio->openStream()", false);
-
-        rtAudioPtr = rtAudio;
-        rtAudioBufferFrames = bufferFrames;
-        usingRtAudio = true;
-        d_stdout("JACK setup failed, using RtAudio instead");
-        return true;
-    }
-
-    bool destroyRtAudio()
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(rtAudioPtr != nullptr, false);
-
-        if (rtAudioPtr->isStreamRunning())
-        {
-            try {
-                rtAudioPtr->abortStream();
-            } DISTRHO_SAFE_EXCEPTION("rtAudioPtr->abortStream()");
-        }
-
-        rtAudioPtr = nullptr;
-        usingRtAudio = false;
-        return true;
-    }
-
-    bool startRtAudioStream()
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(rtAudioPtr != nullptr, false);
-
-        try {
-            rtAudioPtr->startStream();
-        } DISTRHO_SAFE_EXCEPTION("rtAudioPtr->startStream()");
-
-        return true;
-    }
-
-    bool stopRtAudioStream()
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(rtAudioPtr != nullptr, false);
-
-        try {
-            rtAudioPtr->stopStream();
-        } DISTRHO_SAFE_EXCEPTION("rtAudioPtr->stopStream()");
-
-        return true;
-    }
-
-    jack_port_t* addRtAudioPort(const bool isAudio, const bool isInput)
-    {
-        uintptr_t ret = 0x0;
-        if (isAudio)
-            ret |= 0x1000;
-        if (isInput)
-            ret |= 0x2000;
-
-        return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++) 
-                                             : (isInput ? numMidiIns++ : numMidiOuts++)));
-    }
-
-    void* getRtAudioPortBuffer(jack_port_t* const port)
-    {
-        const uintptr_t portMask = (uintptr_t)port;
-
-        if (portMask & 0x1000)
-            return audioBuffers[(portMask & 0x2000 ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
-
-        return nullptr;
-    }
-
-    jack_nframes_t getRtAudioBufferSize() const
-    {
-        return rtAudioBufferFrames;
-    }
-
-    jack_nframes_t getRtAudioSampleRate()
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(rtAudioPtr != nullptr, 0);
-        return rtAudioPtr->getStreamSampleRate();
-    }
-
-    static int RtAudioCallback(void* const outputBuffer,
-                               void* const inputBuffer,
-                               const uint numFrames,
-                               const double /* streamTime */,
-                               const RtAudioStreamStatus /* status */,
-                               void* const userData)
-    {
-        JackBridge* const self = (JackBridge*)userData;
-
-        if (self->rtAudioProcessCallback == nullptr)
-        {
-            std::memset((float*)outputBuffer, 0, sizeof(float)*numFrames*DISTRHO_PLUGIN_NUM_OUTPUTS);
-            return 0;
-        }
-
-        float** const selfAudioBuffers = self->audioBuffers;
-        float* const insPtr  = (float*)inputBuffer;
-        float* const outsPtr = (float*)outputBuffer;
-
-        uint i = 0;
-        for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
-            selfAudioBuffers[i] = insPtr + (j * numFrames);
-        for (uint j=0; j<DISTRHO_PLUGIN_NUM_OUTPUTS; ++j, ++i)
-            selfAudioBuffers[i] = outsPtr + (j * numFrames);
-
-        self->rtAudioProcessCallback(numFrames, self->rtAudioProcessCallbackArg);
-        return 0;
-    }
-#endif // RTAUDIO_API_TYPE
-
     DISTRHO_DECLARE_NON_COPYABLE(JackBridge);
 };
 
 bool JackBridge::usingRtAudio = false;
+#ifdef RTAUDIO_API_TYPE
+RtAudioBridge JackBridge::rtAudio;
+#endif
 
 // -----------------------------------------------------------------------------
 
@@ -991,8 +845,10 @@ const char* jackbridge_get_version_string()
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_version_string();
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
         return RTAUDIO_VERSION;
+# endif
     if (getBridgeInstance().get_version_string_ptr != nullptr)
         return getBridgeInstance().get_version_string_ptr();
 #endif
@@ -1010,8 +866,14 @@ jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options,
     if (getBridgeInstance().client_open_ptr != nullptr)
         if (jack_client_t* const client = getBridgeInstance().client_open_ptr(client_name, static_cast<jack_options_t>(options), status))
             return client;
-    if (getBridgeInstance().initRtAudio())
+# ifdef RTAUDIO_API_TYPE
+    if (JackBridge::rtAudio.open())
+    {
+        d_stdout("JACK setup failed, using RtAudio instead");
+        JackBridge::usingRtAudio = true;
         return (jack_client_t*)0x1; // return non-null
+    }
+# endif
 #endif
     if (status != nullptr)
         *status = JackServerError;
@@ -1024,8 +886,13 @@ bool jackbridge_client_close(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_client_close(client) == 0);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().destroyRtAudio();
+    {
+        JackBridge::usingRtAudio = false;
+        return JackBridge::rtAudio.close();
+    }
+# endif
     if (getBridgeInstance().client_close_ptr != nullptr)
         return (getBridgeInstance().client_close_ptr(client) == 0);
 #endif
@@ -1140,8 +1007,10 @@ bool jackbridge_activate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_activate(client) == 0);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().startRtAudioStream();
+        return JackBridge::rtAudio.activate();
+# endif
     if (getBridgeInstance().activate_ptr != nullptr)
         return (getBridgeInstance().activate_ptr(client) == 0);
 #endif
@@ -1154,8 +1023,10 @@ bool jackbridge_deactivate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_deactivate(client) == 0);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().stopRtAudioStream();
+        return JackBridge::rtAudio.deactivate();
+# endif
     if (getBridgeInstance().deactivate_ptr != nullptr)
         return (getBridgeInstance().deactivate_ptr(client) == 0);
 #endif
@@ -1238,12 +1109,14 @@ bool jackbridge_set_process_callback(jack_client_t* client, JackProcessCallback 
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_process_callback(client, process_callback, arg) == 0);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
     {
-        getBridgeInstance().rtAudioProcessCallback = process_callback;
-        getBridgeInstance().rtAudioProcessCallbackArg = arg;
+        JackBridge::rtAudio.jackProcessCallback = process_callback;
+        JackBridge::rtAudio.jackProcessArg = arg;
         return true;
     }
+# endif
     if (getBridgeInstance().set_process_callback_ptr != nullptr)
     {
 # ifdef __WINE__
@@ -1483,8 +1356,10 @@ jack_nframes_t jackbridge_get_sample_rate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_sample_rate(client);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().getRtAudioSampleRate();
+        return JackBridge::rtAudio.sampleRate;
+# endif
     if (getBridgeInstance().get_sample_rate_ptr != nullptr)
         return getBridgeInstance().get_sample_rate_ptr(client);
 #endif
@@ -1497,8 +1372,10 @@ jack_nframes_t jackbridge_get_buffer_size(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_buffer_size(client);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().getRtAudioBufferSize();
+        return JackBridge::rtAudio.bufferSize;
+# endif
     if (getBridgeInstance().get_buffer_size_ptr != nullptr)
         return getBridgeInstance().get_buffer_size_ptr(client);
 #endif
@@ -1520,21 +1397,18 @@ float jackbridge_cpu_load(jack_client_t* client)
 
 // -----------------------------------------------------------------------------
 
-jack_port_t* jackbridge_port_register(jack_client_t* client, const char* port_name, const char* port_type, uint64_t flags, uint64_t buffer_size)
+jack_port_t* jackbridge_port_register(jack_client_t* client, const char* port_name, const char* type, uint64_t flags, uint64_t buffer_size)
 {
 #if defined(JACKBRIDGE_DUMMY)
 #elif defined(JACKBRIDGE_DIRECT)
-    return jack_port_register(client, port_name, port_type, flags, buffer_size);
+    return jack_port_register(client, port_name, type, flags, buffer_size);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-    {
-        if (std::strcmp(port_type, JACK_DEFAULT_AUDIO_TYPE) == 0)
-            return getBridgeInstance().addRtAudioPort(true, flags & JackPortIsInput);
-        if (std::strcmp(port_type, JACK_DEFAULT_MIDI_TYPE) == 0)
-            return getBridgeInstance().addRtAudioPort(false, flags & JackPortIsInput);
-    }
-    else if (getBridgeInstance().port_register_ptr != nullptr)
-        return getBridgeInstance().port_register_ptr(client, port_name, port_type,
+        return JackBridge::rtAudio.registerPort(type, flags);
+# endif
+    if (getBridgeInstance().port_register_ptr != nullptr)
+        return getBridgeInstance().port_register_ptr(client, port_name, type,
                                                      static_cast<ulong>(flags),
                                                      static_cast<ulong>(buffer_size));
 #endif
@@ -1560,8 +1434,10 @@ void* jackbridge_port_get_buffer(jack_port_t* port, jack_nframes_t nframes)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_get_buffer(port, nframes);
 #else
+# ifdef RTAUDIO_API_TYPE
     if (JackBridge::usingRtAudio)
-        return getBridgeInstance().getRtAudioPortBuffer(port);
+        return JackBridge::rtAudio.getPortBuffer(port);
+# endif
     if (getBridgeInstance().port_get_buffer_ptr != nullptr)
         return getBridgeInstance().port_get_buffer_ptr(port, nframes);
 #endif

@@ -247,6 +247,20 @@ endif
 
 HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 
+ifeq ($(MACOS),true)
+HAVE_RTAUDIO    = true
+else ifeq ($(WINDOWS),true)
+HAVE_RTAUDIO    = true
+else ifneq ($(HAIKU),true)
+HAVE_ALSA       = $(shell $(PKG_CONFIG) --exists alsa && echo true)
+HAVE_PULSEAUDIO = $(shell $(PKG_CONFIG) --exists libpulse-simple && echo true)
+ifeq ($(HAVE_ALSA),true)
+HAVE_RTAUDIO    = true
+else ifeq ($(HAVE_PULSEAUDIO),true)
+HAVE_RTAUDIO    = true
+endif
+endif
+
 # backwards compat
 HAVE_JACK = true
 
@@ -357,9 +371,19 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Set optional libraries specific stuff
 
+ifeq ($(HAVE_ALSA),true)
+ALSA_FLAGS = $(shell $(PKG_CONFIG) --cflags alsa)
+ALSA_LIBS  = $(shell $(PKG_CONFIG) --libs alsa)
+endif
+
 ifeq ($(HAVE_LIBLO),true)
-LIBLO_FLAGS  = $(shell $(PKG_CONFIG) --cflags liblo)
-LIBLO_LIBS   = $(shell $(PKG_CONFIG) --libs liblo)
+LIBLO_FLAGS = $(shell $(PKG_CONFIG) --cflags liblo)
+LIBLO_LIBS  = $(shell $(PKG_CONFIG) --libs liblo)
+endif
+
+ifeq ($(HAVE_PULSEAUDIO),true)
+PULSEAUDIO_FLAGS = $(shell $(PKG_CONFIG) --cflags libpulse-simple)
+PULSEAUDIO_LIBS  = $(shell $(PKG_CONFIG) --libs libpulse-simple)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
