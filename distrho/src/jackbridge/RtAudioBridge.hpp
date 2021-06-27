@@ -34,7 +34,9 @@
 #endif
 
 #ifdef RTAUDIO_API_TYPE
+# define Point CorePoint /* fix conflict between DGL and macOS Point name */
 # include "rtaudio/RtAudio.h"
+# undef Point
 # include "../../extra/ScopedPointer.hpp"
 
 struct RtAudioBridge {

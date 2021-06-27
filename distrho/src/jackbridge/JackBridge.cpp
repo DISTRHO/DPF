@@ -35,9 +35,7 @@
 // in case JACK fails, we fallback to RtAudio's native API
 #include "RtAudioBridge.hpp"
 #ifdef RTAUDIO_API_TYPE
-# define Point CorePoint /* fix conflict between DGL and macOS Point name */
 # include "rtaudio/RtAudio.cpp"
-# undef Point
 #endif
 
 // -----------------------------------------------------------------------------
