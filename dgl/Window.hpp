@@ -87,14 +87,14 @@ public:
             /** Whether to show list of places (bookmarks) */
             ButtonState showPlaces;
 
-            /** Constuctor for default values */
+            /** Constructor for default values */
             Buttons()
                 : listAllFiles(kButtonVisibleChecked),
                   showHidden(kButtonVisibleUnchecked),
                   showPlaces(kButtonVisibleUnchecked) {}
         } buttons;
 
-        /** Constuctor for default values */
+        /** Constructor for default values */
         FileBrowserOptions()
             : startDir(nullptr),
               title(nullptr),

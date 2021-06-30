@@ -66,7 +66,7 @@ public:
         uint flags;
         uint time;
 
-        /** Constuctor */
+        /** Constructor */
         BaseEvent() noexcept : mod(0x0), flags(0x0), time(0) {}
         /** Destuctor */
         virtual ~BaseEvent() noexcept {}
@@ -96,7 +96,7 @@ public:
         uint key;
         uint keycode;
 
-        /** Constuctor */
+        /** Constructor */
         KeyboardEvent() noexcept
             : BaseEvent(),
               press(false),
@@ -118,7 +118,7 @@ public:
         bool press;
         Key  key;
 
-        /** Constuctor */
+        /** Constructor */
         SpecialEvent() noexcept
             : BaseEvent(),
               press(false),
@@ -145,7 +145,7 @@ public:
         uint character;
         char string[8];
 
-        /** Constuctor */
+        /** Constructor */
         CharacterInputEvent() noexcept
             : BaseEvent(),
               keycode(0),
@@ -168,7 +168,7 @@ public:
         Point<double> pos;
         Point<double> absolutePos;
 
-        /** Constuctor */
+        /** Constructor */
         MouseEvent() noexcept
             : BaseEvent(),
               button(0),
@@ -188,7 +188,7 @@ public:
         Point<double> pos;
         Point<double> absolutePos;
 
-        /** Constuctor */
+        /** Constructor */
         MotionEvent() noexcept
             : BaseEvent(),
               pos(0.0, 0.0),
@@ -216,7 +216,7 @@ public:
         Point<double> delta;
         ScrollDirection direction;
 
-        /** Constuctor */
+        /** Constructor */
         ScrollEvent() noexcept
             : BaseEvent(),
               pos(0.0, 0.0),
@@ -235,7 +235,7 @@ public:
         Size<uint> size;
         Size<uint> oldSize;
 
-        /** Constuctor */
+        /** Constructor */
         ResizeEvent() noexcept
             : size(0, 0),
               oldSize(0, 0) {}
@@ -251,7 +251,7 @@ public:
         Point<int> pos;
         Point<int> oldPos;
 
-        /** Constuctor */
+        /** Constructor */
         PositionChangedEvent() noexcept
             : pos(0, 0),
               oldPos(0, 0) {}
