@@ -187,6 +187,12 @@ function(dpf__build_jack NAME DGL_LIBRARY)
   if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
     target_link_libraries("${NAME}-jack" PRIVATE "dl")
   endif()
+
+  # for RtAudio native fallback
+  if(APPLE)
+    find_library(APPLE_COREAUDIO_FRAMEWORK "CoreAudio")
+    target_link_libraries("${NAME}-jack" PRIVATE "${APPLE_COREAUDIO_FRAMEWORK}")
+  endif()
 endfunction()
 
 # dpf__build_ladspa
