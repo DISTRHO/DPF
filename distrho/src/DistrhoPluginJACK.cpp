@@ -355,6 +355,12 @@ protected:
                 fTimePosition.bbt.bar  = pos.bar;
                 fTimePosition.bbt.beat = pos.beat;
                 fTimePosition.bbt.tick = pos.tick;
+#ifdef JACK_TICK_DOUBLE
+                if (pos.valid & JackTickDouble)
+                    fTimePosition.bbt.tick = pos.tick_double;
+                else
+#endif
+                    fTimePosition.bbt.tick = pos.tick;
                 fTimePosition.bbt.barStartTick = pos.bar_start_tick;
 
                 fTimePosition.bbt.beatsPerBar = pos.beats_per_bar;
