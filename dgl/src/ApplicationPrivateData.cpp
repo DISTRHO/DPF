@@ -34,7 +34,7 @@ static ThreadHandle getCurrentThreadHandle() noexcept
 #endif
 }
 
-static bool isThisMainThread(const ThreadHandle mainThreadHandle) noexcept
+static bool isThisTheMainThread(const ThreadHandle mainThreadHandle) noexcept
 {
 #ifdef DISTRHO_OS_WINDOWS
     return GetCurrentThread() == mainThreadHandle; // IsGUIThread ?
@@ -127,7 +127,7 @@ void Application::PrivateData::quit()
 {
     DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
 
-    if (! isThisMainThread(mainThreadHandle))
+    if (! isThisTheMainThread(mainThreadHandle))
     {
         if (! isQuittingInNextCycle)
         {

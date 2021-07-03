@@ -30,6 +30,8 @@ START_NAMESPACE_DGL
    There's no single/global application instance in DGL, and multiple windows can share the same app instance.
 
    In standalone mode an application will automatically quit its event-loop when all its windows are closed.
+
+   Unless stated otherwise, functions within this class are not thread-safe.
  */
 class Application
 {
@@ -61,6 +63,7 @@ public:
    /**
       Quit the application.
       This stops the event-loop and closes all Windows.
+      This function is thread-safe.
       @note This function is meant for standalones only, *never* call this from plugins.
     */
     void quit();
@@ -68,6 +71,7 @@ public:
    /**
       Check if the application is about to quit.
       Returning true means there's no event-loop running at the moment (or it's just about to stop).
+      This function is thread-safe.
     */
     bool isQuiting() const noexcept;
 
