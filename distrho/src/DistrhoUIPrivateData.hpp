@@ -150,25 +150,7 @@ protected:
     }
 
 # ifndef DGL_FILE_BROWSER_DISABLED
-    void onFileSelected(const char* const filename) override
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
-
-#  if DISTRHO_PLUGIN_WANT_STATEFILES
-        if (char* const key = ui->uiData->uiStateFileKeyRequest)
-        {
-            ui->uiData->uiStateFileKeyRequest = nullptr;
-            // notify DSP
-            ui->setState(key, filename);
-            // notify UI
-            ui->stateChanged(key, filename);
-            std::free(key);
-            return;
-        }
-#  endif
-
-        ui->uiFileBrowserSelected(filename);
-    }
+    void onFileSelected(const char* filename) override;
 # endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
@@ -338,8 +320,37 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     return false;
 }
 
-// -----------------------------------------------------------------------
-
 END_NAMESPACE_DISTRHO
+
+// -----------------------------------------------------------------------
+// PluginWindow onFileSelected that require UI::PrivateData definitions
+
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
+START_NAMESPACE_DGL
+
+inline void PluginWindow::onFileSelected(const char* const filename)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+# if DISTRHO_PLUGIN_WANT_STATEFILES
+    if (char* const key = ui->uiData->uiStateFileKeyRequest)
+    {
+        ui->uiData->uiStateFileKeyRequest = nullptr;
+        // notify DSP
+        ui->setState(key, filename);
+        // notify UI
+        ui->stateChanged(key, filename);
+        std::free(key);
+        return;
+    }
+# endif
+
+    ui->uiFileBrowserSelected(filename);
+}
+
+END_NAMESPACE_DGL
+#endif
+
+// -----------------------------------------------------------------------
 
 #endif // DISTRHO_UI_PRIVATE_DATA_HPP_INCLUDED
