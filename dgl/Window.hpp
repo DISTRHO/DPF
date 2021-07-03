@@ -458,15 +458,4 @@ private:
 
 END_NAMESPACE_DGL
 
-/* TODO
- * add eventcrossing/enter-leave event
- */
-#if 0
-protected:
-    bool handlePluginKeyboard(const bool press, const uint key);
-    bool handlePluginSpecial(const bool press, const Key key);
-#endif
-
-// -----------------------------------------------------------------------
-
 #endif // DGL_WINDOW_HPP_INCLUDED
