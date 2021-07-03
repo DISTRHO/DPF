@@ -413,8 +413,8 @@ public:
         wColor->setAbsoluteX(kSidebarWidth);
 
         wImages = new ExampleImagesSubWidget(this);
-        wImages->hide()
-        wImages->setAbsoluteX(kSidebarWidth);;
+        wImages->hide();
+        wImages->setAbsoluteX(kSidebarWidth);
 
         wRects = new ExampleRectanglesSubWidget(this);
         wRects->hide();
@@ -432,7 +432,7 @@ public:
         wLeft = new LeftSideWidget(this, this),
         wLeft->setAbsolutePos(2, 2);
 
-        resizer = new ResizeHandle(this),
+        resizer = new ResizeHandle(this);
 
         curPageChanged(0);
     }

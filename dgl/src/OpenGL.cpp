@@ -316,6 +316,8 @@ static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, con
         setupCalled = true;
     }
 
+    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
