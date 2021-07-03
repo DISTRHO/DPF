@@ -158,8 +158,10 @@ struct RtAudioBridge {
     {
         const uintptr_t portMask = (uintptr_t)port;
 
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         if (portMask & 0x1000)
             return audioBuffers[(portMask & 0x4000 ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
+#endif
 
         return nullptr;
     }
@@ -179,18 +181,29 @@ struct RtAudioBridge {
             return 0;
         }
 
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         float** const selfAudioBuffers = self->audioBuffers;
-        float* const insPtr  = (float*)inputBuffer;
-        float* const outsPtr = (float*)outputBuffer;
 
         uint i = 0;
+# if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        float* const insPtr  = (float*)inputBuffer;
         for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
             selfAudioBuffers[i] = insPtr + (j * numFrames);
+# endif
+# if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        float* const outsPtr = (float*)outputBuffer;
         for (uint j=0; j<DISTRHO_PLUGIN_NUM_OUTPUTS; ++j, ++i)
             selfAudioBuffers[i] = outsPtr + (j * numFrames);
+# endif
+#endif
 
         self->jackProcessCallback(numFrames, self->jackProcessArg);
         return 0;
+
+#if DISTRHO_PLUGIN_NUM_INPUTS == 0
+        // unused
+        (void)inputBuffer;
+#endif
     }
 };
 
