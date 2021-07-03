@@ -287,7 +287,10 @@ void NanoVG::beginFrame(Widget* const widget)
         return;
 
     if (TopLevelWidget* const tlw = widget->getTopLevelWidget())
-        nvgBeginFrame(fContext, static_cast<int>(tlw->getWidth()), static_cast<int>(tlw->getHeight()), 1.0f);
+        nvgBeginFrame(fContext,
+                      static_cast<int>(tlw->getWidth()),
+                      static_cast<int>(tlw->getHeight()),
+                      tlw->getScaleFactor());
 }
 
 void NanoVG::cancelFrame()
