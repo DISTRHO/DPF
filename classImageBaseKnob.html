@@ -63,7 +63,6 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
-<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="classImageBaseKnob-members.html">List of all members</a>  </div>
@@ -78,6 +77,7 @@ Inheritance diagram for ImageBaseKnob&lt; ImageType &gt;:</div>
   <img src="classImageBaseKnob.png" usemap="#ImageBaseKnob_3C_20ImageType_20_3E_map" alt=""/>
   <map id="ImageBaseKnob_3C_20ImageType_20_3E_map" name="ImageBaseKnob_3C_20ImageType_20_3E_map">
 <area href="classSubWidget.html" alt="SubWidget" shape="rect" coords="0,56,187,80"/>
+<area href="classKnobEventHandler.html" alt="KnobEventHandler" shape="rect" coords="197,56,384,80"/>
 <area href="classWidget.html" alt="Widget" shape="rect" coords="0,0,187,24"/>
   </map>
 </div></div>
@@ -86,13 +86,6 @@ Inheritance diagram for ImageBaseKnob&lt; ImageType &gt;:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classImageBaseKnob_1_1Callback.html">Callback</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
-Public Types</h2></td></tr>
-<tr class="memitem:adf67b5a1a2013720eee09889f27e4a41"><td class="memItemLeft" align="right" valign="top"><a id="adf67b5a1a2013720eee09889f27e4a41"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Orientation</b> { <b>Horizontal</b>, 
-<b>Vertical</b>
- }</td></tr>
-<tr class="separator:adf67b5a1a2013720eee09889f27e4a41"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -105,36 +98,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4bb5698a53e7029d748f20d7f68328c8"><td class="memItemLeft" align="right" valign="top"><a id="a4bb5698a53e7029d748f20d7f68328c8"></a>
 <a class="el" href="classImageBaseKnob.html">ImageBaseKnob</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classImageBaseKnob.html">ImageBaseKnob</a> &amp;imageKnob)</td></tr>
 <tr class="separator:a4bb5698a53e7029d748f20d7f68328c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4af2059060a5215d3f8873e7000926fd"><td class="memItemLeft" align="right" valign="top"><a id="a4af2059060a5215d3f8873e7000926fd"></a>
-float&#160;</td><td class="memItemRight" valign="bottom"><b>getValue</b> () const noexcept</td></tr>
-<tr class="separator:a4af2059060a5215d3f8873e7000926fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50b1da00111002856d74ee5d26bd5e31"><td class="memItemLeft" align="right" valign="top"><a id="a50b1da00111002856d74ee5d26bd5e31"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setDefault</b> (float def) noexcept</td></tr>
-<tr class="separator:a50b1da00111002856d74ee5d26bd5e31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a82068076187da2a546b74d3b5652b7d8"><td class="memItemLeft" align="right" valign="top"><a id="a82068076187da2a546b74d3b5652b7d8"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setRange</b> (float min, float max) noexcept</td></tr>
-<tr class="separator:a82068076187da2a546b74d3b5652b7d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a540f4dd220e16ef85d62f962ce18134c"><td class="memItemLeft" align="right" valign="top"><a id="a540f4dd220e16ef85d62f962ce18134c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setStep</b> (float step) noexcept</td></tr>
-<tr class="separator:a540f4dd220e16ef85d62f962ce18134c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6273f931686fbef63959ada484f6f60c"><td class="memItemLeft" align="right" valign="top"><a id="a6273f931686fbef63959ada484f6f60c"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setValue</b> (float value, bool sendCallback=false) noexcept</td></tr>
-<tr class="separator:a6273f931686fbef63959ada484f6f60c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c0e68232fc2d794b3ed8ea2ab7f77aa"><td class="memItemLeft" align="right" valign="top"><a id="a7c0e68232fc2d794b3ed8ea2ab7f77aa"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setUsingLogScale</b> (bool yesNo) noexcept</td></tr>
-<tr class="separator:a7c0e68232fc2d794b3ed8ea2ab7f77aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90ae2ea11f5f0b80ff19141d53f87f60"><td class="memItemLeft" align="right" valign="top"><a id="a90ae2ea11f5f0b80ff19141d53f87f60"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setCallback</b> (<a class="el" href="classImageBaseKnob_1_1Callback.html">Callback</a> *callback) noexcept</td></tr>
 <tr class="separator:a90ae2ea11f5f0b80ff19141d53f87f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ece7f5dddf2aaff8d264e4f7f15f09e"><td class="memItemLeft" align="right" valign="top"><a id="a9ece7f5dddf2aaff8d264e4f7f15f09e"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setOrientation</b> (Orientation orientation) noexcept</td></tr>
-<tr class="separator:a9ece7f5dddf2aaff8d264e4f7f15f09e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d023e9c42a09842a900ff4b185dae05"><td class="memItemLeft" align="right" valign="top"><a id="a9d023e9c42a09842a900ff4b185dae05"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setRotationAngle</b> (int angle)</td></tr>
-<tr class="separator:a9d023e9c42a09842a900ff4b185dae05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93a44db53146b438820209546e01e4fc"><td class="memItemLeft" align="right" valign="top"><a id="a93a44db53146b438820209546e01e4fc"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setImageLayerCount</b> (uint count) noexcept</td></tr>
 <tr class="separator:a93a44db53146b438820209546e01e4fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d023e9c42a09842a900ff4b185dae05"><td class="memItemLeft" align="right" valign="top"><a id="a9d023e9c42a09842a900ff4b185dae05"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setRotationAngle</b> (int angle)</td></tr>
+<tr class="separator:a9d023e9c42a09842a900ff4b185dae05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pub_methods_classSubWidget"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classSubWidget')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classSubWidget.html">SubWidget</a></td></tr>
 <tr class="memitem:a9fda448971613b2758fd9570c3065f7a inherit pub_methods_classSubWidget"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSubWidget.html#a9fda448971613b2758fd9570c3065f7a">SubWidget</a> (<a class="el" href="classWidget.html">Widget</a> *parentWidget)</td></tr>
 <tr class="separator:a9fda448971613b2758fd9570c3065f7a inherit pub_methods_classSubWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -225,6 +197,55 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setImageLayerCount</b
 <tr class="memitem:a0e0b0b2293bb63b2d84774542cc6a421 inherit pub_methods_classWidget"><td class="memItemLeft" align="right" valign="top"><a id="a0e0b0b2293bb63b2d84774542cc6a421"></a>
 <a class="el" href="classWindow.html">Window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getParentWindow</b> () const noexcept</td></tr>
 <tr class="separator:a0e0b0b2293bb63b2d84774542cc6a421 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pub_methods_classKnobEventHandler"><td colspan="2" onclick="javascript:toggleInherit('pub_methods_classKnobEventHandler')"><img src="closed.png" alt="-"/>&#160;Public Member Functions inherited from <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a></td></tr>
+<tr class="memitem:abdb261193909efeb572b3886fff94cfa inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="abdb261193909efeb572b3886fff94cfa"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KnobEventHandler</b> (<a class="el" href="classSubWidget.html">SubWidget</a> *self)</td></tr>
+<tr class="separator:abdb261193909efeb572b3886fff94cfa inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a09e82bea5e0a5fbc9287add5eafbee52 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a09e82bea5e0a5fbc9287add5eafbee52"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><b>KnobEventHandler</b> (<a class="el" href="classSubWidget.html">SubWidget</a> *self, const <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a> &amp;other)</td></tr>
+<tr class="separator:a09e82bea5e0a5fbc9287add5eafbee52 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1bdfef866690043c22bfc5e372b63fb inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="af1bdfef866690043c22bfc5e372b63fb"></a>
+<a class="el" href="classKnobEventHandler.html">KnobEventHandler</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a> &amp;other)</td></tr>
+<tr class="separator:af1bdfef866690043c22bfc5e372b63fb inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6893d9a9584697ff32478e30da88313d inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a6893d9a9584697ff32478e30da88313d"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>getValue</b> () const noexcept</td></tr>
+<tr class="separator:a6893d9a9584697ff32478e30da88313d inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab474f6b02663d2bc1910c2c8968fe261 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="ab474f6b02663d2bc1910c2c8968fe261"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setValue</b> (float value, bool sendCallback=false) noexcept</td></tr>
+<tr class="separator:ab474f6b02663d2bc1910c2c8968fe261 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98018fe6d99413faa2cba6efc82ba017 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a98018fe6d99413faa2cba6efc82ba017"></a>
+float&#160;</td><td class="memItemRight" valign="bottom"><b>getNormalizedValue</b> () const noexcept</td></tr>
+<tr class="separator:a98018fe6d99413faa2cba6efc82ba017 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a202669527510c566466d0276d11bbb94 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a202669527510c566466d0276d11bbb94"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setDefault</b> (float def) noexcept</td></tr>
+<tr class="separator:a202669527510c566466d0276d11bbb94 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa743a38f3b1c93cf6f318c1871ace8a9 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="aa743a38f3b1c93cf6f318c1871ace8a9"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setRange</b> (float min, float max) noexcept</td></tr>
+<tr class="separator:aa743a38f3b1c93cf6f318c1871ace8a9 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac83d1cac770a825a9e82a6e09cfaaf8d inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="ac83d1cac770a825a9e82a6e09cfaaf8d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setStep</b> (float step) noexcept</td></tr>
+<tr class="separator:ac83d1cac770a825a9e82a6e09cfaaf8d inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85bd3d1675da6e9231a86a2f52279fe5 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a85bd3d1675da6e9231a86a2f52279fe5"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setUsingLogScale</b> (bool yesNo) noexcept</td></tr>
+<tr class="separator:a85bd3d1675da6e9231a86a2f52279fe5 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76483d33ca5ca9c43487afd0c7ec75ae inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a76483d33ca5ca9c43487afd0c7ec75ae"></a>
+Orientation&#160;</td><td class="memItemRight" valign="bottom"><b>getOrientation</b> () const noexcept</td></tr>
+<tr class="separator:a76483d33ca5ca9c43487afd0c7ec75ae inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abad11b1875a1377ce1d95e1dc6c9fce0 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="abad11b1875a1377ce1d95e1dc6c9fce0"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setOrientation</b> (const Orientation orientation) noexcept</td></tr>
+<tr class="separator:abad11b1875a1377ce1d95e1dc6c9fce0 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad1f62081621e86bba31d67713a7b1ef3 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="ad1f62081621e86bba31d67713a7b1ef3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setCallback</b> (<a class="el" href="classKnobEventHandler_1_1Callback.html">Callback</a> *callback) noexcept</td></tr>
+<tr class="separator:ad1f62081621e86bba31d67713a7b1ef3 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1b4e17013f8d776734e4810ad2ce8316 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a1b4e17013f8d776734e4810ad2ce8316"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mouseEvent</b> (const <a class="el" href="structWidget_1_1MouseEvent.html">Widget::MouseEvent</a> &amp;ev)</td></tr>
+<tr class="separator:a1b4e17013f8d776734e4810ad2ce8316 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9506785779b69d937459265abcff122 inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="aa9506785779b69d937459265abcff122"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>motionEvent</b> (const <a class="el" href="structWidget_1_1MotionEvent.html">Widget::MotionEvent</a> &amp;ev)</td></tr>
+<tr class="separator:aa9506785779b69d937459265abcff122 inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3e13f425988eaf4b6691a734a253f44c inherit pub_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a3e13f425988eaf4b6691a734a253f44c"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>scrollEvent</b> (const <a class="el" href="structWidget_1_1ScrollEvent.html">Widget::ScrollEvent</a> &amp;ev)</td></tr>
+<tr class="separator:a3e13f425988eaf4b6691a734a253f44c inherit pub_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -248,6 +269,24 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:ad7fb24de24d8809305b04ff3750f0dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classKnobEventHandler"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classKnobEventHandler')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a></td></tr>
+<tr class="memitem:a8338ad3badd61ed5dbb2dccf0cadcc8a inherit pro_methods_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a8338ad3badd61ed5dbb2dccf0cadcc8a"></a>
+State&#160;</td><td class="memItemRight" valign="bottom"><b>getState</b> () const noexcept</td></tr>
+<tr class="separator:a8338ad3badd61ed5dbb2dccf0cadcc8a inherit pro_methods_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
+Additional Inherited Members</h2></td></tr>
+<tr class="inherit_header pub_types_classKnobEventHandler"><td colspan="2" onclick="javascript:toggleInherit('pub_types_classKnobEventHandler')"><img src="closed.png" alt="-"/>&#160;Public Types inherited from <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a></td></tr>
+<tr class="memitem:af36be885045fea73f06c0ffd94c8667b inherit pub_types_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="af36be885045fea73f06c0ffd94c8667b"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Orientation</b> { <b>Horizontal</b>, 
+<b>Vertical</b>
+ }</td></tr>
+<tr class="separator:af36be885045fea73f06c0ffd94c8667b inherit pub_types_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a59cb5b018c4e2bf768a526847dd8b03a inherit pub_types_classKnobEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a59cb5b018c4e2bf768a526847dd8b03a"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>State</b> { <b>kKnobStateDefault</b> = 0x0, 
+<b>kKnobStateHover</b> = 0x1, 
+<b>kKnobStateDragging</b> = 0x2, 
+<b>kKnobStateDraggingHover</b> = kKnobStateDragging|kKnobStateHover
+ }</td></tr>
+<tr class="separator:a59cb5b018c4e2bf768a526847dd8b03a inherit pub_types_classKnobEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="a9a4d1a1ff6fe7e51be7491148c20d1c5"></a>
@@ -379,7 +418,7 @@ template&lt;class ImageType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 15 2021 12:29:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 3 2021 23:07:06 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -137,53 +137,58 @@ $(function() {
 <div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    <a class="code" href="structColor.html#acbbdba6661c2bbd987ef27de59813b47">Color</a>(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color1, <span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color2, <span class="keywordtype">float</span> u) noexcept;</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">      Create a color specified by hue, saturation and lightness.</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">      Values must in [0..1] range.</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">static</span> <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#a41820f7349e997489d53f98036e76a0c">fromHSL</a>(<span class="keywordtype">float</span> hue, <span class="keywordtype">float</span> saturation, <span class="keywordtype">float</span> lightness, <span class="keywordtype">float</span> alpha = 1.0f);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">      Create a color from a HTML string like &quot;#333&quot; or &quot;#112233&quot;.</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">      Create a new color based on this one but with a different alpha value.</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a>(<span class="keywordtype">float</span> alpha) noexcept;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">      Create a color specified by hue, saturation and lightness.</span></div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">      Values must in [0..1] range.</span></div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">static</span> <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#abdc66d9b8c6422a721f8d576e871f646">fromHTML</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* rgb, <span class="keywordtype">float</span> alpha = 1.0f) noexcept;</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keyword">static</span> <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#a41820f7349e997489d53f98036e76a0c">fromHSL</a>(<span class="keywordtype">float</span> hue, <span class="keywordtype">float</span> saturation, <span class="keywordtype">float</span> lightness, <span class="keywordtype">float</span> alpha = 1.0f);</div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      Linearly interpolate this color against another.</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      Create a color from a HTML string like &quot;#333&quot; or &quot;#112233&quot;.</span></div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#a96283f5b9ad6f6465e40f69012aca00f">interpolate</a>(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; other, <span class="keywordtype">float</span> u) noexcept;</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keyword">static</span> <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#abdc66d9b8c6422a721f8d576e871f646">fromHTML</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* rgb, <span class="keywordtype">float</span> alpha = 1.0f) noexcept;</div>
 <div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">      Check if this color matches another.</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">      @note Comparison is done within 8-bit color space.</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a>(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> withAlpha = <span class="keyword">true</span>) noexcept;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">bool</span> isNotEqual(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> withAlpha = <span class="keyword">true</span>) noexcept;</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">      Fix color bounds if needed.</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#aad01f46af4cdb18b2bcbddd3f63d14d5">fixBounds</a>() noexcept;</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">      Linearly interpolate this color against another.</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#a96283f5b9ad6f6465e40f69012aca00f">interpolate</a>(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; other, <span class="keywordtype">float</span> u) noexcept;</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">      Check if this color matches another.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">      @note Comparison is done within 8-bit color space.</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a>(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a> = <span class="keyword">true</span>) noexcept;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">bool</span> isNotEqual(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a> = <span class="keyword">true</span>) noexcept;</div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">      Set this color for use in the next drawing operation for the provided context.</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">      Fix color bounds if needed.</span></div>
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#a9bd4efab0718f412babc62398875a80f">setFor</a>(<span class="keyword">const</span> <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context, <span class="keywordtype">bool</span> includeAlpha = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#aad01f46af4cdb18b2bcbddd3f63d14d5">fixBounds</a>() noexcept;</div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">      @internal</span></div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">      Needed for NanoVG compatibility.</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    <a class="code" href="structColor.html#acbbdba6661c2bbd987ef27de59813b47">Color</a>(<span class="keyword">const</span> NVGcolor&amp;) noexcept;</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    <span class="keyword">operator</span> NVGcolor() <span class="keyword">const</span> noexcept;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;};</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160; </div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160; </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="preprocessor">#endif // DGL_COLOR_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">      Set this color for use in the next drawing operation for the provided context.</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="structColor.html#a9bd4efab0718f412babc62398875a80f">setFor</a>(<span class="keyword">const</span> <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context, <span class="keywordtype">bool</span> includeAlpha = <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">      @internal</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">      Needed for NanoVG compatibility.</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <a class="code" href="structColor.html#acbbdba6661c2bbd987ef27de59813b47">Color</a>(<span class="keyword">const</span> NVGcolor&amp;) noexcept;</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    <span class="keyword">operator</span> NVGcolor() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;};</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor">#endif // DGL_COLOR_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="astructColor_html_a41820f7349e997489d53f98036e76a0c"><div class="ttname"><a href="structColor.html#a41820f7349e997489d53f98036e76a0c">Color::fromHSL</a></div><div class="ttdeci">static Color fromHSL(float hue, float saturation, float lightness, float alpha=1.0f)</div></div>
 <div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:154</div></div>
@@ -192,11 +197,12 @@ $(function() {
 <div class="ttc" id="astructColor_html_abdc66d9b8c6422a721f8d576e871f646"><div class="ttname"><a href="structColor.html#abdc66d9b8c6422a721f8d576e871f646">Color::fromHTML</a></div><div class="ttdeci">static Color fromHTML(const char *rgb, float alpha=1.0f) noexcept</div></div>
 <div class="ttc" id="astructColor_html_acbbdba6661c2bbd987ef27de59813b47"><div class="ttname"><a href="structColor.html#acbbdba6661c2bbd987ef27de59813b47">Color::Color</a></div><div class="ttdeci">Color() noexcept</div></div>
 <div class="ttc" id="astructColor_html_a16880d42b2d52ed23eb307ed2980a9a3"><div class="ttname"><a href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">Color::isEqual</a></div><div class="ttdeci">bool isEqual(const Color &amp;color, bool withAlpha=true) noexcept</div></div>
+<div class="ttc" id="astructColor_html_a664780dcd74f376837dc6c5a219ca566"><div class="ttname"><a href="structColor.html#a664780dcd74f376837dc6c5a219ca566">Color::withAlpha</a></div><div class="ttdeci">Color withAlpha(float alpha) noexcept</div></div>
 <div class="ttc" id="astructColor_html_aad01f46af4cdb18b2bcbddd3f63d14d5"><div class="ttname"><a href="structColor.html#aad01f46af4cdb18b2bcbddd3f63d14d5">Color::fixBounds</a></div><div class="ttdeci">void fixBounds() noexcept</div></div>
 <div class="ttc" id="astructColor_html"><div class="ttname"><a href="structColor.html">Color</a></div><div class="ttdef"><b>Definition:</b> Color.hpp:31</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 15 2021 12:29:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 3 2021 23:07:05 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

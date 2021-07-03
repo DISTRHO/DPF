@@ -88,12 +88,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a11aeda6f8f3b11c66e3df226c61b3473"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d51b3f9457c1d9524ad67c94152b99a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a8d51b3f9457c1d9524ad67c94152b99a">Color</a> (const <a class="el" href="structColor.html">Color</a> &amp;color1, const <a class="el" href="structColor.html">Color</a> &amp;color2, float u) noexcept</td></tr>
 <tr class="separator:a8d51b3f9457c1d9524ad67c94152b99a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a664780dcd74f376837dc6c5a219ca566"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a> (float alpha) noexcept</td></tr>
+<tr class="separator:a664780dcd74f376837dc6c5a219ca566"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96283f5b9ad6f6465e40f69012aca00f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a96283f5b9ad6f6465e40f69012aca00f">interpolate</a> (const <a class="el" href="structColor.html">Color</a> &amp;other, float u) noexcept</td></tr>
 <tr class="separator:a96283f5b9ad6f6465e40f69012aca00f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a16880d42b2d52ed23eb307ed2980a9a3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a> (const <a class="el" href="structColor.html">Color</a> &amp;color, bool withAlpha=true) noexcept</td></tr>
+<tr class="memitem:a16880d42b2d52ed23eb307ed2980a9a3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a> (const <a class="el" href="structColor.html">Color</a> &amp;color, bool <a class="el" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a>=true) noexcept</td></tr>
 <tr class="separator:a16880d42b2d52ed23eb307ed2980a9a3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0e84f05c440907e331590430da2e2e6"><td class="memItemLeft" align="right" valign="top"><a id="aa0e84f05c440907e331590430da2e2e6"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isNotEqual</b> (const <a class="el" href="structColor.html">Color</a> &amp;color, bool withAlpha=true) noexcept</td></tr>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isNotEqual</b> (const <a class="el" href="structColor.html">Color</a> &amp;color, bool <a class="el" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a>=true) noexcept</td></tr>
 <tr class="separator:aa0e84f05c440907e331590430da2e2e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3aa26bd1c31ea638f6fc1c06d4ee168e"><td class="memItemLeft" align="right" valign="top"><a id="a3aa26bd1c31ea638f6fc1c06d4ee168e"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>operator==</b> (const <a class="el" href="structColor.html">Color</a> &amp;color) noexcept</td></tr>
@@ -342,6 +344,33 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a664780dcd74f376837dc6c5a219ca566"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a664780dcd74f376837dc6c5a219ca566">&#9670;&nbsp;</a></span>withAlpha()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::withAlpha </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>alpha</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but with a different alpha value. </p>
+
+</div>
+</div>
 <a id="a41820f7349e997489d53f98036e76a0c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a41820f7349e997489d53f98036e76a0c">&#9670;&nbsp;</a></span>fromHSL()</h2>
 
@@ -579,7 +608,7 @@ Public Attributes</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Tue Jun 15 2021 12:29:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sat Jul 3 2021 23:07:06 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
