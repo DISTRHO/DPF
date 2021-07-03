@@ -237,9 +237,6 @@ void Window::PrivateData::initPost()
     // create view now, as a few methods we allow devs to use require it
     puglRealize(view);
 
-    // FIXME this is bad, the enter/leave should be well scoped. try to find a better place for it..
-    puglBackendEnter(view);
-
     if (isEmbed)
     {
         appData->oneWindowShown();
@@ -628,14 +625,6 @@ void Window::PrivateData::runAsModal(const bool blockWait)
     {
         appData->idle(0);
     }
-}
-
-// -----------------------------------------------------------------------
-// TESTING
-
-void Window::PrivateData::leaveContext()
-{
-    puglBackendLeave(view);
 }
 
 // -----------------------------------------------------------------------

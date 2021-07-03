@@ -161,9 +161,6 @@ struct Window::PrivateData : IdleCallback {
     void stopModal();
     void runAsModal(bool blockWait);
 
-    // TESTING
-    void leaveContext();
-
     // pugl events
     void onPuglConfigure(double width, double height);
     void onPuglExpose();

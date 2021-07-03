@@ -48,6 +48,10 @@ typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
 typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #endif
 
+START_NAMESPACE_DGL
+class PluginWindow;
+END_NAMESPACE_DGL
+
 START_NAMESPACE_DISTRHO
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -311,7 +315,7 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const uiData;
-    friend class PluginWindow;
+    friend class DGL_NAMESPACE::PluginWindow;
     friend class UIExporter;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)

@@ -39,7 +39,7 @@ UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
 PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
 {
     UI::PrivateData* const pData = s_nextPrivateData;
-    pData->window = new PluginWindow(ui, pData, width, height);
+    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
     return pData->window.getObject();
 }
 

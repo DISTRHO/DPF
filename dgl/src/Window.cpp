@@ -21,6 +21,20 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+// ScopedGraphicsContext
+
+Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win)
+    : window(win)
+{
+    puglBackendEnter(window.pData->view);
+}
+
+Window::ScopedGraphicsContext::~ScopedGraphicsContext()
+{
+    puglBackendLeave(window.pData->view);
+}
+
+// -----------------------------------------------------------------------
 // Window
 
 Window::Window(Application& app)
@@ -263,11 +277,6 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
 void Window::runAsModal(bool blockWait)
 {
     pData->runAsModal(blockWait);
-}
-
-void Window::leaveContext()
-{
-    pData->leaveContext();
 }
 
 void Window::setGeometryConstraints(const uint minimumWidth,
