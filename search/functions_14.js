@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['vstguistandalonewindow_865',['VstGuiStandaloneWindow',['../classVstGuiStandaloneWindow.html#a42194a31b6ebd9b12fee1460bca2df79',1,'VstGuiStandaloneWindow']]],
-  ['vulkanimage_866',['VulkanImage',['../classVulkanImage.html#aaa625bb7cbad92de916c0d6877033a42',1,'VulkanImage::VulkanImage()'],['../classVulkanImage.html#a9a3d03e892ee950aa291811e54845568',1,'VulkanImage::VulkanImage(const char *rawData, uint width, uint height, ImageFormat format)'],['../classVulkanImage.html#aa1af6c288a92b400c0f99dd62b709443',1,'VulkanImage::VulkanImage(const char *rawData, const Size&lt; uint &gt; &amp;size, ImageFormat format)'],['../classVulkanImage.html#a5821aca1ae6e78a7e7c9814a42f55f35',1,'VulkanImage::VulkanImage(const VulkanImage &amp;image)']]]
+  ['vulkanimage_863',['VulkanImage',['../classVulkanImage.html#aaa625bb7cbad92de916c0d6877033a42',1,'VulkanImage::VulkanImage()'],['../classVulkanImage.html#a9a3d03e892ee950aa291811e54845568',1,'VulkanImage::VulkanImage(const char *rawData, uint width, uint height, ImageFormat format)'],['../classVulkanImage.html#aa1af6c288a92b400c0f99dd62b709443',1,'VulkanImage::VulkanImage(const char *rawData, const Size&lt; uint &gt; &amp;size, ImageFormat format)'],['../classVulkanImage.html#a5821aca1ae6e78a7e7c9814a42f55f35',1,'VulkanImage::VulkanImage(const VulkanImage &amp;image)']]]
 ];
