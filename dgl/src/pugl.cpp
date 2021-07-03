@@ -178,9 +178,17 @@ void puglClearMinSize(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// missing in pugl, directly returns transient parent
+
+PuglNativeView puglGetTransientParent(const PuglView* const view)
+{
+    return view->transientParent;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // missing in pugl, directly returns title char* pointer
 
-const char* puglGetWindowTitle(const PuglView* view)
+const char* puglGetWindowTitle(const PuglView* const view)
 {
     return view->title;
 }

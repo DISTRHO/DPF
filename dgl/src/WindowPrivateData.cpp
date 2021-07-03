@@ -79,6 +79,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
+      transientParentView(nullptr),
       topLevelWidgets(),
       isClosed(true),
       isVisible(false),
@@ -102,6 +103,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
+      transientParentView(ppData->view),
       topLevelWidgets(),
       isClosed(true),
       isVisible(false),
@@ -117,9 +119,10 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
 #endif
       modal(ppData)
 {
-    initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
+    puglBackendLeave(transientParentView);
+    puglSetTransientFor(view, puglGetNativeWindow(transientParentView));
 
-    puglSetTransientFor(view, puglGetNativeWindow(ppData->view));
+    initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
 Window::PrivateData::PrivateData(Application& a, Window* const s,
@@ -129,6 +132,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
+      transientParentView(nullptr),
       topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
@@ -158,6 +162,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       appData(a.pData),
       self(s),
       view(puglNewView(appData->world)),
+      transientParentView(nullptr),
       topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
@@ -242,6 +247,10 @@ void Window::PrivateData::initPost()
         appData->oneWindowShown();
         puglShow(view);
     }
+
+    // give context back to transient parent window
+    if (transientParentView != nullptr)
+        puglBackendEnter(transientParentView);
 }
 
 // -----------------------------------------------------------------------

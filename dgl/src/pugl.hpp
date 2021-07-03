@@ -54,6 +54,10 @@ puglBackendLeave(PuglView* view);
 PUGL_API void
 puglClearMinSize(PuglView* view);
 
+// missing in pugl, directly returns transient parent
+PUGL_API PuglNativeView
+puglGetTransientParent(const PuglView* view);
+
 // missing in pugl, directly returns title char* pointer
 PUGL_API const char*
 puglGetWindowTitle(const PuglView* view);
