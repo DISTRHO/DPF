@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['keyboardevent_501',['KeyboardEvent',['../structWidget_1_1KeyboardEvent.html',1,'Widget']]],
-  ['knobeventhandler_502',['KnobEventHandler',['../classKnobEventHandler.html',1,'']]]
+  ['keyboardevent_499',['KeyboardEvent',['../structWidget_1_1KeyboardEvent.html',1,'Widget']]],
+  ['knobeventhandler_500',['KnobEventHandler',['../classKnobEventHandler.html',1,'']]]
 ];
