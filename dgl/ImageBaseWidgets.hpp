@@ -103,6 +103,7 @@ public:
     void setCallback(Callback* callback) noexcept;
     void setImageLayerCount(uint count) noexcept;
     void setRotationAngle(int angle);
+    bool setValue(float value, bool sendCallback = false) noexcept override;
 
 protected:
     void onDisplay() override;

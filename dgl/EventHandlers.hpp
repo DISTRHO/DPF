@@ -112,7 +112,7 @@ public:
     float getValue() const noexcept;
 
     // NOTE: value is assumed to be scaled if using log
-    void setValue(float value, bool sendCallback = false) noexcept;
+    virtual bool setValue(float value, bool sendCallback = false) noexcept;
 
     // returns 0-1 ranged value, already with log scale as needed
     float getNormalizedValue() const noexcept;

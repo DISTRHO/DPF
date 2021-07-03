@@ -362,6 +362,20 @@ void ImageBaseKnob<ImageType>::setRotationAngle(int angle)
 }
 
 template <class ImageType>
+bool ImageBaseKnob<ImageType>::setValue(float value, bool sendCallback) noexcept
+{
+    if (KnobEventHandler::setValue(value, sendCallback))
+    {
+        if (pData->rotationAngle == 0 || pData->alwaysRepaint)
+            pData->isReady = false;
+
+        return true;
+    }
+
+    return false;
+}
+
+template <class ImageType>
 bool ImageBaseKnob<ImageType>::onMouse(const MouseEvent& ev)
 {
     if (SubWidget::onMouse(ev))

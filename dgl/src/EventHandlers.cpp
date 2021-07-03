@@ -515,10 +515,10 @@ struct KnobEventHandler::PrivateData {
         maximum = max;
     }
 
-    void setValue(const float value2, const bool sendCallback)
+    bool setValue(const float value2, const bool sendCallback)
     {
         if (d_isEqual(value, value2))
-            return;
+            return false;
 
         valueTmp = value = value2;
         widget->repaint();
@@ -529,6 +529,8 @@ struct KnobEventHandler::PrivateData {
                 callback->knobValueChanged(widget, value);
             } DISTRHO_SAFE_EXCEPTION("KnobEventHandler::setValue");
         }
+
+        return true;
     }
 };
 
@@ -556,9 +558,9 @@ float KnobEventHandler::getValue() const noexcept
     return pData->value;
 }
 
-void KnobEventHandler::setValue(const float value, const bool sendCallback) noexcept
+bool KnobEventHandler::setValue(const float value, const bool sendCallback) noexcept
 {
-    pData->setValue(value, sendCallback);
+    return pData->setValue(value, sendCallback);
 }
 
 float KnobEventHandler::getNormalizedValue() const noexcept
