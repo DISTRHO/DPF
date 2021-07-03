@@ -404,33 +404,35 @@ public:
 
     DemoWindow(Application& app)
         : StandaloneWindow(app),
-          wColor(this),
-          wImages(this),
-          wRects(this),
-          wShapes(this),
-#ifdef DGL_OPENGL
-          wText(this),
-#endif
-          wLeft(this, this),
-          resizer(this),
           curWidget(nullptr)
     {
-        wColor.hide();
-        wImages.hide();
-        wRects.hide();
-        wShapes.hide();
-#ifdef DGL_OPENGL
-        wText.hide();
-#endif
+        const ScopedGraphicsContext sgc(*this);
 
-        wColor.setAbsoluteX(kSidebarWidth);
-        wImages.setAbsoluteX(kSidebarWidth);
-        wRects.setAbsoluteX(kSidebarWidth);
-        wShapes.setAbsoluteX(kSidebarWidth);
+        wColor = new ExampleColorSubWidget(this);
+        wColor->setAbsoluteX(kSidebarWidth);
+        wColor->hide();
+
+        wImages = new ExampleImagesSubWidget(this);
+        wImages->setAbsoluteX(kSidebarWidth);
+        wImages->hide();
+
+        wRects = new ExampleRectanglesSubWidget(this);
+        wRects->setAbsoluteX(kSidebarWidth);
+        wRects->hide();
+
+        wShapes = new ExampleShapesSubWidget(this);
+        wShapes->hide();
+        wShapes->setAbsoluteX(kSidebarWidth);
+
 #ifdef DGL_OPENGL
-        wText.setAbsoluteX(kSidebarWidth);
+        wText = new ExampleTextSubWidget(this),
+        wText->hide();
+        wText->setAbsoluteX(kSidebarWidth);
 #endif
-        wLeft.setAbsolutePos(2, 2);
+        wLeft = new LeftSideWidget(this, this),
+        wLeft->setAbsolutePos(2, 2);
+
+        resizer = new ResizeHandle(this),
 
         curPageChanged(0);
     }
@@ -444,20 +446,20 @@ protected:
         switch (curPage)
         {
         case 0:
-            curWidget = &wColor;
+            curWidget = wColor;
             break;
         case 1:
-            curWidget = &wImages;
+            curWidget = wImages;
             break;
         case 2:
-            curWidget = &wRects;
+            curWidget = wRects;
             break;
         case 3:
-            curWidget = &wShapes;
+            curWidget = wShapes;
             break;
 #ifdef DGL_OPENGL
         case 4:
-            curWidget = &wText;
+            curWidget = wText;
             break;
 #endif
         default:
@@ -481,26 +483,26 @@ protected:
             return;
 
         Size<uint> size(width-kSidebarWidth, height);
-        wColor.setSize(size);
-        wImages.setSize(size);
-        wRects.setSize(size);
-        wShapes.setSize(size);
+        wColor->setSize(size);
+        wImages->setSize(size);
+        wRects->setSize(size);
+        wShapes->setSize(size);
 #ifdef DGL_OPENGL
-        wText.setSize(size);
+        wText->setSize(size);
 #endif
-        wLeft.setSize(kSidebarWidth-4, height-4);
+        wLeft->setSize(kSidebarWidth-4, height-4);
     }
 
 private:
-    ExampleColorSubWidget wColor;
-    ExampleImagesSubWidget wImages;
-    ExampleRectanglesSubWidget wRects;
-    ExampleShapesSubWidget wShapes;
+    ScopedPointer<ExampleColorSubWidget> wColor;
+    ScopedPointer<ExampleImagesSubWidget> wImages;
+    ScopedPointer<ExampleRectanglesSubWidget> wRects;
+    ScopedPointer<ExampleShapesSubWidget> wShapes;
 #ifdef DGL_OPENGL
-    ExampleTextSubWidget wText;
+    ScopedPointer<ExampleTextSubWidget> wText;
 #endif
-    LeftSideWidget wLeft;
-    ResizeHandle resizer;
+    ScopedPointer<LeftSideWidget> wLeft;
+    ScopedPointer<ResizeHandle> resizer;
 
     Widget* curWidget;
 };
