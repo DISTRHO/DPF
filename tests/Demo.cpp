@@ -409,16 +409,16 @@ public:
         const ScopedGraphicsContext sgc(*this);
 
         wColor = new ExampleColorSubWidget(this);
-        wColor->setAbsoluteX(kSidebarWidth);
         wColor->hide();
+        wColor->setAbsoluteX(kSidebarWidth);
 
         wImages = new ExampleImagesSubWidget(this);
-        wImages->setAbsoluteX(kSidebarWidth);
-        wImages->hide();
+        wImages->hide()
+        wImages->setAbsoluteX(kSidebarWidth);;
 
         wRects = new ExampleRectanglesSubWidget(this);
-        wRects->setAbsoluteX(kSidebarWidth);
         wRects->hide();
+        wRects->setAbsoluteX(kSidebarWidth);
 
         wShapes = new ExampleShapesSubWidget(this);
         wShapes->hide();
