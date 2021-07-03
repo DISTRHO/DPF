@@ -105,10 +105,10 @@ public:
     void setRotationAngle(int angle);
 
 protected:
-     void onDisplay() override;
-     bool onMouse(const MouseEvent&) override;
-     bool onMotion(const MotionEvent&) override;
-     bool onScroll(const ScrollEvent&) override;
+    void onDisplay() override;
+    bool onMouse(const MouseEvent&) override;
+    bool onMotion(const MotionEvent&) override;
+    bool onScroll(const ScrollEvent&) override;
 
 private:
     struct PrivateData;

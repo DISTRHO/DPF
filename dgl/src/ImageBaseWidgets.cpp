@@ -299,6 +299,7 @@ ImageBaseKnob<ImageType>::ImageBaseKnob(Widget* const parentWidget,
       KnobEventHandler(this),
       pData(new PrivateData(image))
 {
+    KnobEventHandler::setCallback(pData);
     setOrientation(orientation);
     setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
@@ -309,6 +310,7 @@ ImageBaseKnob<ImageType>::ImageBaseKnob(const ImageBaseKnob<ImageType>& imageKno
       KnobEventHandler(this, imageKnob),
       pData(new PrivateData(imageKnob.pData))
 {
+    KnobEventHandler::setCallback(pData);
     setOrientation(imageKnob.getOrientation());
     setSize(pData->imgLayerWidth, pData->imgLayerHeight);
 }
