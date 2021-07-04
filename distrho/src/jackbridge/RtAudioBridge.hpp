@@ -22,7 +22,7 @@
 #if defined(DISTRHO_OS_MAC)
 # define __MACOSX_CORE__
 # define RTAUDIO_API_TYPE MACOSX_CORE
-#elif defined(DISTRHO_OS_WINDOWS)
+#elif defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
 # define __WINDOWS_WASAPI__
 # define RTAUDIO_API_TYPE WINDOWS_WASAPI
 #elif defined(HAVE_PULSEAUDIO)
