@@ -54,7 +54,7 @@ BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
 ifeq ($(MACOS),true)
-JACK_LIBS  += -framework CoreAudio
+JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
 else ifeq ($(WINDOWS),true)
 # TODO
 JACK_LIBS  +=
