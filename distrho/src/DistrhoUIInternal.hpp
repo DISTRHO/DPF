@@ -260,7 +260,9 @@ public:
     void quit()
     {
         uiData->window->close();
-        uiData->app.quit();
+
+        if (uiData->app.isStandalone())
+            uiData->app.quit();
     }
 #endif
 
@@ -316,20 +318,23 @@ public:
         return ! uiData->app.isQuiting();
     }
 
-    bool handlePluginKeyboard(const bool /*press*/, const uint /*key*/, const uint16_t /*mods*/)
+    bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
     {
-#if 0 /* TODO */
-        return glWindow.handlePluginKeyboard(press, key);
-#endif
-        return false;
+        // TODO also trigger Character input event
+        Widget::KeyboardEvent ev;
+        ev.press = press;
+        ev.key = key;
+        ev.mod = mods;
+        return ui->onKeyboard(ev);
     }
 
-    bool handlePluginSpecial(const bool /*press*/, const DGL_NAMESPACE::Key /*key*/, const uint16_t /*mods*/)
+    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key, const uint16_t mods)
     {
-#if 0 /* TODO */
-        return glWindow.handlePluginSpecial(press, key);
-#endif
-        return false;
+        Widget::SpecialEvent ev;
+        ev.press = press;
+        ev.key = key;
+        ev.mod = mods;
+        return ui->onSpecial(ev);
     }
 #endif
 
