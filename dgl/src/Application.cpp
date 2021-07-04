@@ -53,6 +53,11 @@ bool Application::isQuiting() const noexcept
     return pData->isQuitting || pData->isQuittingInNextCycle;
 }
 
+bool Application::isStandalone() const noexcept
+{
+    return pData->isStandalone;
+}
+
 void Application::addIdleCallback(IdleCallback* const callback)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)
