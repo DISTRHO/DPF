@@ -191,7 +191,7 @@ function(dpf__build_jack NAME DGL_LIBRARY)
   # for RtAudio native fallback
   if(APPLE)
     find_library(APPLE_COREAUDIO_FRAMEWORK "CoreAudio")
-    find_library(APPLE_COREAUDIO_FRAMEWORK "CoreFoundation")
+    find_library(APPLE_COREFOUNDATION_FRAMEWORK "CoreFoundation")
     target_link_libraries("${NAME}-jack" PRIVATE "${APPLE_COREAUDIO_FRAMEWORK}" "${APPLE_COREFOUNDATION_FRAMEWORK}")
   endif()
 endfunction()
