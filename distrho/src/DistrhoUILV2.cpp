@@ -89,11 +89,14 @@ public:
               bgColor,
               fgColor),
           fUridMap(uridMap),
+          fUiPortMap(getLv2Feature<LV2UI_Port_Map>(features, LV2_UI__portMap)),
           fUiRequestValue(getLv2Feature<LV2UI_Request_Value>(features, LV2_UI__requestValue)),
           fUiTouch(getLv2Feature<LV2UI_Touch>(features, LV2_UI__touch)),
           fController(controller),
           fWriteFunction(writeFunc),
           fURIDs(uridMap),
+          fBypassParameterIndex(fUiPortMap != nullptr ? fUiPortMap->port_index(fUiPortMap->handle, "lv2_enabled")
+                                                      : LV2UI_INVALID_PORT_INDEX),
           fWinIdWasNull(winId == 0)
     {
         if (widget != nullptr)
@@ -159,7 +162,11 @@ public:
 
             DISTRHO_SAFE_ASSERT_RETURN(bufferSize == sizeof(float),)
 
-            const float value = *(const float*)buffer;
+            float value = *(const float*)buffer;
+
+            if (rindex == fBypassParameterIndex)
+                value = 1.0f - value;
+
             fUI.parameterChanged(rindex-parameterOffset, value);
         }
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -253,9 +260,12 @@ protected:
             fUiTouch->touch(fUiTouch->handle, rindex, started);
     }
 
-    void setParameterValue(const uint32_t rindex, const float value)
+    void setParameterValue(const uint32_t rindex, float value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fWriteFunction != nullptr,);
+
+        if (rindex == fBypassParameterIndex)
+            value = 1.0f - value;
 
         fWriteFunction(fController, rindex, sizeof(float), 0, &value);
     }
@@ -345,6 +355,7 @@ private:
 
     // LV2 features
     const LV2_URID_Map*        const fUridMap;
+    const LV2UI_Port_Map*      const fUiPortMap;
     const LV2UI_Request_Value* const fUiRequestValue;
     const LV2UI_Touch*         const fUiTouch;
 
@@ -383,8 +394,11 @@ private:
         }
     } fURIDs;
 
+    // index of bypass parameter, if present
+    const uint32_t fBypassParameterIndex;
+
     // using ui:showInterface if true
-    bool fWinIdWasNull;
+    const bool fWinIdWasNull;
 
     // -------------------------------------------------------------------
     // Callbacks
