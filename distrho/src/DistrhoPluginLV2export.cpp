@@ -755,7 +755,7 @@ void lv2_generate_ttl(const char* const basename)
                     // unit
                     const String& unit(plugin.getParameterUnit(i));
 
-                    if (unit.isNotEmpty() && ! unit.contains(" "))
+                    if (unit.isNotEmpty() && ! unit.contains(' '))
                     {
                         String lunit(unit);
                         lunit.toLower();
@@ -806,7 +806,12 @@ void lv2_generate_ttl(const char* const basename)
                     const String& comment(plugin.getParameterDescription(i));
 
                     if (comment.isNotEmpty())
-                        pluginString += "        rdfs:comment \"\"\"" + comment + "\"\"\" ;\n";
+                    {
+                        if (comment.contains('"') || comment.contains('\n'))
+                            pluginString += "        rdfs:comment \"\"\"" + comment + "\"\"\" ;\n";
+                        else
+                            pluginString += "        rdfs:comment \"" + comment + "\" ;\n";
+                    }
 
                     // hints
                     const uint32_t hints(plugin.getParameterHints(i));
