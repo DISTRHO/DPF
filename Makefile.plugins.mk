@@ -20,8 +20,16 @@ include $(DPF_PATH)/Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 # Basic setup
 
-TARGET_DIR ?= ../../bin
-BUILD_DIR ?= ../../build/$(NAME)
+ifeq ($(DPF_TARGET_DIR),)
+TARGET_DIR = ../../bin
+else
+TARGET_DIR = $(DPF_TARGET_DIR)
+endif
+ifeq ($(DPF_BUILD_DIR),)
+BUILD_DIR = ../../build/$(NAME)
+else
+BUILD_DIR = $(DPF_BUILD_DIR)
+endif
 
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
