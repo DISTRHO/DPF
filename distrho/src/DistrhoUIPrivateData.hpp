@@ -244,9 +244,9 @@ struct UI::PrivateData {
 #ifdef DISTRHO_PLUGIN_TARGET_LV2
 # if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
         parameterOffset += 1;
-#  if DISTRHO_PLUGIN_WANT_STATE
+# endif
+# if (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
         parameterOffset += 1;
-#  endif
 # endif
 #endif
     }

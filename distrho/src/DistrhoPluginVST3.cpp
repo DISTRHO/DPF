@@ -96,7 +96,7 @@ private:
 
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
-        return ((PluginVst*)ptr)->requestParameterValueChange(index, value);
+        return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
     }
 #endif
 
@@ -109,7 +109,7 @@ private:
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
     {
-        return ((PluginVst*)ptr)->writeMidi(midiEvent);
+        return ((PluginVst3*)ptr)->writeMidi(midiEvent);
     }
 #endif
 
