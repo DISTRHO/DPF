@@ -24,10 +24,10 @@
 #ifdef DISTRHO_OS_WINDOWS
 # include <winsock2.h>
 # include <windows.h>
-typedef HANDLE ThreadHandle;
+typedef HANDLE d_ThreadHandle;
 #else
 # include <pthread.h>
-typedef pthread_t ThreadHandle;
+typedef pthread_t d_ThreadHandle;
 #endif
 
 typedef struct PuglWorldImpl PuglWorld;
@@ -59,7 +59,7 @@ struct Application::PrivateData {
     uint visibleWindows;
 
     /** Handle that identifies the main thread. Used to check if calls belong to current thread or not. */
-    ThreadHandle mainThreadHandle;
+    d_ThreadHandle mainThreadHandle;
 
     /** List of windows for this application. Only used during `close`. */
     std::list<DGL_NAMESPACE::Window*> windows;

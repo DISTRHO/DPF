@@ -49,8 +49,7 @@ endif
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
 else ifeq ($(WINDOWS),true)
-# TODO
-JACK_LIBS  +=
+JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lole32 -lwinmm -lwmcodecdspuuid
 else ifneq ($(HAIKU),true)
 JACK_LIBS   = -ldl
 ifeq ($(HAVE_ALSA),true)

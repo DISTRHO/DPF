@@ -25,7 +25,7 @@ START_NAMESPACE_DGL
 
 typedef std::list<DGL_NAMESPACE::Window*>::reverse_iterator WindowListReverseIterator;
 
-static ThreadHandle getCurrentThreadHandle() noexcept
+static d_ThreadHandle getCurrentThreadHandle() noexcept
 {
 #ifdef DISTRHO_OS_WINDOWS
     return GetCurrentThread();
@@ -34,7 +34,7 @@ static ThreadHandle getCurrentThreadHandle() noexcept
 #endif
 }
 
-static bool isThisTheMainThread(const ThreadHandle mainThreadHandle) noexcept
+static bool isThisTheMainThread(const d_ThreadHandle mainThreadHandle) noexcept
 {
 #ifdef DISTRHO_OS_WINDOWS
     return GetCurrentThread() == mainThreadHandle; // IsGUIThread ?
