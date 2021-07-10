@@ -177,7 +177,8 @@ struct RtAudioBridge {
 
         if (self->jackProcessCallback == nullptr)
         {
-            std::memset((float*)outputBuffer, 0, sizeof(float)*numFrames*DISTRHO_PLUGIN_NUM_OUTPUTS);
+            if (outputBuffer != nullptr)
+                std::memset((float*)outputBuffer, 0, sizeof(float)*numFrames*DISTRHO_PLUGIN_NUM_OUTPUTS);
             return 0;
         }
 
@@ -186,14 +187,18 @@ struct RtAudioBridge {
 
         uint i = 0;
 # if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        float* const insPtr  = (float*)inputBuffer;
-        for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
-            selfAudioBuffers[i] = insPtr + (j * numFrames);
+        if (float* const insPtr  = (float*)inputBuffer)
+        {
+            for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
+                selfAudioBuffers[i] = insPtr + (j * numFrames);
+        }
 # endif
 # if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        float* const outsPtr = (float*)outputBuffer;
-        for (uint j=0; j<DISTRHO_PLUGIN_NUM_OUTPUTS; ++j, ++i)
-            selfAudioBuffers[i] = outsPtr + (j * numFrames);
+        if (float* const outsPtr = (float*)outputBuffer)
+        {
+            for (uint j=0; j<DISTRHO_PLUGIN_NUM_OUTPUTS; ++j, ++i)
+                selfAudioBuffers[i] = outsPtr + (j * numFrames);
+        }
 # endif
 #endif
 

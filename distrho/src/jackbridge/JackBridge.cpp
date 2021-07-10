@@ -2036,6 +2036,7 @@ uint32_t jackbridge_transport_query(const jack_client_t* client, jack_position_t
     if (pos != nullptr)
     {
         // invalidate
+        std::memset(pos, 0, sizeof(*pos));
         pos->unique_1 = 0;
         pos->unique_2 = 1;
     }
