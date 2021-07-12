@@ -236,7 +236,7 @@ public:
         fTimePosition.bbt.barStartTick = 0;
         fTimePosition.bbt.beatsPerBar  = 4;
         fTimePosition.bbt.beatType     = 4;
-        fTimePosition.bbt.ticksPerBeat = 960.0;
+        fTimePosition.bbt.ticksPerBeat = 1920.0;
         fTimePosition.bbt.beatsPerMinute = 120.0;
 #endif
         fPlugin.activate();
@@ -359,7 +359,7 @@ public:
                 if (obj->body.otype != fURIDs.timePosition)
                     continue;
 
-                LV2_Atom* bar     = nullptr;
+                LV2_Atom* bar = nullptr;
                 LV2_Atom* barBeat = nullptr;
                 LV2_Atom* beatUnit = nullptr;
                 LV2_Atom* beatsPerBar = nullptr;

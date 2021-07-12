@@ -1063,7 +1063,7 @@ public:
             fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
 
             // ticksPerBeat is not possible with VST
-            fTimePosition.bbt.ticksPerBeat = 960.0;
+            fTimePosition.bbt.ticksPerBeat = 1920.0;
 
             if (vstTimeInfo->flags & kVstTempoValid)
                 fTimePosition.bbt.beatsPerMinute = vstTimeInfo->tempo;
@@ -1099,7 +1099,9 @@ public:
                 fTimePosition.bbt.beatType    = 4.0f;
             }
 
-            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*fTimePosition.bbt.beatsPerBar*(fTimePosition.bbt.bar-1);
+            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
+                                             fTimePosition.bbt.beatsPerBar*
+                                             (fTimePosition.bbt.bar-1);
 
             fPlugin.setTimePosition(fTimePosition);
         }
