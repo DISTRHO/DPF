@@ -198,7 +198,7 @@ endif
 
 ifeq ($(WINDOWS),true)
 # Always build statically on windows
-LINK_FLAGS     += -static
+LINK_FLAGS     += -static -static-libgcc -static-libstdc++
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
