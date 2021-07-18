@@ -23,25 +23,29 @@ pkgbuild \
   --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
   --install-location "/Library/Audio/Plug-Ins/LV2/" \
   --root "${PWD}/lv2/" \
-  ../dpf-${sname}-lv2bundles.pkg
+  ../dpf-${SNAME}-lv2bundles.pkg
 
 pkgbuild \
   --identifier "studio.kx.distrho.plugins.${SNAME}.vst2bundles" \
   --install-location "/Library/Audio/Plug-Ins/VST/" \
   --root "${PWD}/vst2/" \
-  ../dpf-${sname}-vst2bundles.pkg
+  ../dpf-${SNAME}-vst2bundles.pkg
 
 cd ..
 
-sed -e "s|@name@|${NAME}|" utils/plugin.pkg/welcome.txt.in > build/welcome.txt
+DPF_UTILS_DIR=$(dirname ${0})
+
+sed -e "s|@name@|${NAME}|" ${DPF_UTILS_DIR}/plugin.pkg/welcome.txt.in > build/welcome.txt
 sed -e "s|@builddir@|${PWD}/build|" \
-    -e "s|@lv2bundleref@|dpf-${sname}-lv2bundles.pkg|" \
-    -e "s|@vst2bundleref@|dpf-${sname}-vst2bundles.pkg|" \
+    -e "s|@lv2bundleref@|dpf-${SNAME}-lv2bundles.pkg|" \
+    -e "s|@vst2bundleref@|dpf-${SNAME}-vst2bundles.pkg|" \
+    -e "s|@name@|${NAME}|g" \
     -e "s|@sname@|${SNAME}|g" \
-    utils/plugin.pkg/package.xml.in > build/package.xml
+    ${DPF_UTILS_DIR}/plugin.pkg/package.xml.in > build/package.xml
 
 productbuild \
   --distribution build/package.xml \
-  --identifier "studio.kx.distrho.plugins.${SNAME}" \
+  --identifier "studio.kx.distrho.${SNAME}" \
   --package-path "${PWD}" \
+  --version 0 \
   ${SNAME}-macOS.pkg
