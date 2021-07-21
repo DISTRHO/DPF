@@ -363,7 +363,7 @@ function(dpf__add_dgl_cairo)
   target_link_libraries(dgl-cairo PRIVATE dgl-system-libs)
 
   add_library(dgl-cairo-definitions INTERFACE)
-  target_compile_definitions(dgl-cairo-definitions INTERFACE "DGL_CAIRO" "HAVE_CAIRO")
+  target_compile_definitions(dgl-cairo-definitions INTERFACE "DGL_CAIRO" "HAVE_CAIRO" "HAVE_DGL")
 
   target_include_directories(dgl-cairo PUBLIC ${CAIRO_INCLUDE_DIRS})
   if(MINGW)
@@ -429,7 +429,7 @@ function(dpf__add_dgl_opengl)
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
 
   add_library(dgl-opengl-definitions INTERFACE)
-  target_compile_definitions(dgl-opengl-definitions INTERFACE "DGL_OPENGL" "HAVE_OPENGL")
+  target_compile_definitions(dgl-opengl-definitions INTERFACE "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")

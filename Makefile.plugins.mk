@@ -140,7 +140,7 @@ endif
 
 ifeq ($(UI_TYPE),cairo)
 ifeq ($(HAVE_CAIRO),true)
-DGL_FLAGS += -DDGL_CAIRO
+DGL_FLAGS += -DDGL_CAIRO -DHAVE_DGL
 DGL_FLAGS += $(CAIRO_FLAGS)
 DGL_LIBS  += $(CAIRO_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-cairo.a
@@ -152,7 +152,7 @@ endif
 
 ifeq ($(UI_TYPE),opengl)
 ifeq ($(HAVE_OPENGL),true)
-DGL_FLAGS += -DDGL_OPENGL
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl.a
@@ -164,7 +164,7 @@ endif
 
 ifeq ($(UI_TYPE),vulkan)
 ifeq ($(HAVE_VULKAN),true)
-DGL_FLAGS += -DDGL_VULKAN
+DGL_FLAGS += -DDGL_VULKAN -DHAVE_DGL
 DGL_FLAGS += $(VULKAN_FLAGS)
 DGL_LIBS  += $(VULKAN_LIBS)
 DGL_LIB    = $(DPF_PATH)/build/libdgl-vulkan.a

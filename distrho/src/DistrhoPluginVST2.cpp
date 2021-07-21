@@ -22,6 +22,11 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL)
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 # include "../extra/RingBuffer.hpp"

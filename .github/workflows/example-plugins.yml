@@ -113,7 +113,7 @@ jobs:
         LDFLAGS: -arch x86_64 -arch arm64 -mmacosx-version-min=10.12
       run: |
         make NOOPT=true -j $(sysctl -n hw.logicalcpu) && \
-        ./dpf/utils/package-osx-bundles.sh
+        ./utils/package-osx-bundles.sh
     - name: Set sha8
       id: slug
       run: echo "::set-output name=sha8::$(echo ${{ github.sha }} | cut -c1-8)"
