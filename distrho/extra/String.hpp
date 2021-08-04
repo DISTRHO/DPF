@@ -59,12 +59,12 @@ public:
     /*
      * Simple char string.
      */
-    explicit String(char* const strBuf, const bool copyData = true) noexcept
+    explicit String(char* const strBuf, const bool reallocData = true) noexcept
         : fBuffer(_null()),
           fBufferLen(0),
           fBufferAlloc(false)
     {
-        if (copyData || strBuf == nullptr)
+        if (reallocData || strBuf == nullptr)
         {
             _dup(strBuf);
         }
@@ -930,7 +930,7 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
     std::memcpy(newBuf, strBefore.buffer(), strBeforeLen);
     std::memcpy(newBuf + strBeforeLen, strBufAfter, strBufAfterLen + 1);
 
-    return String(newBuf);
+    return String(newBuf, false);
 }
 
 static inline
@@ -950,7 +950,7 @@ String operator+(const char* const strBufBefore, const String& strAfter) noexcep
     std::memcpy(newBuf, strBufBefore, strBufBeforeLen);
     std::memcpy(newBuf + strBufBeforeLen, strAfter.buffer(), strAfterLen + 1);
 
-    return String(newBuf);
+    return String(newBuf, false);
 }
 
 // -----------------------------------------------------------------------
