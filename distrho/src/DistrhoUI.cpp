@@ -184,12 +184,23 @@ void UI::uiFileBrowserSelected(const char*)
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
+# if DISTRHO_OS_MAC
+extern float getMacMainScreenBackingScaleFactor();
+# endif // DISTRHO_OS_MAC
+
 void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
 
+# if DISTRHO_OS_MAC
+    float k = getMacMainScreenBackingScaleFactor();
+    const uint width = ev.size.getWidth() / k;
+    const uint height = ev.size.getHeight() / k;
+# else
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
+# endif // DISTRHO_OS_MAC
+
     uiData->setSizeCallback(width, height);
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

@@ -32,4 +32,15 @@
 #define PuglWindowDelegate DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WindowDelegate)
 #define PuglWrapperView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WrapperView)
 
+#import <AppKit/Appkit.h>
+
 #import "src/pugl.mm"
+
+START_NAMESPACE_DISTRHO
+
+float getMacMainScreenBackingScaleFactor()
+{
+    return (float)[NSScreen mainScreen].backingScaleFactor;
+}
+
+END_NAMESPACE_DISTRHO
