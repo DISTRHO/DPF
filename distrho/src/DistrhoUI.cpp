@@ -184,10 +184,6 @@ void UI::uiFileBrowserSelected(const char*)
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
-# if DISTRHO_OS_MAC
-extern float getMacMainScreenBackingScaleFactor();
-# endif // DISTRHO_OS_MAC
-
 void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);

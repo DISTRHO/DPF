@@ -54,6 +54,10 @@ END_NAMESPACE_DGL
 
 START_NAMESPACE_DISTRHO
 
+#ifdef DISTRHO_OS_MAC
+float getMacMainScreenBackingScaleFactor();
+#endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * DPF UI */
 
