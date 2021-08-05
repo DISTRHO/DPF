@@ -391,6 +391,15 @@ bool puglMacOSFilePanelOpen(PuglView* const view,
 
     return true;
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+// macOS specific, allow standalone window to gain focus
+
+void puglMacOSActivateApp()
+{
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    [NSApp activateIgnoringOtherApps:YES];
+}
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
