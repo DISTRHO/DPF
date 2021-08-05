@@ -34,6 +34,10 @@ typedef struct PuglWorldImpl PuglWorld;
 
 START_NAMESPACE_DGL
 
+#ifdef DISTRHO_OS_MAC
+void macActivateApp();
+#endif
+
 class Window;
 
 // --------------------------------------------------------------------------------------------------------------------

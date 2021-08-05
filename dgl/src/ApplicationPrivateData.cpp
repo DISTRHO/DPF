@@ -64,6 +64,12 @@ Application::PrivateData::PrivateData(const bool standalone)
 #ifdef HAVE_X11
     sofdFileDialogSetup(world);
 #endif
+
+#ifdef DISTRHO_OS_MAC
+    if (standalone) {
+        macActivateApp();
+    }
+#endif
 }
 
 Application::PrivateData::~PrivateData()

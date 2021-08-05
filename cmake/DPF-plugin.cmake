@@ -347,6 +347,10 @@ function(dpf__add_dgl_cairo)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Cairo.cpp")
+  if(APPLE)
+    target_sources(dgl-cairo STATIC
+      "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData_macOS.mm")
+  endif()
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
@@ -409,6 +413,10 @@ function(dpf__add_dgl_opengl)
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(APPLE)
+    target_sources(dgl-opengl STATIC
+      "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData_macOS.mm")
+  endif()
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")

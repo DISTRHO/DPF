@@ -41,6 +41,10 @@ OBJS_common = \
 	../build/dgl/Window.cpp.o \
 	../build/dgl/WindowPrivateData.cpp.o
 
+ifeq ($(MACOS),true)
+OBJS_common += ../build/dgl/ApplicationPrivateData_macOS.mm.o
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_cairo = $(OBJS_common) \
