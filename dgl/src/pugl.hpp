@@ -90,6 +90,10 @@ puglFallbackOnResize(PuglView* view);
 // macOS specific, setup file browser dialog
 typedef void (*openPanelCallback)(PuglView* view, const char* path);
 bool puglMacOSFilePanelOpen(PuglView* view, const char* startDir, const char* title, uint flags, openPanelCallback callback);
+
+// macOS specific, allow standalone window to gain focus
+PUGL_API void
+puglMacOSActivateApp();
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
