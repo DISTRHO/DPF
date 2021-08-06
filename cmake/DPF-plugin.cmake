@@ -209,6 +209,7 @@ function(dpf__build_ladspa NAME)
   target_link_libraries("${NAME}-ladspa" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-ladspa" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/ladspa/$<0:>"
     OUTPUT_NAME "${NAME}-ladspa"
     PREFIX "")
 endfunction()
@@ -236,6 +237,7 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
   target_link_libraries("${NAME}-dssi" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-dssi" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/dssi/$<0:>"
     OUTPUT_NAME "${NAME}-dssi"
     PREFIX "")
 
@@ -265,6 +267,7 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
   target_link_libraries("${NAME}-lv2" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-lv2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/lv2/$<0:>"
     OUTPUT_NAME "${NAME}_dsp"
     PREFIX "")
 
@@ -280,6 +283,7 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
       target_link_libraries("${NAME}-lv2-ui" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2-ui" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2/$<0:>"
+        ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/lv2/$<0:>"
         OUTPUT_NAME "${NAME}_ui"
         PREFIX "")
     endif()
@@ -310,6 +314,7 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
   target_link_libraries("${NAME}-vst2" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-vst2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst2/$<0:>"
     OUTPUT_NAME "${NAME}-vst2"
     PREFIX "")
 endfunction()
