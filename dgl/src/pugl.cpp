@@ -110,6 +110,10 @@ START_NAMESPACE_DGL
 #  define PuglWrapperView DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWrapperView)
 #  define PuglWindow      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWindow)
 # endif
+# ifndef __MAC_10_9
+#  define NSModalResponseOK NSOKButton
+typedef NSUInteger NSEventSubtype;
+# endif
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wdeprecated-declarations"
 # import "pugl-upstream/src/mac.m"
