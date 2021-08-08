@@ -81,7 +81,7 @@
 #endif
 
 /* Define DISTRHO_DEPRECATED_BY */
-#if defined(__clang__)
+#if defined(__clang__) && defined(DISTRHO_PROPER_CPP11_SUPPORT)
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("", other)))
 #elif defined(__GNUC__)
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("Use " other)))
