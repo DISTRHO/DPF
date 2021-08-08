@@ -132,7 +132,7 @@ struct ParameterAndNotesHelper
 # endif
 #endif
     {
-#ifndef DISTRHO_PROPER_CPP11_SUPPORT
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
         std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
 #endif
     }

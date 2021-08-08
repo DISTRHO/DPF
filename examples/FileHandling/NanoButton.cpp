@@ -36,15 +36,15 @@ Button::Button(Widget *parent, Callback *cb)
 
 void Button::onNanoDisplay()
 {
-    auto w = getWidth();
-    auto h = getHeight();
-    auto margin = 1.0f;
+    const uint w = getWidth();
+    const uint h = getHeight();
+    const float margin = 1.0f;
 
     // Background
     beginPath();
     fillColor(backgroundColor);
     strokeColor(borderColor);
-    rect(margin, margin, w - 2 * margin, h-2*margin);
+    rect(margin, margin, w - 2 * margin, h - 2 * margin);
     fill();
     stroke();
     closePath();

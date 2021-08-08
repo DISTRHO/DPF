@@ -20,9 +20,14 @@
 #include "../Base.hpp"
 
 /* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
-#include <cstdbool>
 #include <cstddef>
-#include <cstdint>
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# include <cstdbool>
+# include <cstdint>
+#else
+# include <stdbool.h>
+# include <stdint.h>
+#endif
 
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED

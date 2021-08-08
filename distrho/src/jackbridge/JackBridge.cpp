@@ -36,9 +36,11 @@
 #include "../../extra/LibraryUtils.hpp"
 
 // in case JACK fails, we fallback to RtAudio's native API
-#include "RtAudioBridge.hpp"
-#ifdef RTAUDIO_API_TYPE
-# include "rtaudio/RtAudio.cpp"
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# include "RtAudioBridge.hpp"
+# ifdef RTAUDIO_API_TYPE
+#  include "rtaudio/RtAudio.cpp"
+# endif
 #endif
 
 // -----------------------------------------------------------------------------

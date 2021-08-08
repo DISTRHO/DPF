@@ -75,7 +75,9 @@ ifeq ($(LINUX),true)
 VST3_FILENAME = $(TARGET_PROCESSOR)-linux/$(NAME).so
 endif
 ifeq ($(MACOS),true)
+ifneq ($(MACOS_OLD),true)
 VST3_FILENAME = MacOS/$(NAME)
+endif
 endif
 ifeq ($(WINDOWS),true)
 VST3_FILENAME = $(TARGET_PROCESSOR)-win/$(NAME).vst3

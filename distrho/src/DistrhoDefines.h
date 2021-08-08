@@ -64,6 +64,7 @@
 #endif
 
 #ifndef DISTRHO_PROPER_CPP11_SUPPORT
+# define constexpr
 # define noexcept throw()
 # define override
 # define final

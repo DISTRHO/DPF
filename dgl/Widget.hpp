@@ -150,7 +150,11 @@ public:
             : BaseEvent(),
               keycode(0),
               character(0),
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
               string{'\0','\0','\0','\0','\0','\0','\0','\0'} {}
+#else
+              string() { std::memset(string, 0, sizeof(string)); }
+#endif
     };
 
    /**
