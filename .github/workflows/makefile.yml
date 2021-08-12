@@ -1,0 +1,57 @@
+name: makefile
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+env:
+  DEBIAN_FRONTEND: noninteractive
+
+jobs:
+  linux-x86_64:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Set up dependencies
+      run: |
+        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev
+    - name: Without any warnings
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j $(nproc)
+    - name: No namespace build
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -DDONT_SET_USING_DISTRHO_NAMESPACE -DDONT_SET_USING_DGL_NAMESPACE
+      run: |
+        make clean >/dev/null
+        make -j $(nproc)
+    - name: Custom namespace build
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -DDISTRHO_NAMESPACE=WubbWubb -DDGL_NAMESPACE=DabDab
+      run: |
+        make clean >/dev/null
+        make -j $(nproc)
+    - name: Without Cairo
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j $(nproc) HAVE_CAIRO=
+    - name: Without OpenGL
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j $(nproc) HAVE_OPENGL=
