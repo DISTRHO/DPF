@@ -19,7 +19,7 @@ jobs:
         submodules: recursive
     - name: Set up dependencies
       run: |
-        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev
+        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev xvfb
     - name: Without any warnings
       env:
         CFLAGS: -Werror
@@ -27,6 +27,12 @@ jobs:
       run: |
         make clean >/dev/null
         make -j $(nproc)
+    - name: Run tests
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        xvfb-run make -C tests run
     - name: As C++98 mode
       env:
         CFLAGS: -Werror
