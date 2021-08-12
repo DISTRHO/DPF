@@ -9,7 +9,6 @@ dpf_add_plugin(d_cairoui
   FILES_UI
       Artwork.cpp
       DemoWidgetBanner.cpp
-      DemoWidgetClickable.cpp
       CairoExampleUI.cpp)
 
 target_include_directories(
