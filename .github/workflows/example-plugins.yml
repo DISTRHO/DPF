@@ -27,7 +27,7 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -yq g++-aarch64-linux-gnu libasound2-dev:arm64 libcairo2-dev:arm64 libgl1-mesa-dev:arm64 liblo-dev:arm64 libpulse-dev:arm64 libx11-dev:arm64 libxcursor-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 qemu-user-static
         # fix broken Ubuntu packages missing pkg-config file in multi-arch package
-        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev libxcursor-dev libxrandr-dev
+        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev libpulse-dev libxcursor-dev libxrandr-dev
     - name: Build linux arm64 cross-compiled
       env:
         CC: aarch64-linux-gnu-gcc
@@ -62,7 +62,7 @@ jobs:
         sudo apt-get update -qq
         sudo apt-get install -yq g++-arm-linux-gnueabihf libasound2-dev:armhf libcairo2-dev:armhf libgl1-mesa-dev:armhf liblo-dev:armhf libpulse-dev:armhf libx11-dev:armhf libxcursor-dev:armhf libxext-dev:armhf libxrandr-dev:armhf qemu-user-static
         # fix broken Ubuntu packages missing pkg-config file in multi-arch package
-        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev libxcursor-dev libxrandr-dev
+        sudo apt-get install -yq libasound2-dev libgl1-mesa-dev libpulse-dev libxcursor-dev libxrandr-dev
     - name: Build linux armhf cross-compiled
       env:
         CC: arm-linux-gnueabihf-gcc
