@@ -32,6 +32,7 @@ jobs:
         CXX: aarch64-linux-gnu-g++
         LDFLAGS: -static-libgcc -static-libstdc++
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
@@ -63,6 +64,7 @@ jobs:
         CXX: arm-linux-gnueabihf-g++
         LDFLAGS: -static-libgcc -static-libstdc++
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
@@ -90,6 +92,7 @@ jobs:
         CXXFLAGS: -m32
         LDFLAGS: -m32 -static-libgcc -static-libstdc++
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
@@ -113,6 +116,7 @@ jobs:
       env:
         LDFLAGS: -static-libgcc -static-libstdc++
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
@@ -139,7 +143,8 @@ jobs:
         CXXFLAGS: -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_12 -mmacosx-version-min=10.12 -mtune=generic -msse -msse2
         LDFLAGS: -arch x86_64 -arch arm64 -mmacosx-version-min=10.12
       run: |
-        make NOOPT=true -j $(sysctl -n hw.logicalcpu)
+        make features
+        make -j $(sysctl -n hw.logicalcpu)
         ./utils/package-osx-bundles.sh
     - name: Set sha8
       id: slug
@@ -174,6 +179,7 @@ jobs:
         PKG_CONFIG: "false"
         WINEDEBUG: "-all"
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
@@ -203,6 +209,7 @@ jobs:
         PKG_CONFIG: "false"
         WINEDEBUG: "-all"
       run: |
+        make features
         make -j $(nproc)
     - name: Set sha8
       id: slug
