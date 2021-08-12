@@ -14,7 +14,10 @@ BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
 # TODO fix these after pugl-upstream is done
-BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers -Wno-narrowing
+BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers
+ifneq ($(MACOS),true)
+BUILD_CXX_FLAGS += -Wno-narrowing
+endif
 
 # ifneq ($(MACOS_OLD),true)
 # needed by sofd right now, fix later

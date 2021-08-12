@@ -72,7 +72,7 @@
 #endif
 
 /* Define DISTRHO_DEPRECATED */
-#if defined(__GNUC__)
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
 # define DISTRHO_DEPRECATED __attribute__((deprecated))
 #elif defined(_MSC_VER)
 # define DISTRHO_DEPRECATED [[deprecated]] /* Note: __declspec(deprecated) it not applicable to enum members */
@@ -83,7 +83,7 @@
 /* Define DISTRHO_DEPRECATED_BY */
 #if defined(__clang__) && defined(DISTRHO_PROPER_CPP11_SUPPORT)
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("", other)))
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("Use " other)))
 #else
 # define DISTRHO_DEPRECATED_BY(other) DISTRHO_DEPRECATED
