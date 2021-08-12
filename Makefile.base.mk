@@ -26,11 +26,10 @@ endif
 ifneq (,$(findstring haiku,$(TARGET_MACHINE)))
 HAIKU=true
 endif
-ifneq (,$(findstring gnu,$(TARGET_MACHINE)))
-HURD=true
-endif
 ifneq (,$(findstring linux,$(TARGET_MACHINE)))
 LINUX=true
+else ifneq (,$(findstring gnu,$(TARGET_MACHINE)))
+HURD=true
 endif
 ifneq (,$(findstring apple,$(TARGET_MACHINE)))
 MACOS=true
@@ -436,5 +435,49 @@ SILENT =
 else
 SILENT = @
 endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# all needs to be first
+
+all:
+
+# ---------------------------------------------------------------------------------------------------------------------
+# helper to print what is available/possible to build
+
+print_available = @echo $(1): $(shell echo $($(1)) | grep -q true && echo Yes || echo No)
+
+features:
+	@echo === Detected CPU
+	$(call print_available,CPU_AARCH64)
+	$(call print_available,CPU_ARM)
+	$(call print_available,CPU_ARM64)
+	$(call print_available,CPU_ARM_OR_AARCH64)
+	$(call print_available,CPU_I386)
+	$(call print_available,CPU_I386_OR_X86_64)
+	@echo === Detected OS
+	$(call print_available,BSD)
+	$(call print_available,HAIKU)
+	$(call print_available,HURD)
+	$(call print_available,LINUX)
+	$(call print_available,MACOS)
+	$(call print_available,WINDOWS)
+	$(call print_available,HAIKU_OR_MACOS_OR_WINDOWS)
+	$(call print_available,LINUX_OR_MACOS)
+	$(call print_available,MACOS_OR_WINDOWS)
+	$(call print_available,UNIX)
+	@echo === Detected features
+	$(call print_available,HAVE_ALSA)
+	$(call print_available,HAVE_CAIRO)
+	$(call print_available,HAVE_DGL)
+	$(call print_available,HAVE_LIBLO)
+	$(call print_available,HAVE_OPENGL)
+	$(call print_available,HAVE_PULSEAUDIO)
+	$(call print_available,HAVE_RTAUDIO)
+	$(call print_available,HAVE_STUB)
+	$(call print_available,HAVE_VULKAN)
+	$(call print_available,HAVE_X11)
+	$(call print_available,HAVE_XCURSOR)
+	$(call print_available,HAVE_XEXT)
+	$(call print_available,HAVE_XRANDR)
 
 # ---------------------------------------------------------------------------------------------------------------------
