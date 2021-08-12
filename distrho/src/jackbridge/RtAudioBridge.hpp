@@ -58,7 +58,13 @@ struct RtAudioBridge {
     void* jackProcessArg = nullptr;
 
     // Runtime buffers
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+#endif
 
     // TODO midi buffer, likely using ringbuffer class
 
@@ -164,6 +170,11 @@ struct RtAudioBridge {
 #endif
 
         return nullptr;
+
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        // unused
+        (void)portMask;
+#endif
     }
 
     static int RtAudioCallback(void* const outputBuffer,

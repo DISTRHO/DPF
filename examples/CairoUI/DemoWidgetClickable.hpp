@@ -26,14 +26,72 @@ START_NAMESPACE_DGL
 class DemoWidgetClickable : public CairoSubWidget
 {
 public:
-    explicit DemoWidgetClickable(SubWidget* group);
-    explicit DemoWidgetClickable(TopLevelWidget* parent);
+    explicit DemoWidgetClickable(SubWidget* const parent)
+        : CairoSubWidget(parent),
+          colorId(0) {}
+
+    explicit DemoWidgetClickable(TopLevelWidget* const parent)
+        : CairoSubWidget(parent),
+          colorId(0) {}
+
 protected:
-    void onCairoDisplay(const CairoGraphicsContext& context) override;
-    bool onMouse(const MouseEvent& event) override;
+    void onCairoDisplay(const CairoGraphicsContext& context) override
+    {
+        cairo_t* const cr = context.handle;
+
+        const Size<uint> sz = getSize();
+        const int w = sz.getWidth();
+        const int h = sz.getHeight();
+
+        switch (colorId)
+        {
+        case 0:
+            cairo_set_source_rgb(cr, 0.75, 0.0, 0.0);
+            break;
+        case 1:
+            cairo_set_source_rgb(cr, 0.0, 0.75, 0.0);
+            break;
+        case 2:
+            cairo_set_source_rgb(cr, 0.0, 0.0, 0.75);
+            break;
+        }
+
+        cairo_rectangle(cr, 0, 0, w, h);
+        cairo_fill(cr);
+
+        cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+        cairo_new_path(cr);
+        cairo_move_to(cr, 0.25 * w, 0.25 * h);
+        cairo_line_to(cr, 0.75 * w, 0.75 * h);
+        cairo_stroke(cr);
+        cairo_new_path(cr);
+        cairo_move_to(cr, 0.75 * w, 0.25 * h);
+        cairo_line_to(cr, 0.25 * w, 0.75 * h);
+        cairo_stroke(cr);
+    }
+
+    bool onMouse(const MouseEvent& event) override
+    {
+        if (event.press)
+        {
+            const int w = getWidth();
+            const int h = getHeight();
+            const int mx = event.pos.getX();
+            const int my = event.pos.getY();
+
+            // inside
+            if (mx >= 0 && my >= 0 && mx < w && my < h)
+            {
+                colorId = (colorId + 1) % 3;
+                repaint();
+            }
+        }
+
+        return Widget::onMouse(event);
+    }
 
 private:
-    unsigned fColorId = 0;
+    uint colorId;
 };
 
 // -----------------------------------------------------------------------

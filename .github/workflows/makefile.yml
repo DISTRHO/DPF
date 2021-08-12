@@ -27,14 +27,21 @@ jobs:
       run: |
         make clean >/dev/null
         make -j $(nproc)
-    - name: No namespace build
+    - name: As C++98 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++98
+      run: |
+        make clean >/dev/null
+        make -j $(nproc) VST3_FILENAME=
+    - name: No namespace
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror -DDONT_SET_USING_DISTRHO_NAMESPACE -DDONT_SET_USING_DGL_NAMESPACE
       run: |
         make clean >/dev/null
         make -j $(nproc)
-    - name: Custom namespace build
+    - name: Custom namespace
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror -DDISTRHO_NAMESPACE=WubbWubb -DDGL_NAMESPACE=DabDab

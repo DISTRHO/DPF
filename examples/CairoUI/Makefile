@@ -18,7 +18,6 @@ FILES_DSP = \
 FILES_UI  = \
 	Artwork.cpp \
 	DemoWidgetBanner.cpp \
-	DemoWidgetClickable.cpp \
 	CairoExampleUI.cpp
 
 # --------------------------------------------------------------
