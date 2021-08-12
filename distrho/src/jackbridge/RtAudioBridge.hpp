@@ -40,6 +40,9 @@
 # include "../../extra/RingBuffer.hpp"
 # include "../../extra/ScopedPointer.hpp"
 
+using DISTRHO_NAMESPACE::HeapRingBuffer;
+using DISTRHO_NAMESPACE::ScopedPointer;
+
 struct RtAudioBridge {
     // pointer to RtAudio instance
     ScopedPointer<RtAudio> handle;

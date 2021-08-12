@@ -321,7 +321,7 @@ public:
     bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
     {
         // TODO also trigger Character input event
-        Widget::KeyboardEvent ev;
+        DGL_NAMESPACE::Widget::KeyboardEvent ev;
         ev.press = press;
         ev.key = key;
         ev.mod = mods;
@@ -330,7 +330,7 @@ public:
 
     bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key, const uint16_t mods)
     {
-        Widget::SpecialEvent ev;
+        DGL_NAMESPACE::Widget::SpecialEvent ev;
         ev.press = press;
         ev.key = key;
         ev.mod = mods;

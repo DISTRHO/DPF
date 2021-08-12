@@ -70,10 +70,10 @@ public:
 // TODO external ui stuff
 class PluginWindow
 {
-    UI* const ui;
+    DISTRHO_NAMESPACE::UI* const ui;
 
 public:
-    explicit PluginWindow(UI* const uiPtr,
+    explicit PluginWindow(DISTRHO_NAMESPACE::UI* const uiPtr,
                           PluginApplication& app,
                           const uintptr_t parentWindowHandle,
                           const uint width,
@@ -107,10 +107,10 @@ public:
 #else
 class PluginWindow : public Window
 {
-    UI* const ui;
+    DISTRHO_NAMESPACE::UI* const ui;
 
 public:
-    explicit PluginWindow(UI* const uiPtr,
+    explicit PluginWindow(DISTRHO_NAMESPACE::UI* const uiPtr,
                           PluginApplication& app,
                           const uintptr_t parentWindowHandle,
                           const uint width,
@@ -312,7 +312,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     snprintf(title, sizeof(title)-1u, DISTRHO_PLUGIN_NAME ": %s", key);
     title[sizeof(title)-1u] = '\0';
 
-    Window::FileBrowserOptions opts;
+    DGL_NAMESPACE::Window::FileBrowserOptions opts;
     opts.title = title;
     return window->openFileBrowser(opts);
 #endif

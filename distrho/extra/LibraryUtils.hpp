@@ -31,6 +31,8 @@ typedef HMODULE lib_t;
 typedef void* lib_t;
 #endif
 
+START_NAMESPACE_DISTRHO
+
 // -----------------------------------------------------------------------
 // library related calls
 
@@ -128,5 +130,7 @@ const char* lib_error(const char* const filename) noexcept
 }
 
 // -----------------------------------------------------------------------
+
+END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_LIBRARY_UTILS_HPP_INCLUDED
