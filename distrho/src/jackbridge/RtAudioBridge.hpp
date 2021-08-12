@@ -37,6 +37,7 @@
 # define Point CorePoint /* fix conflict between DGL and macOS Point name */
 # include "rtaudio/RtAudio.h"
 # undef Point
+# include "../../extra/RingBuffer.hpp"
 # include "../../extra/ScopedPointer.hpp"
 
 struct RtAudioBridge {
@@ -58,15 +59,23 @@ struct RtAudioBridge {
     void* jackProcessArg = nullptr;
 
     // Runtime buffers
+    enum PortMask {
+        kPortMaskAudio = 0x1000,
+        kPortMaskMIDI = 0x2000,
+        kPortMaskInput = 0x4000,
+        kPortMaskOutput = 0x8000,
+        kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
+        kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
+    };
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    HeapRingBuffer midiInBuffer;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    HeapRingBuffer midiOutBuffer;
 #endif
-
-    // TODO midi buffer, likely using ringbuffer class
 
     bool open()
     {
@@ -96,6 +105,13 @@ struct RtAudioBridge {
         handle = rtAudio;
         bufferSize = rtAudioBufferFrames;
         sampleRate = handle->getStreamSampleRate();
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        midiInBuffer.createBuffer(128);
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        midiOutBuffer.createBuffer(128);
+#endif
         return true;
     }
 
@@ -154,7 +170,8 @@ struct RtAudioBridge {
         else
             return nullptr;
 
-        const uintptr_t ret = (isAudio ? 0x1000 : 0x2000) | (isInput ? 0x4000 : 0x8000);
+        const uintptr_t ret = (isAudio ? kPortMaskAudio : kPortMaskMIDI)
+                            | (isInput ? kPortMaskInput : kPortMaskOutput);
 
         return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++) 
                                              : (isInput ? numMidiIns++ : numMidiOuts++)));
@@ -163,18 +180,22 @@ struct RtAudioBridge {
     void* getPortBuffer(jack_port_t* const port)
     {
         const uintptr_t portMask = (uintptr_t)port;
+        DISTRHO_SAFE_ASSERT_RETURN(portMask != 0x0, nullptr);
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        if (portMask & 0x1000)
-            return audioBuffers[(portMask & 0x4000 ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
+        if (portMask & kPortMaskAudio)
+            return audioBuffers[(portMask & kPortMaskInput ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if ((portMask & kPortMaskInputMIDI) == kPortMaskInputMIDI)
+            return &midiInBuffer;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if ((portMask & kPortMaskOutputMIDI) == kPortMaskOutputMIDI)
+            return &midiOutBuffer;
 #endif
 
         return nullptr;
-
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        // unused
-        (void)portMask;
-#endif
     }
 
     static int RtAudioCallback(void* const outputBuffer,
