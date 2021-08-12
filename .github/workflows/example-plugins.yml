@@ -19,12 +19,12 @@ jobs:
         submodules: recursive
     - name: Set up dependencies
       run: |
-        sudo dpkg --add-architecture arm64 && \
-        sudo sed -i "s/deb http/deb [arch=amd64] http/" /etc/apt/sources.list && \
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ports-arm64.list && \
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list && \
-        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list && \
-        sudo apt-get update -qq && \
+        sudo dpkg --add-architecture arm64
+        sudo sed -i "s/deb http/deb [arch=amd64] http/" /etc/apt/sources.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ports-arm64.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list
+        sudo apt-get update -qq
         sudo apt-get install -yq g++-aarch64-linux-gnu libasound2-dev:arm64 libcairo2-dev:arm64 libgl1-mesa-dev:arm64 liblo-dev:arm64 libpulse-dev:arm64 qemu-user-static
     - name: Build linux arm64 cross-compiled
       env:
@@ -50,12 +50,12 @@ jobs:
         submodules: recursive
     - name: Set up dependencies
       run: |
-        sudo dpkg --add-architecture armhf && \
-        sudo sed -i "s/deb http/deb [arch=amd64] http/" /etc/apt/sources.list && \
-        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ports-armhf.list && \
-        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list && \
-        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list && \
-        sudo apt-get update -qq && \
+        sudo dpkg --add-architecture armhf
+        sudo sed -i "s/deb http/deb [arch=amd64] http/" /etc/apt/sources.list
+        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ports-armhf.list
+        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list
+        echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list
+        sudo apt-get update -qq
         sudo apt-get install -yq g++-arm-linux-gnueabihf libasound2-dev:armhf libcairo2-dev:armhf libgl1-mesa-dev:armhf liblo-dev:armhf libpulse-dev:armhf qemu-user-static
     - name: Build linux armhf cross-compiled
       env:
@@ -73,7 +73,32 @@ jobs:
         path: |
           bin/*
 
-  linux-x64:
+  linux-x86:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+    - name: Set up dependencies
+      run: |
+        sudo apt-get install -yq g++-multilib libasound2-dev:i386 libgl1-mesa-dev:i386 liblo-dev:i386 libpulse-dev:i386
+    - name: Build linux x86
+      env:
+        CFLAGS: -m32
+        CXXFLAGS: -m32
+        LDFLAGS: -m32 -static-libgcc -static-libstdc++
+      run: |
+        make -j $(nproc)
+    - name: Set sha8
+      id: slug
+      run: echo "::set-output name=sha8::$(echo ${{ github.sha }} | cut -c1-8)"
+    - uses: actions/upload-artifact@v2
+      with:
+        name: ${{ github.event.repository.name }}-linux-x86-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
+        path: |
+          bin/*
+
+  linux-x86_64:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
@@ -82,7 +107,7 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev
-    - name: Build linux x64
+    - name: Build linux x86_64
       env:
         LDFLAGS: -static-libgcc -static-libstdc++
       run: |
@@ -92,7 +117,7 @@ jobs:
       run: echo "::set-output name=sha8::$(echo ${{ github.sha }} | cut -c1-8)"
     - uses: actions/upload-artifact@v2
       with:
-        name: ${{ github.event.repository.name }}-linux-x64-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
+        name: ${{ github.event.repository.name }}-linux-x86_64-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
         path: |
           bin/*
 
@@ -112,7 +137,7 @@ jobs:
         CXXFLAGS: -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_12 -mmacosx-version-min=10.12 -mtune=generic -msse -msse2
         LDFLAGS: -arch x86_64 -arch arm64 -mmacosx-version-min=10.12
       run: |
-        make NOOPT=true -j $(sysctl -n hw.logicalcpu) && \
+        make NOOPT=true -j $(sysctl -n hw.logicalcpu)
         ./utils/package-osx-bundles.sh
     - name: Set sha8
       id: slug
@@ -136,8 +161,8 @@ jobs:
         submodules: recursive
     - name: Set up dependencies
       run: |
-        sudo dpkg --add-architecture i386 && \
-        sudo apt-get update -qq && \
+        sudo dpkg --add-architecture i386
+        sudo apt-get update -qq
         sudo apt-get install -yq binutils-mingw-w64-i686 g++-mingw-w64-i686 mingw-w64 wine-stable:i386
     - name: Build win32 cross-compiled
       env:
