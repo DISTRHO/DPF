@@ -156,12 +156,16 @@ void Window::setSize(uint width, uint height)
 
     if (pData->isEmbed)
     {
-        // handle geometry constraints here
-        if (width < pData->minWidth)
-            width = pData->minWidth;
+        const double scaleFactor = pData->scaleFactor;
+        const uint minWidth = static_cast<uint>(pData->minWidth * scaleFactor + 0.5);
+        const uint minHeight = static_cast<uint>(pData->minHeight * scaleFactor + 0.5);
 
-        if (height < pData->minHeight)
-            height = pData->minHeight;
+        // handle geometry constraints here
+        if (width < minWidth)
+            width = minWidth;
+
+        if (height < minHeight)
+            height = minHeight;
 
         if (pData->keepAspectRatio)
         {
