@@ -67,6 +67,10 @@ puglGetTransientParent(const PuglView* view);
 PUGL_API const char*
 puglGetWindowTitle(const PuglView* view);
 
+// get global scale factor
+PUGL_API double
+puglGetDesktopScaleFactor(const PuglView* view);
+
 // bring view window into the foreground, aka "raise" window
 PUGL_API void
 puglRaiseWindow(PuglView* view);

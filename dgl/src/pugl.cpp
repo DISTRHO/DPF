@@ -198,12 +198,31 @@ const char* puglGetWindowTitle(const PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// get global scale factor
+
+double puglGetDesktopScaleFactor(const PuglView* const view)
+{
+#if defined(DISTRHO_OS_MAC)
+    return (view->impl->window ? [view->impl->window screen]
+                               : [NSScreen mainScreen]).backingScaleFactor;
+#else
+    return 1.0;
+
+    // unused
+    (void)view;
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // bring view window into the foreground, aka "raise" window
 
-void puglRaiseWindow(PuglView* view)
+void puglRaiseWindow(PuglView* const view)
 {
-#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
     // nothing here yet
+#elif defined(DISTRHO_OS_MAC)
+    if (view->impl->window)
+        [view->impl->window orderFrontRegardless];
 #elif defined(DISTRHO_OS_WINDOWS)
     SetForegroundWindow(view->impl->hwnd);
     SetActiveWindow(view->impl->hwnd);

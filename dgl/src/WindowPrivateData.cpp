@@ -64,12 +64,13 @@ START_NAMESPACE_DGL
 static const char* const kWin32SelectedFileCancelled = "__dpf_cancelled__";
 #endif
 
-static double getDesktopScaleFactor()
+static double getDesktopScaleFactor(const PuglView* const view)
 {
+    // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
-    return 1.0;
+    return puglGetDesktopScaleFactor(view);
 }
 
 // -----------------------------------------------------------------------
@@ -84,7 +85,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaleFactor(getDesktopScaleFactor()),
+      scaleFactor(getDesktopScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -137,7 +138,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor()),
+      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -167,7 +168,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor()),
+      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),

@@ -34,7 +34,7 @@ public:
         : UI(kInitialWidth, kInitialHeight),
           fSampleRate(getSampleRate()),
           fResizable(isResizable()),
-          fScale(1.0f),
+          fScale(getScaleFactor()),
           fResizeHandle(this)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
@@ -46,7 +46,10 @@ public:
         loadSharedResources();
 #endif
 
-        setGeometryConstraints(kInitialWidth, kInitialHeight, true);
+        if (d_isNotEqual(fScale, 1.0f))
+            setSize(kInitialWidth * fScale, kInitialHeight * fScale);
+
+        setGeometryConstraints(kInitialWidth * fScale, kInitialHeight * fScale, true);
 
         // no need to show resize handle if window is user-resizable
         if (fResizable)
