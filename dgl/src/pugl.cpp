@@ -203,8 +203,10 @@ const char* puglGetWindowTitle(const PuglView* const view)
 double puglGetDesktopScaleFactor(const PuglView* const view)
 {
 #if defined(DISTRHO_OS_MAC)
-    return (view->impl->window ? [view->impl->window screen]
-                               : [NSScreen mainScreen]).backingScaleFactor;
+    if (NSWindow* const window = view->impl->window ? view->impl->window
+                                                    : [view->impl->wrapperView window])
+        return [window screen].backingScaleFactor;
+    return [NSScreen mainScreen].backingScaleFactor;
 #else
     return 1.0;
 
@@ -221,8 +223,9 @@ void puglRaiseWindow(PuglView* const view)
 #if defined(DISTRHO_OS_HAIKU)
     // nothing here yet
 #elif defined(DISTRHO_OS_MAC)
-    if (view->impl->window)
-        [view->impl->window orderFrontRegardless];
+    if (NSWindow* const window = view->impl->window ? view->impl->window
+                                                    : [view->impl->wrapperView window])
+        [window orderFrontRegardless];
 #elif defined(DISTRHO_OS_WINDOWS)
     SetForegroundWindow(view->impl->hwnd);
     SetActiveWindow(view->impl->hwnd);
