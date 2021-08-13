@@ -35,6 +35,7 @@ public:
           fSampleRate(getSampleRate()),
           fResizable(isResizable()),
           fScale(1.0f),
+          fScaleFactor(getScaleFactor()),
           fResizeHandle(this)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
@@ -139,6 +140,11 @@ protected:
         drawRight(x, y, fResizable ? "Yes" : "No", 40);
         y+=lineHeight;
 
+        // host scale factor
+        drawLeft(x, y, "Host scale factor:", 20);
+        drawRight(x, y, getTextBufFloat(fScaleFactor), 40);
+        y+=lineHeight;
+
         // BBT
         x = 200.0f * fScale;
         y = 15.0f * fScale;
@@ -191,6 +197,11 @@ protected:
         UI::onResize(ev);
     }
 
+    void uiScaleFactorChanged(const double scaleFactor) override
+    {
+        fScaleFactor = scaleFactor;
+    }
+
     // -------------------------------------------------------------------------------------------------------
 
 private:
@@ -200,7 +211,8 @@ private:
 
     // UI stuff
     bool fResizable;
-    float fScale;
+    float fScale; // our internal scaling
+    double fScaleFactor; // host reported scale factor
     ResizeHandle fResizeHandle;
 
     // temp buf for text
