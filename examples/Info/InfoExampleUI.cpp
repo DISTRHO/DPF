@@ -34,7 +34,7 @@ public:
         : UI(kInitialWidth, kInitialHeight),
           fSampleRate(getSampleRate()),
           fResizable(isResizable()),
-          fScale(getScaleFactor()),
+          fScale(1.0f),
           fResizeHandle(this)
     {
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
@@ -46,10 +46,7 @@ public:
         loadSharedResources();
 #endif
 
-        if (d_isNotEqual(fScale, 1.0f))
-            setSize(kInitialWidth * fScale, kInitialHeight * fScale);
-
-        setGeometryConstraints(kInitialWidth * fScale, kInitialHeight * fScale, true);
+        setGeometryConstraints(kInitialWidth, kInitialHeight, true);
 
         // no need to show resize handle if window is user-resizable
         if (fResizable)
@@ -186,7 +183,6 @@ protected:
         drawRight(x, y, getTextBufFloat(fParameters[kParameterTimeBeatsPerMinute]));
         y+=lineHeight;
     }
-
 
     void onResize(const ResizeEvent& ev) override
     {
