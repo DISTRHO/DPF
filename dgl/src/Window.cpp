@@ -269,12 +269,21 @@ void Window::repaint() noexcept
 
 void Window::repaint(const Rectangle<uint>& rect) noexcept
 {
-    const PuglRect prect = {
+    PuglRect prect = {
         static_cast<double>(rect.getX()),
         static_cast<double>(rect.getY()),
         static_cast<double>(rect.getWidth()),
         static_cast<double>(rect.getHeight()),
     };
+    if (pData->autoScaling)
+    {
+        const double autoScaleFactor = pData->autoScaleFactor;
+
+        prect.x *= autoScaleFactor;
+        prect.y *= autoScaleFactor;
+        prect.width *= autoScaleFactor;
+        prect.height *= autoScaleFactor;
+    }
     puglPostRedisplayRect(pData->view, prect);
 }
 
