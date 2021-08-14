@@ -59,7 +59,7 @@ public:
                const fileRequestFunc fileRequestCall,
                const char* const bundlePath = nullptr,
                void* const dspPtr = nullptr,
-               const double scaleFactor = 1.0,
+               const double scaleFactor = 0.0,
                const uint32_t bgColor = 0,
                const uint32_t fgColor = 0xffffffff)
         : ui(nullptr),
@@ -126,6 +126,11 @@ public:
     uint getHeight() const noexcept
     {
         return uiData->window->getHeight();
+    }
+
+    double getScaleFactor() const noexcept
+    {
+        return uiData->window->getScaleFactor();
     }
 
     bool isVisible() const noexcept
@@ -339,6 +344,13 @@ public:
 #endif
 
     // -------------------------------------------------------------------
+
+    void notifyScaleFactorChanged(const double scaleFactor)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiScaleFactorChanged(scaleFactor);
+    }
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {
