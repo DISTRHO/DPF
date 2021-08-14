@@ -1406,11 +1406,11 @@ static void cb_hidden (Display *dpy) {
 }
 
 static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
-	const int btop = _fib_height - BTNBTMMARGIN * _fib_font_vsep - _fib_font_ascent - BTNPADDING;
-	const int bbot = btop + _fib_font_height + BTNPADDING + BTNPADDING;
+	const int btop = _fib_height - BTNBTMMARGIN * _fib_font_vsep - _fib_font_ascent - BTNPADDING * _scalefactor;
+	const int bbot = btop + _fib_font_height + BTNPADDING * 2 * _scalefactor;
 	const int llen = (_fib_height - LISTBOT * _fib_font_vsep) / _fib_font_vsep;
 	const int ltop = LISTTOP * _fib_font_vsep;
-	const int fbot = ltop + 4 + llen * _fib_font_vsep;
+	const int fbot = ltop + 4 * _scalefactor + llen * _fib_font_vsep;
 	const int ptop = PATHBTNTOP - _fib_font_ascent;
 	assert (it);
 
@@ -1419,7 +1419,7 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 		int i = _view_p;
 		*it = -1;
 		if (i > 0) { // special case '<'
-			if (x > FAREAMRGB && x <= FAREAMRGB + _pathbtn[0].xw) {
+			if (x > FAREAMRGB * _scalefactor && x <= FAREAMRGB * _scalefactor + _pathbtn[0].xw) {
 				*it = _view_p - 1;
 				i = _pathparts;
 			}
@@ -1452,9 +1452,9 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 	}
 
 	// main file area
-	if (y >= ltop - _fib_font_vsep && y < fbot && x > FAREAMRGL && x < _fib_width - FAREAMRGR) {
+	if (y >= ltop - _fib_font_vsep && y < fbot && x > FAREAMRGL * _scalefactor && x < _fib_width - FAREAMRGR * _scalefactor) {
 		// scrollbar
-		if (_scrl_y0 > 0 && x >= _fib_width - (FAREAMRGR + SCROLLBARW) && x <= _fib_width - FAREAMRGR) {
+		if (_scrl_y0 > 0 && x >= _fib_width - (FAREAMRGR + SCROLLBARW) * _scalefactor && x <= _fib_width - FAREAMRGR * _scalefactor) {
 			if (y >= _scrl_y0 && y < _scrl_y1) {
 				*it = 0;
 			} else if (y >= _scrl_y1) {
@@ -1476,20 +1476,20 @@ static int fib_widget_at_pos (Display *dpy, int x, int y, int *it) {
 		}
 		else {
 			*it = -1;
-			const int fsel_width = _fib_width - FAREAMRGL - FAREAMRGR - (llen < _dircount ? SCROLLBARW : 0);
-			const int t_s = FAREAMRGL + fsel_width - _fib_font_time_width - TEXTSEP - TEXTSEP;
-			const int t_t = FAREAMRGL + fsel_width - TEXTSEP - _fib_font_size_width - ((_columns & 2) ? ( _fib_font_time_width + TEXTSEP + TEXTSEP) : 0);
-			if (x >= fsel_width + FAREAMRGL) ;
+			const int fsel_width = _fib_width - (FAREAMRGL + FAREAMRGR) * _scalefactor - (llen < _dircount ? SCROLLBARW * _scalefactor : 0);
+			const int t_s = FAREAMRGL * _scalefactor + fsel_width - _fib_font_time_width - TEXTSEP * 2 * _scalefactor;
+			const int t_t = FAREAMRGL * _scalefactor + fsel_width - TEXTSEP * _scalefactor - _fib_font_size_width - ((_columns & 2) ? ( _fib_font_time_width + TEXTSEP * 2 * _scalefactor) : 0);
+			if (x >= fsel_width + FAREAMRGL * _scalefactor) ;
 			else if ((_columns & 2) && x >= t_s) *it = 3;
 			else if ((_columns & 1) && x >= t_t) *it = 2;
-			else if (x >= FAREATEXTL + _fib_dir_indent - TEXTSEP) *it = 1;
+			else if (x >= FAREATEXTL * _scalefactor + _fib_dir_indent - TEXTSEP * _scalefactor) *it = 1;
 			if (*it >= 0) return 5;
 			else return 0;
 		}
 	}
 
 	// places list
-	if (_fib_show_places && y >= ltop && y < fbot && x > FAREAMRGB && x < FAREAMRGL - FAREAMRGB) {
+	if (_fib_show_places && y >= ltop && y < fbot && x > FAREAMRGB * _scalefactor && x < (FAREAMRGL - FAREAMRGB) * _scalefactor) {
 			const int item = (y - ltop) / _fib_font_vsep;
 			*it = -1;
 			if (item >= 0 && item < _placecnt) {
