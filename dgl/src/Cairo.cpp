@@ -735,9 +735,7 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     {
         // full viewport size
         cairo_translate(handle, 0, 0);
-
-        // no scaling
-        cairo_scale(handle, 1.0, 1.0);
+        cairo_scale(handle, autoScaleFactor, autoScaleFactor);
     }
     else
     {
@@ -776,14 +774,33 @@ void TopLevelWidget::PrivateData::display()
     if (! selfw->pData->visible)
         return;
 
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(self->getGraphicsContext()).handle;
+
     const Size<uint> size(window.getSize());
     const uint width  = size.getWidth();
     const uint height = size.getHeight();
 
     const double autoScaleFactor = window.pData->autoScaleFactor;
 
+    cairo_matrix_t matrix;
+    cairo_get_matrix(handle, &matrix);
+
+    // full viewport size
+    if (window.pData->autoScaling)
+    {
+        cairo_translate(handle, 0, 0);
+        cairo_scale(handle, autoScaleFactor, autoScaleFactor);
+    }
+    else
+    {
+        cairo_translate(handle, 0, 0);
+        cairo_scale(handle, 1.0, 1.0);
+    }
+
     // main widget drawing
     self->onDisplay();
+
+    cairo_set_matrix(handle, &matrix);
 
     // now draw subwidgets if there are any
     selfw->pData->displaySubWidgets(width, height, autoScaleFactor);

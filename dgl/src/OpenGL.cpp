@@ -649,9 +649,9 @@ void TopLevelWidget::PrivateData::display()
     if (window.pData->autoScaling)
     {
         glViewport(0,
-                   -static_cast<int>(height * autoScaleFactor - height),
-                   static_cast<int>(width * autoScaleFactor),
-                   static_cast<int>(height * autoScaleFactor));
+                   -static_cast<int>(height * autoScaleFactor - height + 0.5),
+                   static_cast<int>(width * autoScaleFactor + 0.5),
+                   static_cast<int>(height * autoScaleFactor + 0.5));
     }
     else
     {
