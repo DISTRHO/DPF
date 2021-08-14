@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018-2019 Rob van den Berg <rghvdberg at gmail dot org>
+ * Copyright (C) 2020-2021 Filipe Coelho <falktx@falktx.com>
  *
  * This file is part of CharacterCompressor
  *
@@ -17,44 +18,40 @@
  * along with CharacterCompressor.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BUTTON_HPP_INCLUDED
-#define BUTTON_HPP_INCLUDED
+#ifndef NANO_BUTTON_HPP_INCLUDED
+#define NANO_BUTTON_HPP_INCLUDED
 
-#include "Widget.hpp"
 #include "NanoVG.hpp"
 
 #include <string>
 
 START_NAMESPACE_DGL
 
-class Button : public NanoSubWidget
+class Button : public NanoSubWidget,
+               public ButtonEventHandler
 {
 public:
-    class Callback
-    {
-    public:
-        virtual ~Callback() {}
-        virtual void buttonClicked(Button *button, bool value) = 0;
-    };
-    explicit Button(Widget *parent, Callback *cb);
+    explicit Button(Widget* parent, ButtonEventHandler::Callback* cb);
 
-    void setLabel(std::string label);
-    void setLabelColor(Color color);
     void setBackgroundColor(Color color);
+    void setFontScale(float scale);
+    void setLabel(const std::string& label);
+    void setLabelColor(Color color);
 
 protected:
     void onNanoDisplay() override;
-    bool onMouse(const MouseEvent &ev) override;
+    bool onMouse(const MouseEvent& ev) override;
+    bool onMotion(const MotionEvent& ev) override;
 
 private:
-    std::string Label;
-    Color labelColor,backgroundColor,borderColor;
-    Callback *const fCallback;
-    bool buttonActive;
-    FontId fNanoFont;
+    Color backgroundColor;
+    Color labelColor;
+    std::string label;
+    float fontScale;
+
     DISTRHO_LEAK_DETECTOR(Button)
 };
 
 END_NAMESPACE_DGL
 
-#endif
+#endif // NANO_BUTTON_HPP_INCLUDED

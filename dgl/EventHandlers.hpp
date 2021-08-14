@@ -21,6 +21,17 @@
 
 START_NAMESPACE_DGL
 
+/* NOTE none of these classes get assigned to a widget automatically
+   Manual plugging into Widget events is needed, like so:
+
+    ```
+    bool onMouse(const MouseEvent& ev) override
+    {
+        return ButtonEventHandler::mouseEvent(ev);
+    }
+    ```
+*/
+
 // --------------------------------------------------------------------------------------------------------------------
 
 class ButtonEventHandler

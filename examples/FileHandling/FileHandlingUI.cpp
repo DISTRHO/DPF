@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2020 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -33,7 +33,7 @@ const char* kStateKeys[kStateCount] = {
 
 // -----------------------------------------------------------------------------------------------------------
 
-static void setupButton(Button& btn, int y)
+inline void setupButton(Button& btn, const int y)
 {
     btn.setAbsolutePos(5, y);
     btn.setLabel("Open...");
@@ -41,7 +41,7 @@ static void setupButton(Button& btn, int y)
 }
 
 class FileHandlingExampleUI : public UI,
-                              public Button::Callback
+                              public ButtonEventHandler::Callback
 {
 public:
     static const uint kInitialWidth  = 600;
@@ -67,7 +67,7 @@ public:
         loadSharedResources();
 #endif
 
-        setGeometryConstraints(kInitialWidth, kInitialHeight, true);
+        setGeometryConstraints(kInitialWidth, kInitialHeight, false);
     }
 
 protected:
@@ -193,18 +193,22 @@ protected:
         fButton2.setSize(100*fScale, 30*fScale);
         fButton3.setSize(100*fScale, 30*fScale);
 
+        fButton1.setFontScale(fScale);
+        fButton2.setFontScale(fScale);
+        fButton3.setFontScale(fScale);
+
         UI::onResize(ev);
     }
 
-    void buttonClicked(Button* const button, bool) override
+    void buttonClicked(SubWidget* const widget, int) override
     {
         States stateId;
 
-        /**/ if (button == &fButton1)
+        /**/ if (widget == &fButton1)
             stateId = kStateFile1;
-        else if (button == &fButton2)
+        else if (widget == &fButton2)
             stateId = kStateFile2;
-        else if (button == &fButton3)
+        else if (widget == &fButton3)
             stateId = kStateFile3;
         else
             return;

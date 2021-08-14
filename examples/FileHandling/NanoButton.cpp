@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2018-2019 Rob van den Berg <rghvdberg at gmail dot org>
+ * Copyright (C) 2020-2021 Filipe Coelho <falktx@falktx.com>
  *
  * This file is part of CharacterCompressor
  *
@@ -22,16 +23,40 @@
 
 START_NAMESPACE_DGL
 
-Button::Button(Widget *parent, Callback *cb)
+Button::Button(Widget* const parent, ButtonEventHandler::Callback* const cb)
     : NanoWidget(parent),
-      fCallback(cb),
-      buttonActive(false)
+      ButtonEventHandler(this),
+      backgroundColor(32, 32, 32),
+      labelColor(255, 255, 255),
+      label("button"),
+      fontScale(1.0f)
 {
+#ifdef DGL_NO_SHARED_RESOURCES
+    createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
+#else
     loadSharedResources();
-    fNanoFont = findFont(NANOVG_DEJAVU_SANS_TTF);
-    labelColor = Color(255, 255, 255);
-    backgroundColor = Color(32,32,32);
-    Label = "button";
+#endif
+    ButtonEventHandler::setCallback(cb);
+}
+
+void Button::setBackgroundColor(const Color color)
+{
+    backgroundColor = color;
+}
+
+void Button::setFontScale(const float scale)
+{
+    fontScale = scale;
+}
+
+void Button::setLabel(const std::string& label2)
+{
+    label = label2;
+}
+
+void Button::setLabelColor(const Color color)
+{
+    labelColor = color;
 }
 
 void Button::onNanoDisplay()
@@ -43,62 +68,35 @@ void Button::onNanoDisplay()
     // Background
     beginPath();
     fillColor(backgroundColor);
-    strokeColor(borderColor);
+    strokeColor(labelColor);
     rect(margin, margin, w - 2 * margin, h - 2 * margin);
     fill();
     stroke();
     closePath();
 
-    //Label
+    // Label
     beginPath();
-    fontFaceId(fNanoFont);
-    fontSize(14);
+    fontSize(14 * fontScale);
     fillColor(labelColor);
     Rectangle<float> bounds;
-    textBounds(0, 0, Label.c_str(), NULL, bounds);
-    // float tw = bounds.getWidth();
-    // float th = bounds.getHeight();
+    textBounds(0, 0, label.c_str(), NULL, bounds);
     float tx = w / 2.0f ;
     float ty = h / 2.0f;
     textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
 
     fillColor(255, 255, 255, 255);
-    text(tx, ty, Label.c_str(), NULL);
+    text(tx, ty, label.c_str(), NULL);
     closePath();
 }
 
-void Button::setLabel(std::string label)
+bool Button::onMouse(const MouseEvent& ev)
 {
-    Label = label;
+    return ButtonEventHandler::mouseEvent(ev);
 }
 
-void Button::setLabelColor(const Color color)
+bool Button::onMotion(const MotionEvent& ev)
 {
-    labelColor = color;
-    borderColor = color;
-}
-void Button::setBackgroundColor(const Color color)
-{
-    backgroundColor = color;
-}
-
-bool Button::onMouse(const MouseEvent &ev)
-{
-    if (ev.press && contains(ev.pos))
-    {
-        buttonActive = true;
-        setLabelColor(labelColor);
-        fCallback->buttonClicked(this, true);
-        return true;
-    }
-    else if (buttonActive)
-    {
-        buttonActive = false;
-        //setLabelColor(Color(128,128,128));
-        return true;
-    }
-
-    return false;
+    return ButtonEventHandler::motionEvent(ev);
 }
 
 END_NAMESPACE_DGL
