@@ -19,7 +19,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 TopLevelWidget::TopLevelWidget(Window& windowToMapTo)
     : Widget(this),
@@ -93,6 +93,38 @@ void TopLevelWidget::setGeometryConstraints(const uint minimumWidth,
     pData->window.setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+bool TopLevelWidget::onKeyboard(const KeyboardEvent&)
+{
+    return false;
+}
+
+bool TopLevelWidget::onSpecial(const SpecialEvent&)
+{
+    return false;
+}
+
+bool TopLevelWidget::onCharacterInput(const CharacterInputEvent&)
+{
+    return false;
+}
+
+bool TopLevelWidget::onMouse(const MouseEvent&)
+{
+    return false;
+}
+
+bool TopLevelWidget::onMotion(const MotionEvent&)
+{
+    return false;
+}
+
+bool TopLevelWidget::onScroll(const ScrollEvent&)
+{
+    return false;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

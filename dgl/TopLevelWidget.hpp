@@ -107,6 +107,14 @@ public:
     DISTRHO_DEPRECATED_BY("getWindow()")
     Window& getParentWindow() const noexcept { return getWindow(); }
 
+protected:
+    bool onKeyboard(const KeyboardEvent&) override;
+    bool onSpecial(const SpecialEvent&) override;
+    bool onCharacterInput(const CharacterInputEvent&) override;
+    bool onMouse(const MouseEvent&) override;
+    bool onMotion(const MotionEvent&) override;
+    bool onScroll(const ScrollEvent&) override;
+
 private:
     struct PrivateData;
     PrivateData* const pData;
