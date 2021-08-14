@@ -507,6 +507,28 @@ void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
 
 #ifdef HAVE_X11
 // --------------------------------------------------------------------------------------------------------------------
+// X11 specific, safer way to grab focus
+
+PuglStatus puglX11GrabFocus(PuglView* const view)
+{
+    PuglInternals* const impl = view->impl;
+
+    XWindowAttributes wa;
+    std::memset(&wa, 0, sizeof(wa));
+
+    DISTRHO_SAFE_ASSERT_RETURN(XGetWindowAttributes(impl->display, impl->win, &wa), PUGL_UNKNOWN_ERROR);
+
+    if (wa.map_state == IsViewable)
+    {
+        XRaiseWindow(impl->display, impl->win);
+        XSetInputFocus(impl->display, impl->win, RevertToPointerRoot, CurrentTime);
+        XSync(impl->display, False);
+    }
+
+    return PUGL_SUCCESS;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // X11 specific, setup event loop filter for sofd file dialog
 
 static bool sofd_has_action;

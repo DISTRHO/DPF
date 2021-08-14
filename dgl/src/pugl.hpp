@@ -120,6 +120,10 @@ puglWin32SetWindowResizable(PuglView* view, bool resizable);
 #endif
 
 #ifdef HAVE_X11
+// X11 specific, safer way to grab focus
+PUGL_API PuglStatus
+puglX11GrabFocus(PuglView* view);
+
 // X11 specific, setup event loop filter for sofd file dialog
 PUGL_API void
 sofdFileDialogSetup(PuglWorld* world);

@@ -363,7 +363,7 @@ void Window::PrivateData::focus()
     if (! isEmbed)
         puglRaiseWindow(view);
 
-    puglGrabFocus(view);
+    puglX11GrabFocus(view);
 }
 
 // -----------------------------------------------------------------------
