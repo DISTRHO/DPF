@@ -74,8 +74,13 @@ public:
    /**
       UI class constructor.
       The UI should be initialized to a default state that matches the plugin side.
+
+      When @a automaticallyScale is set to true, DPF will automatically scale up the UI
+      to fit the host/desktop scale factor.@n
+      It assumes aspect ratio is meant to be kept.
+      Manually call setGeometryConstraints instead if keeping UI aspect ratio is not required.
     */
-    UI(uint width = 0, uint height = 0);
+    UI(uint width = 0, uint height = 0, bool automaticallyScale = false);
 
    /**
       Destructor.
