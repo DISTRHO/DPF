@@ -22,6 +22,7 @@
 #define NANO_BUTTON_HPP_INCLUDED
 
 #include "NanoVG.hpp"
+#include "EventHandlers.hpp"
 
 #include <string>
 

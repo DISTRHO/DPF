@@ -337,9 +337,9 @@ inline void PluginWindow::onFileSelected(const char* const filename)
     {
         ui->uiData->uiStateFileKeyRequest = nullptr;
         // notify DSP
-        ui->setState(key, filename);
+        ui->setState(key, filename != nullptr ? filename : "");
         // notify UI
-        ui->stateChanged(key, filename);
+        ui->stateChanged(key, filename != nullptr ? filename : "");
         std::free(key);
         return;
     }
