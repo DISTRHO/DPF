@@ -87,7 +87,7 @@ protected:
             }
         }
 
-        return Widget::onMouse(event);
+        return CairoSubWidget::onMouse(event);
     }
 
 private:

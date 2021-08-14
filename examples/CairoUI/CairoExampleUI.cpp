@@ -37,32 +37,38 @@ public:
     CairoExampleUI()
         : UI(200, 200)
     {
-        DemoWidgetClickable* widgetClickable = new DemoWidgetClickable(this);
-        fWidgetClickable = widgetClickable;
-        widgetClickable->setSize(50, 50);
-        widgetClickable->setAbsolutePos(100, 100);
+        fWidgetClickable = new DemoWidgetClickable(this);
+        fWidgetClickable->setSize(50, 50);
+        fWidgetClickable->setAbsolutePos(100, 100);
 
-        DemoWidgetBanner* widgetBanner = new DemoWidgetBanner(this);
-        fWidgetBanner = widgetBanner;
-        widgetBanner->setSize(180, 80);
-        widgetBanner->setAbsolutePos(10, 10);
+        fWidgetBanner = new DemoWidgetBanner(this);
+        fWidgetBanner->setSize(180, 80);
+        fWidgetBanner->setAbsolutePos(10, 10);
 
         CairoImage knobSkin;
         knobSkin.loadFromPNG(Artwork::knobData, Artwork::knobDataSize);
 
-        CairoImageKnob* knob = new CairoImageKnob(this, knobSkin);
-        fKnob = knob;
-        knob->setSize(80, 80);
-        knob->setAbsolutePos(10, 100);
+        fKnob = new CairoImageKnob(this, knobSkin);
+        fKnob->setSize(80, 80);
+        fKnob->setAbsolutePos(10, 100);
 
         CairoImage buttonOn, buttonOff;
         buttonOn.loadFromPNG(Artwork::buttonOnData, Artwork::buttonOnDataSize);
         buttonOff.loadFromPNG(Artwork::buttonOffData, Artwork::buttonOffDataSize);
 
-        CairoImageButton* button = new CairoImageButton(this, buttonOff, buttonOn);
-        fButton = button;
-        button->setSize(60, 35);
-        button->setAbsolutePos(100, 160);
+        fButton = new CairoImageButton(this, buttonOff, buttonOn);
+        fButton->setSize(60, 35);
+        fButton->setAbsolutePos(100, 160);
+
+#if 0
+        // we can use this if/when our resources are scalable, for now they are PNGs
+        const double scaleFactor = getScaleFactor();
+        if (scaleFactor != 1.0)
+            setSize(200 * scaleFactor, 200 * scaleFactor);
+#else
+        // without scalable resources, let DPF handle the scaling internally
+        setGeometryConstraints(200, 200, true, true);
+#endif
     }
 
 protected:
@@ -73,7 +79,29 @@ protected:
         cairo_paint(cr);
     }
 
-    void parameterChanged(uint32_t index, float value)
+#if 0
+    // we can use this if/when our resources are scalable, for now they are PNGs
+    void onResize(const ResizeEvent& ev) override
+    {
+        UI::onResize(ev);
+
+        const double scaleFactor = getScaleFactor();
+
+        fWidgetClickable->setSize(50*scaleFactor, 50*scaleFactor);
+        fWidgetClickable->setAbsolutePos(100*scaleFactor, 100*scaleFactor);
+
+        fWidgetBanner->setSize(180*scaleFactor, 80*scaleFactor);
+        fWidgetBanner->setAbsolutePos(10*scaleFactor, 10*scaleFactor);
+
+        fKnob->setSize(80*scaleFactor, 80*scaleFactor);
+        fKnob->setAbsolutePos(10*scaleFactor, 100*scaleFactor);
+
+        fButton->setSize(60*scaleFactor, 35*scaleFactor);
+        fButton->setAbsolutePos(100*scaleFactor, 160*scaleFactor);
+    }
+#endif
+
+    void parameterChanged(uint32_t index, float value) override
     {
         // unused
         (void)index;
