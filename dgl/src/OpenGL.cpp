@@ -598,7 +598,10 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     else if (needsFullViewportForDrawing || (absolutePos.isZero() && self->getSize() == Size<uint>(width, height)))
     {
         // full viewport size
-        glViewport(0, 0, static_cast<int>(width), static_cast<int>(height));
+        glViewport(0,
+                   -static_cast<int>(height * autoScaleFactor - height + 0.5),
+                   static_cast<int>(width * autoScaleFactor + 0.5),
+                   static_cast<int>(height * autoScaleFactor + 0.5));
     }
     else
     {
