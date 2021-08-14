@@ -25,6 +25,7 @@ START_NAMESPACE_DISTRHO
 
 using DGL_NAMESPACE::Button;
 using DGL_NAMESPACE::ButtonEventHandler;
+using DGL_NAMESPACE::SubWidget;
 
 const char* kStateKeys[kStateCount] = {
     "file1",
