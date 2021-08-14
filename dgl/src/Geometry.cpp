@@ -926,6 +926,12 @@ bool Rectangle<uint>::contains(const Point<double>& p) const noexcept
 }
 
 template<typename T>
+bool Rectangle<T>::containsAfterScaling(const Point<T>& p, const double scaling) const noexcept
+{
+    return (p.x >= pos.x && p.y >= pos.y && p.x/scaling <= pos.x+size.fWidth && p.y/scaling <= pos.y+size.fHeight);
+}
+
+template<typename T>
 bool Rectangle<T>::containsX(const T& x) const noexcept
 {
     return (x >= pos.x && x <= pos.x + size.fWidth);

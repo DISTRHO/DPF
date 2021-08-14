@@ -754,6 +754,11 @@ public:
     bool contains(const Point<T>& pos) const noexcept;
 
    /**
+      Check if this rectangle contains the point @a pos affected by a custom scale.
+    */
+    bool containsAfterScaling(const Point<T>& pos, double scaling) const noexcept;
+
+   /**
       Check if this rectangle contains the point @a pos of another type.
     */
     template<typename T2>
