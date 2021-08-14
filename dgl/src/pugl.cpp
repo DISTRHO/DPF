@@ -539,7 +539,7 @@ static char* sofd_filename;
 
 bool sofdFileDialogShow(PuglView* const view,
                         const char* const startDir, const char* const title,
-                        const uint flags, const uint width, const uint height)
+                        const uint flags, const double scaleFactor)
 {
     // only one possible at a time
     DISTRHO_SAFE_ASSERT_RETURN(sofd_display == nullptr, false);
@@ -556,7 +556,7 @@ bool sofdFileDialogShow(PuglView* const view,
     x_fib_cfg_buttons(2, options.buttons.showPlaces-1);
     */
 
-    return (x_fib_show(sofd_display, view->impl->win, width, height) == 0);
+    return (x_fib_show(sofd_display, view->impl->win, 0, 0, scaleFactor) == 0);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

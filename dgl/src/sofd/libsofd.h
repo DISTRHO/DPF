@@ -41,7 +41,7 @@ extern "C" {
  * @param y if >0 set explict initial height of the window
  * @return 0 on success
  */
-int x_fib_show (Display *dpy, Window parent, int x, int y);
+int x_fib_show (Display *dpy, Window parent, int x, int y, double scalefactor);
 
 /** force close the dialog.
  * This is normally not needed, the dialog closes itself

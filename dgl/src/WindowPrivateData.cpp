@@ -545,7 +545,7 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 # ifdef HAVE_X11
     uint flags = 0x0;
     // TODO flags
-    return sofdFileDialogShow(view, startDir, title, flags, options.width, options.height);
+    return sofdFileDialogShow(view, startDir, title, flags, autoScaling ? autoScaleFactor : scaleFactor);
 # endif
 
     return false;

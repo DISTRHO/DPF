@@ -126,7 +126,7 @@ puglX11GrabFocus(PuglView* view);
 
 // X11 specific, show file dialog via sofd
 PUGL_API bool
-sofdFileDialogShow(PuglView* view, const char* startDir, const char* title, uint flags, uint width, uint height);
+sofdFileDialogShow(PuglView* view, const char* startDir, const char* title, uint flags, double scaleFactor);
 
 // X11 specific, idle sofd file dialog, returns true if dialog was closed (with or without a file selection)
 PUGL_API bool
