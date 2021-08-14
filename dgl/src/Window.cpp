@@ -300,12 +300,6 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     DISTRHO_SAFE_ASSERT_RETURN(minimumWidth > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(minimumHeight > 0,);
 
-    if (pData->isEmbed) {
-        // nothing to do here
-    } else if (! isResizable()) {
-        setResizable(true);
-    }
-
     pData->minWidth = minimumWidth;
     pData->minHeight = minimumHeight;
     pData->autoScaling = automaticallyScale;
