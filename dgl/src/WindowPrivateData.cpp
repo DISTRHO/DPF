@@ -363,7 +363,11 @@ void Window::PrivateData::focus()
     if (! isEmbed)
         puglRaiseWindow(view);
 
+#ifdef HAVE_X11
     puglX11GrabFocus(view);
+#else
+    puglGrabFocus(view);
+#endif
 }
 
 // -----------------------------------------------------------------------
