@@ -529,33 +529,10 @@ PuglStatus puglX11GrabFocus(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// X11 specific, setup event loop filter for sofd file dialog
+// X11 specific stuff for sofd
 
-static bool sofd_has_action;
+static Display* sofd_display;
 static char* sofd_filename;
-
-static bool sofd_event_filter(Display* const display, XEvent* const xevent)
-{
-    if (x_fib_handle_events(display, xevent) == 0)
-        return false;
-
-    if (sofd_filename != nullptr)
-        std::free(sofd_filename);
-
-    if (x_fib_status() > 0)
-        sofd_filename = x_fib_filename();
-    else
-        sofd_filename = nullptr;
-
-    x_fib_close(display);
-    sofd_has_action = true;
-    return true;
-}
-
-void sofdFileDialogSetup(PuglWorld* const world)
-{
-    puglX11SetEventFilter(world, sofd_event_filter);
-}
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, show file dialog via sofd
@@ -564,6 +541,12 @@ bool sofdFileDialogShow(PuglView* const view,
                         const char* const startDir, const char* const title,
                         const uint flags, const uint width, const uint height)
 {
+    // only one possible at a time
+    DISTRHO_SAFE_ASSERT_RETURN(sofd_display == nullptr, false);
+
+    sofd_display = XOpenDisplay(nullptr);
+    DISTRHO_SAFE_ASSERT_RETURN(sofd_display != nullptr, false);
+
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(0, startDir) == 0, false);
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(1, title) == 0, false);
 
@@ -573,44 +556,68 @@ bool sofdFileDialogShow(PuglView* const view,
     x_fib_cfg_buttons(2, options.buttons.showPlaces-1);
     */
 
-    PuglInternals* const impl = view->impl;
-    return (x_fib_show(impl->display, impl->win, width, height) == 0);
+    return (x_fib_show(sofd_display, view->impl->win, width, height) == 0);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, idle sofd file dialog, returns true if dialog was closed (with or without a file selection)
+
+bool sofdFileDialogIdle(PuglView* const view)
+{
+    if (sofd_display == nullptr)
+        return false;
+
+    XEvent event;
+    while (XPending(sofd_display) > 0)
+    {
+        XNextEvent(sofd_display, &event);
+
+        if (x_fib_handle_events(sofd_display, &event) == 0)
+            continue;
+
+        if (sofd_filename != nullptr)
+            std::free(sofd_filename);
+
+        if (x_fib_status() > 0)
+            sofd_filename = x_fib_filename();
+        else
+            sofd_filename = nullptr;
+
+        x_fib_close(sofd_display);
+        XCloseDisplay(sofd_display);
+        sofd_display = nullptr;
+        return true;
+    }
+
+    return false;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, close sofd file dialog
 
-void sofdFileDialogClose(PuglView* const view)
+void sofdFileDialogClose()
 {
-    PuglInternals* const impl = view->impl;
-    x_fib_close(impl->display);
+    if (sofd_display != nullptr)
+    {
+        x_fib_close(sofd_display);
+        XCloseDisplay(sofd_display);
+        sofd_display = nullptr;
+    }
+
+    if (sofd_filename != nullptr)
+    {
+        std::free(sofd_filename);
+        sofd_filename = nullptr;
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, get path chosen via sofd file dialog
 
-bool sofdFileDialogGetPath(char** path)
+const char* sofdFileDialogGetPath()
 {
-    if (! sofd_has_action)
-        return false;
-
-    sofd_has_action = false;
-    *path = sofd_filename;
-    return true;
+    return sofd_filename;
 }
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, free path of sofd file dialog, no longer needed
-
-void sofdFileDialogFree(char* const path)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(path == nullptr || path == sofd_filename,);
-
-    std::free(sofd_filename);
-    sofd_filename = nullptr;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

@@ -61,9 +61,6 @@ Application::PrivateData::PrivateData(const bool standalone)
 
     puglSetWorldHandle(world, this);
     puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
-#ifdef HAVE_X11
-    sofdFileDialogSetup(world);
-#endif
 
 #ifdef DISTRHO_OS_MAC
     if (standalone)
