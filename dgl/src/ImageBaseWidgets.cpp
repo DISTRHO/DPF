@@ -29,8 +29,11 @@ ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(Window& parentWindow, cons
     setResizable(false);
     setTitle("About");
 
-    if (image.isValid())
-        setSize(image.getSize());
+    if (image.isInvalid())
+        return;
+
+    setSize(image.getSize());
+    setGeometryConstraints(image.getWidth(), image.getHeight(), true, true);
 }
 
 template <class ImageType>
@@ -41,8 +44,11 @@ ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(TopLevelWidget* const pare
     setResizable(false);
     setTitle("About");
 
-    if (image.isValid())
-        setSize(image.getSize());
+    if (image.isInvalid())
+        return;
+
+    setSize(image.getSize());
+    setGeometryConstraints(image.getWidth(), image.getHeight(), true, true);
 }
 
 template <class ImageType>
@@ -52,7 +58,12 @@ void ImageBaseAboutWindow<ImageType>::setImage(const ImageType& image)
         return;
 
     img = image;
+
+    if (image.isInvalid())
+        return;
+
     setSize(image.getSize());
+    setGeometryConstraints(image.getWidth(), image.getHeight(), true, true);
 }
 
 template <class ImageType>
