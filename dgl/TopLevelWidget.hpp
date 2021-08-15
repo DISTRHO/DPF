@@ -90,12 +90,20 @@ public:
     */
     void setSize(const Size<uint>& size);
 
+   /**
+      TODO document this.
+    */
+    void repaint() noexcept override;
+
+   /**
+      TODO document this.
+    */
+    void repaint(const Rectangle<uint>& rect) noexcept;
+
     // TODO group stuff after here, convenience functions present in Window class
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
     bool removeIdleCallback(IdleCallback* callback);
     double getScaleFactor() const noexcept;
-    void repaint() noexcept;
-    void repaint(const Rectangle<uint>& rect) noexcept;
     void setGeometryConstraints(uint minimumWidth,
                                 uint minimumHeight,
                                 bool keepAspectRatio = false,
