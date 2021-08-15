@@ -140,7 +140,7 @@ struct HugeStackBuffer {
    Typically usage involves:
    ```
    // definition
-   RingBufferControl<HeapBuffer> myHeapBuffer; // or HeapRingBuffer class directly
+   HeapRingBuffer myHeapBuffer; // or RingBufferControl<HeapBuffer> class for more control
 
    // construction, only needed for heap buffers
    myHeapBuffer.createBuffer(8192);
@@ -168,7 +168,7 @@ class RingBufferControl
 {
 public:
     /*
-     * Constructor for unitialized ring buffer.
+     * Constructor for uninitialised ring buffer.
      * A call to setRingBuffer is required to tied this control to a ring buffer struct;
      *
      */
