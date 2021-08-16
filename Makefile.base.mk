@@ -385,6 +385,10 @@ PULSEAUDIO_FLAGS = $(shell $(PKG_CONFIG) --cflags libpulse-simple)
 PULSEAUDIO_LIBS  = $(shell $(PKG_CONFIG) --libs libpulse-simple)
 endif
 
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+SHARED_MEMORY_LIBS = -lrt
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Backwards-compatible HAVE_DGL
 
