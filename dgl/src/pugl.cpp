@@ -62,6 +62,7 @@
 # include <X11/X.h>
 # include <X11/Xatom.h>
 # include <X11/Xlib.h>
+# include <X11/Xresource.h>
 # include <X11/Xutil.h>
 # include <X11/keysym.h>
 # ifdef HAVE_XCURSOR
@@ -207,12 +208,32 @@ double puglGetDesktopScaleFactor(const PuglView* const view)
                                                     : [view->impl->wrapperView window])
         return [window screen].backingScaleFactor;
     return [NSScreen mainScreen].backingScaleFactor;
-#else
-    return 1.0;
+#elif defined(HAVE_X11)
+    XrmInitialize();
 
+    if (char* const rms = XResourceManagerString(view->world->impl->display))
+    {
+        if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
+        {
+            char* type = nullptr;
+            XrmValue ret;
+
+            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
+                && ret.addr != nullptr
+                && type != nullptr
+                && std::strncmp("String", type, 6) == 0)
+            {
+                if (const double dpi = std::atof(ret.addr))
+                    return dpi / 96;
+            }
+        }
+    }
+#else
     // unused
     (void)view;
 #endif
+
+    return 1.0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
