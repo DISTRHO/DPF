@@ -286,15 +286,6 @@ void Window::PrivateData::show()
 
     DGL_DBG("Window show called\n");
 
-#if 0 && defined(DISTRHO_OS_MAC)
-//     if (mWindow != nullptr)
-//     {
-//         if (mParentWindow != nullptr)
-//             [mParentWindow addChildWindow:mWindow
-//                                   ordered:NSWindowAbove];
-//     }
-#endif
-
     if (isClosed)
     {
         isClosed = false;
@@ -336,14 +327,6 @@ void Window::PrivateData::hide()
     }
 
     DGL_DBG("Window hide called\n");
-
-#if 0 && defined(DISTRHO_OS_MAC)
-//     if (mWindow != nullptr)
-//     {
-//         if (mParentWindow != nullptr)
-//             [mParentWindow removeChildWindow:mWindow];
-//     }
-#endif
 
     if (modal.enabled)
         stopModal();
@@ -577,6 +560,10 @@ void Window::PrivateData::startModal()
     modal.parent->show();
     show();
 
+#ifdef DISTRHO_OS_MAC
+    puglMacOSAddChildWindow(modal.parent->view, view);
+#endif
+
     DGL_DBG("Ok\n");
 }
 
@@ -593,26 +580,20 @@ void Window::PrivateData::stopModal()
     if (modal.parent->modal.child != this)
         return;
 
+#ifdef DISTRHO_OS_MAC
+    puglMacOSRemoveChildWindow(modal.parent->view, view);
+#endif
+
     // stop parent from giving focus to us, so it behaves like normal
     modal.parent->modal.child = nullptr;
 
-    // the mouse position probably changed since the modal appeared,
-    // so send a mouse motion event to the modal's parent window
-#if 0
-#if defined(DISTRHO_OS_HAIKU)
-    // TODO
-#elif defined(DISTRHO_OS_MAC)
-    // TODO
-#elif defined(DISTRHO_OS_WINDOWS)
-    // TODO
-#else
-    int i, wx, wy;
-    uint u;
-    ::Window w;
-    if (XQueryPointer(fModal.parent->xDisplay, fModal.parent->xWindow, &w, &w, &i, &i, &wx, &wy, &u) == True)
-        fModal.parent->onPuglMotion(wx, wy);
-#endif
-#endif
+    // refocus main window after closing child
+    if (! modal.parent->isClosed)
+    {
+        const Widget::MotionEvent ev;
+        modal.parent->onPuglMotion(ev);
+        modal.parent->focus();
+    }
 
     DGL_DBG("Ok\n");
 }
@@ -700,10 +681,11 @@ void Window::PrivateData::onPuglClose()
 {
     DGL_DBG("PUGL: onClose\n");
 
-    // if we have a parent or running as standalone we can prevent closing in certain conditions
-    if (modal.parent != nullptr || appData->isStandalone)
+#ifndef DISTRHO_OS_MAC
+    // if we are running as standalone we can prevent closing in certain conditions
+    if (appData->isStandalone)
     {
-        // parent gives focus to us as modal, prevent closing
+        // a child window is active, gives focus to it
         if (modal.child != nullptr)
             return modal.child->focus();
 
@@ -711,14 +693,15 @@ void Window::PrivateData::onPuglClose()
         if (! self->onClose())
             return;
     }
+#endif
 
     if (modal.enabled)
         stopModal();
 
-    if (PrivateData* const child = modal.child)
+    if (modal.child != nullptr)
     {
+        modal.child->close();
         modal.child = nullptr;
-        child->close();
     }
 
     close();

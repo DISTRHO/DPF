@@ -408,6 +408,8 @@ protected:
       This method is not used for embed windows, and not even made available in DISTRHO_NAMESPACE::UI.
       For embed windows, closing is handled by the host/parent process and we have no control over it.
       As such, a close action on embed windows will always succeed and cannot be cancelled.
+
+      NOTE: This currently does not work under macOS.
     */
     virtual bool onClose();
 
