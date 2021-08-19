@@ -206,6 +206,8 @@ public:
 
         jackbridge_activate(fClient);
 
+        std::fflush(stdout);
+
 #if DISTRHO_PLUGIN_HAS_UI
         if (const char* const name = jackbridge_get_client_name(fClient))
             fUI.setWindowTitle(name);
