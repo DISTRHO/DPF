@@ -208,6 +208,30 @@ double puglGetDesktopScaleFactor(const PuglView* const view)
                                                     : [view->impl->wrapperView window])
         return [window screen].backingScaleFactor;
     return [NSScreen mainScreen].backingScaleFactor;
+#elif defined(DISTRHO_OS_WINDOWS)
+    if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
+    {
+        typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
+        typedef HRESULT(WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR, DWORD*);
+
+        const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
+            = (PFN_GetProcessDpiAwareness)GetProcAddress(Shcore, "GetProcessDpiAwareness");
+        const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
+            = (PFN_GetScaleFactorForMonitor)GetProcAddress(Shcore, "GetScaleFactorForMonitor");
+
+        DWORD dpiAware = 0;
+        if (GetProcessDpiAwareness && GetScaleFactorForMonitor
+            && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
+        {
+            const HMONITOR hMon = MonitorFromWindow(view->impl->hwnd, MONITOR_DEFAULTTOPRIMARY);
+
+            DWORD scaleFactor = 0;
+            if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
+                return static_cast<double>(scaleFactor) / 100.0;
+        }
+
+        FreeLibrary(Shcore);
+    }
 #elif defined(HAVE_X11)
     XrmInitialize();
 
