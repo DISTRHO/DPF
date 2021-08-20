@@ -227,7 +227,9 @@ endif
 # Check for required libraries
 
 HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
-HAVE_VULKAN = $(shell $(PKG_CONFIG) --exists vulkan && echo true)
+
+# Vulkan is not supported yet
+# HAVE_VULKAN = $(shell $(PKG_CONFIG) --exists vulkan && echo true)
 
 ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_OPENGL = true
