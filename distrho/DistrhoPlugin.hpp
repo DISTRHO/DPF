@@ -405,7 +405,7 @@ struct ParameterEnumerationValues {
       Array of @ParameterEnumerationValue items.@n
       This pointer must be null or have been allocated on the heap with `new ParameterEnumerationValue[count]`.
     */
-    const ParameterEnumerationValue* values;
+    ParameterEnumerationValue* values;
 
    /**
       Default constructor, for zero enumeration values.
@@ -419,7 +419,7 @@ struct ParameterEnumerationValues {
       Constructor using custom values.@n
       The pointer to @values must have been allocated on the heap with `new`.
     */
-    ParameterEnumerationValues(uint32_t c, bool r, const ParameterEnumerationValue* v) noexcept
+    ParameterEnumerationValues(uint32_t c, bool r, ParameterEnumerationValue* v) noexcept
         : count(c),
           restrictedMode(r),
           values(v) {}
