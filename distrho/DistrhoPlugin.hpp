@@ -405,7 +405,7 @@ struct ParameterEnumerationValues {
       Array of @ParameterEnumerationValue items.@n
       This pointer must be null or have been allocated on the heap with `new ParameterEnumerationValue[count]`.
     */
-    const ParameterEnumerationValue* values;
+    ParameterEnumerationValue* values;
 
    /**
       Default constructor, for zero enumeration values.
