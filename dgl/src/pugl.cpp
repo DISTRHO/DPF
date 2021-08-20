@@ -113,7 +113,6 @@ START_NAMESPACE_DGL
 # endif
 # ifndef __MAC_10_9
 #  define NSModalResponseOK NSOKButton
-typedef NSUInteger NSEventSubtype;
 # endif
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wdeprecated-declarations"
