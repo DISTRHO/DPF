@@ -643,7 +643,7 @@ bool sofdFileDialogShow(PuglView* const view,
     x_fib_cfg_buttons(2, options.buttons.showPlaces-1);
     */
 
-    return (x_fib_show(sofd_display, view->impl->win, 0, 0, scaleFactor) == 0);
+    return (x_fib_show(sofd_display, view->impl->win, 0, 0, scaleFactor + 0.5) == 0);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
