@@ -1004,6 +1004,10 @@ public:
                     return 0xbeef0000;
                 }
 #endif
+#ifndef DISTRHO_OS_MAC
+                if (std::strcmp(canDo, "supportsViewDpiScaling") == 0)
+                    return 1;
+#endif
                 if (std::strcmp(canDo, "receiveVstEvents") == 0 ||
                     std::strcmp(canDo, "receiveVstMidiEvent") == 0)
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
