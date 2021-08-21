@@ -226,7 +226,10 @@ double puglGetDesktopScaleFactor(const PuglView* const view)
 
             DWORD scaleFactor = 0;
             if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
+            {
+                FreeLibrary(Shcore);
                 return static_cast<double>(scaleFactor) / 100.0;
+            }
         }
 
         FreeLibrary(Shcore);
