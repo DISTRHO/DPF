@@ -13,6 +13,10 @@ BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -DDONT_SET_USING_DGL_NAMESPACE -Wno-un
 BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
+ifeq ($(USE_OPENGL3),true)
+BUILD_CXX_FLAGS += -DDGL_USE_OPENGL3
+endif
+
 # TODO fix these after pugl-upstream is done
 BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers
 ifneq ($(MACOS),true)
