@@ -70,10 +70,6 @@ public:
         const char* startDir;
         /** File browser dialog window title, uses "FileBrowser" if null */
         const char* title;
-        /** File browser dialog window width */
-        uint width;
-        /** File browser dialog window height */
-        uint height;
         // TODO file filter
 
        /**
@@ -98,8 +94,6 @@ public:
         FileBrowserOptions()
             : startDir(nullptr),
               title(nullptr),
-              width(0),
-              height(0),
               buttons() {}
     };
 #endif // DGL_FILE_BROWSER_DISABLED
