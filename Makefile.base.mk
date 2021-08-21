@@ -9,6 +9,13 @@ CC  ?= gcc
 CXX ?= g++
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Protect against multiple inclusion
+
+ifneq ($(DPF_MAKEFILE_BASE_INCLUDED),true)
+
+DPF_MAKEFILE_BASE_INCLUDED = true
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Auto-detect OS if not defined
 
 TARGET_MACHINE := $(shell $(CC) -dumpmachine)
@@ -485,5 +492,10 @@ features:
 	$(call print_available,HAVE_XCURSOR)
 	$(call print_available,HAVE_XEXT)
 	$(call print_available,HAVE_XRANDR)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Protect against multiple inclusion
+
+endif # DPF_MAKEFILE_BASE_INCLUDED
 
 # ---------------------------------------------------------------------------------------------------------------------
