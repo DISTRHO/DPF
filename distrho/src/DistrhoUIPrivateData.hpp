@@ -61,13 +61,15 @@ struct PluginApplication
 
     void addIdleCallback(IdleCallback* const cb)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(idleCallback == nullptr,);
+
         idleCallback = cb;
     }
 
     bool isQuiting() const noexcept
     {
-        // TODO
-        return false;
+        return ui->isQuiting();
     }
 
     bool isStandalone() const noexcept
@@ -77,23 +79,16 @@ struct PluginApplication
 
     void exec()
     {
-        // TODO
         while (ui->isRunning())
         {
-            d_msleep(10);
+            d_msleep(30);
             idleCallback->idleCallback();
         }
     }
 
-    void idle()
-    {
-        // TODO
-    }
-
-    void quit()
-    {
-        // TODO
-    }
+    // these are not needed
+    void idle() {}
+    void quit() {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
 };
@@ -128,65 +123,29 @@ class PluginWindow
     UI* const ui;
 
 public:
-    explicit PluginWindow(UI* const uiPtr,
-                          PluginApplication& app,
-                          const uintptr_t parentWindowHandle,
-                          uint, uint, // width and height
-                          const double scaleFactor)
+    explicit PluginWindow(UI* const uiPtr, PluginApplication& app)
         : ui(uiPtr)
     {
         app.ui = ui;
-        ui->pData.parentWindowHandle = parentWindowHandle;
-        ui->pData.scaleFactor = scaleFactor;
     }
 
-    uint getWidth() const noexcept
-    {
-        return ui->pData.width;
-    }
+    // fetch cached data
+    uint getWidth() const noexcept { return ui->pData.width; }
+    uint getHeight() const noexcept { return ui->pData.height; }
+    double getScaleFactor() const noexcept { return ui->pData.scaleFactor; }
+    uintptr_t getNativeWindowHandle() const noexcept { return ui->pData.parentWindowHandle; }
 
-    uint getHeight() const noexcept
-    {
-        return ui->getHeight();
-    }
+    // direct mappings
+    bool isVisible() const noexcept { return ui->isVisible(); }
+    void focus() { ui->focus(); }
+    void show() { ui->show(); }
+    void setTitle(const char* const title) { ui->setTitle(title); }
+    void setVisible(const bool visible) { ui->setVisible(visible); }
 
-    double getScaleFactor() const noexcept
-    {
-        return ui->getScaleFactor();
-    }
-
-    bool isVisible() const noexcept
-    {
-        return ui->isRunning();
-    }
-
-    uintptr_t getNativeWindowHandle() const noexcept
-    {
-        return ui->getNativeWindowHandle();
-    }
-
+    // custom
     void close()
     {
-    }
-
-    void focus()
-    {
-        ui->focus();
-    }
-
-    void show()
-    {
-        ui->show();
-    }
-
-    void setTitle(const char* const title)
-    {
-        ui->setTitle(title);
-    }
-
-    void setVisible(const bool visible)
-    {
-        ui->setVisible(visible);
+        ui->hide();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)

@@ -92,7 +92,17 @@ public:
 
     virtual bool isRunning() const
     {
-        return false;
+        return isVisible();
+    }
+
+    virtual bool isQuiting() const
+    {
+        return !isVisible();
+    }
+
+    uintptr_t getTransientWindowId() const noexcept
+    {
+        return pData.transientWinId;
     }
 
     virtual void setTransientWindowId(uintptr_t winId)
@@ -100,6 +110,7 @@ public:
         if (pData.transientWinId == winId)
             return;
         pData.transientWinId = winId;
+        transientWindowChanged(winId);
     }
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
@@ -153,6 +164,7 @@ public:
         if (pData.visible == visible)
             return;
         pData.visible = visible;
+        visibilityChanged(visible);
     }
 
    /**
@@ -238,6 +250,7 @@ public:
         if (pData.title == title)
             return;
         pData.title = title;
+        titleChanged(title);
     }
 
    /**
@@ -270,12 +283,25 @@ protected:
         (void)height;
     }
 
-    /*
-    uintptr_t getTransientWinId() const noexcept
+    virtual void titleChanged(const char* title)
     {
-        return transientWinId;
+        // unused, meant for custom implementations
+        return; (void)title;
     }
 
+    virtual void visibilityChanged(bool visible)
+    {
+        // unused, meant for custom implementations
+        return; (void)visible;
+    }
+
+    virtual void transientWindowChanged(uintptr_t winId)
+    {
+        // unused, meant for custom implementations
+        return; (void)winId;
+    }
+
+    /*
     bool isRunning() noexcept
     {
         if (pid <= 0)

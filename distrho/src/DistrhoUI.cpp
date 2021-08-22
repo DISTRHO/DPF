@@ -44,8 +44,8 @@ PluginWindow&
 UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
 {
     UI::PrivateData* const pData = s_nextPrivateData;
-    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    pData->window = new PluginWindow(ui, pData->app);
     ExternalWindow::PrivateData ewData;
     ewData.parentWindowHandle = pData->winId;
     ewData.width = width;
@@ -54,6 +54,7 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
     ewData.title = DISTRHO_PLUGIN_NAME;
     return ewData;
 #else
+    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
     return pData->window.getObject();
 #endif
 }
