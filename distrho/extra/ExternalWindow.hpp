@@ -43,26 +43,7 @@ START_NAMESPACE_DISTRHO
  */
 class ExternalWindow
 {
-    struct PrivateData {
-        uintptr_t parentWindowHandle;
-        uintptr_t transientWinId;
-        uint width;
-        uint height;
-        double scaleFactor;
-        String title;
-        bool visible;
-        pid_t pid;
-
-        PrivateData()
-            : parentWindowHandle(0),
-              transientWinId(0),
-              width(1),
-              height(1),
-              scaleFactor(1.0),
-              title(),
-              visible(false),
-              pid(0) {}
-    } pData;
+    struct PrivateData;
 
 public:
    /**
@@ -82,9 +63,7 @@ public:
     */
     virtual ~ExternalWindow()
     {
-        /*
-        terminateAndWaitForProcess();
-        */
+        DISTRHO_SAFE_ASSERT(!pData.visible);
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -92,11 +71,17 @@ public:
 
     virtual bool isRunning() const
     {
+        if (ext.inUse)
+            return ext.isRunning();
+
         return isVisible();
     }
 
     virtual bool isQuiting() const
     {
+        if (ext.inUse)
+            return ext.isQuiting;
+
         return !isVisible();
     }
 
@@ -111,6 +96,14 @@ public:
             return;
         pData.transientWinId = winId;
         transientWindowChanged(winId);
+    }
+
+    void close()
+    {
+        hide();
+
+        if (ext.inUse)
+            terminateAndWaitForExternalProcess();
     }
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
@@ -280,6 +273,25 @@ public:
     virtual void focus() {}
 
 protected:
+   /* --------------------------------------------------------------------------------------------------------
+    * ExternalWindow special calls for running externals tools */
+
+    bool startExternalProcess(const char* args[])
+    {
+        ext.inUse = true;
+
+        return ext.start(args);
+    }
+
+    void terminateAndWaitForExternalProcess()
+    {
+        ext.isQuiting = true;
+        ext.terminateAndWait();
+    }
+
+   /* --------------------------------------------------------------------------------------------------------
+    * ExternalWindow specific callbacks */
+
    /**
       A function called when the window is resized.
     */
@@ -309,101 +321,125 @@ protected:
         return; (void)winId;
     }
 
-    /*
-    bool isRunning() noexcept
-    {
-        if (pid <= 0)
-            return false;
-
-        const pid_t p = ::waitpid(pid, nullptr, WNOHANG);
-
-        if (p == pid || (p == -1 && errno == ECHILD))
-        {
-            printf("NOTICE: Child process exited while idle\n");
-            pid = 0;
-            return false;
-        }
-
-        return true;
-    }
-
-    */
-
-protected:
-    /*
-    bool startExternalProcess(const char* args[])
-    {
-        terminateAndWaitForProcess();
-
-        pid = vfork();
-
-        switch (pid)
-        {
-        case 0:
-            execvp(args[0], (char**)args);
-            _exit(1);
-            return false;
-
-        case -1:
-            printf("Could not start external ui\n");
-            return false;
-
-        default:
-            return true;
-        }
-    }
-
-    void terminateAndWaitForProcess()
-    {
-        if (pid <= 0)
-            return;
-
-        printf("Waiting for previous process to stop,,,\n");
-
-        bool sendTerm = true;
-
-        for (pid_t p;;)
-        {
-            p = ::waitpid(pid, nullptr, WNOHANG);
-
-            switch (p)
-            {
-            case 0:
-                if (sendTerm)
-                {
-                    sendTerm = false;
-                    ::kill(pid, SIGTERM);
-                }
-                break;
-
-            case -1:
-                if (errno == ECHILD)
-                {
-                    printf("Done! (no such process)\n");
-                    pid = 0;
-                    return;
-                }
-                break;
-
-            default:
-                if (p == pid)
-                {
-                    printf("Done! (clean wait)\n");
-                    pid = 0;
-                    return;
-                }
-                break;
-            }
-
-            // 5 msec
-            usleep(5*1000);
-        }
-    }
-    */
-
 private:
     friend class PluginWindow;
     friend class UI;
+
+    struct ExternalProcess {
+        bool inUse;
+        bool isQuiting;
+        mutable pid_t pid;
+
+        ExternalProcess()
+            : inUse(false),
+              isQuiting(false),
+              pid(0) {}
+
+        bool isRunning() const noexcept
+        {
+            if (pid <= 0)
+                return false;
+
+            const pid_t p = ::waitpid(pid, nullptr, WNOHANG);
+
+            if (p == pid || (p == -1 && errno == ECHILD))
+            {
+                d_stdout("NOTICE: Child process exited while idle");
+                pid = 0;
+                return false;
+            }
+
+            return true;
+        }
+
+        bool start(const char* args[])
+        {
+            terminateAndWait();
+
+            pid = vfork();
+
+            switch (pid)
+            {
+            case 0:
+                execvp(args[0], (char**)args);
+                _exit(1);
+                return false;
+
+            case -1:
+                d_stderr("Could not start external ui");
+                return false;
+
+            default:
+                return true;
+            }
+        }
+
+        void terminateAndWait()
+        {
+            if (pid <= 0)
+                return;
+
+            d_stdout("Waiting for external process to stop,,,");
+
+            bool sendTerm = true;
+
+            for (pid_t p;;)
+            {
+                p = ::waitpid(pid, nullptr, WNOHANG);
+
+                switch (p)
+                {
+                case 0:
+                    if (sendTerm)
+                    {
+                        sendTerm = false;
+                        ::kill(pid, SIGTERM);
+                    }
+                    break;
+
+                case -1:
+                    if (errno == ECHILD)
+                    {
+                        d_stdout("Done! (no such process)");
+                        pid = 0;
+                        return;
+                    }
+                    break;
+
+                default:
+                    if (p == pid)
+                    {
+                        d_stdout("Done! (clean wait)");
+                        pid = 0;
+                        return;
+                    }
+                    break;
+                }
+
+                // 5 msec
+                usleep(5*1000);
+            }
+        }
+    } ext;
+
+    struct PrivateData {
+        uintptr_t parentWindowHandle;
+        uintptr_t transientWinId;
+        uint width;
+        uint height;
+        double scaleFactor;
+        String title;
+        bool visible;
+
+        PrivateData()
+            : parentWindowHandle(0),
+              transientWinId(0),
+              width(1),
+              height(1),
+              scaleFactor(1.0),
+              title(),
+              visible(false) {}
+    } pData;
 
     DISTRHO_DECLARE_NON_COPYABLE(ExternalWindow)
 };

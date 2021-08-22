@@ -20,13 +20,21 @@ fi
 # Setup cancellation point for this script
 quitfn() {
     qdbus ${dbusRef} close 2>/dev/null
+    exit 0
 }
 
 trap quitfn SIGINT
 trap quitfn SIGTERM
 
 # Read Fifo for new values or a quit message
-while read line <"${FIFO}"; do
+while read -t 5 line < "${FIFO}"; do
+  if [ $? != 0 ]; then
+    echo "Timed out, closing"
+    break
+  fi
+  if echo "${line}" | grep -q "idle"; then
+    continue
+  fi
   if echo "${line}" | grep -q "quit"; then
     break
   fi

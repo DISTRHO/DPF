@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -13,6 +13,9 @@
  * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
+
+// needed for IDE
+#include "DistrhoPluginInfo.h"
 
 #include "DistrhoUI.hpp"
 
@@ -46,13 +49,14 @@ static bool fileExists(const char* const filename)
 static ssize_t
 writeRetry(int fd, const void* src, size_t size)
 {
-	ssize_t error;
+    ssize_t error;
+    int attempts = 0;
 
-	do {
-		error = write(fd, src, size);
-	} while (error == -1 && (errno == EINTR || errno == EPIPE));
+    do {
+        error = write(fd, src, size);
+    } while (error == -1 && (errno == EINTR || errno == EPIPE) && ++attempts < 5);
 
-	return error;
+    return error;
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -72,7 +76,7 @@ public:
             fExternalScript.truncate(fExternalScript.rfind('/'));
         }
 
-        fExternalScript += "/d_extui.sh";
+        fExternalScript += "/ExternalLauncher.sh";
         d_stdout("External script = %s", fExternalScript.buffer());
     }
 
@@ -106,6 +110,17 @@ protected:
     * External Window overrides */
 
    /**
+      Keep-alive.
+    */
+    void uiIdle() override
+    {
+        if (fFifo == -1)
+            return;
+
+        writeRetry(fFifo, "idle\n", 5);
+    }
+
+   /**
       Manage external process and IPC when UI is requested to be visible.
     */
     void setVisible(const bool yesNo) override
@@ -119,7 +134,7 @@ protected:
 
             char winIdStr[24];
             std::memset(winIdStr, 0, sizeof(winIdStr));
-            std::snprintf(winIdStr, 23, "%lu", getTransientWinId());
+            std::snprintf(winIdStr, 23, "%lu", getTransientWindowId());
 
             const char* args[] = {
                 fExternalScript.buffer(),
@@ -145,12 +160,12 @@ protected:
                     DISTRHO_SAFE_ASSERT(writeRetry(fFifo, "quit\n", 5) == 5);
                     fsync(fFifo);
                 }
-                close(fFifo);
+                ::close(fFifo);
                 fFifo = -1;
             }
 
             unlink(kFifoFilename);
-            terminateAndWaitForProcess();
+            terminateAndWaitForExternalProcess();
         }
 
         UI::setVisible(yesNo);

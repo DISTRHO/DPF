@@ -84,6 +84,9 @@ struct PluginApplication
             d_msleep(30);
             idleCallback->idleCallback();
         }
+
+        if (! ui->isQuiting())
+            ui->close();
     }
 
     // these are not needed
@@ -136,17 +139,12 @@ public:
     uintptr_t getNativeWindowHandle() const noexcept { return ui->pData.parentWindowHandle; }
 
     // direct mappings
-    bool isVisible() const noexcept { return ui->isVisible(); }
+    void close() { ui->close(); }
     void focus() { ui->focus(); }
     void show() { ui->show(); }
+    bool isVisible() const noexcept { return ui->isVisible(); }
     void setTitle(const char* const title) { ui->setTitle(title); }
     void setVisible(const bool visible) { ui->setVisible(visible); }
-
-    // custom
-    void close()
-    {
-        ui->hide();
-    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };
