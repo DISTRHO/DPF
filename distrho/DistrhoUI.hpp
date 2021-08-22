@@ -250,7 +250,6 @@ protected:
     */
     virtual void sampleRateChanged(double newSampleRate);
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /* --------------------------------------------------------------------------------------------------------
     * UI Callbacks (optional) */
 
@@ -262,6 +261,16 @@ protected:
     */
     virtual void uiIdle() {}
 
+   /**
+      Window scale factor function, called when the scale factor changes.
+      This function is for plugin UIs to be able to override Window::onScaleFactorChanged(double).
+
+      The default implementation does nothing.
+      WARNING function needs a proper name
+    */
+    virtual void uiScaleFactorChanged(double scaleFactor);
+
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       Windows focus function, called when the window gains or loses the keyboard focus.
       This function is for plugin UIs to be able to override Window::onFocus(bool, CrossingMode).
@@ -275,21 +284,12 @@ protected:
       This function is for plugin UIs to be able to override Window::onReshape(uint, uint).
 
       The plugin UI size will be set right after this function.
-      The default implementation sets up drawing context where necessary.
+      The default implementation sets up the drawing context where necessary.
 
       You should almost never need to override this function.
       The most common exception is custom OpenGL setup, but only really needed for custom OpenGL drawing code.
     */
     virtual void uiReshape(uint width, uint height);
-
-   /**
-      Window scale factor function, called when the scale factor changes.
-      This function is for plugin UIs to be able to override Window::onScaleFactorChanged(double).
-
-      The default implementation does nothing.
-      WARNING function needs a proper name
-    */
-    virtual void uiScaleFactorChanged(double scaleFactor);
 
 # ifndef DGL_FILE_BROWSER_DISABLED
    /**
@@ -313,7 +313,7 @@ protected:
       @see Widget::onResize(const ResizeEvent&)
     */
     void onResize(const ResizeEvent& ev) override;
-#endif
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
     // -------------------------------------------------------------------------------------------------------
 

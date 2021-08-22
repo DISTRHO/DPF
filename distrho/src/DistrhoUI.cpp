@@ -36,11 +36,26 @@ const char* g_nextBundlePath  = nullptr;
 
 UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
 
-PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+ExternalWindow::PrivateData
+#else
+PluginWindow&
+#endif
+UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
 {
     UI::PrivateData* const pData = s_nextPrivateData;
     pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    ExternalWindow::PrivateData ewData;
+    ewData.parentWindowHandle = pData->winId;
+    ewData.width = width;
+    ewData.height = height;
+    ewData.scaleFactor = pData->scaleFactor;
+    ewData.title = DISTRHO_PLUGIN_NAME;
+    return ewData;
+#else
     return pData->window.getObject();
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -58,6 +73,9 @@ UI::UI(const uint width, const uint height, const bool automaticallyScale)
         if (automaticallyScale)
             setGeometryConstraints(width, height, true, true);
     }
+#else
+    // unused
+    return; (void)automaticallyScale;
 #endif
 }
 
@@ -162,10 +180,14 @@ void UI::sampleRateChanged(double)
 {
 }
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * UI Callbacks (optional) */
 
+void UI::uiScaleFactorChanged(double)
+{
+}
+
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }
@@ -174,10 +196,6 @@ void UI::uiReshape(uint, uint)
 {
     // NOTE this must be the same as Window::onReshape
     pData->fallbackOnResize();
-}
-
-void UI::uiScaleFactorChanged(double)
-{
 }
 
 # ifndef DGL_FILE_BROWSER_DISABLED

@@ -122,17 +122,17 @@ public:
       ```
 
       This struct is necessary because we cannot automatically make the window leave the OpenGL context in custom code.
-      We must always cleanly enter and leave the OpenGL context.
-      In order to avoid messing up the global host context, this class is used around widget creation.
+      And we must always cleanly enter and leave the OpenGL context.
+      So in order to avoid messing up the global host context, this class is used around widget creation.
     */
-    class ScopedGraphicsContext
+    struct ScopedGraphicsContext
     {
-        Window& window;
-    public:
         explicit ScopedGraphicsContext(Window& window);
         ~ScopedGraphicsContext();
         DISTRHO_DECLARE_NON_COPYABLE(ScopedGraphicsContext)
         DISTRHO_PREVENT_HEAP_ALLOCATION
+    private:
+        Window& window;
     };
 
    /**
@@ -184,7 +184,7 @@ public:
     bool isVisible() const noexcept;
 
    /**
-      Set windows visible (or not) according to @a visible.
+      Set window visible (or not) according to @a visible.
       Only valid for standalones, embed windows are always visible.
       @see isVisible(), hide(), show()
     */

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -33,45 +33,247 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // ExternalWindow class
 
+/**
+   External Window class.
+
+   This is a standalone TopLevelWidget-compatible class, but without any real event handling.
+   Being compatible with TopLevelWidget, it allows to be used as DPF UI target.
+
+   It can be used to embed non-DPF things or to run a tool in a new process as the "UI".
+ */
 class ExternalWindow
 {
-public:
-    ExternalWindow(const uint w = 1, const uint h = 1, const char* const t = "")
-        : width(w),
-          height(h),
-          title(t),
-          transientWinId(0),
-          visible(false),
-          pid(0) {}
+    struct PrivateData {
+        uintptr_t parentWindowHandle;
+        uintptr_t transientWinId;
+        uint width;
+        uint height;
+        double scaleFactor;
+        String title;
+        bool visible;
+        pid_t pid;
 
+        PrivateData()
+            : parentWindowHandle(0),
+              transientWinId(0),
+              width(1),
+              height(1),
+              scaleFactor(1.0),
+              title(),
+              visible(false),
+              pid(0) {}
+    } pData;
+
+public:
+   /**
+      Constructor.
+    */
+    explicit ExternalWindow()
+       : pData() {}
+
+   /**
+      Constructor.
+    */
+    explicit ExternalWindow(const PrivateData& data)
+       : pData(data) {}
+
+   /**
+      Destructor.
+    */
     virtual ~ExternalWindow()
     {
+        /*
         terminateAndWaitForProcess();
+        */
     }
 
+   /* --------------------------------------------------------------------------------------------------------
+    * ExternalWindow specific calls */
+
+    virtual bool isRunning() const
+    {
+        return false;
+    }
+
+    virtual void setTransientWindowId(uintptr_t winId)
+    {
+        if (pData.transientWinId == winId)
+            return;
+        pData.transientWinId = winId;
+    }
+
+#if DISTRHO_PLUGIN_HAS_EMBED_UI
+   /**
+      Get the "native" window handle.
+      This can be reimplemented in order to pass the child window to hosts that can use such informaton.
+
+      Returned value type depends on the platform:
+       - HaikuOS: This is a pointer to a `BView`.
+       - MacOS: This is a pointer to an `NSView*`.
+       - Windows: This is a `HWND`.
+       - Everything else: This is an [X11] `Window`.
+    */
+    virtual uintptr_t getNativeWindowHandle() const noexcept
+    {
+        return 0;
+    }
+
+   /**
+      Get the "native" window handle that this window should embed itself into.
+      Returned value type depends on the platform:
+       - HaikuOS: This is a pointer to a `BView`.
+       - MacOS: This is a pointer to an `NSView*`.
+       - Windows: This is a `HWND`.
+       - Everything else: This is an [X11] `Window`.
+    */
+    uintptr_t getParentWindowHandle() const noexcept
+    {
+        return pData.parentWindowHandle;
+    }
+#endif
+
+   /* --------------------------------------------------------------------------------------------------------
+    * TopLevelWidget-like calls */
+
+   /**
+      Check if this window is visible.
+      @see setVisible(bool)
+    */
+    bool isVisible() const noexcept
+    {
+        return pData.visible;
+    }
+
+   /**
+      Set window visible (or not) according to @a visible.
+      @see isVisible(), hide(), show()
+    */
+    virtual void setVisible(bool visible)
+    {
+        if (pData.visible == visible)
+            return;
+        pData.visible = visible;
+    }
+
+   /**
+      Show window.
+      This is the same as calling setVisible(true).
+      @see isVisible(), setVisible(bool)
+    */
+    void show()
+    {
+        setVisible(true);
+    }
+
+   /**
+      Hide window.
+      This is the same as calling setVisible(false).
+      @see isVisible(), setVisible(bool)
+    */
+    void hide()
+    {
+        setVisible(false);
+    }
+
+   /**
+      Get width.
+    */
     uint getWidth() const noexcept
     {
-        return width;
+        return pData.width;
     }
 
+   /**
+      Get height.
+    */
     uint getHeight() const noexcept
     {
-        return height;
+        return pData.height;
     }
 
+   /**
+      Set width.
+    */
+    void setWidth(uint width)
+    {
+        setSize(width, getHeight());
+    }
+
+   /**
+      Set height.
+    */
+    void setHeight(uint height)
+    {
+        setSize(getWidth(), height);
+    }
+
+   /**
+      Set size using @a width and @a height values.
+    */
+    virtual void setSize(uint width, uint height)
+    {
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
+
+        if (pData.width == width || pData.height == height)
+            return;
+
+        pData.width = width;
+        pData.height = height;
+        onResize(width, height);
+    }
+
+   /**
+      Get the title of the window previously set with setTitle().
+    */
     const char* getTitle() const noexcept
     {
-        return title;
+        return pData.title;
     }
 
+   /**
+      Set the title of the window, typically displayed in the title bar or in window switchers.
+    */
+    virtual void setTitle(const char* title)
+    {
+        if (pData.title == title)
+            return;
+        pData.title = title;
+    }
+
+   /**
+      Get the scale factor requested for this window.
+      This is purely informational, and up to developers to choose what to do with it.
+
+      If you do not want to deal with this yourself,
+      consider using setGeometryConstraints() where you can specify to automatically scale the window contents.
+      @see setGeometryConstraints
+    */
+    double getScaleFactor() const noexcept
+    {
+        return pData.scaleFactor;
+    }
+
+   /**
+      Grab the keyboard input focus.
+    */
+    virtual void focus() {}
+
+protected:
+   /**
+      A function called when the window is resized.
+    */
+    virtual void onResize(uint width, uint height)
+    {
+        // unused, meant for custom implementations
+        return;
+        (void)width;
+        (void)height;
+    }
+
+    /*
     uintptr_t getTransientWinId() const noexcept
     {
         return transientWinId;
-    }
-
-    bool isVisible() const noexcept
-    {
-        return visible;
     }
 
     bool isRunning() noexcept
@@ -91,28 +293,10 @@ public:
         return true;
     }
 
-    virtual void setSize(uint w, uint h)
-    {
-        width = w;
-        height = h;
-    }
-
-    virtual void setTitle(const char* const t)
-    {
-        title = t;
-    }
-
-    virtual void setTransientWinId(const uintptr_t winId)
-    {
-        transientWinId = winId;
-    }
-
-    virtual void setVisible(const bool yesNo)
-    {
-        visible = yesNo;
-    }
+    */
 
 protected:
+    /*
     bool startExternalProcess(const char* args[])
     {
         terminateAndWaitForProcess();
@@ -181,16 +365,11 @@ protected:
             usleep(5*1000);
         }
     }
+    */
 
 private:
-    uint width;
-    uint height;
-    String title;
-    uintptr_t transientWinId;
-    bool visible;
-    pid_t pid;
-
-    friend class UIExporter;
+    friend class PluginWindow;
+    friend class UI;
 
     DISTRHO_DECLARE_NON_COPYABLE(ExternalWindow)
 };
