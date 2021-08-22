@@ -22,7 +22,7 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL)
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! defined (DISTRHO_PLUGIN_HAS_EXTERNAL_UI)
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif

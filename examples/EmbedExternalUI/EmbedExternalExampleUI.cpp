@@ -59,13 +59,7 @@ public:
         const ::Window root   = RootWindow(fDisplay, screen);
         const ::Window parent = isEmbed() ? (::Window)getParentWindowHandle() : root;
 
-        XSetWindowAttributes attr = {};
-        attr.event_mask = KeyPressMask|KeyReleaseMask;
-
-        fWindow = XCreateWindow(fDisplay, parent,
-                                0, 0, getWidth(), getHeight(),
-                                0, DefaultDepth(fDisplay, screen), InputOutput, DefaultVisual(fDisplay, screen),
-                                CWColormap | CWEventMask, &attr);
+        fWindow = XCreateSimpleWindow(fDisplay, parent, 0, 0, getWidth(), getHeight(), 0, 0, 0);
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
 
         XSizeHints sizeHints = {};
@@ -73,7 +67,6 @@ public:
         sizeHints.min_width  = getWidth();
         sizeHints.min_height = getHeight();
         XSetNormalHints(fDisplay, fWindow, &sizeHints);
-
         XStoreName(fDisplay, fWindow, getTitle());
 
         if (parent == root)
