@@ -85,25 +85,41 @@ public:
         return !isVisible();
     }
 
-    uintptr_t getTransientWindowId() const noexcept
-    {
-        return pData.transientWinId;
-    }
-
-    virtual void setTransientWindowId(uintptr_t winId)
-    {
-        if (pData.transientWinId == winId)
-            return;
-        pData.transientWinId = winId;
-        transientWindowChanged(winId);
-    }
-
-    void close()
+   /**
+      Hide the UI and gracefully terminate.
+    */
+    virtual void close()
     {
         hide();
 
         if (ext.inUse)
             terminateAndWaitForExternalProcess();
+    }
+
+   /**
+      Grab the keyboard input focus.
+    */
+    virtual void focus() {}
+
+   /**
+      Get the transient window that we should attach ourselves to.
+      TODO what id? also NSView* on macOS, or NSWindow?
+    */
+    uintptr_t getTransientWindowId() const noexcept
+    {
+        return pData.transientWinId;
+    }
+
+   /**
+      Called by the host to set the transient window that we should attach ourselves to.
+      TODO what id? also NSView* on macOS, or NSWindow?
+    */
+    void setTransientWindowId(uintptr_t winId)
+    {
+        if (pData.transientWinId == winId)
+            return;
+        pData.transientWinId = winId;
+        transientWindowChanged(winId);
     }
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
@@ -160,7 +176,7 @@ public:
       Set window visible (or not) according to @a visible.
       @see isVisible(), hide(), show()
     */
-    virtual void setVisible(bool visible)
+    void setVisible(bool visible)
     {
         if (pData.visible == visible)
             return;
@@ -223,7 +239,7 @@ public:
    /**
       Set size using @a width and @a height values.
     */
-    virtual void setSize(uint width, uint height)
+    void setSize(uint width, uint height)
     {
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
 
@@ -246,7 +262,7 @@ public:
    /**
       Set the title of the window, typically displayed in the title bar or in window switchers.
     */
-    virtual void setTitle(const char* title)
+    void setTitle(const char* title)
     {
         if (pData.title == title)
             return;
@@ -257,20 +273,11 @@ public:
    /**
       Get the scale factor requested for this window.
       This is purely informational, and up to developers to choose what to do with it.
-
-      If you do not want to deal with this yourself,
-      consider using setGeometryConstraints() where you can specify to automatically scale the window contents.
-      @see setGeometryConstraints
     */
     double getScaleFactor() const noexcept
     {
         return pData.scaleFactor;
     }
-
-   /**
-      Grab the keyboard input focus.
-    */
-    virtual void focus() {}
 
 protected:
    /* --------------------------------------------------------------------------------------------------------
