@@ -57,7 +57,7 @@ public:
 
         const int screen = DefaultScreen(fDisplay);
         const ::Window root   = RootWindow(fDisplay, screen);
-        const ::Window parent = getParentWindowHandle() != 0 ? (::Window)getParentWindowHandle() : root;
+        const ::Window parent = isEmbed() ? (::Window)getParentWindowHandle() : root;
 
         XSetWindowAttributes attr = {};
         attr.event_mask = KeyPressMask|KeyReleaseMask;

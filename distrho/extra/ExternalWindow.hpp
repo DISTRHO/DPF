@@ -115,6 +115,14 @@ public:
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
+      Whether this Window is embed into another (usually not DGL-controlled) Window.
+    */
+    bool isEmbed() const noexcept
+    {
+        return pData.parentWindowHandle != 0;
+    }
+
+   /**
       Get the "native" window handle.
       This can be reimplemented in order to pass the child window to hosts that can use such informaton.
 
