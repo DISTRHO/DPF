@@ -447,6 +447,15 @@ private:
     friend class PluginWindow;
     friend class TopLevelWidget;
 
+   /** @internal */
+    explicit Window(Application& app,
+                    uintptr_t parentWindowHandle,
+                    uint width,
+                    uint height,
+                    double scaleFactor,
+                    bool resizable,
+                    bool doPostInit);
+
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);
 };
 

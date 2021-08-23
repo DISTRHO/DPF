@@ -152,6 +152,8 @@ public:
 class PluginWindow : public Window
 {
     DISTRHO_NAMESPACE::UI* const ui;
+    bool initializing;
+    bool receivedReshapeDuringInit;
 
 public:
     explicit PluginWindow(DISTRHO_NAMESPACE::UI* const uiPtr,
@@ -160,14 +162,21 @@ public:
                           const uint width,
                           const uint height,
                           const double scaleFactor)
-        : Window(app, parentWindowHandle, width, height, scaleFactor, DISTRHO_UI_USER_RESIZABLE),
-          ui(uiPtr)
+        : Window(app, parentWindowHandle, width, height, scaleFactor, DISTRHO_UI_USER_RESIZABLE, false),
+          ui(uiPtr),
+          initializing(true),
+          receivedReshapeDuringInit(false)
     {
+        pData->initPost();
         puglBackendEnter(pData->view);
     }
 
     void leaveContext()
     {
+        if (receivedReshapeDuringInit)
+            ui->uiReshape(getWidth(), getHeight());
+
+        initializing = false;
         puglBackendLeave(pData->view);
     }
 
@@ -176,6 +185,9 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
+        if (initializing)
+            return;
+
         ui->uiFocus(focus, mode);
     }
 
@@ -183,12 +195,21 @@ protected:
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
+        if (initializing)
+        {
+            receivedReshapeDuringInit = true;
+            return;
+        }
+
         ui->uiReshape(width, height);
     }
 
     void onScaleFactorChanged(const double scaleFactor) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        if (initializing)
+            return;
 
         ui->uiScaleFactorChanged(scaleFactor);
     }
@@ -379,6 +400,9 @@ START_NAMESPACE_DGL
 inline void PluginWindow::onFileSelected(const char* const filename)
 {
     DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+    if (initializing)
+        return;
 
 # if DISTRHO_PLUGIN_WANT_STATEFILES
     if (char* const key = ui->uiData->uiStateFileKeyRequest)

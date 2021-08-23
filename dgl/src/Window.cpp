@@ -69,6 +69,19 @@ Window::Window(Application& app,
     pData->initPost();
 }
 
+Window::Window(Application& app,
+               const uintptr_t parentWindowHandle,
+               const uint width,
+               const uint height,
+               const double scaleFactor,
+               const bool resizable,
+               const bool doPostInit)
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable))
+{
+    if (doPostInit)
+        pData->initPost();
+}
+
 Window::~Window()
 {
     delete pData;
