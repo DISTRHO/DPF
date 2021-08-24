@@ -400,13 +400,11 @@ protected:
 
     void setSize(uint width, uint height)
     {
-        // figure out scale factor ourselves if the host doesn't support it
-        if (! fHasScaleFactor)
-        {
-            const double scaleFactor = fUI.getScaleFactor();
-            width /= scaleFactor;
-            height /= scaleFactor;
-        }
+# if DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+# endif // DISTRHO_OS_MAC
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
@@ -688,13 +686,11 @@ public:
             {
                 fVstRect.right  = fVstUI->getWidth();
                 fVstRect.bottom = fVstUI->getHeight();
-                // figure out scale factor ourselves if the host doesn't support it
-                if (fLastScaleFactor == 0.0f)
-                {
-                    const double scaleFactor = fVstUI->getScaleFactor();
-                    fVstRect.right /= scaleFactor;
-                    fVstRect.bottom /= scaleFactor;
-                }
+# if DISTRHO_OS_MAC
+                const double scaleFactor = fVstUI->getScaleFactor();
+                fVstRect.right /= scaleFactor;
+                fVstRect.bottom /= scaleFactor;
+# endif // DISTRHO_OS_MAC
             }
             else
             {
@@ -703,13 +699,11 @@ public:
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
-                // figure out scale factor ourselves if the host doesn't support it
-                if (fLastScaleFactor == 0.0f)
-                {
-                    const double scaleFactor = tmpUI.getScaleFactor();
-                    fVstRect.right /= scaleFactor;
-                    fVstRect.bottom /= scaleFactor;
-                }
+# if DISTRHO_OS_MAC
+                const double scaleFactor = tmpUI.getScaleFactor();
+                fVstRect.right /= scaleFactor;
+                fVstRect.bottom /= scaleFactor;
+# endif // DISTRHO_OS_MAC
                 tmpUI.quit();
             }
             *(ERect**)ptr = &fVstRect;
