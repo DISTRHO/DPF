@@ -90,7 +90,11 @@ UI::~UI()
 bool UI::isResizable() const noexcept
 {
 #if DISTRHO_UI_USER_RESIZABLE
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    return true;
+# else
     return uiData->window->isResizable();
+# endif
 #else
     return false;
 #endif
@@ -172,7 +176,7 @@ uintptr_t UI::getNextWindowId() noexcept
     return g_nextWindowId;
 }
 # endif
-#endif
+#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks (optional) */

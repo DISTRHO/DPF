@@ -142,6 +142,7 @@ public:
     void close() { ui->close(); }
     void focus() { ui->focus(); }
     void show() { ui->show(); }
+    bool isResizable() const noexcept { return ui->isResizable(); }
     bool isVisible() const noexcept { return ui->isVisible(); }
     void setTitle(const char* const title) { ui->setTitle(title); }
     void setVisible(const bool visible) { ui->setVisible(visible); }
