@@ -189,8 +189,7 @@ public:
               nullptr, // TODO file request
               nullptr,
               plugin->getInstancePointer(),
-              scaleFactor),
-          fHasScaleFactor(d_isNotZero(scaleFactor))
+              scaleFactor)
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         , fKeyboardModifiers(0)
 # endif
@@ -400,13 +399,11 @@ protected:
 
     void setSize(uint width, uint height)
     {
-        // figure out scale factor ourselves if the host doesn't support it
-        if (! fHasScaleFactor)
-        {
-            const double scaleFactor = fUI.getScaleFactor();
-            width /= scaleFactor;
-            height /= scaleFactor;
-        }
+# ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+# endif
         hostCallback(audioMasterSizeWindow, width, height);
     }
 
@@ -438,7 +435,6 @@ private:
 
     // Plugin UI
     UIExporter fUI;
-    const bool fHasScaleFactor;
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     uint16_t fKeyboardModifiers;
 # endif
@@ -688,13 +684,11 @@ public:
             {
                 fVstRect.right  = fVstUI->getWidth();
                 fVstRect.bottom = fVstUI->getHeight();
-                // figure out scale factor ourselves if the host doesn't support it
-                if (fLastScaleFactor == 0.0f)
-                {
-                    const double scaleFactor = fVstUI->getScaleFactor();
-                    fVstRect.right /= scaleFactor;
-                    fVstRect.bottom /= scaleFactor;
-                }
+# ifdef DISTRHO_OS_MAC
+                const double scaleFactor = fVstUI->getScaleFactor();
+                fVstRect.right /= scaleFactor;
+                fVstRect.bottom /= scaleFactor;
+# endif
             }
             else
             {
@@ -703,13 +697,11 @@ public:
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
-                // figure out scale factor ourselves if the host doesn't support it
-                if (fLastScaleFactor == 0.0f)
-                {
-                    const double scaleFactor = tmpUI.getScaleFactor();
-                    fVstRect.right /= scaleFactor;
-                    fVstRect.bottom /= scaleFactor;
-                }
+# ifdef DISTRHO_OS_MAC
+                const double scaleFactor = tmpUI.getScaleFactor();
+                fVstRect.right /= scaleFactor;
+                fVstRect.bottom /= scaleFactor;
+# endif
                 tmpUI.quit();
             }
             *(ERect**)ptr = &fVstRect;
@@ -1032,7 +1024,7 @@ public:
             break;
 
         case effVendorSpecific:
-#if DISTRHO_PLUGIN_HAS_UI
+#if DISTRHO_PLUGIN_HAS_UI && !defined(DISTRHO_OS_MAC)
             if (index == CCONST('P', 'r', 'e', 'S') && value == CCONST('A', 'e', 'C', 's'))
             {
                 if (d_isEqual(fLastScaleFactor, opt))
