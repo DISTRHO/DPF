@@ -79,10 +79,7 @@ public:
 
     virtual bool isQuitting() const
     {
-        if (ext.inUse)
-            return ext.isQuitting;
-
-        return !isVisible();
+        return ext.inUse ? ext.isQuitting : pData.isQuitting;
     }
 
    /**
@@ -90,6 +87,7 @@ public:
     */
     virtual void close()
     {
+        pData.isQuitting = true;
         hide();
 
         if (ext.inUse)
@@ -436,6 +434,7 @@ private:
         uint height;
         double scaleFactor;
         String title;
+        bool isQuitting;
         bool visible;
 
         PrivateData()
@@ -445,6 +444,7 @@ private:
               height(1),
               scaleFactor(1.0),
               title(),
+              isQuitting(false),
               visible(false) {}
     } pData;
 

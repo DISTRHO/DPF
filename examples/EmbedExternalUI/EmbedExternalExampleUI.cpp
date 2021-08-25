@@ -125,6 +125,16 @@ protected:
    /* --------------------------------------------------------------------------------------------------------
     * External Window overrides */
 
+    uintptr_t getNativeWindowHandle() const noexcept override
+    {
+#if defined(DISTRHO_OS_MAC)
+#elif defined(DISTRHO_OS_WINDOWS)
+#else
+        return (uintptr_t)fWindow;
+#endif
+        return 0;
+    }
+
     void titleChanged(const char* const title) override
     {
         d_stdout("visibilityChanged %s", title);
