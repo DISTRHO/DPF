@@ -51,15 +51,15 @@ int main()
         Application app(true);
         IdleCallbackCounter idleCounter;
         app.addIdleCallback(&idleCounter);
-        DISTRHO_ASSERT_EQUAL(app.isQuiting(), false, "app MUST NOT be set as quitting during init");
+        DISTRHO_ASSERT_EQUAL(app.isQuitting(), false, "app MUST NOT be set as quitting during init");
         DISTRHO_ASSERT_EQUAL(idleCounter.counter, 0, "app MUST NOT have triggered idle callbacks yet");
         app.idle();
-        DISTRHO_ASSERT_EQUAL(app.isQuiting(), false, "app MUST NOT be set as quitting after idle()");
+        DISTRHO_ASSERT_EQUAL(app.isQuitting(), false, "app MUST NOT be set as quitting after idle()");
         DISTRHO_ASSERT_EQUAL(idleCounter.counter, 1, "app MUST have triggered 1 idle callback");
         app.idle();
         DISTRHO_ASSERT_EQUAL(idleCounter.counter, 2, "app MUST have triggered 2 idle callbacks");
         app.quit();
-        DISTRHO_ASSERT_EQUAL(app.isQuiting(), true, "app MUST be set as quitting after quit()");
+        DISTRHO_ASSERT_EQUAL(app.isQuitting(), true, "app MUST be set as quitting after quit()");
         DISTRHO_ASSERT_EQUAL(idleCounter.counter, 2, "app MUST have triggered only 2 idle callbacks in its lifetime");
     }
 
