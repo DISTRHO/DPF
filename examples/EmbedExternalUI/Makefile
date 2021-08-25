@@ -24,6 +24,10 @@ FILES_UI  = \
 UI_TYPE = external
 include ../../Makefile.plugins.mk
 
+ifeq ($(MACOS),true)
+BUILD_CXX_FLAGS  += -ObjC++
+endif
+
 # --------------------------------------------------------------
 # Enable all possible plugin types
 

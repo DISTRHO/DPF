@@ -20,6 +20,7 @@
 #include "DistrhoUI.hpp"
 
 #if defined(DISTRHO_OS_MAC)
+# import <Cocoa/Cocoa.h>
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
 # include <sys/types.h>
@@ -36,6 +37,8 @@ START_NAMESPACE_DISTRHO
 class EmbedExternalExampleUI : public UI
 {
 #if defined(DISTRHO_OS_MAC)
+    NSView* fView;
+    id fWindow;
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
     ::Display* fDisplay;
@@ -45,11 +48,44 @@ class EmbedExternalExampleUI : public UI
 public:
     EmbedExternalExampleUI()
         : UI(512, 256),
+#if defined(DISTRHO_OS_MAC)
+          fView(nullptr),
+          fWindow(nil),
+#elif defined(DISTRHO_OS_WINDOWS)
+#else
           fDisplay(nullptr),
           fWindow(0),
+#endif
           fValue(0.0f)
     {
 #if defined(DISTRHO_OS_MAC)
+        NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
+	    [NSApplication sharedApplication];
+
+        if (isEmbed())
+        {
+		    // [fView retain];
+		    // [(NSView*)getParentWindowHandle() fView];
+        }
+        else
+        {
+            fWindow = [[NSWindow new]retain];
+            DISTRHO_SAFE_ASSERT_RETURN(fWindow != nil,);
+
+            [fWindow setIsVisible:NO];
+
+            if (NSString* const nsTitle = [[NSString alloc]
+                                            initWithBytes:getTitle()
+                                                   length:strlen(getTitle())
+                                                 encoding:NSUTF8StringEncoding])
+		        [fWindow setTitle:nsTitle];
+
+            // [fWindow setContentView:impl->view];
+            // [fWindow makeFirstResponder:impl->view];
+            [fWindow makeKeyAndOrderFront:fWindow];
+        }
+
+        [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         fDisplay = XOpenDisplay(nullptr);
@@ -97,6 +133,17 @@ public:
 
     ~EmbedExternalExampleUI()
     {
+#if defined(DISTRHO_OS_MAC)
+        if (fWindow != nil)
+            [fWindow close];
+
+        if (fView != nullptr)
+            [fView release];
+
+        if (fWindow != nil)
+            [fWindow release];
+#elif defined(DISTRHO_OS_WINDOWS)
+#else
         if (fDisplay == nullptr)
             return;
 
@@ -104,6 +151,7 @@ public:
             XDestroyWindow(fDisplay, fWindow);
 
         XCloseDisplay(fDisplay);
+#endif
     }
 
 protected:
@@ -128,6 +176,7 @@ protected:
     uintptr_t getNativeWindowHandle() const noexcept override
     {
 #if defined(DISTRHO_OS_MAC)
+        return (uintptr_t)fView;
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         return (uintptr_t)fWindow;
@@ -139,6 +188,16 @@ protected:
     {
         d_stdout("visibilityChanged %s", title);
 #if defined(DISTRHO_OS_MAC)
+        if (fWindow != nil)
+        {
+            if (NSString* const nsTitle = [[NSString alloc]
+                                           initWithBytes:title
+                                                  length:strlen(title)
+                                                encoding:NSUTF8StringEncoding])
+            {
+                [fWindow setTitle:nsTitle];
+            }
+        }
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
@@ -161,6 +220,10 @@ protected:
     {
         d_stdout("visibilityChanged %d", visible);
 #if defined(DISTRHO_OS_MAC)
+        if (fWindow != nil)
+            [fWindow setIsVisible:(visible ? YES : NO)];
+        else if (fView != nullptr)
+            [fView setHidden:(visible ? NO : YES)];
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
@@ -175,7 +238,37 @@ protected:
     {
         // d_stdout("uiIdle");
 #if defined(DISTRHO_OS_MAC)
+        NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
+        NSDate* const date = [NSDate distantPast];
+
+        for (NSEvent* event;;)
+        {
+            event = [NSApp
+                     nextEventMatchingMask:NSAnyEventMask
+                                 untilDate:date
+                                    inMode:NSDefaultRunLoopMode
+                                   dequeue:YES];
+
+            if (event == nil)
+                break;
+
+            [NSApp sendEvent: event];
+        }
+
+        [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
+        MSG msg;
+        if (! ::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
+            return true;
+
+        if (::GetMessage(&msg, nullptr, 0, 0) >= 0)
+        {
+            if (msg.message == WM_QUIT)
+                return false;
+
+            //TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
 #else
         if (fDisplay == nullptr)
             return;
