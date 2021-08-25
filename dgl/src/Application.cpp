@@ -48,7 +48,7 @@ void Application::quit()
     pData->quit();
 }
 
-bool Application::isQuiting() const noexcept
+bool Application::isQuitting() const noexcept
 {
     return pData->isQuitting || pData->isQuittingInNextCycle;
 }

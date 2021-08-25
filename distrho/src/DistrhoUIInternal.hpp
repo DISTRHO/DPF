@@ -214,7 +214,7 @@ public:
 
         uiData->app.idle();
         ui->uiIdle();
-        return ! uiData->app.isQuiting();
+        return ! uiData->app.isQuitting();
     }
 #endif
 
@@ -253,7 +253,7 @@ public:
     {
         uiData->window->setVisible(yesNo);
 
-        return ! uiData->app.isQuiting();
+        return ! uiData->app.isQuitting();
     }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

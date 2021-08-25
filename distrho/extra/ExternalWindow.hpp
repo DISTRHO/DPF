@@ -77,10 +77,10 @@ public:
         return isVisible();
     }
 
-    virtual bool isQuiting() const
+    virtual bool isQuitting() const
     {
         if (ext.inUse)
-            return ext.isQuiting;
+            return ext.isQuitting;
 
         return !isVisible();
     }
@@ -292,7 +292,7 @@ protected:
 
     void terminateAndWaitForExternalProcess()
     {
-        ext.isQuiting = true;
+        ext.isQuitting = true;
         ext.terminateAndWait();
     }
 
@@ -334,12 +334,12 @@ private:
 
     struct ExternalProcess {
         bool inUse;
-        bool isQuiting;
+        bool isQuitting;
         mutable pid_t pid;
 
         ExternalProcess()
             : inUse(false),
-              isQuiting(false),
+              isQuitting(false),
               pid(0) {}
 
         bool isRunning() const noexcept

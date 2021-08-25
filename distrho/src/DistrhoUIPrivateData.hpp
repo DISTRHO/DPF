@@ -67,9 +67,9 @@ struct PluginApplication
         idleCallback = cb;
     }
 
-    bool isQuiting() const noexcept
+    bool isQuitting() const noexcept
     {
-        return ui->isQuiting();
+        return ui->isQuitting();
     }
 
     bool isStandalone() const noexcept
@@ -85,7 +85,7 @@ struct PluginApplication
             idleCallback->idleCallback();
         }
 
-        if (! ui->isQuiting())
+        if (! ui->isQuitting())
             ui->close();
     }
 

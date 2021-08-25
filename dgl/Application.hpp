@@ -73,7 +73,7 @@ public:
       Returning true means there's no event-loop running at the moment (or it's just about to stop).
       This function is thread-safe.
     */
-    bool isQuiting() const noexcept;
+    bool isQuitting() const noexcept;
 
    /**
       Check if the application is standalone, otherwise running as a module or plugin.
