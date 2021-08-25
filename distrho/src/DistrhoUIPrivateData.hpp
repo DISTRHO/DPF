@@ -136,7 +136,6 @@ public:
     uint getWidth() const noexcept { return ui->pData.width; }
     uint getHeight() const noexcept { return ui->pData.height; }
     double getScaleFactor() const noexcept { return ui->pData.scaleFactor; }
-    uintptr_t getNativeWindowHandle() const noexcept { return ui->pData.parentWindowHandle; }
 
     // direct mappings
     void close() { ui->close(); }
@@ -146,6 +145,7 @@ public:
     bool isVisible() const noexcept { return ui->isVisible(); }
     void setTitle(const char* const title) { ui->setTitle(title); }
     void setVisible(const bool visible) { ui->setVisible(visible); }
+    uintptr_t getNativeWindowHandle() const noexcept { return ui->getNativeWindowHandle(); }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };
