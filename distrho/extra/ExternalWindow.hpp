@@ -59,7 +59,7 @@ START_NAMESPACE_DISTRHO
         This mode is only possible in LV2 plugin formats, using lv2ui:showInterface extension.
 
      * Standalone:
-        The UI is not embed into the host or use its event-loop, basically running as standalone.
+        The UI is not embed into the host or uses its event-loop, basically running as standalone.
         The host only has control over showing and hiding the window, nothing else.
         The UI is still free to close itself at any point.
         DPF will keep calling isRunning() to check if it should keep the event-loop running.
