@@ -31,19 +31,29 @@
 #endif
 
 #if defined(DISTRHO_OS_MAC)
+# ifndef __MAC_10_12
+#  define NSEventMaskAny NSAnyEventMask
+#  define NSWindowStyleMaskClosable NSClosableWindowMask
+#  define NSWindowStyleMaskMiniaturizable NSMiniaturizableWindowMask
+#  define NSWindowStyleMaskResizable NSResizableWindowMask
+#  define NSWindowStyleMaskTitled NSTitledWindowMask
+# endif
 @interface NSExternalWindow : NSWindow
 @end
-@implementation NSExternalWindow
+@implementation NSExternalWindow {
+@public
+    bool closed;
+}
 - (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(unsigned long)aStyle
+                styleMask:(ulong)aStyle
                   backing:(NSBackingStoreType)bufferingType
                     defer:(BOOL)flag
 {
+    closed = false;
     NSWindow* result = [super initWithContentRect:contentRect
                                         styleMask:aStyle
                                           backing:bufferingType
                                             defer:flag];
-    [result setAcceptsMouseMovedEvents:YES];
     return (NSExternalWindow*)result;
 }
 - (BOOL)canBecomeKeyWindow
@@ -53,6 +63,14 @@
 - (BOOL)canBecomeMainWindow
 {
     return NO;
+}
+- (BOOL)windowShouldClose:(id)sender
+{
+    closed = true;
+    return YES;
+
+    // unused
+    (void)sender;
 }
 @end
 #endif
@@ -112,14 +130,19 @@ public:
         }
         else
         {
+            const ulong styleMask = NSWindowStyleMaskClosable
+                                  | NSWindowStyleMaskMiniaturizable
+                                  | NSWindowStyleMaskResizable
+                                  | NSWindowStyleMaskTitled;
+
             fWindow = [[[NSExternalWindow alloc]
                          initWithContentRect:[fView frame]
-                                   styleMask:(NSWindowStyleMaskClosable | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable)
+                                   styleMask:styleMask
                                      backing:NSBackingStoreBuffered
                                        defer:NO]retain];
             DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
 
-            // [fWindow setIsVisible:NO];
+            [fWindow setIsVisible:NO];
 
             if (NSString* const nsTitle = [[NSString alloc]
                                             initWithBytes:getTitle()
@@ -315,16 +338,21 @@ protected:
         for (NSEvent* event;;)
         {
             event = [NSApp
-                     nextEventMatchingMask:NSAnyEventMask
+                     nextEventMatchingMask:NSEventMaskAny
                                  untilDate:date
                                     inMode:NSDefaultRunLoopMode
                                    dequeue:YES];
 
             if (event == nil)
                 break;
-            d_stdout("uiIdle with event %p", event);
 
             [NSApp sendEvent:event];
+        }
+
+        if (fWindow->closed)
+        {
+            fWindow->closed = false;
+            close();
         }
 
         [pool release];

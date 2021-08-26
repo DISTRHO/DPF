@@ -197,6 +197,7 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
 
         uiData->window->show();
+        uiData->window->focus();
         uiData->app.addIdleCallback(cb);
         uiData->app.exec();
     }
