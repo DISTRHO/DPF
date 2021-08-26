@@ -131,7 +131,6 @@ public:
             [fWindow setContentSize:NSMakeSize(getWidth(), getHeight())];
             [fWindow makeFirstResponder:fView];
             [fWindow makeKeyAndOrderFront:fWindow];
-            d_stdout("created window with size %u %u", getWidth(), getHeight());
         }
 
         [pool release];
@@ -140,9 +139,9 @@ public:
         fDisplay = XOpenDisplay(nullptr);
         DISTRHO_SAFE_ASSERT_RETURN(fDisplay != nullptr,);
 
-        const int screen = DefaultScreen(fDisplay);
-        const ::Window root   = RootWindow(fDisplay, screen);
-        const ::Window parent = isEmbed() ? (::Window)getParentWindowHandle() : root;
+        const ::Window parent = isEmbed()
+                              ? (::Window)getParentWindowHandle()
+                              : RootWindow(fDisplay, DefaultScreen(fDisplay));
 
         fWindow = XCreateSimpleWindow(fDisplay, parent, 0, 0, getWidth(), getHeight(), 0, 0, 0);
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
@@ -154,7 +153,12 @@ public:
         XSetNormalHints(fDisplay, fWindow, &sizeHints);
         XStoreName(fDisplay, fWindow, getTitle());
 
-        if (parent == root)
+        if (isEmbed())
+        {
+            // start with window mapped, so host can access it
+            XMapWindow(fDisplay, fWindow);
+        }
+        else
         {
             // grab Esc key for auto-close
             XGrabKey(fDisplay, X11Key_Escape, AnyModifier, fWindow, 1, GrabModeAsync, GrabModeAsync);
@@ -178,6 +182,7 @@ public:
             XChangeProperty(fDisplay, fWindow, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, 2);
         }
 #endif
+        d_stdout("created external window with size %u %u", getWidth(), getHeight());
     }
 
     ~EmbedExternalExampleUI()
