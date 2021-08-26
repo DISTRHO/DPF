@@ -30,6 +30,33 @@
 # define X11Key_Escape 9
 #endif
 
+#if defined(DISTRHO_OS_MAC)
+@interface NSExternalWindow : NSWindow
+@end
+@implementation NSExternalWindow
+- (id)initWithContentRect:(NSRect)contentRect
+                styleMask:(unsigned long)aStyle
+                  backing:(NSBackingStoreType)bufferingType
+                    defer:(BOOL)flag
+{
+    NSWindow* result = [super initWithContentRect:contentRect
+                                        styleMask:aStyle
+                                          backing:bufferingType
+                                            defer:flag];
+    [result setAcceptsMouseMovedEvents:YES];
+    return (NSExternalWindow*)result;
+}
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+- (BOOL)canBecomeMainWindow
+{
+    return NO;
+}
+@end
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
@@ -38,7 +65,7 @@ class EmbedExternalExampleUI : public UI
 {
 #if defined(DISTRHO_OS_MAC)
     NSView* fView;
-    id fWindow;
+    NSExternalWindow* fWindow;
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
     ::Display* fDisplay;
@@ -50,7 +77,7 @@ public:
         : UI(512, 256),
 #if defined(DISTRHO_OS_MAC)
           fView(nullptr),
-          fWindow(nil),
+          fWindow(nullptr),
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
           fDisplay(nullptr),
@@ -59,20 +86,40 @@ public:
           fValue(0.0f)
     {
 #if defined(DISTRHO_OS_MAC)
+        if (isStandalone())
+        {
+            [[NSApplication sharedApplication]new];
+            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+            [NSApp activateIgnoringOtherApps:YES];
+        }
+
         NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
         [NSApplication sharedApplication];
 
+        fView = [NSView new];
+        DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
+
+        [fView initWithFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
+        [fView setAutoresizesSubviews:YES];
+        [fView setFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
+        [fView setHidden:NO];
+        [fView setNeedsDisplay:YES];
+
         if (isEmbed())
         {
-            // [fView retain];
-            // [(NSView*)getParentWindowHandle() fView];
+            [fView retain];
+            [(NSView*)getParentWindowHandle() addSubview:fView];
         }
         else
         {
-            fWindow = [[NSWindow new]retain];
-            DISTRHO_SAFE_ASSERT_RETURN(fWindow != nil,);
+            fWindow = [[[NSExternalWindow alloc]
+                         initWithContentRect:[fView frame]
+                                   styleMask:(NSWindowStyleMaskClosable | NSWindowStyleMaskTitled | NSWindowStyleMaskResizable)
+                                     backing:NSBackingStoreBuffered
+                                       defer:NO]retain];
+            DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
 
-            [fWindow setIsVisible:NO];
+            // [fWindow setIsVisible:NO];
 
             if (NSString* const nsTitle = [[NSString alloc]
                                             initWithBytes:getTitle()
@@ -80,9 +127,11 @@ public:
                                                  encoding:NSUTF8StringEncoding])
                 [fWindow setTitle:nsTitle];
 
-            // [fWindow setContentView:impl->view];
-            // [fWindow makeFirstResponder:impl->view];
+            [fWindow setContentView:fView];
+            [fWindow setContentSize:NSMakeSize(getWidth(), getHeight())];
+            [fWindow makeFirstResponder:fView];
             [fWindow makeKeyAndOrderFront:fWindow];
+            d_stdout("created window with size %u %u", getWidth(), getHeight());
         }
 
         [pool release];
@@ -134,11 +183,13 @@ public:
     ~EmbedExternalExampleUI()
     {
 #if defined(DISTRHO_OS_MAC)
+        if (fView == nullptr)
+            return;
+
         if (fWindow != nil)
             [fWindow close];
 
-        if (fView != nullptr)
-            [fView release];
+        [fView release];
 
         if (fWindow != nil)
             [fWindow release];
@@ -173,6 +224,19 @@ protected:
    /* --------------------------------------------------------------------------------------------------------
     * External Window overrides */
 
+    void focus() override
+    {
+        d_stdout("focus");
+#if defined(DISTRHO_OS_MAC)
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nil,);
+        [fWindow orderFrontRegardless];
+#elif defined(DISTRHO_OS_WINDOWS)
+#else
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
+        XRaiseWindow(fDisplay, fWindow);
+#endif
+    }
+
     uintptr_t getNativeWindowHandle() const noexcept override
     {
 #if defined(DISTRHO_OS_MAC)
@@ -186,7 +250,7 @@ protected:
 
     void titleChanged(const char* const title) override
     {
-        d_stdout("visibilityChanged %s", title);
+        d_stdout("titleChanged %s", title);
 #if defined(DISTRHO_OS_MAC)
         if (fWindow != nil)
         {
@@ -196,6 +260,7 @@ protected:
                                                 encoding:NSUTF8StringEncoding])
             {
                 [fWindow setTitle:nsTitle];
+                [nsTitle release];
             }
         }
 #elif defined(DISTRHO_OS_WINDOWS)
@@ -220,9 +285,10 @@ protected:
     {
         d_stdout("visibilityChanged %d", visible);
 #if defined(DISTRHO_OS_MAC)
+        DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         if (fWindow != nil)
             [fWindow setIsVisible:(visible ? YES : NO)];
-        else if (fView != nullptr)
+        else
             [fView setHidden:(visible ? NO : YES)];
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
@@ -251,8 +317,9 @@ protected:
 
             if (event == nil)
                 break;
+            d_stdout("uiIdle with event %p", event);
 
-            [NSApp sendEvent: event];
+            [NSApp sendEvent:event];
         }
 
         [pool release];
