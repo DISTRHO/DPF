@@ -36,10 +36,40 @@ START_NAMESPACE_DISTRHO
 /**
    External Window class.
 
-   This is a standalone TopLevelWidget-compatible class, but without any real event handling.
-   Being compatible with TopLevelWidget, it allows to be used as DPF UI target.
+   This is a standalone TopLevelWidget/Window-compatible class, but without any real event handling.
+   Being compatible with TopLevelWidget/Window, it allows to be used as DPF UI target.
 
    It can be used to embed non-DPF things or to run a tool in a new process as the "UI".
+   The uiIdle() function will be called at regular intervals to keep UI running.
+   There are helper methods in place to launch external tools and keep track of its running state.
+
+   External windows can be setup to run in 3 different modes:
+     * Embed:
+        Embed into the host UI, even-loop driven by the host.
+        This is basically working as a regular plugin UI, as you typically expect them to.
+        The plugin side does not get control over showing, hiding or closing the window (as usual for plugins).
+        No restrictions on supported plugin format, everything should work.
+        Requires DISTRHO_PLUGIN_HAS_EMBED_UI to be set to 1.
+
+     * Semi-external:
+        The UI is not embed into the host, but the even-loop is still driven by it.
+        In this mode the host does not have control over the UI except for showing, hiding and setting transient parent.
+        It is possible to close the window from the plugin, the host will be notified of such case.
+        Host regularly calls isQuitting() to check if the UI got closed by the user or plugin side.
+        This mode is only possible in LV2 plugin formats, using lv2ui:showInterface extension.
+
+     * Standalone:
+        The UI is not embed into the host or use its event-loop, basically running as standalone.
+        The host only has control over showing and hiding the window, nothing else.
+        The UI is still free to close itself at any point.
+        DPF will keep calling isRunning() to check if it should keep the event-loop running.
+        Only possible in JACK and DSSI targets, as the UIs are literally standalone applications there.
+
+   Please note that for non-embed windows, you cannot show the window yourself.
+   The plugin window is only allowed to hide or close itself, a "show" action needs to come from the host.
+
+   A few callbacks are provided so that implementations do not need to care about checking for state changes.
+   They are not called on construction, but will be everytime something changes either by the host or the window itself.
  */
 class ExternalWindow
 {
@@ -53,7 +83,7 @@ public:
        : pData() {}
 
    /**
-      Constructor.
+      Constructor for DPF internal use.
     */
     explicit ExternalWindow(const PrivateData& data)
        : pData(data) {}
@@ -67,8 +97,13 @@ public:
     }
 
    /* --------------------------------------------------------------------------------------------------------
-    * ExternalWindow specific calls */
+    * ExternalWindow specific calls - Host side calls that you can reimplement for fine-grained funtionality */
 
+   /**
+      Check if main-loop is running.
+      This is used under standalone mode to check whether to keep things running.
+      Returning false from this function will stop the event-loop and close the window.
+    */
     virtual bool isRunning() const
     {
         if (ext.inUse)
@@ -77,48 +112,44 @@ public:
         return isVisible();
     }
 
+   /**
+      Check if we are about to close.
+      This is used when the event-loop is provided by the host to check if it should close the window.
+      It is also used in standalone mode right after isRunning() returns false to verify if window needs to be closed.
+    */
     virtual bool isQuitting() const
     {
         return ext.inUse ? ext.isQuitting : pData.isQuitting;
     }
 
+#if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
-      Hide the UI and gracefully terminate.
-    */
-    virtual void close()
-    {
-        pData.isQuitting = true;
-        hide();
+      Get the "native" window handle.
+      This can be reimplemented in order to pass the native window to hosts that can use such informaton.
 
-        if (ext.inUse)
-            terminateAndWaitForExternalProcess();
+      Returned value type depends on the platform:
+       - HaikuOS: This is a pointer to a `BView`.
+       - MacOS: This is a pointer to an `NSView*`.
+       - Windows: This is a `HWND`.
+       - Everything else: This is an [X11] `Window`.
+
+      @note Only available to override if DISTRHO_PLUGIN_HAS_EMBED_UI is set to 1.
+    */
+    virtual uintptr_t getNativeWindowHandle() const noexcept
+    {
+        return 0;
     }
+#endif
 
    /**
       Grab the keyboard input focus.
+      Typically you would setup OS-native methods to bring the window to front and give it focus.
+      Default implementation does nothing.
     */
     virtual void focus() {}
 
-   /**
-      Get the transient window that we should attach ourselves to.
-      TODO what id? also NSView* on macOS, or NSWindow?
-    */
-    uintptr_t getTransientWindowId() const noexcept
-    {
-        return pData.transientWinId;
-    }
-
-   /**
-      Called by the host to set the transient window that we should attach ourselves to.
-      TODO what id? also NSView* on macOS, or NSWindow?
-    */
-    void setTransientWindowId(uintptr_t winId)
-    {
-        if (pData.transientWinId == winId)
-            return;
-        pData.transientWinId = winId;
-        transientWindowChanged(winId);
-    }
+   /* --------------------------------------------------------------------------------------------------------
+    * TopLevelWidget-like calls - Information, can be called by either host or plugin */
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
@@ -128,22 +159,63 @@ public:
     {
         return pData.parentWindowHandle != 0;
     }
+#endif
 
    /**
-      Get the "native" window handle.
-      This can be reimplemented in order to pass the child window to hosts that can use such informaton.
-
-      Returned value type depends on the platform:
-       - HaikuOS: This is a pointer to a `BView`.
-       - MacOS: This is a pointer to an `NSView*`.
-       - Windows: This is a `HWND`.
-       - Everything else: This is an [X11] `Window`.
+      Check if this window is visible.
+      @see setVisible(bool)
     */
-    virtual uintptr_t getNativeWindowHandle() const noexcept
+    bool isVisible() const noexcept
     {
-        return 0;
+        return pData.visible;
     }
 
+   /**
+      Whether this Window is running as standalone, that is, without being coupled to a host event-loop.
+      When in standalone mode, isRunning() is called to check if the event-loop should keep running.
+    */
+    bool isStandalone() const noexcept
+    {
+        return pData.isStandalone;
+    }
+
+   /**
+      Get width of this window.
+      Only relevant to hosts when the UI is embedded.
+    */
+    uint getWidth() const noexcept
+    {
+        return pData.width;
+    }
+
+   /**
+      Get height of this window.
+      Only relevant to hosts when the UI is embedded.
+    */
+    uint getHeight() const noexcept
+    {
+        return pData.height;
+    }
+
+   /**
+      Get the scale factor requested for this window.
+      This is purely informational, and up to developers to choose what to do with it.
+    */
+    double getScaleFactor() const noexcept
+    {
+        return pData.scaleFactor;
+    }
+
+   /**
+      Get the title of the window previously set with setTitle().
+      This is typically displayed in the title bar or in window switchers.
+    */
+    const char* getTitle() const noexcept
+    {
+        return pData.title;
+    }
+
+#if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
       Get the "native" window handle that this window should embed itself into.
       Returned value type depends on the platform:
@@ -158,16 +230,103 @@ public:
     }
 #endif
 
+   /**
+      Get the transient window that we should attach ourselves to.
+      TODO what id? also NSView* on macOS, or NSWindow?
+    */
+    uintptr_t getTransientWindowId() const noexcept
+    {
+        return pData.transientWinId;
+    }
+
    /* --------------------------------------------------------------------------------------------------------
-    * TopLevelWidget-like calls */
+    * TopLevelWidget-like calls - actions called by either host or plugin */
 
    /**
-      Check if this window is visible.
-      @see setVisible(bool)
+      Hide window.
+      This is the same as calling setVisible(false).
+      Embed windows should never call this!
+      @see isVisible(), setVisible(bool)
     */
-    bool isVisible() const noexcept
+    void hide()
     {
-        return pData.visible;
+        setVisible(false);
+    }
+
+   /**
+      Hide the UI and gracefully terminate.
+      Embed windows should never call this!
+    */
+    virtual void close()
+    {
+        pData.isQuitting = true;
+        hide();
+
+        if (ext.inUse)
+            terminateAndWaitForExternalProcess();
+    }
+
+   /**
+      Set width of this window.
+      Can trigger a sizeChanged callback.
+      Only relevant to hosts when the UI is embedded.
+    */
+    void setWidth(uint width)
+    {
+        setSize(width, getHeight());
+    }
+
+   /**
+      Set height of this window.
+      Can trigger a sizeChanged callback.
+      Only relevant to hosts when the UI is embedded.
+    */
+    void setHeight(uint height)
+    {
+        setSize(getWidth(), height);
+    }
+
+   /**
+      Set size of this window using @a width and @a height values.
+      Can trigger a sizeChanged callback.
+      Only relevant to hosts when the UI is embedded.
+    */
+    void setSize(uint width, uint height)
+    {
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
+
+        if (pData.width == width || pData.height == height)
+            return;
+
+        pData.width = width;
+        pData.height = height;
+        sizeChanged(width, height);
+    }
+
+   /**
+      Set the title of the window, typically displayed in the title bar or in window switchers.
+      Can trigger a titleChanged callback.
+      Only relevant to hosts when the UI is not embedded.
+    */
+    void setTitle(const char* title)
+    {
+        if (pData.title == title)
+            return;
+        pData.title = title;
+        titleChanged(title);
+    }
+
+   /* --------------------------------------------------------------------------------------------------------
+    * TopLevelWidget-like calls - actions called by the host */
+
+   /**
+      Show window.
+      This is the same as calling setVisible(true).
+      @see isVisible(), setVisible(bool)
+    */
+    void show()
+    {
+        setVisible(true);
     }
 
    /**
@@ -183,98 +342,15 @@ public:
     }
 
    /**
-      Show window.
-      This is the same as calling setVisible(true).
-      @see isVisible(), setVisible(bool)
+      Called by the host to set the transient parent window that we should attach ourselves to.
+      TODO what id? also NSView* on macOS, or NSWindow?
     */
-    void show()
+    void setTransientWindowId(uintptr_t winId)
     {
-        setVisible(true);
-    }
-
-   /**
-      Hide window.
-      This is the same as calling setVisible(false).
-      @see isVisible(), setVisible(bool)
-    */
-    void hide()
-    {
-        setVisible(false);
-    }
-
-   /**
-      Get width.
-    */
-    uint getWidth() const noexcept
-    {
-        return pData.width;
-    }
-
-   /**
-      Get height.
-    */
-    uint getHeight() const noexcept
-    {
-        return pData.height;
-    }
-
-   /**
-      Set width.
-    */
-    void setWidth(uint width)
-    {
-        setSize(width, getHeight());
-    }
-
-   /**
-      Set height.
-    */
-    void setHeight(uint height)
-    {
-        setSize(getWidth(), height);
-    }
-
-   /**
-      Set size using @a width and @a height values.
-    */
-    void setSize(uint width, uint height)
-    {
-        DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
-
-        if (pData.width == width || pData.height == height)
+        if (pData.transientWinId == winId)
             return;
-
-        pData.width = width;
-        pData.height = height;
-        onResize(width, height);
-    }
-
-   /**
-      Get the title of the window previously set with setTitle().
-    */
-    const char* getTitle() const noexcept
-    {
-        return pData.title;
-    }
-
-   /**
-      Set the title of the window, typically displayed in the title bar or in window switchers.
-    */
-    void setTitle(const char* title)
-    {
-        if (pData.title == title)
-            return;
-        pData.title = title;
-        titleChanged(title);
-    }
-
-   /**
-      Get the scale factor requested for this window.
-      This is purely informational, and up to developers to choose what to do with it.
-    */
-    double getScaleFactor() const noexcept
-    {
-        return pData.scaleFactor;
+        pData.transientWinId = winId;
+        transientParentWindowChanged(winId);
     }
 
 protected:
@@ -298,29 +374,39 @@ protected:
     * ExternalWindow specific callbacks */
 
    /**
-      A function called when the window is resized.
+      A callback for when the window size changes.
+      @note WIP this might need to get fed back into the host somehow.
     */
-    virtual void onResize(uint width, uint height)
+    virtual void sizeChanged(uint width, uint height)
     {
         // unused, meant for custom implementations
-        return;
-        (void)width;
-        (void)height;
+        return; (void)width; (void)height;
     }
 
+   /**
+      A callback for when the window title changes.
+      @note WIP this might need to get fed back into the host somehow.
+    */
     virtual void titleChanged(const char* title)
     {
         // unused, meant for custom implementations
         return; (void)title;
     }
 
+   /**
+      A callback for when the window visibility changes.
+      @note WIP this might need to get fed back into the host somehow.
+    */
     virtual void visibilityChanged(bool visible)
     {
         // unused, meant for custom implementations
         return; (void)visible;
     }
 
-    virtual void transientWindowChanged(uintptr_t winId)
+   /**
+      A callback for when the transient parent window changes.
+    */
+    virtual void transientParentWindowChanged(uintptr_t winId)
     {
         // unused, meant for custom implementations
         return; (void)winId;
@@ -435,6 +521,7 @@ private:
         double scaleFactor;
         String title;
         bool isQuitting;
+        bool isStandalone;
         bool visible;
 
         PrivateData()
@@ -445,6 +532,7 @@ private:
               scaleFactor(1.0),
               title(),
               isQuitting(false),
+              isStandalone(false),
               visible(false) {}
     } pData;
 

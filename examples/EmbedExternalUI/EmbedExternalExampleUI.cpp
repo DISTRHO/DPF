@@ -60,12 +60,12 @@ public:
     {
 #if defined(DISTRHO_OS_MAC)
         NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
-	    [NSApplication sharedApplication];
+        [NSApplication sharedApplication];
 
         if (isEmbed())
         {
-		    // [fView retain];
-		    // [(NSView*)getParentWindowHandle() fView];
+            // [fView retain];
+            // [(NSView*)getParentWindowHandle() fView];
         }
         else
         {
@@ -78,7 +78,7 @@ public:
                                             initWithBytes:getTitle()
                                                    length:strlen(getTitle())
                                                  encoding:NSUTF8StringEncoding])
-		        [fWindow setTitle:nsTitle];
+                [fWindow setTitle:nsTitle];
 
             // [fWindow setContentView:impl->view];
             // [fWindow makeFirstResponder:impl->view];
@@ -205,9 +205,9 @@ protected:
 #endif
     }
 
-    void transientWindowChanged(const uintptr_t winId) override
+    void transientParentWindowChanged(const uintptr_t winId) override
     {
-        d_stdout("transientWindowChanged %lu", winId);
+        d_stdout("transientParentWindowChanged %lu", winId);
 #if defined(DISTRHO_OS_MAC)
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
