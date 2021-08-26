@@ -122,7 +122,6 @@ public:
         return ext.inUse ? ext.isQuitting : pData.isQuitting;
     }
 
-#if DISTRHO_PLUGIN_HAS_EMBED_UI
    /**
       Get the "native" window handle.
       This can be reimplemented in order to pass the native window to hosts that can use such informaton.
@@ -139,7 +138,6 @@ public:
     {
         return 0;
     }
-#endif
 
    /**
       Grab the keyboard input focus.

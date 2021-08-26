@@ -19,14 +19,20 @@
 
 #include "DistrhoUI.hpp"
 
+#define MPV_TEST
+// #define KDE_FIFO_TEST
+
+#ifdef KDE_FIFO_TEST
 // Extra includes for current path and fifo stuff
 #include <dlfcn.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#endif
 
 START_NAMESPACE_DISTRHO
 
+#ifdef KDE_FIFO_TEST
 // TODO: generate a random, not-yet-existing, filename
 const char* const kFifoFilename = "/tmp/dpf-fifo-test";
 
@@ -58,6 +64,7 @@ writeRetry(int fd, const void* src, size_t size)
 
     return error;
 }
+#endif
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -66,10 +73,13 @@ class ExternalExampleUI : public UI
 public:
     ExternalExampleUI()
         : UI(405, 256),
+#ifdef KDE_FIFO_TEST
           fFifo(-1),
-          fValue(0.0f),
-          fExternalScript(getNextBundlePath())
+          fExternalScript(getNextBundlePath()),
+#endif
+          fValue(0.0f)
     {
+#ifdef KDE_FIFO_TEST
         if (fExternalScript.isEmpty())
         {
             fExternalScript = getCurrentPluginFilename();
@@ -78,6 +88,15 @@ public:
 
         fExternalScript += "/ExternalLauncher.sh";
         d_stdout("External script = %s", fExternalScript.buffer());
+#endif
+        if (isVisible() || isEmbed())
+            visibilityChanged(true);
+    }
+
+    ~ExternalExampleUI()
+    {
+        if (isEmbed())
+            terminateAndWaitForExternalProcess();
     }
 
 protected:
@@ -95,6 +114,7 @@ protected:
 
         fValue = value;
 
+#ifdef KDE_FIFO_TEST
         if (fFifo == -1)
             return;
 
@@ -104,6 +124,7 @@ protected:
         std::snprintf(valueStr, 23, "%i\n", static_cast<int>(value + 0.5f));
 
         DISTRHO_SAFE_ASSERT(writeRetry(fFifo, valueStr, 24) == sizeof(valueStr));
+#endif
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -114,18 +135,21 @@ protected:
     */
     void uiIdle() override
     {
+#ifdef KDE_FIFO_TEST
         if (fFifo == -1)
             return;
 
         writeRetry(fFifo, "idle\n", 5);
+#endif
     }
 
    /**
       Manage external process and IPC when UI is requested to be visible.
     */
-    void setVisible(const bool yesNo) override
+    void visibilityChanged(const bool visible) override
     {
-        if (yesNo)
+#ifdef KDE_FIFO_TEST
+        if (visible)
         {
             DISTRHO_SAFE_ASSERT_RETURN(fileExists(fExternalScript),);
 
@@ -167,21 +191,57 @@ protected:
             unlink(kFifoFilename);
             terminateAndWaitForExternalProcess();
         }
+#endif
+#ifdef MPV_TEST
+        if (visible)
+        {
+            const char* const file = "/home/falktx/Videos/HD/"; // TODO make this a state file?
 
-        UI::setVisible(yesNo);
+            if (isEmbed())
+            {
+                char winIdStr[64];
+                snprintf(winIdStr, sizeof(winIdStr), "--wid=%lu", getParentWindowHandle());
+                const char* args[] = {
+                    "mpv",
+                    "--ao=jack",
+                    winIdStr,
+                    file,
+                    nullptr
+                };
+                unsetenv("LD_LIBRARY_PATH");
+                startExternalProcess(args);
+            }
+            else
+            {
+                const char* args[] = {
+                    "mpv",
+                    "--ao=jack",
+                    file,
+                    nullptr
+                };
+                startExternalProcess(args);
+            }
+        }
+        else
+        {
+            terminateAndWaitForExternalProcess();
+        }
+#endif
     }
 
     // -------------------------------------------------------------------------------------------------------
 
 private:
+#ifdef KDE_FIFO_TEST
     // IPC Stuff
     int fFifo;
 
-    // Current value, cached for when UI becomes visible
-    float fValue;
-
     // Path to external ui script
     String fExternalScript;
+#endif
+
+    // Current value, cached for when UI becomes visible
+    float fValue;
 
    /**
       Set our UI class as non-copyable and add a leak detector just in case.

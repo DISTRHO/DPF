@@ -22,7 +22,7 @@
 #define DISTRHO_PLUGIN_URI   "http://distrho.sf.net/examples/ExternalUI"
 
 #define DISTRHO_PLUGIN_HAS_UI          1
-#define DISTRHO_PLUGIN_HAS_EMBED_UI    0
+#define DISTRHO_PLUGIN_HAS_EMBED_UI    1
 #define DISTRHO_PLUGIN_HAS_EXTERNAL_UI 1
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
 #define DISTRHO_PLUGIN_NUM_INPUTS      1
