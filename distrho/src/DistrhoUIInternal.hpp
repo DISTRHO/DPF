@@ -257,7 +257,18 @@ public:
         return ! uiData->app.isQuitting();
     }
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
+    {
+        return ui->onPluginKeyboard(press, key, mods);
+    }
+
+    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key, const uint16_t mods)
+    {
+        // unsupported
+        return false; (void)press; (void)key; (void)mods;
+    }
+#else
     bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
     {
         // TODO also trigger Character input event

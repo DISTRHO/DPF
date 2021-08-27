@@ -190,9 +190,7 @@ public:
               nullptr,
               plugin->getInstancePointer(),
               scaleFactor)
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         , fKeyboardModifiers(0)
-# endif
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fNotesRingBuffer()
 # endif
@@ -253,7 +251,6 @@ public:
     }
 # endif
 
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
     {
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
@@ -369,7 +366,6 @@ public:
 
         return 0;
     }
-# endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
     // -------------------------------------------------------------------
 
@@ -435,9 +431,7 @@ private:
 
     // Plugin UI
     UIExporter fUI;
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     uint16_t fKeyboardModifiers;
-# endif
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
 # endif
@@ -761,7 +755,6 @@ public:
                 fVstUI->idle();
             break;
 
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         case effEditKeyDown:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(true, index, value);
@@ -771,7 +764,6 @@ public:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(false, index, value);
             break;
-# endif
 #endif // DISTRHO_PLUGIN_HAS_UI
 
 #if DISTRHO_PLUGIN_WANT_STATE

@@ -410,6 +410,15 @@ protected:
         return; (void)winId;
     }
 
+   /**
+      A callback for host keystrokes.
+    */
+    virtual bool onPluginKeyboard(const bool press, const uint key, const uint16_t mods)
+    {
+        // unused, meant for custom implementations
+        return false; (void)press; (void)key; (void)mods;
+    }
+
 private:
     friend class PluginWindow;
     friend class UI;
