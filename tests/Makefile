@@ -149,13 +149,6 @@ clean:
 
 # ---------------------------------------------------------------------------------------------------------------------
 
--include $(OBJS:%.o=%.d)
--include ../build/tests/Demo.cpp.cairo.d
--include ../build/tests/Demo.cpp.opengl.d
--include ../build/tests/Demo.cpp.vulkan.d
--include ../build/tests/Window.cpp.cairo.d
--include ../build/tests/Window.cpp.opengl.d
--include ../build/tests/Window.cpp.stub.d
--include ../build/tests/Window.cpp.vulkan.d
+-include $(ALL_OBJS:%.o=%.d)
 
 # ---------------------------------------------------------------------------------------------------------------------
