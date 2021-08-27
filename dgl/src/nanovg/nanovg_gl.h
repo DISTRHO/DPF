@@ -40,7 +40,9 @@ enum NVGcreateFlags {
 #elif defined NANOVG_GL3_IMPLEMENTATION
 #  define NANOVG_GL3 1
 #  define NANOVG_GL_IMPLEMENTATION 1
-#  define NANOVG_GL_USE_UNIFORMBUFFER 1
+#  ifndef __APPLE__
+#   define NANOVG_GL_USE_UNIFORMBUFFER 1
+#  endif
 #elif defined NANOVG_GLES2_IMPLEMENTATION
 #  define NANOVG_GLES2 1
 #  define NANOVG_GL_IMPLEMENTATION 1

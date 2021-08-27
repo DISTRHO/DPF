@@ -61,7 +61,18 @@ DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
 // Include NanoVG OpenGL implementation
 
 //#define STB_IMAGE_STATIC
-#define NANOVG_GL2_IMPLEMENTATION
+#ifdef DGL_USE_OPENGL3
+# define NANOVG_GL3_IMPLEMENTATION
+#else
+# define NANOVG_GL2_IMPLEMENTATION
+#endif
+
+#if defined(DISTRHO_OS_MAC) && defined(NANOVG_GL3_IMPLEMENTATION)
+# define glBindVertexArray glBindVertexArrayAPPLE
+# define glDeleteVertexArrays glDeleteVertexArraysAPPLE
+# define glGenVertexArrays glGenVertexArraysAPPLE
+#endif
+
 #include "nanovg/nanovg_gl.h"
 
 #if defined(NANOVG_GL2)
