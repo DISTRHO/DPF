@@ -171,8 +171,8 @@ public:
         if (pData->view == nullptr)
             return;
 
-        pData->initPost();
-        puglBackendEnter(pData->view);
+        if (pData->initPost())
+            puglBackendEnter(pData->view);
     }
 
     void leaveContext()

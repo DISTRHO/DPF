@@ -42,7 +42,7 @@ struct Window::PrivateData : IdleCallback {
     Window* const self;
 
     /** Pugl view instance. */
-    PuglView* const view;
+    PuglView* view;
 
     /** Pugl view instance of the transient parent window. */
     PuglView* const transientParentView;
@@ -126,7 +126,7 @@ struct Window::PrivateData : IdleCallback {
     /** Helper initialization function called at the end of all this class constructors. */
     void initPre(uint width, uint height, bool resizable);
     /** Helper initialization function called on the Window constructor after we are done. */
-    void initPost();
+    bool initPost();
 
     /** Hide window and notify application of a window close event.
       * Does nothing if window is embed (that is, not standalone).

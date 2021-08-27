@@ -225,7 +225,7 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
 
     if (view == nullptr)
     {
-        DGL_DBG("Failed to create Pugl view, everything will fail!\n");
+        d_stderr2("Failed to create Pugl view, everything will fail!");
         return;
     }
 
@@ -247,13 +247,18 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     puglSetEventFunc(view, puglEventCallback);
 }
 
-void Window::PrivateData::initPost()
+bool Window::PrivateData::initPost()
 {
     if (view == nullptr)
-        return;
+        return false;
 
     // create view now, as a few methods we allow devs to use require it
-    puglRealize(view);
+    if (puglRealize(view) != PUGL_SUCCESS)
+    {
+        view = nullptr;
+        d_stderr2("Failed to realize Pugl view, everything will fail!");
+        return false;
+    }
 
     if (isEmbed)
     {
@@ -264,6 +269,8 @@ void Window::PrivateData::initPost()
     // give context back to transient parent window
     if (transientParentView != nullptr)
         puglBackendEnter(transientParentView);
+
+    return true;
 }
 
 // -----------------------------------------------------------------------
