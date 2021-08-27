@@ -168,12 +168,18 @@ public:
           initializing(true),
           receivedReshapeDuringInit(false)
     {
+        if (pData->view == nullptr)
+            return;
+
         pData->initPost();
         puglBackendEnter(pData->view);
     }
 
     void leaveContext()
     {
+        if (pData->view == nullptr)
+            return;
+
         if (receivedReshapeDuringInit)
             ui->uiReshape(getWidth(), getHeight());
 

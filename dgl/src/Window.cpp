@@ -132,6 +132,8 @@ void Window::setResizable(const bool resizable)
 
 uint Window::getWidth() const noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
+
     const double width = puglGetFrame(pData->view).width;
     DISTRHO_SAFE_ASSERT_RETURN(width >= 0.0, 0);
     return static_cast<uint>(width + 0.5);
@@ -139,6 +141,8 @@ uint Window::getWidth() const noexcept
 
 uint Window::getHeight() const noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
+
     const double height = puglGetFrame(pData->view).height;
     DISTRHO_SAFE_ASSERT_RETURN(height >= 0.0, 0);
     return static_cast<uint>(height + 0.5);
@@ -146,6 +150,8 @@ uint Window::getHeight() const noexcept
 
 Size<uint> Window::getSize() const noexcept
 {
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, Size<uint>());
+
     const PuglRect rect = puglGetFrame(pData->view);
     DISTRHO_SAFE_ASSERT_RETURN(rect.width >= 0.0, Size<uint>());
     DISTRHO_SAFE_ASSERT_RETURN(rect.height >= 0.0, Size<uint>());
@@ -214,7 +220,8 @@ const char* Window::getTitle() const noexcept
 
 void Window::setTitle(const char* const title)
 {
-    puglSetWindowTitle(pData->view, title);
+    if (pData->view != nullptr)
+        puglSetWindowTitle(pData->view, title);
 }
 
 bool Window::isIgnoringKeyRepeat() const noexcept
@@ -277,11 +284,17 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 
 void Window::repaint() noexcept
 {
+    if (pData->view == nullptr)
+        return;
+
     puglPostRedisplay(pData->view);
 }
 
 void Window::repaint(const Rectangle<uint>& rect) noexcept
 {
+    if (pData->view == nullptr)
+        return;
+
     PuglRect prect = {
         static_cast<double>(rect.getX()),
         static_cast<double>(rect.getY()),
@@ -317,6 +330,9 @@ void Window::setGeometryConstraints(const uint minimumWidth,
     pData->minHeight = minimumHeight;
     pData->autoScaling = automaticallyScale;
     pData->keepAspectRatio = keepAspectRatio;
+
+    if (pData->view == nullptr)
+        return;
 
     const double scaleFactor = pData->scaleFactor;
 

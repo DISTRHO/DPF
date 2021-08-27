@@ -70,7 +70,10 @@ static double getDesktopScaleFactor(const PuglView* const view)
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
-    return puglGetDesktopScaleFactor(view);
+    if (view != nullptr)
+        return puglGetDesktopScaleFactor(view);
+
+    return 1.0;
 }
 
 // -----------------------------------------------------------------------
@@ -162,11 +165,11 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
     : app(a),
       appData(a.pData),
       self(s),
-      view(puglNewView(appData->world)),
+      view(appData->world != nullptr ? puglNewView(appData->world) : nullptr),
       transientParentView(nullptr),
       topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
-      isVisible(parentWindowHandle != 0),
+      isVisible(parentWindowHandle != 0 && view != nullptr),
       isEmbed(parentWindowHandle != 0),
       scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor(view)),
       autoScaling(false),
@@ -187,6 +190,12 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
 
 Window::PrivateData::~PrivateData()
 {
+    appData->idleCallbacks.remove(this);
+    appData->windows.remove(self);
+
+    if (view == nullptr)
+        return;
+
     if (isEmbed)
     {
 #ifdef HAVE_X11
@@ -198,16 +207,12 @@ Window::PrivateData::~PrivateData()
         isVisible = false;
     }
 
-    appData->idleCallbacks.remove(this);
-    appData->windows.remove(self);
-
 #ifdef DISTRHO_OS_WINDOWS
     if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
         std::free(const_cast<char*>(win32SelectedFile));
 #endif
 
-    if (view != nullptr)
-        puglFreeView(view);
+    puglFreeView(view);
 }
 
 // -----------------------------------------------------------------------
@@ -244,6 +249,9 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
 
 void Window::PrivateData::initPost()
 {
+    if (view == nullptr)
+        return;
+
     // create view now, as a few methods we allow devs to use require it
     puglRealize(view);
 
@@ -289,6 +297,9 @@ void Window::PrivateData::show()
     }
 
     DGL_DBG("Window show called\n");
+
+    if (view == nullptr)
+        return;
 
     if (isClosed)
     {
@@ -347,6 +358,9 @@ void Window::PrivateData::hide()
 
 void Window::PrivateData::focus()
 {
+    if (view == nullptr)
+        return;
+
     if (! isEmbed)
         puglRaiseWindow(view);
 

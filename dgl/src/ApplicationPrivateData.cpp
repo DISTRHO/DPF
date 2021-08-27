@@ -151,6 +151,7 @@ void Application::PrivateData::quit()
 
 void Application::PrivateData::setClassName(const char* const name)
 {
+    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
     puglSetClassName(world, name);
