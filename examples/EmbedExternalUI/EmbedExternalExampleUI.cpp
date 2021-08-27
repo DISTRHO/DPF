@@ -43,9 +43,10 @@
 @implementation NSExternalWindow {
 @public
     bool closed;
+    bool standalone;
 }
 - (BOOL)canBecomeKeyWindow { return YES; }
-- (BOOL)canBecomeMainWindow { return NO; }
+- (BOOL)canBecomeMainWindow { return standalone ? YES : NO; }
 - (BOOL)windowShouldClose:(id)_ { closed = true; return YES; }
 @end
 #endif
@@ -78,16 +79,18 @@ public:
 #endif
           fValue(0.0f)
     {
+        const bool standalone = isStandalone();
+        d_stdout("isStandalone %d", (int)standalone);
+
 #if defined(DISTRHO_OS_MAC)
-        if (isStandalone())
+        NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc]init];
+        [NSApplication sharedApplication];
+
+        if (standalone)
         {
-            [[NSApplication sharedApplication]new];
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
             [NSApp activateIgnoringOtherApps:YES];
         }
-
-        NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
-        [NSApplication sharedApplication];
 
         fView = [NSView new];
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
@@ -118,6 +121,7 @@ public:
             DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
 
             fWindow->closed = false; // is this needed?
+            fWindow->standalone = standalone;
             [fWindow setIsVisible:NO];
 
             if (NSString* const nsTitle = [[NSString alloc]
@@ -129,7 +133,6 @@ public:
             [fWindow setContentView:fView];
             [fWindow setContentSize:NSMakeSize(getWidth(), getHeight())];
             [fWindow makeFirstResponder:fView];
-            [fWindow makeKeyAndOrderFront:fWindow];
         }
 
         [pool release];
@@ -234,6 +237,8 @@ protected:
 #if defined(DISTRHO_OS_MAC)
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != nil,);
         [fWindow orderFrontRegardless];
+        [fWindow makeKeyWindow];
+        [fWindow makeFirstResponder:fView];
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
@@ -291,9 +296,18 @@ protected:
 #if defined(DISTRHO_OS_MAC)
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         if (fWindow != nil)
+        {
             [fWindow setIsVisible:(visible ? YES : NO)];
+
+            if (isStandalone())
+                [fWindow makeMainWindow];
+
+            [fWindow makeKeyAndOrderFront:fWindow];
+        }
         else
+        {
             [fView setHidden:(visible ? NO : YES)];
+        }
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);

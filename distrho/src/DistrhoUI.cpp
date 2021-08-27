@@ -52,6 +52,7 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
     ewData.height = height;
     ewData.scaleFactor = pData->scaleFactor;
     ewData.title = DISTRHO_PLUGIN_NAME;
+    ewData.isStandalone = DISTRHO_UI_IS_STANDALONE;
     return ewData;
 #else
     pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);

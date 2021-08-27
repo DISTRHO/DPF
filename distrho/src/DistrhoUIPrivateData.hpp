@@ -130,7 +130,6 @@ public:
         : ui(uiPtr)
     {
         app.ui = ui;
-        ui->pData.isStandalone = DISTRHO_UI_IS_STANDALONE;
     }
 
     // fetch cached data
