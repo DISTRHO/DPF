@@ -44,34 +44,9 @@
 @public
     bool closed;
 }
-- (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(ulong)aStyle
-                  backing:(NSBackingStoreType)bufferingType
-                    defer:(BOOL)flag
-{
-    closed = false;
-    NSWindow* result = [super initWithContentRect:contentRect
-                                        styleMask:aStyle
-                                          backing:bufferingType
-                                            defer:flag];
-    return (NSExternalWindow*)result;
-}
-- (BOOL)canBecomeKeyWindow
-{
-    return YES;
-}
-- (BOOL)canBecomeMainWindow
-{
-    return NO;
-}
-- (BOOL)windowShouldClose:(id)sender
-{
-    closed = true;
-    return YES;
-
-    // unused
-    (void)sender;
-}
+- (BOOL)canBecomeKeyWindow { return YES; }
+- (BOOL)canBecomeMainWindow { return NO; }
+- (BOOL)windowShouldClose:(id)_ { closed = true; return YES; }
 @end
 #endif
 
@@ -142,6 +117,7 @@ public:
                                        defer:NO]retain];
             DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
 
+            fWindow->closed = false; // is this needed?
             [fWindow setIsVisible:NO];
 
             if (NSString* const nsTitle = [[NSString alloc]
