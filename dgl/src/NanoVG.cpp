@@ -280,12 +280,12 @@ NanoVG::~NanoVG()
 
 void NanoVG::beginFrame(const uint width, const uint height, const float scaleFactor)
 {
-    if (fContext == nullptr) return;
     DISTRHO_SAFE_ASSERT_RETURN(scaleFactor > 0.0f,);
     DISTRHO_SAFE_ASSERT_RETURN(! fInFrame,);
     fInFrame = true;
 
-    nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor);
+    if (fContext != nullptr)
+        nvgBeginFrame(fContext, static_cast<int>(width), static_cast<int>(height), scaleFactor);
 }
 
 void NanoVG::beginFrame(Widget* const widget)

@@ -132,8 +132,11 @@ public:
     {
         const uint targetWidth = 400;
         const uint targetHeight = 400;
+        const double scaleFactor = getScaleFactor();
 
-        setSize(targetWidth, targetHeight);
+        setGeometryConstraints(targetWidth, targetHeight, true);
+        setResizable(true);
+        setSize(targetWidth * scaleFactor, targetHeight * scaleFactor);
         setTitle("NanoVG SubWidgets test");
     }
 
