@@ -54,6 +54,15 @@ DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
+# ifdef DGL_USE_OPENGL3
+DGL_EXT(PFNGLBINDBUFFERRANGEPROC,          glBindBufferRange)
+DGL_EXT(PFNGLBINDVERTEXARRAYPROC,          glBindVertexArray)
+DGL_EXT(PFNGLDELETEVERTEXARRAYSPROC,       glDeleteVertexArrays)
+DGL_EXT(PFNGLGENERATEMIPMAPPROC,           glGenerateMipmap)
+DGL_EXT(PFNGLGETUNIFORMBLOCKINDEXPROC,     glGetUniformBlockIndex)
+DGL_EXT(PFNGLGENVERTEXARRAYSPROC,          glGenVertexArrays)
+DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
+# endif
 # undef DGL_EXT
 #endif
 
@@ -136,6 +145,15 @@ DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
+# ifdef DGL_USE_OPENGL3
+DGL_EXT(PFNGLBINDBUFFERRANGEPROC,          glBindBufferRange)
+DGL_EXT(PFNGLBINDVERTEXARRAYPROC,          glBindVertexArray)
+DGL_EXT(PFNGLDELETEVERTEXARRAYSPROC,       glDeleteVertexArrays)
+DGL_EXT(PFNGLGENERATEMIPMAPPROC,           glGenerateMipmap)
+DGL_EXT(PFNGLGETUNIFORMBLOCKINDEXPROC,     glGetUniformBlockIndex)
+DGL_EXT(PFNGLGENVERTEXARRAYSPROC,          glGenVertexArrays)
+DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
+# endif
 # undef DGL_EXT
     needsInit = false;
 # if defined(__GNUC__) && (__GNUC__ >= 9)
