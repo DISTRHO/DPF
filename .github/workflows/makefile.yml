@@ -55,6 +55,13 @@ jobs:
       run: |
         make clean >/dev/null
         make -j $(nproc)
+    - name: With OpenGL 3.x
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -DDGL_USE_OPENGL3
+      run: |
+        make clean >/dev/null
+        make -j $(nproc)
     - name: Without Cairo
       env:
         CFLAGS: -Werror
