@@ -347,7 +347,7 @@ protected:
 
         [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
-        MSG msg;
+        /*MSG msg;
         if (! ::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
             return true;
 
@@ -358,7 +358,7 @@ protected:
 
             //TranslateMessage(&msg);
             DispatchMessage(&msg);
-        }
+        }*/
 #else
         if (fDisplay == nullptr)
             return;

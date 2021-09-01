@@ -19,9 +19,7 @@
 
 #include "String.hpp"
 
-#ifdef DISTRHO_OS_WINDOWS
-# error Unsupported platform!
-#else
+#ifndef DISTRHO_OS_WINDOWS
 # include <cerrno>
 # include <signal.h>
 # include <sys/wait.h>
@@ -106,9 +104,10 @@ public:
     */
     virtual bool isRunning() const
     {
+#ifndef DISTRHO_OS_WINDOWS
         if (ext.inUse)
             return ext.isRunning();
-
+#endif
         return isVisible();
     }
 
@@ -119,7 +118,11 @@ public:
     */
     virtual bool isQuitting() const
     {
+#ifndef DISTRHO_OS_WINDOWS
         return ext.inUse ? ext.isQuitting : pData.isQuitting;
+#else
+        return pData.isQuitting;
+#endif
     }
 
    /**
@@ -259,9 +262,10 @@ public:
     {
         pData.isQuitting = true;
         hide();
-
+#ifndef DISTRHO_OS_WINDOWS
         if (ext.inUse)
             terminateAndWaitForExternalProcess();
+#endif
     }
 
    /**
@@ -357,15 +361,24 @@ protected:
 
     bool startExternalProcess(const char* args[])
     {
+#ifndef DISTRHO_OS_WINDOWS
         ext.inUse = true;
 
         return ext.start(args);
+#else
+        (void)args;
+        return false; // TODO
+#endif
     }
 
     void terminateAndWaitForExternalProcess()
     {
+#ifndef DISTRHO_OS_WINDOWS
         ext.isQuitting = true;
         ext.terminateAndWait();
+#else
+        // TODO
+#endif
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -414,6 +427,7 @@ private:
     friend class PluginWindow;
     friend class UI;
 
+#ifndef DISTRHO_OS_WINDOWS
     struct ExternalProcess {
         bool inUse;
         bool isQuitting;
@@ -510,6 +524,7 @@ private:
             }
         }
     } ext;
+#endif
 
     struct PrivateData {
         uintptr_t parentWindowHandle;
