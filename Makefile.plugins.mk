@@ -89,8 +89,10 @@ endif
 OBJS_DSP = $(FILES_DSP:%=$(BUILD_DIR)/%.o)
 OBJS_UI  = $(FILES_UI:%=$(BUILD_DIR)/%.o)
 
+ifneq ($(UI_TYPE),external)
 ifeq ($(MACOS),true)
 OBJS_UI += $(BUILD_DIR)/DistrhoUI_macOS_$(NAME).mm.o
+endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
