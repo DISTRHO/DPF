@@ -93,14 +93,12 @@ public:
             [NSApp activateIgnoringOtherApps:YES];
         }
 
-        fView = [NSView new];
+        fView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
 
-        [fView initWithFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
-        [fView setAutoresizesSubviews:YES];
-        [fView setFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
-        [fView setHidden:NO];
-        [fView setNeedsDisplay:YES];
+        fView.autoresizesSubviews = YES;
+        fView.wantsLayer = YES;
+        fView.layer.backgroundColor = NSColor.blueColor.CGColor;
 
         if (isEmbed())
         {
@@ -271,6 +269,9 @@ protected:
         UI::sizeChanged(width, height);
 
 #if defined(DISTRHO_OS_MAC)
+        NSRect rect = fView.frame;
+        rect.size = CGSizeMake((CGFloat)width, (CGFloat)height);
+        fView.frame = rect;
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         if (fWindow != 0)
@@ -341,6 +342,10 @@ protected:
 
     void uiIdle() override
     {
+        if (isEmbed()) {
+            return;
+        }
+
         // d_stdout("uiIdle");
 #if defined(DISTRHO_OS_MAC)
         NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
