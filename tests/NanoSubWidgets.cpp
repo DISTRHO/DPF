@@ -127,9 +127,13 @@ class NanoExampleWindow : public Window
 {
 public:
     explicit NanoExampleWindow(Application& app)
-        : Window(app),
-          container(*this)
+        : Window(app)
     {
+        {
+            const ScopedGraphicsContext sgc(*this);
+            container = new NanoRectanglesContainer(*this);
+        }
+
         const uint targetWidth = 400;
         const uint targetHeight = 400;
         const double scaleFactor = getScaleFactor();
@@ -141,7 +145,7 @@ public:
     }
 
 private:
-    NanoRectanglesContainer container;
+    ScopedPointer<NanoRectanglesContainer> container;
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -154,7 +158,6 @@ int main()
 
     Application app;
     NanoExampleWindow win(app);
-
     win.show();
     app.exec();
 

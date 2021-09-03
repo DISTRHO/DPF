@@ -21,8 +21,8 @@
 // DGL Stuff
 
 #include "../../dgl/Color.hpp"
+#include "../../dgl/StandaloneWindow.hpp"
 #include "../../dgl/SubWidget.hpp"
-#include "../../dgl/TopLevelWidget.hpp"
 
 START_NAMESPACE_DGL
 
@@ -38,26 +38,13 @@ public:
     static constexpr const char* const kExampleWidgetName = "Rectangles";
 
     // SubWidget
-    explicit ExampleRectanglesWidget(Widget* const parentWidget)
-        : BaseWidget(parentWidget)
-    {
-        init();
-    }
+    explicit ExampleRectanglesWidget(Widget* const parent);
 
     // TopLevelWidget
-    explicit ExampleRectanglesWidget(Window& windowToMapTo)
-        : BaseWidget(windowToMapTo)
-    {
-        init();
-    }
+    explicit ExampleRectanglesWidget(Window& windowToMapTo);
 
     // StandaloneWindow
-    explicit ExampleRectanglesWidget(Application& app)
-        : BaseWidget(app)
-    {
-        init();
-        done();
-    }
+    explicit ExampleRectanglesWidget(Application& app);
 
     void init()
     {
@@ -169,6 +156,31 @@ protected:
         return true;
     }
 };
+
+// SubWidget
+template<> inline
+ExampleRectanglesWidget<SubWidget>::ExampleRectanglesWidget(Widget* const parentWidget)
+    : SubWidget(parentWidget)
+{
+    init();
+}
+
+// TopLevelWidget
+template<> inline
+ExampleRectanglesWidget<TopLevelWidget>::ExampleRectanglesWidget(Window& windowToMapTo)
+    : TopLevelWidget(windowToMapTo)
+{
+    init();
+}
+
+// StandaloneWindow
+template<> inline
+ExampleRectanglesWidget<StandaloneWindow>::ExampleRectanglesWidget(Application& app)
+    : StandaloneWindow(app)
+{
+    init();
+    done();
+}
 
 typedef ExampleRectanglesWidget<SubWidget> ExampleRectanglesSubWidget;
 typedef ExampleRectanglesWidget<TopLevelWidget> ExampleRectanglesTopLevelWidget;

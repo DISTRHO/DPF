@@ -113,7 +113,7 @@ public:
           Window win(app);
           ScopedPointer<MyCustomTopLevelWidget> widget;
           {
-              const ScopedGraphicsContext sgc(win);
+              const Window::ScopedGraphicsContext sgc(win);
               widget = new MyCustomTopLevelWidget(win);
           }
           app.exec();

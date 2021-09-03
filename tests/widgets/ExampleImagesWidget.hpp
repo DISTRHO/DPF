@@ -21,8 +21,8 @@
 // DGL Stuff
 
 #include "../../dgl/ImageBase.hpp"
+#include "../../dgl/StandaloneWindow.hpp"
 #include "../../dgl/SubWidget.hpp"
-#include "../../dgl/TopLevelWidget.hpp"
 
 // ------------------------------------------------------
 // Images
@@ -55,70 +55,34 @@ public:
     static constexpr const char* kExampleWidgetName = "Images";
 
     // SubWidget
-    ExampleImagesWidget(Widget* const parent)
-        : BaseWidget(parent),
-          imgTop1st(1),
-          imgTop2nd(2),
-          imgTop3rd(3),
-          img1x(0),
-          img2x(kImg2max),
-          img3y(kImg3max),
-          img1rev(false),
-          img2rev(true),
-          img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
-    {
-        BaseWidget::setSize(500, 400);
-
-        parent->getApp().addIdleCallback(this);
-    }
+    explicit ExampleImagesWidget(Widget* const parent);
 
     // TopLevelWidget
-    ExampleImagesWidget(Window& windowToMapTo)
-        : BaseWidget(windowToMapTo),
-          imgTop1st(1),
-          imgTop2nd(2),
-          imgTop3rd(3),
-          img1x(0),
-          img2x(kImg2max),
-          img3y(kImg3max),
-          img1rev(false),
-          img2rev(true),
-          img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
-    {
-        BaseWidget::setSize(500, 400);
-
-        windowToMapTo.getApp().addIdleCallback(this);
-    }
+    explicit ExampleImagesWidget(Window& windowToMapTo);
 
     // StandaloneWindow
-    ExampleImagesWidget(Application& app)
-        : BaseWidget(app),
-          imgTop1st(1),
-          imgTop2nd(2),
-          imgTop3rd(3),
-          img1x(0),
-          img2x(kImg2max),
-          img3y(kImg3max),
-          img1rev(false),
-          img2rev(true),
-          img3rev(true),
-          img1(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR),
-          img2(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR),
-          img3(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR)
-    {
-        BaseWidget::setSize(500, 400);
-
-        app.addIdleCallback(this);
-        done();
-    }
+    explicit ExampleImagesWidget(Application& app);
 
 protected:
+    void init(Application& app)
+    {
+        imgTop1st = 1;
+        imgTop2nd = 2;
+        imgTop3rd = 3;
+        img1x = 0;
+        img2x = kImg2max;
+        img3y = kImg3max;
+        img1rev = false;
+        img2rev = true;
+        img3rev = true;
+        img1 = BaseImage(CatPics::cat1Data, CatPics::cat1Width, CatPics::cat1Height, kImageFormatBGR);
+        img2 = BaseImage(CatPics::cat2Data, CatPics::cat2Width, CatPics::cat2Height, kImageFormatBGR);
+        img3 = BaseImage(CatPics::cat3Data, CatPics::cat3Width, CatPics::cat3Height, kImageFormatBGR);
+
+        BaseWidget::setSize(500, 400);
+        app.addIdleCallback(this);
+    }
+
     void idleCallback() noexcept override
     {
         if (img1rev)

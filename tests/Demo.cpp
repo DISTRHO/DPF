@@ -42,6 +42,19 @@ typedef DGL_NAMESPACE::VulkanImage DemoImage;
 
 START_NAMESPACE_DGL
 
+// Partial specialization is not allowed in C++, so we need to define these here
+template<> inline
+ExampleImagesWidget<SubWidget, DemoImage>::ExampleImagesWidget(Widget* const parentWidget)
+: SubWidget(parentWidget) { init(parentWidget->getApp()); }
+
+template<> inline
+ExampleImagesWidget<TopLevelWidget, DemoImage>::ExampleImagesWidget(Window& windowToMapTo)
+: TopLevelWidget(windowToMapTo) { init(windowToMapTo.getApp()); }
+
+template<>
+ExampleImagesWidget<StandaloneWindow, DemoImage>::ExampleImagesWidget(Application& app)
+: StandaloneWindow(app) { init(app); done(); }
+
 typedef ExampleImagesWidget<SubWidget, DemoImage> ExampleImagesSubWidget;
 typedef ExampleImagesWidget<TopLevelWidget, DemoImage> ExampleImagesTopLevelWidget;
 typedef ExampleImagesWidget<StandaloneWindow, DemoImage> ExampleImagesStandaloneWindow;

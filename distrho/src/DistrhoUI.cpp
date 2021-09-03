@@ -89,7 +89,7 @@ static double getDesktopScaleFactor()
 
     XrmInitialize();
 
-    if (char* const rms = XResourceManagerString(view->world->impl->display))
+    if (char* const rms = XResourceManagerString(display))
     {
         if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
         {
