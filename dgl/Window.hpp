@@ -133,7 +133,7 @@ public:
         /** Desstructor for clearing current context, if not done yet */
         ~ScopedGraphicsContext();
 
-        /** Early context clearing, useful for standalone windows. */
+        /** Early context clearing, useful for standalone windows not created by you. */
         void done();
 
         DISTRHO_DECLARE_NON_COPYABLE(ScopedGraphicsContext)

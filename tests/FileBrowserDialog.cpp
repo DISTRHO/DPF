@@ -39,7 +39,7 @@ public:
 #endif
         setResizable(true);
         setSize(500, 200);
-        setGeometryConstraints(500, 200, true, false);
+        setGeometryConstraints(500, 200, true);
         setTitle("FileBrowserDialog");
         done();
     }
