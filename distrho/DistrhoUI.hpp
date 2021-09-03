@@ -303,17 +303,26 @@ protected:
     */
     virtual void uiFileBrowserSelected(const char* filename);
 # endif
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
    /* --------------------------------------------------------------------------------------------------------
     * UI Resize Handling, internal */
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
-      OpenGL widget resize function, called when the widget is resized.
+      External Window resize function, called when the window is resized.
+      This is overriden here so the host knows when the UI is resized by you.
+      @see ExternalWindow::sizeChanged(uint,uint)
+    */
+    void sizeChanged(uint width, uint height) override;
+#else
+   /**
+      Widget resize function, called when the widget is resized.
       This is overriden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
     void onResize(const ResizeEvent& ev) override;
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif
 
     // -------------------------------------------------------------------------------------------------------
 

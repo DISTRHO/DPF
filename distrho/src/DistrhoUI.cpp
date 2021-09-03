@@ -209,10 +209,19 @@ void UI::uiFileBrowserSelected(const char*)
 {
 }
 # endif
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+void UI::sizeChanged(const uint width, const uint height)
+{
+    UIWidget::sizeChanged(width, height);
+
+    uiData->setSizeCallback(width, height);
+}
+#else
 void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
@@ -221,7 +230,7 @@ void UI::onResize(const ResizeEvent& ev)
     const uint height = ev.size.getHeight();
     uiData->setSizeCallback(width, height);
 }
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif
 
 // -----------------------------------------------------------------------------------------------------------
 
