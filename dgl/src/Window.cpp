@@ -24,14 +24,22 @@ START_NAMESPACE_DGL
 // ScopedGraphicsContext
 
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win)
-    : window(win)
-{
-    puglBackendEnter(window.pData->view);
-}
+    : window(win),
+      active(puglBackendEnter(window.pData->view)) {}
 
 Window::ScopedGraphicsContext::~ScopedGraphicsContext()
 {
-    puglBackendLeave(window.pData->view);
+    if (active)
+        puglBackendLeave(window.pData->view);
+}
+
+void Window::ScopedGraphicsContext::done()
+{
+    if (active)
+    {
+        active = false;
+        puglBackendLeave(window.pData->view);
+    }
 }
 
 // -----------------------------------------------------------------------

@@ -62,6 +62,7 @@ protected:
     }
 };
 
+// SubWidget
 template<> inline
 ExampleTextWidget<NanoSubWidget>::ExampleTextWidget(Widget* const parent)
     : NanoSubWidget(parent)
@@ -70,6 +71,7 @@ ExampleTextWidget<NanoSubWidget>::ExampleTextWidget(Widget* const parent)
     setSize(500, 300);
 }
 
+// TopLevelWidget
 template<> inline
 ExampleTextWidget<NanoTopLevelWidget>::ExampleTextWidget(Window& windowToMapTo)
     : NanoTopLevelWidget(windowToMapTo)
@@ -78,12 +80,14 @@ ExampleTextWidget<NanoTopLevelWidget>::ExampleTextWidget(Window& windowToMapTo)
     setSize(500, 300);
 }
 
+// StandaloneWindow
 template<> inline
 ExampleTextWidget<NanoStandaloneWindow>::ExampleTextWidget(Application& app)
     : NanoStandaloneWindow(app)
 {
     loadSharedResources();
     setSize(500, 300);
+    done();
 }
 
 template class ExampleTextWidget<NanoSubWidget>;

@@ -127,12 +127,21 @@ public:
     */
     struct ScopedGraphicsContext
     {
+        /** Constructor that will make the @a window graphics context the current one */
         explicit ScopedGraphicsContext(Window& window);
+
+        /** Desstructor for clearing current context, if not done yet */
         ~ScopedGraphicsContext();
+
+        /** Early context clearing, useful for standalone windows. */
+        void done();
+
         DISTRHO_DECLARE_NON_COPYABLE(ScopedGraphicsContext)
         DISTRHO_PREVENT_HEAP_ALLOCATION
+
     private:
         Window& window;
+        bool active;
     };
 
    /**

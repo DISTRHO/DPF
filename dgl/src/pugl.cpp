@@ -159,9 +159,9 @@ START_NAMESPACE_DGL
 // --------------------------------------------------------------------------------------------------------------------
 // expose backend enter
 
-void puglBackendEnter(PuglView* const view)
+bool puglBackendEnter(PuglView* const view)
 {
-    view->backend->enter(view, NULL);
+    return view->backend->enter(view, NULL) == PUGL_SUCCESS;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

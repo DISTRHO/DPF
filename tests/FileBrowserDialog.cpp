@@ -37,6 +37,11 @@ public:
 #ifndef DGL_NO_SHARED_RESOURCES
         loadSharedResources();
 #endif
+        setResizable(true);
+        setSize(500, 200);
+        setGeometryConstraints(500, 200, true, false);
+        setTitle("FileBrowserDialog");
+        done();
     }
 
 protected:
@@ -170,8 +175,6 @@ int main()
 
     Application app(true);
     NanoFilePicker win(app);
-    win.setSize(500, 200);
-    win.setTitle("FileBrowserDialog");
     win.show();
     app.exec();
 

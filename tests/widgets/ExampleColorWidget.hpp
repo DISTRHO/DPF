@@ -165,6 +165,7 @@ ExampleColorWidget<StandaloneWindow>::ExampleColorWidget(Application& app)
 {
     setSize(300, 300);
     addIdleCallback(this);
+    done();
 }
 
 typedef ExampleColorWidget<SubWidget> ExampleColorSubWidget;

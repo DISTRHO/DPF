@@ -48,7 +48,7 @@ USE_NAMESPACE_DGL
 PUGL_BEGIN_DECLS
 
 // expose backend enter
-PUGL_API void
+PUGL_API bool
 puglBackendEnter(PuglView* view);
 
 // expose backend leave

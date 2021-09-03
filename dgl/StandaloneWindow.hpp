@@ -33,14 +33,25 @@ public:
     */
     StandaloneWindow(Application& app)
       : Window(app),
-        TopLevelWidget((Window&)*this) {}
+        TopLevelWidget((Window&)*this),
+        sgc((Window&)*this) {}
 
    /**
       Constructor with parent window, typically used to run as modal.
     */
     StandaloneWindow(Application& app, Window& parentWindow)
       : Window(app, parentWindow),
-        TopLevelWidget((Window&)*this) {}
+        TopLevelWidget((Window&)*this),
+        sgc((Window&)*this) {}
+
+   /**
+      Clear current graphics context.
+      Must be called at the end of your StandaloneWindow constructor.
+    */
+    void done()
+    {
+        sgc.done();
+    }
 
    /**
       Overloaded functions to ensure they apply to the Window class.
@@ -65,6 +76,9 @@ public:
     void setGeometryConstraints(uint minimumWidth, uint minimumHeight,
                                 bool keepAspectRatio = false, bool automaticallyScale = false)
     { Window::setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale); }
+
+private:
+    ScopedGraphicsContext sgc;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(StandaloneWindow)
 };

@@ -37,22 +37,26 @@ class ExampleRectanglesWidget : public BaseWidget
 public:
     static constexpr const char* const kExampleWidgetName = "Rectangles";
 
+    // SubWidget
     explicit ExampleRectanglesWidget(Widget* const parentWidget)
         : BaseWidget(parentWidget)
     {
         init();
     }
 
+    // TopLevelWidget
     explicit ExampleRectanglesWidget(Window& windowToMapTo)
         : BaseWidget(windowToMapTo)
     {
         init();
     }
 
+    // StandaloneWindow
     explicit ExampleRectanglesWidget(Application& app)
         : BaseWidget(app)
     {
         init();
+        done();
     }
 
     void init()

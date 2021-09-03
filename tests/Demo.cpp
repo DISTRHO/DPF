@@ -435,6 +435,7 @@ public:
         resizer = new ResizeHandle(this);
 
         curPageChanged(0);
+        done();
     }
 
 protected:

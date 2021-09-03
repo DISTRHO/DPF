@@ -40,22 +40,26 @@ class ExampleShapesWidget : public BaseWidget
 public:
     static constexpr const char* const kExampleWidgetName = "Shapes";
 
+    // SubWidget
     explicit ExampleShapesWidget(Widget* const parentWidget)
         : BaseWidget(parentWidget)
     {
         this->setSize(300, 300);
     }
 
+    // TopLevelWidget
     explicit ExampleShapesWidget(Window& windowToMapTo)
         : BaseWidget(windowToMapTo)
     {
         this->setSize(300, 300);
     }
 
+    // StandaloneWindow
     explicit ExampleShapesWidget(Application& app)
         : BaseWidget(app)
     {
         this->setSize(300, 300);
+        done();
     }
 
 protected:

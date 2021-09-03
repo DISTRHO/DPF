@@ -115,6 +115,7 @@ public:
         BaseWidget::setSize(500, 400);
 
         app.addIdleCallback(this);
+        done();
     }
 
 protected:
