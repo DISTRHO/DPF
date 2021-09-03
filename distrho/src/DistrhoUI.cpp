@@ -17,17 +17,10 @@
 #include "DistrhoUIPrivateData.hpp"
 #include "src/WindowPrivateData.hpp"
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# if defined(DISTRHO_OS_HAIKU)
-# elif defined(DISTRHO_OS_MAC)
-#  define Point CocoaPoint
-#  define Size CocoaSize
-#  import <Cocoa/Cocoa.h>
-#  undef Point
-#  undef Size
-# elif defined(DISTRHO_OS_WINDOWS)
+# if defined(DISTRHO_OS_WINDOWS)
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
-# else
+# elif defined(HAVE_X11)
 #  include <X11/Xresource.h>
 # endif
 #else
@@ -47,15 +40,16 @@ const char* g_nextBundlePath  = nullptr;
 /* ------------------------------------------------------------------------------------------------------------
  * get global scale factor */
 
-static double getDesktopScaleFactor()
+#ifdef DISTRHO_OS_MAC
+double getDesktopScaleFactor(uintptr_t parentWindowHandle);
+#else
+static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 {
     // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
-#if defined(DISTRHO_OS_MAC)
-    return [NSScreen mainScreen].backingScaleFactor;
-#elif defined(DISTRHO_OS_WINDOWS)
+#if defined(DISTRHO_OS_WINDOWS)
     if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
     {
         typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
@@ -70,8 +64,10 @@ static double getDesktopScaleFactor()
         if (GetProcessDpiAwareness && GetScaleFactorForMonitor
             && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
         {
-            // TODO replace with something else
-            const HMONITOR hMon = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
+            const HMONITOR hMon = parentWindowHandle != 0
+                                ? MonitorFromWindow((HWND)parentWindowHandle, MONITOR_DEFAULTTOPRIMARY)
+                                /* TODO replace with something else for parent-less */
+                                : MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
 
             DWORD scaleFactor = 0;
             if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
@@ -114,7 +110,11 @@ static double getDesktopScaleFactor()
 #endif
 
     return 1.0;
+
+    // might be unused
+    (void)parentWindowHandle;
 }
+#endif // !DISTRHO_OS_MAC
 
 #endif
 
@@ -137,7 +137,7 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
     ewData.parentWindowHandle = pData->winId;
     ewData.width = width;
     ewData.height = height;
-    ewData.scaleFactor = pData->scaleFactor != 0.0 ? pData->scaleFactor : getDesktopScaleFactor();
+    ewData.scaleFactor = pData->scaleFactor != 0.0 ? pData->scaleFactor : getDesktopScaleFactor(pData->winId);
     ewData.title = DISTRHO_PLUGIN_NAME;
     ewData.isStandalone = DISTRHO_UI_IS_STANDALONE;
     return ewData;
