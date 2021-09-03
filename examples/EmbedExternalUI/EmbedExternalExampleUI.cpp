@@ -22,6 +22,9 @@
 #if defined(DISTRHO_OS_MAC)
 # import <Cocoa/Cocoa.h>
 #elif defined(DISTRHO_OS_WINDOWS)
+# define WIN32_CLASS_NAME "DPF-EmbedExternalExampleUI"
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
 #else
 # include <sys/types.h>
 # include <X11/Xatom.h>
@@ -137,6 +140,32 @@ public:
 
         [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
+        WNDCLASS windowClass = {};
+        windowClass.style         = CS_OWNDC;
+        windowClass.lpfnWndProc   = DefWindowProc;
+        windowClass.hInstance     = nullptr;
+        windowClass.hIcon         = LoadIcon(nullptr, IDI_APPLICATION);
+        windowClass.hCursor       = LoadCursor(nullptr, IDC_ARROW);
+        windowClass.lpszClassName = WIN32_CLASS_NAME;
+        DISTRHO_SAFE_ASSERT_RETURN(RegisterClass(&windowClass),);
+
+        const int winFlags = isEmbed() ? (WS_CHILD | WS_VISIBLE) : (WS_POPUPWINDOW | WS_CAPTION | WS_SIZEBOX);
+
+        RECT rect = { 0, 0, static_cast<LONG>(getWidth()), static_cast<LONG>(getHeight()) };
+        AdjustWindowRectEx(&rect, winFlags, FALSE, WS_EX_TOPMOST);
+
+        fWindow = CreateWindowEx(WS_EX_TOPMOST,
+                                 WIN32_CLASS_NAME,
+                                 getTitle(),
+                                 winFlags,
+                                 CW_USEDEFAULT, CW_USEDEFAULT,
+                                 rect.right - rect.left,
+                                 rect.bottom - rect.top,
+                                 (HWND)getParentWindowHandle(),
+                                 nullptr, nullptr, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
+
+        SetWindowLongPtr(fWindow, GWLP_USERDATA, (LONG_PTR)this);
 #else
         fDisplay = XOpenDisplay(nullptr);
         DISTRHO_SAFE_ASSERT_RETURN(fDisplay != nullptr,);
@@ -201,6 +230,10 @@ public:
         if (fWindow != nil)
             [fWindow release];
 #elif defined(DISTRHO_OS_WINDOWS)
+        if (fWindow != nullptr)
+            DestroyWindow(fWindow);
+
+        UnregisterClass(WIN32_CLASS_NAME, nullptr);
 #else
         if (fDisplay == nullptr)
             return;
@@ -242,13 +275,20 @@ protected:
     {
         d_stdout("focus");
 #if defined(DISTRHO_OS_MAC)
-        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nil,);
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
+
         [fWindow orderFrontRegardless];
         [fWindow makeKeyWindow];
         [fWindow makeFirstResponder:fView];
 #elif defined(DISTRHO_OS_WINDOWS)
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
+
+        SetForegroundWindow(fWindow);
+        SetActiveWindow(fWindow);
+        SetFocus(fWindow);
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
+
         XRaiseWindow(fDisplay, fWindow);
 #endif
     }
@@ -274,6 +314,12 @@ protected:
         rect.size = CGSizeMake((CGFloat)width, (CGFloat)height);
         [fView setFrame:rect];
 #elif defined(DISTRHO_OS_WINDOWS)
+        if (fWindow != nullptr)
+            SetWindowPos(fWindow,
+                         HWND_TOP,
+                         0, 0,
+                         width, height,
+                         SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
 #else
         if (fWindow != 0)
             XResizeWindow(fDisplay, fWindow, width, height);
@@ -332,8 +378,12 @@ protected:
             [fView setHidden:(visible ? NO : YES)];
         }
 #elif defined(DISTRHO_OS_WINDOWS)
+        DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
+
+        ShowWindow(fWindow, visible ? SW_SHOWNORMAL : SW_HIDE);
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
+
         if (visible)
             XMapRaised(fDisplay, fWindow);
         else
@@ -374,9 +424,12 @@ protected:
 
         [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
+        if (fWindow == nullptr)
+            return;
+
         /*
         MSG msg;
-        if (! ::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
+        if (! ::PeekMessage(&msg, fWindow, 0, 0, PM_NOREMOVE))
             return true;
 
         if (::GetMessage(&msg, nullptr, 0, 0) >= 0)
