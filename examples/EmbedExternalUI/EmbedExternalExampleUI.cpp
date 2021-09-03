@@ -93,12 +93,13 @@ public:
             [NSApp activateIgnoringOtherApps:YES];
         }
 
-        fView = [[NSView alloc] initWithFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
+        fView = [NSView new];
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
 
-        fView.autoresizesSubviews = YES;
-        fView.wantsLayer = YES;
-        fView.layer.backgroundColor = NSColor.blueColor.CGColor;
+        [fView setFrame:NSMakeRect(0, 0, getWidth(), getHeight())];
+        [fView setAutoresizesSubviews:YES];
+        [fView setWantsLayer:YES];
+        [[fView layer] setBackgroundColor:[[NSColor blueColor] CGColor]];
 
         if (isEmbed())
         {
@@ -269,9 +270,9 @@ protected:
         UI::sizeChanged(width, height);
 
 #if defined(DISTRHO_OS_MAC)
-        NSRect rect = fView.frame;
+        NSRect rect = [fView frame];
         rect.size = CGSizeMake((CGFloat)width, (CGFloat)height);
-        fView.frame = rect;
+        [fView setFrame:rect];
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         if (fWindow != 0)
@@ -342,12 +343,12 @@ protected:
 
     void uiIdle() override
     {
+        // d_stdout("uiIdle");
+#if defined(DISTRHO_OS_MAC)
         if (isEmbed()) {
             return;
         }
 
-        // d_stdout("uiIdle");
-#if defined(DISTRHO_OS_MAC)
         NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc] init];
         NSDate* const date = [NSDate distantPast];
 
