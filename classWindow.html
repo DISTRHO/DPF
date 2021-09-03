@@ -88,7 +88,7 @@ Inheritance diagram for Window:</div>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow_1_1ScopedGraphicsContext.html">ScopedGraphicsContext</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWindow_1_1ScopedGraphicsContext.html">ScopedGraphicsContext</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
@@ -476,7 +476,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set windows visible (or not) according to <em>visible</em>. Only valid for standalones, embed windows are always visible. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#a6be53a737e7dfcc74167962437e93b8f">isVisible()</a>, <a class="el" href="classWindow.html#a4626829d3cb9d01285f739d2bbc69b74">hide()</a>, <a class="el" href="classWindow.html#a8f986e19a11c4c97ed8e6ad3d0e648b7">show()</a> </dd></dl>
+<p>Set window visible (or not) according to <em>visible</em>. Only valid for standalones, embed windows are always visible. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#a6be53a737e7dfcc74167962437e93b8f">isVisible()</a>, <a class="el" href="classWindow.html#a4626829d3cb9d01285f739d2bbc69b74">hide()</a>, <a class="el" href="classWindow.html#a8f986e19a11c4c97ed8e6ad3d0e648b7">show()</a> </dd></dl>
 
 </div>
 </div>
@@ -1260,7 +1260,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </table>
 </div><div class="memdoc">
 <p>A function called when the window is attempted to be closed. Returning true closes the window, which is the default behaviour. Override this method and return false to prevent the window from being closed by the user.</p>
-<p>This method is not used for embed windows, and not even made available in DISTRHO_NAMESPACE::UI. For embed windows, closing is handled by the host/parent process and we have no control over it. As such, a close action on embed windows will always succeed and cannot be cancelled. </p>
+<p>This method is not used for embed windows, and not even made available in DISTRHO_NAMESPACE::UI. For embed windows, closing is handled by the host/parent process and we have no control over it. As such, a close action on embed windows will always succeed and cannot be cancelled.</p>
+<p>NOTE: This currently does not work under macOS. </p>
 
 </div>
 </div>
@@ -1425,7 +1426,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

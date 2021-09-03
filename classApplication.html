@@ -74,7 +74,7 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:af9dd089d30cf442f8ffda646305089bb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#af9dd089d30cf442f8ffda646305089bb">Application</a> (bool isStandalone=true)</td></tr>
+<tr class="memitem:af9dd089d30cf442f8ffda646305089bb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#af9dd089d30cf442f8ffda646305089bb">Application</a> (bool <a class="el" href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">isStandalone</a>=true)</td></tr>
 <tr class="separator:af9dd089d30cf442f8ffda646305089bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a20573928a0d53fb96d929513bc5acde6"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a20573928a0d53fb96d929513bc5acde6">~Application</a> ()</td></tr>
 <tr class="separator:a20573928a0d53fb96d929513bc5acde6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -84,8 +84,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a805dd37af3b9adfc1d0ee1e734ad81e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af77b716ee803aecb2ce1674695dc3986"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#af77b716ee803aecb2ce1674695dc3986">quit</a> ()</td></tr>
 <tr class="separator:af77b716ee803aecb2ce1674695dc3986"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7e5fe58c9cdc488a34d61cf95b55fdc7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a7e5fe58c9cdc488a34d61cf95b55fdc7">isQuiting</a> () const noexcept</td></tr>
-<tr class="separator:a7e5fe58c9cdc488a34d61cf95b55fdc7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2dd05d544834e8fca24a58f5e57f795"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#aa2dd05d544834e8fca24a58f5e57f795">isQuitting</a> () const noexcept</td></tr>
+<tr class="separator:aa2dd05d544834e8fca24a58f5e57f795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0728e9c72545d81ba403b44c92ecd50"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">isStandalone</a> () const noexcept</td></tr>
+<tr class="separator:aa0728e9c72545d81ba403b44c92ecd50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6aab76a79b7b3c2883785040b46017a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#ad6aab76a79b7b3c2883785040b46017a">addIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
 <tr class="separator:ad6aab76a79b7b3c2883785040b46017a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a082f532e2922924c6c72517f9272f67d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a082f532e2922924c6c72517f9272f67d">removeIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
@@ -206,8 +208,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 
 </div>
 </div>
-<a id="a7e5fe58c9cdc488a34d61cf95b55fdc7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7e5fe58c9cdc488a34d61cf95b55fdc7">&#9670;&nbsp;</a></span>isQuiting()</h2>
+<a id="aa2dd05d544834e8fca24a58f5e57f795"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2dd05d544834e8fca24a58f5e57f795">&#9670;&nbsp;</a></span>isQuitting()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -216,7 +218,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">bool Application::isQuiting </td>
+          <td class="memname">bool Application::isQuitting </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td> const</td>
@@ -229,6 +231,32 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Check if the application is about to quit. Returning true means there's no event-loop running at the moment (or it's just about to stop). This function is thread-safe. </p>
+
+</div>
+</div>
+<a id="aa0728e9c72545d81ba403b44c92ecd50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0728e9c72545d81ba403b44c92ecd50">&#9670;&nbsp;</a></span>isStandalone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Application::isStandalone </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if the application is standalone, otherwise running as a module or plugin. This function is thread-safe. </p>
 
 </div>
 </div>
@@ -297,7 +325,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

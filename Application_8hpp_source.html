@@ -111,7 +111,7 @@ $(function() {
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">      Constructor.</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;    <span class="comment">// NOTE: the default value is not yet passed, so we catch where we use this</span></div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <a class="code" href="classApplication.html#af9dd089d30cf442f8ffda646305089bb">Application</a>(<span class="keywordtype">bool</span> isStandalone = <span class="keyword">true</span>);</div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    <a class="code" href="classApplication.html#af9dd089d30cf442f8ffda646305089bb">Application</a>(<span class="keywordtype">bool</span> <a class="code" href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">isStandalone</a> = <span class="keyword">true</span>);</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">      Destructor.</span></div>
@@ -144,51 +144,58 @@ $(function() {
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">      Returning true means there&#39;s no event-loop running at the moment (or it&#39;s just about to stop).</span></div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">      This function is thread-safe.</span></div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classApplication.html#a7e5fe58c9cdc488a34d61cf95b55fdc7">isQuiting</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classApplication.html#aa2dd05d544834e8fca24a58f5e57f795">isQuitting</a>() <span class="keyword">const</span> noexcept;</div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">      Add a callback function to be triggered on every idle cycle.</span></div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      You can add more than one, and remove them at anytime with removeIdleCallback().</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">      Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">      There are no guarantees in terms of timing, use Window::addIdleCallback for time-relative callbacks.</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#ad6aab76a79b7b3c2883785040b46017a">addIdleCallback</a>(<a class="code" href="structIdleCallback.html">IdleCallback</a>* callback);</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">      Remove an idle callback previously added via addIdleCallback().</span></div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#a082f532e2922924c6c72517f9272f67d">removeIdleCallback</a>(<a class="code" href="structIdleCallback.html">IdleCallback</a>* callback);</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">      Set the class name of the application.</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">      This is a stable identifier for the application, used as the window class/instance name on X11 and Windows.</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">      It is not displayed to the user, but can be used in scripts and by window managers,</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">      so it should be the same for every instance of the application, but different from other applications.</span></div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">      Plugins created with DPF have their class name automatically set based on DGL_NAMESPACE and plugin name.</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#a203d22d1ce0c0de90c2379f6bc839815">setClassName</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* name);</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <span class="keyword">struct </span>PrivateData;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    PrivateData* <span class="keyword">const</span> pData;</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classWindow.html">Window</a>;</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160; </div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classApplication.html">Application</a>)</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;};</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160; </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160; </div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="preprocessor">#endif // DGL_APP_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">      Check if the application is standalone, otherwise running as a module or plugin.</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      This function is thread-safe.</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">isStandalone</a>() <span class="keyword">const</span> noexcept;</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">      Add a callback function to be triggered on every idle cycle.</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">      You can add more than one, and remove them at anytime with removeIdleCallback().</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">      Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">      There are no guarantees in terms of timing, use Window::addIdleCallback for time-relative callbacks.</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#ad6aab76a79b7b3c2883785040b46017a">addIdleCallback</a>(<a class="code" href="structIdleCallback.html">IdleCallback</a>* callback);</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">      Remove an idle callback previously added via addIdleCallback().</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#a082f532e2922924c6c72517f9272f67d">removeIdleCallback</a>(<a class="code" href="structIdleCallback.html">IdleCallback</a>* callback);</div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">      Set the class name of the application.</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">      This is a stable identifier for the application, used as the window class/instance name on X11 and Windows.</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment">      It is not displayed to the user, but can be used in scripts and by window managers,</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">      so it should be the same for every instance of the application, but different from other applications.</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">      Plugins created with DPF have their class name automatically set based on DGL_NAMESPACE and plugin name.</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classApplication.html#a203d22d1ce0c0de90c2379f6bc839815">setClassName</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* name);</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160; </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    <span class="keyword">struct </span>PrivateData;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    PrivateData* <span class="keyword">const</span> pData;</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classWindow.html">Window</a>;</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classApplication.html">Application</a>)</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;};</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160; </div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160; </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160; </div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor">#endif // DGL_APP_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassApplication_html_af77b716ee803aecb2ce1674695dc3986"><div class="ttname"><a href="classApplication.html#af77b716ee803aecb2ce1674695dc3986">Application::quit</a></div><div class="ttdeci">void quit()</div></div>
+<div class="ttc" id="aclassApplication_html_aa0728e9c72545d81ba403b44c92ecd50"><div class="ttname"><a href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">Application::isStandalone</a></div><div class="ttdeci">bool isStandalone() const noexcept</div></div>
 <div class="ttc" id="aclassApplication_html_a082f532e2922924c6c72517f9272f67d"><div class="ttname"><a href="classApplication.html#a082f532e2922924c6c72517f9272f67d">Application::removeIdleCallback</a></div><div class="ttdeci">void removeIdleCallback(IdleCallback *callback)</div></div>
 <div class="ttc" id="aclassWindow_html"><div class="ttname"><a href="classWindow.html">Window</a></div><div class="ttdef"><b>Definition:</b> Window.hpp:50</div></div>
+<div class="ttc" id="aclassApplication_html_aa2dd05d544834e8fca24a58f5e57f795"><div class="ttname"><a href="classApplication.html#aa2dd05d544834e8fca24a58f5e57f795">Application::isQuitting</a></div><div class="ttdeci">bool isQuitting() const noexcept</div></div>
 <div class="ttc" id="aclassApplication_html_ac8382754f04f4de15768981459a28e3a"><div class="ttname"><a href="classApplication.html#ac8382754f04f4de15768981459a28e3a">Application::idle</a></div><div class="ttdeci">void idle()</div></div>
-<div class="ttc" id="aclassApplication_html_a7e5fe58c9cdc488a34d61cf95b55fdc7"><div class="ttname"><a href="classApplication.html#a7e5fe58c9cdc488a34d61cf95b55fdc7">Application::isQuiting</a></div><div class="ttdeci">bool isQuiting() const noexcept</div></div>
 <div class="ttc" id="aclassApplication_html"><div class="ttname"><a href="classApplication.html">Application</a></div><div class="ttdef"><b>Definition:</b> Application.hpp:36</div></div>
 <div class="ttc" id="aclassApplication_html_a20573928a0d53fb96d929513bc5acde6"><div class="ttname"><a href="classApplication.html#a20573928a0d53fb96d929513bc5acde6">Application::~Application</a></div><div class="ttdeci">virtual ~Application()</div></div>
 <div class="ttc" id="aclassApplication_html_af9dd089d30cf442f8ffda646305089bb"><div class="ttname"><a href="classApplication.html#af9dd089d30cf442f8ffda646305089bb">Application::Application</a></div><div class="ttdeci">Application(bool isStandalone=true)</div></div>
@@ -198,7 +205,7 @@ $(function() {
 <div class="ttc" id="aclassApplication_html_a203d22d1ce0c0de90c2379f6bc839815"><div class="ttname"><a href="classApplication.html#a203d22d1ce0c0de90c2379f6bc839815">Application::setClassName</a></div><div class="ttdeci">void setClassName(const char *name)</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

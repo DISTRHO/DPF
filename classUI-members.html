@@ -84,14 +84,17 @@ $(function() {
   <tr><td class="entry"><a class="el" href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">sendNote</a>(uint8_t channel, uint8_t note, uint8_t velocity)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr class="even"><td class="entry"><a class="el" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">setParameterValue</a>(uint32_t index, float value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
   <tr><td class="entry"><a class="el" href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">setState</a>(const char *key, const char *value)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
-  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">stateChanged</a>(const char *key, const char *value)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classUI.html#ad3425075e4a23234a8568d1893b54f22">UI</a>(uint width=0, uint height=0)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
-  <tr bgcolor="#f0f0f0" class="even"><td class="entry"><b>UIExporter</b> (defined in <a class="el" href="classUI.html">UI</a>)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">friend</span></td></tr>
-  <tr><td class="entry"><a class="el" href="classUI.html#a47e7b6111faba049dfee4738d067cc42">~UI</a>()</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a3d499674a620c1ce3b6e1dbded9f09c4">sizeChanged</a>(uint width, uint height) override</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classUI.html#a1bdc7e158d974e82f0535f1658d66575">stateChanged</a>(const char *key, const char *value)=0</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">pure virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a3015119edd4c96e7082f171a81cc5aa8">UI</a>(uint width=0, uint height=0, bool automaticallyScale=false)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"></td></tr>
+  <tr bgcolor="#f0f0f0"><td class="entry"><b>UIExporter</b> (defined in <a class="el" href="classUI.html">UI</a>)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">friend</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#af8de639088f3b2d42c266a2d2d6719da">uiIdle</a>()</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></td></tr>
+  <tr><td class="entry"><a class="el" href="classUI.html#ad89b09ef4e8129d72ff3b3cb8716a96b">uiScaleFactorChanged</a>(double scaleFactor)</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">protected</span><span class="mlabel">virtual</span></td></tr>
+  <tr class="even"><td class="entry"><a class="el" href="classUI.html#a47e7b6111faba049dfee4738d067cc42">~UI</a>()</td><td class="entry"><a class="el" href="classUI.html">UI</a></td><td class="entry"><span class="mlabel">virtual</span></td></tr>
 </table></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

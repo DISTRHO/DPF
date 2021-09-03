@@ -994,33 +994,34 @@ $(function() {
 <div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> onDisplay()<span class="keyword"> override</span></div>
 <div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;<span class="keyword">    </span>{</div>
-<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;        <a class="code" href="classNanoVG.html#ac8d53f7131f5f883042bd48a1b910f5f">NanoVG::beginFrame</a>(BaseWidget::getWidth(), BaseWidget::getHeight());</div>
-<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;        <a class="code" href="classNanoBaseWidget.html#a77a197095bf9bf6fd6ff40145746c9b9">onNanoDisplay</a>();</div>
-<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;        <a class="code" href="classNanoVG.html#a432d8c79b21f61eb1010a75cc13ee711">NanoVG::endFrame</a>();</div>
-<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;    }</div>
-<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160; </div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;    <span class="comment">// these should not be used</span></div>
-<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;    <span class="keywordtype">void</span> beginFrame(uint,uint) {}</div>
-<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <span class="keywordtype">void</span> beginFrame(uint,uint,<span class="keywordtype">float</span>) {}</div>
-<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;    <span class="keywordtype">void</span> beginFrame(<a class="code" href="classWidget.html">Widget</a>*) {}</div>
-<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;    <span class="keywordtype">void</span> cancelFrame() {}</div>
-<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;    <span class="keywordtype">void</span> endFrame() {}</div>
-<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160; </div>
-<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classNanoBaseWidget.html">NanoBaseWidget</a>)</div>
-<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;};</div>
-<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160; </div>
-<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;SubWidget&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoSubWidget</a>;</div>
-<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;TopLevelWidget&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoTopLevelWidget</a>;</div>
-<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;StandaloneWindow&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoStandaloneWindow</a>;</div>
-<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160; </div>
-<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;NanoSubWidget&quot;</span>)</div>
-<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;typedef <a class="code" href="classNanoBaseWidget.html">NanoSubWidget</a> <a class="code" href="classNanoBaseWidget.html">NanoWidget</a>;</div>
-<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160; </div>
-<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160; </div>
-<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160; </div>
-<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;<span class="preprocessor">#endif // DGL_NANO_WIDGET_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;        <span class="comment">// NOTE maybe should use BaseWidget::getWindow().getScaleFactor() as 3rd arg ?</span></div>
+<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;        <a class="code" href="classNanoVG.html#ac8d53f7131f5f883042bd48a1b910f5f">NanoVG::beginFrame</a>(BaseWidget::getWidth(), BaseWidget::getHeight());</div>
+<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;        <a class="code" href="classNanoBaseWidget.html#a77a197095bf9bf6fd6ff40145746c9b9">onNanoDisplay</a>();</div>
+<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;        <a class="code" href="classNanoVG.html#a432d8c79b21f61eb1010a75cc13ee711">NanoVG::endFrame</a>();</div>
+<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;    }</div>
+<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160; </div>
+<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;    <span class="comment">// these should not be used</span></div>
+<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <span class="keywordtype">void</span> beginFrame(uint,uint) {}</div>
+<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;    <span class="keywordtype">void</span> beginFrame(uint,uint,<span class="keywordtype">float</span>) {}</div>
+<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;    <span class="keywordtype">void</span> beginFrame(<a class="code" href="classWidget.html">Widget</a>*) {}</div>
+<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;    <span class="keywordtype">void</span> cancelFrame() {}</div>
+<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;    <span class="keywordtype">void</span> endFrame() {}</div>
+<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160; </div>
+<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classNanoBaseWidget.html">NanoBaseWidget</a>)</div>
+<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;};</div>
+<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160; </div>
+<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;SubWidget&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoSubWidget</a>;</div>
+<div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;TopLevelWidget&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoTopLevelWidget</a>;</div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;<span class="keyword">typedef</span> <a class="code" href="classNanoBaseWidget.html">NanoBaseWidget&lt;StandaloneWindow&gt;</a> <a class="code" href="classNanoBaseWidget.html">NanoStandaloneWindow</a>;</div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160; </div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;NanoSubWidget&quot;</span>)</div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;typedef <a class="code" href="classNanoBaseWidget.html">NanoSubWidget</a> <a class="code" href="classNanoBaseWidget.html">NanoWidget</a>;</div>
+<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160; </div>
+<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160; </div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160; </div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;<span class="preprocessor">#endif // DGL_NANO_WIDGET_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassNanoVG_html_a54ec9a68401121aab78976df6d3891a9a4fb2bb2ad2eccc922e6e5613ca1bf19e"><div class="ttname"><a href="classNanoVG.html#a54ec9a68401121aab78976df6d3891a9a4fb2bb2ad2eccc922e6e5613ca1bf19e">NanoVG::CREATE_ANTIALIAS</a></div><div class="ttdeci">@ CREATE_ANTIALIAS</div><div class="ttdef"><b>Definition:</b> NanoVG.hpp:214</div></div>
 <div class="ttc" id="aclassNanoVG_html_a13da8f469cd43117c19d8459c178b905"><div class="ttname"><a href="classNanoVG.html#a13da8f469cd43117c19d8459c178b905">NanoVG::rotate</a></div><div class="ttdeci">void rotate(float angle)</div></div>
@@ -1131,7 +1132,7 @@ $(function() {
 <div class="ttc" id="aclassWidget_html"><div class="ttname"><a href="classWidget.html">Widget</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:53</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -178,10 +178,10 @@ class RingBufferControl&lt; BufferStruct &gt;</h3>
 <p>DPF built-in RingBuffer class. <a class="el" href="classRingBufferControl.html">RingBufferControl</a> takes one buffer struct to take control over, and operates over it.</p>
 <p>This is meant for single-writer, single-reader type of control. Writing and reading is wait and lock-free.</p>
 <p>Typically usage involves: </p><div class="fragment"><div class="line"><span class="comment">// definition</span></div>
-<div class="line"><a class="code" href="classRingBufferControl.html">RingBufferControl&lt;HeapBuffer&gt;</a> myHeapBuffer; <span class="comment">// or HeapRingBuffer class directly</span></div>
+<div class="line"><a class="code" href="classHeapRingBuffer.html">HeapRingBuffer</a> myHeapBuffer; <span class="comment">// or RingBufferControl&lt;HeapBuffer&gt; class for more control</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// construction, only needed for heap buffers</span></div>
-<div class="line">myHeapBuffer.createBuffer(8192);</div>
+<div class="line">myHeapBuffer.<a class="code" href="classHeapRingBuffer.html#ab7d60a3acc757e88e1c7254626ce9709">createBuffer</a>(8192);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// writing data</span></div>
 <div class="line">myHeapBuffer.writeUInt(size);</div>
@@ -374,12 +374,13 @@ template&lt;class BufferStruct &gt; </div>
 </ul>
 </div><!-- contents -->
 <div class="ttc" id="aclassRingBufferControl_html_afe0c53d2591eb265d657c1cab6800036"><div class="ttname"><a href="classRingBufferControl.html#afe0c53d2591eb265d657c1cab6800036">RingBufferControl::commitWrite</a></div><div class="ttdeci">bool commitWrite() noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:484</div></div>
-<div class="ttc" id="aclassRingBufferControl_html"><div class="ttname"><a href="classRingBufferControl.html">RingBufferControl&lt; HeapBuffer &gt;</a></div></div>
 <div class="ttc" id="aclassRingBufferControl_html_a72e173dcae573f6e2e8ac4cfeb8aa96b"><div class="ttname"><a href="classRingBufferControl.html#a72e173dcae573f6e2e8ac4cfeb8aa96b">RingBufferControl::writeCustomData</a></div><div class="ttdeci">bool writeCustomData(const void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:460</div></div>
 <div class="ttc" id="aclassRingBufferControl_html_aafdb126b2885c507cec852bc63fd6cb8"><div class="ttname"><a href="classRingBufferControl.html#aafdb126b2885c507cec852bc63fd6cb8">RingBufferControl::readCustomData</a></div><div class="ttdeci">bool readCustomData(void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:344</div></div>
+<div class="ttc" id="aclassHeapRingBuffer_html"><div class="ttname"><a href="classHeapRingBuffer.html">HeapRingBuffer</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:676</div></div>
+<div class="ttc" id="aclassHeapRingBuffer_html_ab7d60a3acc757e88e1c7254626ce9709"><div class="ttname"><a href="classHeapRingBuffer.html#ab7d60a3acc757e88e1c7254626ce9709">HeapRingBuffer::createBuffer</a></div><div class="ttdeci">bool createBuffer(const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:699</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

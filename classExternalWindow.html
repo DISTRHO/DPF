@@ -62,6 +62,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
@@ -70,65 +71,903 @@ $(function() {
 <div class="title">ExternalWindow Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ExternalWindow_8hpp_source.html">ExternalWindow.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a112d97c0baeeefbea6d4eca153046596"><td class="memItemLeft" align="right" valign="top"><a id="a112d97c0baeeefbea6d4eca153046596"></a>
-&#160;</td><td class="memItemRight" valign="bottom"><b>ExternalWindow</b> (const uint w=1, const uint h=1, const char *const t=&quot;&quot;)</td></tr>
-<tr class="separator:a112d97c0baeeefbea6d4eca153046596"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0e15df4f8b3425b67ad56b42526bb5df"><td class="memItemLeft" align="right" valign="top"><a id="a0e15df4f8b3425b67ad56b42526bb5df"></a>
-uint&#160;</td><td class="memItemRight" valign="bottom"><b>getWidth</b> () const noexcept</td></tr>
-<tr class="separator:a0e15df4f8b3425b67ad56b42526bb5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6206ef403f95462ef84fe8127b65b1b7"><td class="memItemLeft" align="right" valign="top"><a id="a6206ef403f95462ef84fe8127b65b1b7"></a>
-uint&#160;</td><td class="memItemRight" valign="bottom"><b>getHeight</b> () const noexcept</td></tr>
-<tr class="separator:a6206ef403f95462ef84fe8127b65b1b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd0c7cbaa50aab700bebe633309f6778"><td class="memItemLeft" align="right" valign="top"><a id="acd0c7cbaa50aab700bebe633309f6778"></a>
-const char *&#160;</td><td class="memItemRight" valign="bottom"><b>getTitle</b> () const noexcept</td></tr>
-<tr class="separator:acd0c7cbaa50aab700bebe633309f6778"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4997cc8aba1f13355f5d765ca98fca9a"><td class="memItemLeft" align="right" valign="top"><a id="a4997cc8aba1f13355f5d765ca98fca9a"></a>
-uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><b>getTransientWinId</b> () const noexcept</td></tr>
-<tr class="separator:a4997cc8aba1f13355f5d765ca98fca9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e76b734d72a0766d7ddbf62d3e9f2b5"><td class="memItemLeft" align="right" valign="top"><a id="a2e76b734d72a0766d7ddbf62d3e9f2b5"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isVisible</b> () const noexcept</td></tr>
+<tr class="memitem:afc5ed08d95e01734cdfbd6c69d8505c6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#afc5ed08d95e01734cdfbd6c69d8505c6">ExternalWindow</a> ()</td></tr>
+<tr class="separator:afc5ed08d95e01734cdfbd6c69d8505c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4db15a0baa5e85c04b4a8c3545958aad"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a4db15a0baa5e85c04b4a8c3545958aad">ExternalWindow</a> (const PrivateData &amp;data)</td></tr>
+<tr class="separator:a4db15a0baa5e85c04b4a8c3545958aad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a97f21d30b4449fc5cd87396ff051c199"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a97f21d30b4449fc5cd87396ff051c199">~ExternalWindow</a> ()</td></tr>
+<tr class="separator:a97f21d30b4449fc5cd87396ff051c199"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5763405ca1d2405973e691e78d9b2a7"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning</a> () const</td></tr>
+<tr class="separator:ae5763405ca1d2405973e691e78d9b2a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7aacd265be6cd6901405ad32cf6758a0"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a> () const</td></tr>
+<tr class="separator:a7aacd265be6cd6901405ad32cf6758a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ec7abf1b22271458926530b377f2c27"><td class="memItemLeft" align="right" valign="top">virtual uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a8ec7abf1b22271458926530b377f2c27">getNativeWindowHandle</a> () const noexcept</td></tr>
+<tr class="separator:a8ec7abf1b22271458926530b377f2c27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6957b4f82aa3e3557c4c455bbc6b1e15"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a6957b4f82aa3e3557c4c455bbc6b1e15">focus</a> ()</td></tr>
+<tr class="separator:a6957b4f82aa3e3557c4c455bbc6b1e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26dd0bc32a816c014731a78658cc3a5b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a26dd0bc32a816c014731a78658cc3a5b">isEmbed</a> () const noexcept</td></tr>
+<tr class="separator:a26dd0bc32a816c014731a78658cc3a5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e76b734d72a0766d7ddbf62d3e9f2b5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a2e76b734d72a0766d7ddbf62d3e9f2b5">isVisible</a> () const noexcept</td></tr>
 <tr class="separator:a2e76b734d72a0766d7ddbf62d3e9f2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adb93c64ec56aec433ff6cda8b60a857f"><td class="memItemLeft" align="right" valign="top"><a id="adb93c64ec56aec433ff6cda8b60a857f"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>isRunning</b> () noexcept</td></tr>
-<tr class="separator:adb93c64ec56aec433ff6cda8b60a857f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae6f3830b3998fc79d8711a82fb38cd2b"><td class="memItemLeft" align="right" valign="top"><a id="ae6f3830b3998fc79d8711a82fb38cd2b"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setSize</b> (uint w, uint h)</td></tr>
-<tr class="separator:ae6f3830b3998fc79d8711a82fb38cd2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af1282750b8e09fd383499d75a68e3ab3"><td class="memItemLeft" align="right" valign="top"><a id="af1282750b8e09fd383499d75a68e3ab3"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setTitle</b> (const char *const t)</td></tr>
-<tr class="separator:af1282750b8e09fd383499d75a68e3ab3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d41affb04e7c3dcbe3e4ecd0d852e9d"><td class="memItemLeft" align="right" valign="top"><a id="a1d41affb04e7c3dcbe3e4ecd0d852e9d"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setTransientWinId</b> (const uintptr_t winId)</td></tr>
-<tr class="separator:a1d41affb04e7c3dcbe3e4ecd0d852e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa66fa32f63a1a88577cd7f9bd42e80ac"><td class="memItemLeft" align="right" valign="top"><a id="aa66fa32f63a1a88577cd7f9bd42e80ac"></a>
-virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>setVisible</b> (const bool yesNo)</td></tr>
-<tr class="separator:aa66fa32f63a1a88577cd7f9bd42e80ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a870bd4d4e4cdbee7eb029384c2f1bf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">isStandalone</a> () const noexcept</td></tr>
+<tr class="separator:a5a870bd4d4e4cdbee7eb029384c2f1bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e15df4f8b3425b67ad56b42526bb5df"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a0e15df4f8b3425b67ad56b42526bb5df">getWidth</a> () const noexcept</td></tr>
+<tr class="separator:a0e15df4f8b3425b67ad56b42526bb5df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6206ef403f95462ef84fe8127b65b1b7"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a6206ef403f95462ef84fe8127b65b1b7">getHeight</a> () const noexcept</td></tr>
+<tr class="separator:a6206ef403f95462ef84fe8127b65b1b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0383b6696469e9709e1a1ee53399d9f4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a0383b6696469e9709e1a1ee53399d9f4">getScaleFactor</a> () const noexcept</td></tr>
+<tr class="separator:a0383b6696469e9709e1a1ee53399d9f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd0c7cbaa50aab700bebe633309f6778"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#acd0c7cbaa50aab700bebe633309f6778">getTitle</a> () const noexcept</td></tr>
+<tr class="separator:acd0c7cbaa50aab700bebe633309f6778"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a56da59b2722bd7b0a6c63f9f7f120839"><td class="memItemLeft" align="right" valign="top">uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a56da59b2722bd7b0a6c63f9f7f120839">getParentWindowHandle</a> () const noexcept</td></tr>
+<tr class="separator:a56da59b2722bd7b0a6c63f9f7f120839"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad06f0e6adb6a1460af88707cd452e767"><td class="memItemLeft" align="right" valign="top">uintptr_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#ad06f0e6adb6a1460af88707cd452e767">getTransientWindowId</a> () const noexcept</td></tr>
+<tr class="separator:ad06f0e6adb6a1460af88707cd452e767"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa9bce2cc83c1a8c6ee87f79bf36e3955"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#aa9bce2cc83c1a8c6ee87f79bf36e3955">hide</a> ()</td></tr>
+<tr class="separator:aa9bce2cc83c1a8c6ee87f79bf36e3955"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acaa09de3c6dfccecf725a8f7a486ce15"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#acaa09de3c6dfccecf725a8f7a486ce15">close</a> ()</td></tr>
+<tr class="separator:acaa09de3c6dfccecf725a8f7a486ce15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4bebffffd78f13122dc74e4d85c0b527"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a4bebffffd78f13122dc74e4d85c0b527">setWidth</a> (uint width)</td></tr>
+<tr class="separator:a4bebffffd78f13122dc74e4d85c0b527"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:add192e95a0fa7187cb0a8e739095674f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#add192e95a0fa7187cb0a8e739095674f">setHeight</a> (uint height)</td></tr>
+<tr class="separator:add192e95a0fa7187cb0a8e739095674f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a54bb8e6674ef42e0ebc67576df3d103a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a54bb8e6674ef42e0ebc67576df3d103a">setSize</a> (uint width, uint height)</td></tr>
+<tr class="separator:a54bb8e6674ef42e0ebc67576df3d103a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a196d0db3f082f6861d1d1bfc1db993"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">setTitle</a> (const char *title)</td></tr>
+<tr class="separator:a8a196d0db3f082f6861d1d1bfc1db993"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a35f711faffa1195c478689f4654dcc4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">show</a> ()</td></tr>
+<tr class="separator:a35f711faffa1195c478689f4654dcc4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b599fc96437e666a7a0a4c1b9844b15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible</a> (bool visible)</td></tr>
+<tr class="separator:a2b599fc96437e666a7a0a4c1b9844b15"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe5b255affc787ad34b25a30114f9b89"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">setTransientWindowId</a> (uintptr_t winId)</td></tr>
+<tr class="separator:afe5b255affc787ad34b25a30114f9b89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a6cbd34f4457f88749bb7d03b764f023c"><td class="memItemLeft" align="right" valign="top"><a id="a6cbd34f4457f88749bb7d03b764f023c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>startExternalProcess</b> (const char *args[])</td></tr>
 <tr class="separator:a6cbd34f4457f88749bb7d03b764f023c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c5d06114a5606ef06c6ca2fc433a7c5"><td class="memItemLeft" align="right" valign="top"><a id="a6c5d06114a5606ef06c6ca2fc433a7c5"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>terminateAndWaitForProcess</b> ()</td></tr>
-<tr class="separator:a6c5d06114a5606ef06c6ca2fc433a7c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab36754813a63657f99d965e300daad90"><td class="memItemLeft" align="right" valign="top"><a id="ab36754813a63657f99d965e300daad90"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>terminateAndWaitForExternalProcess</b> ()</td></tr>
+<tr class="separator:ab36754813a63657f99d965e300daad90"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12bf25c6c01c4aec99e175eb2ba31d87"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">sizeChanged</a> (uint width, uint height)</td></tr>
+<tr class="separator:a12bf25c6c01c4aec99e175eb2ba31d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acde653e5d63c0048c0e4f0a6dabe45bc"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#acde653e5d63c0048c0e4f0a6dabe45bc">titleChanged</a> (const char *title)</td></tr>
+<tr class="separator:acde653e5d63c0048c0e4f0a6dabe45bc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ecde04a2939e1e3f5677c9291a735d1"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#a5ecde04a2939e1e3f5677c9291a735d1">visibilityChanged</a> (bool visible)</td></tr>
+<tr class="separator:a5ecde04a2939e1e3f5677c9291a735d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae83f4d09be5736021038b19a7e44fc12"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classExternalWindow.html#ae83f4d09be5736021038b19a7e44fc12">transientParentWindowChanged</a> (uintptr_t winId)</td></tr>
+<tr class="separator:ae83f4d09be5736021038b19a7e44fc12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
-<tr class="memitem:aaf9db2e4a604d26b79f28734659b7409"><td class="memItemLeft" align="right" valign="top"><a id="aaf9db2e4a604d26b79f28734659b7409"></a>
-class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td></tr>
-<tr class="separator:aaf9db2e4a604d26b79f28734659b7409"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a248da0691bb4a09193e912d67ab7552e"><td class="memItemLeft" align="right" valign="top"><a id="a248da0691bb4a09193e912d67ab7552e"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>PluginWindow</b></td></tr>
+<tr class="separator:a248da0691bb4a09193e912d67ab7552e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef008c3dadcd60243e199b4b59b40303"><td class="memItemLeft" align="right" valign="top"><a id="aef008c3dadcd60243e199b4b59b40303"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>UI</b></td></tr>
+<tr class="separator:aef008c3dadcd60243e199b4b59b40303"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>External <a class="el" href="classWindow.html">Window</a> class.</p>
+<p>This is a standalone TopLevelWidget/Window-compatible class, but without any real event handling. Being compatible with TopLevelWidget/Window, it allows to be used as DPF <a class="el" href="classUI.html">UI</a> target.</p>
+<p>It can be used to embed non-DPF things or to run a tool in a new process as the "UI". The uiIdle() function will be called at regular intervals to keep <a class="el" href="classUI.html">UI</a> running. There are helper methods in place to launch external tools and keep track of its running state.</p>
+<p>External windows can be setup to run in 3 different modes: Embed: Embed into the host <a class="el" href="classUI.html">UI</a>, even-loop driven by the host. This is basically working as a regular plugin <a class="el" href="classUI.html">UI</a>, as you typically expect them to. The plugin side does not get control over showing, hiding or closing the window (as usual for plugins). No restrictions on supported plugin format, everything should work. Requires DISTRHO_PLUGIN_HAS_EMBED_UI to be set to 1.</p>
+<p>Semi-external: The <a class="el" href="classUI.html">UI</a> is not embed into the host, but the even-loop is still driven by it. In this mode the host does not have control over the <a class="el" href="classUI.html">UI</a> except for showing, hiding and setting transient parent. It is possible to close the window from the plugin, the host will be notified of such case. Host regularly calls <a class="el" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting()</a> to check if the <a class="el" href="classUI.html">UI</a> got closed by the user or plugin side. This mode is only possible in LV2 plugin formats, using lv2ui:showInterface extension.</p>
+<p>Standalone: The <a class="el" href="classUI.html">UI</a> is not embed into the host or uses its event-loop, basically running as standalone. The host only has control over showing and hiding the window, nothing else. The <a class="el" href="classUI.html">UI</a> is still free to close itself at any point. DPF will keep calling <a class="el" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning()</a> to check if it should keep the event-loop running. Only possible in JACK and DSSI targets, as the UIs are literally standalone applications there.</p>
+<p>Please note that for non-embed windows, you cannot show the window yourself. The plugin window is only allowed to hide or close itself, a "show" action needs to come from the host.</p>
+<p>A few callbacks are provided so that implementations do not need to care about checking for state changes. They are not called on construction, but will be everytime something changes either by the host or the window itself. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a id="afc5ed08d95e01734cdfbd6c69d8505c6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afc5ed08d95e01734cdfbd6c69d8505c6">&#9670;&nbsp;</a></span>ExternalWindow() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ExternalWindow::ExternalWindow </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Constructor. </p>
+
+</div>
+</div>
+<a id="a4db15a0baa5e85c04b4a8c3545958aad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4db15a0baa5e85c04b4a8c3545958aad">&#9670;&nbsp;</a></span>ExternalWindow() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">ExternalWindow::ExternalWindow </td>
+          <td>(</td>
+          <td class="paramtype">const PrivateData &amp;&#160;</td>
+          <td class="paramname"><em>data</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Constructor for DPF internal use. </p>
+
+</div>
+</div>
+<a id="a97f21d30b4449fc5cd87396ff051c199"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a97f21d30b4449fc5cd87396ff051c199">&#9670;&nbsp;</a></span>~ExternalWindow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual ExternalWindow::~ExternalWindow </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Destructor. </p>
+
+</div>
+</div>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="ae5763405ca1d2405973e691e78d9b2a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5763405ca1d2405973e691e78d9b2a7">&#9670;&nbsp;</a></span>isRunning()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool ExternalWindow::isRunning </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if main-loop is running. This is used under standalone mode to check whether to keep things running. Returning false from this function will stop the event-loop and close the window. </p>
+
+</div>
+</div>
+<a id="a7aacd265be6cd6901405ad32cf6758a0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7aacd265be6cd6901405ad32cf6758a0">&#9670;&nbsp;</a></span>isQuitting()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool ExternalWindow::isQuitting </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if we are about to close. This is used when the event-loop is provided by the host to check if it should close the window. It is also used in standalone mode right after <a class="el" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning()</a> returns false to verify if window needs to be closed. </p>
+
+</div>
+</div>
+<a id="a8ec7abf1b22271458926530b377f2c27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ec7abf1b22271458926530b377f2c27">&#9670;&nbsp;</a></span>getNativeWindowHandle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual uintptr_t ExternalWindow::getNativeWindowHandle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the "native" window handle. This can be reimplemented in order to pass the native window to hosts that can use such informaton.</p>
+<p>Returned value type depends on the platform:</p><ul>
+<li>HaikuOS: This is a pointer to a <code>BView</code>.</li>
+<li>MacOS: This is a pointer to an <code>NSView*</code>.</li>
+<li>Windows: This is a <code>HWND</code>.</li>
+<li>Everything else: This is an [X11] <code><a class="el" href="classWindow.html">Window</a></code>.</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>Only available to override if DISTRHO_PLUGIN_HAS_EMBED_UI is set to 1. </dd></dl>
+
+</div>
+</div>
+<a id="a6957b4f82aa3e3557c4c455bbc6b1e15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6957b4f82aa3e3557c4c455bbc6b1e15">&#9670;&nbsp;</a></span>focus()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::focus </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Grab the keyboard input focus. Typically you would setup OS-native methods to bring the window to front and give it focus. Default implementation does nothing. </p>
+
+</div>
+</div>
+<a id="a26dd0bc32a816c014731a78658cc3a5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26dd0bc32a816c014731a78658cc3a5b">&#9670;&nbsp;</a></span>isEmbed()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ExternalWindow::isEmbed </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Whether this <a class="el" href="classWindow.html">Window</a> is embed into another (usually not DGL-controlled) <a class="el" href="classWindow.html">Window</a>. </p>
+
+</div>
+</div>
+<a id="a2e76b734d72a0766d7ddbf62d3e9f2b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e76b734d72a0766d7ddbf62d3e9f2b5">&#9670;&nbsp;</a></span>isVisible()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ExternalWindow::isVisible </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if this window is visible. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible(bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="a5a870bd4d4e4cdbee7eb029384c2f1bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a870bd4d4e4cdbee7eb029384c2f1bf">&#9670;&nbsp;</a></span>isStandalone()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ExternalWindow::isStandalone </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Whether this <a class="el" href="classWindow.html">Window</a> is running as standalone, that is, without being coupled to a host event-loop. When in standalone mode, <a class="el" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning()</a> is called to check if the event-loop should keep running. </p>
+
+</div>
+</div>
+<a id="a0e15df4f8b3425b67ad56b42526bb5df"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e15df4f8b3425b67ad56b42526bb5df">&#9670;&nbsp;</a></span>getWidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint ExternalWindow::getWidth </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get width of this window. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is embedded. </p>
+
+</div>
+</div>
+<a id="a6206ef403f95462ef84fe8127b65b1b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6206ef403f95462ef84fe8127b65b1b7">&#9670;&nbsp;</a></span>getHeight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uint ExternalWindow::getHeight </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get height of this window. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is embedded. </p>
+
+</div>
+</div>
+<a id="a0383b6696469e9709e1a1ee53399d9f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0383b6696469e9709e1a1ee53399d9f4">&#9670;&nbsp;</a></span>getScaleFactor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ExternalWindow::getScaleFactor </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the scale factor requested for this window. This is purely informational, and up to developers to choose what to do with it. </p>
+
+</div>
+</div>
+<a id="acd0c7cbaa50aab700bebe633309f6778"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd0c7cbaa50aab700bebe633309f6778">&#9670;&nbsp;</a></span>getTitle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* ExternalWindow::getTitle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the title of the window previously set with <a class="el" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">setTitle()</a>. This is typically displayed in the title bar or in window switchers. </p>
+
+</div>
+</div>
+<a id="a56da59b2722bd7b0a6c63f9f7f120839"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a56da59b2722bd7b0a6c63f9f7f120839">&#9670;&nbsp;</a></span>getParentWindowHandle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uintptr_t ExternalWindow::getParentWindowHandle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the "native" window handle that this window should embed itself into. Returned value type depends on the platform:</p><ul>
+<li>HaikuOS: This is a pointer to a <code>BView</code>.</li>
+<li>MacOS: This is a pointer to an <code>NSView*</code>.</li>
+<li>Windows: This is a <code>HWND</code>.</li>
+<li>Everything else: This is an [X11] <code><a class="el" href="classWindow.html">Window</a></code>. </li>
+</ul>
+
+</div>
+</div>
+<a id="ad06f0e6adb6a1460af88707cd452e767"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad06f0e6adb6a1460af88707cd452e767">&#9670;&nbsp;</a></span>getTransientWindowId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">uintptr_t ExternalWindow::getTransientWindowId </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the transient window that we should attach ourselves to. TODO what id? also NSView* on macOS, or NSWindow? </p>
+
+</div>
+</div>
+<a id="aa9bce2cc83c1a8c6ee87f79bf36e3955"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9bce2cc83c1a8c6ee87f79bf36e3955">&#9670;&nbsp;</a></span>hide()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::hide </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hide window. This is the same as calling setVisible(false). Embed windows should never call this! </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a2e76b734d72a0766d7ddbf62d3e9f2b5">isVisible()</a>, <a class="el" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible(bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="acaa09de3c6dfccecf725a8f7a486ce15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acaa09de3c6dfccecf725a8f7a486ce15">&#9670;&nbsp;</a></span>close()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::close </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Hide the <a class="el" href="classUI.html">UI</a> and gracefully terminate. Embed windows should never call this! </p>
+
+</div>
+</div>
+<a id="a4bebffffd78f13122dc74e4d85c0b527"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4bebffffd78f13122dc74e4d85c0b527">&#9670;&nbsp;</a></span>setWidth()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setWidth </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set width of this window. Can trigger a sizeChanged callback. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is embedded. </p>
+
+</div>
+</div>
+<a id="add192e95a0fa7187cb0a8e739095674f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add192e95a0fa7187cb0a8e739095674f">&#9670;&nbsp;</a></span>setHeight()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setHeight </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set height of this window. Can trigger a sizeChanged callback. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is embedded. </p>
+
+</div>
+</div>
+<a id="a54bb8e6674ef42e0ebc67576df3d103a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a54bb8e6674ef42e0ebc67576df3d103a">&#9670;&nbsp;</a></span>setSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setSize </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set size of this window using <em>width</em> and <em>height</em> values. Can trigger a sizeChanged callback. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is embedded. </p>
+
+</div>
+</div>
+<a id="a8a196d0db3f082f6861d1d1bfc1db993"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a196d0db3f082f6861d1d1bfc1db993">&#9670;&nbsp;</a></span>setTitle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setTitle </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>title</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set the title of the window, typically displayed in the title bar or in window switchers. Can trigger a titleChanged callback. Only relevant to hosts when the <a class="el" href="classUI.html">UI</a> is not embedded. </p>
+
+</div>
+</div>
+<a id="a35f711faffa1195c478689f4654dcc4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a35f711faffa1195c478689f4654dcc4f">&#9670;&nbsp;</a></span>show()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::show </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Show window. This is the same as calling setVisible(true). </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a2e76b734d72a0766d7ddbf62d3e9f2b5">isVisible()</a>, <a class="el" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible(bool)</a> </dd></dl>
+
+</div>
+</div>
+<a id="a2b599fc96437e666a7a0a4c1b9844b15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b599fc96437e666a7a0a4c1b9844b15">&#9670;&nbsp;</a></span>setVisible()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setVisible </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>visible</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set window visible (or not) according to <em>visible</em>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a2e76b734d72a0766d7ddbf62d3e9f2b5">isVisible()</a>, <a class="el" href="classExternalWindow.html#aa9bce2cc83c1a8c6ee87f79bf36e3955">hide()</a>, <a class="el" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">show()</a> </dd></dl>
+
+</div>
+</div>
+<a id="afe5b255affc787ad34b25a30114f9b89"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe5b255affc787ad34b25a30114f9b89">&#9670;&nbsp;</a></span>setTransientWindowId()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ExternalWindow::setTransientWindowId </td>
+          <td>(</td>
+          <td class="paramtype">uintptr_t&#160;</td>
+          <td class="paramname"><em>winId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Called by the host to set the transient parent window that we should attach ourselves to. TODO what id? also NSView* on macOS, or NSWindow? </p>
+
+</div>
+</div>
+<a id="a12bf25c6c01c4aec99e175eb2ba31d87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a12bf25c6c01c4aec99e175eb2ba31d87">&#9670;&nbsp;</a></span>sizeChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::sizeChanged </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A callback for when the window size changes. </p><dl class="section note"><dt>Note</dt><dd>WIP this might need to get fed back into the host somehow. </dd></dl>
+
+</div>
+</div>
+<a id="acde653e5d63c0048c0e4f0a6dabe45bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acde653e5d63c0048c0e4f0a6dabe45bc">&#9670;&nbsp;</a></span>titleChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::titleChanged </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>title</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A callback for when the window title changes. </p><dl class="section note"><dt>Note</dt><dd>WIP this might need to get fed back into the host somehow. </dd></dl>
+
+</div>
+</div>
+<a id="a5ecde04a2939e1e3f5677c9291a735d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ecde04a2939e1e3f5677c9291a735d1">&#9670;&nbsp;</a></span>visibilityChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::visibilityChanged </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>visible</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A callback for when the window visibility changes. </p><dl class="section note"><dt>Note</dt><dd>WIP this might need to get fed back into the host somehow. </dd></dl>
+
+</div>
+</div>
+<a id="ae83f4d09be5736021038b19a7e44fc12"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae83f4d09be5736021038b19a7e44fc12">&#9670;&nbsp;</a></span>transientParentWindowChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void ExternalWindow::transientParentWindowChanged </td>
+          <td>(</td>
+          <td class="paramtype">uintptr_t&#160;</td>
+          <td class="paramname"><em>winId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A callback for when the transient parent window changes. </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>distrho/extra/<a class="el" href="ExternalWindow_8hpp_source.html">ExternalWindow.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

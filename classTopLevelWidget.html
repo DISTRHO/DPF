@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
 <a href="classTopLevelWidget-members.html">List of all members</a>  </div>
   <div class="headertitle">
@@ -101,6 +102,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a41fa486da289fb082bb840aaaad72a08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94f526903d739bf2e812fb785fc66aae"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a94f526903d739bf2e812fb785fc66aae">setSize</a> (const <a class="el" href="classSize.html">Size</a>&lt; uint &gt; &amp;size)</td></tr>
 <tr class="separator:a94f526903d739bf2e812fb785fc66aae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b71bc1266aea488b1f85b83744adbfd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a5b71bc1266aea488b1f85b83744adbfd">repaint</a> () noexcept override</td></tr>
+<tr class="separator:a5b71bc1266aea488b1f85b83744adbfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a4a9b2d040ba36825fd95f966bb4d9e36">repaint</a> (const <a class="el" href="classRectangle.html">Rectangle</a>&lt; uint &gt; &amp;rect) noexcept</td></tr>
+<tr class="separator:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5569262e4859b2b59832af4fb8409ddc"><td class="memItemLeft" align="right" valign="top"><a id="a5569262e4859b2b59832af4fb8409ddc"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>addIdleCallback</b> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback, uint timerFrequencyInMs=0)</td></tr>
 <tr class="separator:a5569262e4859b2b59832af4fb8409ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -110,11 +115,6 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>removeIdleCallback</b
 <tr class="memitem:a8f8c6b72513abeb782cdbed5b24c6fb8"><td class="memItemLeft" align="right" valign="top"><a id="a8f8c6b72513abeb782cdbed5b24c6fb8"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>getScaleFactor</b> () const noexcept</td></tr>
 <tr class="separator:a8f8c6b72513abeb782cdbed5b24c6fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad03702ffcbafa87ec546994891d4cd8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#ad03702ffcbafa87ec546994891d4cd8a">repaint</a> () noexcept</td></tr>
-<tr class="separator:ad03702ffcbafa87ec546994891d4cd8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memItemLeft" align="right" valign="top"><a id="a4a9b2d040ba36825fd95f966bb4d9e36"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>repaint</b> (const <a class="el" href="classRectangle.html">Rectangle</a>&lt; uint &gt; &amp;rect) noexcept</td></tr>
-<tr class="separator:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a017b8d4994d1df395497cbbba22152ef"><td class="memItemLeft" align="right" valign="top"><a id="a017b8d4994d1df395497cbbba22152ef"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraints</b> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false)</td></tr>
 <tr class="separator:a017b8d4994d1df395497cbbba22152ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,31 +168,31 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraint
 <a class="el" href="classWindow.html">Window</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getParentWindow</b> () const noexcept</td></tr>
 <tr class="separator:a0e0b0b2293bb63b2d84774542cc6a421 inherit pub_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
+Protected Member Functions</h2></td></tr>
+<tr class="memitem:a7b182e276662bc32aa0fcd7b07dfe4d0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a7b182e276662bc32aa0fcd7b07dfe4d0">onKeyboard</a> (const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;) override</td></tr>
+<tr class="separator:a7b182e276662bc32aa0fcd7b07dfe4d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a62dcfe3102ce26a4e928daeda91734a9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a62dcfe3102ce26a4e928daeda91734a9">onSpecial</a> (const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;) override</td></tr>
+<tr class="separator:a62dcfe3102ce26a4e928daeda91734a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a567153ae0853e56553c9569dc61ed913"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a567153ae0853e56553c9569dc61ed913">onCharacterInput</a> (const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;) override</td></tr>
+<tr class="separator:a567153ae0853e56553c9569dc61ed913"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8ceccb37de18c8e3b21fbf64ad58981c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a8ceccb37de18c8e3b21fbf64ad58981c">onMouse</a> (const <a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a> &amp;) override</td></tr>
+<tr class="separator:a8ceccb37de18c8e3b21fbf64ad58981c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac640eb913196c9edb68e5d52df4a89cb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#ac640eb913196c9edb68e5d52df4a89cb">onMotion</a> (const <a class="el" href="structWidget_1_1MotionEvent.html">MotionEvent</a> &amp;) override</td></tr>
+<tr class="separator:ac640eb913196c9edb68e5d52df4a89cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a412a6ce96a4ef7f64396e312ad072f9d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a412a6ce96a4ef7f64396e312ad072f9d">onScroll</a> (const <a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> &amp;) override</td></tr>
+<tr class="separator:a412a6ce96a4ef7f64396e312ad072f9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="inherit_header pro_methods_classWidget"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classWidget')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classWidget.html">Widget</a></td></tr>
+<tr class="memitem:ae1554f348fe3b2f9d4c3c5c4f9ec55bd inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">onDisplay</a> ()=0</td></tr>
+<tr class="separator:ae1554f348fe3b2f9d4c3c5c4f9ec55bd inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
+<tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
 <tr class="memitem:a553f958a25683445088050a69d3de8e9"><td class="memItemLeft" align="right" valign="top"><a id="a553f958a25683445088050a69d3de8e9"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 <tr class="separator:a553f958a25683445088050a69d3de8e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
-Additional Inherited Members</h2></td></tr>
-<tr class="inherit_header pro_methods_classWidget"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classWidget')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classWidget.html">Widget</a></td></tr>
-<tr class="memitem:ae1554f348fe3b2f9d4c3c5c4f9ec55bd inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">onDisplay</a> ()=0</td></tr>
-<tr class="separator:ae1554f348fe3b2f9d4c3c5c4f9ec55bd inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fa874aede538b41348f1029524aea11 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a9fa874aede538b41348f1029524aea11">onKeyboard</a> (const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;)</td></tr>
-<tr class="separator:a9fa874aede538b41348f1029524aea11 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;)</td></tr>
-<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad7fb24de24d8809305b04ff3750f0dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">onCharacterInput</a> (const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;)</td></tr>
-<tr class="separator:ad7fb24de24d8809305b04ff3750f0dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a097ec1d56a06bdc9e0a4e54880def378 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">onMouse</a> (const <a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a> &amp;)</td></tr>
-<tr class="separator:a097ec1d56a06bdc9e0a4e54880def378 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a655569fb78a598652e9f24cefa1fe4a5 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">onMotion</a> (const <a class="el" href="structWidget_1_1MotionEvent.html">MotionEvent</a> &amp;)</td></tr>
-<tr class="separator:a655569fb78a598652e9f24cefa1fe4a5 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d78d28bd4a98c3a016a38091b2d4185 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">onScroll</a> (const <a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> &amp;)</td></tr>
-<tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
-<tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Top-Level <a class="el" href="classWidget.html">Widget</a> class.</p>
@@ -392,8 +392,8 @@ Additional Inherited Members</h2></td></tr>
 
 </div>
 </div>
-<a id="ad03702ffcbafa87ec546994891d4cd8a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad03702ffcbafa87ec546994891d4cd8a">&#9670;&nbsp;</a></span>repaint()</h2>
+<a id="a5b71bc1266aea488b1f85b83744adbfd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b71bc1266aea488b1f85b83744adbfd">&#9670;&nbsp;</a></span>repaint() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -410,13 +410,214 @@ Additional Inherited Members</h2></td></tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">virtual</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Request repaint of this widget's area to the window this widget belongs to. On the raw <a class="el" href="classWidget.html">Widget</a> class this function does nothing. </p>
+<p>TODO document this. </p>
 
 <p>Reimplemented from <a class="el" href="classWidget.html#abe8cfe0aaae71dd011cf9a86e930fd12">Widget</a>.</p>
+
+</div>
+</div>
+<a id="a4a9b2d040ba36825fd95f966bb4d9e36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a9b2d040ba36825fd95f966bb4d9e36">&#9670;&nbsp;</a></span>repaint() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void TopLevelWidget::repaint </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classRectangle.html">Rectangle</a>&lt; uint &gt; &amp;&#160;</td>
+          <td class="paramname"><em>rect</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>TODO document this. </p>
+
+</div>
+</div>
+<a id="a7b182e276662bc32aa0fcd7b07dfe4d0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b182e276662bc32aa0fcd7b07dfe4d0">&#9670;&nbsp;</a></span>onKeyboard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onKeyboard </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when a key is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#a9fa874aede538b41348f1029524aea11">Widget</a>.</p>
+
+</div>
+</div>
+<a id="a62dcfe3102ce26a4e928daeda91734a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a62dcfe3102ce26a4e928daeda91734a9">&#9670;&nbsp;</a></span>onSpecial()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onSpecial </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when a special key is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">Widget</a>.</p>
+
+</div>
+</div>
+<a id="a567153ae0853e56553c9569dc61ed913"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a567153ae0853e56553c9569dc61ed913">&#9670;&nbsp;</a></span>onCharacterInput()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onCharacterInput </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when an UTF-8 character is received. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">Widget</a>.</p>
+
+</div>
+</div>
+<a id="a8ceccb37de18c8e3b21fbf64ad58981c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8ceccb37de18c8e3b21fbf64ad58981c">&#9670;&nbsp;</a></span>onMouse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onMouse </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when a mouse button is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">Widget</a>.</p>
+
+</div>
+</div>
+<a id="ac640eb913196c9edb68e5d52df4a89cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac640eb913196c9edb68e5d52df4a89cb">&#9670;&nbsp;</a></span>onMotion()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onMotion </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1MotionEvent.html">MotionEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when the pointer moves. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">Widget</a>.</p>
+
+</div>
+</div>
+<a id="a412a6ce96a4ef7f64396e312ad072f9d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a412a6ce96a4ef7f64396e312ad072f9d">&#9670;&nbsp;</a></span>onScroll()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool TopLevelWidget::onScroll </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called on scrolling (e.g. mouse wheel or track pad). </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
+
+<p>Reimplemented from <a class="el" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">Widget</a>.</p>
 
 </div>
 </div>
@@ -426,7 +627,7 @@ Additional Inherited Members</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

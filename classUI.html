@@ -82,8 +82,8 @@ Inheritance diagram for UI:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ad3425075e4a23234a8568d1893b54f22"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ad3425075e4a23234a8568d1893b54f22">UI</a> (uint width=0, uint height=0)</td></tr>
-<tr class="separator:ad3425075e4a23234a8568d1893b54f22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3015119edd4c96e7082f171a81cc5aa8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3015119edd4c96e7082f171a81cc5aa8">UI</a> (uint width=0, uint height=0, bool automaticallyScale=false)</td></tr>
+<tr class="separator:a3015119edd4c96e7082f171a81cc5aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47e7b6111faba049dfee4738d067cc42"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a47e7b6111faba049dfee4738d067cc42">~UI</a> ()</td></tr>
 <tr class="separator:a47e7b6111faba049dfee4738d067cc42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fe940d56a0c283095e28bbc5806af31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a8fe940d56a0c283095e28bbc5806af31">isResizable</a> () const noexcept</td></tr>
@@ -124,6 +124,12 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a1bdc7e158d974e82f0535f1658d66575"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3e98726ca71f95a1e6c867706ebd9be"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ac3e98726ca71f95a1e6c867706ebd9be">sampleRateChanged</a> (double newSampleRate)</td></tr>
 <tr class="separator:ac3e98726ca71f95a1e6c867706ebd9be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af8de639088f3b2d42c266a2d2d6719da"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#af8de639088f3b2d42c266a2d2d6719da">uiIdle</a> ()</td></tr>
+<tr class="separator:af8de639088f3b2d42c266a2d2d6719da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad89b09ef4e8129d72ff3b3cb8716a96b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ad89b09ef4e8129d72ff3b3cb8716a96b">uiScaleFactorChanged</a> (double scaleFactor)</td></tr>
+<tr class="separator:ad89b09ef4e8129d72ff3b3cb8716a96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d499674a620c1ce3b6e1dbded9f09c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3d499674a620c1ce3b6e1dbded9f09c4">sizeChanged</a> (uint width, uint height) override</td></tr>
+<tr class="separator:a3d499674a620c1ce3b6e1dbded9f09c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -138,8 +144,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
 <div class="textblock"><p>DPF <a class="el" href="classUI.html">UI</a> class from where <a class="el" href="classUI.html">UI</a> instances are created.</p>
 <dl class="section note"><dt>Note</dt><dd>You must call setSize during construction, @TODO Detailed information about this class. </dd></dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ad3425075e4a23234a8568d1893b54f22"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad3425075e4a23234a8568d1893b54f22">&#9670;&nbsp;</a></span>UI()</h2>
+<a id="a3015119edd4c96e7082f171a81cc5aa8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3015119edd4c96e7082f171a81cc5aa8">&#9670;&nbsp;</a></span>UI()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -154,7 +160,13 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">uint&#160;</td>
-          <td class="paramname"><em>height</em> = <code>0</code>&#160;</td>
+          <td class="paramname"><em>height</em> = <code>0</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>automaticallyScale</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -163,7 +175,9 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
         </tr>
       </table>
 </div><div class="memdoc">
-<p><a class="el" href="classUI.html">UI</a> class constructor. The <a class="el" href="classUI.html">UI</a> should be initialized to a default state that matches the plugin side. </p>
+<p><a class="el" href="classUI.html">UI</a> class constructor. The <a class="el" href="classUI.html">UI</a> should be initialized to a default state that matches the plugin side.</p>
+<p>When <em>automaticallyScale</em> is set to true, DPF will automatically scale up the <a class="el" href="classUI.html">UI</a> to fit the host/desktop scale factor.<br  />
+It assumes aspect ratio is meant to be kept. Manually call setGeometryConstraints instead if keeping <a class="el" href="classUI.html">UI</a> aspect ratio is not required. </p>
 
 </div>
 </div>
@@ -665,13 +679,104 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
 
 </div>
 </div>
+<a id="af8de639088f3b2d42c266a2d2d6719da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8de639088f3b2d42c266a2d2d6719da">&#9670;&nbsp;</a></span>uiIdle()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void UI::uiIdle </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="classUI.html">UI</a> idle function, called to give idle time to the plugin <a class="el" href="classUI.html">UI</a> directly from the host. This is called right after OS event handling and <a class="el" href="classWindow.html">Window</a> idle events (within the same cycle). There are no guarantees in terms of timing. </p><dl class="section see"><dt>See also</dt><dd>addIdleCallback(IdleCallback*, uint). </dd></dl>
+
+</div>
+</div>
+<a id="ad89b09ef4e8129d72ff3b3cb8716a96b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad89b09ef4e8129d72ff3b3cb8716a96b">&#9670;&nbsp;</a></span>uiScaleFactorChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void UI::uiScaleFactorChanged </td>
+          <td>(</td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>scaleFactor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="classWindow.html">Window</a> scale factor function, called when the scale factor changes. This function is for plugin UIs to be able to override <a class="el" href="classWindow.html#a306742ddc21c7c41f59b41e5761a38c7">Window::onScaleFactorChanged(double)</a>.</p>
+<p>The default implementation does nothing. WARNING function needs a proper name </p>
+
+</div>
+</div>
+<a id="a3d499674a620c1ce3b6e1dbded9f09c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d499674a620c1ce3b6e1dbded9f09c4">&#9670;&nbsp;</a></span>sizeChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void UI::sizeChanged </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>width</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>height</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>External <a class="el" href="classWindow.html">Window</a> resize function, called when the window is resized. This is overriden here so the host knows when the <a class="el" href="classUI.html">UI</a> is resized by you. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">ExternalWindow::sizeChanged(uint,uint)</a> </dd></dl>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>distrho/<a class="el" href="DistrhoUI_8hpp_source.html">DistrhoUI.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -825,84 +825,89 @@ $(function() {
 <div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a08b0741e6259e88552106136cdbff489">contains</a>(const <a class="code" href="classPoint.html">Point</a>&lt;T&gt;&amp; pos) const noexcept;</div>
 <div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;<span class="comment">      Check if this rectangle contains the point @a pos of another type.</span></div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;<span class="comment">      Check if this rectangle contains the point @a pos affected by a custom scale.</span></div>
 <div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    template&lt;typename T2&gt;</div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a08b0741e6259e88552106136cdbff489">contains</a>(const <a class="code" href="classPoint.html">Point</a>&lt;T2&gt;&amp; pos) const noexcept;</div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;<span class="comment">      Check if this rectangle contains X.</span></div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a71d17fdf110e4ed2350d2a5fe248e540">containsX</a>(const T&amp; x) const noexcept;</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a9edf56d37c808947aa75b55fa81a11e1">containsAfterScaling</a>(const <a class="code" href="classPoint.html">Point</a>&lt;T&gt;&amp; pos, <span class="keywordtype">double</span> scaling) const noexcept;</div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="comment">      Check if this rectangle contains the point @a pos of another type.</span></div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;    template&lt;typename T2&gt;</div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a08b0741e6259e88552106136cdbff489">contains</a>(const <a class="code" href="classPoint.html">Point</a>&lt;T2&gt;&amp; pos) const noexcept;</div>
 <div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="comment">      Check if this rectangle contains Y.</span></div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="comment">      Check if this rectangle contains X.</span></div>
 <div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a38b56f4f8b38597fd34f68c677de2559">containsY</a>(const T&amp; y) const noexcept;</div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a71d17fdf110e4ed2350d2a5fe248e540">containsX</a>(const T&amp; x) const noexcept;</div>
 <div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;<span class="comment">      Return true if size is null (0x0).</span></div>
-<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;<span class="comment">      An null size is also invalid.</span></div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#ae49e802c09f810bef2e98698d94a7416">isNull</a>() const noexcept;</div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;<span class="comment">      Return true if size is not null (0x0).</span></div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;<span class="comment">      A non-null size is still invalid if its width or height are negative.</span></div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a418138f282293797af5273163a307356">isNotNull</a>() const noexcept;</div>
-<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;<span class="comment">      Return true if size is valid (width and height are higher than zero).</span></div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;<span class="comment">      Check if this rectangle contains Y.</span></div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a38b56f4f8b38597fd34f68c677de2559">containsY</a>(const T&amp; y) const noexcept;</div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;<span class="comment">      Return true if size is null (0x0).</span></div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;<span class="comment">      An null size is also invalid.</span></div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#ae49e802c09f810bef2e98698d94a7416">isNull</a>() const noexcept;</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;<span class="comment">      Return true if size is not null (0x0).</span></div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;<span class="comment">      A non-null size is still invalid if its width or height are negative.</span></div>
 <div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a364ee7449a1d11207322e56aac024376">isValid</a>() const noexcept;</div>
+<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a418138f282293797af5273163a307356">isNotNull</a>() const noexcept;</div>
 <div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;<span class="comment">      Return true if size is invalid (width or height are lower or equal to zero).</span></div>
-<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="comment">      An invalid size might not be null under some circumstances.</span></div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a4606fd36eafb48a35cc890a781075177">isInvalid</a>() const noexcept;</div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="comment">      Draw this rectangle using the provided graphics context.</span></div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;<span class="comment">      Return true if size is valid (width and height are higher than zero).</span></div>
+<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a364ee7449a1d11207322e56aac024376">isValid</a>() const noexcept;</div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="comment">      Return true if size is invalid (width or height are lower or equal to zero).</span></div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="comment">      An invalid size might not be null under some circumstances.</span></div>
 <div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context);</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classRectangle.html#a4606fd36eafb48a35cc890a781075177">isInvalid</a>() const noexcept;</div>
 <div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;<span class="comment">      Draw lines (outline of this rectangle) using the provided graphics context, optionally specifying line width.</span></div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;<span class="comment">      Draw this rectangle using the provided graphics context.</span></div>
 <div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context, T lineWidth = 1);</div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160; </div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator=(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; rect) noexcept;</div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator*=(<span class="keywordtype">double</span> m) noexcept;</div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator/=(<span class="keywordtype">double</span> d) noexcept;</div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;    <span class="keywordtype">bool</span> operator==(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; size) const noexcept;</div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;    <span class="keywordtype">bool</span> operator!=(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; size) const noexcept;</div>
-<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;<span class="comment">      Draw this rectangle using the current OpenGL state.@n</span></div>
-<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;<span class="comment">      DEPRECATED Please use draw(const GraphicsContext&amp;) instead.</span></div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp;)&quot;)</div>
-<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>();</div>
-<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;<span class="comment">      Draw lines (outline of this rectangle) using the current OpenGL state.@n</span></div>
-<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;<span class="comment">      DEPRECATED Please use drawOutline(const GraphicsContext&amp;,T) instead.</span></div>
-<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp;)&quot;)</div>
-<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>();</div>
-<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160; </div>
-<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;private:</div>
-<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;    <a class="code" href="classPoint.html">Point</a>&lt;T&gt; pos;</div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    <a class="code" href="classSize.html">Size</a>&lt;T&gt; size;</div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;};</div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context);</div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;<span class="comment">      Draw lines (outline of this rectangle) using the provided graphics context, optionally specifying line width.</span></div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; context, T lineWidth = 1);</div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160; </div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator=(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; rect) noexcept;</div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator*=(<span class="keywordtype">double</span> m) noexcept;</div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; operator/=(<span class="keywordtype">double</span> d) noexcept;</div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    <span class="keywordtype">bool</span> operator==(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; size) const noexcept;</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    <span class="keywordtype">bool</span> operator!=(const <a class="code" href="classRectangle.html">Rectangle</a>&lt;T&gt;&amp; size) const noexcept;</div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;<span class="comment">      Draw this rectangle using the current OpenGL state.@n</span></div>
+<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;<span class="comment">      DEPRECATED Please use draw(const GraphicsContext&amp;) instead.</span></div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp;)&quot;)</div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a415da25901ad63d87e3bac7755535cda">draw</a>();</div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;<span class="comment">      Draw lines (outline of this rectangle) using the current OpenGL state.@n</span></div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;<span class="comment">      DEPRECATED Please use drawOutline(const GraphicsContext&amp;,T) instead.</span></div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>(const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp;)&quot;)</div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classRectangle.html#a562e46203701309da8748dcc5277373e">drawOutline</a>();</div>
 <div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160; </div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160; </div>
-<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160; </div>
-<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;<span class="preprocessor">#endif // DGL_GEOMETRY_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;private:</div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    <a class="code" href="classPoint.html">Point</a>&lt;T&gt; pos;</div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <a class="code" href="classSize.html">Size</a>&lt;T&gt; size;</div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;};</div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160; </div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160; </div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160; </div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;<span class="preprocessor">#endif // DGL_GEOMETRY_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassRectangle_html_abe5b6c92cece58bbc0c7cb4855e73dac"><div class="ttname"><a href="classRectangle.html#abe5b6c92cece58bbc0c7cb4855e73dac">Rectangle::setY</a></div><div class="ttdeci">void setY(const T &amp;y) noexcept</div></div>
 <div class="ttc" id="aclassTriangle_html"><div class="ttname"><a href="classTriangle.html">Triangle</a></div><div class="ttdef"><b>Definition:</b> Geometry.hpp:29</div></div>
@@ -986,6 +991,7 @@ $(function() {
 <div class="ttc" id="aclassSize_html_ab49a572da2fb72ab4f6dfd7a06b000c8"><div class="ttname"><a href="classSize.html#ab49a572da2fb72ab4f6dfd7a06b000c8">Size::isNull</a></div><div class="ttdeci">bool isNull() const noexcept</div></div>
 <div class="ttc" id="aclassLine_html_a7f3af6a8c08af69188714a83353e09fb"><div class="ttname"><a href="classLine.html#a7f3af6a8c08af69188714a83353e09fb">Line::getStartX</a></div><div class="ttdeci">const T &amp; getStartX() const noexcept</div></div>
 <div class="ttc" id="aclassLine_html_ab300b2e8deeda3d08cc7e70299c3955d"><div class="ttname"><a href="classLine.html#ab300b2e8deeda3d08cc7e70299c3955d">Line::isNull</a></div><div class="ttdeci">bool isNull() const noexcept</div></div>
+<div class="ttc" id="aclassRectangle_html_a9edf56d37c808947aa75b55fa81a11e1"><div class="ttname"><a href="classRectangle.html#a9edf56d37c808947aa75b55fa81a11e1">Rectangle::containsAfterScaling</a></div><div class="ttdeci">bool containsAfterScaling(const Point&lt; T &gt; &amp;pos, double scaling) const noexcept</div></div>
 <div class="ttc" id="aclassLine_html_a2c5ecf6513f1b1fd846a80915aff5744"><div class="ttname"><a href="classLine.html#a2c5ecf6513f1b1fd846a80915aff5744">Line::getStartPos</a></div><div class="ttdeci">const Point&lt; T &gt; &amp; getStartPos() const noexcept</div></div>
 <div class="ttc" id="aclassRectangle_html_aa91fa8951b6a77c86a3df804b1ed0717"><div class="ttname"><a href="classRectangle.html#aa91fa8951b6a77c86a3df804b1ed0717">Rectangle::getPos</a></div><div class="ttdeci">const Point&lt; T &gt; &amp; getPos() const noexcept</div></div>
 <div class="ttc" id="aclassLine_html_a5c5de1ccedae8ea85fd711eab10359dd"><div class="ttname"><a href="classLine.html#a5c5de1ccedae8ea85fd711eab10359dd">Line::getEndY</a></div><div class="ttdeci">const T &amp; getEndY() const noexcept</div></div>
@@ -997,7 +1003,7 @@ $(function() {
 <div class="ttc" id="aclassLine_html_a17061d9ae2e85a5f929148e5106504bf"><div class="ttname"><a href="classLine.html#a17061d9ae2e85a5f929148e5106504bf">Line::setEndX</a></div><div class="ttdeci">void setEndX(const T &amp;x) noexcept</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sat Jul 3 2021 23:11:19 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
