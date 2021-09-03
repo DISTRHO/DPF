@@ -61,6 +61,7 @@ class EmbedExternalExampleUI : public UI
     NSView* fView;
     NSExternalWindow* fWindow;
 #elif defined(DISTRHO_OS_WINDOWS)
+    ::HWND fWindow;
 #else
     ::Display* fDisplay;
     ::Window fWindow;
@@ -71,13 +72,13 @@ public:
         : UI(512, 256),
 #if defined(DISTRHO_OS_MAC)
           fView(nullptr),
-          fWindow(nullptr),
+          fWindow(nullptr)
 #elif defined(DISTRHO_OS_WINDOWS)
+          fWindow(nullptr)
 #else
           fDisplay(nullptr),
-          fWindow(0),
+          fWindow(0)
 #endif
-          fValue(0.0f)
     {
         const bool standalone = isStandalone();
         d_stdout("isStandalone %d", (int)standalone);
@@ -222,10 +223,17 @@ protected:
     */
     void parameterChanged(uint32_t index, float value) override
     {
-        if (index != 0)
-            return;
+        d_stdout("parameterChanged %u %f", index, value);
 
-        fValue = value;
+        switch (index)
+        {
+        case kParameterWidth:
+            setWidth(static_cast<int>(value + 0.5f));
+            break;
+        case kParameterHeight:
+            setHeight(static_cast<int>(value + 0.5f));
+            break;
+        }
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -255,6 +263,19 @@ protected:
         return (uintptr_t)fWindow;
 #endif
         return 0;
+    }
+
+    void sizeChanged(uint width, uint height) override
+    {
+        d_stdout("sizeChanged %u %u", width, height);
+        UI::sizeChanged(width, height);
+
+#if defined(DISTRHO_OS_MAC)
+#elif defined(DISTRHO_OS_WINDOWS)
+#else
+        if (fWindow != 0)
+            XResizeWindow(fDisplay, fWindow, width, height);
+#endif
     }
 
     void titleChanged(const char* const title) override
@@ -347,7 +368,8 @@ protected:
 
         [pool release];
 #elif defined(DISTRHO_OS_WINDOWS)
-        /*MSG msg;
+        /*
+        MSG msg;
         if (! ::PeekMessage(&msg, nullptr, 0, 0, PM_NOREMOVE))
             return true;
 
@@ -358,7 +380,8 @@ protected:
 
             //TranslateMessage(&msg);
             DispatchMessage(&msg);
-        }*/
+        }
+        */
 #else
         if (fDisplay == nullptr)
             return;

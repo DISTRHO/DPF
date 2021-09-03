@@ -297,7 +297,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
 
-        if (pData.width == width || pData.height == height)
+        if (pData.width == width && pData.height == height)
             return;
 
         pData.width = width;

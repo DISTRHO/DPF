@@ -28,7 +28,8 @@ class EmbedExternalExamplePlugin : public Plugin
 public:
     EmbedExternalExamplePlugin()
         : Plugin(kParameterCount, 0, 0),
-          fValue(0.0f)
+          fWidth(512.0f),
+          fHeight(256.0f)
     {
     }
 
@@ -104,15 +105,27 @@ protected:
     */
     void initParameter(uint32_t index, Parameter& parameter) override
     {
-        if (index != 0)
-            return;
-
-        parameter.hints      = kParameterIsAutomable|kParameterIsInteger;
-        parameter.ranges.def = 0.0f;
-        parameter.ranges.min = 0.0f;
-        parameter.ranges.max = 100.0f;
-        parameter.name   = "Value";
-        parameter.symbol = "value";
+        switch (index)
+        {
+        case kParameterWidth:
+            parameter.hints      = kParameterIsAutomable|kParameterIsInteger;
+            parameter.ranges.def = 512.0f;
+            parameter.ranges.min = 256.0f;
+            parameter.ranges.max = 4096.0f;
+            parameter.name   = "Width";
+            parameter.symbol = "width";
+            parameter.unit   = "px";
+            break;
+        case kParameterHeight:
+            parameter.hints      = kParameterIsAutomable|kParameterIsInteger;
+            parameter.ranges.def = 256.0f;
+            parameter.ranges.min = 256.0f;
+            parameter.ranges.max = 4096.0f;
+            parameter.name   = "Height";
+            parameter.symbol = "height";
+            parameter.unit   = "px";
+            break;
+        }
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -124,10 +137,15 @@ protected:
     */
     float getParameterValue(uint32_t index) const override
     {
-        if (index != 0)
-            return 0.0f;
+        switch (index)
+        {
+        case kParameterWidth:
+            return fWidth;
+        case kParameterHeight:
+            return fHeight;
+        }
 
-        return fValue;
+        return 0.0f;
 
     }
 
@@ -139,10 +157,15 @@ protected:
     */
     void setParameterValue(uint32_t index, float value) override
     {
-        if (index != 0)
-            return;
-
-        fValue = value;
+        switch (index)
+        {
+        case kParameterWidth:
+            fWidth = value;
+            break;
+        case kParameterHeight:
+            fHeight = value;
+            break;
+        }
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -169,7 +192,7 @@ protected:
 
 private:
     // Parameters
-    float fValue;
+    float fWidth, fHeight;
 
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.

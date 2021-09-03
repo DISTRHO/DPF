@@ -30,7 +30,8 @@
 #define DISTRHO_UI_USER_RESIZABLE      1
 
 enum Parameters {
-    kParameterLevel = 0,
+    kParameterWidth = 0,
+    kParameterHeight,
     kParameterCount
 };
 
