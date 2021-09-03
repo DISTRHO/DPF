@@ -16,19 +16,106 @@
 
 #include "DistrhoUIPrivateData.hpp"
 #include "src/WindowPrivateData.hpp"
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if defined(DISTRHO_OS_HAIKU)
+# elif defined(DISTRHO_OS_MAC)
+#  define Point CocoaPoint
+#  define Size CocoaSize
+#  import <Cocoa/Cocoa.h>
+#  undef Point
+#  undef Size
+# elif defined(DISTRHO_OS_WINDOWS)
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+# else
+#  include <X11/Xresource.h>
+# endif
+#else
 # include "src/TopLevelWidgetPrivateData.hpp"
 #endif
 
 START_NAMESPACE_DISTRHO
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * Static data, see DistrhoUIInternal.hpp */
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 uintptr_t   g_nextWindowId    = 0;
 double      g_nextScaleFactor = 1.0;
 const char* g_nextBundlePath  = nullptr;
+
+/* ------------------------------------------------------------------------------------------------------------
+ * get global scale factor */
+
+static double getDesktopScaleFactor()
+{
+    // allow custom scale for testing
+    if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
+        return std::max(1.0, std::atof(scale));
+
+#if defined(DISTRHO_OS_MAC)
+    return [NSScreen mainScreen].backingScaleFactor;
+#elif defined(DISTRHO_OS_WINDOWS)
+    if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
+    {
+        typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
+        typedef HRESULT(WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR, DWORD*);
+
+        const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
+            = (PFN_GetProcessDpiAwareness)GetProcAddress(Shcore, "GetProcessDpiAwareness");
+        const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
+            = (PFN_GetScaleFactorForMonitor)GetProcAddress(Shcore, "GetScaleFactorForMonitor");
+
+        DWORD dpiAware = 0;
+        if (GetProcessDpiAwareness && GetScaleFactorForMonitor
+            && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
+        {
+            // TODO replace with something else
+            const HMONITOR hMon = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
+
+            DWORD scaleFactor = 0;
+            if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
+            {
+                FreeLibrary(Shcore);
+                return static_cast<double>(scaleFactor) / 100.0;
+            }
+        }
+
+        FreeLibrary(Shcore);
+    }
+#elif defined(HAVE_X11)
+    ::Display* const display = XOpenDisplay(nullptr);
+    DISTRHO_SAFE_ASSERT_RETURN(display != nullptr, 1.0);
+
+    XrmInitialize();
+
+    if (char* const rms = XResourceManagerString(view->world->impl->display))
+    {
+        if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
+        {
+            char* type = nullptr;
+            XrmValue ret;
+
+            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
+                && ret.addr != nullptr
+                && type != nullptr
+                && std::strncmp("String", type, 6) == 0)
+            {
+                if (const double dpi = std::atof(ret.addr))
+                {
+                    XCloseDisplay(display);
+                    return dpi / 96;
+                }
+            }
+        }
+    }
+
+    XCloseDisplay(display);
+#endif
+
+    return 1.0;
+}
+
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -50,7 +137,7 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
     ewData.parentWindowHandle = pData->winId;
     ewData.width = width;
     ewData.height = height;
-    ewData.scaleFactor = pData->scaleFactor;
+    ewData.scaleFactor = pData->scaleFactor != 0.0 ? pData->scaleFactor : getDesktopScaleFactor();
     ewData.title = DISTRHO_PLUGIN_NAME;
     ewData.isStandalone = DISTRHO_UI_IS_STANDALONE;
     return ewData;
