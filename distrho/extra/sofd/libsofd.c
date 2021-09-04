@@ -461,8 +461,8 @@ static FibButton    *_btns[] = {&_btn_places, &_btn_filter, &_btn_hidden, &_btn_
 static int (*_fib_filter_function)(const char *filename);
 
 /* hardcoded layout */
-#define DSEP 6 // px; horiz space beween elements, also l+r margin for file-list
-#define PSEP 4 // px; horiz space beween paths
+#define DSEP 6 // px; horiz space between elements, also l+r margin for file-list
+#define PSEP 4 // px; horiz space between paths
 #define FILECOLUMN (17 * _fib_dir_indent) //px;  min width of file-column
 #define LISTTOP 2.7 //em;  top of the file-browser list
 #define LISTBOT 4.75 //em;  bottom of the file-browers list
@@ -617,7 +617,7 @@ static void fib_expose (Display *dpy, Window realwin) {
 	int t_s = FAREATEXTL * _scalefactor + fsel_width;
 	int t_t = FAREATEXTL * _scalefactor + fsel_width;
 
-	// check which colums can be visible
+	// check which columns can be visible
 	// depending on available width of window.
 	_columns = 0;
 	if (fsel_width > FILECOLUMN + _fib_font_size_width + _fib_font_time_width) {

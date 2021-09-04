@@ -694,7 +694,7 @@ static int glnvg__renderCreate(void* uptr, void* otherUptr)   // Share the textu
 		"		color *= strokeAlpha * scissor;\n"
 		"		result = color;\n"
 		"	} else if (type == 1) {		// Image\n"
-		"		// Calculate color fron texture\n"
+		"		// Calculate color from texture\n"
 		"		vec2 pt = (paintMat * vec3(fpos,1.0)).xy / extent;\n"
 		"#ifdef NANOVG_GL3\n"
 		"		vec4 color = texture(tex, pt);\n"

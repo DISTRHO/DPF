@@ -149,7 +149,7 @@ puglCreateWindow(PuglView* view, const char* title)
 	if (view->user_resizable) {
 		winFlags |= WS_SIZEBOX;
 		if (view->min_width > 0 && view->min_height > 0) {
-			// Adjust the minimum window size to accomodate requested view size
+			// Adjust the minimum window size to accommodate requested view size
 			RECT mr = { 0, 0, view->min_width, view->min_height };
 			AdjustWindowRectEx(&mr, view->parent ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
 			view->min_width  = mr.right - mr.left;
@@ -157,7 +157,7 @@ puglCreateWindow(PuglView* view, const char* title)
 		}
 	}
 
-	// Adjust the window size to accomodate requested view size
+	// Adjust the window size to accommodate requested view size
 	RECT wr = { 0, 0, view->width, view->height };
 	AdjustWindowRectEx(&wr, view->parent ? WS_CHILD : winFlags, FALSE, WS_EX_TOPMOST);
 

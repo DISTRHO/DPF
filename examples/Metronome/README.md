@@ -5,7 +5,7 @@ This example will show tempo sync in DPF.<br/>
 This plugin will output a sine wave at the start of every beat.<br/>
 The pitch of sine wave is 1 octave higher at the start of every bar.<br/>
 
-4 parameters are avaialble:
+4 parameters are available:
 
 - Gain
 - Decay time

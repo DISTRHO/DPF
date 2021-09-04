@@ -125,7 +125,7 @@ struct AudioMidiSyncHelper
     }
 
     /**
-       Process a batch of events untill no more are available.
+       Process a batch of events until no more are available.
        You must not read any more values from this class after this function returns false.
     */
     bool nextEvent()
