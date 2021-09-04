@@ -15,7 +15,6 @@
  */
 
 #include "DistrhoUIPrivateData.hpp"
-#include "src/WindowPrivateData.hpp"
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # if defined(DISTRHO_OS_WINDOWS)
 #  define WIN32_LEAN_AND_MEAN
@@ -26,6 +25,7 @@
 #else
 # include "src/TopLevelWidgetPrivateData.hpp"
 #endif
+#include "src/WindowPrivateData.hpp"
 
 START_NAMESPACE_DISTRHO
 
