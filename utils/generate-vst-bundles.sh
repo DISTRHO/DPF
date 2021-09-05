@@ -19,7 +19,7 @@ for i in $PLUGINS; do
   cp -r ${DPF_DIR}/utils/plugin.vst/ ${BUNDLE}.vst
   mv ${i} ${BUNDLE}.vst/Contents/MacOS/${BUNDLE}
   rm -f ${BUNDLE}.vst/Contents/MacOS/deleteme
-  sed -i -e "s/X-PROJECTNAME-X/${BUNDLE}/" ${BUNDLE}.vst/Contents/Info.plist
+  sed -i -e "s/@INFO_PLIST_PROJECT_NAME@/${BUNDLE}/" ${BUNDLE}.vst/Contents/Info.plist
   rm -f ${BUNDLE}.vst/Contents/Info.plist-e
 done
 

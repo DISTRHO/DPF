@@ -317,6 +317,17 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst2/$<0:>"
     OUTPUT_NAME "${NAME}-vst2"
     PREFIX "")
+  if(APPLE)
+    set_target_properties("${NAME}-vst2" PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents/MacOS/$<0:>"
+      OUTPUT_NAME "${NAME}"
+      SUFFIX "")
+    set(INFO_PLIST_PROJECT_NAME "${NAME}")
+    configure_file("${DPF_ROOT_DIR}/utils/plugin.vst/Contents/Info.plist"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents/Info.plist" @ONLY)
+    file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst/Contents/PkgInfo"
+      DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents")
+  endif()
 endfunction()
 
 # dpf__add_dgl_cairo
