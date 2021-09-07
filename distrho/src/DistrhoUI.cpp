@@ -14,8 +14,8 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoUIPrivateData.hpp"
-#include "src/WindowPrivateData.hpp"
+#include "src/DistrhoPluginChecks.h"
+
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # if defined(DISTRHO_OS_WINDOWS)
 #  define WIN32_LEAN_AND_MEAN
@@ -26,6 +26,9 @@
 #else
 # include "src/TopLevelWidgetPrivateData.hpp"
 #endif
+
+#include "DistrhoUIPrivateData.hpp"
+#include "src/WindowPrivateData.hpp"
 
 START_NAMESPACE_DISTRHO
 
