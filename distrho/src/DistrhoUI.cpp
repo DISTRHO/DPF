@@ -25,10 +25,10 @@
 # endif
 #else
 # include "src/TopLevelWidgetPrivateData.hpp"
+# include "src/WindowPrivateData.hpp"
 #endif
 
 #include "DistrhoUIPrivateData.hpp"
-#include "src/WindowPrivateData.hpp"
 
 START_NAMESPACE_DISTRHO
 
