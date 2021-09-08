@@ -84,10 +84,12 @@ public:
           fPortControls(nullptr),
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+          fCtrlInPortChangeReq(ctrlInPortChangeReq),
+#endif
           fURIDs(uridMap),
           fUridMap(uridMap),
-          fWorker(worker),
-          fCtrlInPortChangeReq(ctrlInPortChangeReq)
+          fWorker(worker)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -156,6 +158,11 @@ public:
 #else
         // unused
         (void)fWorker;
+#endif
+
+#if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+        // unused
+        (void)ctrlInPortChangeReq;
 #endif
     }
 
@@ -1178,9 +1185,11 @@ private:
     } fURIDs;
 
     // LV2 features
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    const LV2_ControlInputPort_Change_Request* const fCtrlInPortChangeReq;
+#endif
     const LV2_URID_Map* const fUridMap;
     const LV2_Worker_Schedule* const fWorker;
-    const LV2_ControlInputPort_Change_Request* const fCtrlInPortChangeReq;
 
 #if DISTRHO_PLUGIN_WANT_STATE
     StringToStringMap fStateMap;

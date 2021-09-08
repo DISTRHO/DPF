@@ -473,10 +473,6 @@ protected:
 
     // -------------------------------------------------------------------------------------------------------
 
-private:
-    // Current value, cached for when UI becomes visible
-    float fValue;
-
    /**
       Set our UI class as non-copyable and add a leak detector just in case.
     */
