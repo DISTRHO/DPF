@@ -69,8 +69,7 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
         {
             const HMONITOR hMon = parentWindowHandle != 0
                                 ? MonitorFromWindow((HWND)parentWindowHandle, MONITOR_DEFAULTTOPRIMARY)
-                                /* TODO replace with something else for parent-less */
-                                : MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
+                                : MonitorFromPoint(POINT{0,0}, MONITOR_DEFAULTTOPRIMARY);
 
             DWORD scaleFactor = 0;
             if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
