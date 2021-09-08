@@ -642,11 +642,9 @@ bool sofdFileDialogShow(PuglView* const view,
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(0, startDir) == 0, false);
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(1, title) == 0, false);
 
-    /*
-    x_fib_cfg_buttons(3, options.buttons.listAllFiles-1);
-    x_fib_cfg_buttons(1, options.buttons.showHidden-1);
-    x_fib_cfg_buttons(2, options.buttons.showPlaces-1);
-    */
+    x_fib_cfg_buttons(3, flags & 0x001 ? 1 : flags & 0x002 ? 0 : -1);
+    x_fib_cfg_buttons(1, flags & 0x010 ? 1 : flags & 0x020 ? 0 : -1);
+    x_fib_cfg_buttons(2, flags & 0x100 ? 1 : flags & 0x200 ? 0 : -1);
 
     return (x_fib_show(sofd_display, view->impl->win, 0, 0, scaleFactor + 0.5) == 0);
 }

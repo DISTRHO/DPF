@@ -87,7 +87,7 @@ public:
             Buttons()
                 : listAllFiles(kButtonVisibleChecked),
                   showHidden(kButtonVisibleUnchecked),
-                  showPlaces(kButtonVisibleUnchecked) {}
+                  showPlaces(kButtonVisibleChecked) {}
         } buttons;
 
         /** Constructor for default values */

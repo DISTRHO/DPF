@@ -2072,7 +2072,7 @@ int x_fib_show (Display *dpy, Window parent, int x, int y, double scalefactor) {
 	sync_button_states () ;
 
 	_fib_height = _fib_font_vsep * 15.8 * (1.0 + (scalefactor - 1.0) / 2.0);
-	_fib_width  = MAX (_btn_span, 440 * scalefactor);
+	_fib_width  = MAX (_btn_span, 480 * scalefactor);
 
 	XResizeWindow (dpy, _fib_win, _fib_width, _fib_height);
 

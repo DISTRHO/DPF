@@ -459,19 +459,19 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     if (startDir.isEmpty())
     {
         // TESTING verify this whole thing...
-#ifdef DISTRHO_OS_WINDOWS
+# ifdef DISTRHO_OS_WINDOWS
         if (char* const cwd = _getcwd(nullptr, 0))
         {
             startDir = cwd;
             std::free(cwd);
         }
-#else
+# else
         if (char* const cwd = getcwd(nullptr, 0))
         {
             startDir = cwd;
             std::free(cwd);
         }
-#endif
+# endif
     }
 
     DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
@@ -497,14 +497,17 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 
 # ifdef DISTRHO_OS_MAC
     uint flags = 0x0;
+
     if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x001;
     else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
         flags |= 0x002;
+
     if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x010;
     else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
         flags |= 0x020;
+
     if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x100;
     else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
@@ -564,14 +567,17 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 
 # ifdef HAVE_X11
     uint flags = 0x0;
+
     if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x001;
     else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
         flags |= 0x002;
+
     if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x010;
     else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
         flags |= 0x020;
+
     if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
         flags |= 0x100;
     else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
