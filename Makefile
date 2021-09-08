@@ -21,6 +21,7 @@ dgl:
 
 examples: dgl
 	$(MAKE) all -C examples/CVPort
+	$(MAKE) all -C examples/EmbedExternalUI
 	$(MAKE) all -C examples/FileHandling
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
@@ -33,15 +34,6 @@ examples: dgl
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
-# ifneq ($(MACOS_OR_WINDOWS),true)
-# 	# ExternalUI is WIP
-# 	$(MAKE) all -C examples/ExternalUI
-# 	install -d bin/d_extui-dssi
-# 	install -d bin/d_extui.lv2
-# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.sh
-# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui-dssi/d_extui.sh
-# 	install -m 755 examples/ExternalUI/ExternalLauncher.sh bin/d_extui.lv2/d_extui.sh
-# endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator
@@ -65,6 +57,7 @@ clean:
 	$(MAKE) clean -C dgl
 	$(MAKE) clean -C examples/CVPort
 	$(MAKE) clean -C examples/CairoUI
+	$(MAKE) clean -C examples/EmbedExternalUI
 	$(MAKE) clean -C examples/FileHandling
 	$(MAKE) clean -C examples/Info
 	$(MAKE) clean -C examples/Latency
@@ -75,9 +68,6 @@ clean:
 	$(MAKE) clean -C examples/SendNote
 	$(MAKE) clean -C examples/States
 	$(MAKE) clean -C utils/lv2-ttl-generator
-ifneq ($(MACOS_OR_WINDOWS),true)
-	$(MAKE) clean -C examples/ExternalUI
-endif
 	rm -rf bin build
 
 # --------------------------------------------------------------
