@@ -505,12 +505,17 @@ bool puglMacOSFilePanelOpen(PuglView* const view,
 
     NSOpenPanel* const panel = [NSOpenPanel openPanel];
 
-    // TODO flags
+    [panel setAllowsMultipleSelection:NO];
     [panel setCanChooseFiles:YES];
     [panel setCanChooseDirectories:NO];
-    [panel setAllowsMultipleSelection:NO];
-
     [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
+
+    // TODO file filter using allowedContentTypes: [UTType]
+
+    if (flags & 0x001)
+        [panel setAllowsOtherFileTypes:YES];
+    if (flags & 0x010)
+        [panel setShowsHiddenFiles:YES];
 
     NSString* titleString = [[NSString alloc]
         initWithBytes:title

@@ -497,7 +497,19 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 
 # ifdef DISTRHO_OS_MAC
     uint flags = 0x0;
-    // TODO flags
+    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x001;
+    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x002;
+    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x010;
+    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x020;
+    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x100;
+    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x200;
+
     return puglMacOSFilePanelOpen(view, startDir, title, flags, openPanelCallback);
 # endif
 
@@ -552,7 +564,19 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 
 # ifdef HAVE_X11
     uint flags = 0x0;
-    // TODO flags
+    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x001;
+    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x002;
+    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x010;
+    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x020;
+    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
+        flags |= 0x100;
+    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
+        flags |= 0x200;
+
     return sofdFileDialogShow(view, startDir, title, flags, autoScaling ? autoScaleFactor : scaleFactor);
 # endif
 

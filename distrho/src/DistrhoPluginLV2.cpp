@@ -84,10 +84,10 @@ public:
           fPortControls(nullptr),
           fLastControlValues(nullptr),
           fSampleRate(sampleRate),
+          fURIDs(uridMap),
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
           fCtrlInPortChangeReq(ctrlInPortChangeReq),
 #endif
-          fURIDs(uridMap),
           fUridMap(uridMap),
           fWorker(worker)
     {
