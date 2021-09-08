@@ -61,6 +61,6 @@ Online help and discussion about DPF happens in the [kx.studio chat, DPF room](h
  - [Shiro Plugins](https://github.com/ninodewit/SHIRO-Plugins/)
  - [Shiru Plugins](https://github.com/linuxmao-org/shiru-plugins)
 
-Checking the [github "DPF" tag](https://github.com/topics/dpf) can potentially brings up other DPF-made plugins.
+Checking the [github "DPF" tag](https://github.com/topics/dpf) can potentially bring up other DPF-made plugins.
 
 Plugin examples are available in the `example/` folder inside this repo.
