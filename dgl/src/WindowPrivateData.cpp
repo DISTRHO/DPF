@@ -544,6 +544,11 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     ofn.lpstrFile = fileNameW.data();
     ofn.nMaxFile = (DWORD)fileNameW.size();
 
+    // flags
+    ofn.Flags = OFN_PATHMUSTEXIST;
+    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
+        ofn.Flags |= OFN_FORCESHOWHIDDEN;
+
     // TODO synchronous only, can't do better with WinAPI native dialogs.
     // threading might work, if someone is motivated to risk it.
     if (GetOpenFileNameW(&ofn))
