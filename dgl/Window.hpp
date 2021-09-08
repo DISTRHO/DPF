@@ -59,6 +59,7 @@ public:
        /**
           File browser button state.
           This allows to customize the behaviour of the file browse dialog buttons.
+          Note these are merely hints, not all systems support them.
         */
         enum ButtonState {
             kButtonInvisible,
