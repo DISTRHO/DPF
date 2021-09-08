@@ -902,9 +902,9 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View created, a #PuglEventCreate
     case PUGL_CREATE:
-#ifdef DGL_PUGL_USING_X11
+#ifdef HAVE_X11
         if (! pData->isEmbed)
-            puglExtraSetWindowTypeAndPID(view);
+            puglX11SetWindowTypeAndPID(view);
 #endif
         break;
 

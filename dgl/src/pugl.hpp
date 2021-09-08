@@ -130,7 +130,11 @@ puglWin32SetWindowResizable(PuglView* view, bool resizable);
 #ifdef HAVE_X11
 // X11 specific, safer way to grab focus
 PUGL_API PuglStatus
-puglX11GrabFocus(PuglView* view);
+puglX11GrabFocus(const PuglView* view);
+
+// X11 specific, set dialog window type and pid hints
+PUGL_API void
+puglX11SetWindowTypeAndPID(const PuglView* view);
 
 // X11 specific, show file dialog via sofd
 PUGL_API bool

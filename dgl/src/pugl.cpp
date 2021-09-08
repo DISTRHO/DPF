@@ -601,9 +601,9 @@ void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, safer way to grab focus
 
-PuglStatus puglX11GrabFocus(PuglView* const view)
+PuglStatus puglX11GrabFocus(const PuglView* const view)
 {
-    PuglInternals* const impl = view->impl;
+    const PuglInternals* const impl = view->impl;
 
     XWindowAttributes wa;
     std::memset(&wa, 0, sizeof(wa));
@@ -618,6 +618,29 @@ PuglStatus puglX11GrabFocus(PuglView* const view)
     }
 
     return PUGL_SUCCESS;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// X11 specific, set dialog window type and pid hints
+
+void puglX11SetWindowTypeAndPID(const PuglView* const view)
+{
+    const PuglInternals* const impl = view->impl;
+
+    const pid_t pid = getpid();
+    const Atom _nwp = XInternAtom(impl->display, "_NET_WM_PID", False);
+    XChangeProperty(impl->display, impl->win, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
+
+    const Atom _wt = XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE", False);
+
+    // Setting the window to both dialog and normal will produce a decorated floating dialog
+    // Order is important: DIALOG needs to come before NORMAL
+    const Atom _wts[2] = {
+        XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE_DIALOG", False),
+        XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE_NORMAL", False)
+    };
+
+    XChangeProperty(impl->display, impl->win, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, 2);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
