@@ -53,6 +53,10 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
         return std::max(1.0, std::atof(scale));
 
 #if defined(DISTRHO_OS_WINDOWS)
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
     if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
     {
         typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
@@ -81,6 +85,9 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
         FreeLibrary(Shcore);
     }
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic pop
+# endif
 #elif defined(HAVE_X11)
     ::Display* const display = XOpenDisplay(nullptr);
     DISTRHO_SAFE_ASSERT_RETURN(display != nullptr, 1.0);
