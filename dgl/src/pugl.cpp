@@ -213,10 +213,17 @@ double puglGetDesktopScaleFactor(const PuglView* const view)
         typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
         typedef HRESULT(WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR, DWORD*);
 
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
         const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
             = (PFN_GetProcessDpiAwareness)GetProcAddress(Shcore, "GetProcessDpiAwareness");
         const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
             = (PFN_GetScaleFactorForMonitor)GetProcAddress(Shcore, "GetScaleFactorForMonitor");
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic pop
+# endif
 
         DWORD dpiAware = 0;
         if (GetProcessDpiAwareness && GetScaleFactorForMonitor
