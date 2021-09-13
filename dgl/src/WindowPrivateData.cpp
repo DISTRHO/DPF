@@ -123,7 +123,6 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
 #endif
       modal(ppData)
 {
-    puglBackendLeave(transientParentView);
     puglSetTransientFor(view, puglGetNativeWindow(transientParentView));
 
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -265,10 +264,6 @@ bool Window::PrivateData::initPost()
         appData->oneWindowShown();
         puglShow(view);
     }
-
-    // give context back to transient parent window
-    if (transientParentView != nullptr)
-        puglBackendEnter(transientParentView);
 
     return true;
 }

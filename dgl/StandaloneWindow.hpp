@@ -37,12 +37,12 @@ public:
         sgc((Window&)*this) {}
 
    /**
-      Constructor with parent window, typically used to run as modal.
+      Constructor with a transient parent window, typically used to run as modal.
     */
-    StandaloneWindow(Application& app, Window& parentWindow)
-      : Window(app, parentWindow),
+    StandaloneWindow(Application& app, Window& transientParentWindow)
+      : Window(app, transientParentWindow),
         TopLevelWidget((Window&)*this),
-        sgc((Window&)*this) {}
+        sgc((Window&)*this, transientParentWindow) {}
 
    /**
       Clear current graphics context.

@@ -49,6 +49,8 @@ class TopLevelWidget;
  */
 class Window
 {
+   struct PrivateData;
+
 public:
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
@@ -131,6 +133,9 @@ public:
         /** Constructor that will make the @a window graphics context the current one */
         explicit ScopedGraphicsContext(Window& window);
 
+        /** Overloaded constructor, gives back context to its transient parent when done */
+        explicit ScopedGraphicsContext(Window& window, Window& transientParentWindow);
+
         /** Desstructor for clearing current context, if not done yet */
         ~ScopedGraphicsContext();
 
@@ -142,6 +147,7 @@ public:
 
     private:
         Window& window;
+        Window::PrivateData* ppData;
         bool active;
     };
 
@@ -451,7 +457,6 @@ protected:
 #endif
 
 private:
-    struct PrivateData;
     PrivateData* const pData;
     friend class Application;
     friend class PluginWindow;
