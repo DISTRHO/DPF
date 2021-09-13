@@ -152,6 +152,11 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
     return ewData;
 #else
     pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
+
+    // If there are no callbacks, this is most likely a temporary window, so ignore idle callbacks
+    if (pData->callbacksPtr == nullptr)
+        pData->window->setIgnoreIdleCallbacks();
+
     return pData->window.getObject();
 #endif
 }

@@ -93,10 +93,6 @@ public:
 #else
         // Leave context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
         uiData->window->leaveContext();
-
-        // If there are no callbacks, this is most likely a temporary window, so ignore idle callbacks
-        if (callbacksPtr == nullptr)
-            uiData->window->setIgnoreIdleCallbacks();
 #endif
         UI::PrivateData::s_nextPrivateData = nullptr;
 
