@@ -74,6 +74,9 @@ struct Window::PrivateData : IdleCallback {
     uint minWidth, minHeight;
     bool keepAspectRatio;
 
+    /** Whether to ignore idle callback requests, useful for temporary windows. */
+    bool ignoreIdleCallbacks;
+
 #ifdef DISTRHO_OS_WINDOWS
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */
     const char* win32SelectedFile;

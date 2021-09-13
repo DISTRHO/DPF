@@ -94,6 +94,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
+      ignoreIdleCallbacks(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -118,6 +119,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
+      ignoreIdleCallbacks(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -146,6 +148,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
+      ignoreIdleCallbacks(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -176,6 +179,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
+      ignoreIdleCallbacks(false),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -414,6 +418,9 @@ void Window::PrivateData::idleCallback()
 
 bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
+    if (ignoreIdleCallbacks)
+        return false;
+
     if (timerFrequencyInMs == 0)
     {
         appData->idleCallbacks.push_back(callback);
@@ -425,6 +432,9 @@ bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const ui
 
 bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 {
+    if (ignoreIdleCallbacks)
+        return false;
+
     if (std::find(appData->idleCallbacks.begin(),
                   appData->idleCallbacks.end(), callback) != appData->idleCallbacks.end())
     {

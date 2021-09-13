@@ -187,6 +187,11 @@ public:
         puglBackendLeave(pData->view);
     }
 
+    void setIgnoreIdleCallbacks(const bool ignore = true)
+    {
+        pData->ignoreIdleCallbacks = ignore;
+    }
+
 protected:
     void onFocus(const bool focus, const DGL_NAMESPACE::CrossingMode mode) override
     {
