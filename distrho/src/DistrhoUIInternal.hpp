@@ -107,6 +107,7 @@ public:
 
     ~UIExporter()
     {
+        quit();
         delete ui;
         delete uiData;
     }
