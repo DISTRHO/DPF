@@ -502,6 +502,33 @@ puglMacOSRemoveChildWindow(PuglView* const view, PuglView* const child)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// macOS specific, center view based on parent coordinates (if there is one)
+
+void puglMacOSShowCentered(PuglView* const view)
+{
+    if (puglShow(view) != PUGL_SUCCESS)
+        return;
+
+    if (view->transientParent != 0)
+    {
+        NSWindow* const transientWindow = [(NSView*)view->transientParent window];
+        DISTRHO_SAFE_ASSERT_RETURN(transientWindow != nullptr,);
+
+        const NSRect ourFrame       = [view->impl->window frame];
+        const NSRect transientFrame = [transientWindow frame];
+
+        const int x = transientFrame.origin.x + transientFrame.size.width / 2 - ourFrame.size.width / 2;
+        const int y = transientFrame.origin.y + transientFrame.size.height / 2  + ourFrame.size.height / 2;
+
+        [view->impl->window setFrameTopLeftPoint:NSMakePoint(x, y)];
+    }
+    else
+    {
+        [view->impl->window center];
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // macOS specific, setup file browser dialog
 
 bool puglMacOSFilePanelOpen(PuglView* const view,
@@ -564,7 +591,7 @@ void puglWin32RestoreWindow(PuglView* const view)
 // --------------------------------------------------------------------------------------------------------------------
 // win32 specific, center view based on parent coordinates (if there is one)
 
-void puglWin32ShowWindowCentered(PuglView* const view)
+void puglWin32ShowCentered(PuglView* const view)
 {
     PuglInternals* impl = view->impl;
     DISTRHO_SAFE_ASSERT_RETURN(impl->hwnd != nullptr,);

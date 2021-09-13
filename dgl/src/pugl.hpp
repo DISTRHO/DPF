@@ -108,6 +108,10 @@ puglMacOSAddChildWindow(PuglView* view, PuglView* child);
 PUGL_API PuglStatus
 puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
 
+// macOS specific, center view based on parent coordinates (if there is one)
+PUGL_API void
+puglMacOSShowCentered(PuglView* view);
+
 // macOS specific, setup file browser dialog
 typedef void (*openPanelCallback)(PuglView* view, const char* path);
 bool puglMacOSFilePanelOpen(PuglView* view, const char* startDir, const char* title, uint flags, openPanelCallback callback);
@@ -120,7 +124,7 @@ puglWin32RestoreWindow(PuglView* view);
 
 // win32 specific, center view based on parent coordinates (if there is one)
 PUGL_API void
-puglWin32ShowWindowCentered(PuglView* view);
+puglWin32ShowCentered(PuglView* view);
 
 // win32 specific, set or unset WS_SIZEBOX style flag
 PUGL_API void

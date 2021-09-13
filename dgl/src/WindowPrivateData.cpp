@@ -316,8 +316,10 @@ void Window::PrivateData::show()
         PuglRect rect = puglGetFrame(view);
         puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
 
-#ifdef DISTRHO_OS_WINDOWS
-        puglWin32ShowWindowCentered(view);
+#if defined(DISTRHO_OS_WINDOWS)
+        puglWin32ShowCentered(view);
+#elif defined(DISTRHO_OS_MAC)
+        puglMacOSShowCentered(view);
 #else
         puglShow(view);
 #endif
