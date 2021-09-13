@@ -43,8 +43,6 @@ void Application::exec(const uint idleTimeInMs)
 
 void Application::quit()
 {
-    DISTRHO_SAFE_ASSERT_RETURN(pData->isStandalone,);
-
     pData->quit();
 }
 

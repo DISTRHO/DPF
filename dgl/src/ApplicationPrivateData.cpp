@@ -127,8 +127,6 @@ void Application::PrivateData::idle(const uint timeoutInMs)
 
 void Application::PrivateData::quit()
 {
-    DISTRHO_SAFE_ASSERT_RETURN(isStandalone,);
-
     if (! isThisTheMainThread(mainThreadHandle))
     {
         if (! isQuittingInNextCycle)

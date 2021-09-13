@@ -228,9 +228,7 @@ public:
     void quit()
     {
         uiData->window->close();
-
-        if (uiData->app.isStandalone())
-            uiData->app.quit();
+        uiData->app.quit();
     }
 
     // -------------------------------------------------------------------

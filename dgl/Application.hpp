@@ -64,7 +64,6 @@ public:
       Quit the application.
       This stops the event-loop and closes all Windows.
       This function is thread-safe.
-      @note This function is meant for standalones only, *never* call this from plugins.
     */
     void quit();
 
