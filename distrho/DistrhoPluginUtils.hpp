@@ -47,8 +47,8 @@ START_NAMESPACE_DISTRHO
     2. The class variable names are the same as the default ones in the run function.
        Keep that in mind and try to avoid typos. :)
  */
-class AudioMidiSyncHelper {
-public:
+struct AudioMidiSyncHelper
+{
     /** Parameters from the run function, adjusted for event sync */
     float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
     uint32_t frames;
