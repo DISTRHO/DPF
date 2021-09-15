@@ -44,7 +44,7 @@ START_NAMESPACE_DISTRHO
 
    Some important notes when using this class:
     1. MidiEvent::frame retains its original value, but it is useless, do not use it.
-    2. The class variables names are be the same as the default ones in the run function.
+    2. The class variable names are the same as the default ones in the run function.
        Keep that in mind and try to avoid typos. :)
  */
 class AudioMidiSyncHelper {
