@@ -582,12 +582,26 @@ public:
     NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, int imageFlags);
 
    /**
-      Creates image from specified image data.
+      Creates image from specified raw format image data.
+    */
+    NanoImage::Handle createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                               ImageFlags imageFlags, ImageFormat format);
+
+   /**
+      Creates image from specified raw format image data.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                               int imageFlags, ImageFormat format);
+
+   /**
+      Creates image from specified RGBA image data.
     */
     NanoImage::Handle createImageFromRGBA(uint w, uint h, const uchar* data, ImageFlags imageFlags);
 
    /**
-      Creates image from specified image data.
+      Creates image from specified RGBA image data.
       Overloaded function for convenience.
       @see ImageFlags
     */

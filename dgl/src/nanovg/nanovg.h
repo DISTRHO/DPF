@@ -144,6 +144,14 @@ enum NVGimageFlags {
 	NVG_IMAGE_NEAREST			= 1<<5,		// Image interpolation is Nearest instead Linear
 };
 
+enum NVGtexture {
+	NVG_TEXTURE_ALPHA,
+	NVG_TEXTURE_BGR,
+	NVG_TEXTURE_BGRA,
+	NVG_TEXTURE_RGB,
+	NVG_TEXTURE_RGBA,
+};
+
 // Begin drawing a new frame
 // Calls to nanovg drawing API should be wrapped in nvgBeginFrame() & nvgEndFrame()
 // nvgBeginFrame() defines the size of the window to render to in relation currently
@@ -374,6 +382,10 @@ int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 // Creates image by loading it from the specified chunk of memory.
 // Returns handle to the image.
 int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata);
+
+// Creates image from specified image data and texture format.
+// Returns handle to the image.
+int nvgCreateImageRaw(NVGcontext* ctx, int w, int h, int imageFlags, NVGtexture format, const unsigned char* data);
 
 // Creates image from specified image data.
 // Returns handle to the image.
@@ -627,11 +639,6 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 //
 // Internal Render API
 //
-enum NVGtexture {
-	NVG_TEXTURE_ALPHA = 0x01,
-	NVG_TEXTURE_RGBA = 0x02,
-};
-
 struct NVGscissor {
 	float xform[6];
 	float extent[2];

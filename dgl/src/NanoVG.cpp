@@ -215,6 +215,7 @@ NanoImage& NanoImage::operator=(const Handle& handle)
 
     fHandle.context = handle.context;
     fHandle.imageId = handle.imageId;
+    _updateSize();
 
     return *this;
 }
@@ -631,6 +632,45 @@ NanoImage::Handle NanoVG::createImageFromMemory(uchar* data, uint dataSize, int 
     return NanoImage::Handle(fContext, nvgCreateImageMem(fContext, imageFlags, data,static_cast<int>(dataSize)));
 }
 
+NanoImage::Handle NanoVG::createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                                   ImageFlags imageFlags, ImageFormat format)
+{
+    return createImageFromRawMemory(w, h, data, static_cast<int>(imageFlags), format);
+}
+
+NanoImage::Handle NanoVG::createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                                   int imageFlags, ImageFormat format)
+{
+    if (fContext == nullptr) return NanoImage::Handle();
+    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, NanoImage::Handle());
+
+    NVGtexture nvgformat;
+    switch (format)
+    {
+    case kImageFormatGrayscale:
+        nvgformat = NVG_TEXTURE_ALPHA;
+        break;
+    case kImageFormatBGR:
+        nvgformat = NVG_TEXTURE_BGR;
+        break;
+    case kImageFormatBGRA:
+        nvgformat = NVG_TEXTURE_BGRA;
+        break;
+    case kImageFormatRGB:
+        nvgformat = NVG_TEXTURE_RGB;
+        break;
+    case kImageFormatRGBA:
+        nvgformat = NVG_TEXTURE_RGBA;
+        break;
+    default:
+        return NanoImage::Handle();
+    }
+
+    return NanoImage::Handle(fContext, nvgCreateImageRaw(fContext,
+                                                         static_cast<int>(w),
+                                                         static_cast<int>(h), imageFlags, nvgformat, data));
+}
+
 NanoImage::Handle NanoVG::createImageFromRGBA(uint w, uint h, const uchar* data, ImageFlags imageFlags)
 {
     return createImageFromRGBA(w, h, data, static_cast<int>(imageFlags));
@@ -646,12 +686,14 @@ NanoImage::Handle NanoVG::createImageFromRGBA(uint w, uint h, const uchar* data,
                                                           static_cast<int>(h), imageFlags, data));
 }
 
-NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h, ImageFlags imageFlags, bool deleteTexture)
+NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h,
+                                                       ImageFlags imageFlags, bool deleteTexture)
 {
     return createImageFromTextureHandle(textureId, w, h, static_cast<int>(imageFlags), deleteTexture);
 }
 
-NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture)
+NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h,
+                                                       int imageFlags, bool deleteTexture)
 {
     if (fContext == nullptr) return NanoImage::Handle();
     DISTRHO_SAFE_ASSERT_RETURN(textureId != 0, NanoImage::Handle());

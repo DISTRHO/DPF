@@ -761,9 +761,21 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 	}
 #endif
 
-	if (type == NVG_TEXTURE_RGBA)
+	switch (type)
+	{
+	case NVG_TEXTURE_BGR:
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_BGRA:
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGB:
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGBA:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	else
+		break;
+	default:
 #if defined(NANOVG_GLES2) || defined (NANOVG_GL2)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 #elif defined(NANOVG_GLES3)
@@ -771,6 +783,8 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, data);
 #endif
+		break;
+	}
 
 	if (imageFlags & NVG_IMAGE_GENERATE_MIPMAPS) {
 		if (imageFlags & NVG_IMAGE_NEAREST) {
@@ -845,22 +859,50 @@ static int glnvg__renderUpdateTexture(void* uptr, int image, int x, int y, int w
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
 #else
 	// No support for all of skip, need to update a whole row at a time.
-	if (tex->type == NVG_TEXTURE_RGBA)
+	switch (tex->type)
+	{
+	case NVG_TEXTURE_BGR:
+		data += y*tex->width*3;
+		break;
+	case NVG_TEXTURE_BGRA:
 		data += y*tex->width*4;
-	else
+		break;
+	case NVG_TEXTURE_RGB:
+		data += y*tex->width*3;
+		break;
+	case NVG_TEXTURE_RGBA:
+		data += y*tex->width*4;
+		break;
+	default:
 		data += y*tex->width;
+		break;
+	}
 	x = 0;
 	w = tex->width;
 #endif
 
-	if (tex->type == NVG_TEXTURE_RGBA)
+	switch (tex->type)
+	{
+	case NVG_TEXTURE_BGR:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_BGR, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_BGRA:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_BGRA, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGB:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RGB, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGBA:
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	else
+		break;
+	default:
 #if defined(NANOVG_GLES2) || defined(NANOVG_GL2)
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 #else
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RED, GL_UNSIGNED_BYTE, data);
 #endif
+		break;
+	}
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 #ifndef NANOVG_GLES2
@@ -956,15 +998,31 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 		frag->type = NSVG_SHADER_FILLIMG;
 
 		#if NANOVG_GL_USE_UNIFORMBUFFER
-		if (tex->type == NVG_TEXTURE_RGBA)
+		switch (tex->type)
+		{
+		case NVG_TEXTURE_BGR:
+		case NVG_TEXTURE_BGRA:
+		case NVG_TEXTURE_RGB:
+		case NVG_TEXTURE_RGBA:
 			frag->texType = (tex->flags & NVG_IMAGE_PREMULTIPLIED) ? 0 : 1;
-		else
+			break;
+		default:
 			frag->texType = 2;
+			break;
+		}
 		#else
-		if (tex->type == NVG_TEXTURE_RGBA)
+		switch (tex->type)
+		{
+		case NVG_TEXTURE_BGR:
+		case NVG_TEXTURE_BGRA:
+		case NVG_TEXTURE_RGB:
+		case NVG_TEXTURE_RGBA:
 			frag->texType = (tex->flags & NVG_IMAGE_PREMULTIPLIED) ? 0.0f : 1.0f;
-		else
+			break;
+		default:
 			frag->texType = 2.0f;
+			break;
+		}
 		#endif
 //		printf("frag->texType = %d\n", frag->texType);
 	} else {
