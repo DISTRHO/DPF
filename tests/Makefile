@@ -31,6 +31,7 @@ endif
 ifeq ($(HAVE_OPENGL),true)
 MANUAL_TESTS += Demo.opengl
 MANUAL_TESTS += FileBrowserDialog
+MANUAL_TESTS += NanoImage
 MANUAL_TESTS += NanoSubWidgets
 UNIT_TESTS   += Window.opengl
 endif
@@ -140,11 +141,15 @@ clean:
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(VULKAN_LIBS) -o $@
 
 ../build/tests/FileBrowserDialog$(APP_EXT): ../build/tests/FileBrowserDialog.cpp.o ../build/libdgl-opengl.a
-	@echo "Linking Demo (OpenGL)"
+	@echo "Linking FileBrowserDialog (OpenGL)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
+
+../build/tests/NanoImage$(APP_EXT): ../build/tests/NanoImage.cpp.o ../build/libdgl-opengl.a
+	@echo "Linking NanoImage (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 ../build/tests/NanoSubWidgets$(APP_EXT): ../build/tests/NanoSubWidgets.cpp.o ../build/libdgl-opengl.a
-	@echo "Linking Demo (OpenGL)"
+	@echo "Linking NanoSubWidgets (OpenGL)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
