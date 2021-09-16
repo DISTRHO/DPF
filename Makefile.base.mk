@@ -29,22 +29,17 @@ ifneq ($(WINDOWS),true)
 
 ifneq (,$(findstring bsd,$(TARGET_MACHINE)))
 BSD=true
-endif
-ifneq (,$(findstring haiku,$(TARGET_MACHINE)))
+else ifneq (,$(findstring haiku,$(TARGET_MACHINE)))
 HAIKU=true
-endif
-ifneq (,$(findstring linux,$(TARGET_MACHINE)))
+else ifneq (,$(findstring linux,$(TARGET_MACHINE)))
 LINUX=true
 else ifneq (,$(findstring gnu,$(TARGET_MACHINE)))
 HURD=true
-endif
-ifneq (,$(findstring apple,$(TARGET_MACHINE)))
+else ifneq (,$(findstring apple,$(TARGET_MACHINE)))
 MACOS=true
-endif
-ifneq (,$(findstring mingw,$(TARGET_MACHINE)))
+else ifneq (,$(findstring mingw,$(TARGET_MACHINE)))
 WINDOWS=true
-endif
-ifneq (,$(findstring windows,$(TARGET_MACHINE)))
+else ifneq (,$(findstring windows,$(TARGET_MACHINE)))
 WINDOWS=true
 endif
 
