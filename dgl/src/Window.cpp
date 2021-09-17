@@ -336,6 +336,11 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
     puglPostRedisplayRect(pData->view, prect);
 }
 
+void Window::renderToPicture(const char* const filename)
+{
+    pData->filenameToRenderInto = strdup(filename);
+}
+
 void Window::runAsModal(bool blockWait)
 {
     pData->runAsModal(blockWait);

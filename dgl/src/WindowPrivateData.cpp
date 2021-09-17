@@ -95,6 +95,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -120,6 +121,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -149,6 +151,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -180,6 +183,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
 #endif
@@ -195,6 +199,7 @@ Window::PrivateData::~PrivateData()
 {
     appData->idleCallbacks.remove(this);
     appData->windows.remove(self);
+    std::free(filenameToRenderInto);
 
     if (view == nullptr)
         return;
@@ -744,6 +749,14 @@ void Window::PrivateData::onPuglExpose()
             widget->pData->display();
     }
 #endif
+
+    if (char* const filename = filenameToRenderInto)
+    {
+        const PuglRect rect = puglGetFrame(view);
+        filenameToRenderInto = nullptr;
+        renderToPicture(filename, getGraphicsContext(), static_cast<uint>(rect.width), static_cast<uint>(rect.height));
+        std::free(filename);
+    }
 }
 
 void Window::PrivateData::onPuglClose()

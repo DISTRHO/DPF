@@ -383,6 +383,13 @@ public:
     void repaint(const Rectangle<uint>& rect) noexcept;
 
    /**
+      Render this window's content into a picture file, specified by @a filename.
+      Window must be visible and on screen.
+      Written picture format is PPM.
+    */
+    void renderToPicture(const char* filename);
+
+   /**
       Run this window as a modal, blocking input events from the parent.
       Only valid for windows that have been created with another window as parent (as passed in the constructor).
       Can optionally block-wait, but such option is only available if the application is running as standalone.

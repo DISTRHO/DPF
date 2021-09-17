@@ -667,6 +667,34 @@ void TopLevelWidget::PrivateData::display()
 
 // -----------------------------------------------------------------------
 
+void Window::PrivateData::renderToPicture(const char* const filename,
+                                          const GraphicsContext&,
+                                          const uint width,
+                                          const uint height)
+{
+    FILE* const f = fopen(filename, "w");
+    DISTRHO_SAFE_ASSERT_RETURN(f != nullptr,);
+
+    GLubyte* const pixels = new GLubyte[width * height * 3 * sizeof(GLubyte)];
+
+    glFlush();
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+    fprintf(f, "P3\n%d %d\n255\n", width, height);
+    for (uint y = 0; y < height; y++) {
+        for (uint i, x = 0; x < width; x++) {
+            i = 3 * ((height - y - 1) * width + x);
+            fprintf(f, "%3d %3d %3d ", pixels[i], pixels[i+1], pixels[i+2]);
+        }
+        fprintf(f, "\n");
+    }
+
+    delete[] pixels;
+    fclose(f);
+}
+
+// -----------------------------------------------------------------------
+
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
     return (const GraphicsContext&)graphicsContext;

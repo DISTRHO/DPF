@@ -808,6 +808,13 @@ void TopLevelWidget::PrivateData::display()
 
 // -----------------------------------------------------------------------
 
+void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, uint, uint)
+{
+    notImplemented("Window::PrivateData::renderToPicture");
+}
+
+// -----------------------------------------------------------------------
+
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
     GraphicsContext& context((GraphicsContext&)graphicsContext);

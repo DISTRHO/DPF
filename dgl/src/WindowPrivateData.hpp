@@ -77,6 +77,9 @@ struct Window::PrivateData : IdleCallback {
     /** Whether to ignore idle callback requests, useful for temporary windows. */
     bool ignoreIdleCallbacks;
 
+    /** Render to a picture file when non-null, automatically free+unset after saving. */
+    char* filenameToRenderInto;
+
 #ifdef DISTRHO_OS_WINDOWS
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */
     const char* win32SelectedFile;
@@ -161,6 +164,8 @@ struct Window::PrivateData : IdleCallback {
     static void openPanelCallback(PuglView* view, const char* path);
 # endif
 #endif
+
+    static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);
 
     // modal handling
     void startModal();
