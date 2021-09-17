@@ -681,8 +681,10 @@ void Window::PrivateData::renderToPicture(const char* const filename,
     glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
     fprintf(f, "P3\n%d %d\n255\n", width, height);
-    for (uint y = 0; y < height; y++) {
-        for (uint i, x = 0; x < width; x++) {
+    for (uint y = 0; y < height; y++)
+    {
+        for (uint i, x = 0; x < width; x++)
+        {
             i = 3 * ((height - y - 1) * width + x);
             fprintf(f, "%3d %3d %3d ", pixels[i], pixels[i+1], pixels[i+2]);
         }

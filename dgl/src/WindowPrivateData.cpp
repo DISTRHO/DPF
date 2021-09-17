@@ -748,7 +748,6 @@ void Window::PrivateData::onPuglExpose()
         if (widget->isVisible())
             widget->pData->display();
     }
-#endif
 
     if (char* const filename = filenameToRenderInto)
     {
@@ -757,6 +756,7 @@ void Window::PrivateData::onPuglExpose()
         renderToPicture(filename, getGraphicsContext(), static_cast<uint>(rect.width), static_cast<uint>(rect.height));
         std::free(filename);
     }
+#endif
 }
 
 void Window::PrivateData::onPuglClose()
