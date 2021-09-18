@@ -368,11 +368,11 @@ void lv2_generate_ttl(const char* const basename)
         // plugin
         pluginString += "<" DISTRHO_PLUGIN_URI ">\n";
 #ifdef DISTRHO_PLUGIN_LV2_CATEGORY
-        pluginString += "    a " DISTRHO_PLUGIN_LV2_CATEGORY ", lv2:Plugin ;\n";
+        pluginString += "    a " DISTRHO_PLUGIN_LV2_CATEGORY ", lv2:Plugin, doap:Project ;\n";
 #elif DISTRHO_PLUGIN_IS_SYNTH
-        pluginString += "    a lv2:InstrumentPlugin, lv2:Plugin ;\n";
+        pluginString += "    a lv2:InstrumentPlugin, lv2:Plugin, doap:Project ;\n";
 #else
-        pluginString += "    a lv2:Plugin ;\n";
+        pluginString += "    a lv2:Plugin, doap:Project ;\n";
 #endif
         pluginString += "\n";
 
@@ -1086,7 +1086,12 @@ void lv2_generate_ttl(const char* const basename)
         const uint32_t numPrograms   = plugin.getProgramCount();
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
         const uint32_t numStates     = plugin.getStateCount();
+        const bool     valid         = numParameters != 0 || numStates != 0;
+# else
+        const bool     valid         = numParameters != 0;
 # endif
+
+        DISTRHO_CUSTOM_SAFE_ASSERT_RETURN("Programs require parameters or full state", valid, presetsFile.close());
 
         const String presetSeparator(std::strstr(DISTRHO_PLUGIN_URI, "#") != nullptr ? ":" : "#");
 
@@ -1102,17 +1107,6 @@ void lv2_generate_ttl(const char* const basename)
             plugin.loadProgram(i);
 
             presetString = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
-
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
-            if (numParameters == 0 && numStates == 0)
-#else
-            if (numParameters == 0)
-#endif
-            {
-                presetString += "    .";
-                presetsString += presetString;
-                continue;
-            }
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
             presetString += "    state:state [\n";
