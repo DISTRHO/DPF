@@ -1740,13 +1740,4 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     return effect;
 }
 
-#if DISTRHO_OS_WINDOWS
-// backwards compat with old hosts
-DISTRHO_PLUGIN_EXPORT const AEffect* main(audioMasterCallback audioMaster);
-DISTRHO_PLUGIN_EXPORT const AEffect* main(audioMasterCallback audioMaster)
-{
-    return VSTPluginMain(audioMaster):
-}
-#endif
-
 // -----------------------------------------------------------------------
