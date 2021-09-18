@@ -72,7 +72,9 @@ public:
         : Plugin(4, 0, 0), // 4 parameters, 0 programs, 0 states
           sampleRate(getSampleRate()),
           counter(0),
+          wasPlaying(false),
           phase(0.0f),
+          envelope(1.0f),
           decay(0.0f),
           gain(0.5f),
           semitone(72),
