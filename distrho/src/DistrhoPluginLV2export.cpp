@@ -599,6 +599,9 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
 # endif
+# if DISTRHO_PLUGIN_WANT_STATEFILES
+            pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
+# endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
             pluginString += "        atom:supports <" LV2_TIME__Position "> ;\n";
 # endif
@@ -619,6 +622,9 @@ void lv2_generate_ttl(const char* const basename)
 # endif
 # if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
+# endif
+# if DISTRHO_PLUGIN_WANT_STATEFILES
+            pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
 # endif
             pluginString += "    ] ;\n\n";
             ++portIndex;
@@ -1106,6 +1112,10 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
         for (uint32_t i=0; i<numStates; ++i)
         {
+#  if DISTRHO_PLUGIN_WANT_STATEFILES
+            if (plugin.isStateFile(i))
+                continue;
+#  endif
             presetString  = "<" DISTRHO_PLUGIN_LV2_STATE_PREFIX + plugin.getStateKey(i) + ">\n";
             presetString += "    a owl:DatatypeProperty ;\n";
             presetString += "    rdfs:label \"Plugin state key-value string pair\" ;\n";
