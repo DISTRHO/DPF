@@ -1078,7 +1078,10 @@ void lv2_generate_ttl(const char* const basename)
         presetsString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
         presetsString += "@prefix pset:  <" LV2_PRESETS_PREFIX "> .\n";
 # if DISTRHO_PLUGIN_WANT_STATE
+        presetsString += "@prefix owl:   <http://www.w3.org/2002/07/owl#> .\n";
+        presetsString += "@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .\n";
         presetsString += "@prefix state: <" LV2_STATE_PREFIX "> .\n";
+        presetsString += "@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .\n";
 # endif
         presetsString += "\n";
 
@@ -1099,6 +1102,18 @@ void lv2_generate_ttl(const char* const basename)
         strBuf[0xff] = '\0';
 
         String presetString;
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+        for (uint32_t i=0; i<numStates; ++i)
+        {
+            presetString  = "<" DISTRHO_PLUGIN_LV2_STATE_PREFIX + plugin.getStateKey(i) + ">\n";
+            presetString += "    a owl:DatatypeProperty ;\n";
+            presetString += "    rdfs:label \"Plugin state key-value string pair\" ;\n";
+            presetString += "    rdfs:domain state:State ;\n";
+            presetString += "    rdfs:range xsd:string .\n\n";
+            presetsString += presetString;
+        }
+# endif
 
         for (uint32_t i=0; i<numPrograms; ++i)
         {
