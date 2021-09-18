@@ -907,8 +907,8 @@ void lv2_generate_ttl(const char* const basename)
             {
                 pluginString += "    doap:license <" +  license + "> ;\n\n";
             }
-            // String contaning quotes or spaces, use as-is
-            else if (license.contains('"') || license.contains(' '))
+            // String contaning quotes, use as-is
+            else if (license.contains('"'))
             {
                 pluginString += "    doap:license \"\"\"" +  license + "\"\"\" ;\n\n";
             }
@@ -920,55 +920,133 @@ void lv2_generate_ttl(const char* const basename)
                 // for reference, see https://spdx.org/licenses/
 
                 // common licenses
-                /**/ if (uplicense == "AGPL-1.0-ONLY" || uplicense == "AGPL1" || uplicense == "AGPLV1")
+                /**/ if (uplicense == "AGPL-1.0-ONLY" ||
+                         uplicense == "AGPL1" ||
+                         uplicense == "AGPLV1")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/AGPL-1.0-only.html> ;\n\n";
-                else if (uplicense == "AGPL-1.0-OR-LATER" || uplicense == "AGPL1+" || uplicense == "AGPLV1+")
+                }
+                else if (uplicense == "AGPL-1.0-OR-LATER" ||
+                         uplicense == "AGPL1+" ||
+                         uplicense == "AGPLV1+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/AGPL-1.0-or-later.html> ;\n\n";
-                else if (uplicense == "AGPL-3.0-ONLY" || uplicense == "AGPL3" || uplicense == "AGPLV3")
+                }
+                else if (uplicense == "AGPL-3.0-ONLY" ||
+                         uplicense == "AGPL3" ||
+                         uplicense == "AGPLV3")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/AGPL-3.0-only.html> ;\n\n";
-                else if (uplicense == "AGPL-3.0-OR-LATER" || uplicense == "AGPL3+" || uplicense == "AGPLV3+")
+                }
+                else if (uplicense == "AGPL-3.0-OR-LATER" ||
+                         uplicense == "AGPL3+" ||
+                         uplicense == "AGPLV3+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/AGPL-3.0-or-later.html> ;\n\n";
-                else if (uplicense == "APACHE-2.0" || uplicense == "APACHE2" || uplicense == "APACHE-2")
+                }
+                else if (uplicense == "APACHE-2.0" ||
+                         uplicense == "APACHE2" ||
+                         uplicense == "APACHE-2")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/Apache-2.0.html> ;\n\n";
-                else if (uplicense == "BSD-2-CLAUSE" || uplicense == "BSD2" || uplicense == "BSD-2")
+                }
+                else if (uplicense == "BSD-2-CLAUSE" ||
+                         uplicense == "BSD2" ||
+                         uplicense == "BSD-2")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/BSD-2-Clause.html> ;\n\n";
-                else if (uplicense == "BSD-3-CLAUSE" || uplicense == "BSD3" || uplicense == "BSD-3")
+                }
+                else if (uplicense == "BSD-3-CLAUSE" ||
+                         uplicense == "BSD3" ||
+                         uplicense == "BSD-3")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/BSD-3-Clause.html> ;\n\n";
-                else if (uplicense == "GPL-2.0-ONLY" || uplicense == "GPL2" || uplicense == "GPLV2")
+                }
+                else if (uplicense == "GPL-2.0-ONLY" ||
+                         uplicense == "GPL2" ||
+                         uplicense == "GPLV2")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-2.0-only.html> ;\n\n";
-                else if (uplicense == "GPL-2.0-OR-LATER" || uplicense == "GPL2+" || uplicense == "GPLV2+")
+                }
+                else if (uplicense == "GPL-2.0-OR-LATER" ||
+                         uplicense == "GPL2+" ||
+                         uplicense == "GPLV2+" ||
+                         uplicense == "GPL V2+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-2.0-or-later.html> ;\n\n";
-                else if (uplicense == "GPL-3.0-ONLY" || uplicense == "GPL3" || uplicense == "GPLV3")
+                }
+                else if (uplicense == "GPL-3.0-ONLY" ||
+                         uplicense == "GPL3" ||
+                         uplicense == "GPLV3")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-3.0-only.html> ;\n\n";
-                else if (uplicense == "GPL-3.0-OR-LATER" || uplicense == "GPL3+" || uplicense == "GPLV3+")
+                }
+                else if (uplicense == "GPL-3.0-OR-LATER" ||
+                         uplicense == "GPL3+" ||
+                         uplicense == "GPLV3+" ||
+                         uplicense == "GPL V3+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-3.0-or-later.html> ;\n\n";
+                }
                 else if (uplicense == "ISC")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/ISC.html> ;\n\n";
-                else if (uplicense == "LGPL-2.0-ONLY" || uplicense == "LGPL2" || uplicense == "LGPLV2")
+                }
+                else if (uplicense == "LGPL-2.0-ONLY" ||
+                         uplicense == "LGPL2" ||
+                         uplicense == "LGPLV2")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-2.0-only.html> ;\n\n";
-                else if (uplicense == "LGPL-2.0-OR-LATER" || uplicense == "LGPL2+" || uplicense == "LGPLV2+")
+                }
+                else if (uplicense == "LGPL-2.0-OR-LATER" ||
+                         uplicense == "LGPL2+" ||
+                         uplicense == "LGPLV2+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-2.0-or-later.html> ;\n\n";
-                else if (uplicense == "LGPL-2.1-ONLY" || uplicense == "LGPL2.1" || uplicense == "LGPLV2.1")
+                }
+                else if (uplicense == "LGPL-2.1-ONLY" ||
+                         uplicense == "LGPL2.1" ||
+                         uplicense == "LGPLV2.1")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-2.1-only.html> ;\n\n";
-                else if (uplicense == "LGPL-2.1-OR-LATER" || uplicense == "LGPL2.1+" || uplicense == "LGPLV2.1+")
+                }
+                else if (uplicense == "LGPL-2.1-OR-LATER" ||
+                         uplicense == "LGPL2.1+" ||
+                         uplicense == "LGPLV2.1+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-2.1-or-later.html> ;\n\n";
-                else if (uplicense == "LGPL-3.0-ONLY" || uplicense == "LGPL3" || uplicense == "LGPLV3")
+                }
+                else if (uplicense == "LGPL-3.0-ONLY" ||
+                         uplicense == "LGPL3" ||
+                         uplicense == "LGPLV3")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-2.0-only.html> ;\n\n";
-                else if (uplicense == "LGPL-3.0-OR-LATER" || uplicense == "LGPL3+" || uplicense == "LGPLV3+")
+                }
+                else if (uplicense == "LGPL-3.0-OR-LATER" ||
+                         uplicense == "LGPL3+" ||
+                         uplicense == "LGPLV3+")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/LGPL-3.0-or-later.html> ;\n\n";
+                }
                 else if (uplicense == "MIT")
+                {
                     pluginString += "    doap:license <http://spdx.org/licenses/MIT.html> ;\n\n";
+                }
 
                 // generic fallbacks
                 else if (uplicense.startsWith("GPL"))
+                {
                     pluginString += "    doap:license <https://opensource.org/licenses/gpl-license> ;\n\n";
+                }
                 else if (uplicense.startsWith("LGPL"))
+                {
                     pluginString += "    doap:license <https://opensource.org/licenses/lgpl-license> ;\n\n";
+                }
 
                 // unknown or not handled yet, log a warning
                 else
                 {
-                    d_stderr("Unkown license string '%s'", license.buffer());
+                    d_stderr("Unknown license string '%s'", license.buffer());
                     pluginString += "    doap:license \"" +  license + "\" ;\n\n";
                 }
             }
