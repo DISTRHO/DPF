@@ -42,9 +42,9 @@
 #define VST_FORCE_DEPRECATED 0
 
 #include <clocale>
-#include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 #if VESTIGE_HEADER
 # include "vestige/vestige.h"
@@ -1637,11 +1637,11 @@ static void vst_processReplacingCallback(AEffect* effect, float** inputs, float*
 #undef vstObjectPtr
 
 static struct Cleanup {
-    std::list<AEffect*> effects;
+    std::vector<AEffect*> effects;
 
     ~Cleanup()
     {
-        for (std::list<AEffect*>::iterator it = effects.begin(), end = effects.end(); it != end; ++it)
+        for (std::vector<AEffect*>::iterator it = effects.begin(), end = effects.end(); it != end; ++it)
         {
             AEffect* const effect = *it;
             delete (VstObject*)effect->object;
