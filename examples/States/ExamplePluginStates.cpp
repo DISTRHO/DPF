@@ -105,9 +105,9 @@ The plugin will be treated as an effect, but it will not change the host audio."
     * Init */
 
    /**
-      This plugin has no parameters..
+      This plugin has no parameters.
     */
-    void  initParameter(uint32_t, Parameter&) override {}
+    void initParameter(uint32_t, Parameter&) override {}
 
    /**
       Set the name of the program @a index.
@@ -172,8 +172,8 @@ The plugin will be treated as an effect, but it will not change the host audio."
    /**
       This plugin has no parameters..
     */
-    void  setParameterValue(uint32_t, float) override {}
-    float getParameterValue(uint32_t) const  override { return 0.0f; }
+    void setParameterValue(uint32_t, float) override {}
+    float getParameterValue(uint32_t) const override { return 0.0f; }
 
    /**
       Load a program.
@@ -208,7 +208,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
         }
     }
 
-#if DISTRHO_PLUGIN_WANT_FULL_STATE /* FIXME */
    /**
       Get the value of an internal state.
       The host may call this function from any non-realtime context.
@@ -240,7 +239,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
 
         return sFalse;
     }
-#endif
 
    /**
       Change an internal state.

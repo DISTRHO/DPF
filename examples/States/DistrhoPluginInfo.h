@@ -29,4 +29,7 @@
 #define DISTRHO_PLUGIN_WANT_STATE      1
 #define DISTRHO_UI_USER_RESIZABLE      1
 
+// states and presets together require this in order to function
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 1
+
 #endif // DISTRHO_PLUGIN_INFO_H_INCLUDED

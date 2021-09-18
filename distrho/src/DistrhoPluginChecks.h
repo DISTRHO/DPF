@@ -146,12 +146,11 @@
 // -----------------------------------------------------------------------
 // Enable full state if plugin exports presets
 
-// FIXME
-// #if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && ! DISTRHO_PLUGIN_WANT_FULL_STATE
-// # warning Plugins with programs and state need to implement full state API
-// # undef DISTRHO_PLUGIN_WANT_FULL_STATE
-// # define DISTRHO_PLUGIN_WANT_FULL_STATE 1
-// #endif
+#if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && ! DISTRHO_PLUGIN_WANT_FULL_STATE
+# warning Plugins with programs and state need to implement full state API too
+# undef DISTRHO_PLUGIN_WANT_FULL_STATE
+# define DISTRHO_PLUGIN_WANT_FULL_STATE 1
+#endif
 
 // -----------------------------------------------------------------------
 // Disable UI if DGL or External UI is not available
