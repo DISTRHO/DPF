@@ -206,6 +206,7 @@ function(dpf__build_ladspa NAME)
 
   dpf__add_module("${NAME}-ladspa" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-ladspa" "ladspa")
+  dpf__set_module_export_list("${NAME}-ladspa" "ladspa")
   target_link_libraries("${NAME}-ladspa" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-ladspa" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
@@ -234,6 +235,7 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
 
   dpf__add_module("${NAME}-dssi" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-dssi" "dssi")
+  dpf__set_module_export_list("${NAME}-dssi" "dssi")
   target_link_libraries("${NAME}-dssi" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-dssi" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
@@ -264,6 +266,11 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
 
   dpf__add_module("${NAME}-lv2" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-lv2" "lv2")
+  if(DGL_LIBRARY AND MONOLITHIC)
+    dpf__set_module_export_list("${NAME}-lv2" "lv2")
+  else()
+    dpf__set_module_export_list("${NAME}-lv2" "lv2-dsp")
+  endif()
   target_link_libraries("${NAME}-lv2" PRIVATE "${NAME}-dsp")
   set_target_properties("${NAME}-lv2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2/$<0:>"
@@ -280,6 +287,7 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
     else()
       dpf__add_module("${NAME}-lv2-ui" ${_no_srcs})
       dpf__add_ui_main("${NAME}-lv2-ui" "lv2" "${DGL_LIBRARY}")
+      dpf__set_module_export_list("${NAME}-lv2-ui" "lv2-ui")
       target_link_libraries("${NAME}-lv2-ui" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2-ui" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2/$<0:>"
@@ -311,6 +319,7 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
   dpf__add_module("${NAME}-vst2" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-vst2" "vst2")
   dpf__add_ui_main("${NAME}-vst2" "vst2" "${DGL_LIBRARY}")
+  dpf__set_module_export_list("${NAME}-vst2" "vst2")
   target_link_libraries("${NAME}-vst2" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-vst2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
@@ -564,6 +573,24 @@ endfunction()
 function(dpf__add_static_library NAME)
   add_library("${NAME}" STATIC ${ARGN})
   dpf__set_target_defaults("${NAME}")
+endfunction()
+
+# dpf__set_module_export_list
+# ------------------------------------------------------------------------------
+#
+# Applies a list of exported symbols to the module target.
+#
+function(dpf__set_module_export_list NAME EXPORTS)
+  if(WIN32)
+    target_sources("${NAME}" PRIVATE "${DPF_ROOT_DIR}/utils/symbols/${EXPORTS}.def")
+  elseif(APPLE)
+    set_property(TARGET "${NAME}" APPEND PROPERTY LINK_OPTIONS
+      "-Xlinker" "-exported_symbols_list"
+      "-Xlinker" "${DPF_ROOT_DIR}/utils/symbols/${EXPORTS}.exp")
+  else()
+    set_property(TARGET "${NAME}" APPEND PROPERTY LINK_OPTIONS
+      "-Xlinker" "--version-script=${DPF_ROOT_DIR}/utils/symbols/${EXPORTS}.version")
+  endif()
 endfunction()
 
 # dpf__set_target_defaults
