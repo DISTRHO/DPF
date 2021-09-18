@@ -276,47 +276,47 @@ jobs:
               /usr/lib/lv2/{atom,buf-size,core,data-access,kx-control-input-port-change-request,kx-programs,instance-access,midi,parameters,port-groups,port-props,options,patch,presets,resize-port,state,time,ui,units,urid,worker}.lv2 \
               ${LV2_PATH}
           lv2lint -s lv2_generate_ttl -M nopack $(lv2ls)
-      #- name: Test LADSPA plugins
-        #run: |
-            #for p in $(ls bin/ | grep ladspa.so); do \
-                #env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
-                    #valgrind \
-                    #--error-exitcode=255 \
-                    #--leak-check=full \
-                    #--track-origins=yes \
-                    #--suppressions=./utils/valgrind-dpf.supp \
-                    #/usr/lib/carla/carla-bridge-native ladspa ./bin/${p} "" 1>/dev/null; \
-            #done
-      #- name: Test DSSI plugins
-        #run: |
-            #for p in $(ls bin/ | grep dssi.so); do \
-                #env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
-                    #valgrind \
-                    #--error-exitcode=255 \
-                    #--leak-check=full \
-                    #--track-origins=yes \
-                    #--suppressions=./utils/valgrind-dpf.supp \
-                    #/usr/lib/carla/carla-bridge-native dssi ./bin/${p} "" 1>/dev/null; \
-            #done
-      #- name: Test LV2 plugins
-        #run: |
-            #for p in $(lv2ls); do \
-                #env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
-                    #valgrind \
-                    #--error-exitcode=255 \
-                    #--leak-check=full \
-                    #--track-origins=yes \
-                    #--suppressions=./utils/valgrind-dpf.supp \
-                    #/usr/lib/carla/carla-bridge-native lv2 "" ${p} 1>/dev/null; \
-            #done
-      #- name: Test VST2 plugins
-        #run: |
-            #for p in $(ls bin/ | grep vst.so); do \
-                #env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
-                    #valgrind \
-                    #--error-exitcode=255 \
-                    #--leak-check=full \
-                    #--track-origins=yes \
-                    #--suppressions=./utils/valgrind-dpf.supp \
-                    #/usr/lib/carla/carla-bridge-native vst2 ./bin/${p} "" 1>/dev/null; \
-            #done
+      - name: Test LADSPA plugins
+        run: |
+            for p in $(ls bin/ | grep ladspa.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native ladspa ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test DSSI plugins
+        run: |
+            for p in $(ls bin/ | grep dssi.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native dssi ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test LV2 plugins
+        run: |
+            for p in $(lv2ls); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native lv2 "" ${p} 1>/dev/null; \
+            done
+      - name: Test VST2 plugins
+        run: |
+            for p in $(ls bin/ | grep vst.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native vst2 ./bin/${p} "" 1>/dev/null; \
+            done
