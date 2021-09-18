@@ -114,10 +114,19 @@ endif
 ifeq ($(MACOS),true)
 SYMBOLS_LADSPA = -Wl,-exported_symbol,_ladspa_descriptor
 SYMBOLS_DSSI   = -Wl,-exported_symbol,_ladspa_descriptor -Wl,-exported_symbol,_dssi_descriptor
-SYMBOLS_LV2    = -Wl,-exported_symbol,_lv2_descriptor -Wl,-exported_symbol,_lv2_generate_ttl
+SYMBOLS_LV2DSP = -Wl,-exported_symbol,_lv2_descriptor -Wl,-exported_symbol,_lv2_generate_ttl
 SYMBOLS_LV2UI  = -Wl,-exported_symbol,_lv2ui_descriptor
+SYMBOLS_LV2    = $(SYMBOLS_LV2DSP) $(SYMBOLS_LV2UI)
 SYMBOLS_VST2   = -Wl,-exported_symbol,_VSTPluginMain
 SYMBOLS_VST3   = -Wl,-exported_symbol,_GetPluginFactory -Wl,-exported_symbol,_bundleEntry -Wl,-exported_symbol,_bundleExit
+else
+SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
+SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
+SYMBOLS_LV2DSP = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-dsp.version
+SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
+SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
+SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
+SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -337,12 +346,12 @@ $(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2) $(SYMBOLS_LV2UI)  -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2) -o $@
 
 $(lv2_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin library for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) $(SYMBOLS_LV2) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(SHARED) $(SYMBOLS_LV2DSP) -o $@
 
 $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)

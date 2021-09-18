@@ -1,0 +1,4 @@
+{
+    global: GetPluginFactory; InitDll; ExitDll; ModuleEntry; ModuleExit;
+    local: *;
+};
