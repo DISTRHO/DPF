@@ -895,13 +895,54 @@ void lv2_generate_ttl(const char* const basename)
         {
             const String license(plugin.getLicense());
 
-            // TODO always convert to URL, do best-guess based on known licenses
+            // Using URL as license
             if (license.contains("://"))
+            {
                 pluginString += "    doap:license <" +  license + "> ;\n\n";
-            else if (license.contains('"'))
+            }
+            // String contaning quotes or spaces, use as-is
+            else if (license.contains('"') || license.contains(' '))
+            {
                 pluginString += "    doap:license \"\"\"" +  license + "\"\"\" ;\n\n";
+            }
+            // Regular license string, convert to URL as much as we can
             else
-                pluginString += "    doap:license \"" +  license + "\" ;\n\n";
+            {
+                const String lowlicense(license.asLower());
+
+                /**/ if (lowlicense.startsWith("apache"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/Apache-2.0> ;\n\n";
+                else if (lowlicense == "bsd2" || lowlicense == "bsd-2")
+                    pluginString += "    doap:license <https://opensource.org/licenses/BSD-2-Clause> ;\n\n";
+                else if (lowlicense.startsWith("bsd"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/BSD-3-Clause> ;\n\n";
+                else if (lowlicense.startsWith("cddl"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/CDDL-1.0> ;\n\n";
+                else if (lowlicense.startsWith("epl"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/EPL-2.0> ;\n\n";
+                else if (lowlicense == "gpl")
+                    pluginString += "    doap:license <https://opensource.org/licenses/gpl-license> ;\n\n";
+                else if (lowlicense.startsWith("gpl2") || lowlicense.startsWith("gplv2"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/GPL-2.0> ;\n\n";
+                else if (lowlicense.startsWith("gpl3") || lowlicense.startsWith("gplv3"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/GPL-3.0> ;\n\n";
+                else if (lowlicense == "isc")
+                    pluginString += "    doap:license <https://opensource.org/licenses/ISC> ;\n\n";
+                else if (lowlicense == "lgpl")
+                    pluginString += "    doap:license <https://opensource.org/licenses/lgpl-license> ;\n\n";
+                else if (lowlicense.startsWith("lgpl2.0") || lowlicense.startsWith("lgplv2.0"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/LGPL-2.0> ;\n\n";
+                else if (lowlicense.startsWith("lgpl2") || lowlicense.startsWith("lgplv2"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/LGPL-2.1> ;\n\n";
+                else if (lowlicense.startsWith("lgpl3") || lowlicense.startsWith("lgplv3"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/LGPL-3.0> ;\n\n";
+                else if (lowlicense == "mit")
+                    pluginString += "    doap:license <https://opensource.org/licenses/MIT> ;\n\n";
+                else if (lowlicense.startsWith("mpl"))
+                    pluginString += "    doap:license <https://opensource.org/licenses/MPL-2.0> ;\n\n";
+                else
+                    pluginString += "    doap:license \"" +  license + "\" ;\n\n";
+            }
         }
 
         // developer
