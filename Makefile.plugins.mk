@@ -112,13 +112,13 @@ endif
 # Set plugin symbols to export
 
 ifeq ($(MACOS),true)
-SYMBOLS_LADSPA = -Wl,-exported_symbol,_ladspa_descriptor
-SYMBOLS_DSSI   = -Wl,-exported_symbol,_ladspa_descriptor -Wl,-exported_symbol,_dssi_descriptor
-SYMBOLS_LV2DSP = -Wl,-exported_symbol,_lv2_descriptor -Wl,-exported_symbol,_lv2_generate_ttl
-SYMBOLS_LV2UI  = -Wl,-exported_symbol,_lv2ui_descriptor
-SYMBOLS_LV2    = $(SYMBOLS_LV2DSP) $(SYMBOLS_LV2UI)
-SYMBOLS_VST2   = -Wl,-exported_symbol,_VSTPluginMain
-SYMBOLS_VST3   = -Wl,-exported_symbol,_GetPluginFactory -Wl,-exported_symbol,_bundleEntry -Wl,-exported_symbol,_bundleExit
+SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
+SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
+SYMBOLS_LV2DSP = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-dsp.exp
+SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
+SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
+SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
+SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
 else
 SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
 SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
