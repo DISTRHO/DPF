@@ -332,6 +332,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix doap:  <http://usefulinc.com/ns/doap#> .\n";
         pluginString += "@prefix foaf:  <http://xmlns.com/foaf/0.1/> .\n";
         pluginString += "@prefix lv2:   <" LV2_CORE_PREFIX "> .\n";
+        pluginString += "@prefix midi:  <" LV2_MIDI_PREFIX "> .\n";
         pluginString += "@prefix mod:   <http://moddevices.com/ns/mod#> .\n";
         pluginString += "@prefix opts:  <" LV2_OPTIONS_PREFIX "> .\n";
         pluginString += "@prefix pg:    <" LV2_PORT_GROUPS_PREFIX "> .\n";
@@ -595,10 +596,10 @@ void lv2_generate_ttl(const char* const basename)
             pluginString += "        rsz:minimumSize " + String(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
             pluginString += "        atom:bufferType atom:Sequence ;\n";
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
-            pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
+            pluginString += "        atom:supports atom:String ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
+            pluginString += "        atom:supports midi:MidiEvent ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_STATEFILES
             pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
@@ -619,10 +620,10 @@ void lv2_generate_ttl(const char* const basename)
             pluginString += "        rsz:minimumSize " + String(DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE) + " ;\n";
             pluginString += "        atom:bufferType atom:Sequence ;\n";
 # if (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI)
-            pluginString += "        atom:supports <" LV2_ATOM__String "> ;\n";
+            pluginString += "        atom:supports atom:String ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-            pluginString += "        atom:supports <" LV2_MIDI__MidiEvent "> ;\n";
+            pluginString += "        atom:supports midi:MidiEvent ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_STATEFILES
             pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
@@ -753,10 +754,20 @@ void lv2_generate_ttl(const char* const basename)
                             }
 
                             if (j+1 == enumValues.count)
-                                pluginString += "        ] ;\n\n";
+                                pluginString += "        ] ;\n";
                             else
                                 pluginString += "        ] ,\n";
                         }
+                    }
+
+                    // MIDI CC binding
+                    if (const uint8_t midiCC = plugin.getParameterMidiCC(i))
+                    {
+                        char midiCCBuf[7];
+                        snprintf(midiCCBuf, sizeof(midiCCBuf), "B0%02x00", midiCC);
+                        pluginString += "        midi:binding \"";
+                        pluginString += midiCCBuf;
+                        pluginString += "\"^^midi:MidiEvent ;\n";
                     }
 
                     // unit
@@ -821,7 +832,7 @@ void lv2_generate_ttl(const char* const basename)
                     }
 
                     // hints
-                    const uint32_t hints(plugin.getParameterHints(i));
+                    const uint32_t hints = plugin.getParameterHints(i);
 
                     if (hints & kParameterIsBoolean)
                     {
@@ -838,8 +849,6 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty <" LV2_PORT_PROPS__expensive "> ,\n";
                         pluginString += "                         <" LV2_KXSTUDIO_PROPERTIES__NonAutomable "> ;\n";
                     }
-
-                    // TODO midiCC
 
                     // group
                     const uint32_t groupId = plugin.getParameterGroupId(i);
