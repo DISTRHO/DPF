@@ -300,6 +300,7 @@ jobs:
             done
       - name: Test LV2 plugins
         run: |
+            export LV2_PATH=/tmp/lv2-path
             for p in $(lv2ls); do \
                 env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
                     valgrind \
