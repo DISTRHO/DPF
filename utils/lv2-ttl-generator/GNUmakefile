@@ -9,19 +9,19 @@ ifeq ($(WINDOWS),true)
 build: ../lv2_ttl_generator.exe
 
 ../lv2_ttl_generator.exe: lv2_ttl_generator.c
-	$(CC) $< $(CFLAGS) -o $@ $(LDFLAGS) -static
+	$(CC) $< $(BUILD_C_FLAGS) -o $@ $(LINK_FLAGS) -static
 	touch ../lv2_ttl_generator
 
 else # WINDOWS
 
-ifneq ($(HAIKU),true)
-LDFLAGS += -ldl
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+LINK_FLAGS += -ldl
 endif
 
 build: ../lv2_ttl_generator
 
 ../lv2_ttl_generator: lv2_ttl_generator.c
-	$(CC) $< $(CFLAGS) -o $@ $(LDFLAGS)
+	$(CC) $< $(BUILD_C_FLAGS) -o $@ $(LINK_FLAGS)
 
 endif # WINDOWS
 
