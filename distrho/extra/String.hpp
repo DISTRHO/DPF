@@ -619,6 +619,36 @@ public:
     }
 
     /*
+     * Create a new string where all non-basic characters are converted to '_'.
+     * @see toBasic()
+     */
+    String asBasic() const noexcept
+    {
+        String s(*this);
+        return s.toBasic();
+    }
+
+    /*
+     * Create a new string where all ascii characters are converted lowercase.
+     * @see toLower()
+     */
+    String asLower() const noexcept
+    {
+        String s(*this);
+        return s.toLower();
+    }
+
+    /*
+     * Create a new string where all ascii characters are converted to uppercase.
+     * @see toUpper()
+     */
+    String asUpper() const noexcept
+    {
+        String s(*this);
+        return s.toUpper();
+    }
+
+    /*
      * Direct access to the string buffer (read-only).
      */
     const char* buffer() const noexcept
