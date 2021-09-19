@@ -44,28 +44,42 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
     pData->audioPorts = new AudioPort[DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS];
 #endif
 
+#ifdef DPF_ABORT_ON_ERROR
+# define DPF_ABORT abort();
+#else
+# define DPF_ABORT
+#endif
+
     if (parameterCount > 0)
     {
         pData->parameterCount = parameterCount;
         pData->parameters     = new Parameter[parameterCount];
     }
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
     if (programCount > 0)
     {
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
         pData->programCount = programCount;
         pData->programNames = new String[programCount];
-    }
+#else
+        d_stderr2("DPF warning: Plugins with programs must define `DISTRHO_PLUGIN_WANT_PROGRAMS` to 1");
+        DPF_ABORT
 #endif
+    }
 
-#if DISTRHO_PLUGIN_WANT_STATE
     if (stateCount > 0)
     {
+#if DISTRHO_PLUGIN_WANT_STATE
         pData->stateCount     = stateCount;
         pData->stateKeys      = new String[stateCount];
         pData->stateDefValues = new String[stateCount];
-    }
+#else
+        d_stderr2("DPF warning: Plugins with state must define `DISTRHO_PLUGIN_WANT_STATE` to 1");
+        DPF_ABORT
 #endif
+    }
+
+#undef DPF_ABORT
 }
 
 Plugin::~Plugin()
@@ -156,7 +170,7 @@ void Plugin::initState(uint32_t, String&, String&) {}
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES
-bool Plugin::isStateFile(uint32_t index) { return false; }
+bool Plugin::isStateFile(uint32_t) { return false; }
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------

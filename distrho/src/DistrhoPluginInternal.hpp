@@ -288,12 +288,6 @@ public:
                 DPF_ABORT
             }
         }
-# else
-        if (fData->programCount != 0)
-        {
-            d_stderr2("DPF warning: Plugins with programs must define `DISTRHO_PLUGIN_WANT_PROGRAMS` to 1");
-            DPF_ABORT
-        }
 # endif
 
 # if DISTRHO_PLUGIN_WANT_STATE
@@ -311,12 +305,6 @@ public:
                 DPF_ABORT
             }
         }
-# else
-        if (fData->stateCount != 0)
-        {
-            d_stderr2("DPF warning: Plugins with state must define `DISTRHO_PLUGIN_WANT_STATE` to 1");
-            DPF_ABORT
-        }
 # endif
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
@@ -330,11 +318,8 @@ public:
         }
         else
         {
-            if (fData->stateCount == 0)
-            {
-                d_stderr2("DPF warning: Plugins with full state must have at least 1 state");
-                DPF_ABORT
-            }
+            d_stderr2("DPF warning: Plugins with full state must have at least 1 state");
+            DPF_ABORT
         }
 # endif
 
