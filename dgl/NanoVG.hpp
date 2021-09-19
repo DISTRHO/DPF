@@ -24,6 +24,7 @@
 #include "StandaloneWindow.hpp"
 
 #ifdef _MSC_VER
+# pragma warning(push)
 # pragma warning(disable:4661) /* instantiated template classes whose methods are defined elsewhere */
 #endif
 
@@ -969,7 +970,7 @@ typedef NanoSubWidget NanoWidget;
 END_NAMESPACE_DGL
 
 #ifdef _MSC_VER
-# pragma warning(enable:4661)
+# pragma warning(pop)
 #endif
 
 #endif // DGL_NANO_WIDGET_HPP_INCLUDED

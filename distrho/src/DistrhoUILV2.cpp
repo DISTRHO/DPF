@@ -285,11 +285,13 @@ protected:
         tmpStr[std::strlen(key)] = '\0';
 
         // set msg size (key + separator + value + null terminator)
-        const size_t msgSize = tmpStr.length() + 1U;
+        const uint32_t msgSize = static_cast<uint32_t>(tmpStr.length()) + 1U;
 
         // reserve atom space
-        const size_t atomSize = sizeof(LV2_Atom) + msgSize;
+        const uint32_t atomSize = sizeof(LV2_Atom) + msgSize;
         char* const  atomBuf = (char*)malloc(atomSize);
+        DISTRHO_SAFE_ASSERT_RETURN(atomBuf != nullptr,);
+
         std::memset(atomBuf, 0, atomSize);
 
         // set atom info

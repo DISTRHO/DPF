@@ -355,7 +355,7 @@ public:
 
             portGroupIndices.erase(kPortGroupNone);
 
-            if (const uint32_t portGroupSize = portGroupIndices.size())
+            if (const uint32_t portGroupSize = static_cast<uint32_t>(portGroupIndices.size()))
             {
                 fData->portGroups = new PortGroupWithId[portGroupSize];
                 fData->portGroupCount = portGroupSize;
