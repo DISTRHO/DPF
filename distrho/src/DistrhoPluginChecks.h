@@ -87,6 +87,7 @@
 
 #ifndef DISTRHO_PLUGIN_WANT_FULL_STATE
 # define DISTRHO_PLUGIN_WANT_FULL_STATE 0
+# define DISTRHO_PLUGIN_WANT_FULL_STATE_WAS_NOT_SET
 #endif
 
 #ifndef DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -146,8 +147,8 @@
 // -----------------------------------------------------------------------
 // Enable full state if plugin exports presets
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && ! DISTRHO_PLUGIN_WANT_FULL_STATE
-# warning Plugins with programs and state need to implement full state API too
+#if DISTRHO_PLUGIN_WANT_PROGRAMS && DISTRHO_PLUGIN_WANT_STATE && defined(DISTRHO_PLUGIN_WANT_FULL_STATE_WAS_NOT_SET)
+# warning Plugins with programs and state should implement full state API too
 # undef DISTRHO_PLUGIN_WANT_FULL_STATE
 # define DISTRHO_PLUGIN_WANT_FULL_STATE 1
 #endif

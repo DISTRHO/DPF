@@ -56,8 +56,6 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
         pData->programCount = programCount;
         pData->programNames = new String[programCount];
     }
-#else
-    DISTRHO_SAFE_ASSERT(programCount == 0);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -67,8 +65,6 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
         pData->stateKeys      = new String[stateCount];
         pData->stateDefValues = new String[stateCount];
     }
-#else
-    DISTRHO_SAFE_ASSERT(stateCount == 0);
 #endif
 }
 
@@ -144,16 +140,48 @@ void Plugin::initAudioPort(bool input, uint32_t index, AudioPort& port)
     }
 }
 
+void Plugin::initParameter(uint32_t, Parameter&) {}
+
 void Plugin::initPortGroup(const uint32_t groupId, PortGroup& portGroup)
 {
     fillInPredefinedPortGroupData(groupId, portGroup);
 }
 
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+void Plugin::initProgramName(uint32_t, String&) {}
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+void Plugin::initState(uint32_t, String&, String&) {}
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATEFILES
+bool Plugin::isStateFile(uint32_t index) { return false; }
+#endif
+
+/* ------------------------------------------------------------------------------------------------------------
+ * Init */
+
+float Plugin::getParameterValue(uint32_t) const { return 0.0f; }
+void Plugin::setParameterValue(uint32_t, float) {}
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+void Plugin::loadProgram(uint32_t) {}
+#endif
+
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
+String Plugin::getState(const char*) const { return String(); }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+void Plugin::setState(const char*, const char*) {}
+#endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * Callbacks (optional) */
 
 void Plugin::bufferSizeChanged(uint32_t) {}
-void Plugin::sampleRateChanged(double)   {}
+void Plugin::sampleRateChanged(double) {}
 
 // -----------------------------------------------------------------------------------------------------------
 

@@ -247,6 +247,100 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
 
+        /* Verify that virtual functions are overriden if parameters, programs or states are in use.
+         * This does not work on all compilers, but we use it purely as informational check anyway. */
+#ifdef __GNUC__
+# ifdef DPF_ABORT_ON_ERROR
+#  define DPF_ABORT abort();
+# else
+#  define DPF_ABORT
+# endif
+        if (fData->parameterCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initParameter)) == (void*)&Plugin::initParameter)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `initParameter`");
+                DPF_ABORT
+            }
+            if ((void*)(fPlugin->*(&Plugin::getParameterValue)) == (void*)&Plugin::getParameterValue)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `getParameterValue`");
+                DPF_ABORT
+            }
+            if ((void*)(fPlugin->*(&Plugin::setParameterValue)) == (void*)&Plugin::setParameterValue)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `setParameterValue`");
+                DPF_ABORT
+            }
+        }
+
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (fData->programCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initProgramName)) == (void*)&Plugin::initProgramName)
+            {
+                d_stderr2("DPF warning: Plugins with programs must implement `initProgramName`");
+                DPF_ABORT
+            }
+            if ((void*)(fPlugin->*(&Plugin::loadProgram)) == (void*)&Plugin::loadProgram)
+            {
+                d_stderr2("DPF warning: Plugins with programs must implement `loadProgram`");
+                DPF_ABORT
+            }
+        }
+# else
+        if (fData->programCount != 0)
+        {
+            d_stderr2("DPF warning: Plugins with programs must define `DISTRHO_PLUGIN_WANT_PROGRAMS` to 1");
+            DPF_ABORT
+        }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+        if (fData->stateCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initState)) == (void*)&Plugin::initState)
+            {
+                d_stderr2("DPF warning: Plugins with state must implement `initState`");
+                DPF_ABORT
+            }
+
+            if ((void*)(fPlugin->*(&Plugin::setState)) == (void*)&Plugin::setState)
+            {
+                d_stderr2("DPF warning: Plugins with state must implement `setState`");
+                DPF_ABORT
+            }
+        }
+# else
+        if (fData->stateCount != 0)
+        {
+            d_stderr2("DPF warning: Plugins with state must define `DISTRHO_PLUGIN_WANT_STATE` to 1");
+            DPF_ABORT
+        }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+        if (fData->stateCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::getState)) == (void*)&Plugin::getState)
+            {
+                d_stderr2("DPF warning: Plugins with full state must implement `getState`");
+                DPF_ABORT
+            }
+        }
+        else
+        {
+            if (fData->stateCount == 0)
+            {
+                d_stderr2("DPF warning: Plugins with full state must have at least 1 state");
+                DPF_ABORT
+            }
+        }
+# endif
+
+# undef DPF_ABORT
+#endif
+
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         {
             uint32_t j=0;

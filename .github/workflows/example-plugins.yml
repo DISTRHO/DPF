@@ -255,7 +255,7 @@ jobs:
       - name: Build plugins
         env:
           CFLAGS: -g
-          CXXFLAGS: -g
+          CXXFLAGS: -g -DDPF_ABORT_ON_ERROR
           LDFLAGS: -static-libgcc -static-libstdc++
         run: |
           make features

@@ -943,7 +943,7 @@ protected:
       Initialize the parameter @a index.@n
       This function will be called once, shortly after the plugin is created.
     */
-    virtual void initParameter(uint32_t index, Parameter& parameter) = 0;
+    virtual void initParameter(uint32_t index, Parameter& parameter);
 
    /**
       Initialize the port group @a groupId.@n
@@ -967,7 +967,7 @@ protected:
       This function will be called once, shortly after the plugin is created.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue) = 0;
+    virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES
@@ -984,7 +984,7 @@ protected:
       Get the current value of a parameter.@n
       The host may call this function from any context, including realtime processing.
     */
-    virtual float getParameterValue(uint32_t index) const = 0;
+    virtual float getParameterValue(uint32_t index) const;
 
    /**
       Change a parameter value.@n
@@ -992,7 +992,7 @@ protected:
       When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
-    virtual void setParameterValue(uint32_t index, float value) = 0;
+    virtual void setParameterValue(uint32_t index, float value);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
    /**
@@ -1000,7 +1000,7 @@ protected:
       The host may call this function from any context, including realtime processing.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is enabled.
     */
-    virtual void loadProgram(uint32_t index) = 0;
+    virtual void loadProgram(uint32_t index);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_FULL_STATE
@@ -1010,7 +1010,7 @@ protected:
       Must be implemented by your plugin class if DISTRHO_PLUGIN_WANT_FULL_STATE is enabled.
       @note The use of this function breaks compatibility with the DSSI format.
     */
-    virtual String getState(const char* key) const = 0;
+    virtual String getState(const char* key) const;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -1018,7 +1018,7 @@ protected:
       Change an internal state @a key to @a value.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void setState(const char* key, const char* value) = 0;
+    virtual void setState(const char* key, const char* value);
 #endif
 
    /* --------------------------------------------------------------------------------------------------------
