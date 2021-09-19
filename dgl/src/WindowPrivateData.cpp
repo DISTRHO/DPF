@@ -542,13 +542,13 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     // set start directory in UTF-16 encoding
     std::vector<WCHAR> startDirW;
     startDirW.resize(startDir.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, startDir.buffer(), -1, startDirW.data(), startDirW.size()))
+    if (MultiByteToWideChar(CP_UTF8, 0, startDir.buffer(), -1, startDirW.data(), static_cast<int>(startDirW.size())))
         ofn.lpstrInitialDir = startDirW.data();
 
     // set title in UTF-16 encoding
     std::vector<WCHAR> titleW;
     titleW.resize(title.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, title.buffer(), -1, titleW.data(), titleW.size()))
+    if (MultiByteToWideChar(CP_UTF8, 0, title.buffer(), -1, titleW.data(), static_cast<int>(titleW.size())))
         ofn.lpstrTitle = titleW.data();
 
     // prepare a buffer to receive the result

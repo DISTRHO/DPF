@@ -708,7 +708,7 @@ public:
                 const String& value(cit->second);
 
                 // set msg size (key + value + separator + 2x null terminator)
-                const size_t msgSize = key.length()+value.length()+3;
+                const uint32_t msgSize = static_cast<uint32_t>(key.length()+value.length())+3U;
 
                 if (sizeof(LV2_Atom_Event) + msgSize > capacity - fEventsOutData.offset)
                 {

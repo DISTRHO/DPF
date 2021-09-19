@@ -469,7 +469,7 @@ protected:
                 MidiEvent& midiEvent(midiEvents[midiEventCount++]);
 
                 midiEvent.frame = jevent.time;
-                midiEvent.size  = jevent.size;
+                midiEvent.size  = static_cast<uint32_t>(jevent.size);
 
                 if (midiEvent.size > MidiEvent::kDataSize)
                     midiEvent.dataExt = jevent.buffer;
