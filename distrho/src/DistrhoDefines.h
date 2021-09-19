@@ -193,6 +193,12 @@ private:                                         \
 # define DISTRHO_OS_SPLIT_STR ":"
 #endif
 
+/* MSVC warnings */
+#ifdef _MSC_VER
+# define strdup _strdup
+# pragma warning(disable:4244) /* possible loss of data */
+#endif
+
 /* Useful typedefs */
 typedef unsigned char uchar;
 typedef unsigned short int ushort;

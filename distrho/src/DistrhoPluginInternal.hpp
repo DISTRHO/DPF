@@ -249,7 +249,7 @@ public:
 
         /* Verify that virtual functions are overriden if parameters, programs or states are in use.
          * This does not work on all compilers, but we use it purely as informational check anyway. */
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 # ifdef DPF_ABORT_ON_ERROR
 #  define DPF_ABORT abort();
 # else
