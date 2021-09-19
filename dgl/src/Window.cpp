@@ -220,10 +220,10 @@ void Window::setSize(uint width, uint height)
             {
                 // fix width
                 if (reqRatio > ratio)
-                    width = height * ratio;
+                    width = static_cast<uint>(height * ratio + 0.5);
                 // fix height
                 else
-                    height = width / ratio;
+                    height = static_cast<uint>(static_cast<double>(width) / ratio + 0.5);
             }
         }
     }

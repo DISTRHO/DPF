@@ -678,7 +678,7 @@ void Window::PrivateData::renderToPicture(const char* const filename,
     GLubyte* const pixels = new GLubyte[width * height * 3 * sizeof(GLubyte)];
 
     glFlush();
-    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+    glReadPixels(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height), GL_RGB, GL_UNSIGNED_BYTE, pixels);
 
     fprintf(f, "P3\n%d %d\n255\n", width, height);
     for (uint y = 0; y < height; y++)

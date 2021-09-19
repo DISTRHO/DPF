@@ -52,7 +52,7 @@ public:
     };
 
     explicit ButtonEventHandler(SubWidget* self);
-    ~ButtonEventHandler();
+    virtual ~ButtonEventHandler();
 
     bool isActive() noexcept;
     void setActive(bool active, bool sendCallback) noexcept;
@@ -117,7 +117,7 @@ public:
     explicit KnobEventHandler(SubWidget* self);
     explicit KnobEventHandler(SubWidget* self, const KnobEventHandler& other);
     KnobEventHandler& operator=(const KnobEventHandler& other);
-    ~KnobEventHandler();
+    virtual ~KnobEventHandler();
 
     // returns raw value, is assumed to be scaled if using log
     float getValue() const noexcept;
@@ -153,6 +153,15 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const pData;
+
+    /* not for use */
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+    KnobEventHandler(KnobEventHandler& other) = delete;
+    KnobEventHandler(const KnobEventHandler& other) = delete;
+#else
+    KnobEventHandler(KnobEventHandler& other);
+    KnobEventHandler(const KnobEventHandler& other);
+#endif
 
     DISTRHO_LEAK_DETECTOR(KnobEventHandler)
 };

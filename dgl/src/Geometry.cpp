@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2019 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,8 +15,10 @@
  */
 
 #ifdef _MSC_VER
-// instantiated template classes whose methods are defined elsewhere
-# pragma warning(disable:4661)
+# pragma warning(disable:4661) /* instantiated template classes whose methods are defined elsewhere */
+#elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
 #endif
 
 #include "../Geometry.hpp"

@@ -23,6 +23,10 @@
 #include "TopLevelWidget.hpp"
 #include "StandaloneWindow.hpp"
 
+#ifdef _MSC_VER
+# pragma warning(disable:4661) /* instantiated template classes whose methods are defined elsewhere */
+#endif
+
 #ifndef DGL_NO_SHARED_RESOURCES
 # define NANOVG_DEJAVU_SANS_TTF "__dpf_dejavusans_ttf__"
 #endif
@@ -963,5 +967,9 @@ typedef NanoSubWidget NanoWidget;
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#ifdef _MSC_VER
+# pragma warning(enable:4661)
+#endif
 
 #endif // DGL_NANO_WIDGET_HPP_INCLUDED

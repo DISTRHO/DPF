@@ -34,7 +34,9 @@ SubWidget::~SubWidget()
 template<typename T>
 bool SubWidget::contains(const T x, const T y) const noexcept
 {
-    return Rectangle<double>(0, 0, getWidth()-pData->margin.getX(), getHeight()-pData->margin.getY()).contains(x, y);
+    return Rectangle<double>(0, 0,
+                             static_cast<double>(getWidth()) - pData->margin.getX(),
+                             static_cast<double>(getHeight()) - pData->margin.getY()).contains(x, y);
 }
 
 template<typename T>
