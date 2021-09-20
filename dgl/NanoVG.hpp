@@ -903,7 +903,7 @@ public:
       Constructor for a NanoSubWidget.
       @see CreateFlags
     */
-    explicit NanoBaseWidget(Widget* const parentGroupWidget, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Widget* parentGroupWidget, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a NanoTopLevelWidget.
@@ -912,16 +912,16 @@ public:
     explicit NanoBaseWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a NanoStandaloneWindow without parent window.
+      Constructor for a NanoStandaloneWindow without transient parent window.
       @see CreateFlags
     */
     explicit NanoBaseWidget(Application& app, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a NanoStandaloneWindow with parent window.
+      Constructor for a NanoStandaloneWindow with transient parent window.
       @see CreateFlags
     */
-    explicit NanoBaseWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Application& app, Window& transientParentWindow, int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.

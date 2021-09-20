@@ -66,8 +66,8 @@ Window::Window(Application& app)
     pData->initPost();
 }
 
-Window::Window(Application& app, Window& parent)
-    : pData(new PrivateData(app, this, parent.pData))
+Window::Window(Application& app, Window& transientParentWindow)
+    : pData(new PrivateData(app, this, transientParentWindow.pData))
 {
     pData->initPost();
 }
