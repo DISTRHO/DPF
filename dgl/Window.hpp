@@ -369,7 +369,7 @@ public:
 
       This function does not block the event loop.
     */
-    bool openFileBrowser(const FileBrowserOptions& options);
+    bool openFileBrowser(const FileBrowserOptions& options = FileBrowserOptions());
 #endif
 
    /**
