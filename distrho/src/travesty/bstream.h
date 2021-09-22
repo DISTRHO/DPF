@@ -1,5 +1,5 @@
 /*
- * travesty, pure C interface to steinberg VST3 SDK
+ * travesty, pure C VST3-compatible interface
  * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with

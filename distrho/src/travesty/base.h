@@ -1,5 +1,5 @@
 /*
- * travesty, pure C interface to steinberg VST3 SDK
+ * travesty, pure C VST3-compatible interface
  * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -54,42 +54,42 @@ v3_tuid_match(const v3_tuid a, const v3_tuid b)
 
 #if V3_COM_COMPAT
 enum {
-	V3_NO_INTERFACE		= 0x80004002L,
-	V3_OK				= 0,
-	V3_TRUE				= 0,
-	V3_FALSE			= 1,
-	V3_INVALID_ARG		= 0x80070057L,
-	V3_NOT_IMPLEMENTED	= 0x80004001L,
-	V3_INTERNAL_ERR		= 0x80004005L,
-	V3_NOT_INITIALISED	= 0x8000FFFFL,
-	V3_NOMEM			= 0x8007000EL
+	V3_NO_INTERFACE    = 0x80004002L,
+	V3_OK              = 0,
+	V3_TRUE            = 0,
+	V3_FALSE           = 1,
+	V3_INVALID_ARG     = 0x80070057L,
+	V3_NOT_IMPLEMENTED = 0x80004001L,
+	V3_INTERNAL_ERR    = 0x80004005L,
+	V3_NOT_INITIALISED = 0x8000FFFFL,
+	V3_NOMEM           = 0x8007000EL
 };
 
-# define V3_ID(a, b, c, d) {												\
-	((a) & 0x000000FF),														\
-	((a) & 0x0000FF00) >>  8,												\
-	((a) & 0x00FF0000) >> 16,												\
-	((a) & 0xFF000000) >> 24,												\
-																			\
-	((b) & 0x00FF0000) >> 16,												\
-	((b) & 0xFF000000) >> 24,												\
-	((b) & 0x000000FF),														\
-	((b) & 0x0000FF00) >>  8,												\
-																			\
-	((c) & 0xFF000000) >> 24,												\
-	((c) & 0x00FF0000) >> 16,												\
-	((c) & 0x0000FF00) >>  8,												\
-	((c) & 0x000000FF),														\
-																			\
-	((d) & 0xFF000000) >> 24,												\
-	((d) & 0x00FF0000) >> 16,												\
-	((d) & 0x0000FF00) >>  8,												\
-	((d) & 0x000000FF),														\
+# define V3_ID(a, b, c, d) {   \
+	((a) & 0x000000FF),        \
+	((a) & 0x0000FF00) >>  8,  \
+	((a) & 0x00FF0000) >> 16,  \
+	((a) & 0xFF000000) >> 24,  \
+	                           \
+	((b) & 0x00FF0000) >> 16,  \
+	((b) & 0xFF000000) >> 24,  \
+	((b) & 0x000000FF),        \
+	((b) & 0x0000FF00) >>  8,  \
+	                           \
+	((c) & 0xFF000000) >> 24,  \
+	((c) & 0x00FF0000) >> 16,  \
+	((c) & 0x0000FF00) >>  8,  \
+	((c) & 0x000000FF),        \
+	                           \
+	((d) & 0xFF000000) >> 24,  \
+	((d) & 0x00FF0000) >> 16,  \
+	((d) & 0x0000FF00) >>  8,  \
+	((d) & 0x000000FF),        \
 }
 
 #else // V3_COM_COMPAT
 enum {
-	V3_NO_INTERFACE	= -1,
+	V3_NO_INTERFACE = -1,
 	V3_OK,
 	V3_TRUE = V3_OK,
 	V3_FALSE,
@@ -100,26 +100,26 @@ enum {
 	V3_NOMEM
 };
 
-# define V3_ID(a, b, c, d) {												\
-	((a) & 0xFF000000) >> 24,												\
-	((a) & 0x00FF0000) >> 16,												\
-	((a) & 0x0000FF00) >>  8,												\
-	((a) & 0x000000FF),														\
-																			\
-	((b) & 0xFF000000) >> 24,												\
-	((b) & 0x00FF0000) >> 16,												\
-	((b) & 0x0000FF00) >>  8,												\
-	((b) & 0x000000FF),														\
-																			\
-	((c) & 0xFF000000) >> 24,												\
-	((c) & 0x00FF0000) >> 16,												\
-	((c) & 0x0000FF00) >>  8,												\
-	((c) & 0x000000FF),														\
-																			\
-	((d) & 0xFF000000) >> 24,												\
-	((d) & 0x00FF0000) >> 16,												\
-	((d) & 0x0000FF00) >>  8,												\
-	((d) & 0x000000FF),														\
+# define V3_ID(a, b, c, d) {   \
+	((a) & 0xFF000000) >> 24,  \
+	((a) & 0x00FF0000) >> 16,  \
+	((a) & 0x0000FF00) >>  8,  \
+	((a) & 0x000000FF),        \
+	                           \
+	((b) & 0xFF000000) >> 24,  \
+	((b) & 0x00FF0000) >> 16,  \
+	((b) & 0x0000FF00) >>  8,  \
+	((b) & 0x000000FF),        \
+	                           \
+	((c) & 0xFF000000) >> 24,  \
+	((c) & 0x00FF0000) >> 16,  \
+	((c) & 0x0000FF00) >>  8,  \
+	((c) & 0x000000FF),        \
+	                           \
+	((d) & 0xFF000000) >> 24,  \
+	((d) & 0x00FF0000) >> 16,  \
+	((d) & 0x0000FF00) >>  8,  \
+	((d) & 0x000000FF),        \
 }
 #endif // V3_COM_COMPAT
 

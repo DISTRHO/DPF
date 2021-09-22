@@ -1,5 +1,5 @@
 /*
- * travesty, pure C interface to steinberg VST3 SDK
+ * travesty, pure C VST3-compatible interface
  * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -68,7 +68,7 @@ struct v3_plugin_view {
 		(void *self, v3_bool state);
 
 	V3_API v3_result (*set_frame)
-		(void *self, struct v3_plug_frame *);
+		(void *self, struct v3_plugin_frame *);
 	V3_API v3_result (*can_resize)(void *self);
 	V3_API v3_result (*check_size_constraint)
 		(void *self, struct v3_view_rect *);
@@ -81,7 +81,7 @@ struct v3_plugin_frame {
 	struct v3_funknown;
 
 	V3_API v3_result (*resize_view)
-		(void *self, struct v3_plug_view *, struct v3_view_rect *);
+		(void *self, struct v3_plugin_view *, struct v3_view_rect *);
 };
 
 static const v3_tuid v3_plugin_frame_iid =
@@ -106,12 +106,12 @@ static const v3_tuid v3_plugin_view_content_scale_steinberg_iid =
  * support for querying the view to find what control is underneath the mouse
  */
 
-struct v3_plugin_view_param_finder {
+struct v3_plugin_view_parameter_finder {
 	struct v3_funknown;
 
 	V3_API v3_result (*find_parameter)
 		(void *self, int32_t x, int32_t y, v3_param_id *);
 };
 
-static const v3_tuid v3_plugin_view_param_finder_iid =
+static const v3_tuid v3_plugin_view_parameter_finder_iid =
 	V3_ID(0x0F618302, 0x215D4587, 0xA512073C, 0x77B9D383);
