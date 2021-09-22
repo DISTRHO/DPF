@@ -71,7 +71,7 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * DISTRHO Plugin Framework (DPF)</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2019 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2021 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * Permission to use, copy, modify, and/or distribute this software for any purpose with</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * or without fee is hereby granted, provided that the above copyright notice and this</span></div>
@@ -333,7 +333,7 @@ $(function() {
 <div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160; </div>
 <div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;   To use programs you must first enable them by setting @ref <a class="code" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a> to 1 in your DistrhoPluginInfo.h file.@n</div>
 <div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;   When enabled you&#39;ll need to override 2 new function in your plugin code,</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;   <a class="code" href="classPlugin.html">Plugin</a>::initProgramName(uint32_t, String&amp;) and <a class="code" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram</a>(uint32_t).</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;   <a class="code" href="classPlugin.html">Plugin</a>::initProgramName(uint32_t, String&amp;) and <a class="code" href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram</a>(uint32_t).</div>
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160; </div>
 <div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;   Here&#39;s an example of a plugin with a &quot;default&quot; program:</div>
 <div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;   @code</div>
@@ -579,136 +579,201 @@ $(function() {
 <div class="line"><a name="l00508"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72">  508</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_IS_SYNTH 1</span></div>
 <div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;<span class="comment">   Enable direct access between the %UI and plugin code.</span></div>
-<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;<span class="comment">   @see UI::getPluginInstancePointer()</span></div>
-<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;<span class="comment">   @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!</span></div>
-<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;<span class="comment">         Try to avoid it at all costs!</span></div>
-<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00516"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1">  516</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0</span></div>
-<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;<span class="comment">   Whether the plugin introduces latency during audio or midi processing.</span></div>
-<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;<span class="comment">   @see Plugin::setLatency(uint32_t)</span></div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;<span class="comment">   Request the minimum buffer size for the input and output event ports.@n</span></div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;<span class="comment">   Currently only used in LV2, with a default value of 2048 if unset.</span></div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00514"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga9e0277ebff0b0a05047439532ff216d5">  514</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE 2048</span></div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;<span class="comment">   Whether the plugin has an LV2 modgui.</span></div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;<span class="comment">   This will simply add a &quot;rdfs:seeAlso &lt;modgui.ttl&gt;&quot; on the LV2 manifest.@n</span></div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;<span class="comment">   It is up to you to create this file.</span></div>
 <div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00522"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930">  522</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_LATENCY 1</span></div>
+<div class="line"><a name="l00522"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaf75c327526ca8508c8968e43b6c1e49b">  522</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_USES_MODGUI 0</span></div>
 <div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;<span class="comment">   Whether the plugin wants MIDI input.@n</span></div>
-<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;<span class="comment">   This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.</span></div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00528"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">  528</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1</span></div>
-<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;<span class="comment">   Whether the plugin wants MIDI output.</span></div>
-<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;<span class="comment">   @see Plugin::writeMidiEvent(const MidiEvent&amp;)</span></div>
-<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00534"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073">  534</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1</span></div>
-<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;<span class="comment">   Whether the plugin wants to change its own parameter inputs.@n</span></div>
-<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;<span class="comment">   Not all hosts or plugin formats support this,</span></div>
-<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;<span class="comment">   so Plugin::canRequestParameterValueChanges() can be used to query support at runtime.</span></div>
-<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;<span class="comment">   @see Plugin::requestParameterValueChange(uint32_t, float)</span></div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;<span class="comment">   Enable direct access between the %UI and plugin code.</span></div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;<span class="comment">   @see UI::getPluginInstancePointer()</span></div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="comment">   @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!</span></div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;<span class="comment">         Try to avoid it at all costs!</span></div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00530"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1">  530</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0</span></div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;<span class="comment">   Whether the plugin introduces latency during audio or midi processing.</span></div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;<span class="comment">   @see Plugin::setLatency(uint32_t)</span></div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00536"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930">  536</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_LATENCY 1</span></div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;<span class="comment">   Whether the plugin wants MIDI input.@n</span></div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;<span class="comment">   This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.</span></div>
 <div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00542"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5a33bc5567795bdbbaab32313fabc652">  542</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 1</span></div>
+<div class="line"><a name="l00542"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf2e2eb7550e4116001c816adfb04a70">  542</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_MIDI_INPUT 1</span></div>
 <div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;<span class="comment">   Whether the plugin provides its own internal programs.</span></div>
-<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;<span class="comment">   @see Plugin::initProgramName(uint32_t, String&amp;)</span></div>
-<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;<span class="comment">   @see Plugin::loadProgram(uint32_t)</span></div>
-<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00549"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">  549</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_PROGRAMS 1</span></div>
-<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;<span class="comment">   Whether the plugin uses internal non-parameter data.</span></div>
-<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;<span class="comment">   @see Plugin::initState(uint32_t, String&amp;, String&amp;)</span></div>
-<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;<span class="comment">   @see Plugin::setState(const char*, const char*)</span></div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;<span class="comment">   Whether the plugin wants MIDI output.</span></div>
+<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;<span class="comment">   @see Plugin::writeMidiEvent(const MidiEvent&amp;)</span></div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00548"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga548522eb91344a45841a5a95ff4f8073">  548</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1</span></div>
+<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;<span class="comment">   Whether the plugin wants to change its own parameter inputs.@n</span></div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;<span class="comment">   Not all hosts or plugin formats support this,</span></div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;<span class="comment">   so Plugin::canRequestParameterValueChanges() can be used to query support at runtime.</span></div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;<span class="comment">   @see Plugin::requestParameterValueChange(uint32_t, float)</span></div>
 <div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00556"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">  556</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_STATE 1</span></div>
+<div class="line"><a name="l00556"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5a33bc5567795bdbbaab32313fabc652">  556</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST 1</span></div>
 <div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;<span class="comment">   Whether the plugin implements the full state API.</span></div>
-<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;<span class="comment">   When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project.</span></div>
-<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;<span class="comment">   This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters.</span></div>
-<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;<span class="comment">   Most simple effects and synths will not need this.</span></div>
-<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;<span class="comment">   @note this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes.</span></div>
-<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;<span class="comment">   @see Plugin::getState(const char*)</span></div>
-<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00566"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac022d3d0a8782d632d7a801bc9cf721e">  566</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_FULL_STATE 1</span></div>
-<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;<span class="comment">   Whether the plugin wants time position information from the host.</span></div>
-<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160;<span class="comment">   @see Plugin::getTimePosition()</span></div>
-<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00572"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2">  572</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_TIMEPOS 1</span></div>
-<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;<span class="comment">   Whether the %UI uses a custom toolkit implementation based on OpenGL.@n</span></div>
-<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;<span class="comment">   When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.</span></div>
-<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00578"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5bcd1ce31e47a617de4c32fbf85e44ca">  578</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USE_CUSTOM 1</span></div>
-<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00580"></a><span class="lineno">  580</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;<span class="comment">   The include path to the header file used by the custom toolkit implementation.</span></div>
-<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;<span class="comment">   This path must be relative to dpf/distrho/DistrhoUI.hpp</span></div>
-<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_CUSTOM</span></div>
-<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00585"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaf978778ddb34e3663a5c0bd128067e10">  585</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_CUSTOM_INCLUDE_PATH</span></div>
-<div class="line"><a name="l00586"></a><span class="lineno">  586</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="comment">   The top-level-widget typedef to use for the custom toolkit.</span></div>
-<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="comment">   This widget class MUST be a subclass of DGL TopLevelWindow class.</span></div>
-<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;<span class="comment">   It is recommended that you keep this widget class inside the DGL namespace,</span></div>
-<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;<span class="comment">   and define widget type as e.g. DGL_NAMESPACE::MyCustomTopLevelWidget.</span></div>
-<div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_CUSTOM</span></div>
-<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00594"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaf6377f757b9796bd37f7be4e605ccd4a">  594</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_CUSTOM_WIDGET_TYPE</span></div>
-<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;<span class="comment">   Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n</span></div>
-<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;<span class="comment">   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.</span></div>
-<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00600"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">  600</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USE_NANOVG 1</span></div>
-<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;<span class="comment">   Whether the %UI is resizable to any size by the user.@n</span></div>
-<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;<span class="comment">   By default this is false, and resizing is only allowed under the plugin UI control,@n</span></div>
-<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;<span class="comment">   Enabling this options makes it possible for the user to resize the plugin UI at anytime.</span></div>
-<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;<span class="comment">   @see UI::setGeometryConstraints(uint, uint, bool, bool)</span></div>
+<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;<span class="comment">   Whether the plugin provides its own internal programs.</span></div>
+<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;<span class="comment">   @see Plugin::initProgramName(uint32_t, String&amp;)</span></div>
+<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;<span class="comment">   @see Plugin::loadProgram(uint32_t)</span></div>
+<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00563"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">  563</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_PROGRAMS 1</span></div>
+<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;<span class="comment">   Whether the plugin uses internal non-parameter data.</span></div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;<span class="comment">   @see Plugin::initState(uint32_t, String&amp;, String&amp;)</span></div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;<span class="comment">   @see Plugin::setState(const char*, const char*)</span></div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00570"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga255f43cc0997af8b56abcca260c875e0">  570</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_STATE 1</span></div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160;<span class="comment">   Whether the plugin implements the full state API.</span></div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;<span class="comment">   When this macro is enabled, the plugin must implement a new getState(const char* key) function, which the host calls when saving its session/project.</span></div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160;<span class="comment">   This is useful for plugins that have custom internal values not exposed to the host as key-value state pairs or parameters.</span></div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;<span class="comment">   Most simple effects and synths will not need this.</span></div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160;<span class="comment">   @note this macro is automatically enabled if a plugin has programs and state, as the key-value state pairs need to be updated when the current program changes.</span></div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;<span class="comment">   @see Plugin::getState(const char*)</span></div>
+<div class="line"><a name="l00579"></a><span class="lineno">  579</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00580"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gac022d3d0a8782d632d7a801bc9cf721e">  580</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_FULL_STATE 1</span></div>
+<div class="line"><a name="l00581"></a><span class="lineno">  581</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00582"></a><span class="lineno">  582</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00583"></a><span class="lineno">  583</span>&#160;<span class="comment">   Whether the plugin wants time position information from the host.</span></div>
+<div class="line"><a name="l00584"></a><span class="lineno">  584</span>&#160;<span class="comment">   @see Plugin::getTimePosition()</span></div>
+<div class="line"><a name="l00585"></a><span class="lineno">  585</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00586"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga496610b956d931b1940d07da48d123f2">  586</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_WANT_TIMEPOS 1</span></div>
+<div class="line"><a name="l00587"></a><span class="lineno">  587</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00588"></a><span class="lineno">  588</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00589"></a><span class="lineno">  589</span>&#160;<span class="comment">   Whether the %UI uses a custom toolkit implementation based on OpenGL.@n</span></div>
+<div class="line"><a name="l00590"></a><span class="lineno">  590</span>&#160;<span class="comment">   When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.</span></div>
+<div class="line"><a name="l00591"></a><span class="lineno">  591</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00592"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga5bcd1ce31e47a617de4c32fbf85e44ca">  592</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USE_CUSTOM 1</span></div>
+<div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;<span class="comment">   The include path to the header file used by the custom toolkit implementation.</span></div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;<span class="comment">   This path must be relative to dpf/distrho/DistrhoUI.hpp</span></div>
+<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_CUSTOM</span></div>
+<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00599"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaf978778ddb34e3663a5c0bd128067e10">  599</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_CUSTOM_INCLUDE_PATH</span></div>
+<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;<span class="comment">   The top-level-widget typedef to use for the custom toolkit.</span></div>
+<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;<span class="comment">   This widget class MUST be a subclass of DGL TopLevelWindow class.</span></div>
+<div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;<span class="comment">   It is recommended that you keep this widget class inside the DGL namespace,</span></div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;<span class="comment">   and define widget type as e.g. DGL_NAMESPACE::MyCustomTopLevelWidget.</span></div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;<span class="comment">   @see DISTRHO_UI_USE_CUSTOM</span></div>
 <div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00608"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gabadb9d9ba7f479df39b3963ee60b7a4b">  608</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USER_RESIZABLE 1</span></div>
+<div class="line"><a name="l00608"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaf6377f757b9796bd37f7be4e605ccd4a">  608</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_CUSTOM_WIDGET_TYPE</span></div>
 <div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;<span class="comment">   The %UI URI when exporting in LV2 format.@n</span></div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;<span class="comment">   By default this is set to @ref DISTRHO_PLUGIN_URI with &quot;#UI&quot; as suffix.</span></div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;<span class="comment">   Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n</span></div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;<span class="comment">   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.</span></div>
 <div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00614"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">  614</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI &quot;#UI&quot;</span></div>
+<div class="line"><a name="l00614"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">  614</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USE_NANOVG 1</span></div>
 <div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;<span class="comment">/** @} */</span></div>
-<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160; </div>
-<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;<span class="comment">// -----------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160; </div>
-<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;END_NAMESPACE_DISTRHO</div>
-<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160; </div>
-<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;<span class="preprocessor">#endif // DOXYGEN</span></div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;<span class="comment">   Whether the %UI is resizable to any size by the user.@n</span></div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;<span class="comment">   By default this is false, and resizing is only allowed under the plugin UI control,@n</span></div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;<span class="comment">   Enabling this options makes it possible for the user to resize the plugin UI at anytime.</span></div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;<span class="comment">   @see UI::setGeometryConstraints(uint, uint, bool, bool)</span></div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00622"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gabadb9d9ba7f479df39b3963ee60b7a4b">  622</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_USER_RESIZABLE 1</span></div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;<span class="comment">   The %UI URI when exporting in LV2 format.@n</span></div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;<span class="comment">   By default this is set to @ref DISTRHO_PLUGIN_URI with &quot;#UI&quot; as suffix.</span></div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00628"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">  628</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI &quot;#UI&quot;</span></div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160; </div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;<span class="comment"> * Plugin Macros */</span></div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;<span class="comment">   @defgroup ExtraPluginMacros Extra Plugin Macros</span></div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;<span class="comment">   C Macros to customize DPF behaviour.</span></div>
+<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;<span class="comment">   These are macros that do not set plugin features or information, but instead change DPF internals.@n</span></div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;<span class="comment">   They are all optional, none are enabled by default.</span></div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;<span class="comment">   Unless stated otherwise, values are assumed to be a simple/empty define.</span></div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;<span class="comment">   Whether to enable runtime plugin tests.@n</span></div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;<span class="comment">   This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n</span></div>
+<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;<span class="comment">   Useful to enable as part of CI, can safely be skipped.@n</span></div>
+<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make DPF_RUNTIME_TESTING=true`.</span></div>
+<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;<span class="comment">   @note Some checks are only available with the GCC compiler,</span></div>
+<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;<span class="comment">         for detecting if a virtual function has been reimplemented.</span></div>
+<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00656"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga692c508f53e1eb8747e261d2435490b7">  656</a></span>&#160;<span class="preprocessor">#define DPF_RUNTIME_TESTING</span></div>
+<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;<span class="comment">   Whether to show parameter outputs in the VST2 plugins.@n</span></div>
+<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;<span class="comment">   This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters.</span></div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00662"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga9e6df7bd76cecd30e3762a58e29cd011">  662</a></span>&#160;<span class="preprocessor">#define DPF_VST_SHOW_PARAMETER_OUTPUTS</span></div>
+<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;<span class="comment">   Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.</span></div>
+<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.</span></div>
+<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;<span class="comment">   @note This is experimental and incomplete, contributions are welcome and appreciated.</span></div>
+<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00670"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga01988e3c3664d33fac3b7958715b00fd">  670</a></span>&#160;<span class="preprocessor">#define DGL_USE_OPENGL3</span></div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;<span class="comment">   Whether to use the GPLv2+ vestige header instead of the official Steinberg VST2 SDK.@n</span></div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;<span class="comment">   This is a boolean, and enabled (set to 1) by default.@n</span></div>
+<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;<span class="comment">   Set this to 0 in order to create non-GPL binaries.</span></div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;<span class="comment">   (but then at your own discretion in regards to Steinberg licensing)@n</span></div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;<span class="comment">   When set to 0, DPF will import the VST2 definitions from `&quot;vst/aeffectx.h&quot;` (not shipped with DPF).</span></div>
+<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00679"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga89155a96125944b4e4eb32d69d65272e">  679</a></span>&#160;<span class="preprocessor">#define VESTIGE_HEADER 1</span></div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160; </div>
+<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;<span class="comment">// -----------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160; </div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;END_NAMESPACE_DISTRHO</div>
+<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160; </div>
+<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;<span class="preprocessor">#endif // DOXYGEN</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
 <div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:491</div></div>
 <div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:445</div></div>
 <div class="ttc" id="aclassUI_html"><div class="ttname"><a href="classUI.html">UI</a></div><div class="ttdef"><b>Definition:</b> DistrhoUI.hpp:71</div></div>
-<div class="ttc" id="aclassPlugin_html_ab629f35c60406d6f2c0b9d530e67cf09"><div class="ttname"><a href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram</a></div><div class="ttdeci">virtual void loadProgram(uint32_t index)=0</div></div>
 <div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:249</div></div>
 <div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:457</div></div>
 <div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:472</div></div>
-<div class="ttc" id="agroup__PluginMacros_html_gad95e24b17f196260cee15255fdb5b677"><div class="ttname"><a href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a></div><div class="ttdeci">#define DISTRHO_PLUGIN_WANT_PROGRAMS</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:549</div></div>
+<div class="ttc" id="agroup__PluginMacros_html_gad95e24b17f196260cee15255fdb5b677"><div class="ttname"><a href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a></div><div class="ttdeci">#define DISTRHO_PLUGIN_WANT_PROGRAMS</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:563</div></div>
 <div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:802</div></div>
 <div class="ttc" id="agroup__ParameterHints_html_ga04161ef926442aa08ae7aa6847078ad9"><div class="ttname"><a href="group__ParameterHints.html#ga04161ef926442aa08ae7aa6847078ad9">kParameterIsAutomable</a></div><div class="ttdeci">static const uint32_t kParameterIsAutomable</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:90</div></div>
+<div class="ttc" id="aclassPlugin_html_a44eb1bfcc3a3e5949ad053fc9ce55ce8"><div class="ttname"><a href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram</a></div><div class="ttdeci">virtual void loadProgram(uint32_t index)</div></div>
 <div class="ttc" id="astructParameterRanges_html_a175c78c905c598df929a4450e4d2a2a0"><div class="ttname"><a href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">ParameterRanges::max</a></div><div class="ttdeci">float max</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:259</div></div>
 <div class="ttc" id="astructParameterRanges_html_a63c40988463a8ace9d0e9e55a00f3c7b"><div class="ttname"><a href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">ParameterRanges::min</a></div><div class="ttdeci">float min</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:254</div></div>
 <div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:450</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

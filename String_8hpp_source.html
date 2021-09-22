@@ -690,351 +690,381 @@ $(function() {
 <div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;    }</div>
 <div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160; </div>
 <div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;    <span class="comment">/*</span></div>
-<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;<span class="comment">     * Direct access to the string buffer (read-only).</span></div>
-<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* buffer() <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;    {</div>
-<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;        <span class="keywordflow">return</span> fBuffer;</div>
-<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;    }</div>
-<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160; </div>
-<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;    <span class="comment">/*</span></div>
-<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;<span class="comment">     * Get and release the string buffer, while also clearing this string.</span></div>
-<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;<span class="comment">     * This allows to keep a pointer to the buffer after this object is deleted.</span></div>
-<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;<span class="comment">     * Result must be freed.</span></div>
-<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;    <span class="keywordtype">char</span>* getAndReleaseBuffer() noexcept</div>
-<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;    {</div>
-<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;        <span class="keywordtype">char</span>* ret = fBufferLen &gt; 0 ? fBuffer : <span class="keyword">nullptr</span>;</div>
-<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;        fBuffer = _null();</div>
-<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;        fBufferLen = 0;</div>
-<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;        fBufferAlloc = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;        <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;    }</div>
-<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160; </div>
-<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;    <span class="comment">// base64 stuff, based on http://www.adp-gmbh.ch/cpp/common/base64.html</span></div>
-<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    <span class="comment">// Copyright (C) 2004-2008 René Nyffenegger</span></div>
-<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160; </div>
-<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;    <span class="keyword">static</span> <a class="code" href="classString.html">String</a> asBase64(<span class="keyword">const</span> <span class="keywordtype">void</span>* <span class="keyword">const</span> data, <span class="keyword">const</span> std::size_t dataSize)</div>
-<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;    {</div>
-<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;        <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> kBase64Chars =</div>
-<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;            <span class="stringliteral">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span></div>
-<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;            <span class="stringliteral">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span></div>
-<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;            <span class="stringliteral">&quot;0123456789+/&quot;</span>;</div>
-<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160; </div>
-<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;<span class="preprocessor">#ifndef _MSC_VER</span></div>
-<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;        <span class="keyword">const</span> std::size_t kTmpBufSize = std::min(d_nextPowerOf2(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(dataSize/3)), 65536U);</div>
-<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;        constexpr std::size_t kTmpBufSize = 65536U;</div>
-<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160; </div>
-<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;        <span class="keyword">const</span> uchar* bytesToEncode((<span class="keyword">const</span> uchar*)data);</div>
-<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160; </div>
-<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;        uint i=0, j=0;</div>
-<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;        uint charArray3[3], charArray4[4];</div>
-<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160; </div>
-<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;        <span class="keywordtype">char</span> strBuf[kTmpBufSize + 1];</div>
-<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;        strBuf[kTmpBufSize] = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160;        std::size_t strBufIndex = 0;</div>
-<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160; </div>
-<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;        <a class="code" href="classString.html">String</a> ret;</div>
-<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160; </div>
-<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;        <span class="keywordflow">for</span> (std::size_t s=0; s&lt;dataSize; ++s)</div>
-<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;        {</div>
-<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;            charArray3[i++] = *(bytesToEncode++);</div>
-<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160; </div>
-<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;            <span class="keywordflow">if</span> (i == 3)</div>
-<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;            {</div>
-<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;                charArray4[0] =  (charArray3[0] &amp; 0xfc) &gt;&gt; 2;</div>
-<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;                charArray4[1] = ((charArray3[0] &amp; 0x03) &lt;&lt; 4) + ((charArray3[1] &amp; 0xf0) &gt;&gt; 4);</div>
-<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;                charArray4[2] = ((charArray3[1] &amp; 0x0f) &lt;&lt; 2) + ((charArray3[2] &amp; 0xc0) &gt;&gt; 6);</div>
-<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;                charArray4[3] =   charArray3[2] &amp; 0x3f;</div>
-<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160; </div>
-<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;                <span class="keywordflow">for</span> (i=0; i&lt;4; ++i)</div>
-<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;                    strBuf[strBufIndex++] = kBase64Chars[charArray4[i]];</div>
-<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160; </div>
-<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;                <span class="keywordflow">if</span> (strBufIndex &gt;= kTmpBufSize-7)</div>
-<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;                {</div>
-<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;                    strBuf[strBufIndex] = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;                    strBufIndex = 0;</div>
-<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;                    ret += strBuf;</div>
-<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;                }</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;<span class="comment">     * Create a new string where all non-basic characters are converted to &#39;_&#39;.</span></div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;<span class="comment">     * @see toBasic()</span></div>
+<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;    <a class="code" href="classString.html">String</a> asBasic() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;    {</div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;        <a class="code" href="classString.html">String</a> s(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;        <span class="keywordflow">return</span> s.toBasic();</div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;    }</div>
+<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160; </div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;<span class="comment">     * Create a new string where all ascii characters are converted lowercase.</span></div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;<span class="comment">     * @see toLower()</span></div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;    <a class="code" href="classString.html">String</a> asLower() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;    {</div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;        <a class="code" href="classString.html">String</a> s(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;        <span class="keywordflow">return</span> s.toLower();</div>
+<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;    }</div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160; </div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;<span class="comment">     * Create a new string where all ascii characters are converted to uppercase.</span></div>
+<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;<span class="comment">     * @see toUpper()</span></div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    <a class="code" href="classString.html">String</a> asUpper() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;    {</div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;        <a class="code" href="classString.html">String</a> s(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;        <span class="keywordflow">return</span> s.toUpper();</div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;    }</div>
+<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160; </div>
+<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;<span class="comment">     * Direct access to the string buffer (read-only).</span></div>
+<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* buffer() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;    {</div>
+<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;        <span class="keywordflow">return</span> fBuffer;</div>
+<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;    }</div>
+<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160; </div>
+<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;<span class="comment">     * Get and release the string buffer, while also clearing this string.</span></div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;<span class="comment">     * This allows to keep a pointer to the buffer after this object is deleted.</span></div>
+<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;<span class="comment">     * Result must be freed.</span></div>
+<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;    <span class="keywordtype">char</span>* getAndReleaseBuffer() noexcept</div>
+<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;    {</div>
+<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;        <span class="keywordtype">char</span>* ret = fBufferLen &gt; 0 ? fBuffer : <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160;        fBuffer = _null();</div>
+<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;        fBufferLen = 0;</div>
+<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;        fBufferAlloc = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;        <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;    }</div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160; </div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;    <span class="comment">// base64 stuff, based on http://www.adp-gmbh.ch/cpp/common/base64.html</span></div>
+<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;    <span class="comment">// Copyright (C) 2004-2008 René Nyffenegger</span></div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160; </div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;    <span class="keyword">static</span> <a class="code" href="classString.html">String</a> asBase64(<span class="keyword">const</span> <span class="keywordtype">void</span>* <span class="keyword">const</span> data, <span class="keyword">const</span> std::size_t dataSize)</div>
+<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;    {</div>
+<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;        <span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> kBase64Chars =</div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;            <span class="stringliteral">&quot;ABCDEFGHIJKLMNOPQRSTUVWXYZ&quot;</span></div>
+<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;            <span class="stringliteral">&quot;abcdefghijklmnopqrstuvwxyz&quot;</span></div>
+<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;            <span class="stringliteral">&quot;0123456789+/&quot;</span>;</div>
+<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160; </div>
+<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;<span class="preprocessor">#ifndef _MSC_VER</span></div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;        <span class="keyword">const</span> std::size_t kTmpBufSize = std::min(d_nextPowerOf2(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(dataSize/3)), 65536U);</div>
+<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;        constexpr std::size_t kTmpBufSize = 65536U;</div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160; </div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;        <span class="keyword">const</span> uchar* bytesToEncode((<span class="keyword">const</span> uchar*)data);</div>
 <div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160; </div>
-<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;                i = 0;</div>
-<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;            }</div>
-<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160;        }</div>
-<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160; </div>
-<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;        <span class="keywordflow">if</span> (i != 0)</div>
-<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;        {</div>
-<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;            <span class="keywordflow">for</span> (j=i; j&lt;3; ++j)</div>
-<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;              charArray3[j] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;        uint i=0, j=0;</div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;        uint charArray3[3], charArray4[4];</div>
+<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160; </div>
+<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;        <span class="keywordtype">char</span> strBuf[kTmpBufSize + 1];</div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;        strBuf[kTmpBufSize] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;        std::size_t strBufIndex = 0;</div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160; </div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;        <a class="code" href="classString.html">String</a> ret;</div>
 <div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160; </div>
-<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;            charArray4[0] =  (charArray3[0] &amp; 0xfc) &gt;&gt; 2;</div>
-<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;            charArray4[1] = ((charArray3[0] &amp; 0x03) &lt;&lt; 4) + ((charArray3[1] &amp; 0xf0) &gt;&gt; 4);</div>
-<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;            charArray4[2] = ((charArray3[1] &amp; 0x0f) &lt;&lt; 2) + ((charArray3[2] &amp; 0xc0) &gt;&gt; 6);</div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;            charArray4[3] =   charArray3[2] &amp; 0x3f;</div>
-<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160; </div>
-<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;            <span class="keywordflow">for</span> (j=0; j&lt;4 &amp;&amp; i&lt;3 &amp;&amp; j&lt;i+1; ++j)</div>
-<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;                strBuf[strBufIndex++] = kBase64Chars[charArray4[j]];</div>
-<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160; </div>
-<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;            <span class="keywordflow">for</span> (; i++ &lt; 3;)</div>
-<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                strBuf[strBufIndex++] = <span class="charliteral">&#39;=&#39;</span>;</div>
-<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;        }</div>
-<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160; </div>
-<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;        <span class="keywordflow">if</span> (strBufIndex != 0)</div>
-<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;        {</div>
-<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;            strBuf[strBufIndex] = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;            ret += strBuf;</div>
-<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;        }</div>
-<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160; </div>
-<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;        <span class="keywordflow">return</span> ret;</div>
-<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;    }</div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;        <span class="keywordflow">for</span> (std::size_t s=0; s&lt;dataSize; ++s)</div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;        {</div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;            charArray3[i++] = *(bytesToEncode++);</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160; </div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;            <span class="keywordflow">if</span> (i == 3)</div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;            {</div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;                charArray4[0] =  (charArray3[0] &amp; 0xfc) &gt;&gt; 2;</div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;                charArray4[1] = ((charArray3[0] &amp; 0x03) &lt;&lt; 4) + ((charArray3[1] &amp; 0xf0) &gt;&gt; 4);</div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;                charArray4[2] = ((charArray3[1] &amp; 0x0f) &lt;&lt; 2) + ((charArray3[2] &amp; 0xc0) &gt;&gt; 6);</div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                charArray4[3] =   charArray3[2] &amp; 0x3f;</div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160; </div>
+<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                <span class="keywordflow">for</span> (i=0; i&lt;4; ++i)</div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;                    strBuf[strBufIndex++] = kBase64Chars[charArray4[i]];</div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160; </div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;                <span class="keywordflow">if</span> (strBufIndex &gt;= kTmpBufSize-7)</div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;                {</div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;                    strBuf[strBufIndex] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;                    strBufIndex = 0;</div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;                    ret += strBuf;</div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;                }</div>
 <div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160; </div>
-<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;    <span class="comment">// public operators</span></div>
-<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160; </div>
-<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;    <span class="keyword">operator</span> <span class="keyword">const</span> <span class="keywordtype">char</span>*() <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;    {</div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;        <span class="keywordflow">return</span> fBuffer;</div>
-<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;    }</div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160; </div>
-<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;    <span class="keywordtype">char</span> operator[](<span class="keyword">const</span> std::size_t pos) <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;    {</div>
-<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
-<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
-<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160; </div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
-<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160; </div>
-<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;        <span class="keywordflow">return</span> fallback;</div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;    }</div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160; </div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;    <span class="keywordtype">char</span>&amp; operator[](<span class="keyword">const</span> std::size_t pos) noexcept</div>
-<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;    {</div>
-<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
-<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160; </div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;                i = 0;</div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;            }</div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;        }</div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160; </div>
+<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;        <span class="keywordflow">if</span> (i != 0)</div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;        {</div>
+<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;            <span class="keywordflow">for</span> (j=i; j&lt;3; ++j)</div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;              charArray3[j] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160; </div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;            charArray4[0] =  (charArray3[0] &amp; 0xfc) &gt;&gt; 2;</div>
+<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;            charArray4[1] = ((charArray3[0] &amp; 0x03) &lt;&lt; 4) + ((charArray3[1] &amp; 0xf0) &gt;&gt; 4);</div>
+<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;            charArray4[2] = ((charArray3[1] &amp; 0x0f) &lt;&lt; 2) + ((charArray3[2] &amp; 0xc0) &gt;&gt; 6);</div>
+<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;            charArray4[3] =   charArray3[2] &amp; 0x3f;</div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160; </div>
+<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;            <span class="keywordflow">for</span> (j=0; j&lt;4 &amp;&amp; i&lt;3 &amp;&amp; j&lt;i+1; ++j)</div>
+<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;                strBuf[strBufIndex++] = kBase64Chars[charArray4[j]];</div>
+<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160; </div>
+<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;            <span class="keywordflow">for</span> (; i++ &lt; 3;)</div>
+<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;                strBuf[strBufIndex++] = <span class="charliteral">&#39;=&#39;</span>;</div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;        }</div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160; </div>
+<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;        <span class="keywordflow">if</span> (strBufIndex != 0)</div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;        {</div>
+<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;            strBuf[strBufIndex] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;            ret += strBuf;</div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;        }</div>
 <div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160; </div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
-<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;        <span class="keywordflow">return</span> fallback;</div>
-<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;    }</div>
-<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160; </div>
-<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;    {</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;        <span class="keywordflow">return</span> (strBuf != <span class="keyword">nullptr</span> &amp;&amp; std::strcmp(fBuffer, strBuf) == 0);</div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;    }</div>
-<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160; </div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;    {</div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;        <span class="keywordflow">return</span> operator==(str.fBuffer);</div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;    }</div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160; </div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;    {</div>
-<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        <span class="keywordflow">return</span> !operator==(strBuf);</div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;    }</div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160; </div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) <span class="keyword">const</span> noexcept</div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;    {</div>
-<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;        <span class="keywordflow">return</span> !operator==(str.fBuffer);</div>
-<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;    }</div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160; </div>
-<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;    {</div>
-<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;        _dup(strBuf);</div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160; </div>
-<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;    }</div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160; </div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    {</div>
-<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;        _dup(str.fBuffer);</div>
-<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160; </div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;    }</div>
-<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160; </div>
-<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator+=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
-<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;    {</div>
-<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;        <span class="keywordflow">if</span> (strBuf == <span class="keyword">nullptr</span> || strBuf[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
-<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160; </div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;        <span class="keyword">const</span> std::size_t strBufLen = std::strlen(strBuf);</div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160; </div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;        <span class="comment">// for empty strings, we can just take the appended string as our entire data</span></div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;        <span class="keywordflow">if</span> (isEmpty())</div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;        {</div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;            _dup(strBuf, strBufLen);</div>
-<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;        }</div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160; </div>
-<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;        <span class="comment">// we have some data ourselves, reallocate to add the new stuff</span></div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;        <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)realloc(fBuffer, fBufferLen + strBufLen + 1);</div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, *<span class="keyword">this</span>);</div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160; </div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);</div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;        <span class="keywordflow">return</span> ret;</div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;    }</div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160; </div>
+<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;    <span class="comment">// public operators</span></div>
+<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160; </div>
+<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;    <span class="keyword">operator</span> <span class="keyword">const</span> <span class="keywordtype">char</span>*() <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;    {</div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;        <span class="keywordflow">return</span> fBuffer;</div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;    }</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160; </div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;    <span class="keywordtype">char</span> operator[](<span class="keyword">const</span> std::size_t pos) <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;    {</div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160; </div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
+<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160; </div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;        <span class="keywordflow">return</span> fallback;</div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;    }</div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160; </div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;    <span class="keywordtype">char</span>&amp; operator[](<span class="keyword">const</span> std::size_t pos) noexcept</div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;    {</div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160; </div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
+<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160; </div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;        <span class="keywordflow">return</span> fallback;</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;    }</div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160; </div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;    {</div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;        <span class="keywordflow">return</span> (strBuf != <span class="keyword">nullptr</span> &amp;&amp; std::strcmp(fBuffer, strBuf) == 0);</div>
+<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;    }</div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160; </div>
+<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;    <span class="keywordtype">bool</span> operator==(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;    {</div>
+<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;        <span class="keywordflow">return</span> operator==(str.fBuffer);</div>
+<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;    }</div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160; </div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;    {</div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;        <span class="keywordflow">return</span> !operator==(strBuf);</div>
+<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;    }</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160; </div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;    <span class="keywordtype">bool</span> operator!=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) <span class="keyword">const</span> noexcept</div>
+<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;    {</div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;        <span class="keywordflow">return</span> !operator==(str.fBuffer);</div>
+<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;    }</div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160; </div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;    {</div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;        _dup(strBuf);</div>
 <div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160; </div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;        fBuffer = newBuf;</div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;        fBufferLen += strBufLen;</div>
+<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;    }</div>
 <div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160; </div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    }</div>
-<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160; </div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator+=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    {</div>
-<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;        <span class="keywordflow">return</span> operator+=(str.fBuffer);</div>
-<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;    }</div>
-<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160; </div>
-<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;    <a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
-<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    {</div>
-<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;        <span class="keywordflow">if</span> (strBuf == <span class="keyword">nullptr</span> || strBuf[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
-<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;        <span class="keywordflow">if</span> (isEmpty())</div>
-<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBuf);</div>
-<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160; </div>
-<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;        <span class="keyword">const</span> std::size_t strBufLen = std::strlen(strBuf);</div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;        <span class="keyword">const</span> std::size_t newBufSize = fBufferLen + strBufLen;</div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;        <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
-<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160; </div>
-<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;        std::memcpy(newBuf, fBuffer, fBufferLen);</div>
-<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);</div>
-<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160; </div>
-<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf);</div>
-<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;    }</div>
-<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160; </div>
-<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;    <a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
-<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;    {</div>
-<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;        <span class="keywordflow">return</span> operator+(str.fBuffer);</div>
-<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;    }</div>
-<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160; </div>
-<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;    {</div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;        _dup(str.fBuffer);</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160; </div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    }</div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160; </div>
+<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator+=(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;    {</div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;        <span class="keywordflow">if</span> (strBuf == <span class="keyword">nullptr</span> || strBuf[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160; </div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;        <span class="keyword">const</span> std::size_t strBufLen = std::strlen(strBuf);</div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160; </div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;        <span class="comment">// for empty strings, we can just take the appended string as our entire data</span></div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;        <span class="keywordflow">if</span> (isEmpty())</div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;        {</div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;            _dup(strBuf, strBufLen);</div>
+<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;        }</div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160; </div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;        <span class="comment">// we have some data ourselves, reallocate to add the new stuff</span></div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;        <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)realloc(fBuffer, fBufferLen + strBufLen + 1);</div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, *<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160; </div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);</div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160; </div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;        fBuffer = newBuf;</div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;        fBufferLen += strBufLen;</div>
+<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160; </div>
+<div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;    }</div>
 <div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160; </div>
-<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;    <span class="keywordtype">char</span>*       fBuffer;      <span class="comment">// the actual string buffer</span></div>
-<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;    std::size_t fBufferLen;   <span class="comment">// string length</span></div>
-<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;    <span class="keywordtype">bool</span>        fBufferAlloc; <span class="comment">// wherever the buffer is allocated, not using _null()</span></div>
+<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;    <a class="code" href="classString.html">String</a>&amp; operator+=(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
+<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;    {</div>
+<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;        <span class="keywordflow">return</span> operator+=(str.fBuffer);</div>
+<div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;    }</div>
 <div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160; </div>
-<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;    <span class="comment">/*</span></div>
-<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;<span class="comment">     * Static null string.</span></div>
-<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;<span class="comment">     * Prevents allocation for new and/or empty strings.</span></div>
-<div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">char</span>* _null() noexcept</div>
-<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;    {</div>
-<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> sNull = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;        <span class="keywordflow">return</span> &amp;sNull;</div>
-<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;    }</div>
-<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160; </div>
-<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;    <span class="comment">/*</span></div>
-<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;<span class="comment">     * Helper function.</span></div>
-<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;<span class="comment">     * Called whenever the string needs to be allocated.</span></div>
-<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;<span class="comment">     *</span></div>
-<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;<span class="comment">     * Notes:</span></div>
-<div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;<span class="comment">     * - Allocates string only if &#39;strBuf&#39; is not null and new string contents are different</span></div>
-<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;<span class="comment">     * - If &#39;strBuf&#39; is null, &#39;size&#39; must be 0</span></div>
-<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="comment">     */</span></div>
-<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;    <span class="keywordtype">void</span> _dup(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf, <span class="keyword">const</span> std::size_t size = 0) noexcept</div>
+<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;    <a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf) noexcept</div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;    {</div>
+<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;        <span class="keywordflow">if</span> (strBuf == <span class="keyword">nullptr</span> || strBuf[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
+<div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;        <span class="keywordflow">if</span> (isEmpty())</div>
+<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBuf);</div>
+<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160; </div>
+<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;        <span class="keyword">const</span> std::size_t strBufLen = std::strlen(strBuf);</div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;        <span class="keyword">const</span> std::size_t newBufSize = fBufferLen + strBufLen;</div>
+<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;        <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
+<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
+<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160; </div>
+<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;        std::memcpy(newBuf, fBuffer, fBufferLen);</div>
+<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;        std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);</div>
+<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160; </div>
+<div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf);</div>
+<div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;    }</div>
+<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160; </div>
+<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;    <a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; str) noexcept</div>
 <div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;    {</div>
-<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;        <span class="keywordflow">if</span> (strBuf != <span class="keyword">nullptr</span>)</div>
-<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;        {</div>
-<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;            <span class="comment">// don&#39;t recreate string if contents match</span></div>
-<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;            <span class="keywordflow">if</span> (std::strcmp(fBuffer, strBuf) == 0)</div>
-<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160; </div>
-<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;            <span class="keywordflow">if</span> (fBufferAlloc)</div>
-<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;                std::free(fBuffer);</div>
-<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160; </div>
-<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;            fBufferLen = (size &gt; 0) ? size : std::strlen(strBuf);</div>
-<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;            fBuffer    = (<span class="keywordtype">char</span>*)std::malloc(fBufferLen+1);</div>
-<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160; </div>
-<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;            <span class="keywordflow">if</span> (fBuffer == <span class="keyword">nullptr</span>)</div>
-<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;            {</div>
-<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;                fBuffer      = _null();</div>
-<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;                fBufferLen   = 0;</div>
-<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;                fBufferAlloc = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160;                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;            }</div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;        <span class="keywordflow">return</span> operator+(str.fBuffer);</div>
+<div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;    }</div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160; </div>
+<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;    <span class="comment">// -------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160; </div>
+<div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;    <span class="keywordtype">char</span>*       fBuffer;      <span class="comment">// the actual string buffer</span></div>
+<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;    std::size_t fBufferLen;   <span class="comment">// string length</span></div>
+<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;    <span class="keywordtype">bool</span>        fBufferAlloc; <span class="comment">// wherever the buffer is allocated, not using _null()</span></div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160; </div>
+<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;<span class="comment">     * Static null string.</span></div>
+<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;<span class="comment">     * Prevents allocation for new and/or empty strings.</span></div>
+<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;    <span class="keyword">static</span> <span class="keywordtype">char</span>* _null() noexcept</div>
+<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;    {</div>
+<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> sNull = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160;        <span class="keywordflow">return</span> &amp;sNull;</div>
+<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;    }</div>
 <div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160; </div>
-<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;            fBufferAlloc = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160; </div>
-<div class="line"><a name="l00891"></a><span class="lineno">  891</span>&#160;            std::strcpy(fBuffer, strBuf);</div>
-<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;            fBuffer[fBufferLen] = <span class="charliteral">&#39;\0&#39;</span>;</div>
-<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;        }</div>
-<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;        <span class="keywordflow">else</span></div>
-<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;        {</div>
-<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;            DISTRHO_SAFE_ASSERT_UINT(size == 0, <span class="keyword">static_cast&lt;</span>uint<span class="keyword">&gt;</span>(size));</div>
-<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160; </div>
-<div class="line"><a name="l00898"></a><span class="lineno">  898</span>&#160;            <span class="comment">// don&#39;t recreate null string</span></div>
-<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;            <span class="keywordflow">if</span> (! fBufferAlloc)</div>
-<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160; </div>
-<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;            DISTRHO_SAFE_ASSERT(fBuffer != <span class="keyword">nullptr</span>);</div>
-<div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;            std::free(fBuffer);</div>
+<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;    <span class="comment">/*</span></div>
+<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;<span class="comment">     * Helper function.</span></div>
+<div class="line"><a name="l00891"></a><span class="lineno">  891</span>&#160;<span class="comment">     * Called whenever the string needs to be allocated.</span></div>
+<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;<span class="comment">     *</span></div>
+<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;<span class="comment">     * Notes:</span></div>
+<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;<span class="comment">     * - Allocates string only if &#39;strBuf&#39; is not null and new string contents are different</span></div>
+<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;<span class="comment">     * - If &#39;strBuf&#39; is null, &#39;size&#39; must be 0</span></div>
+<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;<span class="comment">     */</span></div>
+<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160;    <span class="keywordtype">void</span> _dup(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBuf, <span class="keyword">const</span> std::size_t size = 0) noexcept</div>
+<div class="line"><a name="l00898"></a><span class="lineno">  898</span>&#160;    {</div>
+<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;        <span class="keywordflow">if</span> (strBuf != <span class="keyword">nullptr</span>)</div>
+<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;        {</div>
+<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;            <span class="comment">// don&#39;t recreate string if contents match</span></div>
+<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;            <span class="keywordflow">if</span> (std::strcmp(fBuffer, strBuf) == 0)</div>
+<div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;                <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00904"></a><span class="lineno">  904</span>&#160; </div>
-<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;            fBuffer      = _null();</div>
-<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;            fBufferLen   = 0;</div>
-<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160;            fBufferAlloc = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;        }</div>
-<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;    }</div>
+<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;            <span class="keywordflow">if</span> (fBufferAlloc)</div>
+<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;                std::free(fBuffer);</div>
+<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160; </div>
+<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;            fBufferLen = (size &gt; 0) ? size : std::strlen(strBuf);</div>
+<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;            fBuffer    = (<span class="keywordtype">char</span>*)std::malloc(fBufferLen+1);</div>
 <div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160; </div>
-<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;    DISTRHO_PREVENT_HEAP_ALLOCATION</div>
-<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;};</div>
-<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160; </div>
-<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160; </div>
-<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;<a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; strBefore, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBufAfter) noexcept</div>
-<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;{</div>
-<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;    <span class="keywordflow">if</span> (strBufAfter == <span class="keyword">nullptr</span> || strBufAfter[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
-<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;        <span class="keywordflow">return</span> strBefore;</div>
-<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;    <span class="keywordflow">if</span> (strBefore.isEmpty())</div>
-<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBufAfter);</div>
-<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160; </div>
-<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;    <span class="keyword">const</span> std::size_t strBeforeLen = strBefore.length();</div>
-<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;    <span class="keyword">const</span> std::size_t strBufAfterLen = std::strlen(strBufAfter);</div>
-<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;    <span class="keyword">const</span> std::size_t newBufSize = strBeforeLen + strBufAfterLen;</div>
-<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;    <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
-<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
-<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160; </div>
-<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;    std::memcpy(newBuf, strBefore.buffer(), strBeforeLen);</div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;    std::memcpy(newBuf + strBeforeLen, strBufAfter, strBufAfterLen + 1);</div>
-<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160; </div>
-<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf, <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;}</div>
-<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160; </div>
-<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;<a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBufBefore, <span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; strAfter) noexcept</div>
-<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;{</div>
-<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;    <span class="keywordflow">if</span> (strAfter.isEmpty())</div>
-<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBufBefore);</div>
-<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;    <span class="keywordflow">if</span> (strBufBefore == <span class="keyword">nullptr</span> || strBufBefore[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
-<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;        <span class="keywordflow">return</span> strAfter;</div>
+<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;            <span class="keywordflow">if</span> (fBuffer == <span class="keyword">nullptr</span>)</div>
+<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;            {</div>
+<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;                fBuffer      = _null();</div>
+<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;                fBufferLen   = 0;</div>
+<div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160;                fBufferAlloc = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;            }</div>
+<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160; </div>
+<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;            fBufferAlloc = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160; </div>
+<div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;            std::strcpy(fBuffer, strBuf);</div>
+<div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;            fBuffer[fBufferLen] = <span class="charliteral">&#39;\0&#39;</span>;</div>
+<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;        }</div>
+<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;        <span class="keywordflow">else</span></div>
+<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;        {</div>
+<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;            DISTRHO_SAFE_ASSERT_UINT(size == 0, <span class="keyword">static_cast&lt;</span>uint<span class="keyword">&gt;</span>(size));</div>
+<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160; </div>
+<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;            <span class="comment">// don&#39;t recreate null string</span></div>
+<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;            <span class="keywordflow">if</span> (! fBufferAlloc)</div>
+<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160; </div>
+<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;            DISTRHO_SAFE_ASSERT(fBuffer != <span class="keyword">nullptr</span>);</div>
+<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;            std::free(fBuffer);</div>
+<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160; </div>
+<div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;            fBuffer      = _null();</div>
+<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160;            fBufferLen   = 0;</div>
+<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;            fBufferAlloc = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;        }</div>
+<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;    }</div>
+<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160; </div>
+<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;    DISTRHO_PREVENT_HEAP_ALLOCATION</div>
+<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;};</div>
 <div class="line"><a name="l00943"></a><span class="lineno">  943</span>&#160; </div>
-<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;    <span class="keyword">const</span> std::size_t strBufBeforeLen = std::strlen(strBufBefore);</div>
-<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;    <span class="keyword">const</span> std::size_t strAfterLen = strAfter.length();</div>
-<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;    <span class="keyword">const</span> std::size_t newBufSize = strBufBeforeLen + strAfterLen;</div>
-<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;    <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
-<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
-<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160; </div>
-<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;    std::memcpy(newBuf, strBufBefore, strBufBeforeLen);</div>
-<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;    std::memcpy(newBuf + strBufBeforeLen, strAfter.buffer(), strAfterLen + 1);</div>
-<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160; </div>
-<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf, <span class="keyword">false</span>);</div>
-<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;}</div>
-<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160; </div>
-<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160; </div>
-<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;END_NAMESPACE_DISTRHO</div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160; </div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;<a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; strBefore, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBufAfter) noexcept</div>
+<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;{</div>
+<div class="line"><a name="l00949"></a><span class="lineno">  949</span>&#160;    <span class="keywordflow">if</span> (strBufAfter == <span class="keyword">nullptr</span> || strBufAfter[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;        <span class="keywordflow">return</span> strBefore;</div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;    <span class="keywordflow">if</span> (strBefore.isEmpty())</div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBufAfter);</div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160; </div>
+<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;    <span class="keyword">const</span> std::size_t strBeforeLen = strBefore.length();</div>
+<div class="line"><a name="l00955"></a><span class="lineno">  955</span>&#160;    <span class="keyword">const</span> std::size_t strBufAfterLen = std::strlen(strBufAfter);</div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160;    <span class="keyword">const</span> std::size_t newBufSize = strBeforeLen + strBufAfterLen;</div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;    <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
 <div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160; </div>
-<div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160;<span class="preprocessor">#endif // DISTRHO_STRING_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160;    std::memcpy(newBuf, strBefore.buffer(), strBeforeLen);</div>
+<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;    std::memcpy(newBuf + strBeforeLen, strBufAfter, strBufAfterLen + 1);</div>
+<div class="line"><a name="l00962"></a><span class="lineno">  962</span>&#160; </div>
+<div class="line"><a name="l00963"></a><span class="lineno">  963</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf, <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00964"></a><span class="lineno">  964</span>&#160;}</div>
+<div class="line"><a name="l00965"></a><span class="lineno">  965</span>&#160; </div>
+<div class="line"><a name="l00966"></a><span class="lineno">  966</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00967"></a><span class="lineno">  967</span>&#160;<a class="code" href="classString.html">String</a> operator+(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> strBufBefore, <span class="keyword">const</span> <a class="code" href="classString.html">String</a>&amp; strAfter) noexcept</div>
+<div class="line"><a name="l00968"></a><span class="lineno">  968</span>&#160;{</div>
+<div class="line"><a name="l00969"></a><span class="lineno">  969</span>&#160;    <span class="keywordflow">if</span> (strAfter.isEmpty())</div>
+<div class="line"><a name="l00970"></a><span class="lineno">  970</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(strBufBefore);</div>
+<div class="line"><a name="l00971"></a><span class="lineno">  971</span>&#160;    <span class="keywordflow">if</span> (strBufBefore == <span class="keyword">nullptr</span> || strBufBefore[0] == <span class="charliteral">&#39;\0&#39;</span>)</div>
+<div class="line"><a name="l00972"></a><span class="lineno">  972</span>&#160;        <span class="keywordflow">return</span> strAfter;</div>
+<div class="line"><a name="l00973"></a><span class="lineno">  973</span>&#160; </div>
+<div class="line"><a name="l00974"></a><span class="lineno">  974</span>&#160;    <span class="keyword">const</span> std::size_t strBufBeforeLen = std::strlen(strBufBefore);</div>
+<div class="line"><a name="l00975"></a><span class="lineno">  975</span>&#160;    <span class="keyword">const</span> std::size_t strAfterLen = strAfter.length();</div>
+<div class="line"><a name="l00976"></a><span class="lineno">  976</span>&#160;    <span class="keyword">const</span> std::size_t newBufSize = strBufBeforeLen + strAfterLen;</div>
+<div class="line"><a name="l00977"></a><span class="lineno">  977</span>&#160;    <span class="keywordtype">char</span>* <span class="keyword">const</span> newBuf = (<span class="keywordtype">char</span>*)malloc(newBufSize + 1);</div>
+<div class="line"><a name="l00978"></a><span class="lineno">  978</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(newBuf != <span class="keyword">nullptr</span>, <a class="code" href="classString.html">String</a>());</div>
+<div class="line"><a name="l00979"></a><span class="lineno">  979</span>&#160; </div>
+<div class="line"><a name="l00980"></a><span class="lineno">  980</span>&#160;    std::memcpy(newBuf, strBufBefore, strBufBeforeLen);</div>
+<div class="line"><a name="l00981"></a><span class="lineno">  981</span>&#160;    std::memcpy(newBuf + strBufBeforeLen, strAfter.buffer(), strAfterLen + 1);</div>
+<div class="line"><a name="l00982"></a><span class="lineno">  982</span>&#160; </div>
+<div class="line"><a name="l00983"></a><span class="lineno">  983</span>&#160;    <span class="keywordflow">return</span> <a class="code" href="classString.html">String</a>(newBuf, <span class="keyword">false</span>);</div>
+<div class="line"><a name="l00984"></a><span class="lineno">  984</span>&#160;}</div>
+<div class="line"><a name="l00985"></a><span class="lineno">  985</span>&#160; </div>
+<div class="line"><a name="l00986"></a><span class="lineno">  986</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00987"></a><span class="lineno">  987</span>&#160; </div>
+<div class="line"><a name="l00988"></a><span class="lineno">  988</span>&#160;END_NAMESPACE_DISTRHO</div>
+<div class="line"><a name="l00989"></a><span class="lineno">  989</span>&#160; </div>
+<div class="line"><a name="l00990"></a><span class="lineno">  990</span>&#160;<span class="preprocessor">#endif // DISTRHO_STRING_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
 <div class="ttc" id="aclassScopedSafeLocale_html"><div class="ttname"><a href="classScopedSafeLocale.html">ScopedSafeLocale</a></div><div class="ttdef"><b>Definition:</b> ScopedSafeLocale.hpp:57</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

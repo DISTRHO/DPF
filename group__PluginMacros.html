@@ -87,6 +87,10 @@ Macros</h2></td></tr>
 <tr class="separator:ga82546dd199fcea338b113f2f6da84ced"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga854bde6b6fdb0d47182149dbab0fed72"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga854bde6b6fdb0d47182149dbab0fed72">DISTRHO_PLUGIN_IS_SYNTH</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:ga854bde6b6fdb0d47182149dbab0fed72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9e0277ebff0b0a05047439532ff216d5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga9e0277ebff0b0a05047439532ff216d5">DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE</a>&#160;&#160;&#160;2048</td></tr>
+<tr class="separator:ga9e0277ebff0b0a05047439532ff216d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaf75c327526ca8508c8968e43b6c1e49b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gaf75c327526ca8508c8968e43b6c1e49b">DISTRHO_PLUGIN_USES_MODGUI</a>&#160;&#160;&#160;0</td></tr>
+<tr class="separator:gaf75c327526ca8508c8968e43b6c1e49b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gac6873a3950f52f3fde8e386af63b69a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gac6873a3950f52f3fde8e386af63b69a1">DISTRHO_PLUGIN_WANT_DIRECT_ACCESS</a>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:gac6873a3950f52f3fde8e386af63b69a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad6b0ebf10e048f4742f29735da4d4930"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gad6b0ebf10e048f4742f29735da4d4930">DISTRHO_PLUGIN_WANT_LATENCY</a>&#160;&#160;&#160;1</td></tr>
@@ -243,6 +247,39 @@ TODO - list rtsafe requirements </p>
 
 </div>
 </div>
+<a id="ga9e0277ebff0b0a05047439532ff216d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9e0277ebff0b0a05047439532ff216d5">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE&#160;&#160;&#160;2048</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Request the minimum buffer size for the input and output event ports.<br  />
+Currently only used in LV2, with a default value of 2048 if unset. </p>
+
+</div>
+</div>
+<a id="gaf75c327526ca8508c8968e43b6c1e49b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaf75c327526ca8508c8968e43b6c1e49b">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_USES_MODGUI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_USES_MODGUI&#160;&#160;&#160;0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether the plugin has an LV2 modgui.</p>
+<p>This will simply add a "rdfs:seeAlso &lt;modgui.ttl&gt;" on the LV2 manifest.<br  />
+It is up to you to create this file. </p>
+
+</div>
+</div>
 <a id="gac6873a3950f52f3fde8e386af63b69a1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gac6873a3950f52f3fde8e386af63b69a1">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_WANT_DIRECT_ACCESS</h2>
 
@@ -334,7 +371,7 @@ Not all hosts or plugin formats support this, so <a class="el" href="classPlugin
 </div><div class="memdoc">
 <p>Whether the plugin provides its own internal programs. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> </dd>
 <dd>
-<a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram(uint32_t)</a> </dd></dl>
+<a class="el" href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram(uint32_t)</a> </dd></dl>
 
 </div>
 </div>
@@ -349,9 +386,9 @@ Not all hosts or plugin formats support this, so <a class="el" href="classPlugin
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Whether the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#ae301a970a8b5cff3c7ecef927ea20080">Plugin::initState(uint32_t, String&amp;, String&amp;)</a> </dd>
+<p>Whether the plugin uses internal non-parameter data. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a807b306c5ecb644c70421ae395421d84">Plugin::initState(uint32_t, String&amp;, String&amp;)</a> </dd>
 <dd>
-<a class="el" href="classPlugin.html#ad25ed64a2f00f48c86d2ae0016ea3e59">Plugin::setState(const char*, const char*)</a> </dd></dl>
+<a class="el" href="classPlugin.html#afcbb504b824bacea622de9bac09b2331">Plugin::setState(const char*, const char*)</a> </dd></dl>
 
 </div>
 </div>
@@ -484,7 +521,7 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

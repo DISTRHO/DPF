@@ -215,6 +215,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a395cde178d473c548e3d92c48d430ca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf7d2cac5deeb625a91c40448ed70b6a"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#acf7d2cac5deeb625a91c40448ed70b6a">createImageFromMemory</a> (uchar *data, uint dataSize, int imageFlags)</td></tr>
 <tr class="separator:acf7d2cac5deeb625a91c40448ed70b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a32fc9c8f1385dad33acf208167230ddb"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a32fc9c8f1385dad33acf208167230ddb">createImageFromRawMemory</a> (uint w, uint h, const uchar *data, ImageFlags imageFlags, ImageFormat format)</td></tr>
+<tr class="separator:a32fc9c8f1385dad33acf208167230ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adb3e8947a09a73b9662731f14aa2ca1f"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#adb3e8947a09a73b9662731f14aa2ca1f">createImageFromRawMemory</a> (uint w, uint h, const uchar *data, int imageFlags, ImageFormat format)</td></tr>
+<tr class="separator:adb3e8947a09a73b9662731f14aa2ca1f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a68cfbff787af38a017eecdb4e77e1b45"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a68cfbff787af38a017eecdb4e77e1b45">createImageFromRGBA</a> (uint w, uint h, const uchar *data, ImageFlags imageFlags)</td></tr>
 <tr class="separator:a68cfbff787af38a017eecdb4e77e1b45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac4e97dd35ebface5fd9160ef1d5e8cbb"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#ac4e97dd35ebface5fd9160ef1d5e8cbb">createImageFromRGBA</a> (uint w, uint h, const uchar *data, int imageFlags)</td></tr>
@@ -1729,6 +1733,100 @@ Text</h1>
 
 </div>
 </div>
+<a id="a32fc9c8f1385dad33acf208167230ddb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a32fc9c8f1385dad33acf208167230ddb">&#9670;&nbsp;</a></span>createImageFromRawMemory() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NanoImage::Handle NanoVG::createImageFromRawMemory </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uchar *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ImageFlags&#160;</td>
+          <td class="paramname"><em>imageFlags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ImageFormat&#160;</td>
+          <td class="paramname"><em>format</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Creates image from specified raw format image data. </p>
+
+</div>
+</div>
+<a id="adb3e8947a09a73b9662731f14aa2ca1f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb3e8947a09a73b9662731f14aa2ca1f">&#9670;&nbsp;</a></span>createImageFromRawMemory() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NanoImage::Handle NanoVG::createImageFromRawMemory </td>
+          <td>(</td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>w</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const uchar *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>imageFlags</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">ImageFormat&#160;</td>
+          <td class="paramname"><em>format</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Creates image from specified raw format image data. Overloaded function for convenience. </p><dl class="section see"><dt>See also</dt><dd>ImageFlags </dd></dl>
+
+</div>
+</div>
 <a id="a68cfbff787af38a017eecdb4e77e1b45"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a68cfbff787af38a017eecdb4e77e1b45">&#9670;&nbsp;</a></span>createImageFromRGBA() <span class="overload">[1/2]</span></h2>
 
@@ -1766,7 +1864,7 @@ Text</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Creates image from specified image data. </p>
+<p>Creates image from specified RGBA image data. </p>
 
 </div>
 </div>
@@ -1807,7 +1905,7 @@ Text</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Creates image from specified image data. Overloaded function for convenience. </p><dl class="section see"><dt>See also</dt><dd>ImageFlags </dd></dl>
+<p>Creates image from specified RGBA image data. Overloaded function for convenience. </p><dl class="section see"><dt>See also</dt><dd>ImageFlags </dd></dl>
 
 </div>
 </div>
@@ -3338,7 +3436,7 @@ Text</h1>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

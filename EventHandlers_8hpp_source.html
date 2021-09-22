@@ -123,7 +123,7 @@ $(function() {
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;    };</div>
 <div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160; </div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classButtonEventHandler.html">ButtonEventHandler</a>(<a class="code" href="classSubWidget.html">SubWidget</a>* <span class="keyword">self</span>);</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    ~<a class="code" href="classButtonEventHandler.html">ButtonEventHandler</a>();</div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classButtonEventHandler.html">ButtonEventHandler</a>();</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">bool</span> isActive() noexcept;</div>
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;    <span class="keywordtype">void</span> setActive(<span class="keywordtype">bool</span> active, <span class="keywordtype">bool</span> sendCallback) noexcept;</div>
@@ -188,7 +188,7 @@ $(function() {
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<a class="code" href="classSubWidget.html">SubWidget</a>* <span class="keyword">self</span>);</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<a class="code" href="classSubWidget.html">SubWidget</a>* <span class="keyword">self</span>, <span class="keyword">const</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other);</div>
 <div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; operator=(<span class="keyword">const</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other);</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    ~<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>();</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>();</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160; </div>
 <div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    <span class="comment">// returns raw value, is assumed to be scaled if using log</span></div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    <span class="keywordtype">float</span> getValue() const noexcept;</div>
@@ -225,15 +225,24 @@ $(function() {
 <div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    struct PrivateData;</div>
 <div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    PrivateData* const pData;</div>
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160; </div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    DISTRHO_LEAK_DETECTOR(<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>)</div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;};</div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160; </div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160; </div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="preprocessor">#endif // DGL_EVENT_HANDLERS_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    <span class="comment">/* not for use */</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="preprocessor">#ifdef DISTRHO_PROPER_CPP11_SUPPORT</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;    <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;    <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<span class="keyword">const</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other);</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>(<span class="keyword">const</span> <a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>&amp; other);</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160; </div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    DISTRHO_LEAK_DETECTOR(<a class="code" href="classKnobEventHandler.html">KnobEventHandler</a>)</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;};</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160; </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160; </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160; </div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="preprocessor">#endif // DGL_EVENT_HANDLERS_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160; </div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassButtonEventHandler_1_1Callback_html"><div class="ttname"><a href="classButtonEventHandler_1_1Callback.html">ButtonEventHandler::Callback</a></div><div class="ttdef"><b>Definition:</b> EventHandlers.hpp:47</div></div>
 <div class="ttc" id="aclassPoint_html"><div class="ttname"><a href="classPoint.html">Point</a></div><div class="ttdef"><b>Definition:</b> Geometry.hpp:40</div></div>
@@ -244,7 +253,7 @@ $(function() {
 <div class="ttc" id="aclassWidget_html"><div class="ttname"><a href="classWidget.html">Widget</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:53</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

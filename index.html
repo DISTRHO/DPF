@@ -141,9 +141,9 @@ You need to pass the number of parameters in the constructor and also the number
 <div class="line">  <span class="comment">/* ----------------------------------------------------------------------------------------</span></div>
 <div class="line"><span class="comment">   * This example has no parameters, so skip parameter stuff */</span></div>
 <div class="line"> </div>
-<div class="line">   <span class="keywordtype">void</span>  <a class="code" href="classPlugin.html#a5b0ec59527a1c2f4b01f17fc8c18ea8b">initParameter</a>(uint32_t, <a class="code" href="structParameter.html">Parameter</a>&amp;)<span class="keyword"> override </span>{}</div>
-<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">getParameterValue</a>(uint32_t)<span class="keyword"> const   override </span>{ <span class="keywordflow">return</span> 0.0f; }</div>
-<div class="line">   <span class="keywordtype">void</span>  <a class="code" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">setParameterValue</a>(uint32_t, <span class="keywordtype">float</span>)<span class="keyword">  override </span>{}</div>
+<div class="line">   <span class="keywordtype">void</span>  <a class="code" href="classPlugin.html#aacf87bd0037efeb3b60d204940f3f4a0">initParameter</a>(uint32_t, <a class="code" href="structParameter.html">Parameter</a>&amp;)<span class="keyword"> override </span>{}</div>
+<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#af9e9f5438e2e0c2352052eb5f95832aa">getParameterValue</a>(uint32_t)<span class="keyword"> const   override </span>{ <span class="keywordflow">return</span> 0.0f; }</div>
+<div class="line">   <span class="keywordtype">void</span>  <a class="code" href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">setParameterValue</a>(uint32_t, <span class="keywordtype">float</span>)<span class="keyword">  override </span>{}</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* ----------------------------------------------------------------------------------------</span></div>
 <div class="line"><span class="comment">   * Audio/MIDI Processing */</span></div>
@@ -224,7 +224,7 @@ The host will simply read their values and not change them.</p>
 <div class="line"><span class="comment">     Initialize a parameter.</span></div>
 <div class="line"><span class="comment">     This function will be called once, shortly after the plugin is created.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a5b0ec59527a1c2f4b01f17fc8c18ea8b">initParameter</a>(uint32_t index, <a class="code" href="structParameter.html">Parameter</a>&amp; parameter)<span class="keyword"> override</span></div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#aacf87bd0037efeb3b60d204940f3f4a0">initParameter</a>(uint32_t index, <a class="code" href="structParameter.html">Parameter</a>&amp; parameter)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       <span class="comment">// we only have one parameter so we can skip checking the index</span></div>
 <div class="line"> </div>
@@ -242,7 +242,7 @@ The host will simply read their values and not change them.</p>
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Get the current value of a parameter.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">getParameterValue</a>(uint32_t index)<span class="keyword"> const override</span></div>
+<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#af9e9f5438e2e0c2352052eb5f95832aa">getParameterValue</a>(uint32_t index)<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       <span class="comment">// same as before, ignore index check</span></div>
 <div class="line"> </div>
@@ -252,7 +252,7 @@ The host will simply read their values and not change them.</p>
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Change a parameter value.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value)<span class="keyword"> override</span></div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       <span class="comment">// same as before, ignore index check</span></div>
 <div class="line"> </div>
@@ -281,7 +281,7 @@ The host will simply read their values and not change them.</p>
 Programs</h1>
 <p>Programs in DPF refer to plugin-side presets (usually called "factory presets"), an initial set of presets provided by plugin authors included in the actual plugin.</p>
 <p>To use programs you must first enable them by setting <a class="el" href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a> to 1 in your DistrhoPluginInfo.h file.<br  />
-When enabled you'll need to override 2 new function in your plugin code, <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> and <a class="el" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram(uint32_t)</a>.</p>
+When enabled you'll need to override 2 new function in your plugin code, <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName(uint32_t, String&amp;)</a> and <a class="el" href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram(uint32_t)</a>.</p>
 <p>Here's an example of a plugin with a "default" program: </p><div class="fragment"><div class="line"><span class="keyword">class </span>PluginWithPresets : <span class="keyword">public</span> <a class="code" href="classPlugin.html">Plugin</a></div>
 <div class="line">{</div>
 <div class="line"><span class="keyword">public</span>:</div>
@@ -328,7 +328,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line"><span class="comment">     Initialize a parameter.</span></div>
 <div class="line"><span class="comment">     This function will be called once, shortly after the plugin is created.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a5b0ec59527a1c2f4b01f17fc8c18ea8b">initParameter</a>(uint32_t index, <a class="code" href="structParameter.html">Parameter</a>&amp; parameter)<span class="keyword"> override</span></div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#aacf87bd0037efeb3b60d204940f3f4a0">initParameter</a>(uint32_t index, <a class="code" href="structParameter.html">Parameter</a>&amp; parameter)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       parameter.<a class="code" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">hints</a>      = <a class="code" href="group__ParameterHints.html#ga04161ef926442aa08ae7aa6847078ad9">kParameterIsAutomable</a>;</div>
 <div class="line">       parameter.<a class="code" href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">ranges</a>.<a class="code" href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">min</a> = 0.0f;</div>
@@ -368,7 +368,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Get the current value of a parameter.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">getParameterValue</a>(uint32_t index)<span class="keyword"> const override</span></div>
+<div class="line">   <span class="keywordtype">float</span> <a class="code" href="classPlugin.html#af9e9f5438e2e0c2352052eb5f95832aa">getParameterValue</a>(uint32_t index)<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       <span class="keywordflow">switch</span> (index)</div>
 <div class="line">       {</div>
@@ -382,7 +382,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Change a parameter value.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value)<span class="keyword"> override</span></div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">setParameterValue</a>(uint32_t index, <span class="keywordtype">float</span> value)<span class="keyword"> override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
 <div class="line">       <span class="keywordflow">switch</span> (index)</div>
 <div class="line">       {</div>
@@ -398,7 +398,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Load a program.</span></div>
 <div class="line"><span class="comment">   */</span></div>
-<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">loadProgram</a>(uint32_t index)</div>
+<div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">loadProgram</a>(uint32_t index)</div>
 <div class="line">   {</div>
 <div class="line">       <span class="keywordflow">switch</span>(index)</div>
 <div class="line">       {</div>
@@ -436,29 +436,29 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 </div><!-- contents -->
 <div class="ttc" id="aclassPlugin_html_abae540dd93caf4834270358a8aad334a"><div class="ttname"><a href="classPlugin.html#abae540dd93caf4834270358a8aad334a">Plugin::getVersion</a></div><div class="ttdeci">virtual uint32_t getVersion() const =0</div></div>
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
-<div class="ttc" id="aclassPlugin_html_a2d1da98c90568bb4547662bc4f02c31f"><div class="ttname"><a href="classPlugin.html#a2d1da98c90568bb4547662bc4f02c31f">Plugin::getParameterValue</a></div><div class="ttdeci">virtual float getParameterValue(uint32_t index) const =0</div></div>
 <div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:491</div></div>
 <div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:445</div></div>
 <div class="ttc" id="aclassPlugin_html_a955832840de786a7a22798f0ef451c5d"><div class="ttname"><a href="classPlugin.html#a955832840de786a7a22798f0ef451c5d">Plugin::getMaker</a></div><div class="ttdeci">virtual const char * getMaker() const =0</div></div>
-<div class="ttc" id="aclassPlugin_html_ab629f35c60406d6f2c0b9d530e67cf09"><div class="ttname"><a href="classPlugin.html#ab629f35c60406d6f2c0b9d530e67cf09">Plugin::loadProgram</a></div><div class="ttdeci">virtual void loadProgram(uint32_t index)=0</div></div>
+<div class="ttc" id="aclassPlugin_html_a7e9e26ceafc7603ef6163483a9dc39be"><div class="ttname"><a href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">Plugin::setParameterValue</a></div><div class="ttdeci">virtual void setParameterValue(uint32_t index, float value)</div></div>
 <div class="ttc" id="aclassPlugin_html_a54d66af3111541b7c118f9749ef0231b"><div class="ttname"><a href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName</a></div><div class="ttdeci">virtual void initProgramName(uint32_t index, String &amp;programName)=0</div></div>
 <div class="ttc" id="aclassPlugin_html_a00f7945c16149db6845fbcc2af729f4f"><div class="ttname"><a href="classPlugin.html#a00f7945c16149db6845fbcc2af729f4f">Plugin::getLabel</a></div><div class="ttdeci">virtual const char * getLabel() const =0</div></div>
 <div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:249</div></div>
 <div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:457</div></div>
-<div class="ttc" id="aclassPlugin_html_a5b0ec59527a1c2f4b01f17fc8c18ea8b"><div class="ttname"><a href="classPlugin.html#a5b0ec59527a1c2f4b01f17fc8c18ea8b">Plugin::initParameter</a></div><div class="ttdeci">virtual void initParameter(uint32_t index, Parameter &amp;parameter)=0</div></div>
 <div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:472</div></div>
 <div class="ttc" id="aclassPlugin_html_a686a3c92a376a185d6fd97efd59125d1"><div class="ttname"><a href="classPlugin.html#a686a3c92a376a185d6fd97efd59125d1">Plugin::getLicense</a></div><div class="ttdeci">virtual const char * getLicense() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_ad6ff8c80227d5ceebd40b96f3be29a66"><div class="ttname"><a href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">Plugin::getUniqueId</a></div><div class="ttdeci">virtual int64_t getUniqueId() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:802</div></div>
 <div class="ttc" id="aclassPlugin_html_a0a969c78f8455ac6ba65fa42e8c498f6"><div class="ttname"><a href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">Plugin::run</a></div><div class="ttdeci">virtual void run(const float **inputs, float **outputs, uint32_t frames, const MidiEvent *midiEvents, uint32_t midiEventCount)=0</div></div>
-<div class="ttc" id="aclassPlugin_html_a6911a881fabb9eca9daf0eadbaad8599"><div class="ttname"><a href="classPlugin.html#a6911a881fabb9eca9daf0eadbaad8599">Plugin::setParameterValue</a></div><div class="ttdeci">virtual void setParameterValue(uint32_t index, float value)=0</div></div>
 <div class="ttc" id="agroup__ParameterHints_html_ga04161ef926442aa08ae7aa6847078ad9"><div class="ttname"><a href="group__ParameterHints.html#ga04161ef926442aa08ae7aa6847078ad9">kParameterIsAutomable</a></div><div class="ttdeci">static const uint32_t kParameterIsAutomable</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:90</div></div>
+<div class="ttc" id="aclassPlugin_html_a44eb1bfcc3a3e5949ad053fc9ce55ce8"><div class="ttname"><a href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram</a></div><div class="ttdeci">virtual void loadProgram(uint32_t index)</div></div>
 <div class="ttc" id="astructParameterRanges_html_a175c78c905c598df929a4450e4d2a2a0"><div class="ttname"><a href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">ParameterRanges::max</a></div><div class="ttdeci">float max</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:259</div></div>
 <div class="ttc" id="astructParameterRanges_html_a63c40988463a8ace9d0e9e55a00f3c7b"><div class="ttname"><a href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">ParameterRanges::min</a></div><div class="ttdeci">float min</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:254</div></div>
+<div class="ttc" id="aclassPlugin_html_af9e9f5438e2e0c2352052eb5f95832aa"><div class="ttname"><a href="classPlugin.html#af9e9f5438e2e0c2352052eb5f95832aa">Plugin::getParameterValue</a></div><div class="ttdeci">virtual float getParameterValue(uint32_t index) const</div></div>
+<div class="ttc" id="aclassPlugin_html_aacf87bd0037efeb3b60d204940f3f4a0"><div class="ttname"><a href="classPlugin.html#aacf87bd0037efeb3b60d204940f3f4a0">Plugin::initParameter</a></div><div class="ttdeci">virtual void initParameter(uint32_t index, Parameter &amp;parameter)</div></div>
 <div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:450</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

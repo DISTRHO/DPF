@@ -71,7 +71,7 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * DISTRHO Plugin Framework (DPF)</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2019 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2021 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * Permission to use, copy, modify, and/or distribute this software for any purpose with</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * or without fee is hereby granted, provided that the above copyright notice and this</span></div>
@@ -115,13 +115,13 @@ $(function() {
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">   Some important notes when using this class:</span></div>
 <div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">    1. MidiEvent::frame retains its original value, but it is useless, do not use it.</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">    2. The class variables names are be the same as the default ones in the run function.</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">    2. The class variable names are the same as the default ones in the run function.</span></div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">       Keep that in mind and try to avoid typos. :)</span></div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="classAudioMidiSyncHelper.html">   50</a></span>&#160;<span class="keyword">class </span><a class="code" href="classAudioMidiSyncHelper.html">AudioMidiSyncHelper</a> {</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00050"></a><span class="lineno"><a class="line" href="structAudioMidiSyncHelper.html">   50</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structAudioMidiSyncHelper.html">AudioMidiSyncHelper</a></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;{<span class="comment"></span></div>
 <div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">    /** Parameters from the run function, adjusted for event sync */</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">   53</a></span>&#160;    <span class="keywordtype">float</span>* <a class="code" href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[<a class="code" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a>];</div>
+<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">   53</a></span>&#160;    <span class="keywordtype">float</span>* <a class="code" href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[<a class="code" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a>];</div>
 <div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;    uint32_t frames;</div>
 <div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;    <span class="keyword">const</span> <a class="code" href="structMidiEvent.html">MidiEvent</a>* midiEvents;</div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    uint32_t midiEventCount;</div>
@@ -129,8 +129,8 @@ $(function() {
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">    /**</span></div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">       Constructor, using values from the run function.</span></div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="classAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">   61</a></span>&#160;    <a class="code" href="classAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">AudioMidiSyncHelper</a>(<span class="keywordtype">float</span>** <span class="keyword">const</span> o, uint32_t f, <span class="keyword">const</span> <a class="code" href="structMidiEvent.html">MidiEvent</a>* m, uint32_t mc)</div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        : <a class="code" href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>(),</div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="structAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">   61</a></span>&#160;    <a class="code" href="structAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">AudioMidiSyncHelper</a>(<span class="keywordtype">float</span>** <span class="keyword">const</span> o, uint32_t f, <span class="keyword">const</span> <a class="code" href="structMidiEvent.html">MidiEvent</a>* m, uint32_t mc)</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;        : <a class="code" href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>(),</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;          frames(0),</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;          midiEvents(m),</div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;          midiEventCount(0),</div>
@@ -139,14 +139,14 @@ $(function() {
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;          totalFramesUsed(0)</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    {</div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;        <span class="keywordflow">for</span> (uint i=0; i&lt;<a class="code" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a>; ++i)</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            <a class="code" href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[i] = o[i];</div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;            <a class="code" href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[i] = o[i];</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    }</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">    /**</span></div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">       Process a batch of events untill no more are available.</span></div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">       You must not read any more values from this class after this function returns false.</span></div>
 <div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="classAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">   78</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">nextEvent</a>()</div>
+<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="structAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">   78</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">nextEvent</a>()</div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    {</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <span class="comment">// nothing else to do</span></div>
 <div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <span class="keywordflow">if</span> (remainingFrames == 0)</div>
@@ -178,7 +178,7 @@ $(function() {
 <div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <span class="keywordflow">else</span></div>
 <div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;        {</div>
 <div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;            <span class="keywordflow">for</span> (uint32_t i=0; i&lt;<a class="code" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a>; ++i)</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                <a class="code" href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[i] += frames;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;                <a class="code" href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">outputs</a>[i] += frames;</div>
 <div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;        }</div>
 <div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160; </div>
 <div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="comment">// no more MIDI events available</span></div>
@@ -229,16 +229,16 @@ $(function() {
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160; </div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="preprocessor">#endif // DISTRHO_PLUGIN_UTILS_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="astructAudioMidiSyncHelper_html_a43f354c1520893449d81a27b3e7a81fe"><div class="ttname"><a href="structAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">AudioMidiSyncHelper::nextEvent</a></div><div class="ttdeci">bool nextEvent()</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:78</div></div>
 <div class="ttc" id="astructMidiEvent_html"><div class="ttname"><a href="structMidiEvent.html">MidiEvent</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:616</div></div>
 <div class="ttc" id="astructMidiEvent_html_aca2f6590b33bd2175ab71f985747d88e"><div class="ttname"><a href="structMidiEvent.html#aca2f6590b33bd2175ab71f985747d88e">MidiEvent::frame</a></div><div class="ttdeci">uint32_t frame</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:625</div></div>
-<div class="ttc" id="aclassAudioMidiSyncHelper_html_a7b54cae0fdaae3d23aaccf2dbb9344ef"><div class="ttname"><a href="classAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">AudioMidiSyncHelper::outputs</a></div><div class="ttdeci">float * outputs[2]</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:53</div></div>
-<div class="ttc" id="aclassAudioMidiSyncHelper_html_a43f354c1520893449d81a27b3e7a81fe"><div class="ttname"><a href="classAudioMidiSyncHelper.html#a43f354c1520893449d81a27b3e7a81fe">AudioMidiSyncHelper::nextEvent</a></div><div class="ttdeci">bool nextEvent()</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:78</div></div>
-<div class="ttc" id="aclassAudioMidiSyncHelper_html_ae75a1d7256c04445ec77176b6505fcb0"><div class="ttname"><a href="classAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">AudioMidiSyncHelper::AudioMidiSyncHelper</a></div><div class="ttdeci">AudioMidiSyncHelper(float **const o, uint32_t f, const MidiEvent *m, uint32_t mc)</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:61</div></div>
 <div class="ttc" id="agroup__PluginMacros_html_ga917195804ebcb2bb48c9fad52b20b3ca"><div class="ttname"><a href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a></div><div class="ttdeci">#define DISTRHO_PLUGIN_NUM_OUTPUTS</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:482</div></div>
-<div class="ttc" id="aclassAudioMidiSyncHelper_html"><div class="ttname"><a href="classAudioMidiSyncHelper.html">AudioMidiSyncHelper</a></div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:50</div></div>
+<div class="ttc" id="astructAudioMidiSyncHelper_html_a7b54cae0fdaae3d23aaccf2dbb9344ef"><div class="ttname"><a href="structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef">AudioMidiSyncHelper::outputs</a></div><div class="ttdeci">float * outputs[2]</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:53</div></div>
+<div class="ttc" id="astructAudioMidiSyncHelper_html_ae75a1d7256c04445ec77176b6505fcb0"><div class="ttname"><a href="structAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0">AudioMidiSyncHelper::AudioMidiSyncHelper</a></div><div class="ttdeci">AudioMidiSyncHelper(float **const o, uint32_t f, const MidiEvent *m, uint32_t mc)</div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:61</div></div>
+<div class="ttc" id="astructAudioMidiSyncHelper_html"><div class="ttname"><a href="structAudioMidiSyncHelper.html">AudioMidiSyncHelper</a></div><div class="ttdef"><b>Definition:</b> DistrhoPluginUtils.hpp:50</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:15 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

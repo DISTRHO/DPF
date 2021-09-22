@@ -5,7 +5,7 @@ var searchData=
   ['application_2',['Application',['../classApplication.html',1,'Application'],['../classApplication.html#af9dd089d30cf442f8ffda646305089bb',1,'Application::Application()']]],
   ['arc_3',['arc',['../classNanoVG.html#a5da07d6030f2918260e1fc20cfb4c9e6',1,'NanoVG']]],
   ['arcto_4',['arcTo',['../classNanoVG.html#aea6996381cba59bdcef33a981af853e8',1,'NanoVG']]],
-  ['audiomidisynchelper_5',['AudioMidiSyncHelper',['../classAudioMidiSyncHelper.html',1,'AudioMidiSyncHelper'],['../classAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0',1,'AudioMidiSyncHelper::AudioMidiSyncHelper()']]],
+  ['audiomidisynchelper_5',['AudioMidiSyncHelper',['../structAudioMidiSyncHelper.html',1,'AudioMidiSyncHelper'],['../structAudioMidiSyncHelper.html#ae75a1d7256c04445ec77176b6505fcb0',1,'AudioMidiSyncHelper::AudioMidiSyncHelper()']]],
   ['audioport_6',['AudioPort',['../structAudioPort.html',1,'AudioPort'],['../structAudioPort.html#abbd5c1ad18e0b920c2ff6c5053e59ede',1,'AudioPort::AudioPort()']]],
   ['audio_20port_20hints_7',['Audio Port Hints',['../group__AudioPortHints.html',1,'']]]
 ];

@@ -95,8 +95,8 @@ Classes</h2></td></tr>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a2f6257937261fcb3e627752dfb248d47"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a2f6257937261fcb3e627752dfb248d47">Window</a> (<a class="el" href="classApplication.html">Application</a> &amp;app)</td></tr>
 <tr class="separator:a2f6257937261fcb3e627752dfb248d47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0f0784ad6118e6886627b354bd43726"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#af0f0784ad6118e6886627b354bd43726">Window</a> (<a class="el" href="classApplication.html">Application</a> &amp;app, <a class="el" href="classWindow.html">Window</a> &amp;parent)</td></tr>
-<tr class="separator:af0f0784ad6118e6886627b354bd43726"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a647ec84da28005ecf0501825af77adec"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a647ec84da28005ecf0501825af77adec">Window</a> (<a class="el" href="classApplication.html">Application</a> &amp;app, <a class="el" href="classWindow.html">Window</a> &amp;transientParentWindow)</td></tr>
+<tr class="separator:a647ec84da28005ecf0501825af77adec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2cd48e2c2d816439cf38faf5c7a9736f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a2cd48e2c2d816439cf38faf5c7a9736f">Window</a> (<a class="el" href="classApplication.html">Application</a> &amp;app, uintptr_t parentWindowHandle, double scaleFactor, bool resizable)</td></tr>
 <tr class="separator:a2cd48e2c2d816439cf38faf5c7a9736f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada557b4543c122a0de22c876c55504ae"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#ada557b4543c122a0de22c876c55504ae">Window</a> (<a class="el" href="classApplication.html">Application</a> &amp;app, uintptr_t parentWindowHandle, uint width, uint height, double scaleFactor, bool resizable)</td></tr>
@@ -155,12 +155,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a77774c8ce4b01113fcd525079f9b8787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03985e4ca2c9b4fcf572b5029e8c0115"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a03985e4ca2c9b4fcf572b5029e8c0115">focus</a> ()</td></tr>
 <tr class="separator:a03985e4ca2c9b4fcf572b5029e8c0115"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0d7a058ff1194def1a07edb21c30f4c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#aa0d7a058ff1194def1a07edb21c30f4c">openFileBrowser</a> (const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;options)</td></tr>
-<tr class="separator:aa0d7a058ff1194def1a07edb21c30f4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7d2a006347a7fb95e63140ad2cec531c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a7d2a006347a7fb95e63140ad2cec531c">openFileBrowser</a> (const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;options=<a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a>())</td></tr>
+<tr class="separator:a7d2a006347a7fb95e63140ad2cec531c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a729ab39a1ac99d81b289e08a42582ade"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a729ab39a1ac99d81b289e08a42582ade">repaint</a> () noexcept</td></tr>
 <tr class="separator:a729ab39a1ac99d81b289e08a42582ade"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a33f9518b6f3209cd8201106260c9e42c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a33f9518b6f3209cd8201106260c9e42c">repaint</a> (const <a class="el" href="classRectangle.html">Rectangle</a>&lt; uint &gt; &amp;rect) noexcept</td></tr>
 <tr class="separator:a33f9518b6f3209cd8201106260c9e42c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abc7044d06bab27a7dadf06b9f42b2c95"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#abc7044d06bab27a7dadf06b9f42b2c95">renderToPicture</a> (const char *filename)</td></tr>
+<tr class="separator:abc7044d06bab27a7dadf06b9f42b2c95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00108f3d1c5831d02b0c67cd4f226e4d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a00108f3d1c5831d02b0c67cd4f226e4d">runAsModal</a> (bool blockWait=false)</td></tr>
 <tr class="separator:a00108f3d1c5831d02b0c67cd4f226e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aece9e08d0c4d3b6ec02cbb804583c175"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">setGeometryConstraints</a> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false)</td></tr>
@@ -235,8 +237,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
-<a id="af0f0784ad6118e6886627b354bd43726"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af0f0784ad6118e6886627b354bd43726">&#9670;&nbsp;</a></span>Window() <span class="overload">[2/4]</span></h2>
+<a id="a647ec84da28005ecf0501825af77adec"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a647ec84da28005ecf0501825af77adec">&#9670;&nbsp;</a></span>Window() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -254,7 +256,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="classWindow.html">Window</a> &amp;&#160;</td>
-          <td class="paramname"><em>parent</em>&#160;</td>
+          <td class="paramname"><em>transientParentWindow</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -268,7 +270,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Constructor for a modal window, by having another window as its parent. The <a class="el" href="classApplication.html">Application</a> instance must be the same between the 2 windows. </p>
+<p>Constructor for a modal window, by having another window as its transient parent. The <a class="el" href="classApplication.html">Application</a> instance must be the same between the 2 windows. </p>
 
 </div>
 </div>
@@ -1024,8 +1026,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
-<a id="aa0d7a058ff1194def1a07edb21c30f4c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa0d7a058ff1194def1a07edb21c30f4c">&#9670;&nbsp;</a></span>openFileBrowser()</h2>
+<a id="a7d2a006347a7fb95e63140ad2cec531c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7d2a006347a7fb95e63140ad2cec531c">&#9670;&nbsp;</a></span>openFileBrowser()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1034,7 +1036,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
           <td class="memname">bool Window::openFileBrowser </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;&#160;</td>
-          <td class="paramname"><em>options</em></td><td>)</td>
+          <td class="paramname"><em>options</em> = <code><a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a>()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1095,6 +1097,25 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </table>
 </div><div class="memdoc">
 <p>Request partial repaint of this window, with bounds according to <em>rect</em>. </p>
+
+</div>
+</div>
+<a id="abc7044d06bab27a7dadf06b9f42b2c95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abc7044d06bab27a7dadf06b9f42b2c95">&#9670;&nbsp;</a></span>renderToPicture()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Window::renderToPicture </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Render this window's content into a picture file, specified by <em>filename</em>. <a class="el" href="classWindow.html">Window</a> must be visible and on screen. Written picture format is PPM. </p>
 
 </div>
 </div>
@@ -1389,7 +1410,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
   </tr>
 </table>
 </div><div class="memdoc">
-<p>A function called when a path is selected by the user, as triggered by <a class="el" href="classWindow.html#aa0d7a058ff1194def1a07edb21c30f4c">openFileBrowser()</a>. This action happens after the user confirms the action, so the file browser dialog will be closed at this point. The default implementation does nothing. </p>
+<p>A function called when a path is selected by the user, as triggered by <a class="el" href="classWindow.html#a7d2a006347a7fb95e63140ad2cec531c">openFileBrowser()</a>. This action happens after the user confirms the action, so the file browser dialog will be closed at this point. The default implementation does nothing. </p>
 
 </div>
 </div>
@@ -1426,7 +1447,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Fri Sep 3 2021 11:46:16 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed Sep 22 2021 13:01:47 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
