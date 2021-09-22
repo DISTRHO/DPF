@@ -508,6 +508,20 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_IS_SYNTH 1
 
 /**
+   Request the minimum buffer size for the input and output event ports.@n
+   Currently only used in LV2, with a default value of 2048 if unset.
+ */
+#define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE 2048
+
+/**
+   Whether the plugin has an LV2 modgui.
+
+   This will simply add a "rdfs:seeAlso <modgui.ttl>" on the LV2 manifest.@n
+   It is up to you to create this file.
+ */
+#define DISTRHO_PLUGIN_USES_MODGUI 0
+
+/**
    Enable direct access between the %UI and plugin code.
    @see UI::getPluginInstancePointer()
    @note DO NOT USE THIS UNLESS STRICTLY NECESSARY!!
@@ -626,7 +640,7 @@ START_NAMESPACE_DISTRHO
    These are macros that do not set plugin features or information, but instead change DPF internals.@n
    They are all optional, none are enabled by default.
 
-   All values are a simple define, their value is meaningless (and unused).
+   Unless stated otherwise, values are assumed to be a simple/empty define.
    @{
  */
 
@@ -634,12 +648,35 @@ START_NAMESPACE_DISTRHO
    Whether to enable runtime plugin tests.@n
    This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n
    Useful to enable as part of CI, can safely be skipped.@n
-   Under DPF makefiles can be enabled by using `make DPF_RUNTIME_TESTING=true`.
+   Under DPF makefiles this can be enabled by using `make DPF_RUNTIME_TESTING=true`.
 
    @note Some checks are only available with the GCC compiler,
          for detecting if a virtual function has been reimplemented.
  */
 #define DPF_RUNTIME_TESTING
+
+/**
+   Whether to show parameter outputs in the VST2 plugins.@n
+   This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters.
+ */
+#define DPF_VST_SHOW_PARAMETER_OUTPUTS
+
+/**
+   Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.
+   Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.
+
+   @note This is experimental and incomplete, contributions are welcome and appreciated.
+ */
+#define DGL_USE_OPENGL3
+
+/**
+   Whether to use the GPLv2+ vestige header instead of the official Steinberg VST2 SDK.@n
+   This is a boolean, and enabled (set to 1) by default.@n
+   Set this to 0 in order to create non-GPL binaries.
+   (but then at your own discretion in regards to Steinberg licensing)@n
+   When set to 0, DPF will import the VST2 definitions from `"vst/aeffectx.h"` (not shipped with DPF).
+ */
+#define VESTIGE_HEADER 1
 
 /** @} */
 
