@@ -655,6 +655,18 @@ START_NAMESPACE_DISTRHO
 #define DPF_VST_SHOW_PARAMETER_OUTPUTS
 
 /**
+   Disable all file browser related code.@n
+   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS="-DDGL_FILE_BROWSER_DISABLED"`)
+ */
+#define DGL_FILE_BROWSER_DISABLED
+
+/**
+   Disable resource files, like internally used fonts.@n
+   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS="-DDGL_NO_SHARED_RESOURCES"`)
+ */
+#define DGL_NO_SHARED_RESOURCES
+
+/**
    Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.
    Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.
 
