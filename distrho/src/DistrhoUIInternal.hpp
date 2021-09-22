@@ -272,7 +272,7 @@ public:
         cev.character = key;
 
         // if shift modifier is on, convert a-z -> A-Z for character input
-        if (key >= 'a' && key <= 'z' && (mods & kModifierShift) != 0)
+        if (key >= 'a' && key <= 'z' && (mods & DGL_NAMESPACE::kModifierShift) != 0)
             cev.character -= 'a' - 'A';
 
         ui->onCharacterInput(cev);
