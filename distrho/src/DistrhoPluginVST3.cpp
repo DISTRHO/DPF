@@ -43,6 +43,7 @@ static constexpr const uint32_t dpf_id_ctrl  = d_cconst('c', 't', 'r', 'l');
 static constexpr const uint32_t dpf_id_proc  = d_cconst('p', 'r', 'o', 'c');
 static constexpr const uint32_t dpf_id_view  = d_cconst('v', 'i', 'e', 'w');
 
+// plugin uids, values are filled in during plugin init
 static dpf_tuid dpf_tuid_class = { dpf_id_entry, dpf_id_clas, 0, 0 };
 static dpf_tuid dpf_tuid_component = { dpf_id_entry, dpf_id_comp, 0, 0 };
 static dpf_tuid dpf_tuid_controller = { dpf_id_entry, dpf_id_ctrl, 0, 0 };
@@ -178,36 +179,21 @@ struct ProcessorComponent : ComponentAdapter
 
 static ScopedPointer<PluginExporter> gPluginInfo;
 
-static void gPluginInit()
-{
-    if (gPluginInfo != nullptr)
-        return;
-
-    d_lastBufferSize = 512;
-    d_lastSampleRate = 44100.0;
-    gPluginInfo = new PluginExporter(nullptr, nullptr, nullptr);
-    d_lastBufferSize = 0;
-    d_lastSampleRate = 0.0;
-
-    dpf_tuid_class[3] = dpf_tuid_component[3] = dpf_tuid_controller[3]
-        = dpf_tuid_processor[3] = dpf_tuid_view[3] = gPluginInfo->getUniqueId();
-}
-
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_factory
+// dpf_component
 
-struct v3_plugin_factory_cpp : v3_funknown, v3_plugin_factory {
-    v3_plugin_factory_2 v2;
-    v3_plugin_factory_3 v3;
+struct v3_component_cpp : v3_funknown {
+    v3_plugin_base base;
+    v3_component comp;
 };
 
-struct dpf_factory : v3_plugin_factory_cpp {
-    dpf_factory()
+struct dpf_component : v3_component_cpp {
+    dpf_component()
     {
         static const uint8_t* kSupportedFactories[] = {
             v3_funknown_iid,
-            v3_plugin_factory_iid,
-            v3_plugin_factory_2_iid
+            v3_plugin_base_iid,
+            v3_component_iid
         };
 
         // ------------------------------------------------------------------------------------------------------------
@@ -215,6 +201,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
         query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
         {
+            d_stdout("dpf_component::query_interface         => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, iid, iface);
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 
@@ -231,27 +218,168 @@ struct dpf_factory : v3_plugin_factory_cpp {
         };
 
         // we only support 1 plugin per binary, so don't have to care here
-        ref = []V3_API(void*) -> uint32_t { return 1; };
-        unref = []V3_API(void*) -> uint32_t { return 0; };
+        ref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_component::ref                     => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 1;
+        };
+
+        unref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_component::unref                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_plugin_base
+
+        base.initialise = []V3_API(void* self, struct v3_plugin_base::v3_funknown *context) -> v3_result
+        {
+            d_stdout("dpf_component::initialise              => %s | %p %p", __PRETTY_FUNCTION__ + 41, self, context);
+            return V3_OK;
+        };
+
+        base.terminate = []V3_API(void* self) -> v3_result
+        {
+            d_stdout("dpf_component::terminate               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_component
+
+        comp.get_controller_class_id = []V3_API(void* self, v3_tuid class_id) -> v3_result
+        {
+            d_stdout("dpf_component::get_controller_class_id => %s | %p %p", __PRETTY_FUNCTION__ + 41, self, class_id);
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        comp.set_io_mode = []V3_API(void* self, int32_t io_mode) -> v3_result
+        {
+            d_stdout("dpf_component::set_io_mode             => %s | %p %i", __PRETTY_FUNCTION__ + 41, self, io_mode);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.get_bus_count = []V3_API(void* self, int32_t media_type, int32_t bus_direction) -> int32_t
+        {
+            d_stdout("dpf_component::get_bus_count           => %s | %p %i %i", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction);
+            return 0;
+        };
+
+        comp.get_bus_info = []V3_API(void* self, int32_t media_type, int32_t bus_direction,
+                                     int32_t bus_idx, v3_bus_info* bus_info) -> v3_result
+        {
+            d_stdout("dpf_component::get_bus_info            => %s | %p %i %i %i %p", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, bus_info);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.get_routing_info = []V3_API(void* self, v3_routing_info* input, v3_routing_info* output) -> v3_result
+        {
+            d_stdout("dpf_component::get_routing_info        => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, input, output);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.activate_bus = []V3_API(void* self, int32_t media_type, int32_t bus_direction,
+                                     int32_t bus_idx, v3_bool state) -> v3_result
+        {
+            d_stdout("dpf_component::activate_bus            => %s | %p %i %i %i %u", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, state);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.set_active = []V3_API(void* self, v3_bool state) -> v3_result
+        {
+            d_stdout("dpf_component::set_active              => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.set_state = []V3_API(void* self, v3_bstream**) -> v3_result
+        {
+            d_stdout("dpf_component::set_state               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_INTERNAL_ERR;
+        };
+
+        comp.get_state = []V3_API(void* self, v3_bstream**) -> v3_result
+        {
+            d_stdout("dpf_component::get_state               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_INTERNAL_ERR;
+        };
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_factory
+
+struct v3_plugin_factory_cpp : v3_funknown {
+    v3_plugin_factory   v1;
+    v3_plugin_factory_2 v2;
+    v3_plugin_factory_3 v3;
+};
+
+struct dpf_factory : v3_plugin_factory_cpp {
+    dpf_factory()
+    {
+        static const uint8_t* kSupportedFactories[] = {
+            v3_funknown_iid,
+            v3_plugin_factory_iid,
+            v3_plugin_factory_2_iid /*,
+            v3_plugin_factory_3_iid */
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_factory::query_interface      => %s | %p %p %p", __PRETTY_FUNCTION__ + 37, self, iid, iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* factory_iid : kSupportedFactories)
+            {
+                if (v3_tuid_match(factory_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // we only support 1 plugin per binary, so don't have to care here
+        ref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_factory::ref                  => %s | %p", __PRETTY_FUNCTION__ + 37, self);
+            return 1;
+        };
+
+        unref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_factory::unref                => %s | %p", __PRETTY_FUNCTION__ + 37, self);
+            return 0;
+        };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_factory
 
-        get_factory_info = []V3_API(void*, struct v3_factory_info* const info) -> v3_result
+        v1.get_factory_info = []V3_API(void* self, struct v3_factory_info* const info) -> v3_result
         {
+            d_stdout("dpf_factory::get_factory_info     => %s | %p %p", __PRETTY_FUNCTION__ + 37, self, info);
             DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
             DISTRHO_NAMESPACE::strncpy(info->url, gPluginInfo->getHomePage(), sizeof(info->url));
             DISTRHO_NAMESPACE::strncpy(info->email, "", sizeof(info->email)); // TODO
             return V3_OK;
         };
 
-        num_classes = []V3_API(void*) -> int32_t
+        v1.num_classes = []V3_API(void* self) -> int32_t
         {
+            d_stdout("dpf_factory::num_classes          => %s | %p", __PRETTY_FUNCTION__ + 37, self);
             return 1;
         };
 
-        get_class_info = []V3_API(void*, int32_t /*idx*/, struct v3_class_info* const info) -> v3_result
+        v1.get_class_info = []V3_API(void* self, int32_t idx, struct v3_class_info* const info) -> v3_result
         {
+            d_stdout("dpf_factory::get_class_info       => %s | %p %i %p", __PRETTY_FUNCTION__ + 37, self, idx, info);
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
@@ -259,21 +387,31 @@ struct dpf_factory : v3_plugin_factory_cpp {
             return V3_OK;
         };
 
-        create_instance = []V3_API(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance) -> v3_result
+        v1.create_instance = []V3_API(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance) -> v3_result
         {
-            d_stdout("%s %i %p %p %p %p", __PRETTY_FUNCTION__, __LINE__, self, class_id, iid, instance);
+            d_stdout("dpf_factory::create_instance      => %s | %p %p %p %p", __PRETTY_FUNCTION__ + 37, self, class_id, iid, instance);
             DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(v3_tuid*)&dpf_tuid_class) &&
                                        v3_tuid_match(iid, v3_component_iid), V3_NO_INTERFACE);
 
-            *instance = nullptr; // new ComponentAdapter();
-            return V3_INTERNAL_ERR;
+            static dpf_component* component = nullptr;
+
+            if (component == nullptr)
+            {
+                component = new dpf_component();
+                *instance = &component;
+                return V3_OK;
+            }
+
+            *instance = nullptr;
+            return V3_NO_INTERFACE;
         };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_factory_2
 
-        v2.get_class_info_2 = []V3_API(void*, int32_t /*idx*/, struct v3_class_info_2 *info) -> v3_result
+        v2.get_class_info_2 = []V3_API(void* self, int32_t idx, struct v3_class_info_2* info) -> v3_result
         {
+            d_stdout("dpf_factory::get_class_info_2     => %s | %p %i %p", __PRETTY_FUNCTION__ + 37, self, idx, info);
             // get_class_info
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
@@ -283,14 +421,27 @@ struct dpf_factory : v3_plugin_factory_cpp {
             info->class_flags = 0;
             DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
             DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
-            DISTRHO_NAMESPACE::strncpy(info->version, "", sizeof(info->version)); // TODO
+            std::snprintf(info->version, sizeof(info->version), "%u", gPluginInfo->getVersion()); // TODO
             DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_plugin_factory_3
+
+        v3.get_class_info_utf16 = []V3_API(void* self, int32_t idx, struct v3_class_info_3* info) -> v3_result
+        {
+            d_stdout("dpf_factory::get_class_info_utf16 => %s | %p %i %p", __PRETTY_FUNCTION__ + 37, self, idx, info);
+            return V3_INTERNAL_ERR;
+        };
+
+        v3.set_host_context = []V3_API (void* self, struct v3_funknown* host) -> v3_result
+        {
+            d_stdout("dpf_factory::set_host_context     => %s | %p %p", __PRETTY_FUNCTION__ + 37, self, host);
+            return V3_INTERNAL_ERR;
+        };
     }
 };
-
-static const dpf_factory dpf_factory;
 
 END_NAMESPACE_DISTRHO
 
@@ -303,8 +454,12 @@ const void* GetPluginFactory(void);
 const void* GetPluginFactory(void)
 {
     USE_NAMESPACE_DISTRHO;
-    static const struct v3_plugin_factory_2* const factory = (v3_plugin_factory_2*)&dpf_factory;
-    return &factory;
+    static const dpf_factory factory;
+    static const struct v3_plugin_factory_2* factories[] = {
+        (const v3_plugin_factory_2*)&factory,
+        nullptr
+    };
+    return factories;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -327,7 +482,19 @@ bool ENTRYFNNAME(void*);
 bool ENTRYFNNAME(void*)
 {
     USE_NAMESPACE_DISTRHO;
-    gPluginInit();
+
+    if (gPluginInfo == nullptr)
+    {
+        d_lastBufferSize = 512;
+        d_lastSampleRate = 44100.0;
+        gPluginInfo = new PluginExporter(nullptr, nullptr, nullptr);
+        d_lastBufferSize = 0;
+        d_lastSampleRate = 0.0;
+
+        dpf_tuid_class[3] = dpf_tuid_component[3] = dpf_tuid_controller[3]
+            = dpf_tuid_processor[3] = dpf_tuid_view[3] = gPluginInfo->getUniqueId();
+    }
+
     return true;
 }
 
