@@ -798,16 +798,16 @@ struct v3_plugin_factory_cpp : v3_funknown {
     v3_plugin_factory_3 v3;
 };
 
-std::list<dpf_component*> components;
-
 struct dpf_factory : v3_plugin_factory_cpp {
+    std::list<dpf_component*> components;
+
     dpf_factory()
     {
         static const uint8_t* kSupportedFactories[] = {
             v3_funknown_iid,
             v3_plugin_factory_iid,
-            v3_plugin_factory_2_iid /*,
-            v3_plugin_factory_3_iid */
+            v3_plugin_factory_2_iid,
+            v3_plugin_factory_3_iid
         };
 
         // ------------------------------------------------------------------------------------------------------------
@@ -880,9 +880,10 @@ struct dpf_factory : v3_plugin_factory_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(v3_tuid*)&dpf_tuid_class) &&
                                        v3_tuid_match(iid, v3_component_iid), V3_NO_INTERFACE);
 
+            dpf_factory* const factory = *(dpf_factory**)self;
             dpf_component* const component = new dpf_component();
-            components.push_back(component);
-            *instance = &components.back();
+            factory->components.push_back(component);
+            *instance = &factory->components.back();
             return V3_OK;
         };
 
@@ -892,12 +893,11 @@ struct dpf_factory : v3_plugin_factory_cpp {
         v2.get_class_info_2 = []V3_API(void* self, int32_t idx, struct v3_class_info_2* info) -> v3_result
         {
             d_stdout("dpf_factory::get_class_info_2     => %s | %p %i %p", __PRETTY_FUNCTION__ + 37, self, idx, info);
-            // get_class_info
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
             DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo->getName(), sizeof(info->name));
-            // get_class_info_2
+
             info->class_flags = 0;
             DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
             DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
@@ -912,13 +912,23 @@ struct dpf_factory : v3_plugin_factory_cpp {
         v3.get_class_info_utf16 = []V3_API(void* self, int32_t idx, struct v3_class_info_3* info) -> v3_result
         {
             d_stdout("dpf_factory::get_class_info_utf16 => %s | %p %i %p", __PRETTY_FUNCTION__ + 37, self, idx, info);
-            return V3_INTERNAL_ERR;
+            memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            info->cardinality = 0x7FFFFFFF;
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
+            DISTRHO_NAMESPACE::strncpy_16from8(info->name, gPluginInfo->getName(), sizeof(info->name));
+
+            info->class_flags = 0;
+            DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
+            DISTRHO_NAMESPACE::strncpy_16from8(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
+            // DISTRHO_NAMESPACE::snprintf16(info->version, sizeof(info->version)/sizeof(info->version[0]), "%u", gPluginInfo->getVersion()); // TODO
+            DISTRHO_NAMESPACE::strncpy_16from8(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
+            return V3_OK;
         };
 
         v3.set_host_context = []V3_API (void* self, struct v3_funknown* host) -> v3_result
         {
             d_stdout("dpf_factory::set_host_context     => %s | %p %p", __PRETTY_FUNCTION__ + 37, self, host);
-            return V3_INTERNAL_ERR;
+            return V3_NOT_IMPLEMENTED;
         };
     }
 };
