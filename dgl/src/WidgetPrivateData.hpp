@@ -44,7 +44,6 @@ struct Widget::PrivateData {
     void displaySubWidgets(uint width, uint height, double autoScaleFactor);
 
     bool giveKeyboardEventForSubWidgets(const KeyboardEvent& ev);
-    bool giveSpecialEventForSubWidgets(const SpecialEvent& ev);
     bool giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev);
     bool giveMouseEventForSubWidgets(MouseEvent& ev);
     bool giveMotionEventForSubWidgets(MotionEvent& ev);

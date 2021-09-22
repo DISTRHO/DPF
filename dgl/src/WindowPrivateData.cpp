@@ -820,24 +820,6 @@ void Window::PrivateData::onPuglKey(const Widget::KeyboardEvent& ev)
 #endif
 }
 
-void Window::PrivateData::onPuglSpecial(const Widget::SpecialEvent& ev)
-{
-    DGL_DBGp("onPuglSpecial : %i %u\n", ev.press, ev.key);
-
-    if (modal.child != nullptr)
-        return modal.child->focus();
-
-#ifndef DPF_TEST_WINDOW_CPP
-    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
-    {
-        TopLevelWidget* const widget(*rit);
-
-        if (widget->isVisible() && widget->pData->specialEvent(ev))
-            break;
-    }
-#endif
-}
-
 void Window::PrivateData::onPuglText(const Widget::CharacterInputEvent& ev)
 {
     DGL_DBGp("onPuglText : %u %u %s\n", ev.keycode, ev.character, ev.string);
@@ -982,7 +964,6 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_KEY_RELEASE:
     {
         // unused x, y, xRoot, yRoot (double)
-        // TODO special keys?
         Widget::KeyboardEvent ev;
         ev.mod     = event->key.state;
         ev.flags   = event->key.flags;
@@ -990,8 +971,14 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.press   = event->type == PUGL_KEY_PRESS;
         ev.key     = event->key.key;
         ev.keycode = event->key.keycode;
-        if ((ev.mod & kModifierShift) != 0 && ev.key >= 'a' && ev.key <= 'z')
-            ev.key -= 'a' - 'A'; // a-z -> A-Z
+
+        // keyboard events must always be lowercase
+        if (ev.key >= 'A' && ev.key <= 'Z')
+        {
+            ev.key += 'a' - 'A'; // A-Z -> a-z
+            ev.mod |= kModifierShift;
+        }
+
         pData->onPuglKey(ev);
         break;
     }

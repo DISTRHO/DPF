@@ -50,20 +50,6 @@ bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)
     return selfw->pData->giveKeyboardEventForSubWidgets(ev);
 }
 
-bool TopLevelWidget::PrivateData::specialEvent(const SpecialEvent& ev)
-{
-    // ignore event if we are not visible
-    if (! selfw->pData->visible)
-        return false;
-
-    // give top-level widget chance to catch this event first
-    if (self->onSpecial(ev))
-        return true;
-
-    // propagate event to all subwidgets recursively
-    return selfw->pData->giveSpecialEventForSubWidgets(ev);
-}
-
 bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent& ev)
 {
     // ignore event if we are not visible

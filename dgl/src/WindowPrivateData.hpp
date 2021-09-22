@@ -178,7 +178,6 @@ struct Window::PrivateData : IdleCallback {
     void onPuglClose();
     void onPuglFocus(bool focus, CrossingMode mode);
     void onPuglKey(const Widget::KeyboardEvent& ev);
-    void onPuglSpecial(const Widget::SpecialEvent& ev);
     void onPuglText(const Widget::CharacterInputEvent& ev);
     void onPuglMouse(const Widget::MouseEvent& ev);
     void onPuglMotion(const Widget::MotionEvent& ev);

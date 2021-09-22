@@ -100,11 +100,6 @@ bool TopLevelWidget::onKeyboard(const KeyboardEvent&)
     return false;
 }
 
-bool TopLevelWidget::onSpecial(const SpecialEvent&)
-{
-    return false;
-}
-
 bool TopLevelWidget::onCharacterInput(const CharacterInputEvent&)
 {
     return false;

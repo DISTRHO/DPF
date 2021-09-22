@@ -49,16 +49,16 @@ enum Modifier {
 /**
    Keyboard key codepoints.
 
-   All keys are identified by a Unicode code point in PuglEventKey::key.  This
-   enumeration defines constants for special keys that do not have a standard
-   code point, and some convenience constants for control characters.  Note
-   that all keys are handled in the same way, this enumeration is just for
+   All keys are identified by a Unicode code point in Widget::KeyboardEvent::key.
+   This enumeration defines constants for special keys that do not have a standard
+   code point, and some convenience constants for control characters.
+   Note that all keys are handled in the same way, this enumeration is just for
    convenience when writing hard-coded key bindings.
 
    Keys that do not have a standard code point use values in the Private Use
-   Area in the Basic Multilingual Plane (`U+E000` to `U+F8FF`).  Applications
-   must take care to not interpret these values beyond key detection, the
-   mapping used here is arbitrary and specific to DPF.
+   Area in the Basic Multilingual Plane (`U+E000` to `U+F8FF`).
+   Applications must take care to not interpret these values beyond key detection,
+   the mapping used here is arbitrary and specific to DPF.
  */
 enum Key {
     // Convenience symbols for ASCII control characters
@@ -116,7 +116,7 @@ enum Key {
 /**
    Common flags for all events.
  */
-enum Flag {
+enum EventFlag {
     kFlagSendEvent = 1, ///< Event is synthetic
     kFlagIsHint    = 2  ///< Event is a hint (not direct user input)
 };

@@ -260,21 +260,23 @@ public:
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
     {
-        // TODO also trigger Character input event
         DGL_NAMESPACE::Widget::KeyboardEvent ev;
+        ev.mod   = mods;
         ev.press = press;
-        ev.key = key;
-        ev.mod = mods;
-        return ui->onKeyboard(ev);
-    }
+        ev.key   = key;
 
-    bool handlePluginSpecial(const bool press, const DGL_NAMESPACE::Key key, const uint16_t mods)
-    {
-        DGL_NAMESPACE::Widget::SpecialEvent ev;
-        ev.press = press;
-        ev.key = key;
-        ev.mod = mods;
-        return ui->onSpecial(ev);
+        const bool ret = ui->onKeyboard(ev);
+
+        DGL_NAMESPACE::Widget::CharacterInputEvent cev;
+        cev.mod       = mods;
+        cev.character = key;
+
+        // if shift modifier is on, convert a-z -> A-Z for character input
+        if (key >= 'a' && key <= 'z' && (mods & kModifierShift) != 0)
+            cev.character -= 'a' - 'A';
+
+        ui->onCharacterInput(cev);
+        return ret;
     }
 #endif
 

@@ -58,7 +58,7 @@ public:
       These are the fields present on all Widget events.
 
       @a mod  Currently active keyboard modifiers, @see Modifier.
-      @a mod  Event flags, @see Flag.
+      @a mod  Event flags, @see EventFlag.
       @a time Event timestamp (if any).
     */
     struct BaseEvent {
@@ -107,14 +107,10 @@ public:
    /**
       Special keyboard event.
 
-      This event allows the use of keys that do not have unicode points.
-      Note that some are non-printable keys.
-
-      @a press True if the key was pressed, false if released.
-      @a key   The key pressed.
-      @see onSpecial
+      DEPRECATED This used to be part of DPF due to pugl, but now deprecated and simply non-functional.
+      All events go through KeyboardEvent or CharacterInputEvent, use those instead.
     */
-    struct SpecialEvent : BaseEvent {
+    struct DISTRHO_DEPRECATED_BY("KeyboardEvent") SpecialEvent : BaseEvent {
         bool press;
         Key  key;
 
@@ -399,12 +395,6 @@ protected:
     virtual bool onKeyboard(const KeyboardEvent&);
 
    /**
-      A function called when a special key is pressed or released.
-      @return True to stop event propagation, false otherwise.
-    */
-    virtual bool onSpecial(const SpecialEvent&);
-
-   /**
       A function called when an UTF-8 character is received.
       @return True to stop event propagation, false otherwise.
     */
@@ -432,6 +422,19 @@ protected:
       A function called when the widget is resized.
     */
     virtual void onResize(const ResizeEvent&);
+
+   /**
+      A function called when a special key is pressed or released.
+      DEPRECATED use onKeyboard or onCharacterInput
+    */
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    virtual bool onSpecial(const SpecialEvent&) { return false; }
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
+# pragma GCC diagnostic pop
+#endif
 
 private:
     struct PrivateData;

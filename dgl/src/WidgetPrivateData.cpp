@@ -87,24 +87,6 @@ bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const KeyboardEvent& ev
     return false;
 }
 
-bool Widget::PrivateData::giveSpecialEventForSubWidgets(const SpecialEvent& ev)
-{
-    if (! visible)
-        return false;
-    if (subWidgets.size() == 0)
-        return false;
-
-    FOR_EACH_SUBWIDGET_INV(rit)
-    {
-        SubWidget* const widget(*rit);
-
-        if (widget->isVisible() && widget->onSpecial(ev))
-            return true;
-    }
-
-    return false;
-}
-
 bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev)
 {
     if (! visible)

@@ -167,11 +167,6 @@ bool Widget::onKeyboard(const KeyboardEvent& ev)
     return pData->giveKeyboardEventForSubWidgets(ev);
 }
 
-bool Widget::onSpecial(const SpecialEvent& ev)
-{
-    return pData->giveSpecialEventForSubWidgets(ev);
-}
-
 bool Widget::onCharacterInput(const CharacterInputEvent& ev)
 {
     return pData->giveCharacterInputEventForSubWidgets(ev);

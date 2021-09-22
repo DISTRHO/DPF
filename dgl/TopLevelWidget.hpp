@@ -117,7 +117,6 @@ public:
 
 protected:
     bool onKeyboard(const KeyboardEvent&) override;
-    bool onSpecial(const SpecialEvent&) override;
     bool onCharacterInput(const CharacterInputEvent&) override;
     bool onMouse(const MouseEvent&) override;
     bool onMotion(const MotionEvent&) override;

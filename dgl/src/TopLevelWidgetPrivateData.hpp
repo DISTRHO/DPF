@@ -34,7 +34,6 @@ struct TopLevelWidget::PrivateData {
     ~PrivateData();
     void display();
     bool keyboardEvent(const KeyboardEvent& ev);
-    bool specialEvent(const SpecialEvent& ev);
     bool characterInputEvent(const CharacterInputEvent& ev);
     bool mouseEvent(const MouseEvent& ev);
     bool motionEvent(const MotionEvent& ev);

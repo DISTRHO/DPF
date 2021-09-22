@@ -261,7 +261,6 @@ public:
 
         using namespace DGL_NAMESPACE;
 
-        int special = 0;
         switch (value)
         {
         // convert some VST special values to normal keys
@@ -304,37 +303,37 @@ public:
            - kKeyCapsLock
            - kKeyPrintScreen
          */
-        case 40: special = kKeyF1;         break;
-        case 41: special = kKeyF2;         break;
-        case 42: special = kKeyF3;         break;
-        case 43: special = kKeyF4;         break;
-        case 44: special = kKeyF5;         break;
-        case 45: special = kKeyF6;         break;
-        case 46: special = kKeyF7;         break;
-        case 47: special = kKeyF8;         break;
-        case 48: special = kKeyF9;         break;
-        case 49: special = kKeyF10;        break;
-        case 50: special = kKeyF11;        break;
-        case 51: special = kKeyF12;        break;
-        case 11: special = kKeyLeft;       break;
-        case 12: special = kKeyUp;         break;
-        case 13: special = kKeyRight;      break;
-        case 14: special = kKeyDown;       break;
-        case 15: special = kKeyPageUp;     break;
-        case 16: special = kKeyPageDown;   break;
-        case 10: special = kKeyHome;       break;
-        case  9: special = kKeyEnd;        break;
-        case 21: special = kKeyInsert;     break;
-        case 54: special = kKeyShift;      break;
-        case 55: special = kKeyControl;    break;
-        case 56: special = kKeyAlt;        break;
-        case 58: special = kKeyMenu;       break;
-        case 52: special = kKeyNumLock;    break;
-        case 53: special = kKeyScrollLock; break;
-        case  5: special = kKeyPause;      break;
+        case 40: index = kKeyF1;         break;
+        case 41: index = kKeyF2;         break;
+        case 42: index = kKeyF3;         break;
+        case 43: index = kKeyF4;         break;
+        case 44: index = kKeyF5;         break;
+        case 45: index = kKeyF6;         break;
+        case 46: index = kKeyF7;         break;
+        case 47: index = kKeyF8;         break;
+        case 48: index = kKeyF9;         break;
+        case 49: index = kKeyF10;        break;
+        case 50: index = kKeyF11;        break;
+        case 51: index = kKeyF12;        break;
+        case 11: index = kKeyLeft;       break;
+        case 12: index = kKeyUp;         break;
+        case 13: index = kKeyRight;      break;
+        case 14: index = kKeyDown;       break;
+        case 15: index = kKeyPageUp;     break;
+        case 16: index = kKeyPageDown;   break;
+        case 10: index = kKeyHome;       break;
+        case  9: index = kKeyEnd;        break;
+        case 21: index = kKeyInsert;     break;
+        case 54: index = kKeyShift;      break;
+        case 55: index = kKeyControl;    break;
+        case 56: index = kKeyAlt;        break;
+        case 58: index = kKeyMenu;       break;
+        case 52: index = kKeyNumLock;    break;
+        case 53: index = kKeyScrollLock; break;
+        case  5: index = kKeyPause;      break;
         }
 
-        switch (special)
+        switch (index)
         {
         case kKeyShift:
             if (down)
@@ -356,15 +355,26 @@ public:
             break;
         }
 
-        if (special != 0)
-        {
-            fUI.handlePluginSpecial(down, static_cast<Key>(special), fKeyboardModifiers);
-            return 1;
-        }
-
         if (index > 0)
         {
+            // keyboard events must always be lowercase
+            bool needsShiftRevert = false;
+            if (index >= 'A' && index <= 'Z')
+            {
+                index += 'a' - 'A'; // A-Z -> a-z
+
+                if ((fKeyboardModifiers & kModifierShift) == 0x0)
+                {
+                    needsShiftRevert = true;
+                    fKeyboardModifiers |= kModifierShift;
+                }
+            }
+
             fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
+
+            if (needsShiftRevert)
+                fKeyboardModifiers &= ~kModifierShift;
+
             return 1;
         }
 
