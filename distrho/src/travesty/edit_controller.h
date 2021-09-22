@@ -83,7 +83,7 @@ struct v3_edit_controller {
 		(void *self, struct v3_bstream *);
 
 	V3_API int32_t (*get_parameter_count)(void *self);
-	V3_API v3_result (*get_param_info)
+	V3_API v3_result (*get_parameter_info)
 		(void *self, int32_t param_idx, struct v3_param_info *);
 
 	V3_API v3_result (*get_param_string_for_value)

@@ -41,9 +41,9 @@ struct v3_view_rect {
 # define V3_VIEW_PLATFORM_TYPE_NATIVE V3_VIEW_PLATFORM_TYPE_X11
 #endif
 
-struct v3_plug_frame;
+struct v3_plugin_frame;
 
-struct v3_plug_view {
+struct v3_plugin_view {
 	struct v3_funknown;
 
 	V3_API v3_result (*is_platform_type_supported)
@@ -74,17 +74,17 @@ struct v3_plug_view {
 		(void *self, struct v3_view_rect *);
 };
 
-static const v3_tuid v3_plug_view_iid =
+static const v3_tuid v3_plugin_view_iid =
 	V3_ID(0x5BC32507, 0xD06049EA, 0xA6151B52, 0x2B755B29);
 
-struct v3_plug_frame {
+struct v3_plugin_frame {
 	struct v3_funknown;
 
 	V3_API v3_result (*resize_view)
 		(void *self, struct v3_plug_view *, struct v3_view_rect *);
 };
 
-static const v3_tuid v3_plug_frame_iid =
+static const v3_tuid v3_plugin_frame_iid =
 	V3_ID(0x367FAF01, 0xAFA94693, 0x8D4DA2A0, 0xED0882A3);
 
 /**
@@ -92,26 +92,26 @@ static const v3_tuid v3_plug_frame_iid =
  * (same IID/iface as presonus view scaling)
  */
 
-struct v3_plug_view_content_scale_steinberg {
+struct v3_plugin_view_content_scale_steinberg {
 	struct v3_funknown;
 
 	V3_API v3_result (*set_content_scale_factor)
 		(void *self, float factor);
 };
 
-static const v3_tuid v3_plug_view_content_scale_steinberg_iid =
+static const v3_tuid v3_plugin_view_content_scale_steinberg_iid =
 	V3_ID(0x65ED9690, 0x8AC44525, 0x8AADEF7A, 0x72EA703F);
 
 /**
  * support for querying the view to find what control is underneath the mouse
  */
 
-struct v3_plug_view_param_finder {
+struct v3_plugin_view_param_finder {
 	struct v3_funknown;
 
 	V3_API v3_result (*find_parameter)
 		(void *self, int32_t x, int32_t y, v3_param_id *);
 };
 
-static const v3_tuid v3_plug_view_param_finder_iid =
+static const v3_tuid v3_plugin_view_param_finder_iid =
 	V3_ID(0x0F618302, 0x215D4587, 0xA512073C, 0x77B9D383);

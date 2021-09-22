@@ -116,26 +116,24 @@ private:
 
 };
 
-// -----------------------------------------------------------------------
-// WIP this whole section still TODO
+// --------------------------------------------------------------------------------------------------------------------
+// Dummy plugin to get data from
 
-struct ControllerComponent;
-struct ProcessorComponent;
+static ScopedPointer<PluginExporter> gPluginInfo;
 
-struct ComponentAdapter : v3_funknown, v3_plugin_base
-{
-    // needs atomic refcount, starts at 1
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_plugin_view
 
-    ComponentAdapter()
+struct v3_plugin_view_cpp : v3_funknown {
+    v3_plugin_view view;
+};
+
+struct dpf_plugin_view : v3_plugin_view_cpp {
+    dpf_plugin_view()
     {
         static const uint8_t* kSupportedFactories[] = {
             v3_funknown_iid,
-            v3_plugin_base_iid,
-            /*
-            v3_component_iid,
-            v3_edit_controller_iid,
-            v3_audio_processor_iid
-            */
+            v3_plugin_view_iid
         };
 
         // ------------------------------------------------------------------------------------------------------------
@@ -143,8 +141,7 @@ struct ComponentAdapter : v3_funknown, v3_plugin_base
 
         query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
         {
-            d_stdout("ComponentAdapter::query_interface %p %p %p", self, iid, iface);
-
+            d_stdout("dpf_plugin_view::query_interface         => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, iid, iface);
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 
@@ -160,24 +157,332 @@ struct ComponentAdapter : v3_funknown, v3_plugin_base
             return V3_NO_INTERFACE;
         };
 
-        // TODO use atomic counter
-        ref = []V3_API(void*) -> uint32_t { return 1; };
-        unref = []V3_API(void*) -> uint32_t { return 0; };
+        // we only support 1 plugin per binary, so don't have to care here
+        ref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_plugin_view::ref                     => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 1;
+        };
+
+        unref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_plugin_view::unref                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_plugin_base
+
+        view.is_platform_type_supported = []V3_API(void* self, const char* platform_type) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::is_platform_type_supported => %s | %p %s", __PRETTY_FUNCTION__ + 41, self, platform_type);
+            return V3_OK;
+        };
+
+        view.attached = []V3_API(void* self, void* parent, const char* platform_type) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::attached                   => %s | %p %p %s", __PRETTY_FUNCTION__ + 41, self, parent, platform_type);
+            return V3_OK;
+        };
+
+        view.removed = []V3_API(void* self) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::removed                    => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        view.on_wheel = []V3_API(void* self, float distance) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::on_wheel                   => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, distance);
+            return V3_OK;
+        };
+
+        view.on_key_down = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::on_key_down                => %s | %p %i %i %i", __PRETTY_FUNCTION__ + 41, self, key_char, key_code, modifiers);
+            return V3_OK;
+        };
+
+        view.on_key_up = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::on_key_up                  => %s | %p %i %i %i", __PRETTY_FUNCTION__ + 41, self, key_char, key_code, modifiers);
+            return V3_OK;
+        };
+
+        view.get_size = []V3_API(void* self, v3_view_rect*) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::get_size                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        view.set_size = []V3_API(void* self, v3_view_rect*) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::set_size                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        view.on_focus = []V3_API(void* self, v3_bool state) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::on_focus                   => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
+            return V3_OK;
+        };
+
+        view.set_frame = []V3_API(void* self, v3_plug_frame*) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::set_frame                  => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        view.can_resize = []V3_API(void* self) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::can_resize                 => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        view.check_size_constraint = []V3_API(void* self, v3_view_rect*) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::check_size_constraint      => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
     }
 };
 
-struct ControllerComponent : ComponentAdapter
-{
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_edit_controller
+
+struct v3_edit_controller_cpp : v3_funknown {
+    v3_edit_controller controller;
 };
 
-struct ProcessorComponent : ComponentAdapter
-{
+struct dpf_edit_controller : v3_edit_controller_cpp {
+    dpf_edit_controller()
+    {
+        static const uint8_t* kSupportedFactories[] = {
+            v3_funknown_iid,
+            v3_edit_controller_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::query_interface            => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, iid, iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* factory_iid : kSupportedFactories)
+            {
+                if (v3_tuid_match(factory_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // we only support 1 plugin per binary, so don't have to care here
+        ref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_edit_controller::ref                        => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 1;
+        };
+
+        unref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_edit_controller::unref                      => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_plugin_base
+
+        controller.set_component_state = []V3_API(void* self, v3_bstream*) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::set_component_state        => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        controller.set_state = []V3_API(void* self, v3_bstream*) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::set_state                  => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        controller.get_state = []V3_API(void* self, v3_bstream*) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::get_state                  => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        controller.get_parameter_count = []V3_API(void* self) -> int32_t
+        {
+            d_stdout("dpf_edit_controller::get_parameter_count        => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        controller.get_parameter_info = []V3_API(void* self, int32_t param_idx, v3_param_info*) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::get_parameter_info         => %s | %p %i", __PRETTY_FUNCTION__ + 41, self, param_idx);
+            return V3_OK;
+        };
+
+        controller.get_param_string_for_value = []V3_API(void* self, v3_param_id, double normalised, v3_str_128 /*output*/) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::get_param_string_for_value => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, normalised);
+            return V3_OK;
+        };
+
+        controller.get_param_value_for_string = []V3_API(void* self, v3_param_id, int16_t* input, double* output) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::get_param_value_for_string => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, input, output);
+            return V3_OK;
+        };
+
+        controller.normalised_param_to_plain = []V3_API(void* self, v3_param_id, double normalised) -> double
+        {
+            d_stdout("dpf_edit_controller::normalised_param_to_plain  => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, normalised);
+            return 0.0;
+        };
+
+        controller.plain_param_to_normalised = []V3_API(void* self, v3_param_id, double normalised) -> double
+        {
+            d_stdout("dpf_edit_controller::plain_param_to_normalised  => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, normalised);
+            return 0.0;
+        };
+
+        controller.get_param_normalised = []V3_API(void* self, v3_param_id) -> double
+        {
+            d_stdout("dpf_edit_controller::get_param_normalised       => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0.0;
+        };
+
+        controller.set_param_normalised = []V3_API(void* self, v3_param_id, double normalised) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::set_param_normalised       => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, normalised);
+            return V3_OK;
+        };
+
+        controller.set_component_handler = []V3_API(void* self, v3_component_handler**) -> v3_result
+        {
+            d_stdout("dpf_edit_controller::set_component_handler      => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        controller.create_view = []V3_API(void* self, const char* name) -> v3_plug_view**
+        {
+            d_stdout("dpf_edit_controller::create_view                => %s | %p %s", __PRETTY_FUNCTION__ + 41, self, name);
+            return nullptr;
+        };
+    }
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// Dummy plugin to get data from
+// dpf_audio_processor
 
-static ScopedPointer<PluginExporter> gPluginInfo;
+struct v3_audio_processor_cpp : v3_funknown {
+    v3_audio_processor processor;
+};
+
+struct dpf_audio_processor : v3_audio_processor_cpp {
+    dpf_audio_processor()
+    {
+        static const uint8_t* kSupportedFactories[] = {
+            v3_funknown_iid,
+            v3_audio_processor_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::query_interface         => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, iid, iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* factory_iid : kSupportedFactories)
+            {
+                if (v3_tuid_match(factory_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // we only support 1 plugin per binary, so don't have to care here
+        ref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_audio_processor::ref                     => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 1;
+        };
+
+        unref = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_audio_processor::unref                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_plugin_base
+
+        processor.set_bus_arrangements = []V3_API(void* self,
+                                                  v3_speaker_arrangement* inputs, int32_t num_inputs,
+                                                  v3_speaker_arrangement* outputs, int32_t num_outputs) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::set_bus_arrangements    => %s | %p %p %i %p %i", __PRETTY_FUNCTION__ + 41, self, inputs, num_inputs, outputs, num_outputs);
+            return V3_OK;
+        };
+
+        processor.get_bus_arrangement = []V3_API(void* self, int32_t bus_direction,
+                                                 int32_t idx, v3_speaker_arrangement*) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::get_bus_arrangement     => %s | %p %i %i", __PRETTY_FUNCTION__ + 41, self, bus_direction, idx);
+            return V3_OK;
+        };
+
+        processor.can_process_sample_size = []V3_API(void* self, int32_t symbolic_sample_size) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::can_process_sample_size => %s | %p %i", __PRETTY_FUNCTION__ + 41, self, symbolic_sample_size);
+            return V3_OK;
+        };
+
+        processor.get_latency_samples = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_audio_processor::get_latency_samples     => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+
+        processor.setup_processing = []V3_API(void* self, v3_process_setup*) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::setup_processing        => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        processor.set_processing = []V3_API(void* self, v3_bool state) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::set_processing          => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
+            return V3_OK;
+        };
+
+        processor.process = []V3_API(void* self, v3_process_data*) -> v3_result
+        {
+            d_stdout("dpf_audio_processor::process                 => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return V3_OK;
+        };
+
+        processor.get_tail_samples = []V3_API(void* self) -> uint32_t
+        {
+            d_stdout("dpf_audio_processor::get_tail_samples        => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            return 0;
+        };
+    }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_component
