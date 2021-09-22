@@ -33,7 +33,6 @@ endif
 
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
-BUILD_CXX_FLAGS += -Wno-pmf-conversions
 
 ifeq ($(HAVE_ALSA),true)
 BASE_FLAGS += -DHAVE_ALSA
@@ -223,6 +222,13 @@ endif
 
 # TODO split dsp and ui object build flags
 BASE_FLAGS += $(DGL_FLAGS)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Runtime test build
+
+ifeq ($(DPF_RUNTIME_TESTING),true)
+BUILD_CXX_FLAGS += -DDPF_RUNTIME_TESTING -Wno-pmf-conversions
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # all needs to be first

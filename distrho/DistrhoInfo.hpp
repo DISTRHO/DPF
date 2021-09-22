@@ -615,6 +615,34 @@ START_NAMESPACE_DISTRHO
 
 /** @} */
 
+/* ------------------------------------------------------------------------------------------------------------
+ * Plugin Macros */
+
+/**
+   @defgroup ExtraPluginMacros Extra Plugin Macros
+
+   C Macros to customize DPF behaviour.
+
+   These are macros that do not set plugin features or information, but instead change DPF internals.@n
+   They are all optional, none are enabled by default.
+
+   All values are a simple define, their value is meaningless (and unused).
+   @{
+ */
+
+/**
+   Whether to enable runtime plugin tests.@n
+   This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n
+   Useful to enable as part of CI, can safely be skipped.@n
+   Under DPF makefiles can be enabled by using `make DPF_RUNTIME_TESTING=true`.
+
+   @note Some checks are only available with the GCC compiler,
+         for detecting if a virtual function has been reimplemented.
+ */
+#define DPF_RUNTIME_TESTING
+
+/** @} */
+
 // -----------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
