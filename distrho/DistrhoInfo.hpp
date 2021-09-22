@@ -107,13 +107,6 @@ START_NAMESPACE_DISTRHO
       }
 
      /* ----------------------------------------------------------------------------------------
-      * This example has no parameters, so skip parameter stuff */
-
-      void  initParameter(uint32_t, Parameter&) override {}
-      float getParameterValue(uint32_t) const   override { return 0.0f; }
-      void  setParameterValue(uint32_t, float)  override {}
-
-     /* ----------------------------------------------------------------------------------------
       * Audio/MIDI Processing */
 
      /**
@@ -637,8 +630,8 @@ START_NAMESPACE_DISTRHO
 
    C Macros to customize DPF behaviour.
 
-   These are macros that do not set plugin features or information, but instead change DPF internals.@n
-   They are all optional, none are enabled by default.
+   These are macros that do not set plugin features or information, but instead change DPF internals.
+   They are all optional.
 
    Unless stated otherwise, values are assumed to be a simple/empty define.
    @{
