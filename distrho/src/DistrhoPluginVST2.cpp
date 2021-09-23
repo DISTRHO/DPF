@@ -1066,7 +1066,7 @@ public:
 
     void vst_setParameter(const int32_t index, const float value)
     {
-        const uint32_t hints(fPlugin.getParameterHints(index));
+        const uint32_t hints = fPlugin.getParameterHints(index);
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
         // TODO figure out how to detect kVstParameterUsesIntegerMinMax host support, and skip normalization

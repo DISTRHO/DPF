@@ -86,18 +86,18 @@ struct v3_edit_controller {
 	V3_API v3_result (*get_parameter_info)
 		(void *self, int32_t param_idx, struct v3_param_info *);
 
-	V3_API v3_result (*get_param_string_for_value)
+	V3_API v3_result (*get_parameter_string_for_value)
 		(void *self, v3_param_id, double normalised, v3_str_128 output);
-	V3_API v3_result (*get_param_value_for_string)
+	V3_API v3_result (*get_parameter_value_for_string)
 		(void *self, v3_param_id, int16_t *input, double *output);
 
-	V3_API double (*normalised_param_to_plain)
+	V3_API double (*normalised_parameter_to_plain)
 		(void *self, v3_param_id, double normalised);
-	V3_API double (*plain_param_to_normalised)
+	V3_API double (*plain_parameter_to_normalised)
 		(void *self, v3_param_id, double normalised);
 
-	V3_API double (*get_param_normalised)(void *self, v3_param_id);
-	V3_API v3_result (*set_param_normalised)
+	V3_API double (*get_parameter_normalised)(void *self, v3_param_id);
+	V3_API v3_result (*set_parameter_normalised)
 		(void *self, v3_param_id, double normalised);
 
 	V3_API v3_result (*set_component_handler)

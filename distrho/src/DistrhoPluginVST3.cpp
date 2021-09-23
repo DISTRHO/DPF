@@ -22,7 +22,8 @@
 #include "travesty/edit_controller.h"
 #include "travesty/factory.h"
 
-#include <list>
+#include <atomic>
+#include <vector>
 
 START_NAMESPACE_DISTRHO
 
@@ -158,7 +159,7 @@ void strncpy_16from8(int16_t* const dst, const char* const src, const size_t siz
     }
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 class PluginVst3
 {
@@ -166,6 +167,85 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback)
     {
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // stuff for vst3 interfaces
+
+    uint32_t getParameterCount() const noexcept
+    {
+        return fPlugin.getParameterCount();
+    }
+
+    void getParameterInfo(const uint32_t index, v3_param_info* const info) const noexcept
+    {
+        // set up flags
+        int32_t flags = 0;
+
+        const auto desig = fPlugin.getParameterDesignation(index);
+        const auto hints = fPlugin.getParameterHints(index);
+
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+        switch (desig)
+        {
+        case kParameterDesignationNull:
+            break;
+        case kParameterDesignationBypass:
+            flags |= V3_PARAM_IS_BYPASS;
+            break;
+        }
+
+        if (hints & kParameterIsAutomable)
+            flags |= V3_PARAM_CAN_AUTOMATE;
+        if (hints & kParameterIsOutput)
+            flags |= V3_PARAM_READ_ONLY;
+        // TODO V3_PARAM_IS_LIST
+
+        // set up step_count
+        int32_t step_count = 0;
+
+        if (hints & kParameterIsBoolean)
+            step_count = 1;
+        if ((hints & kParameterIsInteger) && ranges.max - ranges.min > 1)
+            step_count = ranges.max - ranges.min - 1;
+
+        std::memset(info, 0, sizeof(v3_param_info));
+        info->param_id = index;
+        info->flags = flags;
+        info->step_count = step_count;
+        info->default_normalised_value = ranges.getNormalizedValue(ranges.def);
+        // int32_t unit_id;
+        strncpy_16from8(info->title,       fPlugin.getParameterName(index), 128);
+        strncpy_16from8(info->short_title, fPlugin.getParameterShortName(index), 128);
+        strncpy_16from8(info->units,       fPlugin.getParameterUnit(index), 128);
+    }
+
+    double getNormalizedParameterValue(const uint32_t index)
+    {
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        return ranges.getNormalizedValue(fPlugin.getParameterValue(index));
+    }
+
+    void setNormalizedParameterValue(const uint32_t index, const double value)
+    {
+        const uint32_t hints = fPlugin.getParameterHints(index);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+        float realValue = ranges.getUnnormalizedValue(value);
+
+        if (hints & kParameterIsBoolean)
+        {
+            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+            realValue = realValue > midRange ? ranges.max : ranges.min;
+        }
+
+        if (hints & kParameterIsInteger)
+        {
+            realValue = std::round(realValue);
+        }
+
+        fPlugin.setParameterValue(index, realValue);
     }
 
 private:
@@ -343,7 +423,10 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
-    dpf_edit_controller()
+    ScopedPointer<PluginVst3>& vst3;
+
+    dpf_edit_controller(ScopedPointer<PluginVst3>& v)
+        : vst3(v)
     {
         static const uint8_t* kSupportedFactories[] = {
             v3_funknown_iid,
@@ -423,66 +506,34 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         controller.get_parameter_count = []V3_API(void* self) -> int32_t
         {
             d_stdout("dpf_edit_controller::get_parameter_count        => %s | %p", __PRETTY_FUNCTION__ + 53, self);
-            return gPluginInfo->getParameterCount();
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_INVALID_ARG);
+
+            PluginVst3* const vst3 = controller->vst3.get();
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+            return vst3->getParameterCount();
         };
 
         controller.get_parameter_info = []V3_API(void* self, int32_t param_idx, v3_param_info* param_info) -> v3_result
         {
             d_stdout("dpf_edit_controller::get_parameter_info         => %s | %p %i", __PRETTY_FUNCTION__ + 53, self, param_idx);
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_INVALID_ARG);
+            DISTRHO_SAFE_ASSERT_RETURN(param_idx >= 0, V3_INVALID_ARG);
 
-            // set up flags
-            int32_t flags = 0;
+            PluginVst3* const vst3 = controller->vst3.get();
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            const auto desig = gPluginInfo->getParameterDesignation(param_idx);
-            const auto hints = gPluginInfo->getParameterHints(param_idx);
+            const uint32_t uidx = static_cast<uint32_t>(param_idx);
+            DISTRHO_SAFE_ASSERT_RETURN(uidx < vst3->getParameterCount(), V3_INVALID_ARG);
 
-            const ParameterRanges& ranges(gPluginInfo->getParameterRanges(param_idx));
-
-            switch (desig)
-            {
-            case kParameterDesignationNull:
-                break;
-            case kParameterDesignationBypass:
-                flags |= V3_PARAM_IS_BYPASS;
-                break;
-            }
-
-            if (hints & kParameterIsAutomable)
-                flags |= V3_PARAM_CAN_AUTOMATE;
-            if (hints & kParameterIsOutput)
-                flags |= V3_PARAM_READ_ONLY;
-            // TODO V3_PARAM_IS_LIST
-
-            // set up step_count
-            int32_t step_count = 0;
-
-            if (hints & kParameterIsBoolean)
-                step_count = 1;
-            if ((hints & kParameterIsInteger) && ranges.max - ranges.min > 1)
-                step_count = ranges.max - ranges.min - 1;
-
-            std::memset(param_info, 0, sizeof(v3_param_info));
-            param_info->param_id = param_idx;
-            param_info->flags = flags;
-            param_info->step_count = step_count;
-            param_info->default_normalised_value = ranges.getNormalizedValue(ranges.def);
-            // int32_t unit_id;
-            strncpy_16from8(param_info->title,       gPluginInfo->getParameterName(param_idx), 128);
-            strncpy_16from8(param_info->short_title, gPluginInfo->getParameterShortName(param_idx), 128);
-            strncpy_16from8(param_info->units,       gPluginInfo->getParameterUnit(param_idx), 128);
-
-            /*
-            v3_str_128 title;
-            v3_str_128 short_title;
-            v3_str_128 units;
-            */
-
+            vst3->getParameterInfo(uidx, param_info);
             return V3_OK;
         };
 
-        controller.get_param_string_for_value = []V3_API(void* self, v3_param_id index, double normalised, v3_str_128 output) -> v3_result
+        controller.get_parameter_string_for_value = []V3_API(void* self, v3_param_id index, double normalised, v3_str_128 output) -> v3_result
         {
-            d_stdout("dpf_edit_controller::get_param_string_for_value => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
+            d_stdout("dpf_edit_controller::get_parameter_string_for_value => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
 
             const ParameterRanges& ranges(gPluginInfo->getParameterRanges(index));
             const float realvalue = ranges.getUnnormalizedValue(normalised);
@@ -492,40 +543,55 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return V3_OK;
         };
 
-        controller.get_param_value_for_string = []V3_API(void* self, v3_param_id, int16_t* input, double* output) -> v3_result
+        controller.get_parameter_value_for_string = []V3_API(void* self, v3_param_id, int16_t* input, double* output) -> v3_result
         {
-            d_stdout("dpf_edit_controller::get_param_value_for_string => %s | %p %p %p", __PRETTY_FUNCTION__ + 53, self, input, output);
+            d_stdout("dpf_edit_controller::get_parameter_value_for_string => %s | %p %p %p", __PRETTY_FUNCTION__ + 53, self, input, output);
             return V3_NOT_IMPLEMENTED;
         };
 
-        controller.normalised_param_to_plain = []V3_API(void* self, v3_param_id, double normalised) -> double
+        controller.normalised_parameter_to_plain = []V3_API(void* self, v3_param_id, double normalised) -> double
         {
-            d_stdout("dpf_edit_controller::normalised_param_to_plain  => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
+            d_stdout("dpf_edit_controller::normalised_parameter_to_plain  => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
             return normalised;
         };
 
-        controller.plain_param_to_normalised = []V3_API(void* self, v3_param_id, double normalised) -> double
+        controller.plain_parameter_to_normalised = []V3_API(void* self, v3_param_id, double normalised) -> double
         {
-            d_stdout("dpf_edit_controller::plain_param_to_normalised  => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
+            d_stdout("dpf_edit_controller::plain_parameter_to_normalised  => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
             return normalised;
         };
 
-        controller.get_param_normalised = []V3_API(void* self, v3_param_id) -> double
+        controller.get_parameter_normalised = []V3_API(void* self, v3_param_id param_idx) -> double
         {
-            d_stdout("dpf_edit_controller::get_param_normalised       => %s | %p", __PRETTY_FUNCTION__ + 53, self);
-            return 0.0;
+            d_stdout("dpf_edit_controller::get_parameter_normalised       => %s | %p", __PRETTY_FUNCTION__ + 53, self);
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0.0);
+
+            PluginVst3* const vst3 = controller->vst3.get();
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, 0.0);
+            DISTRHO_SAFE_ASSERT_RETURN(param_idx < vst3->getParameterCount(), 0.0);
+
+            return vst3->getNormalizedParameterValue(param_idx);
         };
 
-        controller.set_param_normalised = []V3_API(void* self, v3_param_id, double normalised) -> v3_result
+        controller.set_parameter_normalised = []V3_API(void* self, v3_param_id param_idx, double normalised) -> v3_result
         {
-            d_stdout("dpf_edit_controller::set_param_normalised       => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
+            d_stdout("dpf_edit_controller::set_parameter_normalised       => %s | %p %f", __PRETTY_FUNCTION__ + 53, self, normalised);
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_INVALID_ARG);
+
+            PluginVst3* const vst3 = controller->vst3.get();
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(param_idx < vst3->getParameterCount(), V3_INVALID_ARG);
+
+            vst3->setNormalizedParameterValue(param_idx, normalised);
             return V3_OK;
         };
 
         controller.set_component_handler = []V3_API(void* self, v3_component_handler**) -> v3_result
         {
             d_stdout("dpf_edit_controller::set_component_handler      => %s | %p", __PRETTY_FUNCTION__ + 53, self);
-            return V3_OK;
+            return V3_NOT_IMPLEMENTED;
         };
 
         controller.create_view = []V3_API(void* self, const char* name) -> v3_plug_view**
@@ -615,9 +681,13 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
             return 0;
         };
 
-        processor.setup_processing = []V3_API(void* self, v3_process_setup*) -> v3_result
+        processor.setup_processing = []V3_API(void* self, v3_process_setup* setup) -> v3_result
         {
             d_stdout("dpf_audio_processor::setup_processing        => %s | %p", __PRETTY_FUNCTION__ + 53, self);
+
+            d_lastBufferSize = setup->max_block_size;
+            d_lastSampleRate = setup->sample_rate;
+
             return V3_OK;
         };
 
@@ -650,10 +720,13 @@ struct v3_component_cpp : v3_funknown {
 };
 
 struct dpf_component : v3_component_cpp {
-    dpf_audio_processor* processor = nullptr;
-    dpf_edit_controller* controller = nullptr;
+    std::atomic<int> refcounter;
+    ScopedPointer<dpf_audio_processor> processor;
+    ScopedPointer<dpf_edit_controller> controller;
+    ScopedPointer<PluginVst3> vst3;
 
     dpf_component()
+        : refcounter(1)
     {
         static const uint8_t* kSupportedBaseFactories[] = {
             v3_funknown_iid,
@@ -684,7 +757,7 @@ struct dpf_component : v3_component_cpp {
                 dpf_component* const component = *(dpf_component**)self;
                 if (component->processor == nullptr)
                     component->processor = new dpf_audio_processor();
-                *iface = (v3_funknown*)&component->processor;
+                *iface = &component->processor;
                 return V3_OK;
             }
 
@@ -692,8 +765,8 @@ struct dpf_component : v3_component_cpp {
             {
                 dpf_component* const component = *(dpf_component**)self;
                 if (component->controller == nullptr)
-                    component->controller = new dpf_edit_controller();
-                *iface = (v3_funknown*)&component->controller;
+                    component->controller = new dpf_edit_controller(component->vst3);
+                *iface = &component->controller;
                 return V3_OK;
             }
 
@@ -704,27 +777,44 @@ struct dpf_component : v3_component_cpp {
         ref = []V3_API(void* self) -> uint32_t
         {
             d_stdout("dpf_component::ref                     => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return 1;
+            dpf_component* const component = *(dpf_component**)self;
+            return ++component->refcounter;
         };
 
         unref = []V3_API(void* self) -> uint32_t
         {
             d_stdout("dpf_component::unref                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            dpf_component* const component = *(dpf_component**)self;
+            if (const int refcounter = --component->refcounter)
+                return refcounter;
+            // delete component;
+            *(dpf_component**)self = nullptr;
             return 0;
         };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_base
 
-        base.initialise = []V3_API(void* self, struct v3_plugin_base::v3_funknown *context) -> v3_result
+        base.initialise = []V3_API(void* self, struct v3_plugin_base::v3_funknown* context) -> v3_result
         {
             d_stdout("dpf_component::initialise              => %s | %p %p", __PRETTY_FUNCTION__ + 41, self, context);
+            dpf_component* const component = *(dpf_component**)self;
+
+            // default early values
+            if (d_lastBufferSize == 0)
+                d_lastBufferSize = 2048;
+            if (d_lastSampleRate <= 0.0)
+                d_lastSampleRate = 44100.0;
+
+            component->vst3 = new PluginVst3();
             return V3_OK;
         };
 
         base.terminate = []V3_API(void* self) -> v3_result
         {
             d_stdout("dpf_component::terminate               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            dpf_component* const component = *(dpf_component**)self;
+            component->vst3 = nullptr;
             return V3_OK;
         };
 
@@ -799,7 +889,7 @@ struct v3_plugin_factory_cpp : v3_funknown {
 };
 
 struct dpf_factory : v3_plugin_factory_cpp {
-    std::list<dpf_component*> components;
+    std::vector<dpf_component*> components;
 
     dpf_factory()
     {
