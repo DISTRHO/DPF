@@ -29,7 +29,7 @@ bool     d_lastCanRequestParameterValueChanges = false;
  * Static fallback data, see DistrhoPluginInternal.hpp */
 
 const String                     PluginExporter::sFallbackString;
-const AudioPort                  PluginExporter::sFallbackAudioPort;
+/* */ AudioPortWithBusId         PluginExporter::sFallbackAudioPort;
 const ParameterRanges            PluginExporter::sFallbackRanges;
 const ParameterEnumerationValues PluginExporter::sFallbackEnumValues;
 const PortGroupWithId            PluginExporter::sFallbackPortGroup;
@@ -41,7 +41,7 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
     : pData(new PrivateData())
 {
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    pData->audioPorts = new AudioPort[DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS];
+    pData->audioPorts = new AudioPortWithBusId[DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS];
 #endif
 
 #ifdef DPF_ABORT_ON_ERROR

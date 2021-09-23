@@ -40,7 +40,9 @@ START_NAMESPACE_DISTRHO
 static const uint32_t kAudioPortIsCV = 0x1;
 
 /**
-   Audio port should be used as sidechan (LV2 only).
+   Audio port should be used as sidechan (LV2 and VST3 only).
+   This hint should not be used with CV style ports.
+   @note non-sidechain audio ports must exist in the plugin if this flag is set.
  */
 static const uint32_t kAudioPortIsSidechain = 0x2;
 

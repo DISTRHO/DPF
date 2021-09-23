@@ -25,6 +25,21 @@
 #include <atomic>
 #include <vector>
 
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI
+# include "DistrhoUIInternal.hpp"
+# include "../extra/RingBuffer.hpp"
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -161,16 +176,449 @@ void strncpy_16from8(int16_t* const dst, const char* const src, const size_t siz
 
 // --------------------------------------------------------------------------------------------------------------------
 
+struct ParameterAndNotesHelper
+{
+    float* parameterValues;
+#if DISTRHO_PLUGIN_HAS_UI
+    bool* parameterChecks;
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    SmallStackBuffer notesRingBuffer;
+# endif
+#endif
+
+    ParameterAndNotesHelper()
+        : parameterValues(nullptr)
+#if DISTRHO_PLUGIN_HAS_UI
+        , parameterChecks(nullptr)
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , notesRingBuffer(StackBuffer_INIT)
+# endif
+#endif
+    {
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
+        std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
+#endif
+    }
+
+    virtual ~ParameterAndNotesHelper()
+    {
+        if (parameterValues != nullptr)
+        {
+            delete[] parameterValues;
+            parameterValues = nullptr;
+        }
+#if DISTRHO_PLUGIN_HAS_UI
+        if (parameterChecks != nullptr)
+        {
+            delete[] parameterChecks;
+            parameterChecks = nullptr;
+        }
+#endif
+    }
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
+#endif
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#if DISTRHO_PLUGIN_HAS_UI
+
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static const setStateFunc setStateCallback = nullptr;
+#endif
+
+class UIVst3
+{
+public:
+    UIVst3(ParameterAndNotesHelper* const uiHelper,
+           PluginExporter* const plugin,
+           const intptr_t winId, const float scaleFactor)
+        : fUiHelper(uiHelper),
+          fPlugin(plugin),
+          fUI(this, winId, plugin->getSampleRate(),
+              editParameterCallback,
+              setParameterCallback,
+              setStateCallback,
+              sendNoteCallback,
+              setSizeCallback,
+              nullptr, // TODO file request
+              nullptr,
+              plugin->getInstancePointer(),
+              scaleFactor)
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , fNotesRingBuffer()
+# endif
+    {
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
+# endif
+    }
+
+    // -------------------------------------------------------------------
+
+    void idle()
+    {
+        for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
+        {
+            if (fUiHelper->parameterChecks[i])
+            {
+                fUiHelper->parameterChecks[i] = false;
+                fUI.parameterChanged(i, fUiHelper->parameterValues[i]);
+            }
+        }
+
+        fUI.plugin_idle();
+    }
+
+    int16_t getWidth() const
+    {
+        return fUI.getWidth();
+    }
+
+    int16_t getHeight() const
+    {
+        return fUI.getHeight();
+    }
+
+    double getScaleFactor() const
+    {
+        return fUI.getScaleFactor();
+    }
+
+    // -------------------------------------------------------------------
+
+protected:
+    void editParameter(const uint32_t /*index*/, const bool /*started*/) const
+    {
+        // hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
+    }
+
+    void setParameterValue(const uint32_t index, const float realValue)
+    {
+        // const ParameterRanges& ranges(fPlugin->getParameterRanges(index));
+        // const float perValue(ranges.getNormalizedValue(realValue));
+
+        fPlugin->setParameterValue(index, realValue);
+        // hostCallback(audioMasterAutomate, index, 0, nullptr, perValue);
+    }
+
+    void setSize(uint /*width*/, uint /*height*/)
+    {
+// # ifdef DISTRHO_OS_MAC
+//         const double scaleFactor = fUI.getScaleFactor();
+//         width /= scaleFactor;
+//         height /= scaleFactor;
+// # endif
+        // hostCallback(audioMasterSizeWindow, width, height);
+    }
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fNotesRingBuffer.writeCustomData(midiData, 3);
+        fNotesRingBuffer.commitWrite();
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        fUiHelper->setStateFromUI(key, value);
+    }
+# endif
+
+private:
+    // Vst3 stuff
+    ParameterAndNotesHelper* const fUiHelper;
+    PluginExporter* const fPlugin;
+
+    // Plugin UI
+    UIExporter fUI;
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
+# endif
+
+    // -------------------------------------------------------------------
+    // Callbacks
+
+    #define handlePtr ((UIVst3*)ptr)
+
+    static void editParameterCallback(void* ptr, uint32_t index, bool started)
+    {
+        handlePtr->editParameter(index, started);
+    }
+
+    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
+    {
+        handlePtr->setParameterValue(rindex, value);
+    }
+
+    static void setSizeCallback(void* ptr, uint width, uint height)
+    {
+        handlePtr->setSize(width, height);
+    }
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+        handlePtr->sendNote(channel, note, velocity);
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        handlePtr->setState(key, value);
+    }
+# endif
+
+    #undef handlePtr
+};
+
+#endif //  DISTRHO_PLUGIN_HAS_UI
+
+// --------------------------------------------------------------------------------------------------------------------
+
 class PluginVst3
 {
+    /* buses: we provide 1 for the main audio (if there is any) plus 1 for each sidechain or cv port.
+     * Main audio comes first, if available.
+     * Then sidechain, also if available.
+     * And finally each CV port individually.
+     *
+     * MIDI will have a single bus, nothing special there.
+     */
+    struct BusInfo {
+        uint8_t audio = 0;     // either 0 or 1
+        uint8_t sidechain = 0; // either 0 or 1
+        uint32_t numMainAudio = 0;
+        uint32_t numSidechain = 0;
+        uint32_t numCV = 0;
+    } inputBuses, outputBuses;
+
 public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback)
     {
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+        {
+            const uint32_t hints = fPlugin.getAudioPortHints(true, i);
+
+            if (hints & kAudioPortIsCV)
+                ++inputBuses.numCV;
+            else
+                ++inputBuses.numMainAudio;
+
+            if (hints & kAudioPortIsSidechain)
+                ++inputBuses.numSidechain;
+        }
+
+        if (inputBuses.numMainAudio != 0)
+            inputBuses.audio = 1;
+        if (inputBuses.numSidechain != 0)
+            inputBuses.sidechain = 1;
+
+        uint32_t cvInputBusId = 0;
+        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+        {
+            AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
+
+            if (port.hints & kAudioPortIsCV)
+                port.busId = inputBuses.audio + inputBuses.sidechain + cvInputBusId++;
+            else if (port.hints & kAudioPortIsSidechain)
+                port.busId = 1;
+            else
+                port.busId = 0;
+        }
+#endif
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+        {
+            const uint32_t hints = fPlugin.getAudioPortHints(false, i);
+
+            if (hints & kAudioPortIsCV)
+                ++outputBuses.numCV;
+            else
+                ++outputBuses.numMainAudio;
+
+            if (hints & kAudioPortIsSidechain)
+                ++outputBuses.numSidechain;
+        }
+
+        if (outputBuses.numMainAudio != 0)
+            outputBuses.audio = 1;
+        if (outputBuses.numSidechain != 0)
+            outputBuses.sidechain = 1;
+
+        uint32_t cvOutputBusId = 0;
+        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+        {
+            AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
+
+            if (port.hints & kAudioPortIsCV)
+                port.busId = outputBuses.audio + outputBuses.sidechain + cvOutputBusId++;
+            else if (port.hints & kAudioPortIsSidechain)
+                port.busId = 1;
+            else
+                port.busId = 0;
+        }
+#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // stuff for vst3 interfaces
+    // v3_component interface calls
+
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    int32_t getAudioBusCount(const bool isInput) const noexcept
+    {
+        if (isInput)
+            return inputBuses.audio + inputBuses.sidechain + inputBuses.numCV;
+        else
+            return outputBuses.audio + outputBuses.sidechain + outputBuses.numCV;
+    };
+
+    v3_result getBusAudioBusInfo(const bool isInput, const uint32_t index, v3_bus_info* info) const
+    {
+        int32_t channel_count;
+        v3_bus_types bus_type;
+        v3_bus_flags flags;
+        v3_str_128 bus_name;
+
+        if (isInput)
+        {
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+            switch (index)
+            {
+            case 0:
+                if (inputBuses.audio)
+                {
+                    channel_count = inputBuses.numMainAudio;
+                    bus_type = V3_MAIN;
+                    flags = V3_DEFAULT_ACTIVE;
+                    break;
+                }
+            // fall-through
+            case 1:
+                if (inputBuses.sidechain)
+                {
+                    channel_count = inputBuses.numSidechain;
+                    bus_type = V3_AUX;
+                    flags = v3_bus_flags(0);
+                    break;
+                }
+            // fall-through
+            default:
+                channel_count = 1;
+                bus_type = V3_AUX;
+                flags = V3_IS_CONTROL_VOLTAGE;
+                break;
+            }
+
+            if (bus_type == V3_MAIN)
+            {
+                strncpy_16from8(info->bus_name, "Audio Input", 128);
+            }
+            else
+            {
+                for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+                {
+                    const AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
+
+                    // TODO find port group name
+                    if (port.busId == index)
+                    {
+                        strncpy_16from8(info->bus_name, port.name, 128);
+                        break;
+                    }
+                }
+            }
+#else
+            return V3_INVALID_ARG;
+#endif
+        }
+        else
+        {
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            switch (index)
+            {
+            case 0:
+                if (outputBuses.audio)
+                {
+                    channel_count = outputBuses.numMainAudio;
+                    bus_type = V3_MAIN;
+                    flags = V3_DEFAULT_ACTIVE;
+                    break;
+                }
+            // fall-through
+            case 1:
+                if (outputBuses.sidechain)
+                {
+                    channel_count = outputBuses.numSidechain;
+                    bus_type = V3_AUX;
+                    flags = v3_bus_flags(0);
+                    break;
+                }
+            // fall-through
+            default:
+                channel_count = 1;
+                bus_type = V3_AUX;
+                flags = V3_IS_CONTROL_VOLTAGE;
+                break;
+            }
+
+            if (bus_type == V3_MAIN)
+            {
+                strncpy_16from8(info->bus_name, "Audio Output", 128);
+            }
+            else
+            {
+                for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                {
+                    const AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
+
+                    // TODO find port group name
+                    if (port.busId == index)
+                    {
+                        strncpy_16from8(info->bus_name, port.name, 128);
+                        break;
+                    }
+                }
+            }
+#else
+            return V3_INVALID_ARG;
+#endif
+        }
+
+        info->media_type = V3_AUDIO;
+        info->direction = isInput ? V3_INPUT : V3_OUTPUT;
+        info->channel_count = channel_count;
+        std::memcpy(info->bus_name, bus_name, sizeof(bus_name));
+        info->bus_type = bus_type;
+        info->flags = flags;
+        return V3_OK;
+    }
+#endif
+
+    void setActive(const bool active)
+    {
+        if (active)
+            fPlugin.activate();
+        else
+            fPlugin.deactivate();
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_edit_controller interface calls
 
     uint32_t getParameterCount() const noexcept
     {
@@ -291,11 +739,14 @@ static ScopedPointer<PluginExporter> gPluginInfo;
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view
 
+#if DISTRHO_PLUGIN_HAS_UI
 struct v3_plugin_view_cpp : v3_funknown {
     v3_plugin_view view;
 };
 
 struct dpf_plugin_view : v3_plugin_view_cpp {
+    ScopedPointer<UIVst3> vst3;
+
     dpf_plugin_view()
     {
         static const uint8_t* kSupportedFactories[] = {
@@ -413,6 +864,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         };
     }
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
@@ -830,51 +1282,121 @@ struct dpf_component : v3_component_cpp {
         comp.set_io_mode = []V3_API(void* self, int32_t io_mode) -> v3_result
         {
             d_stdout("dpf_component::set_io_mode             => %s | %p %i", __PRETTY_FUNCTION__ + 41, self, io_mode);
-            return V3_INTERNAL_ERR;
+            return V3_OK;
         };
 
         comp.get_bus_count = []V3_API(void* self, int32_t media_type, int32_t bus_direction) -> int32_t
         {
+            // NOTE runs during RT
             d_stdout("dpf_component::get_bus_count           => %s | %p %i %i", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction);
+
+            switch (media_type)
+            {
+            case V3_AUDIO:
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+                if (bus_direction == V3_INPUT || bus_direction == V3_OUTPUT)
+                {
+                    dpf_component* const component = *(dpf_component**)self;
+                    return component->vst3->getAudioBusCount(bus_direction == V3_INPUT);
+                }
+#endif
+                break;
+
+            case V3_EVENT:
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                if (bus_direction == V3_INPUT)
+                    return 1;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+                if (bus_direction == V3_OUTPUT)
+                    return 1;
+#endif
+                break;
+            }
+
             return 0;
         };
 
         comp.get_bus_info = []V3_API(void* self, int32_t media_type, int32_t bus_direction,
-                                     int32_t bus_idx, v3_bus_info* bus_info) -> v3_result
+                                     int32_t bus_idx, v3_bus_info* info) -> v3_result
         {
-            d_stdout("dpf_component::get_bus_info            => %s | %p %i %i %i %p", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, bus_info);
-            return V3_INTERNAL_ERR;
+            d_stdout("dpf_component::get_bus_info            => %s | %p %i %i %i %p", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, info);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(media_type == V3_AUDIO || media_type == V3_EVENT, media_type, V3_INVALID_ARG);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(bus_direction == V3_INPUT || bus_direction == V3_OUTPUT, bus_direction, V3_INVALID_ARG);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(bus_idx >= 0, bus_idx, V3_INVALID_ARG);
+
+            if (media_type == V3_AUDIO)
+            {
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+                dpf_component* const component = *(dpf_component**)self;
+                return component->vst3->getBusAudioBusInfo(bus_direction == V3_INPUT,
+                                                           static_cast<uint32_t>(bus_idx),
+                                                           info);
+#else
+                return V3_INVALID_ARG;
+#endif
+            }
+            else
+            {
+                if (bus_direction == V3_INPUT)
+                {
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                    DISTRHO_SAFE_ASSERT_RETURN(index == 0, V3_INVALID_ARG);
+#else
+                    return V3_INVALID_ARG;
+#endif
+                }
+                else
+                {
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+                    DISTRHO_SAFE_ASSERT_RETURN(index == 0, V3_INVALID_ARG);
+#else
+                    return V3_INVALID_ARG;
+#endif
+                }
+                info->media_type = V3_EVENT;
+                info->direction = bus_direction;
+                info->channel_count = 1;
+                strncpy_16from8(info->bus_name, bus_direction == V3_INPUT ? "Event/MIDI Input"
+                                                                          : "Event/MIDI Output", 128);
+                info->bus_type = V3_MAIN;
+                info->flags = V3_DEFAULT_ACTIVE;
+                return V3_OK;
+            }
         };
 
         comp.get_routing_info = []V3_API(void* self, v3_routing_info* input, v3_routing_info* output) -> v3_result
         {
             d_stdout("dpf_component::get_routing_info        => %s | %p %p %p", __PRETTY_FUNCTION__ + 41, self, input, output);
-            return V3_INTERNAL_ERR;
+            return V3_NOT_IMPLEMENTED;
         };
 
         comp.activate_bus = []V3_API(void* self, int32_t media_type, int32_t bus_direction,
                                      int32_t bus_idx, v3_bool state) -> v3_result
         {
             d_stdout("dpf_component::activate_bus            => %s | %p %i %i %i %u", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, state);
-            return V3_INTERNAL_ERR;
+            return V3_OK;
         };
 
         comp.set_active = []V3_API(void* self, v3_bool state) -> v3_result
         {
             d_stdout("dpf_component::set_active              => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
-            return V3_INTERNAL_ERR;
+            dpf_component* const component = *(dpf_component**)self;
+
+            component->vst3->setActive(state);
+            return V3_OK;
         };
 
         comp.set_state = []V3_API(void* self, v3_bstream**) -> v3_result
         {
             d_stdout("dpf_component::set_state               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return V3_INTERNAL_ERR;
+            return V3_NOT_IMPLEMENTED;
         };
 
         comp.get_state = []V3_API(void* self, v3_bstream**) -> v3_result
         {
             d_stdout("dpf_component::get_state               => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return V3_INTERNAL_ERR;
+            return V3_NOT_IMPLEMENTED;
         };
     }
 };

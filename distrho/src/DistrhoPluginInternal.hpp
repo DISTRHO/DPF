@@ -44,6 +44,14 @@ typedef bool (*requestParameterValueChangeFunc) (void* ptr, uint32_t index, floa
 // -----------------------------------------------------------------------
 // Helpers
 
+struct AudioPortWithBusId : AudioPort {
+    uint32_t busId;
+
+    AudioPortWithBusId()
+        : AudioPort(),
+          busId(0) {}
+};
+
 struct PortGroupWithId : PortGroup {
     uint32_t groupId;
 
@@ -78,7 +86,7 @@ struct Plugin::PrivateData {
     bool isProcessing;
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    AudioPort* audioPorts;
+    AudioPortWithBusId* audioPorts;
 #endif
 
     uint32_t   parameterCount;
@@ -463,7 +471,7 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    const AudioPort& getAudioPort(const bool input, const uint32_t index) const noexcept
+    AudioPortWithBusId& getAudioPort(const bool input, const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackAudioPort);
 
@@ -481,6 +489,11 @@ public:
         }
 
         return fData->audioPorts[index + (input ? 0 : DISTRHO_PLUGIN_NUM_INPUTS)];
+    }
+
+    uint32_t getAudioPortHints(const bool input, const uint32_t index) const noexcept
+    {
+        return getAudioPort(input, index).hints;
     }
 #endif
 
@@ -882,7 +895,7 @@ private:
     // Static fallback data, see DistrhoPlugin.cpp
 
     static const String                     sFallbackString;
-    static const AudioPort                  sFallbackAudioPort;
+    static /* */ AudioPortWithBusId         sFallbackAudioPort;
     static const ParameterRanges            sFallbackRanges;
     static const ParameterEnumerationValues sFallbackEnumValues;
     static const PortGroupWithId            sFallbackPortGroup;
