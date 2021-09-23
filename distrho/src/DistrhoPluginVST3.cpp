@@ -25,6 +25,9 @@
 #include <atomic>
 #include <vector>
 
+// TESTING awful idea dont reuse
+#include "../extra/Thread.hpp"
+
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
@@ -34,6 +37,9 @@
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
+
+#undef DISTRHO_PLUGIN_HAS_UI
+#define DISTRHO_PLUGIN_HAS_UI 1
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
@@ -223,171 +229,6 @@ struct ParameterAndNotesHelper
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_HAS_UI
-
-#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
-#endif
-#if ! DISTRHO_PLUGIN_WANT_STATE
-static const setStateFunc setStateCallback = nullptr;
-#endif
-
-class UIVst3
-{
-public:
-    UIVst3(ParameterAndNotesHelper* const uiHelper,
-           PluginExporter* const plugin,
-           const intptr_t winId, const float scaleFactor)
-        : fUiHelper(uiHelper),
-          fPlugin(plugin),
-          fUI(this, winId, plugin->getSampleRate(),
-              editParameterCallback,
-              setParameterCallback,
-              setStateCallback,
-              sendNoteCallback,
-              setSizeCallback,
-              nullptr, // TODO file request
-              nullptr,
-              plugin->getInstancePointer(),
-              scaleFactor)
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        , fNotesRingBuffer()
-# endif
-    {
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
-# endif
-    }
-
-    // -------------------------------------------------------------------
-
-    void idle()
-    {
-        for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
-        {
-            if (fUiHelper->parameterChecks[i])
-            {
-                fUiHelper->parameterChecks[i] = false;
-                fUI.parameterChanged(i, fUiHelper->parameterValues[i]);
-            }
-        }
-
-        fUI.plugin_idle();
-    }
-
-    int16_t getWidth() const
-    {
-        return fUI.getWidth();
-    }
-
-    int16_t getHeight() const
-    {
-        return fUI.getHeight();
-    }
-
-    double getScaleFactor() const
-    {
-        return fUI.getScaleFactor();
-    }
-
-    // -------------------------------------------------------------------
-
-protected:
-    void editParameter(const uint32_t /*index*/, const bool /*started*/) const
-    {
-        // hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
-    }
-
-    void setParameterValue(const uint32_t index, const float realValue)
-    {
-        // const ParameterRanges& ranges(fPlugin->getParameterRanges(index));
-        // const float perValue(ranges.getNormalizedValue(realValue));
-
-        fPlugin->setParameterValue(index, realValue);
-        // hostCallback(audioMasterAutomate, index, 0, nullptr, perValue);
-    }
-
-    void setSize(uint /*width*/, uint /*height*/)
-    {
-// # ifdef DISTRHO_OS_MAC
-//         const double scaleFactor = fUI.getScaleFactor();
-//         width /= scaleFactor;
-//         height /= scaleFactor;
-// # endif
-        // hostCallback(audioMasterSizeWindow, width, height);
-    }
-
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        uint8_t midiData[3];
-        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
-        midiData[1] = note;
-        midiData[2] = velocity;
-        fNotesRingBuffer.writeCustomData(midiData, 3);
-        fNotesRingBuffer.commitWrite();
-    }
-# endif
-
-# if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char* const key, const char* const value)
-    {
-        fUiHelper->setStateFromUI(key, value);
-    }
-# endif
-
-private:
-    // Vst3 stuff
-    ParameterAndNotesHelper* const fUiHelper;
-    PluginExporter* const fPlugin;
-
-    // Plugin UI
-    UIExporter fUI;
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
-# endif
-
-    // -------------------------------------------------------------------
-    // Callbacks
-
-    #define handlePtr ((UIVst3*)ptr)
-
-    static void editParameterCallback(void* ptr, uint32_t index, bool started)
-    {
-        handlePtr->editParameter(index, started);
-    }
-
-    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
-    {
-        handlePtr->setParameterValue(rindex, value);
-    }
-
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        handlePtr->setSize(width, height);
-    }
-
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
-    {
-        handlePtr->sendNote(channel, note, velocity);
-    }
-# endif
-
-# if DISTRHO_PLUGIN_WANT_STATE
-    static void setStateCallback(void* ptr, const char* key, const char* value)
-    {
-        handlePtr->setState(key, value);
-    }
-# endif
-
-    #undef handlePtr
-};
-
-#endif //  DISTRHO_PLUGIN_HAS_UI
-
-// --------------------------------------------------------------------------------------------------------------------
-
 class PluginVst3
 {
     /* buses: we provide 1 for the main audio (if there is any) plus 1 for each sidechain or cv port.
@@ -473,6 +314,16 @@ public:
                 port.busId = 0;
         }
 #endif
+    }
+
+    void* getInstancePointer() const noexcept
+    {
+        return fPlugin.getInstancePointer();
+    }
+
+    double getSampleRate() const noexcept
+    {
+        return fPlugin.getSampleRate();
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -726,9 +577,14 @@ public:
     void setProcessing(const bool processing)
     {
         if (processing)
-            fPlugin.activate();
+        {
+            if (! fPlugin.isActive())
+                fPlugin.activate();
+        }
         else
+        {
             fPlugin.deactivate();
+        }
     }
 
     void process(v3_process_data* const data)
@@ -776,6 +632,202 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+
+#if DISTRHO_PLUGIN_HAS_UI
+
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static const sendNoteFunc sendNoteCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static const setStateFunc setStateCallback = nullptr;
+#endif
+
+class UIVst3 : public Thread
+{
+public:
+    UIVst3(ScopedPointer<PluginVst3>& v, v3_plugin_frame* const f, const intptr_t winId, const float scaleFactor)
+        : vst3(v),
+          frame(f),
+          fUI(this, winId, v->getSampleRate(),
+              editParameterCallback,
+              setParameterCallback,
+              setStateCallback,
+              sendNoteCallback,
+              setSizeCallback,
+              nullptr, // TODO file request
+              nullptr,
+              v->getInstancePointer(),
+              scaleFactor)
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , fNotesRingBuffer()
+# endif
+    {
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
+# endif
+        // TESTING awful idea dont reuse
+        startThread();
+    }
+
+    ~UIVst3() override
+    {
+        stopThread(5000);
+    }
+
+    // -------------------------------------------------------------------
+
+    // TESTING awful idea dont reuse
+    void run() override
+    {
+        while (! shouldThreadExit())
+        {
+            idle();
+            d_msleep(50);
+        }
+    }
+
+    void idle()
+    {
+        /*
+        for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
+        {
+            if (fUiHelper->parameterChecks[i])
+            {
+                fUiHelper->parameterChecks[i] = false;
+                fUI.parameterChanged(i, fUiHelper->parameterValues[i]);
+            }
+        }
+        */
+
+        fUI.plugin_idle();
+    }
+
+    int16_t getWidth() const
+    {
+        return fUI.getWidth();
+    }
+
+    int16_t getHeight() const
+    {
+        return fUI.getHeight();
+    }
+
+    double getScaleFactor() const
+    {
+        return fUI.getScaleFactor();
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_plugin_view interface calls
+
+    void setFrame(v3_plugin_frame* const f) noexcept
+    {
+        frame = f;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+
+protected:
+    void editParameter(const uint32_t /*index*/, const bool /*started*/) const
+    {
+        // hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
+    }
+
+    void setParameterValue(const uint32_t index, const float realValue)
+    {
+        // const ParameterRanges& ranges(fPlugin->getParameterRanges(index));
+        // const float perValue(ranges.getNormalizedValue(realValue));
+
+        // fPlugin->setParameterValue(index, realValue);
+        // hostCallback(audioMasterAutomate, index, 0, nullptr, perValue);
+    }
+
+    void setSize(uint width, uint height)
+    {
+# ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+# endif
+        if (frame == nullptr)
+            return;
+
+        v3_view_rect rect = {};
+        rect.right = width;
+        rect.bottom = height;
+        // frame->resize_view(nullptr, uivst3, &rect);
+    }
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fNotesRingBuffer.writeCustomData(midiData, 3);
+        fNotesRingBuffer.commitWrite();
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        // fUiHelper->setStateFromUI(key, value);
+    }
+# endif
+
+private:
+    // VST3 stuff
+    ScopedPointer<PluginVst3>& vst3;
+    v3_plugin_frame* frame;
+
+    // Plugin UI
+    UIExporter fUI;
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
+# endif
+
+    // -------------------------------------------------------------------
+    // Callbacks
+
+    #define handlePtr ((UIVst3*)ptr)
+
+    static void editParameterCallback(void* ptr, uint32_t index, bool started)
+    {
+        handlePtr->editParameter(index, started);
+    }
+
+    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
+    {
+        handlePtr->setParameterValue(rindex, value);
+    }
+
+    static void setSizeCallback(void* ptr, uint width, uint height)
+    {
+        handlePtr->setSize(width, height);
+    }
+
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    {
+        handlePtr->sendNote(channel, note, velocity);
+    }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* ptr, const char* key, const char* value)
+    {
+        handlePtr->setState(key, value);
+    }
+# endif
+
+    #undef handlePtr
+};
+
+#endif //  DISTRHO_PLUGIN_HAS_UI
+
+// --------------------------------------------------------------------------------------------------------------------
 // Dummy plugin to get data from
 
 static ScopedPointer<PluginExporter> gPluginInfo;
@@ -789,9 +841,12 @@ struct v3_plugin_view_cpp : v3_funknown {
 };
 
 struct dpf_plugin_view : v3_plugin_view_cpp {
-    ScopedPointer<UIVst3>& vst3;
+    ScopedPointer<PluginVst3>& vst3;
+    ScopedPointer<UIVst3> uivst3;
+    double lastScaleFactor = 0.0;
+    v3_plugin_frame* hostframe = nullptr;
 
-    dpf_plugin_view(ScopedPointer<UIVst3>& v)
+    dpf_plugin_view(ScopedPointer<PluginVst3>& v)
         : vst3(v)
     {
         static const uint8_t* kSupportedFactories[] = {
@@ -839,73 +894,157 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         view.is_platform_type_supported = []V3_API(void* self, const char* platform_type) -> v3_result
         {
             d_stdout("dpf_plugin_view::is_platform_type_supported => %s | %p %s", __PRETTY_FUNCTION__ + 41, self, platform_type);
-            return V3_OK;
+            const char* const supported[] = {
+#ifdef _WIN32
+                V3_VIEW_PLATFORM_TYPE_HWND,
+#elif defined(__APPLE__)
+                V3_VIEW_PLATFORM_TYPE_NSVIEW,
+#else
+                V3_VIEW_PLATFORM_TYPE_X11,
+#endif
+            };
+
+            for (size_t i=0; i<sizeof(supported)/sizeof(supported[0]); ++i)
+            {
+                if (std::strcmp(supported[i], platform_type))
+                    return V3_OK;
+            }
+
+            return V3_NOT_IMPLEMENTED;
         };
 
         view.attached = []V3_API(void* self, void* parent, const char* platform_type) -> v3_result
         {
             d_stdout("dpf_plugin_view::attached                   => %s | %p %p %s", __PRETTY_FUNCTION__ + 41, self, parent, platform_type);
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 == nullptr, V3_INVALID_ARG);
+            view->uivst3 = new UIVst3(view->vst3, view->hostframe, (uintptr_t)parent, view->lastScaleFactor);
+
+            // TODO send parameter values
+            view->uivst3->idle();
             return V3_OK;
         };
 
         view.removed = []V3_API(void* self) -> v3_result
         {
             d_stdout("dpf_plugin_view::removed                    => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
+            view->uivst3 = nullptr;
             return V3_OK;
         };
 
         view.on_wheel = []V3_API(void* self, float distance) -> v3_result
         {
             d_stdout("dpf_plugin_view::on_wheel                   => %s | %p %f", __PRETTY_FUNCTION__ + 41, self, distance);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
+            return V3_NOT_IMPLEMENTED;
         };
 
         view.on_key_down = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
         {
             d_stdout("dpf_plugin_view::on_key_down                => %s | %p %i %i %i", __PRETTY_FUNCTION__ + 41, self, key_char, key_code, modifiers);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
+            return V3_NOT_IMPLEMENTED;
         };
 
         view.on_key_up = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
         {
             d_stdout("dpf_plugin_view::on_key_up                  => %s | %p %i %i %i", __PRETTY_FUNCTION__ + 41, self, key_char, key_code, modifiers);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
+            return V3_NOT_IMPLEMENTED;
         };
 
-        view.get_size = []V3_API(void* self, v3_view_rect*) -> v3_result
+        view.get_size = []V3_API(void* self, v3_view_rect* rect) -> v3_result
         {
             d_stdout("dpf_plugin_view::get_size                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+
+            std::memset(rect, 0, sizeof(v3_view_rect));
+
+            if (view->uivst3 != nullptr)
+            {
+                rect->right  = view->uivst3->getWidth();
+                rect->bottom = view->uivst3->getHeight();
+# ifdef DISTRHO_OS_MAC
+                const double scaleFactor = view->uivst3->getScaleFactor();
+                rect->right /= scaleFactor;
+                rect->bottom /= scaleFactor;
+# endif
+            }
+            else
+            {
+                UIExporter tmpUI(nullptr, 0, view->vst3->getSampleRate(),
+                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                 view->vst3->getInstancePointer(), view->lastScaleFactor);
+                rect->right  = tmpUI.getWidth();
+                rect->bottom = tmpUI.getHeight();
+# ifdef DISTRHO_OS_MAC
+                const double scaleFactor = tmpUI.getScaleFactor();
+                rect->right /= scaleFactor;
+                rect->bottom /= scaleFactor;
+# endif
+                tmpUI.quit();
+            }
+
+            return V3_NOT_IMPLEMENTED;
         };
 
         view.set_size = []V3_API(void* self, v3_view_rect*) -> v3_result
         {
             d_stdout("dpf_plugin_view::set_size                   => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
+            return V3_NOT_IMPLEMENTED;
         };
 
         view.on_focus = []V3_API(void* self, v3_bool state) -> v3_result
         {
             d_stdout("dpf_plugin_view::on_focus                   => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
-            return V3_OK;
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
+            return V3_NOT_IMPLEMENTED;
         };
 
-        view.set_frame = []V3_API(void* self, v3_plugin_frame*) -> v3_result
+        view.set_frame = []V3_API(void* self, v3_plugin_frame* frame) -> v3_result
         {
             d_stdout("dpf_plugin_view::set_frame                  => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
+
+            view->hostframe = frame;
+
+            if (view->uivst3 != nullptr)
+                view->uivst3->setFrame(frame);
+
             return V3_OK;
         };
 
         view.can_resize = []V3_API(void* self) -> v3_result
         {
             d_stdout("dpf_plugin_view::can_resize                 => %s | %p", __PRETTY_FUNCTION__ + 41, self);
+#if DISTRHO_UI_USER_RESIZABLE
             return V3_OK;
+#else
+            return V3_NOT_IMPLEMENTED;
+#endif
         };
 
         view.check_size_constraint = []V3_API(void* self, v3_view_rect*) -> v3_result
         {
             d_stdout("dpf_plugin_view::check_size_constraint      => %s | %p", __PRETTY_FUNCTION__ + 41, self);
-            return V3_OK;
+            return V3_NOT_IMPLEMENTED;
         };
     }
 };
@@ -920,6 +1059,7 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
+    ScopedPointer<dpf_plugin_view> view;
     ScopedPointer<PluginVst3>& vst3;
 
     dpf_edit_controller(ScopedPointer<PluginVst3>& v)
@@ -1075,7 +1215,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         {
             d_stdout("dpf_edit_controller::set_parameter_normalised       => %s | %p %f", __PRETTY_FUNCTION__ + 97, self, normalised);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_INVALID_ARG);
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
             PluginVst3* const vst3 = controller->vst3.get();
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
@@ -1091,10 +1231,16 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return V3_NOT_IMPLEMENTED;
         };
 
-        controller.create_view = []V3_API(void* self, const char* name) -> v3_plug_view**
+        controller.create_view = []V3_API(void* self, const char* name) -> v3_plugin_view**
         {
             d_stdout("dpf_edit_controller::create_view                => %s | %p %s", __PRETTY_FUNCTION__ + 97, self, name);
-            return nullptr;
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
+
+            if (controller->view == nullptr)
+                controller->view = new dpf_plugin_view(controller->vst3);
+
+            return (v3_plugin_view**)&controller->view;
         };
     }
 };
@@ -1211,9 +1357,11 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 
         processor.process = []V3_API(void* self, v3_process_data* data) -> v3_result
         {
-            d_stdout("dpf_audio_processor::process                 => %s | %p", __PRETTY_FUNCTION__ + 97, self);
+            // NOTE runs during RT
+            // d_stdout("dpf_audio_processor::process                 => %s | %p", __PRETTY_FUNCTION__ + 97, self);
             dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
             DISTRHO_SAFE_ASSERT_RETURN(processor != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(data->symbolic_sample_size == V3_SAMPLE_32, V3_INVALID_ARG);
             processor->vst3->process(data);
             return V3_OK;
         };
@@ -1345,13 +1493,13 @@ struct dpf_component : v3_component_cpp {
         comp.set_io_mode = []V3_API(void* self, int32_t io_mode) -> v3_result
         {
             d_stdout("dpf_component::set_io_mode             => %s | %p %i", __PRETTY_FUNCTION__ + 41, self, io_mode);
-            return V3_OK;
+            return V3_NOT_IMPLEMENTED;
         };
 
         comp.get_bus_count = []V3_API(void* self, int32_t media_type, int32_t bus_direction) -> int32_t
         {
             // NOTE runs during RT
-            d_stdout("dpf_component::get_bus_count           => %s | %p %i %i", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction);
+            // d_stdout("dpf_component::get_bus_count           => %s | %p %i %i", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction);
 
             switch (media_type)
             {
@@ -1438,14 +1586,13 @@ struct dpf_component : v3_component_cpp {
                                      int32_t bus_idx, v3_bool state) -> v3_result
         {
             d_stdout("dpf_component::activate_bus            => %s | %p %i %i %i %u", __PRETTY_FUNCTION__ + 41, self, media_type, bus_direction, bus_idx, state);
-            return V3_OK;
+            return V3_NOT_IMPLEMENTED;
         };
 
         comp.set_active = []V3_API(void* self, v3_bool state) -> v3_result
         {
             d_stdout("dpf_component::set_active              => %s | %p %u", __PRETTY_FUNCTION__ + 41, self, state);
             dpf_component* const component = *(dpf_component**)self;
-
             component->vst3->setActive(state);
             return V3_OK;
         };

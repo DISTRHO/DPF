@@ -103,7 +103,7 @@ struct v3_edit_controller {
 	V3_API v3_result (*set_component_handler)
 		(void *self, struct v3_component_handler **);
 
-	V3_API struct v3_plug_view **(*create_view)
+	V3_API struct v3_plugin_view **(*create_view)
 		(void *self, const char *name);
 };
 
