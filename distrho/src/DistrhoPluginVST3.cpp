@@ -733,7 +733,7 @@ protected:
         // hostCallback(started ? audioMasterBeginEdit : audioMasterEndEdit, index);
     }
 
-    void setParameterValue(const uint32_t index, const float realValue)
+    void setParameterValue(const uint32_t /*index*/, const float /*realValue*/)
     {
         // const ParameterRanges& ranges(fPlugin->getParameterRanges(index));
         // const float perValue(ranges.getNormalizedValue(realValue));
@@ -755,6 +755,7 @@ protected:
         v3_view_rect rect = {};
         rect.right = width;
         rect.bottom = height;
+        (void)rect;
         // frame->resize_view(nullptr, uivst3, &rect);
     }
 
@@ -920,9 +921,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
             DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 == nullptr, V3_INVALID_ARG);
             view->uivst3 = new UIVst3(view->vst3, view->hostframe, (uintptr_t)parent, view->lastScaleFactor);
-
-            // TODO send parameter values
-            view->uivst3->idle();
             return V3_OK;
         };
 
