@@ -94,7 +94,7 @@ struct v3_edit_controller {
 	V3_API double (*normalised_parameter_to_plain)
 		(void *self, v3_param_id, double normalised);
 	V3_API double (*plain_parameter_to_normalised)
-		(void *self, v3_param_id, double normalised);
+		(void *self, v3_param_id, double plain);
 
 	V3_API double (*get_parameter_normalised)(void *self, v3_param_id);
 	V3_API v3_result (*set_parameter_normalised)
