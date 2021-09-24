@@ -220,6 +220,9 @@ public:
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
           fComponentHandlerArg(nullptr)
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        , fHostEventOutputHandle(nullptr)
+#endif
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -458,7 +461,7 @@ public:
             if (busDirection == V3_INPUT)
             {
                #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                DISTRHO_SAFE_ASSERT_RETURN(index == 0, V3_INVALID_ARG);
+                DISTRHO_SAFE_ASSERT_RETURN(busId == 0, V3_INVALID_ARG);
                #else
                 return V3_INVALID_ARG;
                #endif
@@ -466,7 +469,7 @@ public:
             else
             {
                #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-                DISTRHO_SAFE_ASSERT_RETURN(index == 0, V3_INVALID_ARG);
+                DISTRHO_SAFE_ASSERT_RETURN(busId == 0, V3_INVALID_ARG);
                #else
                 return V3_INVALID_ARG;
                #endif
@@ -771,7 +774,6 @@ public:
         }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        // TODO implement v3_process_context_requirements as query_interface of something..
         if (v3_process_context* const ctx = data->ctx)
         {
             fTimePosition.playing   = ctx->state & V3_PROCESS_CTX_PLAYING;
@@ -858,10 +860,93 @@ public:
                 outputs[i] = nullptr; // TODO use dummy buffer
         }
 
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fHostEventOutputHandle = data->output_events;
+#endif
+
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        fPlugin.run(inputs, outputs, data->nframes, nullptr, 0);
+        uint32_t midiEventCount = 0;
+
+        if (v3_event_list** const eventarg = data->input_events)
+        {
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_event_list* const eventptr = (v3_event_list*)((uint8_t*)(*eventarg)+sizeof(v3_funknown));
+
+            v3_event event;
+            for (uint32_t i = 0, count = eventptr->get_event_count(eventarg); i < count; ++i)
+            {
+                if (eventptr->get_event(eventarg, i, &event) != V3_OK)
+                    break;
+
+                // check if event can be encoded as MIDI
+                switch (event.type)
+                {
+                case V3_EVENT_NOTE_ON:
+                case V3_EVENT_NOTE_OFF:
+                // case V3_EVENT_DATA:
+                case V3_EVENT_POLY_PRESSURE:
+                // case V3_EVENT_NOTE_EXP_VALUE:
+                // case V3_EVENT_NOTE_EXP_TEXT:
+                // case V3_EVENT_CHORD:
+                // case V3_EVENT_SCALE:
+                case V3_EVENT_LEGACY_MIDI_CC_OUT:
+                    break;
+                default:
+                    continue;
+                }
+
+                MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
+                midiEvent.frame = event.sample_offset;
+
+                // encode event as MIDI
+                switch (event.type)
+                {
+                case V3_EVENT_NOTE_ON:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0x90 | (event.note_on.channel & 0xf);
+                    midiEvent.data[1] = event.note_on.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.note_on.velocity * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                case V3_EVENT_NOTE_OFF:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0x80 | (event.note_off.channel & 0xf);
+                    midiEvent.data[1] = event.note_off.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.note_off.velocity * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                case V3_EVENT_POLY_PRESSURE:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0xA0 | (event.poly_pressure.channel & 0xf);
+                    midiEvent.data[1] = event.poly_pressure.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.poly_pressure.pressure * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                case V3_EVENT_LEGACY_MIDI_CC_OUT:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0xB0 | (event.midi_cc_out.channel & 0xf);
+                    midiEvent.data[1] = event.midi_cc_out.cc_number;
+                    midiEvent.data[2] = event.midi_cc_out.value;
+                    midiEvent.data[3] = 0;
+                    // midiEvent.data[3] = event.midi_cc_out.value2; // TODO check when size should be 4
+                    break;
+                default:
+                    midiEvent.size = 0;
+                    break;
+                }
+
+                if (midiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
+
+        fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
 #else
         fPlugin.run(inputs, outputs, data->nframes);
+#endif
+
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fHostEventOutputHandle = nullptr;
 #endif
 
         // TODO updateParameterOutputsAndTriggers()
@@ -1032,6 +1117,12 @@ private:
     void*                 fComponentHandlerArg;
 
     // Temporary data
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    MidiEvent fMidiEvents[kMaxMidiEvents];
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    v3_event_list** fHostEventOutputHandle;
+#endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
 #endif
@@ -1061,8 +1152,55 @@ private:
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
-        // TODO
-        return true;
+        DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN("MIDI output unsupported", fHostEventOutputHandle != nullptr, false);
+
+        v3_event event;
+        std::memset(&event, 0, sizeof(event));
+        event.sample_offset = midiEvent.frame;
+
+        const uint8_t* const data = midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data;
+
+        switch (data[0] & 0xf0)
+        {
+        case 0x80:
+            event.type = V3_EVENT_NOTE_OFF;
+            event.note_off.channel = data[0] & 0xf;
+            event.note_off.pitch = data[1];
+            event.note_off.velocity = (float)data[2] / 127.0f;
+            // int32_t note_id;
+            // float tuning;
+            break;
+        case 0x90:
+            event.type = V3_EVENT_NOTE_ON;
+            event.note_on.channel = data[0] & 0xf;
+            event.note_on.pitch = data[1];
+            // float tuning;
+            event.note_on.velocity = (float)data[2] / 127.0f;
+            // int32_t length;
+            // int32_t note_id;
+            break;
+        case 0xA0:
+            event.type = V3_EVENT_POLY_PRESSURE;
+            event.poly_pressure.channel = data[0] & 0xf;
+            event.poly_pressure.pitch = data[1];
+            event.poly_pressure.pressure = (float)data[2] / 127.0f;
+            // int32_t note_id;
+            break;
+        case 0xB0:
+            event.type = V3_EVENT_LEGACY_MIDI_CC_OUT;
+            event.midi_cc_out.channel = data[0] & 0xf;
+            event.midi_cc_out.cc_number = data[1];
+            event.midi_cc_out.value = data[2];
+            event.midi_cc_out.value2 = midiEvent.size == 4 ? data[3] : 0;
+            break;
+        default:
+            return true;
+        }
+
+        // offset struct by sizeof(v3_funknown), because of differences between C and C++
+        v3_event_list* const hostptr = (v3_event_list*)((uint8_t*)(*fHostEventOutputHandle)+sizeof(v3_funknown));
+
+        return hostptr->add_event(fHostEventOutputHandle, &event) == V3_OK;
     }
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
@@ -1431,12 +1569,16 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
 
         req.get_process_context_requirements = []V3_API(void*) -> uint32_t
         {
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
             return 0x0
                 |V3_PROCESS_CTX_NEED_CONTINUOUS_TIME  // V3_PROCESS_CTX_CONT_TIME_VALID
                 |V3_PROCESS_CTX_NEED_PROJECT_TIME     // V3_PROCESS_CTX_PROJECT_TIME_VALID
                 |V3_PROCESS_CTX_NEED_TEMPO            // V3_PROCESS_CTX_TEMPO_VALID
                 |V3_PROCESS_CTX_NEED_TIME_SIG         // V3_PROCESS_CTX_TIME_SIG_VALID
                 |V3_PROCESS_CTX_NEED_TRANSPORT_STATE; // V3_PROCESS_CTX_PLAYING
+#else
+            return 0x0;
+#endif
         };
     }
 
