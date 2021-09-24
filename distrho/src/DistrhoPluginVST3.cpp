@@ -824,7 +824,6 @@ public:
                                              (fTimePosition.bbt.bar-1);
 
             fPlugin.setTimePosition(fTimePosition);
-
         }
 #endif
 
@@ -1388,6 +1387,63 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// dpf_process_context_requirements
+
+struct v3_process_context_requirements_cpp : v3_funknown {
+    v3_process_context_requirements req;
+};
+
+struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
+    dpf_process_context_requirements()
+    {
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_process_context_requirements_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_process_context_requirements::query_interface => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // this is used statically, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_process_context_requirements
+
+        req.get_process_context_requirements = []V3_API(void*) -> uint32_t
+        {
+            return 0x0
+                |V3_PROCESS_CTX_NEED_CONTINUOUS_TIME  // V3_PROCESS_CTX_CONT_TIME_VALID
+                |V3_PROCESS_CTX_NEED_PROJECT_TIME     // V3_PROCESS_CTX_PROJECT_TIME_VALID
+                |V3_PROCESS_CTX_NEED_TEMPO            // V3_PROCESS_CTX_TEMPO_VALID
+                |V3_PROCESS_CTX_NEED_TIME_SIG         // V3_PROCESS_CTX_TIME_SIG_VALID
+                |V3_PROCESS_CTX_NEED_TRANSPORT_STATE; // V3_PROCESS_CTX_PLAYING
+        };
+    }
+
+    DISTRHO_PREVENT_HEAP_ALLOCATION
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // dpf_audio_processor
 
 struct v3_audio_processor_cpp : v3_funknown {
@@ -1404,7 +1460,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
           self(s),
           vst3(v)
     {
-        static const uint8_t* kSupportedInterfaces[] = {
+        static const uint8_t* kSupportedInterfacesBase[] = {
             v3_funknown_iid,
             v3_audio_processor_iid
         };
@@ -1418,13 +1474,21 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 
-            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            for (const uint8_t* interface_iid : kSupportedInterfacesBase)
             {
                 if (v3_tuid_match(interface_iid, iid))
                 {
                     *iface = self;
                     return V3_OK;
                 }
+            }
+
+            if (v3_tuid_match(v3_process_context_requirements_iid, iid))
+            {
+                static dpf_process_context_requirements context_req;
+                static dpf_process_context_requirements* context_req_ptr = &context_req;;
+                *iface = &context_req_ptr;
+                return V3_OK;
             }
 
             return V3_NO_INTERFACE;
