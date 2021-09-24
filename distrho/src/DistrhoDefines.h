@@ -199,6 +199,9 @@ private:                                         \
 # pragma warning(disable:4244) /* possible loss of data */
 #endif
 
+/* Useful macros */
+#define ARRAY_SIZE(ARRAY) sizeof(ARRAY)/sizeof(ARRAY[0])
+
 /* Useful typedefs */
 typedef unsigned char uchar;
 typedef unsigned short int ushort;
