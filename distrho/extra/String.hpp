@@ -516,7 +516,7 @@ public:
      */
     String& replace(const char before, const char after) noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' && after != '\0', *this);
+        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' /* && after != '\0' */, *this);
 
         for (std::size_t i=0; i < fBufferLen; ++i)
         {

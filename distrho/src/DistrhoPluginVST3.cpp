@@ -507,13 +507,195 @@ public:
         return V3_OK;
     }
 
-    v3_result setState(v3_bstream*, void*)
+    /* state: we pack pairs of key-value strings each separated by a null/zero byte.
+     * states come first, and then parameters. parameters are simply converted to/from strings and floats.
+     * the parameter symbol is used as the "key", so it is possible to reorder them or even remove and add safely.
+     * the number of states must remain constant though.
+     */
+    v3_result setState(v3_bstream* const stream, void* arg)
+    {
+#if DISTRHO_PLUGIN_WANT_STATE
+        // TODO
+#endif
+
+        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        {
+            char buffer[32], orig;
+            String key, value;
+            v3_result res;
+            bool fillingKey = true;
+
+            // temporarily set locale to "C" while converting floats
+            const ScopedSafeLocale ssl;
+
+            for (int32_t pos = 0, read;; pos += read)
+            {
+                std::memset(buffer, '\xff', sizeof(buffer));
+                res = stream->read(arg, buffer, sizeof(buffer)-1, &read);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
+
+                for (int32_t i = 0; i < read; ++i)
+                {
+                    if (buffer[i] == '\0' && pos == 0 && i == 0)
+                        continue;
+
+                    orig = buffer[read];
+                    buffer[read] = '\0';
+
+                    if (fillingKey)
+                        key += buffer + i;
+                    else
+                        value += buffer + i;
+
+                    i += std::strlen(buffer + i);
+                    buffer[read] = orig;
+
+                    if (buffer[i] == '\0')
+                    {
+                        fillingKey = !fillingKey;
+
+                        if (value.isNotEmpty())
+                        {
+                            // find parameter with this symbol, and set its value
+                            for (uint32_t j=0; j<paramCount; ++j)
+                            {
+                                if (fPlugin.isParameterOutputOrTrigger(j))
+                                    continue;
+                                if (fPlugin.getParameterSymbol(j) != key)
+                                    continue;
+
+                                fPlugin.setParameterValue(j, std::atof(value.buffer()));
+                                break;
+                            }
+
+                            key.clear();
+                            value.clear();
+                        }
+
+                        if (buffer[i+1] == '\0')
+                            return V3_OK;
+                    }
+                }
+
+                if (buffer[read] == '\0')
+                    return V3_OK;
+            }
+        }
+
+        return V3_OK;
+    }
+
+    v3_result getState(v3_bstream* const stream, void* arg)
+    {
+        const uint32_t paramCount = fPlugin.getParameterCount();
+#if DISTRHO_PLUGIN_WANT_STATE
+        const uint32_t stateCount = fPlugin.getStateCount();
+#else
+        const uint32_t stateCount = 0;
+#endif
+
+        if (stateCount == 0 && paramCount == 0)
+        {
+            char buffer = '\0';
+            int32_t ignored;
+            return stream->write(arg, &buffer, 1, &ignored);
+        }
+
+        String state;
+
+#if DISTRHO_PLUGIN_WANT_FULL_STATE
+        /*
+        // Update current state
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key = cit->first;
+            fStateMap[key] = fPlugin.getState(key);
+        }
+        */
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+        /*
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key   = cit->first;
+            const String& value = cit->second;
+
+            // join key and value
+            String tmpStr;
+            tmpStr  = key;
+            tmpStr += "\xff";
+            tmpStr += value;
+            tmpStr += "\xff";
+
+            state += tmpStr;
+        }
+        */
+#endif
+
+        if (paramCount != 0)
+        {
+            // add another separator
+            state += "\xff";
+
+            for (uint32_t i=0; i<paramCount; ++i)
+            {
+                if (fPlugin.isParameterOutputOrTrigger(i))
+                    continue;
+
+                // join key and value
+                String tmpStr;
+                tmpStr  = fPlugin.getParameterSymbol(i);
+                tmpStr += "\xff";
+                tmpStr += String(fPlugin.getParameterValue(i));
+                tmpStr += "\xff";
+
+                state += tmpStr;
+            }
+        }
+
+        state.replace('\xff', '\0');
+
+        // now saving state, carefully until host written bytes matches full state size
+        const char* buffer = state.buffer();
+        const int32_t size = static_cast<int32_t>(state.length())+1;
+        v3_result res;
+
+        for (int32_t wrtntotal = 0, wrtn; wrtntotal < size; wrtntotal += wrtn)
+        {
+            wrtn = 0;
+            res = stream->write(arg, const_cast<char*>(buffer), size - wrtntotal, &wrtn);
+
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(wrtn > 0, wrtn, V3_INTERNAL_ERR);
+        }
+
+        return V3_OK;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_bstream interface calls (for state support)
+
+    v3_result read(void* buffer, int32_t num_bytes, int32_t* bytes_read)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result getState(v3_bstream*, void*)
+    v3_result write(void* buffer, int32_t num_bytes, int32_t* bytes_written)
+    {
+        // TODO
+        return V3_NOT_IMPLEMENTED;
+    }
+
+    v3_result seek(int64_t pos, int32_t seek_mode, int64_t* result)
+    {
+        // TODO
+        return V3_NOT_IMPLEMENTED;
+    }
+
+    v3_result tell(int64_t* pos)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
@@ -1303,6 +1485,102 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// dpf_state_stream
+
+struct v3_bstream_cpp : v3_funknown {
+    v3_bstream stream;
+};
+
+struct dpf_state_stream : v3_bstream_cpp {
+    ScopedPointer<PluginVst3>& vst3;
+
+    dpf_state_stream(ScopedPointer<PluginVst3>& v)
+        : vst3(v)
+    {
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_bstream_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_factory::query_interface      => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // TODO
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_bstream
+
+        stream.read = []V3_API(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_read) -> v3_result
+        {
+            d_stdout("dpf_state_stream::read  => %p %p %i %p", self, buffer, num_bytes, bytes_read);
+            dpf_state_stream* const stream = *(dpf_state_stream**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = stream->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        stream.write = []V3_API(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_written) -> v3_result
+        {
+            d_stdout("dpf_state_stream::write => %p %p %i %p", self, buffer, num_bytes, bytes_written);
+            dpf_state_stream* const stream = *(dpf_state_stream**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = stream->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        stream.seek = []V3_API(void* self, int64_t pos, int32_t seek_mode, int64_t* result) -> v3_result
+        {
+            d_stdout("dpf_state_stream::seek  => %p %lu %i %p", self, pos, seek_mode, result);
+            dpf_state_stream* const stream = *(dpf_state_stream**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = stream->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        stream.tell = []V3_API(void* self, int64_t* pos) -> v3_result
+        {
+            d_stdout("dpf_state_stream::tell  => %p %p", self, pos);
+            dpf_state_stream* const stream = *(dpf_state_stream**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = stream->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // dpf_component
 
 struct v3_component_cpp : v3_funknown {
@@ -1315,7 +1593,7 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
     ScopedPointer<dpf_edit_controller> controller;
-//     ScopedPointer<dpf_plugin_view> view;
+    ScopedPointer<dpf_state_stream> stream;
     ScopedPointer<PluginVst3> vst3;
 
     dpf_component(ScopedPointer<dpf_component>* const s)
@@ -1539,7 +1817,7 @@ struct dpf_component : v3_component_cpp {
 
         comp.get_state = []V3_API(void* self, v3_bstream** stream) -> v3_result
         {
-            d_stdout("dpf_component::get_state               => %p", self);
+            d_stdout("dpf_component::get_state               => %p %p", self, stream);
             dpf_component* const component = *(dpf_component**)self;
             DISTRHO_SAFE_ASSERT_RETURN(component != nullptr, V3_NOT_INITIALISED);
 
@@ -1706,6 +1984,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
             return V3_NOT_IMPLEMENTED;
         };
     }
+
+    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 END_NAMESPACE_DISTRHO
