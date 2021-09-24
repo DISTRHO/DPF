@@ -46,14 +46,6 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 
-struct v3_component_handler_cpp : v3_funknown {
-    v3_component_handler handler;
-};
-
-struct v3_plugin_frame_cpp : v3_funknown {
-    v3_plugin_frame frame;
-};
-
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -133,16 +125,6 @@ const char* tuid2str(const v3_tuid iid)
                   (uint32_t)d_cconst(iid[12], iid[13], iid[14], iid[15]));
     return buf;
 }
-
-// --------------------------------------------------------------------------------------------------------------------
-
-// TESTING
-struct v3_plugin_view_cpp_virtual {
-    virtual V3_API v3_result query_interface(const v3_tuid iid, void **obj) = 0;
-    virtual V3_API uint32_t ref() = 0;
-    virtual V3_API uint32_t unref() = 0;
-    virtual V3_API v3_result resize_view(void*, void*) = 0;
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 
