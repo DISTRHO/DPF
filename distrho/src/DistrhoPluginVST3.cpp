@@ -66,7 +66,7 @@ static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
 // --------------------------------------------------------------------------------------------------------------------
 // Utility functions
 
-const char* tuid2str(const v3_tuid iid)
+static const char* tuid2str(const v3_tuid iid)
 {
     if (v3_tuid_match(iid, v3_funknown_iid))
         return "{v3_funknown}";
@@ -124,7 +124,9 @@ const char* tuid2str(const v3_tuid iid)
     return buf;
 }
 
-void strncpy(char* const dst, const char* const src, const size_t size)
+// --------------------------------------------------------------------------------------------------------------------
+
+static void strncpy(char* const dst, const char* const src, const size_t size)
 {
     DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
 
@@ -139,7 +141,7 @@ void strncpy(char* const dst, const char* const src, const size_t size)
     }
 }
 
-void strncpy_16from8(int16_t* const dst, const char* const src, const size_t size)
+static void strncpy_utf16(int16_t* const dst, const char* const src, const size_t size)
 {
     DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
 
@@ -163,6 +165,39 @@ void strncpy_16from8(int16_t* const dst, const char* const src, const size_t siz
 
 // --------------------------------------------------------------------------------------------------------------------
 
+template<typename T, const char* const format>
+static void snprintf_t(char* const dst, const T value, const size_t size)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+    std::snprintf(dst, size-1, format, value);
+    dst[size-1] = '\0';
+}
+
+template<typename T, const char* const format>
+static void snprintf_utf16_t(int16_t* const dst, const T value, const size_t size)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+
+    char* const tmpbuf = (char*)std::malloc(size);
+    DISTRHO_SAFE_ASSERT_RETURN(tmpbuf != nullptr,);
+
+    std::snprintf(tmpbuf, size-1, format, value);
+    tmpbuf[size-1] = '\0';
+
+    strncpy_utf16(dst, tmpbuf, size);
+    std::free(tmpbuf);
+}
+
+static constexpr const char format_i32[] = "%d";
+static constexpr const char format_f32[] = "%f";
+static constexpr const char format_u32[] = "%u";
+
+static constexpr void (*const snprintf_u32)(char*, uint32_t, size_t) = snprintf_t<uint32_t, format_u32>;
+static constexpr void (*const snprintf_f32_utf16)(int16_t*, float, size_t) = snprintf_utf16_t<float, format_f32>;
+static constexpr void (*const snprintf_u32_utf16)(int16_t*, uint32_t, size_t) = snprintf_utf16_t<uint32_t, format_u32>;
+
+// --------------------------------------------------------------------------------------------------------------------
+
 class PluginVst3
 {
     /* buses: we provide 1 for the main audio (if there is any) plus 1 for each sidechain or cv port.
@@ -182,7 +217,9 @@ class PluginVst3
 
 public:
     PluginVst3()
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback)
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+          fComponentHandler(nullptr),
+          fComponentHandlerArg(nullptr)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
@@ -248,16 +285,6 @@ public:
                 port.busId = 0;
         }
 #endif
-    }
-
-    void* getInstancePointer() const noexcept
-    {
-        return fPlugin.getInstancePointer();
-    }
-
-    double getSampleRate() const noexcept
-    {
-        return fPlugin.getSampleRate();
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -341,7 +368,7 @@ public:
 
                 if (busType == V3_MAIN)
                 {
-                    strncpy_16from8(busName, "Audio Input", 128);
+                    strncpy_utf16(busName, "Audio Input", 128);
                 }
                 else
                 {
@@ -352,7 +379,7 @@ public:
                         // TODO find port group name
                         if (port.busId == busId)
                         {
-                            strncpy_16from8(busName, port.name, 128);
+                            strncpy_utf16(busName, port.name, 128);
                             break;
                         }
                     }
@@ -393,7 +420,7 @@ public:
 
                 if (busType == V3_MAIN)
                 {
-                    strncpy_16from8(busName, "Audio Output", 128);
+                    strncpy_utf16(busName, "Audio Output", 128);
                 }
                 else
                 {
@@ -404,7 +431,7 @@ public:
                         // TODO find port group name
                         if (port.busId == busId)
                         {
-                            strncpy_16from8(busName, port.name, 128);
+                            strncpy_utf16(busName, port.name, 128);
                             break;
                         }
                     }
@@ -447,8 +474,8 @@ public:
             info->media_type = V3_EVENT;
             info->direction = busDirection;
             info->channel_count = 1;
-            strncpy_16from8(info->bus_name, busDirection == V3_INPUT ? "Event/MIDI Input"
-                                                                     : "Event/MIDI Output", 128);
+            strncpy_utf16(info->bus_name, busDirection == V3_INPUT ? "Event/MIDI Input"
+                                                                   : "Event/MIDI Output", 128);
             info->bus_type = V3_MAIN;
             info->flags = V3_DEFAULT_ACTIVE;
             return V3_OK;
@@ -670,10 +697,9 @@ public:
         info->step_count = step_count;
         info->default_normalised_value = ranges.getNormalizedValue(ranges.def);
         // int32_t unit_id;
-        strncpy_16from8(info->title,       fPlugin.getParameterName(index), 128);
-        strncpy_16from8(info->short_title, fPlugin.getParameterShortName(index), 128);
-        strncpy_16from8(info->units,       fPlugin.getParameterUnit(index), 128);
-
+        strncpy_utf16(info->title,       fPlugin.getParameterName(index), 128);
+        strncpy_utf16(info->short_title, fPlugin.getParameterShortName(index), 128);
+        strncpy_utf16(info->units,       fPlugin.getParameterUnit(index), 128);
         return V3_OK;
     }
 
@@ -681,10 +707,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
 
-        // TODO snprintf16
-        char buf[24];
-        sprintf(buf, "%f", fPlugin.getParameterRanges(index).getUnnormalizedValue(normalised));
-        strncpy_16from8(output, buf, 128);
+        snprintf_f32_utf16(output, fPlugin.getParameterRanges(index).getUnnormalizedValue(normalised), 128);
         return V3_OK;
     }
 
@@ -742,6 +765,13 @@ public:
         return V3_OK;
     }
 
+    v3_result setComponentHandler(v3_component_handler* const handler, void* const arg) noexcept
+    {
+        fComponentHandler = handler;
+        fComponentHandlerArg = arg;
+        return V3_OK;
+    }
+
     // ----------------------------------------------------------------------------------------------------------------
 
 private:
@@ -749,15 +779,25 @@ private:
     PluginExporter fPlugin;
 
     // VST3 stuff
-    // TODO
+    v3_component_handler* fComponentHandler;
+    void*                 fComponentHandlerArg;
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-    bool requestParameterValueChange(uint32_t, float)
+    bool requestParameterValueChange(const uint32_t index, const float value)
     {
-        // TODO
-        return true;
+        DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
+        DISTRHO_SAFE_ASSERT_RETURN(fComponentHandlerArg != nullptr, false);
+
+        if (fComponentHandler->begin_edit(fComponentHandlerArg, index) != V3_OK)
+            return false;
+
+        const double normalized = fPlugin.getParameterRanges(index).getNormalizedValue(value);
+        const bool ret = fComponentHandler->perform_edit(fComponentHandlerArg, index, normalized) == V3_OK;
+
+        fComponentHandler->end_edit(fComponentHandlerArg, index);
+        return ret;
     }
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
         return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
@@ -790,11 +830,8 @@ struct v3_edit_controller_cpp : v3_funknown {
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_edit_controller>* self;
-    // ScopedPointer<dpf_plugin_view> view;
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
-    // cached values
-    // v3_component_handler_cpp** handler = nullptr;
 
     dpf_edit_controller(ScopedPointer<dpf_edit_controller>* const s, ScopedPointer<PluginVst3>& v)
         : refcounter(1),
@@ -1012,8 +1049,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            vst3->setParameterNormalized(index, normalised);
-
 //             if (dpf_plugin_view* const view = controller->view)
 //             {
 //                 if (UIVst3* const uivst3 = view->uivst3)
@@ -1022,7 +1057,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 //                 }
 //             }
 
-            return V3_OK;
+            return vst3->setParameterNormalized(index, normalised);
         };
 
         controller.set_component_handler = []V3_API(void* self, v3_component_handler** handler) -> v3_result
@@ -1030,6 +1065,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             d_stdout("dpf_edit_controller::set_component_handler      => %p %p", self, handler);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = controller->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
 //             v3_component_handler_cpp** const cpphandler = (v3_component_handler_cpp**)handler;
 //
@@ -1043,7 +1081,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 //                     uivst3->setHandler(cpphandler);
 //             }
 
-            return V3_OK;
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_component_handler* const handlerptr
+                = handler != nullptr ? (v3_component_handler*)((uint8_t*)*(handler)+sizeof(v3_funknown))
+                                     : nullptr;
+
+            return vst3->setComponentHandler(handlerptr, handler);
         };
 
         controller.create_view = []V3_API(void* self, const char* name) -> v3_plugin_view**
@@ -1138,7 +1181,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
                                                   v3_speaker_arrangement* inputs, int32_t num_inputs,
                                                   v3_speaker_arrangement* outputs, int32_t num_outputs) -> v3_result
         {
-            d_stdout("dpf_audio_processor::set_bus_arrangements    => %p %p %i %p %i", self, inputs, num_inputs, outputs, num_outputs);
+            // NOTE this is called a bunch of times
+            // d_stdout("dpf_audio_processor::set_bus_arrangements    => %p %p %i %p %i", self, inputs, num_inputs, outputs, num_outputs);
             dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
             DISTRHO_SAFE_ASSERT_RETURN(processor != nullptr, V3_NOT_INITIALISED);
 
@@ -1332,6 +1376,8 @@ struct dpf_component : v3_component_cpp {
             PluginVst3* const vst3 = component->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 == nullptr, V3_INVALID_ARG);
 
+            d_lastCanRequestParameterValueChanges = true;
+
             // default early values
             if (d_lastBufferSize == 0)
                 d_lastBufferSize = 2048;
@@ -1425,7 +1471,8 @@ struct dpf_component : v3_component_cpp {
         comp.activate_bus = []V3_API(void* self, int32_t media_type, int32_t bus_direction,
                                      int32_t bus_idx, v3_bool state) -> v3_result
         {
-            d_stdout("dpf_component::activate_bus            => %p %i %i %i %u", self, media_type, bus_direction, bus_idx, state);
+            // NOTE this is called a bunch of times
+            // d_stdout("dpf_component::activate_bus            => %p %i %i %i %u", self, media_type, bus_direction, bus_idx, state);
             dpf_component* const component = *(dpf_component**)self;
             DISTRHO_SAFE_ASSERT_RETURN(component != nullptr, V3_NOT_INITIALISED);
 
@@ -1497,9 +1544,11 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
         d_lastBufferSize = 512;
         d_lastSampleRate = 44100.0;
+        d_lastCanRequestParameterValueChanges = true;
         static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr);
         d_lastBufferSize = 0;
         d_lastSampleRate = 0.0;
+        d_lastCanRequestParameterValueChanges = false;
 
         dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
             = dpf_tuid_processor[2] = dpf_tuid_view[2] = gPluginInfo.getUniqueId();
@@ -1526,42 +1575,32 @@ struct dpf_factory : v3_plugin_factory_cpp {
         };
 
         // we only support 1 plugin per binary, so don't have to care here
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_factory::ref                  => %p", self);
-            return 1;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_factory::unref                => %p", self);
-            return 0;
-        };
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_factory
 
-        v1.get_factory_info = []V3_API(void* self, struct v3_factory_info* const info) -> v3_result
+        v1.get_factory_info = []V3_API(void*, struct v3_factory_info* const info) -> v3_result
         {
-            d_stdout("dpf_factory::get_factory_info     => %p %p", self, info);
+            std::memset(info, 0, sizeof(*info));
             DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
             DISTRHO_NAMESPACE::strncpy(info->url, gPluginInfo.getHomePage(), sizeof(info->url));
-            DISTRHO_NAMESPACE::strncpy(info->email, "", sizeof(info->email)); // TODO
+            // DISTRHO_NAMESPACE::strncpy(info->email, "", sizeof(info->email)); // TODO
             return V3_OK;
         };
 
-        v1.num_classes = []V3_API(void* self) -> int32_t
+        v1.num_classes = []V3_API(void*) -> int32_t
         {
-            d_stdout("dpf_factory::num_classes          => %p", self);
             return 1;
         };
 
-        v1.get_class_info = []V3_API(void* self, int32_t idx, struct v3_class_info* const info) -> v3_result
+        v1.get_class_info = []V3_API(void*, int32_t idx, struct v3_class_info* const info) -> v3_result
         {
-            d_stdout("dpf_factory::get_class_info       => %p %i %p", self, idx, info);
+            std::memset(info, 0, sizeof(*info));
             DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
 
-            memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
             DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo.getName(), sizeof(info->name));
@@ -1586,38 +1625,42 @@ struct dpf_factory : v3_plugin_factory_cpp {
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_factory_2
 
-        v2.get_class_info_2 = []V3_API(void* self, int32_t idx, struct v3_class_info_2* info) -> v3_result
+        v2.get_class_info_2 = []V3_API(void*, int32_t idx, struct v3_class_info_2* info) -> v3_result
         {
-            d_stdout("dpf_factory::get_class_info_2     => %p %i %p", self, idx, info);
-            memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            std::memset(info, 0, sizeof(*info));
+            DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
+
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
-            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo.getName(), sizeof(info->name));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo.getName(), ARRAY_SIZE(info->name));
 
             info->class_flags = 0;
-            DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
-            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
-            std::snprintf(info->version, sizeof(info->version), "%u", gPluginInfo.getVersion()); // TODO
-            DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
+            // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
+            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), ARRAY_SIZE(info->vendor));
+            DISTRHO_NAMESPACE::snprintf_u32(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version));
+            DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_factory_3
 
-        v3.get_class_info_utf16 = []V3_API(void* self, int32_t idx, struct v3_class_info_3* info) -> v3_result
+        v3.get_class_info_utf16 = []V3_API(void*, int32_t idx, struct v3_class_info_3* info) -> v3_result
         {
-            d_stdout("dpf_factory::get_class_info_utf16 => %p %i %p", self, idx, info);
-            memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            std::memset(info, 0, sizeof(*info));
+            DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
+
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
-            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-            DISTRHO_NAMESPACE::strncpy_16from8(info->name, gPluginInfo.getName(), sizeof(info->name));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+            DISTRHO_NAMESPACE::strncpy_utf16(info->name, gPluginInfo.getName(), ARRAY_SIZE(info->name));
 
             info->class_flags = 0;
-            DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
-            DISTRHO_NAMESPACE::strncpy_16from8(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
-            // DISTRHO_NAMESPACE::snprintf16(info->version, sizeof(info->version)/sizeof(info->version[0]), "%u", gPluginInfo.getVersion()); // TODO
-            DISTRHO_NAMESPACE::strncpy_16from8(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
+            // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", ARRAY_SIZE(info->sub_categories)); // TODO
+            DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
+            DISTRHO_NAMESPACE::snprintf_u32_utf16(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version));
+            DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
 

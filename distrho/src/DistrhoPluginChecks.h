@@ -173,7 +173,6 @@
 # error DISTRHO_UI_IS_STANDALONE must not be defined
 #endif
 
-
 // -----------------------------------------------------------------------
 
 #endif // DISTRHO_PLUGIN_CHECKS_H_INCLUDED
