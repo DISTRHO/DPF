@@ -1474,11 +1474,6 @@ struct dpf_component : v3_component_cpp {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// Dummy plugin to get data from
-
-static ScopedPointer<PluginExporter> gPluginInfo;
-
-// --------------------------------------------------------------------------------------------------------------------
 // dpf_factory
 
 struct v3_plugin_factory_cpp : v3_funknown {
@@ -1496,6 +1491,18 @@ struct dpf_factory : v3_plugin_factory_cpp {
             v3_plugin_factory_2_iid,
             v3_plugin_factory_3_iid
         };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // Dummy plugin to get data from
+
+        d_lastBufferSize = 512;
+        d_lastSampleRate = 44100.0;
+        static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr);
+        d_lastBufferSize = 0;
+        d_lastSampleRate = 0.0;
+
+        dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
+            = dpf_tuid_processor[2] = dpf_tuid_view[2] = gPluginInfo.getUniqueId();
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_funknown
@@ -1537,8 +1544,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         v1.get_factory_info = []V3_API(void* self, struct v3_factory_info* const info) -> v3_result
         {
             d_stdout("dpf_factory::get_factory_info     => %p %p", self, info);
-            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
-            DISTRHO_NAMESPACE::strncpy(info->url, gPluginInfo->getHomePage(), sizeof(info->url));
+            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
+            DISTRHO_NAMESPACE::strncpy(info->url, gPluginInfo.getHomePage(), sizeof(info->url));
             DISTRHO_NAMESPACE::strncpy(info->email, "", sizeof(info->email)); // TODO
             return V3_OK;
         };
@@ -1557,7 +1564,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo->getName(), sizeof(info->name));
+            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo.getName(), sizeof(info->name));
             return V3_OK;
         };
 
@@ -1585,12 +1592,12 @@ struct dpf_factory : v3_plugin_factory_cpp {
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo->getName(), sizeof(info->name));
+            DISTRHO_NAMESPACE::strncpy(info->name, gPluginInfo.getName(), sizeof(info->name));
 
             info->class_flags = 0;
             DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
-            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
-            std::snprintf(info->version, sizeof(info->version), "%u", gPluginInfo->getVersion()); // TODO
+            DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
+            std::snprintf(info->version, sizeof(info->version), "%u", gPluginInfo.getVersion()); // TODO
             DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
@@ -1604,12 +1611,12 @@ struct dpf_factory : v3_plugin_factory_cpp {
             memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
             info->cardinality = 0x7FFFFFFF;
             DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-            DISTRHO_NAMESPACE::strncpy_16from8(info->name, gPluginInfo->getName(), sizeof(info->name));
+            DISTRHO_NAMESPACE::strncpy_16from8(info->name, gPluginInfo.getName(), sizeof(info->name));
 
             info->class_flags = 0;
             DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
-            DISTRHO_NAMESPACE::strncpy_16from8(info->vendor, gPluginInfo->getMaker(), sizeof(info->vendor));
-            // DISTRHO_NAMESPACE::snprintf16(info->version, sizeof(info->version)/sizeof(info->version[0]), "%u", gPluginInfo->getVersion()); // TODO
+            DISTRHO_NAMESPACE::strncpy_16from8(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
+            // DISTRHO_NAMESPACE::snprintf16(info->version, sizeof(info->version)/sizeof(info->version[0]), "%u", gPluginInfo.getVersion()); // TODO
             DISTRHO_NAMESPACE::strncpy_16from8(info->sdk_version, "Travesty", sizeof(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
@@ -1657,20 +1664,6 @@ bool ENTRYFNNAME(void*);
 
 bool ENTRYFNNAME(void*)
 {
-    USE_NAMESPACE_DISTRHO;
-
-    if (gPluginInfo == nullptr)
-    {
-        d_lastBufferSize = 512;
-        d_lastSampleRate = 44100.0;
-        gPluginInfo = new PluginExporter(nullptr, nullptr, nullptr);
-        d_lastBufferSize = 0;
-        d_lastSampleRate = 0.0;
-
-        dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
-            = dpf_tuid_processor[2] = dpf_tuid_view[2] = gPluginInfo->getUniqueId();
-    }
-
     return true;
 }
 
@@ -1679,8 +1672,6 @@ bool EXITFNNAME(void);
 
 bool EXITFNNAME(void)
 {
-    USE_NAMESPACE_DISTRHO;
-    gPluginInfo = nullptr;
     return true;
 }
 
