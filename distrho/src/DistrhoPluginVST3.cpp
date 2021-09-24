@@ -23,28 +23,9 @@
 #include "travesty/factory.h"
 
 #include <atomic>
-#include <vector>
 
 // TESTING awful idea dont reuse
 #include "../extra/Thread.hpp"
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#undef DISTRHO_PLUGIN_HAS_UI
-#define DISTRHO_PLUGIN_HAS_UI 1
-
-#if DISTRHO_PLUGIN_HAS_UI
-# include "DistrhoUIInternal.hpp"
-# include "../extra/RingBuffer.hpp"
-#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -179,53 +160,6 @@ void strncpy_16from8(int16_t* const dst, const char* const src, const size_t siz
         dst[0] = 0;
     }
 }
-
-// --------------------------------------------------------------------------------------------------------------------
-
-struct ParameterAndNotesHelper
-{
-    float* parameterValues;
-#if DISTRHO_PLUGIN_HAS_UI
-    bool* parameterChecks;
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    SmallStackBuffer notesRingBuffer;
-# endif
-#endif
-
-    ParameterAndNotesHelper()
-        : parameterValues(nullptr)
-#if DISTRHO_PLUGIN_HAS_UI
-        , parameterChecks(nullptr)
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        , notesRingBuffer(StackBuffer_INIT)
-# endif
-#endif
-    {
-#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
-        std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
-#endif
-    }
-
-    virtual ~ParameterAndNotesHelper()
-    {
-        if (parameterValues != nullptr)
-        {
-            delete[] parameterValues;
-            parameterValues = nullptr;
-        }
-#if DISTRHO_PLUGIN_HAS_UI
-        if (parameterChecks != nullptr)
-        {
-            delete[] parameterChecks;
-            parameterChecks = nullptr;
-        }
-#endif
-    }
-
-#if DISTRHO_PLUGIN_WANT_STATE
-    virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
-#endif
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -846,573 +780,6 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-
-#if DISTRHO_PLUGIN_HAS_UI
-
-#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
-#endif
-#if ! DISTRHO_PLUGIN_WANT_STATE
-static const setStateFunc setStateCallback = nullptr;
-#endif
-
-struct v3_component_handler_cpp : v3_funknown {
-    v3_component_handler handler;
-};
-
-class UIVst3 : public Thread
-{
-public:
-    UIVst3(ScopedPointer<PluginVst3>& v, v3_plugin_frame* const f, const intptr_t winId, const float scaleFactor)
-        : vst3(v),
-          frame(f),
-          fUI(this, winId, v->getSampleRate(),
-              editParameterCallback,
-              setParameterCallback,
-              setStateCallback,
-              sendNoteCallback,
-              setSizeCallback,
-              nullptr, // TODO file request
-              nullptr,
-              v->getInstancePointer(),
-              scaleFactor)
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        , fNotesRingBuffer()
-# endif
-    {
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
-# endif
-        // TESTING awful idea dont reuse
-        startThread();
-    }
-
-    ~UIVst3() override
-    {
-        stopThread(5000);
-    }
-
-    // -------------------------------------------------------------------
-
-    // TESTING awful idea dont reuse
-    void run() override
-    {
-        while (! shouldThreadExit())
-        {
-            idle();
-            d_msleep(50);
-        }
-    }
-
-    void idle()
-    {
-        /*
-        for (uint32_t i=0, count = fPlugin->getParameterCount(); i < count; ++i)
-        {
-            if (fUiHelper->parameterChecks[i])
-            {
-                fUiHelper->parameterChecks[i] = false;
-                fUI.parameterChanged(i, fUiHelper->parameterValues[i]);
-            }
-        }
-        */
-
-        fUI.plugin_idle();
-    }
-
-    int16_t getWidth() const
-    {
-        return fUI.getWidth();
-    }
-
-    int16_t getHeight() const
-    {
-        return fUI.getHeight();
-    }
-
-    double getScaleFactor() const
-    {
-        return fUI.getScaleFactor();
-    }
-
-    void notifyScaleFactorChanged(const double scaleFactor)
-    {
-        fUI.notifyScaleFactorChanged(scaleFactor);
-    }
-
-    // TODO dont use this
-    void setParameterValueFromDSP(const uint32_t index, const float value)
-    {
-        fUI.parameterChanged(index, value);
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------
-    // v3_plugin_view interface calls
-
-    void setFrame(v3_plugin_frame* const f) noexcept
-    {
-        frame = f;
-    }
-
-    void setHandler(v3_component_handler_cpp** const h) noexcept
-    {
-        handler = h;
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------
-
-protected:
-    void editParameter(const uint32_t index, const bool started) const
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
-
-        v3_component_handler_cpp* const chandler = *handler;
-        DISTRHO_SAFE_ASSERT_RETURN(chandler != nullptr,);
-
-        if (started)
-            chandler->handler.begin_edit(handler, index);
-        else
-            chandler->handler.end_edit(handler, index);
-    }
-
-    void setParameterValue(const uint32_t index, const float realValue)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
-
-        v3_component_handler_cpp* const chandler = *handler;
-        DISTRHO_SAFE_ASSERT_RETURN(chandler != nullptr,);
-
-        const double value = vst3->plainParameterToNormalised(index, realValue);
-        chandler->handler.perform_edit(handler, index, value);
-
-        // TODO send change to DSP side?
-    }
-
-    void setSize(uint width, uint height)
-    {
-# ifdef DISTRHO_OS_MAC
-        const double scaleFactor = fUI.getScaleFactor();
-        width /= scaleFactor;
-        height /= scaleFactor;
-# endif
-        if (frame == nullptr)
-            return;
-
-        v3_view_rect rect = {};
-        rect.right = width;
-        rect.bottom = height;
-        (void)rect;
-        // frame->resize_view(nullptr, uivst3, &rect);
-    }
-
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        uint8_t midiData[3];
-        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
-        midiData[1] = note;
-        midiData[2] = velocity;
-        fNotesRingBuffer.writeCustomData(midiData, 3);
-        fNotesRingBuffer.commitWrite();
-    }
-# endif
-
-# if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char* const key, const char* const value)
-    {
-        // fUiHelper->setStateFromUI(key, value);
-    }
-# endif
-
-private:
-    // VST3 stuff
-    ScopedPointer<PluginVst3>& vst3;
-    v3_plugin_frame* frame;
-    v3_component_handler_cpp** handler = nullptr;
-
-    // Plugin UI
-    UIExporter fUI;
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
-# endif
-
-    // -------------------------------------------------------------------
-    // Callbacks
-
-    #define handlePtr ((UIVst3*)ptr)
-
-    static void editParameterCallback(void* ptr, uint32_t index, bool started)
-    {
-        handlePtr->editParameter(index, started);
-    }
-
-    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
-    {
-        handlePtr->setParameterValue(rindex, value);
-    }
-
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        handlePtr->setSize(width, height);
-    }
-
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
-    {
-        handlePtr->sendNote(channel, note, velocity);
-    }
-# endif
-
-# if DISTRHO_PLUGIN_WANT_STATE
-    static void setStateCallback(void* ptr, const char* key, const char* value)
-    {
-        handlePtr->setState(key, value);
-    }
-# endif
-
-    #undef handlePtr
-};
-
-#endif //  DISTRHO_PLUGIN_HAS_UI
-
-// --------------------------------------------------------------------------------------------------------------------
-// Dummy plugin to get data from
-
-static ScopedPointer<PluginExporter> gPluginInfo;
-
-#if DISTRHO_PLUGIN_HAS_UI
-// --------------------------------------------------------------------------------------------------------------------
-// dpf_plugin_view_content_scale
-
-struct v3_plugin_view_content_scale_steinberg_cpp : v3_funknown {
-    v3_plugin_view_content_scale_steinberg scale;
-};
-
-struct dpf_plugin_view_scale : v3_plugin_view_content_scale_steinberg_cpp {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_plugin_view_scale>* self;
-    ScopedPointer<UIVst3>& uivst3;
-    float lastScaleFactor = 0.0f;
-
-    dpf_plugin_view_scale(ScopedPointer<dpf_plugin_view_scale>* s, ScopedPointer<UIVst3>& v)
-        : refcounter(1),
-          self(s),
-          uivst3(v)
-    {
-        static const uint8_t* kSupportedInterfaces[] = {
-            v3_funknown_iid,
-            v3_plugin_view_content_scale_steinberg_iid
-        };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_funknown
-
-        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
-        {
-            d_stdout("dpf_plugin_view_scale::query_interface    => %p %s %p", self, tuid2str(iid), iface);
-            *iface = NULL;
-            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
-
-            for (const uint8_t* interface_iid : kSupportedInterfaces)
-            {
-                if (v3_tuid_match(interface_iid, iid))
-                {
-                    *iface = self;
-                    return V3_OK;
-                }
-            }
-
-            return V3_NO_INTERFACE;
-        };
-
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view_scale::ref                => %p", self);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, 0);
-
-            return ++scale->refcounter;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view_scale::unref              => %p", self);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, 0);
-
-            if (const int refcounter = --scale->refcounter)
-                return refcounter;
-
-            *(dpf_plugin_view_scale**)self = nullptr;
-            *scale->self = nullptr;
-            return 0;
-        };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_plugin_view_content_scale_steinberg
-
-        scale.set_content_scale_factor = []V3_API(void* self, float factor) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, V3_NOT_INITIALISED);
-
-            if (UIVst3* const uivst3 = scale->uivst3)
-                if (d_isNotZero(scale->lastScaleFactor) && d_isNotEqual(scale->lastScaleFactor, factor))
-                    uivst3->notifyScaleFactorChanged(factor);
-
-            scale->lastScaleFactor = factor;
-            return V3_OK;
-        };
-    }
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-// dpf_plugin_view
-
-struct v3_plugin_view_cpp : v3_funknown {
-    v3_plugin_view view;
-};
-
-struct dpf_plugin_view : v3_plugin_view_cpp {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_plugin_view>* self;
-    ScopedPointer<dpf_plugin_view_scale> scale;
-    ScopedPointer<PluginVst3>& vst3;
-    ScopedPointer<UIVst3> uivst3;
-    // cached values
-    v3_component_handler_cpp** handler = nullptr;
-    v3_plugin_frame* hostframe = nullptr;
-
-    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* s, ScopedPointer<PluginVst3>& v)
-        : refcounter(1),
-          self(s),
-          vst3(v)
-    {
-        static const uint8_t* kSupportedInterfacesBase[] = {
-            v3_funknown_iid,
-            v3_plugin_view_iid
-        };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_funknown
-
-        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::query_interface         => %p %s %p", self, tuid2str(iid), iface);
-            *iface = NULL;
-            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
-
-            for (const uint8_t* interface_iid : kSupportedInterfacesBase)
-            {
-                if (v3_tuid_match(interface_iid, iid))
-                {
-                    *iface = self;
-                    return V3_OK;
-                }
-            }
-
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NO_INTERFACE);
-
-            if (v3_tuid_match(v3_plugin_view_content_scale_steinberg_iid, iid))
-            {
-                if (view->scale == nullptr)
-                    view->scale = new dpf_plugin_view_scale(&view->scale, view->uivst3);
-                *iface = &view->scale;
-                return V3_OK;
-            }
-
-            return V3_NO_INTERFACE;
-        };
-
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view::ref                     => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, 0);
-
-            return ++view->refcounter;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view::unref                   => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, 0);
-
-            if (const int refcounter = --view->refcounter)
-                return refcounter;
-
-            *(dpf_plugin_view**)self = nullptr;
-            *view->self = nullptr;
-            return 0;
-        };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_plugin_view
-
-        view.is_platform_type_supported = []V3_API(void* self, const char* platform_type) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::is_platform_type_supported => %p %s", self, platform_type);
-            const char* const supported[] = {
-#ifdef _WIN32
-                V3_VIEW_PLATFORM_TYPE_HWND,
-#elif defined(__APPLE__)
-                V3_VIEW_PLATFORM_TYPE_NSVIEW,
-#else
-                V3_VIEW_PLATFORM_TYPE_X11,
-#endif
-            };
-
-            for (size_t i=0; i<sizeof(supported)/sizeof(supported[0]); ++i)
-            {
-                if (std::strcmp(supported[i], platform_type))
-                    return V3_OK;
-            }
-
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.attached = []V3_API(void* self, void* parent, const char* platform_type) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::attached                   => %p %p %s", self, parent, platform_type);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 == nullptr, V3_INVALID_ARG);
-
-            const double scaleFactor = view->scale != nullptr ? view->scale->lastScaleFactor : 0.0;
-            view->uivst3 = new UIVst3(view->vst3, view->hostframe, (uintptr_t)parent, scaleFactor);
-            view->uivst3->setHandler(view->handler);
-            return V3_OK;
-        };
-
-        view.removed = []V3_API(void* self) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::removed                    => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
-            view->uivst3 = nullptr;
-            return V3_OK;
-        };
-
-        view.on_wheel = []V3_API(void* self, float distance) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::on_wheel                   => %p %f", self, distance);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.on_key_down = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::on_key_down                => %p %i %i %i", self, key_char, key_code, modifiers);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.on_key_up = []V3_API(void* self, int16_t key_char, int16_t key_code, int16_t modifiers) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::on_key_up                  => %p %i %i %i", self, key_char, key_code, modifiers);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.get_size = []V3_API(void* self, v3_view_rect* rect) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::get_size                   => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-
-            std::memset(rect, 0, sizeof(v3_view_rect));
-
-            if (view->uivst3 != nullptr)
-            {
-                rect->right  = view->uivst3->getWidth();
-                rect->bottom = view->uivst3->getHeight();
-# ifdef DISTRHO_OS_MAC
-                const double scaleFactor = view->uivst3->getScaleFactor();
-                rect->right /= scaleFactor;
-                rect->bottom /= scaleFactor;
-# endif
-            }
-            else
-            {
-                const double scaleFactor = view->scale != nullptr ? view->scale->lastScaleFactor : 0.0;
-                UIExporter tmpUI(nullptr, 0, view->vst3->getSampleRate(),
-                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                                 view->vst3->getInstancePointer(), scaleFactor);
-                rect->right  = tmpUI.getWidth();
-                rect->bottom = tmpUI.getHeight();
-# ifdef DISTRHO_OS_MAC
-                const double scaleFactor = tmpUI.getScaleFactor();
-                rect->right /= scaleFactor;
-                rect->bottom /= scaleFactor;
-# endif
-                tmpUI.quit();
-            }
-
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.set_size = []V3_API(void* self, v3_view_rect*) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::set_size                   => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.on_focus = []V3_API(void* self, v3_bool state) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::on_focus                   => %p %u", self, state);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-            DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_NOT_INITIALISED);
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        view.set_frame = []V3_API(void* self, v3_plugin_frame* frame) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::set_frame                  => %p", self);
-            dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
-
-            view->hostframe = frame;
-
-            if (view->uivst3 != nullptr)
-                view->uivst3->setFrame(frame);
-
-            return V3_OK;
-        };
-
-        view.can_resize = []V3_API(void* self) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::can_resize                 => %p", self);
-#if DISTRHO_UI_USER_RESIZABLE
-            return V3_OK;
-#else
-            return V3_NOT_IMPLEMENTED;
-#endif
-        };
-
-        view.check_size_constraint = []V3_API(void* self, v3_view_rect*) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::check_size_constraint      => %p", self);
-            return V3_NOT_IMPLEMENTED;
-        };
-    }
-};
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
 
 struct v3_edit_controller_cpp : v3_funknown {
@@ -1423,11 +790,11 @@ struct v3_edit_controller_cpp : v3_funknown {
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_edit_controller>* self;
-    ScopedPointer<dpf_plugin_view> view;
+    // ScopedPointer<dpf_plugin_view> view;
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
     // cached values
-    v3_component_handler_cpp** handler = nullptr;
+    // v3_component_handler_cpp** handler = nullptr;
 
     dpf_edit_controller(ScopedPointer<dpf_edit_controller>* const s, ScopedPointer<PluginVst3>& v)
         : refcounter(1),
@@ -1647,13 +1014,13 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
             vst3->setParameterNormalized(index, normalised);
 
-            if (dpf_plugin_view* const view = controller->view)
-            {
-                if (UIVst3* const uivst3 = view->uivst3)
-                {
-                    uivst3->setParameterValueFromDSP(index, vst3->normalisedParameterToPlain(index, normalised));
-                }
-            }
+//             if (dpf_plugin_view* const view = controller->view)
+//             {
+//                 if (UIVst3* const uivst3 = view->uivst3)
+//                 {
+//                     uivst3->setParameterValueFromDSP(index, vst3->normalisedParameterToPlain(index, normalised));
+//                 }
+//             }
 
             return V3_OK;
         };
@@ -1664,17 +1031,17 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
-            v3_component_handler_cpp** const cpphandler = (v3_component_handler_cpp**)handler;
-
-            controller->handler = cpphandler;
-
-            if (controller->view != nullptr)
-            {
-                controller->view->handler = cpphandler;
-
-                if (UIVst3* const uivst3 = controller->view->uivst3)
-                    uivst3->setHandler(cpphandler);
-            }
+//             v3_component_handler_cpp** const cpphandler = (v3_component_handler_cpp**)handler;
+//
+//             controller->handler = cpphandler;
+//
+//             if (controller->view != nullptr)
+//             {
+//                 controller->view->handler = cpphandler;
+//
+//                 if (UIVst3* const uivst3 = controller->view->uivst3)
+//                     uivst3->setHandler(cpphandler);
+//             }
 
             return V3_OK;
         };
@@ -1685,13 +1052,15 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
-            if (controller->view == nullptr)
-            {
-                controller->view = new dpf_plugin_view(&controller->view, controller->vst3);
-                controller->view->handler = controller->handler;
-            }
+            return nullptr;
 
-            return (v3_plugin_view**)&controller->view;
+//             if (controller->view == nullptr)
+//             {
+//                 controller->view = new dpf_plugin_view(&controller->view, controller->vst3);
+//                 controller->view->handler = controller->handler;
+//             }
+
+//             return (v3_plugin_view**)&controller->view;
         };
     }
 };
@@ -1876,7 +1245,7 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
     ScopedPointer<dpf_edit_controller> controller;
-    ScopedPointer<dpf_plugin_view> view;
+//     ScopedPointer<dpf_plugin_view> view;
     ScopedPointer<PluginVst3> vst3;
 
     dpf_component(ScopedPointer<dpf_component>* const s)
@@ -1922,14 +1291,6 @@ struct dpf_component : v3_component_cpp {
                 if (component->controller == nullptr)
                     component->controller = new dpf_edit_controller(&component->controller, component->vst3);
                 *iface = &component->controller;
-                return V3_OK;
-            }
-
-            if (v3_tuid_match(v3_plugin_view_iid, iid))
-            {
-                if (component->view == nullptr)
-                    component->view = new dpf_plugin_view(&component->view, component->vst3);
-                *iface = &component->view;
                 return V3_OK;
             }
 
@@ -2111,6 +1472,11 @@ struct dpf_component : v3_component_cpp {
         };
     }
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+// Dummy plugin to get data from
+
+static ScopedPointer<PluginExporter> gPluginInfo;
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_factory
