@@ -50,6 +50,10 @@ struct v3_component_handler_cpp : v3_funknown {
     v3_component_handler handler;
 };
 
+struct v3_plugin_frame_cpp : v3_funknown {
+    v3_plugin_frame frame;
+};
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -132,10 +136,21 @@ const char* tuid2str(const v3_tuid iid)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+// TESTING
+struct v3_plugin_view_cpp_virtual {
+    virtual V3_API v3_result query_interface(const v3_tuid iid, void **obj) = 0;
+    virtual V3_API uint32_t ref() = 0;
+    virtual V3_API uint32_t unref() = 0;
+    virtual V3_API v3_result resize_view(void*, void*) = 0;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
 class UIVst3 : public Thread
 {
 public:
-    UIVst3(const intptr_t winId, const float scaleFactor, const double sampleRate, void* const instancePointer)
+    UIVst3(const intptr_t winId, const float scaleFactor, const double sampleRate,
+           void* const instancePointer, v3_plugin_view** const view)
         : fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
@@ -146,7 +161,9 @@ public:
               nullptr,
               instancePointer,
               scaleFactor),
+          fView(view),
           fFrame(nullptr),
+          fFrameArg(nullptr),
           fScaleFactor(scaleFactor)
     {
         // TESTING awful idea dont reuse
@@ -167,17 +184,6 @@ public:
             d_msleep(50);
         }
     }
-
-//     // TODO dont use this
-//     void setParameterValueFromDSP(const uint32_t index, const float value)
-//     {
-//         fUI.parameterChanged(index, value);
-//     }
-
-//     void setHandler(v3_component_handler_cpp** const h) noexcept
-//     {
-//         handler = h;
-//     }
 
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view interface calls
@@ -215,7 +221,7 @@ public:
         return V3_OK;
     }
 
-    v3_result setSize(v3_view_rect* const /*rect*/)
+    v3_result onSize(v3_view_rect* const /*rect*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
@@ -227,9 +233,12 @@ public:
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result setFrame(v3_plugin_frame* const frame) noexcept
+    v3_result setFrame(v3_plugin_frame* const frame, void* const arg) noexcept
     {
+        d_stdout("setFrame %p %p", frame, arg);
         fFrame = frame;
+        fFrameArg = arg;
+
         return V3_OK;
     }
 
@@ -259,7 +268,9 @@ private:
     UIExporter fUI;
 
     // VST3 stuff
+    v3_plugin_view** const fView;
     v3_plugin_frame* fFrame;
+    void* fFrameArg;
     // v3_component_handler_cpp** handler = nullptr;
 
     // Temporary data
@@ -301,21 +312,24 @@ private:
         ((UIVst3*)ptr)->setParameterValue(rindex, value);
     }
 
-    void setSize(uint /*width*/, uint /*height*/)
+    void setSize(uint width, uint height)
     {
-// #ifdef DISTRHO_OS_MAC
-//         const double scaleFactor = fUI.getScaleFactor();
-//         width /= scaleFactor;
-//         height /= scaleFactor;
-// #endif
-//         if (frame == nullptr)
-//             return;
-//
-//         v3_view_rect rect = {};
-//         rect.right = width;
-//         rect.bottom = height;
-//         (void)rect;
-//         // frame->resize_view(nullptr, uivst3, &rect);
+        DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fFrameArg != nullptr,);
+        d_stdout("from UI setSize %u %u | %p %p %p", width, height, fView, fFrame, fFrameArg);
+
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+#endif
+
+        v3_view_rect rect;
+        std::memset(&rect, 0, sizeof(rect));
+        rect.right = width;
+        rect.bottom = height;
+        fFrame->resize_view(fFrameArg, fView, &rect);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)
@@ -351,8 +365,6 @@ private:
         ((UIVst3*)ptr)->setState(key, value);
     }
 #endif
-
-    #undef handlePtr
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -459,7 +471,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     void* const instancePointer;
     double sampleRate;
 //     v3_component_handler_cpp** handler = nullptr;
-    v3_plugin_frame* frame = nullptr;
+    v3_plugin_frame** frame = nullptr;
 
     dpf_plugin_view(ScopedPointer<dpf_plugin_view>* s, void* const instance, const double sr)
         : refcounter(1),
@@ -567,8 +579,15 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
                 {
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-                    view->uivst3 = new UIVst3((uintptr_t)parent, scaleFactor, view->sampleRate, view->instancePointer);
-                    view->uivst3->setFrame(view->frame);
+                    view->uivst3 = new UIVst3((uintptr_t)parent, scaleFactor, view->sampleRate,
+                                              view->instancePointer, (v3_plugin_view**)self);
+
+                    // offset struct by sizeof(v3_funknown), because of differences between C and C++
+                    v3_plugin_frame* const frameptr
+                        = view->frame != nullptr ? (v3_plugin_frame*)((uint8_t*)*(view->frame)+sizeof(v3_funknown))
+                                                 : nullptr;
+
+                    view->uivst3->setFrame(frameptr, view->frame);
                     // view->uivst3->setHandler(view->handler);
                     return V3_OK;
                 }
@@ -635,20 +654,24 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 return uivst3->getSize(rect);
 
             const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-            const UIVst3 uivst3(0, scaleFactor, view->sampleRate, view->instancePointer);
-            return uivst3.getSize(rect);
+            UIExporter tmpUI(nullptr, 0, view->sampleRate,
+                             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                             view->instancePointer, scaleFactor);
+            rect->right = tmpUI.getWidth();
+            rect->bottom = tmpUI.getHeight();
+            return V3_OK;
         };
 
-        view.set_size = []V3_API(void* self, v3_view_rect* rect) -> v3_result
+        view.on_size = []V3_API(void* self, v3_view_rect* rect) -> v3_result
         {
-            d_stdout("dpf_plugin_view::set_size                   => %p %p", self, rect);
+            d_stdout("dpf_plugin_view::on_size                    => %p %p", self, rect);
             dpf_plugin_view* const view = *(dpf_plugin_view**)self;
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
 
             UIVst3* const uivst3 = view->uivst3;
             DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALISED);
 
-            return uivst3->setSize(rect);
+            return uivst3->onSize(rect);
         };
 
         view.on_focus = []V3_API(void* self, v3_bool state) -> v3_result
@@ -663,16 +686,23 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return uivst3->onFocus(state);
         };
 
-        view.set_frame = []V3_API(void* self, v3_plugin_frame* frame) -> v3_result
+        view.set_frame = []V3_API(void* self, v3_plugin_frame** frame) -> v3_result
         {
-            d_stdout("dpf_plugin_view::set_frame                  => %p %o", self, frame);
+            d_stdout("dpf_plugin_view::set_frame                  => %p %p", self, frame);
             dpf_plugin_view* const view = *(dpf_plugin_view**)self;
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
 
             view->frame = frame;
 
             if (UIVst3* const uivst3 = view->uivst3)
-                return uivst3->setFrame(frame);
+            {
+                // offset struct by sizeof(v3_funknown), because of differences between C and C++
+                v3_plugin_frame* const frameptr
+                    = frame != nullptr ? (v3_plugin_frame*)((uint8_t*)*(frame)+sizeof(v3_funknown))
+                                       : nullptr;
+
+                return uivst3->setFrame(frameptr, frame);
+            }
 
             return V3_NOT_INITIALISED;
         };
