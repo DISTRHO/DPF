@@ -291,6 +291,19 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // stuff called for UI creation
+
+    void* getInstancePointer() const noexcept
+    {
+        return fPlugin.getInstancePointer();
+    }
+
+    double getSampleRate() const noexcept
+    {
+        return fPlugin.getSampleRate();
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
     // v3_component interface calls
 
     int32_t getBusCount(const int32_t mediaType, const int32_t busDirection) const noexcept
@@ -1127,6 +1140,7 @@ private:
     TimePosition fTimePosition;
 #endif
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
@@ -1142,7 +1156,6 @@ private:
         return ret;
     }
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
         return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
@@ -1210,6 +1223,13 @@ private:
 #endif
 
 };
+
+#if DISTRHO_PLUGIN_HAS_UI
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_plugin_view_create (called from DSP side)
+
+v3_funknown** dpf_plugin_view_create(void* instancePointer, double sampleRate);
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
@@ -1511,15 +1531,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
+            PluginVst3* const vst3 = controller->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
+
+#if DISTRHO_PLUGIN_HAS_UI
+            return (v3_plugin_view**)dpf_plugin_view_create(vst3->getInstancePointer(), vst3->getSampleRate());
+#else
             return nullptr;
-
-//             if (controller->view == nullptr)
-//             {
-//                 controller->view = new dpf_plugin_view(&controller->view, controller->vst3);
-//                 controller->view->handler = controller->handler;
-//             }
-
-//             return (v3_plugin_view**)&controller->view;
+#endif
         };
     }
 };
