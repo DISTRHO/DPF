@@ -25,7 +25,8 @@ include ../../Makefile.plugins.mk
 
 TARGETS += jack
 TARGETS += lv2_dsp
-TARGETS += vst
+TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 

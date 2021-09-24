@@ -109,7 +109,7 @@
 #define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_CONTINUE(msg, cond)    if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } continue; }
 #define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN(msg, cond, ret) if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } return ret; }
 
-#define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value); break; }
+#define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); break; }
 #define DISTRHO_SAFE_ASSERT_INT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); continue; }
 #define DISTRHO_SAFE_ASSERT_INT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); return ret; }
 
@@ -117,7 +117,7 @@
 #define DISTRHO_SAFE_ASSERT_INT2_CONTINUE(cond, v1, v2)     if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); continue; }
 #define DISTRHO_SAFE_ASSERT_INT2_RETURN(cond, v1, v2, ret)  if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); return ret; }
 
-#define DISTRHO_SAFE_ASSERT_UINT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value); break; }
+#define DISTRHO_SAFE_ASSERT_UINT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); break; }
 #define DISTRHO_SAFE_ASSERT_UINT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); continue; }
 #define DISTRHO_SAFE_ASSERT_UINT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); return ret; }
 

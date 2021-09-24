@@ -153,7 +153,7 @@ struct v3_process_context {
 	int64_t project_time_in_samples; // with loop
 
 	int64_t system_time_ns;
-	int64_t continuous_time_in_samples; // without loop? unclear
+	int64_t continuous_time_in_samples; // without loop
 
 	double project_time_quarters;
 	double bar_position_quarters;

@@ -1114,7 +1114,7 @@ public:
             fTimePosition.playing   =  (vstTimeInfo->flags & kVstTransportPlaying);
             fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
 
-            // ticksPerBeat is not possible with VST
+            // ticksPerBeat is not possible with VST2
             fTimePosition.bbt.ticksPerBeat = 1920.0;
 
             if (vstTimeInfo->flags & kVstTempoValid)

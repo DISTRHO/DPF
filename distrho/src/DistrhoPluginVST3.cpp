@@ -677,25 +677,25 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_bstream interface calls (for state support)
 
-    v3_result read(void* buffer, int32_t num_bytes, int32_t* bytes_read)
+    v3_result read(void* /*buffer*/, int32_t /*num_bytes*/, int32_t* /*bytes_read*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result write(void* buffer, int32_t num_bytes, int32_t* bytes_written)
+    v3_result write(void* /*buffer*/, int32_t /*num_bytes*/, int32_t* /*bytes_written*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result seek(int64_t pos, int32_t seek_mode, int64_t* result)
+    v3_result seek(int64_t /*pos*/, int32_t /*seek_mode*/, int64_t* /*result*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result tell(int64_t* pos)
+    v3_result tell(int64_t* /*pos*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
@@ -771,25 +771,91 @@ public:
         }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
-        // TODO
+        // TODO implement v3_process_context_requirements as query_interface of something..
+        if (v3_process_context* const ctx = data->ctx)
+        {
+            fTimePosition.playing   = ctx->state & V3_PROCESS_CTX_PLAYING;
+            fTimePosition.bbt.valid = ctx->state & (V3_PROCESS_CTX_TEMPO_VALID|V3_PROCESS_CTX_TIME_SIG_VALID);
+
+            // ticksPerBeat is not possible with VST2
+            fTimePosition.bbt.ticksPerBeat = 1920.0;
+
+            if (ctx->state & V3_PROCESS_CTX_CONT_TIME_VALID)
+                fTimePosition.frame = ctx->continuous_time_in_samples;
+            else
+                fTimePosition.frame = ctx->project_time_in_samples;
+
+            if (ctx->state & V3_PROCESS_CTX_TEMPO_VALID)
+                fTimePosition.bbt.beatsPerMinute = ctx->bpm;
+            else
+                fTimePosition.bbt.beatsPerMinute = 120.0;
+
+            if (ctx->state & (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID))
+            {
+                const double ppqPos    = std::abs(ctx->project_time_quarters);
+                const int    ppqPerBar = ctx->time_sig_numerator * 4 / ctx->time_sig_denom;
+                const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * ctx->time_sig_numerator;
+                const double rest      =  std::fmod(barBeats, 1.0);
+
+                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
+                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
+                fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
+                fTimePosition.bbt.beatsPerBar = ctx->time_sig_numerator;
+                fTimePosition.bbt.beatType    = ctx->time_sig_denom;
+
+                if (ctx->project_time_quarters < 0.0)
+                {
+                    --fTimePosition.bbt.bar;
+                    fTimePosition.bbt.beat = ctx->time_sig_numerator - fTimePosition.bbt.beat + 1;
+                    fTimePosition.bbt.tick = fTimePosition.bbt.ticksPerBeat - fTimePosition.bbt.tick - 1;
+                }
+            }
+            else
+            {
+                fTimePosition.bbt.bar         = 1;
+                fTimePosition.bbt.beat        = 1;
+                fTimePosition.bbt.tick        = 0.0;
+                fTimePosition.bbt.beatsPerBar = 4.0f;
+                fTimePosition.bbt.beatType    = 4.0f;
+            }
+
+            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat*
+                                             fTimePosition.bbt.beatsPerBar*
+                                             (fTimePosition.bbt.bar-1);
+
+            fPlugin.setTimePosition(fTimePosition);
+
+        }
 #endif
 
-        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS];
-        /* */ float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
+        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS != 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
+        /* */ float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS != 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
 
         {
             int32_t i = 0;
-            for (; i < data->inputs->num_channels; ++i)
-                inputs[i] = data->inputs->channel_buffers_32[i];
-            for (; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            if (data->inputs != nullptr)
+            {
+                for (; i < data->inputs->num_channels; ++i)
+                {
+                    DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_INPUTS, i);
+                    inputs[i] = data->inputs->channel_buffers_32[i];
+                }
+            }
+            for (; i < std::max(1, DISTRHO_PLUGIN_NUM_INPUTS); ++i)
                 inputs[i] = nullptr; // TODO use dummy buffer
         }
 
         {
             int32_t i = 0;
-            for (; i < data->outputs->num_channels; ++i)
-                outputs[i] = data->outputs->channel_buffers_32[i];
-            for (; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            if (data->outputs != nullptr)
+            {
+                for (; i < data->outputs->num_channels; ++i)
+                {
+                    DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_OUTPUTS, i);
+                    outputs[i] = data->outputs->channel_buffers_32[i];
+                }
+            }
+            for (; i < std::max(1, DISTRHO_PLUGIN_NUM_OUTPUTS); ++i)
                 outputs[i] = nullptr; // TODO use dummy buffer
         }
 
@@ -965,6 +1031,11 @@ private:
     // VST3 stuff
     v3_component_handler* fComponentHandler;
     void*                 fComponentHandlerArg;
+
+    // Temporary data
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
+    TimePosition fTimePosition;
+#endif
 
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
