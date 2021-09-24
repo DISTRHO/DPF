@@ -507,17 +507,17 @@ public:
         return V3_OK;
     }
 
-    v3_result setState(v3_bstream**)
+    v3_result setState(v3_bstream*, void*)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result getState(v3_bstream**)
+    v3_result getState(v3_bstream*, void*)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     // ----------------------------------------------------------------------------------------------------------------
     // v3_audio_processor interface calls
@@ -630,23 +630,25 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_edit_controller interface calls
 
-    v3_result setComponentState(v3_bstream*)
+#if 0
+    v3_result setComponentState(v3_bstream*, void*)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result setState(v3_bstream*)
+    v3_result setState(v3_bstream*, void*)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result getState(v3_bstream*)
+    v3_result getState(v3_bstream*, void*)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
+#endif
 
     int32_t getParameterCount() const noexcept
     {
@@ -922,38 +924,62 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.set_component_state = []V3_API(void* self, v3_bstream* stream) -> v3_result
         {
-            d_stdout("dpf_edit_controller::set_component_state        => %p", self);
+            d_stdout("dpf_edit_controller::set_component_state        => %p %p", self, stream);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            return vst3->setComponentState(stream);
+#if 0
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_bstream* const streamptr
+                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
+                                    : nullptr;
+
+            return vst3->setComponentState(streamptr, stream);
+#endif
+            return V3_NOT_IMPLEMENTED;
         };
 
         controller.set_state = []V3_API(void* self, v3_bstream* stream) -> v3_result
         {
-            d_stdout("dpf_edit_controller::set_state                  => %p", self);
+            d_stdout("dpf_edit_controller::set_state                  => %p %p", self, stream);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
+#if 0
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_bstream* const streamptr
+                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
+                                    : nullptr;
+
             return vst3->setState(stream);
+#endif
+            return V3_NOT_IMPLEMENTED;
         };
 
         controller.get_state = []V3_API(void* self, v3_bstream* stream) -> v3_result
         {
-            d_stdout("dpf_edit_controller::get_state                  => %p", self);
+            d_stdout("dpf_edit_controller::get_state                  => %p %p", self, stream);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
+#if 0
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_bstream* const streamptr
+                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
+                                    : nullptr;
+
             return vst3->getState(stream);
+#endif
+            return V3_NOT_IMPLEMENTED;
         };
 
         controller.get_parameter_count = []V3_API(void* self) -> int32_t
@@ -1503,7 +1529,12 @@ struct dpf_component : v3_component_cpp {
             PluginVst3* const vst3 = component->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            return vst3->setState(stream);
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_bstream* const streamptr
+                = stream != nullptr ? (v3_bstream*)((uint8_t*)*(stream)+sizeof(v3_funknown))
+                                    : nullptr;
+
+            return vst3->setState(streamptr, stream);
         };
 
         comp.get_state = []V3_API(void* self, v3_bstream** stream) -> v3_result
@@ -1515,7 +1546,12 @@ struct dpf_component : v3_component_cpp {
             PluginVst3* const vst3 = component->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            return vst3->getState(stream);
+            // offset struct by sizeof(v3_funknown), because of differences between C and C++
+            v3_bstream* const streamptr
+                = stream != nullptr ? (v3_bstream*)((uint8_t*)*(stream)+sizeof(v3_funknown))
+                                    : nullptr;
+
+            return vst3->getState(streamptr, stream);
         };
     }
 };
