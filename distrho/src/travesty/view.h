@@ -61,14 +61,14 @@ struct v3_plugin_view {
 
 	V3_API v3_result (*get_size)
 		(void *self, struct v3_view_rect *);
-	V3_API v3_result (*set_size)
+	V3_API v3_result (*on_size)
 		(void *self, struct v3_view_rect *);
 
 	V3_API v3_result (*on_focus)
 		(void *self, v3_bool state);
 
 	V3_API v3_result (*set_frame)
-		(void *self, struct v3_plugin_frame *);
+		(void *self, struct v3_plugin_frame **);
 	V3_API v3_result (*can_resize)(void *self);
 	V3_API v3_result (*check_size_constraint)
 		(void *self, struct v3_view_rect *);
@@ -81,7 +81,7 @@ struct v3_plugin_frame {
 	struct v3_funknown;
 
 	V3_API v3_result (*resize_view)
-		(void *self, struct v3_plugin_view *, struct v3_view_rect *);
+		(void *self, struct v3_plugin_view **, struct v3_view_rect *);
 };
 
 static const v3_tuid v3_plugin_frame_iid =
