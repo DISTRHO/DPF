@@ -44,7 +44,7 @@
  * - set factory sub_categories
  * - set factory email (needs new DPF API, useful for LV2 as well)
  * - do something with get_controller_class_id and set_io_mode?
- * - call component handler restart with params-changed flag after changing program
+ * - call component handler restart with params-changed flag after changing program (doesnt seem to be needed..?)
  * - call component handler restart with latency-changed flag when latency changes
  */
 
@@ -571,7 +571,7 @@ public:
      * the parameter symbol is used as the "key", so it is possible to reorder them or even remove and add safely.
      * the number of states must remain constant though.
      */
-    v3_result setState(v3_bstream* const stream, void* arg)
+    v3_result setState(v3_bstream** const stream)
     {
 #if DISTRHO_PLUGIN_WANT_STATE
         // TODO
@@ -593,7 +593,7 @@ public:
             for (int32_t pos = 0, read;; pos += read)
             {
                 std::memset(buffer, '\xff', sizeof(buffer));
-                res = stream->read(arg, buffer, sizeof(buffer)-1, &read);
+                res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
                 DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
                 DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
@@ -648,7 +648,7 @@ public:
         return V3_OK;
     }
 
-    v3_result getState(v3_bstream* const stream, void* arg)
+    v3_result getState(v3_bstream** const stream)
     {
         const uint32_t paramCount = fPlugin.getParameterCount();
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -661,7 +661,7 @@ public:
         {
             char buffer = '\0';
             int32_t ignored;
-            return stream->write(arg, &buffer, 1, &ignored);
+            return v3_cpp_obj(stream)->write(stream, &buffer, 1, &ignored);
         }
 
         String state;
@@ -727,7 +727,7 @@ public:
         for (int32_t wrtntotal = 0, wrtn; wrtntotal < size; wrtntotal += wrtn)
         {
             wrtn = 0;
-            res = stream->write(arg, const_cast<char*>(buffer), size - wrtntotal, &wrtn);
+            res = v3_cpp_obj(stream)->write(stream, const_cast<char*>(buffer), size - wrtntotal, &wrtn);
 
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
             DISTRHO_SAFE_ASSERT_INT_RETURN(wrtn > 0, wrtn, V3_INTERNAL_ERR);
@@ -932,15 +932,12 @@ public:
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         uint32_t midiEventCount = 0;
 
-        if (v3_event_list** const eventarg = data->input_events)
+        if (v3_event_list** const eventptr = data->input_events)
         {
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_event_list* const eventptr = (v3_event_list*)((uint8_t*)(*eventarg)+sizeof(v3_funknown));
-
             v3_event event;
-            for (uint32_t i = 0, count = eventptr->get_event_count(eventarg); i < count; ++i)
+            for (uint32_t i = 0, count = v3_cpp_obj(eventptr)->get_event_count(eventptr); i < count; ++i)
             {
-                if (eventptr->get_event(eventarg, i, &event) != V3_OK)
+                if (v3_cpp_obj(eventptr)->get_event(eventptr, i, &event) != V3_OK)
                     break;
 
                 // check if event can be encoded as MIDI
@@ -1366,10 +1363,7 @@ private:
             return true;
         }
 
-        // offset struct by sizeof(v3_funknown), because of differences between C and C++
-        v3_event_list* const hostptr = (v3_event_list*)((uint8_t*)(*fHostEventOutputHandle)+sizeof(v3_funknown));
-
-        return hostptr->add_event(fHostEventOutputHandle, &event) == V3_OK;
+        return v3_cpp_obj(fHostEventOutputHandle)->add_event(fHostEventOutputHandle, &event) == V3_OK;
     }
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
@@ -1478,12 +1472,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
 #if 0
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_bstream* const streamptr
-                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
-                                    : nullptr;
-
-            return vst3->setComponentState(streamptr, stream);
+            return vst3->setComponentState(stream);
 #endif
             return V3_NOT_IMPLEMENTED;
         };
@@ -1498,11 +1487,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
 #if 0
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_bstream* const streamptr
-                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
-                                    : nullptr;
-
             return vst3->setState(stream);
 #endif
             return V3_NOT_IMPLEMENTED;
@@ -1518,11 +1502,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
 #if 0
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_bstream* const streamptr
-                = stream != nullptr ? (v3_bstream*)((uint8_t*)stream+sizeof(v3_funknown))
-                                    : nullptr;
-
             return vst3->getState(stream);
 #endif
             return V3_NOT_IMPLEMENTED;
@@ -2215,12 +2194,7 @@ struct dpf_component : v3_component_cpp {
             PluginVst3* const vst3 = component->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_bstream* const streamptr
-                = stream != nullptr ? (v3_bstream*)((uint8_t*)*(stream)+sizeof(v3_funknown))
-                                    : nullptr;
-
-            return vst3->setState(streamptr, stream);
+            return vst3->setState(stream);
         };
 
         comp.get_state = []V3_API(void* self, v3_bstream** stream) -> v3_result
@@ -2232,12 +2206,7 @@ struct dpf_component : v3_component_cpp {
             PluginVst3* const vst3 = component->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_bstream* const streamptr
-                = stream != nullptr ? (v3_bstream*)((uint8_t*)*(stream)+sizeof(v3_funknown))
-                                    : nullptr;
-
-            return vst3->getState(streamptr, stream);
+            return vst3->getState(stream);
         };
     }
 };

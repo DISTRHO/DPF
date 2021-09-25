@@ -25,7 +25,6 @@
  */
 
 #ifdef __cplusplus
-struct v3_funknown;
 template<class T> static inline
 constexpr T* v3_cpp_obj(T** obj)
 {
