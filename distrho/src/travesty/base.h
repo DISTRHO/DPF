@@ -21,6 +21,23 @@
 #include <string.h>
 
 /**
+ * deal with C vs C++ differences
+ */
+
+#ifdef __cplusplus
+struct v3_funknown;
+template<class T> static inline
+constexpr T* v3_cpp_obj(T** obj)
+{
+	return (T*)((v3_funknown*)*obj + 1);
+}
+#else
+# ifndef constexpr
+#  define constexpr
+# endif
+#endif
+
+/**
  * various types
  */
 
@@ -31,15 +48,14 @@ typedef uint8_t v3_bool;
 
 typedef uint32_t v3_param_id;
 
-
 /**
  * low-level ABI nonsense
  */
 
 typedef uint8_t v3_tuid[16];
 
-inline static bool
-v3_tuid_match(const v3_tuid a, const v3_tuid b)
+static inline
+bool v3_tuid_match(const v3_tuid a, const v3_tuid b)
 {
 	return memcmp(a, b, sizeof(v3_tuid)) == 0;
 }
@@ -128,14 +144,12 @@ enum {
  */
 
 struct v3_funknown {
-	V3_API v3_result (*query_interface)
-		(void *self, const v3_tuid iid, void **obj);
-
-	V3_API uint32_t (*ref)(void *self);
-	V3_API uint32_t (*unref)(void *self);
+	V3_API v3_result (*query_interface)(void* self, const v3_tuid iid, void** obj);
+	V3_API uint32_t (*ref)(void* self);
+	V3_API uint32_t (*unref)(void* self);
 };
 
-static const v3_tuid v3_funknown_iid =
+static constexpr const v3_tuid v3_funknown_iid =
 	V3_ID(0x00000000, 0x00000000, 0xC0000000, 0x00000046);
 
 /**
@@ -145,10 +159,9 @@ static const v3_tuid v3_funknown_iid =
 struct v3_plugin_base {
 	struct v3_funknown;
 
-	V3_API v3_result (*initialise)
-		(void *self, struct v3_funknown *context);
-	V3_API v3_result (*terminate)(void *self);
+	V3_API v3_result (*initialise)(void* self, struct v3_funknown* context);
+	V3_API v3_result (*terminate)(void* self);
 };
 
-static const v3_tuid v3_plugin_base_iid =
+static constexpr const v3_tuid v3_plugin_base_iid =
 	V3_ID(0x22888DDB, 0x156E45AE, 0x8358B348, 0x08190625);

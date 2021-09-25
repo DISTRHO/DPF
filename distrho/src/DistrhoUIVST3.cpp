@@ -21,16 +21,16 @@
 // TESTING awful idea dont reuse
 #include "../extra/Thread.hpp"
 
-// #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-// # undef DISTRHO_PLUGIN_HAS_UI
-// # define DISTRHO_PLUGIN_HAS_UI 0
-// #endif
-//
-// #if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-// # undef DISTRHO_PLUGIN_HAS_UI
-// # define DISTRHO_PLUGIN_HAS_UI 0
-// #endif
-//
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
 // #undef DISTRHO_PLUGIN_HAS_UI
 // #define DISTRHO_PLUGIN_HAS_UI 1
 
@@ -38,93 +38,33 @@
 # include "DistrhoUIInternal.hpp"
 // #endif
 
-#include "travesty/audio_processor.h"
-#include "travesty/component.h"
 #include "travesty/edit_controller.h"
-#include "travesty/factory.h"
 #include "travesty/view.h"
 
-// --------------------------------------------------------------------------------------------------------------------
+/* TODO items:
+ * - see how to handle external non-embed UI build
+ * - program listener
+ * - state listener and sender
+ * - sample rate change listener
+ * - call component handler restart with params-changed flag when setting program
+ * - call component handler restart with latency-changed flag when latency changes
+ */
 
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
+static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_STATE
-static const setStateFunc setStateCallback = nullptr;
+static constexpr const setStateFunc setStateCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// custom v3_tuid compatible type
+// Utility functions (defined on plugin side)
 
-typedef uint32_t dpf_tuid[4];
-static_assert(sizeof(v3_tuid) == sizeof(dpf_tuid), "uid size mismatch");
-
-// --------------------------------------------------------------------------------------------------------------------
-// Utility functions
-
-const char* tuid2str(const v3_tuid iid)
-{
-    if (v3_tuid_match(iid, v3_funknown_iid))
-        return "{v3_funknown}";
-    if (v3_tuid_match(iid, v3_plugin_base_iid))
-        return "{v3_plugin_base}";
-    if (v3_tuid_match(iid, v3_plugin_factory_iid))
-        return "{v3_plugin_factory}";
-    if (v3_tuid_match(iid, v3_plugin_factory_2_iid))
-        return "{v3_plugin_factory_2}";
-    if (v3_tuid_match(iid, v3_plugin_factory_3_iid))
-        return "{v3_plugin_factory_3}";
-    if (v3_tuid_match(iid, v3_component_iid))
-        return "{v3_component}";
-    if (v3_tuid_match(iid, v3_bstream_iid))
-        return "{v3_bstream}";
-    if (v3_tuid_match(iid, v3_event_list_iid))
-        return "{v3_event_list}";
-    if (v3_tuid_match(iid, v3_param_value_queue_iid))
-        return "{v3_param_value_queue}";
-    if (v3_tuid_match(iid, v3_param_changes_iid))
-        return "{v3_param_changes}";
-    if (v3_tuid_match(iid, v3_process_context_requirements_iid))
-        return "{v3_process_context_requirements}";
-    if (v3_tuid_match(iid, v3_audio_processor_iid))
-        return "{v3_audio_processor}";
-    if (v3_tuid_match(iid, v3_component_handler_iid))
-        return "{v3_component_handler}";
-    if (v3_tuid_match(iid, v3_edit_controller_iid))
-        return "{v3_edit_controller}";
-    if (v3_tuid_match(iid, v3_plugin_view_iid))
-        return "{v3_plugin_view}";
-    if (v3_tuid_match(iid, v3_plugin_frame_iid))
-        return "{v3_plugin_frame}";
-    if (v3_tuid_match(iid, v3_plugin_view_content_scale_steinberg_iid))
-        return "{v3_plugin_view_content_scale_steinberg}";
-    if (v3_tuid_match(iid, v3_plugin_view_parameter_finder_iid))
-        return "{v3_plugin_view_parameter_finder}";
-    /*
-    if (std::memcmp(iid, dpf_tuid_class, sizeof(dpf_tuid)) == 0)
-        return "{dpf_tuid_class}";
-    if (std::memcmp(iid, dpf_tuid_component, sizeof(dpf_tuid)) == 0)
-        return "{dpf_tuid_component}";
-    if (std::memcmp(iid, dpf_tuid_controller, sizeof(dpf_tuid)) == 0)
-        return "{dpf_tuid_controller}";
-    if (std::memcmp(iid, dpf_tuid_processor, sizeof(dpf_tuid)) == 0)
-        return "{dpf_tuid_processor}";
-    if (std::memcmp(iid, dpf_tuid_view, sizeof(dpf_tuid)) == 0)
-        return "{dpf_tuid_view}";
-    */
-
-    static char buf[46];
-    std::snprintf(buf, sizeof(buf), "{0x%08X,0x%08X,0x%08X,0x%08X}",
-                  (uint32_t)d_cconst(iid[ 0], iid[ 1], iid[ 2], iid[ 3]),
-                  (uint32_t)d_cconst(iid[ 4], iid[ 5], iid[ 6], iid[ 7]),
-                  (uint32_t)d_cconst(iid[ 8], iid[ 9], iid[10], iid[11]),
-                  (uint32_t)d_cconst(iid[12], iid[13], iid[14], iid[15]));
-    return buf;
-}
+const char* tuid2str(const v3_tuid iid);
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -145,7 +85,6 @@ public:
               scaleFactor),
           fView(view),
           fFrame(nullptr),
-          fFrameArg(nullptr),
           fScaleFactor(scaleFactor)
     {
         // TESTING awful idea dont reuse
@@ -221,12 +160,9 @@ public:
 #endif
     }
 
-    v3_result setFrame(v3_plugin_frame* const frame, void* const arg) noexcept
+    v3_result setFrame(v3_plugin_frame** const frame) noexcept
     {
-        d_stdout("setFrame %p %p", frame, arg);
         fFrame = frame;
-        fFrameArg = arg;
-
         return V3_OK;
     }
 
@@ -257,8 +193,7 @@ private:
 
     // VST3 stuff
     v3_plugin_view** const fView;
-    v3_plugin_frame* fFrame;
-    void* fFrameArg;
+    v3_plugin_frame** fFrame;
     // v3_component_handler_cpp** handler = nullptr;
 
     // Temporary data
@@ -304,8 +239,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fFrameArg != nullptr,);
-        d_stdout("from UI setSize %u %u | %p %p %p", width, height, fView, fFrame, fFrameArg);
+        d_stdout("from UI setSize %u %u | %p %p", width, height, fView, fFrame);
 
 #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
@@ -317,7 +251,7 @@ private:
         std::memset(&rect, 0, sizeof(rect));
         rect.right = width;
         rect.bottom = height;
-        fFrame->resize_view(fFrameArg, fView, &rect);
+        v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)
@@ -546,13 +480,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                     view->uivst3 = new UIVst3((uintptr_t)parent, scaleFactor, view->sampleRate,
                                               view->instancePointer, (v3_plugin_view**)self);
-
-                    // offset struct by sizeof(v3_funknown), because of differences between C and C++
-                    v3_plugin_frame* const frameptr
-                        = view->frame != nullptr ? (v3_plugin_frame*)((uint8_t*)*(view->frame)+sizeof(v3_funknown))
-                                                 : nullptr;
-
-                    view->uivst3->setFrame(frameptr, view->frame);
+                    view->uivst3->setFrame(view->frame);
                     // view->uivst3->setHandler(view->handler);
                     return V3_OK;
                 }
@@ -613,10 +541,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             dpf_plugin_view* const view = *(dpf_plugin_view**)self;
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
 
-            // special case: allow UI to not be attached yet, as a way to get size before window creation
-
             if (UIVst3* const uivst3 = view->uivst3)
                 return uivst3->getSize(rect);
+
+            // special case: allow UI to not be attached yet, as a way to get size before window creation
 
             const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
             UIExporter tmpUI(nullptr, 0, view->sampleRate,
@@ -660,14 +588,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             view->frame = frame;
 
             if (UIVst3* const uivst3 = view->uivst3)
-            {
-                // offset struct by sizeof(v3_funknown), because of differences between C and C++
-                v3_plugin_frame* const frameptr
-                    = frame != nullptr ? (v3_plugin_frame*)((uint8_t*)*(frame)+sizeof(v3_funknown))
-                                       : nullptr;
-
-                return uivst3->setFrame(frameptr, frame);
-            }
+                return uivst3->setFrame(frame);
 
             return V3_NOT_INITIALISED;
         };
@@ -697,7 +618,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_plugin_view_create (called from DSP side)
+// dpf_plugin_view_create (called from plugin side)
 
 v3_funknown** dpf_plugin_view_create(void* instancePointer, double sampleRate);
 

@@ -25,18 +25,25 @@
 #include <atomic>
 #include <vector>
 
-// TESTING awful idea dont reuse
-#include "../extra/Thread.hpp"
+/* TODO items:
+ * - base component refcount handling
+ * - program support
+ * - state support
+ * - midi cc parameter mapping
+ * - full MIDI1 encode and decode
+ * - call component handler restart with params-changed flag when setting program
+ * - call component handler restart with latency-changed flag when latency changes
+ */
 
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-static const writeMidiFunc writeMidiCallback = nullptr;
+static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+static constexpr const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -67,7 +74,7 @@ static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
 // --------------------------------------------------------------------------------------------------------------------
 // Utility functions
 
-static const char* tuid2str(const v3_tuid iid)
+const char* tuid2str(const v3_tuid iid)
 {
     if (v3_tuid_match(iid, v3_funknown_iid))
         return "{v3_funknown}";
@@ -220,7 +227,6 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
-          fComponentHandlerArg(nullptr),
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
@@ -1136,10 +1142,9 @@ public:
         return V3_OK;
     }
 
-    v3_result setComponentHandler(v3_component_handler* const handler, void* const arg) noexcept
+    v3_result setComponentHandler(v3_component_handler** const handler) noexcept
     {
         fComponentHandler = handler;
-        fComponentHandlerArg = arg;
         return V3_OK;
     }
 
@@ -1150,8 +1155,7 @@ private:
     PluginExporter fPlugin;
 
     // VST3 stuff
-    v3_component_handler* fComponentHandler;
-    void*                 fComponentHandlerArg;
+    v3_component_handler** fComponentHandler;
 
     // Temporary data
     float* fParameterValues;
@@ -1209,15 +1213,14 @@ private:
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
-        DISTRHO_SAFE_ASSERT_RETURN(fComponentHandlerArg != nullptr, false);
 
-        if (fComponentHandler->begin_edit(fComponentHandlerArg, index) != V3_OK)
+        if (v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, index) != V3_OK)
             return false;
 
         const double normalized = fPlugin.getParameterRanges(index).getNormalizedValue(value);
-        const bool ret = fComponentHandler->perform_edit(fComponentHandlerArg, index, normalized) == V3_OK;
+        const bool ret = v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, index, normalized) == V3_OK;
 
-        fComponentHandler->end_edit(fComponentHandlerArg, index);
+        v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, index);
         return ret;
     }
 
@@ -1308,10 +1311,13 @@ struct v3_edit_controller_cpp : v3_funknown {
 struct dpf_edit_controller : v3_edit_controller_cpp {
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
+    // cached values
+    v3_component_handler** handler;
 
     dpf_edit_controller(ScopedPointer<PluginVst3>& v)
         : vst3(v),
-          initialized(false)
+          initialized(false),
+          handler(nullptr)
     {
         static const uint8_t* kSupportedInterfaces[] = {
             v3_funknown_iid,
@@ -1547,27 +1553,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
-            PluginVst3* const vst3 = controller->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+            controller->handler = handler;
 
-//             v3_component_handler_cpp** const cpphandler = (v3_component_handler_cpp**)handler;
-//
-//             controller->handler = cpphandler;
-//
-//             if (controller->view != nullptr)
-//             {
-//                 controller->view->handler = cpphandler;
-//
-//                 if (UIVst3* const uivst3 = controller->view->uivst3)
-//                     uivst3->setHandler(cpphandler);
-//             }
+            if (PluginVst3* const vst3 = controller->vst3)
+                return vst3->setComponentHandler(handler);
 
-            // offset struct by sizeof(v3_funknown), because of differences between C and C++
-            v3_component_handler* const handlerptr
-                = handler != nullptr ? (v3_component_handler*)((uint8_t*)*(handler)+sizeof(v3_funknown))
-                                     : nullptr;
-
-            return vst3->setComponentHandler(handlerptr, handler);
+            return V3_NOT_INITIALISED;
         };
 
         controller.create_view = []V3_API(void* self, const char* name) -> v3_plugin_view**
