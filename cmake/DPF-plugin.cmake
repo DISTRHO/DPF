@@ -22,7 +22,7 @@
 # add_subdirectory(DPF)
 #
 # dpf_add_plugin(MyPlugin
-#   TARGETS lv2 vst2
+#   TARGETS lv2 vst2 vst3
 #   UI_TYPE opengl
 #   FILES_DSP
 #       src/MyPlugin.cpp
@@ -71,7 +71,7 @@ include(CMakeParseArguments)
 #
 #   `TARGETS` <tgt1>...<tgtN>
 #       a list of one of more of the following target types:
-#       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`
+#       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`
 #
 #   `UI_TYPE` <type>
 #       the user interface type: `opengl` (default), `cairo`
@@ -153,6 +153,8 @@ function(dpf_add_plugin NAME)
       dpf__build_lv2("${NAME}" "${_dgl_library}" "${_dpf_plugin_MONOLITHIC}")
     elseif(_target STREQUAL "vst2")
       dpf__build_vst2("${NAME}" "${_dgl_library}")
+    elseif(_target STREQUAL "vst3")
+      dpf__build_vst3("${NAME}" "${_dgl_library}")
     else()
       message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
@@ -199,7 +201,7 @@ endfunction()
 # dpf__build_ladspa
 # ------------------------------------------------------------------------------
 #
-# Add build rules for a DSSI plugin.
+# Add build rules for a LADSPA plugin.
 #
 function(dpf__build_ladspa NAME)
   dpf__create_dummy_source_list(_no_srcs)
@@ -259,7 +261,7 @@ endfunction()
 # dpf__build_lv2
 # ------------------------------------------------------------------------------
 #
-# Add build rules for a LV2 plugin.
+# Add build rules for an LV2 plugin.
 #
 function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
   dpf__create_dummy_source_list(_no_srcs)
@@ -337,6 +339,38 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
     file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst/Contents/PkgInfo"
       DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents")
   endif()
+endfunction()
+
+# dpf__build_vst3
+# ------------------------------------------------------------------------------
+#
+# Add build rules for a VST3 plugin.
+#
+function(dpf__build_vst3 NAME DGL_LIBRARY)
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-vst3" ${_no_srcs})
+  dpf__add_plugin_main("${NAME}-vst3" "vst3")
+  dpf__add_ui_main("${NAME}-vst3" "vst3" "${DGL_LIBRARY}")
+  dpf__set_module_export_list("${NAME}-vst3" "vst3")
+  target_link_libraries("${NAME}-vst3" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  set_target_properties("${NAME}-vst3" PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst3/$<0:>"
+    OUTPUT_NAME "${NAME}-vst3"
+    PREFIX "")
+  # TODO set correct output directory for VST3 packaging
+  #if(APPLE)
+    #set_target_properties("${NAME}-vst3" PROPERTIES
+      #LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/MacOS/$<0:>"
+      #OUTPUT_NAME "${NAME}"
+      #SUFFIX "")
+    #set(INFO_PLIST_PROJECT_NAME "${NAME}")
+    #configure_file("${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/Info.plist"
+      #"${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
+    #file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/PkgInfo"
+      #DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
+  #endif()
 endfunction()
 
 # dpf__add_dgl_cairo

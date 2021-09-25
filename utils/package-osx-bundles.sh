@@ -47,6 +47,7 @@ sed -e "s|@name@|${NAME}|" ${DPF_UTILS_DIR}/plugin.pkg/welcome.txt.in > build/we
 sed -e "s|@builddir@|${PWD}/build|" \
     -e "s|@lv2bundleref@|dpf-${SNAME}-lv2bundles.pkg|" \
     -e "s|@vst2bundleref@|dpf-${SNAME}-vst2bundles.pkg|" \
+    -e "s|@vst3bundleref@|dpf-${SNAME}-vst3bundles.pkg|" \
     -e "s|@name@|${NAME}|g" \
     -e "s|@sname@|${SNAME}|g" \
     ${DPF_UTILS_DIR}/plugin.pkg/package.xml.in > build/package.xml
