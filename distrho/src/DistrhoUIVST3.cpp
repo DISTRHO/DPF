@@ -16,12 +16,6 @@
 
 #include "DistrhoUIInternal.hpp"
 
-#include "travesty/audio_processor.h"
-#include "travesty/component.h"
-#include "travesty/edit_controller.h"
-#include "travesty/factory.h"
-#include "travesty/view.h"
-
 #include <atomic>
 
 // TESTING awful idea dont reuse
@@ -43,6 +37,12 @@
 // #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 // #endif
+
+#include "travesty/audio_processor.h"
+#include "travesty/component.h"
+#include "travesty/edit_controller.h"
+#include "travesty/factory.h"
+#include "travesty/view.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -209,10 +209,16 @@ public:
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result onFocus(const bool /*state*/)
+    v3_result onFocus(const bool state)
     {
-        // TODO
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        fUI.notifyFocusChanged(state);
+        return V3_OK;
+#else
         return V3_NOT_IMPLEMENTED;
+        // unused
+        (void)state;
+#endif
     }
 
     v3_result setFrame(v3_plugin_frame* const frame, void* const arg) noexcept
@@ -692,11 +698,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         view.can_resize = []V3_API(void* self) -> v3_result
         {
             d_stdout("dpf_plugin_view::can_resize                 => %p", self);
-#if DISTRHO_UI_USER_RESIZABLE
-            return V3_OK;
-#else
+// #if DISTRHO_UI_USER_RESIZABLE
+//             return V3_OK;
+// #else
             return V3_NOT_IMPLEMENTED;
-#endif
+// #endif
         };
 
         view.check_size_constraint = []V3_API(void* self, v3_view_rect* rect) -> v3_result

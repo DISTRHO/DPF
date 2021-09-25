@@ -370,7 +370,7 @@ public:
                 }
             }
 
-            fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
+            fUI.handlePluginKeyboardVST2(down, static_cast<uint>(index), fKeyboardModifiers);
 
             if (needsShiftRevert)
                 fKeyboardModifiers &= ~kModifierShift;

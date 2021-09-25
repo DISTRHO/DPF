@@ -610,6 +610,14 @@ public:
         return fData->parameters[index].groupId;
     }
 
+    float getParameterDefault(const uint32_t index) const
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0.0f);
+
+        return fData->parameters[index].ranges.def;
+    }
+
     float getParameterValue(const uint32_t index) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);

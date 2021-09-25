@@ -407,22 +407,6 @@ void Window::setTransientWinId(const uintptr_t winId)
 {
     puglSetTransientFor(pData->view, winId);
 }
-
-// -----------------------------------------------------------------------
-
-bool Window::handlePluginKeyboard(const bool press, const uint key)
-{
-    // TODO
-    return false;
-    // return pData->handlePluginKeyboard(press, key);
-}
-
-bool Window::handlePluginSpecial(const bool press, const Key key)
-{
-    // TODO
-    return false;
-    // return pData->handlePluginSpecial(press, key);
-}
 #endif
 
 // -----------------------------------------------------------------------

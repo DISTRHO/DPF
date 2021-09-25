@@ -258,7 +258,7 @@ public:
     }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    bool handlePluginKeyboard(const bool press, const uint key, const uint16_t mods)
+    bool handlePluginKeyboardVST2(const bool press, const uint key, const uint16_t mods)
     {
         DGL_NAMESPACE::Widget::KeyboardEvent ev;
         ev.mod   = mods;
@@ -288,6 +288,15 @@ public:
 
         ui->uiScaleFactorChanged(scaleFactor);
     }
+
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    void notifyFocusChanged(const bool focus)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        ui->uiFocus(focus, DGL_NAMESPACE::kCrossingNormal);
+    }
+#endif
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {

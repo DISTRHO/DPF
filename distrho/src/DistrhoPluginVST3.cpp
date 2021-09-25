@@ -219,7 +219,8 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
-          fComponentHandlerArg(nullptr)
+          fComponentHandlerArg(nullptr),
+          fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
 #endif
@@ -288,6 +289,23 @@ public:
                 port.busId = 0;
         }
 #endif
+
+        if (const uint32_t parameterCount = fPlugin.getParameterCount())
+        {
+            fParameterValues = new float[parameterCount];
+
+            for (uint32_t i=0; i < parameterCount; ++i)
+                fParameterValues[i] = fPlugin.getParameterDefault(i);
+        }
+    }
+
+    ~PluginVst3()
+    {
+        if (fParameterValues != nullptr)
+        {
+            delete[] fParameterValues;
+            fParameterValues = nullptr;
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -842,6 +860,12 @@ public:
         }
 #endif
 
+        if (data->nframes <= 0)
+        {
+            updateParameterOutputsAndTriggers();
+            return V3_OK;
+        }
+
         const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS != 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
         /* */ float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS != 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
 
@@ -962,8 +986,7 @@ public:
         fHostEventOutputHandle = nullptr;
 #endif
 
-        // TODO updateParameterOutputsAndTriggers()
-
+        updateParameterOutputsAndTriggers();
         return V3_OK;
     }
 
@@ -1130,6 +1153,7 @@ private:
     void*                 fComponentHandlerArg;
 
     // Temporary data
+    float* fParameterValues;
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
@@ -1140,7 +1164,47 @@ private:
     TimePosition fTimePosition;
 #endif
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    // ----------------------------------------------------------------------------------------------------------------
+    // functions called from the plugin side, RT no block
+
+    void updateParameterOutputsAndTriggers()
+    {
+        float curValue;
+
+        for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+        {
+            if (fPlugin.isParameterOutput(i))
+            {
+                // NOTE: no output parameter support in VST3, simulate it here
+                curValue = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(curValue, fParameterValues[i]))
+                    continue;
+
+                fParameterValues[i] = curValue;
+            }
+            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            {
+                // NOTE: no trigger support in VST parameters, simulate it here
+                curValue = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(curValue, fPlugin.getParameterDefault(i)))
+                    continue;
+
+                fPlugin.setParameterValue(i, curValue);
+            }
+            else
+            {
+                continue;
+            }
+
+            requestParameterValueChange(i, curValue);
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // DPF callbacks
+
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
@@ -1156,6 +1220,7 @@ private:
         return ret;
     }
 
+#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
         return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
@@ -1418,7 +1483,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.get_parameter_string_for_value = []V3_API(void* self, v3_param_id index, double normalised, v3_str_128 output) -> v3_result
         {
-            d_stdout("dpf_edit_controller::get_parameter_string_for_value => %p %u %f %p", self, index, normalised, output);
+            // NOTE very noisy, called many times
+            // d_stdout("dpf_edit_controller::get_parameter_string_for_value => %p %u %f %p", self, index, normalised, output);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
@@ -1466,7 +1532,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.get_parameter_normalised = []V3_API(void* self, v3_param_id index) -> double
         {
-            d_stdout("dpf_edit_controller::get_parameter_normalised       => %p", self);
+            // NOTE very noisy, called many times
+            // d_stdout("dpf_edit_controller::get_parameter_normalised       => %p", self);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0.0);
 
