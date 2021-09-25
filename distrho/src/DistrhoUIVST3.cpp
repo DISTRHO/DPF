@@ -71,6 +71,14 @@ const char* tuid2str(const v3_tuid iid);
 
 // --------------------------------------------------------------------------------------------------------------------
 
+/**
+ * VST3 UI class.
+ *
+ * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
+ * The UI is created during the "attach" view event, and destroyed during "removed".
+ *
+ * The low-level VST3 stuff comes after.
+ */
 class UIVst3 : public Thread
 {
 public:
@@ -292,6 +300,12 @@ private:
     }
 #endif
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+ * VST3 low-level pointer thingies follow, proceed with care.
+ */
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_content_scale

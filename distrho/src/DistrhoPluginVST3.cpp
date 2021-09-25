@@ -219,6 +219,14 @@ static constexpr void (*const snprintf_u32_utf16)(int16_t*, uint32_t, size_t) = 
 
 // --------------------------------------------------------------------------------------------------------------------
 
+/**
+ * VST3 DSP class.
+ *
+ * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
+ * The DSP is created during the "initialise" component event, and destroyed during "terminate".
+ *
+ * The low-level VST3 stuff comes after.
+ */
 class PluginVst3
 {
     /* buses: we provide 1 for the main audio (if there is any) plus 1 for each sidechain or cv port.
@@ -1376,6 +1384,12 @@ private:
 #endif
 
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
+ * VST3 low-level pointer thingies follow, proceed with care.
+ */
 
 #if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
