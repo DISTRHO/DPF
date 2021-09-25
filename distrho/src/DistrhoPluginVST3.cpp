@@ -121,8 +121,8 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_plugin_view}";
     if (v3_tuid_match(iid, v3_plugin_frame_iid))
         return "{v3_plugin_frame}";
-    if (v3_tuid_match(iid, v3_plugin_view_content_scale_steinberg_iid))
-        return "{v3_plugin_view_content_scale_steinberg}";
+    if (v3_tuid_match(iid, v3_plugin_view_content_scale_iid))
+        return "{v3_plugin_view_content_scale_iid}";
     if (v3_tuid_match(iid, v3_plugin_view_parameter_finder_iid))
         return "{v3_plugin_view_parameter_finder}";
     if (std::memcmp(iid, dpf_tuid_class, sizeof(dpf_tuid)) == 0)

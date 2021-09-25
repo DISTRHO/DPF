@@ -85,13 +85,13 @@ static constexpr const v3_tuid v3_plugin_frame_iid =
  * (same IID/iface as presonus view scaling)
  */
 
-struct v3_plugin_view_content_scale_steinberg {
+struct v3_plugin_view_content_scale {
 	struct v3_funknown;
 
 	V3_API v3_result (*set_content_scale_factor)(void* self, float factor);
 };
 
-static constexpr const v3_tuid v3_plugin_view_content_scale_steinberg_iid =
+static constexpr const v3_tuid v3_plugin_view_content_scale_iid =
 	V3_ID(0x65ED9690, 0x8AC44525, 0x8AADEF7A, 0x72EA703F);
 
 /**

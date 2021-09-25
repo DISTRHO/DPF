@@ -310,65 +310,70 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_content_scale
 
-struct v3_plugin_view_content_scale_steinberg_cpp : v3_funknown {
-    v3_plugin_view_content_scale_steinberg scale;
+struct v3_plugin_view_content_scale_cpp : v3_funknown {
+    v3_plugin_view_content_scale scale;
 };
 
-struct dpf_plugin_view_scale : v3_plugin_view_content_scale_steinberg_cpp {
+struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     ScopedPointer<UIVst3>& uivst3;
     // cached values
     float scaleFactor;
 
-    dpf_plugin_view_scale(ScopedPointer<UIVst3>& v)
+    dpf_plugin_view_content_scale(ScopedPointer<UIVst3>& v)
         : uivst3(v),
           scaleFactor(0.0f)
     {
+        query_interface = query_interface_fn;
+        ref = ref_fn;
+        unref = unref_fn;
+        scale.set_content_scale_factor = set_content_scale_factor_fn;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_funknown
+
+    static V3_API v3_result query_interface_fn(void* self, const v3_tuid iid, void** iface)
+    {
+        d_stdout("dpf_plugin_view_content_scale::query_interface    => %p %s %p", self, tuid2str(iid), iface);
+        *iface = NULL;
+        DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
         static const uint8_t* kSupportedInterfaces[] = {
             v3_funknown_iid,
-            v3_plugin_view_content_scale_steinberg_iid
+            v3_plugin_view_content_scale_iid
         };
 
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_funknown
-
-        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        for (const uint8_t* interface_iid : kSupportedInterfaces)
         {
-            d_stdout("dpf_plugin_view_scale::query_interface    => %p %s %p", self, tuid2str(iid), iface);
-            *iface = NULL;
-            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
-
-            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            if (v3_tuid_match(interface_iid, iid))
             {
-                if (v3_tuid_match(interface_iid, iid))
-                {
-                    *iface = self;
-                    return V3_OK;
-                }
+                *iface = self;
+                return V3_OK;
             }
+        }
 
-            return V3_NO_INTERFACE;
-        };
+        return V3_NO_INTERFACE;
+    }
 
-        // there is only a single instance of this, so we don't have to care here
-        ref = []V3_API(void*) -> uint32_t { return 1; };
-        unref = []V3_API(void*) -> uint32_t { return 0; };
+    // there is only a single instance of this, so we don't have to care here
+    static V3_API uint32_t ref_fn(void*) { return 1; };
+    static V3_API uint32_t unref_fn(void*) { return 0; };
 
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_plugin_view_content_scale_steinberg
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_plugin_view_content_scale_steinberg
 
-        scale.set_content_scale_factor = []V3_API(void* self, float factor) -> v3_result
-        {
-            d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, V3_NOT_INITIALISED);
+    static V3_API v3_result set_content_scale_factor_fn(void* self, float factor)
+    {
+        d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
+        dpf_plugin_view_content_scale* const scale = *(dpf_plugin_view_content_scale**)self;
+        DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, V3_NOT_INITIALISED);
 
-            scale->scaleFactor = factor;
+        scale->scaleFactor = factor;
 
-            if (UIVst3* const uivst3 = scale->uivst3)
-                return uivst3->setContentScaleFactor(factor);
+        if (UIVst3* const uivst3 = scale->uivst3)
+            return uivst3->setContentScaleFactor(factor);
 
-            return V3_NOT_INITIALISED;
-        };
+        return V3_NOT_INITIALISED;
     }
 };
 
@@ -382,14 +387,13 @@ struct v3_plugin_view_cpp : v3_funknown {
 struct dpf_plugin_view : v3_plugin_view_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_plugin_view>* self;
-    ScopedPointer<dpf_plugin_view_scale> scale;
+    ScopedPointer<dpf_plugin_view_content_scale> scale;
     ScopedPointer<UIVst3> uivst3;
     // cached values
     v3_edit_controller** const controller;
     v3_component_handler** const handler;
     void* const instancePointer;
     double sampleRate;
-//     v3_component_handler_cpp** handler = nullptr;
     v3_plugin_frame** frame = nullptr;
 
     dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr,
@@ -440,10 +444,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             dpf_plugin_view* const view = *(dpf_plugin_view**)self;
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NO_INTERFACE);
 
-            if (v3_tuid_match(v3_plugin_view_content_scale_steinberg_iid, iid))
+            if (v3_tuid_match(v3_plugin_view_content_scale_iid, iid))
             {
                 if (view->scale == nullptr)
-                    view->scale = new dpf_plugin_view_scale(view->uivst3);
+                    view->scale = new dpf_plugin_view_content_scale(view->uivst3);
                 *iface = &view->scale;
                 return V3_OK;
             }
