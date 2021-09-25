@@ -42,12 +42,15 @@
 #include "travesty/view.h"
 
 /* TODO items:
- * - see how to handle external non-embed UI build
- * - program listener
- * - state listener and sender
+ * - disable UI if non-embed UI build
+ * - parameter change listener
+ * - parameter change sender
+ * - program change listener
+ * - program change sender
+ * - state change listener
+ * - state change sender
  * - sample rate change listener
- * - call component handler restart with params-changed flag when setting program
- * - call component handler restart with latency-changed flag when latency changes
+ * - call component handler restart with params-changed flag when setting program?
  */
 
 START_NAMESPACE_DISTRHO

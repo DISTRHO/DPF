@@ -29,7 +29,7 @@ struct v3_funknown;
 template<class T> static inline
 constexpr T* v3_cpp_obj(T** obj)
 {
-	return (T*)((v3_funknown*)*obj + 1);
+	return (T*)((uint8_t*)*obj + sizeof(void*)*3);
 }
 #else
 # ifndef constexpr

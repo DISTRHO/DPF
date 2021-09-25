@@ -27,11 +27,24 @@
 
 /* TODO items:
  * - base component refcount handling
- * - program support
+ * - parameter enumeration as lists
+ * - hide parameter outputs?
+ * - hide program parameter?
  * - state support
+ * - save and restore current program
  * - midi cc parameter mapping
  * - full MIDI1 encode and decode
- * - call component handler restart with params-changed flag when setting program
+ * - decode version number (0x102030 -> 1.2.3)
+ * - bus arrangements
+ * - optional audio buses, create dummy buffer of max_block_size length for them
+ * - routing info, do we care?
+ * - set sidechain bus name from port group
+ * - implement getParameterValueForString
+ * - set factory class_flags
+ * - set factory sub_categories
+ * - set factory email (needs new DPF API, useful for LV2 as well)
+ * - do something with get_controller_class_id and set_io_mode?
+ * - call component handler restart with params-changed flag after changing program
  * - call component handler restart with latency-changed flag when latency changes
  */
 
@@ -227,9 +240,14 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
+          fParameterOffset(fPlugin.getParameterOffset()),
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
+#endif
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        , fCurrentProgram(0),
+          fProgramCountMinusOne(fPlugin.getProgramCount()-1)
 #endif
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
@@ -417,7 +435,7 @@ public:
                     {
                         const AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
 
-                        // TODO find port group name
+                        // TODO find port group name for sidechain buses
                         if (port.busId == busId)
                         {
                             strncpy_utf16(busName, port.name, 128);
@@ -469,7 +487,7 @@ public:
                     {
                         const AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
 
-                        // TODO find port group name
+                        // TODO find port group name for sidechain buses
                         if (port.busId == busId)
                         {
                             strncpy_utf16(busName, port.name, 128);
@@ -556,6 +574,9 @@ public:
     v3_result setState(v3_bstream* const stream, void* arg)
     {
 #if DISTRHO_PLUGIN_WANT_STATE
+        // TODO
+#endif
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
         // TODO
 #endif
 
@@ -1027,14 +1048,27 @@ public:
 
     int32_t getParameterCount() const noexcept
     {
-        return fPlugin.getParameterCount();
+        return fPlugin.getParameterCount() + fParameterOffset;
     }
 
     v3_result getParameterInfo(const int32_t index, v3_param_info* const info) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(index >= 0, V3_INVALID_ARG);
 
-        const uint32_t uindex = static_cast<uint32_t>(index);
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+        {
+            std::memset(info, 0, sizeof(v3_param_info));
+            info->param_id = index;
+            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
+            info->step_count = fProgramCountMinusOne;
+            strncpy_utf16(info->title, "Current Program", 128);
+            strncpy_utf16(info->short_title, "Program", 128);
+            return V3_OK;
+        }
+#endif
+
+        const uint32_t uindex = static_cast<uint32_t>(index) - fParameterOffset;
         DISTRHO_SAFE_ASSERT_RETURN(uindex < fPlugin.getParameterCount(), V3_INVALID_ARG);
 
         // set up flags
@@ -1082,15 +1116,35 @@ public:
 
     v3_result getParameterStringForValue(const v3_param_id index, const double normalised, v3_str_128 output)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
 
-        snprintf_f32_utf16(output, fPlugin.getParameterRanges(index).getUnnormalizedValue(normalised), 128);
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
+
+            const uint32_t program = std::round(normalised * fProgramCountMinusOne);
+            strncpy_utf16(output, fPlugin.getProgramName(program), 128);
+            return V3_OK;
+        }
+#endif
+
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        snprintf_f32_utf16(output, ranges.getUnnormalizedValue(normalised), 128);
         return V3_OK;
     }
 
     v3_result getParameterValueForString(const v3_param_id index, int16_t*, double*)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+        {
+            // TODO find program index based on name
+            return V3_NOT_IMPLEMENTED;
+        }
+#endif
 
         // TODO
         return V3_NOT_IMPLEMENTED;
@@ -1098,29 +1152,57 @@ public:
 
     double normalisedParameterToPlain(const v3_param_id index, const double normalised)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
 
-        return fPlugin.getParameterRanges(index).getUnnormalizedValue(normalised);
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+            return std::round(normalised * fProgramCountMinusOne);
+#endif
+
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        return ranges.getUnnormalizedValue(normalised);
     };
 
     double plainParameterToNormalised(const v3_param_id index, const double plain)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
 
-        return fPlugin.getParameterRanges(index).getNormalizedValue(plain);
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+            return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
+#endif
+
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        return ranges.getNormalizedValue(plain);
     };
 
     double getParameterNormalized(const v3_param_id index)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), 0.0);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, 0.0);
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+            return std::max(0.0, std::min(1.0, (double)fCurrentProgram / fProgramCountMinusOne));
+#endif
 
         const float value = fPlugin.getParameterValue(index);
-        return fPlugin.getParameterRanges(index).getNormalizedValue(value);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        return ranges.getNormalizedValue(value);
     }
 
     v3_result setParameterNormalized(const v3_param_id index, const double value)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (index == 0)
+        {
+            fCurrentProgram = std::round(value * fProgramCountMinusOne);
+            fPlugin.loadProgram(fCurrentProgram);
+            return V3_OK;
+        }
+#endif
 
         const uint32_t hints = fPlugin.getParameterHints(index);
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
@@ -1158,12 +1240,17 @@ private:
     v3_component_handler** fComponentHandler;
 
     // Temporary data
+    const uint32_t fParameterOffset;
     float* fParameterValues;
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     v3_event_list** fHostEventOutputHandle;
+#endif
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    uint32_t fCurrentProgram;
+    const uint32_t fProgramCountMinusOne;
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
@@ -2276,7 +2363,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
             info->class_flags = 0;
             // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
             DISTRHO_NAMESPACE::strncpy(info->vendor, gPluginInfo.getMaker(), ARRAY_SIZE(info->vendor));
-            DISTRHO_NAMESPACE::snprintf_u32(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version));
+            DISTRHO_NAMESPACE::snprintf_u32(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version)); // FIXME
             DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
@@ -2297,7 +2384,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
             info->class_flags = 0;
             // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", ARRAY_SIZE(info->sub_categories)); // TODO
             DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, gPluginInfo.getMaker(), sizeof(info->vendor));
-            DISTRHO_NAMESPACE::snprintf_u32_utf16(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version));
+            DISTRHO_NAMESPACE::snprintf_u32_utf16(info->version, gPluginInfo.getVersion(), ARRAY_SIZE(info->version)); // FIXME
             DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
             return V3_OK;
         };
