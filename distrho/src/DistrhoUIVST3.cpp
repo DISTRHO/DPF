@@ -74,8 +74,13 @@ const char* tuid2str(const v3_tuid iid);
 class UIVst3 : public Thread
 {
 public:
-    UIVst3(const intptr_t winId, const float scaleFactor, const double sampleRate,
-           void* const instancePointer, v3_plugin_view** const view)
+    UIVst3(v3_plugin_view** const view,
+           v3_edit_controller** const controller,
+           v3_component_handler** const handler,
+           const intptr_t winId,
+           const float scaleFactor,
+           const double sampleRate,
+           void* const instancePointer)
         : fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
@@ -87,6 +92,8 @@ public:
               instancePointer,
               scaleFactor),
           fView(view),
+          fController(controller),
+          fHandler(handler),
           fFrame(nullptr),
           fScaleFactor(scaleFactor)
     {
@@ -196,41 +203,35 @@ private:
 
     // VST3 stuff
     v3_plugin_view** const fView;
+    v3_edit_controller** const fController;
+    v3_component_handler** const fHandler;
     v3_plugin_frame** fFrame;
-    // v3_component_handler_cpp** handler = nullptr;
 
     // Temporary data
     float fScaleFactor;
 
-    void editParameter(const uint32_t /*index*/, const bool /*started*/) const
+    void editParameter(const uint32_t rindex, const bool started) const
     {
-//         DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
-//
-//         v3_component_handler_cpp* const chandler = *handler;
-//         DISTRHO_SAFE_ASSERT_RETURN(chandler != nullptr,);
-//
-//         if (started)
-//             chandler->handler.begin_edit(handler, index);
-//         else
-//             chandler->handler.end_edit(handler, index);
+        DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
+
+        if (started)
+            v3_cpp_obj(fHandler)->begin_edit(fHandler, rindex);
+        else
+            v3_cpp_obj(fHandler)->end_edit(fHandler, rindex);
     }
 
-    static void editParameterCallback(void* ptr, uint32_t index, bool started)
+    static void editParameterCallback(void* ptr, uint32_t rindex, bool started)
     {
-        ((UIVst3*)ptr)->editParameter(index, started);
+        ((UIVst3*)ptr)->editParameter(rindex, started);
     }
 
-    void setParameterValue(const uint32_t /*index*/, const float /*realValue*/)
+    void setParameterValue(const uint32_t rindex, const float realValue)
     {
-//         DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
-//
-//         v3_component_handler_cpp* const chandler = *handler;
-//         DISTRHO_SAFE_ASSERT_RETURN(chandler != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fController != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
 
-//         const double value = vst3->plainParameterToNormalised(index, realValue);
-//         chandler->handler.perform_edit(handler, index, value);
-
-        // TODO send change to DSP side?
+        const double value = v3_cpp_obj(fController)->plain_parameter_to_normalised(fController, rindex, realValue);
+        v3_cpp_obj(fHandler)->perform_edit(fHandler, rindex, value);
     }
 
     static void setParameterCallback(void* ptr, uint32_t rindex, float value)
@@ -370,14 +371,22 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     ScopedPointer<dpf_plugin_view_scale> scale;
     ScopedPointer<UIVst3> uivst3;
     // cached values
+    v3_edit_controller** const controller;
+    v3_component_handler** const handler;
     void* const instancePointer;
     double sampleRate;
 //     v3_component_handler_cpp** handler = nullptr;
     v3_plugin_frame** frame = nullptr;
 
-    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* s, void* const instance, const double sr)
+    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr,
+                    v3_edit_controller** const controllerptr,
+                    v3_component_handler** const handlerptr,
+                    void* const instance,
+                    const double sr)
         : refcounter(1),
-          self(s),
+          self(selfptr),
+          controller(controllerptr),
+          handler(handlerptr),
           instancePointer(instance),
           sampleRate(sr)
     {
@@ -481,10 +490,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
                 {
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-                    view->uivst3 = new UIVst3((uintptr_t)parent, scaleFactor, view->sampleRate,
-                                              view->instancePointer, (v3_plugin_view**)self);
+                    view->uivst3 = new UIVst3((v3_plugin_view**)self,
+                                              view->controller,
+                                              view->handler,
+                                              (uintptr_t)parent,
+                                              scaleFactor,
+                                              view->sampleRate,
+                                              view->instancePointer);
                     view->uivst3->setFrame(view->frame);
-                    // view->uivst3->setHandler(view->handler);
                     return V3_OK;
                 }
             }
@@ -623,12 +636,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from plugin side)
 
-v3_funknown** dpf_plugin_view_create(void* instancePointer, double sampleRate);
+v3_funknown** dpf_plugin_view_create(v3_edit_controller** controller, v3_component_handler** handler,
+                                     void* instancePointer, double sampleRate);
 
-v3_funknown** dpf_plugin_view_create(void* const instancePointer, const double sampleRate)
+v3_funknown** dpf_plugin_view_create(v3_edit_controller** const controller, v3_component_handler** const handler,
+                                     void* const instancePointer, const double sampleRate)
 {
     ScopedPointer<dpf_plugin_view>* const viewptr = new ScopedPointer<dpf_plugin_view>;
-    *viewptr = new dpf_plugin_view(viewptr, instancePointer, sampleRate);
+    *viewptr = new dpf_plugin_view(viewptr, controller, handler, instancePointer, sampleRate);
     return (v3_funknown**)viewptr;
 }
 

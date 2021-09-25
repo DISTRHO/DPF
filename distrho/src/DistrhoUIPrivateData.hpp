@@ -332,6 +332,7 @@ struct UI::PrivateData {
         parameterOffset += 1;
 # endif
 #endif
+
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
         parameterOffset += 1;

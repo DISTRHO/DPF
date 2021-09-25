@@ -1048,15 +1048,15 @@ public:
         return fPlugin.getParameterCount() + fParameterOffset;
     }
 
-    v3_result getParameterInfo(const int32_t index, v3_param_info* const info) const noexcept
+    v3_result getParameterInfo(const int32_t rindex, v3_param_info* const info) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index >= 0, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
         {
             std::memset(info, 0, sizeof(v3_param_info));
-            info->param_id = index;
+            info->param_id = rindex;
             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
             info->step_count = fProgramCountMinusOne;
             strncpy_utf16(info->title, "Current Program", 128);
@@ -1065,8 +1065,8 @@ public:
         }
 #endif
 
-        const uint32_t uindex = static_cast<uint32_t>(index) - fParameterOffset;
-        DISTRHO_SAFE_ASSERT_RETURN(uindex < fPlugin.getParameterCount(), V3_INVALID_ARG);
+        const uint32_t index = static_cast<uint32_t>(rindex) - fParameterOffset;
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(index < fPlugin.getParameterCount(), index, V3_INVALID_ARG);
 
         // set up flags
         int32_t flags = 0;
@@ -1100,7 +1100,7 @@ public:
             step_count = ranges.max - ranges.min - 1;
 
         std::memset(info, 0, sizeof(v3_param_info));
-        info->param_id = index;
+        info->param_id = rindex;
         info->flags = flags;
         info->step_count = step_count;
         info->default_normalised_value = ranges.getNormalizedValue(ranges.def);
@@ -1111,12 +1111,12 @@ public:
         return V3_OK;
     }
 
-    v3_result getParameterStringForValue(const v3_param_id index, const double normalised, v3_str_128 output)
+    v3_result getParameterStringForValue(const v3_param_id rindex, const double normalised, v3_str_128 output)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
         {
             DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
 
@@ -1126,17 +1126,17 @@ public:
         }
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         snprintf_f32_utf16(output, ranges.getUnnormalizedValue(normalised), 128);
         return V3_OK;
     }
 
-    v3_result getParameterValueForString(const v3_param_id index, int16_t*, double*)
+    v3_result getParameterValueForString(const v3_param_id rindex, int16_t*, double*)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
         {
             // TODO find program index based on name
             return V3_NOT_IMPLEMENTED;
@@ -1147,53 +1147,53 @@ public:
         return V3_NOT_IMPLEMENTED;
     };
 
-    double normalisedParameterToPlain(const v3_param_id index, const double normalised)
+    double normalisedParameterToPlain(const v3_param_id rindex, const double normalised)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
             return std::round(normalised * fProgramCountMinusOne);
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         return ranges.getUnnormalizedValue(normalised);
     };
 
-    double plainParameterToNormalised(const v3_param_id index, const double plain)
+    double plainParameterToNormalised(const v3_param_id rindex, const double plain)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
             return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         return ranges.getNormalizedValue(plain);
     };
 
-    double getParameterNormalized(const v3_param_id index)
+    double getParameterNormalized(const v3_param_id rindex)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, 0.0);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
             return std::max(0.0, std::min(1.0, (double)fCurrentProgram / fProgramCountMinusOne));
 #endif
 
-        const float value = fPlugin.getParameterValue(index);
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index - fParameterOffset));
+        const float value = fPlugin.getParameterValue(rindex - fParameterOffset);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         return ranges.getNormalizedValue(value);
     }
 
-    v3_result setParameterNormalized(const v3_param_id index, const double value)
+    v3_result setParameterNormalized(const v3_param_id rindex, const double value)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(index < fPlugin.getParameterCount() + fParameterOffset, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (index == 0)
+        if (rindex == 0)
         {
             fCurrentProgram = std::round(value * fProgramCountMinusOne);
             fPlugin.loadProgram(fCurrentProgram);
@@ -1201,6 +1201,7 @@ public:
         }
 #endif
 
+        const uint32_t index = rindex - fParameterOffset;
         const uint32_t hints = fPlugin.getParameterHints(index);
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
@@ -1378,7 +1379,8 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from DSP side)
 
-v3_funknown** dpf_plugin_view_create(void* instancePointer, double sampleRate);
+v3_funknown** dpf_plugin_view_create(v3_edit_controller** controller, v3_component_handler** handler,
+                                     void* instancePointer, double sampleRate);
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1570,7 +1572,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.plain_parameter_to_normalised = []V3_API(void* self, v3_param_id index, double plain) -> double
         {
-            d_stdout("dpf_edit_controller::plain_parameter_to_normalised  => %p %f", self, plain);
+            d_stdout("dpf_edit_controller::plain_parameter_to_normalised  => %p %u %f", self, index, plain);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
@@ -1583,7 +1585,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         controller.get_parameter_normalised = []V3_API(void* self, v3_param_id index) -> double
         {
             // NOTE very noisy, called many times
-            // d_stdout("dpf_edit_controller::get_parameter_normalised       => %p", self);
+            // d_stdout("dpf_edit_controller::get_parameter_normalised       => %p %u", self, index);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0.0);
 
@@ -1595,7 +1597,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.set_parameter_normalised = []V3_API(void* self, v3_param_id index, double normalised) -> v3_result
         {
-            d_stdout("dpf_edit_controller::set_parameter_normalised       => %p %f", self, normalised);
+            d_stdout("dpf_edit_controller::set_parameter_normalised       => %p %u %f", self, index, normalised);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
@@ -1637,7 +1639,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
 #if DISTRHO_PLUGIN_HAS_UI
-            return (v3_plugin_view**)dpf_plugin_view_create(vst3->getInstancePointer(), vst3->getSampleRate());
+            return (v3_plugin_view**)dpf_plugin_view_create((v3_edit_controller**)self,
+                                                            controller->handler,
+                                                            vst3->getInstancePointer(),
+                                                            vst3->getSampleRate());
 #else
             return nullptr;
 #endif

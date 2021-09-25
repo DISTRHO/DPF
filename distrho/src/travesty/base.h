@@ -28,7 +28,11 @@
 template<class T> static inline
 constexpr T* v3_cpp_obj(T** obj)
 {
-	return (T*)((uint8_t*)*obj + sizeof(void*)*3);
+	/**
+	 * this ugly piece of code is required due to C++ assuming `reinterpret_cast` by default,
+	 * but we need everything to be `static_cast` for it to be `constexpr` compatible.
+	 */
+	return static_cast<T*>(static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*3));
 }
 #else
 # ifndef constexpr

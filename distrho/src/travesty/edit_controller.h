@@ -84,4 +84,17 @@ struct v3_edit_controller {
 static constexpr const v3_tuid v3_edit_controller_iid =
 	V3_ID(0xDCD7BBE3, 0x7742448D, 0xA874AACC, 0x979C759E);
 
+#ifdef __cplusplus
+template<> inline
+constexpr v3_edit_controller* v3_cpp_obj(v3_edit_controller** obj)
+{
+	/**
+	 * this ugly piece of code is required due to C++ assuming `reinterpret_cast` by default,
+	 * but we need everything to be `static_cast` for it to be `constexpr` compatible.
+	 */
+	return static_cast<v3_edit_controller*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*5));
+}
+#endif
+
 #include "align_pop.h"
