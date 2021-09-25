@@ -363,16 +363,12 @@ struct v3_plugin_view_content_scale_steinberg_cpp : v3_funknown {
 };
 
 struct dpf_plugin_view_scale : v3_plugin_view_content_scale_steinberg_cpp {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_plugin_view_scale>* self;
     ScopedPointer<UIVst3>& uivst3;
     // cached values
     float scaleFactor;
 
-    dpf_plugin_view_scale(ScopedPointer<dpf_plugin_view_scale>* s, ScopedPointer<UIVst3>& v)
-        : refcounter(1),
-          self(s),
-          uivst3(v),
+    dpf_plugin_view_scale(ScopedPointer<UIVst3>& v)
+        : uivst3(v),
           scaleFactor(0.0f)
     {
         static const uint8_t* kSupportedInterfaces[] = {
@@ -401,28 +397,9 @@ struct dpf_plugin_view_scale : v3_plugin_view_content_scale_steinberg_cpp {
             return V3_NO_INTERFACE;
         };
 
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view_scale::ref                => %p", self);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, 0);
-
-            return ++scale->refcounter;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_plugin_view_scale::unref              => %p", self);
-            dpf_plugin_view_scale* const scale = *(dpf_plugin_view_scale**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(scale != nullptr, 0);
-
-            if (const int refcounter = --scale->refcounter)
-                return refcounter;
-
-            *(dpf_plugin_view_scale**)self = nullptr;
-            *scale->self = nullptr;
-            return 0;
-        };
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_view_content_scale_steinberg
@@ -506,7 +483,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             if (v3_tuid_match(v3_plugin_view_content_scale_steinberg_iid, iid))
             {
                 if (view->scale == nullptr)
-                    view->scale = new dpf_plugin_view_scale(&view->scale, view->uivst3);
+                    view->scale = new dpf_plugin_view_scale(view->uivst3);
                 *iface = &view->scale;
                 return V3_OK;
             }

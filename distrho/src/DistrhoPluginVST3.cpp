@@ -1305,15 +1305,11 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_edit_controller>* self;
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
 
-    dpf_edit_controller(ScopedPointer<dpf_edit_controller>* const s, ScopedPointer<PluginVst3>& v)
-        : refcounter(1),
-          self(s),
-          vst3(v),
+    dpf_edit_controller(ScopedPointer<PluginVst3>& v)
+        : vst3(v),
           initialized(false)
     {
         static const uint8_t* kSupportedInterfaces[] = {
@@ -1342,28 +1338,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return V3_NO_INTERFACE;
         };
 
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_edit_controller::ref                        => %p", self);
-            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0);
-
-            return ++controller->refcounter;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_edit_controller::unref                      => %p", self);
-            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0);
-
-            if (const int refcounter = --controller->refcounter)
-                return refcounter;
-
-            *(dpf_edit_controller**)self = nullptr;
-            *controller->self = nullptr;
-            return 0;
-        };
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_base
@@ -1679,14 +1656,10 @@ struct v3_audio_processor_cpp : v3_funknown {
 };
 
 struct dpf_audio_processor : v3_audio_processor_cpp {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_audio_processor>* self;
     ScopedPointer<PluginVst3>& vst3;
 
-    dpf_audio_processor(ScopedPointer<dpf_audio_processor>* const s, ScopedPointer<PluginVst3>& v)
-        : refcounter(1),
-          self(s),
-          vst3(v)
+    dpf_audio_processor(ScopedPointer<PluginVst3>& v)
+        : vst3(v)
     {
         static const uint8_t* kSupportedInterfacesBase[] = {
             v3_funknown_iid,
@@ -1722,28 +1695,9 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
             return V3_NO_INTERFACE;
         };
 
-        ref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_audio_processor::ref                     => %p", self);
-            dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(processor != nullptr, 0);
-
-            return ++processor->refcounter;
-        };
-
-        unref = []V3_API(void* self) -> uint32_t
-        {
-            d_stdout("dpf_audio_processor::unref                   => %p", self);
-            dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(processor != nullptr, 0);
-
-            if (const int refcounter = --processor->refcounter)
-                return refcounter;
-
-            *(dpf_audio_processor**)self = nullptr;
-            *processor->self = nullptr;
-            return 0;
-        };
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_audio_processor
@@ -1847,6 +1801,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     }
 };
 
+#if 0
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_state_stream
 
@@ -1886,7 +1841,7 @@ struct dpf_state_stream : v3_bstream_cpp {
             return V3_NO_INTERFACE;
         };
 
-        // TODO
+        // there is only a single instance of this, so we don't have to care here
         ref = []V3_API(void*) -> uint32_t { return 1; };
         unref = []V3_API(void*) -> uint32_t { return 0; };
 
@@ -1942,6 +1897,7 @@ struct dpf_state_stream : v3_bstream_cpp {
         };
     }
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_component
@@ -1956,7 +1912,7 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
     ScopedPointer<dpf_edit_controller> controller;
-    ScopedPointer<dpf_state_stream> stream;
+    // ScopedPointer<dpf_state_stream> stream;
     ScopedPointer<PluginVst3> vst3;
 
     dpf_component(ScopedPointer<dpf_component>* const s)
@@ -1992,7 +1948,7 @@ struct dpf_component : v3_component_cpp {
             if (v3_tuid_match(v3_audio_processor_iid, iid))
             {
                 if (component->processor == nullptr)
-                    component->processor = new dpf_audio_processor(&component->processor, component->vst3);
+                    component->processor = new dpf_audio_processor(component->vst3);
                 *iface = &component->processor;
                 return V3_OK;
             }
@@ -2000,7 +1956,7 @@ struct dpf_component : v3_component_cpp {
             if (v3_tuid_match(v3_edit_controller_iid, iid))
             {
                 if (component->controller == nullptr)
-                    component->controller = new dpf_edit_controller(&component->controller, component->vst3);
+                    component->controller = new dpf_edit_controller(component->vst3);
                 *iface = &component->controller;
                 return V3_OK;
             }
