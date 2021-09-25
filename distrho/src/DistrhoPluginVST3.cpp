@@ -241,6 +241,7 @@ public:
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
           fParameterOffset(fPlugin.getParameterOffset()),
+          fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
@@ -1045,7 +1046,7 @@ public:
 
     int32_t getParameterCount() const noexcept
     {
-        return fPlugin.getParameterCount() + fParameterOffset;
+        return fRealParameterCount;
     }
 
     v3_result getParameterInfo(const int32_t rindex, v3_param_info* const info) const noexcept
@@ -1113,7 +1114,7 @@ public:
 
     v3_result getParameterStringForValue(const v3_param_id rindex, const double normalised, v3_str_128 output)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1133,7 +1134,7 @@ public:
 
     v3_result getParameterValueForString(const v3_param_id rindex, int16_t*, double*)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1149,7 +1150,7 @@ public:
 
     double normalisedParameterToPlain(const v3_param_id rindex, const double normalised)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1162,7 +1163,7 @@ public:
 
     double plainParameterToNormalised(const v3_param_id rindex, const double plain)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1175,7 +1176,7 @@ public:
 
     double getParameterNormalized(const v3_param_id rindex)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, 0.0);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1189,7 +1190,7 @@ public:
 
     v3_result setParameterNormalized(const v3_param_id rindex, const double value)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fPlugin.getParameterCount() + fParameterOffset, rindex, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -1239,6 +1240,7 @@ private:
 
     // Temporary data
     const uint32_t fParameterOffset;
+    const uint32_t fRealParameterCount; // regular parameters + current program
     float* fParameterValues;
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
