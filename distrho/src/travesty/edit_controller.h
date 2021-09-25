@@ -26,6 +26,19 @@
  * component handler
  */
 
+enum {
+	V3_RESTART_RELOAD_COMPONENT             = 1 << 0,
+	V3_RESTART_IO_CHANGED                   = 1 << 1,
+	V3_RESTART_PARAM_VALUES_CHANGED         = 1 << 2,
+	V3_RESTART_LATENCY_CHANGED              = 1 << 3,
+	V3_RESTART_PARAM_TITLES_CHANGED         = 1 << 4,
+	V3_RESTART_MIDI_CC_ASSIGNMENT_CHANGED   = 1 << 5,
+	V3_RESTART_NOTE_EXPRESSION_CHANGED      = 1 << 6,
+	V3_RESTART_IO_TITLES_CHANGED            = 1 << 7,
+	V3_RESTART_PREFETCHABLE_SUPPORT_CHANGED = 1 << 8,
+	V3_RESTART_ROUTING_INFO_CHANGED         = 1 << 9
+};
+
 struct v3_component_handler {
 	struct v3_funknown;
 

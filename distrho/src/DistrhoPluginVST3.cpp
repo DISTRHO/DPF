@@ -21,6 +21,7 @@
 #include "travesty/component.h"
 #include "travesty/edit_controller.h"
 #include "travesty/factory.h"
+#include "travesty/message.h"
 
 #include <atomic>
 #include <vector>
@@ -89,8 +90,49 @@ static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
 
 const char* tuid2str(const v3_tuid iid)
 {
+    static constexpr const struct {
+        v3_tuid iid;
+        const char* name;
+    } extra_known_iids[] = {
+        { V3_ID(0x00000000,0x00000000,0x00000000,0x00000000), "(nil)" },
+        // edit-controller
+        { V3_ID(0xF040B4B3,0xA36045EC,0xABCDC045,0xB4D5A2CC), "{v3_component_handler2|NOT}" },
+        { V3_ID(0x7F4EFE59,0xF3204967,0xAC27A3AE,0xAFB63038), "{v3_edit_controller2|NOT}" },
+        { V3_ID(0x067D02C1,0x5B4E274D,0xA92D90FD,0x6EAF7240), "{v3_component_handler_bus_activation|NOT}" },
+        { V3_ID(0xDF0FF9F7,0x49B74669,0xB63AB732,0x7ADBF5E5), "{v3_midi_mapping|NOT}" },
+        { V3_ID(0xC1271208,0x70594098,0xB9DD34B3,0x6BB0195E), "{v3_edit_controller_host_editing|NOT}" },
+        // units
+        { V3_ID(0x8683B01F,0x7B354F70,0xA2651DEC,0x353AF4FF), "{v3_program_list_data|NOT}" },
+        { V3_ID(0x6C389611,0xD391455D,0xB870B833,0x94A0EFDD), "{v3_unit_data|NOT}" },
+        { V3_ID(0x4B5147F8,0x4654486B,0x8DAB30BA,0x163A3C56), "{v3_unit_handler|NOT}" },
+        { V3_ID(0xF89F8CDF,0x699E4BA5,0x96AAC9A4,0x81452B01), "{v3_unit_handler2|NOT}" },
+        { V3_ID(0x3D4BD6B5,0x913A4FD2,0xA886E768,0xA5EB92C1), "{v3_unit_info|NOT}" },
+        // misc
+        { V3_ID(0x0F194781,0x8D984ADA,0xBBA0C1EF,0xC011D8D0), "{v3_info_listener|NOT}" },
+    };
+
+    if (v3_tuid_match(iid, v3_audio_processor_iid))
+        return "{v3_audio_processor}";
+    if (v3_tuid_match(iid, v3_bstream_iid))
+        return "{v3_bstream}";
+    if (v3_tuid_match(iid, v3_component_iid))
+        return "{v3_component}";
+    if (v3_tuid_match(iid, v3_component_handler_iid))
+        return "{v3_component_handler}";
+    if (v3_tuid_match(iid, v3_connection_point_iid))
+        return "{v3_connection_point_iid}";
+    if (v3_tuid_match(iid, v3_edit_controller_iid))
+        return "{v3_edit_controller}";
+    if (v3_tuid_match(iid, v3_event_list_iid))
+        return "{v3_event_list}";
     if (v3_tuid_match(iid, v3_funknown_iid))
         return "{v3_funknown}";
+    if (v3_tuid_match(iid, v3_message_iid))
+        return "{v3_message_iid}";
+    if (v3_tuid_match(iid, v3_param_value_queue_iid))
+        return "{v3_param_value_queue}";
+    if (v3_tuid_match(iid, v3_param_changes_iid))
+        return "{v3_param_changes}";
     if (v3_tuid_match(iid, v3_plugin_base_iid))
         return "{v3_plugin_base}";
     if (v3_tuid_match(iid, v3_plugin_factory_iid))
@@ -99,32 +141,17 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_plugin_factory_2}";
     if (v3_tuid_match(iid, v3_plugin_factory_3_iid))
         return "{v3_plugin_factory_3}";
-    if (v3_tuid_match(iid, v3_component_iid))
-        return "{v3_component}";
-    if (v3_tuid_match(iid, v3_bstream_iid))
-        return "{v3_bstream}";
-    if (v3_tuid_match(iid, v3_event_list_iid))
-        return "{v3_event_list}";
-    if (v3_tuid_match(iid, v3_param_value_queue_iid))
-        return "{v3_param_value_queue}";
-    if (v3_tuid_match(iid, v3_param_changes_iid))
-        return "{v3_param_changes}";
-    if (v3_tuid_match(iid, v3_process_context_requirements_iid))
-        return "{v3_process_context_requirements}";
-    if (v3_tuid_match(iid, v3_audio_processor_iid))
-        return "{v3_audio_processor}";
-    if (v3_tuid_match(iid, v3_component_handler_iid))
-        return "{v3_component_handler}";
-    if (v3_tuid_match(iid, v3_edit_controller_iid))
-        return "{v3_edit_controller}";
-    if (v3_tuid_match(iid, v3_plugin_view_iid))
-        return "{v3_plugin_view}";
     if (v3_tuid_match(iid, v3_plugin_frame_iid))
         return "{v3_plugin_frame}";
+    if (v3_tuid_match(iid, v3_plugin_view_iid))
+        return "{v3_plugin_view}";
     if (v3_tuid_match(iid, v3_plugin_view_content_scale_iid))
         return "{v3_plugin_view_content_scale_iid}";
     if (v3_tuid_match(iid, v3_plugin_view_parameter_finder_iid))
         return "{v3_plugin_view_parameter_finder}";
+    if (v3_tuid_match(iid, v3_process_context_requirements_iid))
+        return "{v3_process_context_requirements}";
+
     if (std::memcmp(iid, dpf_tuid_class, sizeof(dpf_tuid)) == 0)
         return "{dpf_tuid_class}";
     if (std::memcmp(iid, dpf_tuid_component, sizeof(dpf_tuid)) == 0)
@@ -135,6 +162,12 @@ const char* tuid2str(const v3_tuid iid)
         return "{dpf_tuid_processor}";
     if (std::memcmp(iid, dpf_tuid_view, sizeof(dpf_tuid)) == 0)
         return "{dpf_tuid_view}";
+
+    for (size_t i=0; i<ARRAY_SIZE(extra_known_iids); ++i)
+    {
+        if (v3_tuid_match(iid, extra_known_iids[i].iid))
+            return extra_known_iids[i].name;
+    }
 
     static char buf[46];
     std::snprintf(buf, sizeof(buf), "{0x%08X,0x%08X,0x%08X,0x%08X}",
@@ -1238,6 +1271,17 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // dpf_connection_point
+
+    v3_result notify(v3_message** const message)
+    {
+        d_stdout("notify received %p -> %s", message, v3_cpp_obj(message)->get_message_id(message));
+        // TESTING, ensure host gets the message
+        requestParameterValueChange(2, 1.0f);
+        return V3_OK;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
 
 private:
     // Plugin
@@ -1309,13 +1353,15 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
 
-        if (v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, index) != V3_OK)
+        const uint32_t rindex = index + fParameterOffset;
+
+        if (v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, rindex) != V3_OK)
             return false;
 
         const double normalized = fPlugin.getParameterRanges(index).getNormalizedValue(value);
-        const bool ret = v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, index, normalized) == V3_OK;
+        const bool ret = v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, rindex, normalized) == V3_OK;
 
-        v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, index);
+        v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, rindex);
         return ret;
     }
 
@@ -1395,9 +1441,98 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from DSP side)
 
-v3_funknown** dpf_plugin_view_create(v3_edit_controller** controller, v3_component_handler** handler,
-                                     void* instancePointer, double sampleRate);
+v3_funknown** dpf_plugin_view_create(v3_connection_point** connection, void* instancePointer, double sampleRate);
 #endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_connection_point
+
+struct v3_connection_point_cpp : v3_funknown {
+    v3_connection_point point;
+};
+
+struct dpf_connection_point : v3_connection_point_cpp {
+    ScopedPointer<PluginVst3>& vst3;
+    const bool controller; // component otherwise
+    bool connected;
+
+    dpf_connection_point(const bool isEditCtrl, ScopedPointer<PluginVst3>& v)
+        : vst3(v),
+          controller(isEditCtrl),
+          connected(false)
+    {
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_connection_point_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_connection_point::query_interface => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_connection_point
+
+        point.connect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
+        {
+            d_stdout("dpf_connection_point::connect         => %p %p", self, other);
+            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
+
+            const bool connected = point->connected;
+            DISTRHO_SAFE_ASSERT_RETURN(! connected, V3_INVALID_ARG);
+
+            point->connected = true;
+            return V3_OK;
+        };
+
+        point.disconnect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
+        {
+            d_stdout("dpf_connection_point::disconnect      => %p %p", self, other);
+            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
+
+            const bool connected = point->connected;
+            DISTRHO_SAFE_ASSERT_RETURN(connected, V3_INVALID_ARG);
+
+            point->connected = false;
+            return V3_OK;
+        };
+
+        point.notify = []V3_API(void* self, struct v3_message** message) -> v3_result
+        {
+            d_stdout("dpf_connection_point::notify          => %p %p", self, message);
+            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
+
+            PluginVst3* const vst3 = point->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
+
+            return vst3->notify(message);
+        };
+    }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
@@ -1408,6 +1543,7 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
+    ScopedPointer<dpf_connection_point> connection;
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
     // cached values
@@ -1418,7 +1554,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
           initialized(false),
           handler(nullptr)
     {
-        static const uint8_t* kSupportedInterfaces[] = {
+        static const uint8_t* kSupportedInterfacesBase[] = {
             v3_funknown_iid,
             v3_edit_controller_iid
         };
@@ -1432,13 +1568,24 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 
-            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            for (const uint8_t* interface_iid : kSupportedInterfacesBase)
             {
                 if (v3_tuid_match(interface_iid, iid))
                 {
                     *iface = self;
                     return V3_OK;
                 }
+            }
+
+            dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NO_INTERFACE);
+
+            if (v3_tuid_match(v3_connection_point_iid, iid))
+            {
+                if (controller->connection == nullptr)
+                    controller->connection = new dpf_connection_point(true, controller->vst3);
+                *iface = &controller->connection;
+                return V3_OK;
             }
 
             return V3_NO_INTERFACE;
@@ -1527,7 +1674,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.get_parameter_count = []V3_API(void* self) -> int32_t
         {
-            d_stdout("dpf_edit_controller::get_parameter_count        => %p", self);
+            // d_stdout("dpf_edit_controller::get_parameter_count        => %p", self);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
@@ -1539,7 +1686,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         controller.get_parameter_info = []V3_API(void* self, int32_t param_idx, v3_param_info* param_info) -> v3_result
         {
-            d_stdout("dpf_edit_controller::get_parameter_info         => %p %i", self, param_idx);
+            // d_stdout("dpf_edit_controller::get_parameter_info         => %p %i", self, param_idx);
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALISED);
 
@@ -1651,14 +1798,39 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
-            PluginVst3* const vst3 = controller->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
+            // if there is no connection yet we can still manage ourselves, but only if component is initialized
+            DISTRHO_SAFE_ASSERT_RETURN((controller->connection != nullptr && controller->connection->connected) ||
+                                       controller->vst3 != nullptr, nullptr);
+
+            if (controller->connection != nullptr)
+            {
+                // if there is a connection point alreay it needs to be connected
+                DISTRHO_SAFE_ASSERT_RETURN(controller->connection->connected, nullptr);
+            }
+            else
+            {
+                // no connection point, let's do it ourselves (assume local usage)
+                controller->connection = new dpf_connection_point(true, controller->vst3);
+                controller->connection->connected = true;
+            }
+
+            void* instancePointer;
+            double sampleRate;
+
+            if (PluginVst3* const vst3 = controller->vst3)
+            {
+                instancePointer = vst3->getInstancePointer();
+                sampleRate = vst3->getSampleRate();
+            }
+            else
+            {
+                instancePointer = nullptr;
+                sampleRate = 44100.0;
+            }
 
 #if DISTRHO_PLUGIN_HAS_UI
-            return (v3_plugin_view**)dpf_plugin_view_create((v3_edit_controller**)self,
-                                                            controller->handler,
-                                                            vst3->getInstancePointer(),
-                                                            vst3->getSampleRate());
+            return (v3_plugin_view**)dpf_plugin_view_create((v3_connection_point**)&controller->connection,
+                                                            instancePointer, sampleRate);
 #else
             return nullptr;
 #endif
@@ -1990,6 +2162,7 @@ struct dpf_component : v3_component_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
+    ScopedPointer<dpf_connection_point> connection;
     ScopedPointer<dpf_edit_controller> controller;
     // ScopedPointer<dpf_state_stream> stream;
     ScopedPointer<PluginVst3> vst3;
@@ -2029,6 +2202,14 @@ struct dpf_component : v3_component_cpp {
                 if (component->processor == nullptr)
                     component->processor = new dpf_audio_processor(component->vst3);
                 *iface = &component->processor;
+                return V3_OK;
+            }
+
+            if (v3_tuid_match(v3_connection_point_iid, iid))
+            {
+                if (component->connection == nullptr)
+                    component->connection = new dpf_connection_point(false, component->vst3);
+                *iface = &component->connection;
                 return V3_OK;
             }
 

@@ -39,6 +39,7 @@
 // #endif
 
 #include "travesty/edit_controller.h"
+#include "travesty/message.h"
 #include "travesty/view.h"
 
 /* TODO items:
@@ -70,6 +71,21 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 const char* tuid2str(const v3_tuid iid);
 
 // --------------------------------------------------------------------------------------------------------------------
+// dpf_message (needed by the UI class, implementation comes later)
+
+struct v3_message_cpp : v3_funknown {
+    v3_message msg;
+};
+
+// NOTE value type must be POD
+template<typename T>
+struct dpf_message : v3_message_cpp {
+    dpf_message(ScopedPointer<dpf_message>* self, const char* id, T value);
+    struct PrivateData;
+    PrivateData* const pData;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * VST3 UI class.
@@ -77,14 +93,17 @@ const char* tuid2str(const v3_tuid iid);
  * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
  * The UI is created during the "attach" view event, and destroyed during "removed".
  *
+ * Note that DPF VST3 implementation works over the connection point interface,
+ * rather than using edit controller directly.
+ * This allows the UI to be running remotely from the DSP.
+ *
  * The low-level VST3 stuff comes after.
  */
 class UIVst3 : public Thread
 {
 public:
     UIVst3(v3_plugin_view** const view,
-           v3_edit_controller** const controller,
-           v3_component_handler** const handler,
+           v3_connection_point** const connection,
            const intptr_t winId,
            const float scaleFactor,
            const double sampleRate,
@@ -100,8 +119,7 @@ public:
               instancePointer,
               scaleFactor),
           fView(view),
-          fController(controller),
-          fHandler(handler),
+          fConnection(connection),
           fFrame(nullptr),
           fScaleFactor(scaleFactor)
     {
@@ -211,21 +229,23 @@ private:
 
     // VST3 stuff
     v3_plugin_view** const fView;
-    v3_edit_controller** const fController;
-    v3_component_handler** const fHandler;
+    v3_connection_point** const fConnection;
     v3_plugin_frame** fFrame;
 
     // Temporary data
     float fScaleFactor;
 
-    void editParameter(const uint32_t rindex, const bool started) const
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
+    // ----------------------------------------------------------------------------------------------------------------
+    // DPF callbacks
 
-        if (started)
-            v3_cpp_obj(fHandler)->begin_edit(fHandler, rindex);
-        else
-            v3_cpp_obj(fHandler)->end_edit(fHandler, rindex);
+    void editParameter(const uint32_t /*rindex*/, const bool /*started*/) const
+    {
+//         DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
+
+//         if (started)
+//             v3_cpp_obj(fHandler)->begin_edit(fHandler, rindex);
+//         else
+//             v3_cpp_obj(fHandler)->end_edit(fHandler, rindex);
     }
 
     static void editParameterCallback(void* ptr, uint32_t rindex, bool started)
@@ -235,11 +255,17 @@ private:
 
     void setParameterValue(const uint32_t rindex, const float realValue)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fController != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+        d_stdout("setParameterValue %p %u %f", this, rindex, realValue);
 
-        const double value = v3_cpp_obj(fController)->plain_parameter_to_normalised(fController, rindex, realValue);
-        v3_cpp_obj(fHandler)->perform_edit(fHandler, rindex, value);
+        struct IndexAndValue {
+            uint32_t index;
+            float value;
+        };
+        ScopedPointer<dpf_message<IndexAndValue>>* const messageptr = new ScopedPointer<dpf_message<IndexAndValue>>;
+        *messageptr = new dpf_message<IndexAndValue>(messageptr, "parameter-value-set", { rindex, realValue });
+
+        v3_cpp_obj(fConnection)->notify(fConnection, (v3_message**)messageptr);
     }
 
     static void setParameterCallback(void* ptr, uint32_t rindex, float value)
@@ -253,17 +279,17 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
         d_stdout("from UI setSize %u %u | %p %p", width, height, fView, fFrame);
 
-#ifdef DISTRHO_OS_MAC
-        const double scaleFactor = fUI.getScaleFactor();
-        width /= scaleFactor;
-        height /= scaleFactor;
-#endif
-
-        v3_view_rect rect;
-        std::memset(&rect, 0, sizeof(rect));
-        rect.right = width;
-        rect.bottom = height;
-        v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
+// #ifdef DISTRHO_OS_MAC
+//         const double scaleFactor = fUI.getScaleFactor();
+//         width /= scaleFactor;
+//         height /= scaleFactor;
+// #endif
+//
+//         v3_view_rect rect;
+//         std::memset(&rect, 0, sizeof(rect));
+//         rect.right = width;
+//         rect.bottom = height;
+//         v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)
@@ -306,6 +332,118 @@ private:
 /**
  * VST3 low-level pointer thingies follow, proceed with care.
  */
+
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_message (implementation only, declaration already done as needed by UI class)
+
+template<typename T>
+struct dpf_message<T>::PrivateData {
+    std::atomic<int> refcounter;
+    ScopedPointer<dpf_message>* self;
+    String id;
+    const T value;
+
+    PrivateData(ScopedPointer<dpf_message>* const s, const char* const id2, T value2)
+        : refcounter(1),
+          self(s),
+          id(id2),
+          value(value2) {}
+};
+
+static V3_API v3_result dpf_message__query_interface(void* self, const v3_tuid iid, void** iface)
+{
+    d_stdout("dpf_message::query_interface    => %p %s %p", self, tuid2str(iid), iface);
+    *iface = NULL;
+    DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+    static const uint8_t* kSupportedInterfaces[] = {
+        v3_funknown_iid,
+        v3_message_iid
+    };
+
+    for (const uint8_t* interface_iid : kSupportedInterfaces)
+    {
+        if (v3_tuid_match(interface_iid, iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+    }
+
+    return V3_NO_INTERFACE;
+}
+
+template<typename T>
+static V3_API uint32_t dpf_message__ref(void* const self)
+{
+    d_stdout("dpf_message::ref                     => %p", self);
+    dpf_message<T>* const message = *(dpf_message<T>**)self;
+    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
+
+    return ++message->pData->refcounter;
+}
+
+template<typename T>
+static V3_API uint32_t dpf_message__unref(void* const self)
+{
+    d_stdout("dpf_message::unref                   => %p", self);
+    dpf_message<T>* const message = *(dpf_message<T>**)self;
+    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
+
+    if (const int refcounter = --message->pData->refcounter)
+        return refcounter;
+
+    dpf_message<T>* const messageptr = message->pData->self->release();
+    delete message->pData;
+    delete messageptr;
+    delete (dpf_message<T>**)self;
+    return 0;
+}
+
+template<typename T>
+static V3_API const char* dpf_message__get_message_id(void* const self)
+{
+    d_stdout("dpf_message::get_message_id => %p", self);
+    dpf_message<T>* const message = *(dpf_message<T>**)self;
+    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
+
+    return message->pData->id;
+}
+
+template<typename T>
+static V3_API void dpf_message__set_message_id(void* const self, const char* const id)
+{
+    d_stdout("dpf_message::set_message_id => %p %s", self, id);
+    dpf_message<T>* const message = *(dpf_message<T>**)self;
+    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+    message->pData->id = id;
+}
+
+template<typename T>
+static V3_API v3_attribute_list* dpf_message__get_attributes(void* const self)
+{
+    d_stdout("dpf_message::get_attributes => %p", self);
+    dpf_message<T>* const message = *(dpf_message<T>**)self;
+    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
+
+    // TODO
+    return nullptr;
+}
+
+template<typename T>
+dpf_message<T>::dpf_message(ScopedPointer<dpf_message>* const self, const char* const id, const T value)
+    : pData(new PrivateData(self, id, value))
+{
+    query_interface = dpf_message__query_interface;
+    ref = dpf_message__ref<T>;
+    unref = dpf_message__unref<T>;
+    msg.get_message_id = dpf_message__get_message_id<T>;
+    msg.set_message_id = dpf_message__set_message_id<T>;
+    msg.get_attributes = dpf_message__get_attributes<T>;
+}
+
+template struct dpf_message<float>;
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_content_scale
@@ -390,21 +528,18 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     ScopedPointer<dpf_plugin_view_content_scale> scale;
     ScopedPointer<UIVst3> uivst3;
     // cached values
-    v3_edit_controller** const controller;
-    v3_component_handler** const handler;
+    v3_connection_point** const connection;
     void* const instancePointer;
     double sampleRate;
     v3_plugin_frame** frame = nullptr;
 
     dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr,
-                    v3_edit_controller** const controllerptr,
-                    v3_component_handler** const handlerptr,
+                    v3_connection_point** const connectionptr,
                     void* const instance,
                     const double sr)
         : refcounter(1),
           self(selfptr),
-          controller(controllerptr),
-          handler(handlerptr),
+          connection(connectionptr),
           instancePointer(instance),
           sampleRate(sr)
     {
@@ -508,9 +643,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
                 {
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-                    view->uivst3 = new UIVst3((v3_plugin_view**)self,
-                                              view->controller,
-                                              view->handler,
+                    view->uivst3 = new UIVst3((v3_plugin_view**)view->self,
+                                              view->connection,
                                               (uintptr_t)parent,
                                               scaleFactor,
                                               view->sampleRate,
@@ -654,14 +788,13 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from plugin side)
 
-v3_funknown** dpf_plugin_view_create(v3_edit_controller** controller, v3_component_handler** handler,
-                                     void* instancePointer, double sampleRate);
+v3_funknown** dpf_plugin_view_create(v3_connection_point** connection, void* instancePointer, double sampleRate);
 
-v3_funknown** dpf_plugin_view_create(v3_edit_controller** const controller, v3_component_handler** const handler,
+v3_funknown** dpf_plugin_view_create(v3_connection_point** const connection,
                                      void* const instancePointer, const double sampleRate)
 {
     ScopedPointer<dpf_plugin_view>* const viewptr = new ScopedPointer<dpf_plugin_view>;
-    *viewptr = new dpf_plugin_view(viewptr, controller, handler, instancePointer, sampleRate);
+    *viewptr = new dpf_plugin_view(viewptr, connection, instancePointer, sampleRate);
     return (v3_funknown**)viewptr;
 }
 
