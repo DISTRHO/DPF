@@ -23,6 +23,7 @@
 #include "travesty/factory.h"
 
 #include <atomic>
+#include <vector>
 
 // TESTING awful idea dont reuse
 #include "../extra/Thread.hpp"
@@ -1964,6 +1965,11 @@ struct dpf_component : v3_component_cpp {
             return V3_NO_INTERFACE;
         };
 
+#if 1
+        // TODO fix this up later
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+#else
         ref = []V3_API(void* self) -> uint32_t
         {
             d_stdout("dpf_component::ref                     => %p", self);
@@ -1979,13 +1985,18 @@ struct dpf_component : v3_component_cpp {
             dpf_component* const component = *(dpf_component**)self;
             DISTRHO_SAFE_ASSERT_RETURN(component != nullptr, 0);
 
-            if (const int refcounter = --component->refcounter)
-                return refcounter;
+            if (const int refcount = --component->refcounter)
+            {
+                d_stdout("dpf_component::unref                   => %p | refcount %i", self, refcount);
+                return refcount;
+            }
 
-            *(dpf_component**)self = nullptr;
+            d_stdout("dpf_component::unref                   => %p | refcount is zero, deleting everything now!", self);
             *component->self = nullptr;
+            delete (dpf_component**)self;
             return 0;
         };
+#endif
 
         // ------------------------------------------------------------------------------------------------------------
         // v3_plugin_base
@@ -2163,6 +2174,8 @@ struct v3_plugin_factory_cpp : v3_funknown {
 };
 
 struct dpf_factory : v3_plugin_factory_cpp {
+    std::vector<ScopedPointer<dpf_component>*> components;
+
     dpf_factory()
     {
         static const uint8_t* kSupportedFactories[] = {
@@ -2252,6 +2265,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
             ScopedPointer<dpf_component>* const componentptr = new ScopedPointer<dpf_component>;
             *componentptr = new dpf_component(componentptr);
             *instance = componentptr;
+            factory->components.push_back(componentptr);
             return V3_OK;
         };
 
@@ -2302,6 +2316,17 @@ struct dpf_factory : v3_plugin_factory_cpp {
             d_stdout("dpf_factory::set_host_context     => %p %p", self, host);
             return V3_NOT_IMPLEMENTED;
         };
+    }
+
+    ~dpf_factory()
+    {
+        d_stdout("dpf_factory deleting");
+
+        for (ScopedPointer<dpf_component>* componentptr : components)
+        {
+            *componentptr = nullptr;
+            delete componentptr;
+        }
     }
 
     DISTRHO_PREVENT_HEAP_ALLOCATION

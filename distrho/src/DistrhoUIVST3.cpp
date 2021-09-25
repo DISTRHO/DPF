@@ -509,8 +509,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             if (const int refcounter = --view->refcounter)
                 return refcounter;
 
-            *(dpf_plugin_view**)self = nullptr;
             *view->self = nullptr;
+            delete (dpf_plugin_view**)self;
             return 0;
         };
 
