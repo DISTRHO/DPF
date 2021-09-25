@@ -14,10 +14,12 @@ SNAME="$(echo ${NAME} | tr -d ' ' | tr '/' '-')"
 
 rm -rf lv2
 rm -rf vst2
+rm -rf vst3
 
-mkdir lv2 vst2
+mkdir lv2 vst2 vst3
 mv *.lv2 lv2/
 mv *.vst vst2/
+mv *.vst3 vst3/
 
 pkgbuild \
   --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
@@ -30,6 +32,12 @@ pkgbuild \
   --install-location "/Library/Audio/Plug-Ins/VST/" \
   --root "${PWD}/vst2/" \
   ../dpf-${SNAME}-vst2bundles.pkg
+
+pkgbuild \
+  --identifier "studio.kx.distrho.plugins.${SNAME}.vst3bundles" \
+  --install-location "/Library/Audio/Plug-Ins/VST3/" \
+  --root "${PWD}/vst3/" \
+  ../dpf-${SNAME}-vst3bundles.pkg
 
 cd ..
 

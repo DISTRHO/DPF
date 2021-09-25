@@ -172,6 +172,7 @@ jobs:
             !bin/*-dssi.dylib
             !bin/lv2
             !bin/vst2
+            !bin/vst3
 
   win32:
     runs-on: ubuntu-20.04
@@ -320,4 +321,15 @@ jobs:
                     --track-origins=yes \
                     --suppressions=./utils/valgrind-dpf.supp \
                     /usr/lib/carla/carla-bridge-native vst2 ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test VST3 plugins
+        run: |
+            for p in $(ls bin/ | grep vst3); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native vst3 ./bin/${p} "" 1>/dev/null; \
             done

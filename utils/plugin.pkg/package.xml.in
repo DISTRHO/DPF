@@ -11,8 +11,12 @@
     <choice id="studio.kx.distrho.@sname@-vst2" title="VST2" description="Install VST2 plugins" visible="true">
         <pkg-ref id="studio.kx.distrho.@sname@-vst2bundles" version="0">@vst2bundleref@</pkg-ref>
     </choice>
+    <choice id="studio.kx.distrho.@sname@-vst3" title="VST3" description="Install VST3 plugins" visible="true">
+        <pkg-ref id="studio.kx.distrho.@sname@-vst3bundles" version="0">@vst3bundleref@</pkg-ref>
+    </choice>
     <choices-outline>
         <line choice="studio.kx.distrho.@sname@-lv2"/>
         <line choice="studio.kx.distrho.@sname@-vst2"/>
+        <line choice="studio.kx.distrho.@sname@-vst3"/>
     </choices-outline>
 </installer-gui-script>
