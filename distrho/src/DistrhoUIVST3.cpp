@@ -72,6 +72,12 @@ v3_message** dpf_message_create(const char* id);
 // --------------------------------------------------------------------------------------------------------------------
 // custom attribute list struct, used for sending utf8 strings
 
+struct v3_attribute_list_utf8 {
+    struct v3_funknown;
+    V3_API v3_result (*set_string_utf8)(void* self, const char* id, const char* string);
+    V3_API v3_result (*get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
+};
+
 static constexpr const v3_tuid v3_attribute_list_utf8_iid =
     V3_ID(d_cconst('D','P','F',' '),
           d_cconst('c','l','a','s'),
@@ -290,7 +296,7 @@ public:
             for (uint32_t i=0; i<valueSize/sizeof(int16_t); ++i)
                 value[i] = value16[i];
 
-            fPlugin.stateChanged(key, value);
+            fUI.stateChanged(key, value);
             return V3_OK;
         }
 #endif
@@ -428,7 +434,7 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
 
         v3_attribute_list_utf8** utf8attrlist = nullptr;
-        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj_query_interface(attrlist, v3_attribute_list_utf8_iid, &utf8attrs) == V3_OK,);
+        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj_query_interface(attrlist, v3_attribute_list_utf8_iid, &utf8attrlist) == V3_OK,);
         DISTRHO_SAFE_ASSERT_RETURN(utf8attrlist != nullptr,);
 
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
