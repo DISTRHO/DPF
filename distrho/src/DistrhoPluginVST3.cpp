@@ -77,6 +77,8 @@ static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 static constexpr const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
+typedef std::map<const String, String> StringMap;
+
 // --------------------------------------------------------------------------------------------------------------------
 // custom v3_tuid compatible type
 
@@ -101,6 +103,21 @@ static dpf_tuid dpf_tuid_component = { dpf_id_entry, dpf_id_comp, 0, 0 };
 static dpf_tuid dpf_tuid_controller = { dpf_id_entry, dpf_id_ctrl, 0, 0 };
 static dpf_tuid dpf_tuid_processor = { dpf_id_entry, dpf_id_proc, 0, 0 };
 static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
+
+// --------------------------------------------------------------------------------------------------------------------
+// custom attribute list struct, used for sending utf8 strings
+
+struct v3_attribute_list_utf8 {
+    struct v3_funknown;
+    V3_API v3_result (*set_string_utf8)(void* self, const char* id, const char* string);
+    V3_API v3_result (*get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
+};
+
+static constexpr const v3_tuid v3_attribute_list_utf8_iid =
+    V3_ID(d_cconst('D','P','F',' '),
+          d_cconst('c','l','a','s'),
+          d_cconst('a','t','t','r'),
+          d_cconst('u','t','f','8'));
 
 // --------------------------------------------------------------------------------------------------------------------
 // Utility functions
@@ -132,6 +149,8 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_audio_processor}";
     if (v3_tuid_match(iid, v3_attribute_list_iid))
         return "{v3_attribute_list_iid}";
+    if (v3_tuid_match(iid, v3_attribute_list_utf8_iid))
+        return "{v3_attribute_list_utf8_iid|CUSTOM}";
     if (v3_tuid_match(iid, v3_bstream_iid))
         return "{v3_bstream}";
     if (v3_tuid_match(iid, v3_component_iid))
@@ -270,21 +289,6 @@ static constexpr void (*const snprintf_f32_utf16)(int16_t*, float, size_t) = snp
 static constexpr void (*const snprintf_u32_utf16)(int16_t*, uint32_t, size_t) = snprintf_utf16_t<uint32_t, format_u32>;
 
 // --------------------------------------------------------------------------------------------------------------------
-// custom attribute list struct, used for sending utf8 strings
-
-struct v3_attribute_list_utf8 {
-    struct v3_funknown;
-    V3_API v3_result (*set_string_utf8)(void* self, const char* id, const char* string);
-    V3_API v3_result (*get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
-};
-
-static constexpr const v3_tuid v3_attribute_list_utf8_iid =
-    V3_ID(d_cconst('D','P','F',' '),
-          d_cconst('c','l','a','s'),
-          d_cconst('a','t','t','r'),
-          d_cconst('u','t','f','8'));
-
-// --------------------------------------------------------------------------------------------------------------------
 // create message object (implementation comes later)
 
 v3_message** dpf_message_create(const char* id);
@@ -325,12 +329,14 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
+#if DISTRHO_PLUGIN_HAS_UI
           fConnection(nullptr),
-          fConnectedToUI(false),
+#endif
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
+        , fConnectedToUI(false)
         , fChangedParameterValues(nullptr)
         , fNextSampleRate(0.0)
 #endif
@@ -423,6 +429,14 @@ public:
         {
             fChangedParameterValues = new bool[fRealParameterCount];
             std::memset(fChangedParameterValues, 0, sizeof(bool)*fRealParameterCount);
+        }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+        for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
+        {
+            const String& dkey(fPlugin.getStateKey(i));
+            fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
 #endif
     }
@@ -1350,10 +1364,10 @@ public:
         return V3_OK;
     }
 
+#if DISTRHO_PLUGIN_HAS_UI
     // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point interface calls
 
-#if DISTRHO_PLUGIN_HAS_UI
     void connect(v3_connection_point** const other)
     {
         DISTRHO_SAFE_ASSERT(fConnectedToUI == false);
@@ -1404,17 +1418,35 @@ public:
                 sendSampleRateToUI(sampleRate);
             }
 
-            // report current state to UI
-            for (uint32_t i=0; i<fRealParameterCount; ++i)
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+            fChangedParameterValues[0] = false;
+            sendParameterChangeToUI(0, fCurrentProgram);
+# endif
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+            // Update current state from plugin side
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key = cit->first;
+                fStateMap[key] = fPlugin.getState(key);
+            }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+            // Set state
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key   = cit->first;
+                const String& value = cit->second;
+
+                sendStateChangeToUI(key, value);
+            }
+# endif
+
+            for (uint32_t i=fParameterOffset; i<fRealParameterCount; ++i)
             {
                 fChangedParameterValues[i] = false;
-
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-                if (i == 0)
-                    sendParameterChangeToUI(i, fCurrentProgram);
-                else
-# endif
-                    sendParameterChangeToUI(i, fPlugin.getParameterValue(i - fParameterOffset));
+                sendParameterChangeToUI(i, fPlugin.getParameterValue(i - fParameterOffset));
             }
 
             sendReadyToUI();
@@ -1514,6 +1546,24 @@ public:
                 value[i] = value16[i];
 
             fPlugin.setState(key, value);
+
+            // save this key as needed
+            if (fPlugin.wantStateKey(key))
+            {
+                for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
+                {
+                    const String& dkey(it->first);
+
+                    if (dkey == key)
+                    {
+                        it->second = value;
+                        return V3_OK;
+                    }
+                }
+
+                d_stderr("Failed to find plugin state with key \"%s\"", key);
+            }
+
             return V3_OK;
         }
 # endif
@@ -1530,14 +1580,16 @@ private:
 
     // VST3 stuff
     v3_component_handler** fComponentHandler;
+#if DISTRHO_PLUGIN_HAS_UI
     v3_connection_point** fConnection;
-    bool fConnectedToUI;
+#endif
 
     // Temporary data
     const uint32_t fParameterOffset;
     const uint32_t fRealParameterCount; // regular parameters + current program
     float* fParameterValues;
 #if DISTRHO_PLUGIN_HAS_UI
+    bool fConnectedToUI;
     bool* fChangedParameterValues;
     double fNextSampleRate; // if not zero, report to UI
 #endif
@@ -1556,6 +1608,9 @@ private:
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
     uint32_t fCurrentProgram;
     const uint32_t fProgramCountMinusOne;
+#endif
+#if DISTRHO_PLUGIN_WANT_STATE
+    StringMap fStateMap;
 #endif
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
@@ -1617,6 +1672,7 @@ private:
 #endif
     }
 
+#if DISTRHO_PLUGIN_HAS_UI
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing, can block
 
@@ -1651,6 +1707,26 @@ private:
         v3_cpp_obj_unref(message);
     }
 
+    void sendStateChangeToUI(const char* const key, const char* const value)
+    {
+        v3_message** const message = dpf_message_create("state-set");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_attribute_list_utf8** utf8attrlist = nullptr;
+        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj_query_interface(attrlist, v3_attribute_list_utf8_iid, &utf8attrlist) == V3_OK,);
+        DISTRHO_SAFE_ASSERT_RETURN(utf8attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
+        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "key", key);
+        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "value", value);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
+
     void sendReadyToUI()
     {
         v3_message** const message = dpf_message_create("ready");
@@ -1664,6 +1740,7 @@ private:
 
         v3_cpp_obj_unref(message);
     }
+#endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
