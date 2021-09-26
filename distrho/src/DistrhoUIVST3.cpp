@@ -27,8 +27,9 @@
 
 /* TODO items:
  * - sample rate change listener
- * - ui mousewheel event
- * - ui key down/up events
+ * - mousewheel event
+ * - key down/up events
+ * - size constraints
  */
 
 START_NAMESPACE_DISTRHO
@@ -210,7 +211,7 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // dpf_ui_connection_point
+    // v3_connection_point interface calls
 
     void connect(v3_connection_point** const point) noexcept
     {
@@ -237,6 +238,7 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
         d_stdout("reporting UI closed");
+        fReadyForPluginData = false;
 
         v3_message** const message = dpf_message_create("close");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
@@ -250,7 +252,6 @@ public:
         v3_cpp_obj_unref(message);
 
         fConnection = nullptr;
-        fReadyForPluginData = false;
     }
 
     v3_result notify(v3_message** const message)
@@ -260,6 +261,15 @@ public:
 
         v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
         DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr, V3_INVALID_ARG);
+
+        if (std::strcmp(msgid, "ready") == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(! fReadyForPluginData, V3_INTERNAL_ERR);
+            fReadyForPluginData = true;
+            return V3_OK;
+        }
+
+        d_stdout("UIVst3 received msg '%s'", msgid);
 
         if (std::strcmp(msgid, "parameter-set") == 0)
         {
@@ -319,15 +329,6 @@ public:
             return V3_OK;
         }
 #endif
-
-        if (std::strcmp(msgid, "ready") == 0)
-        {
-            DISTRHO_SAFE_ASSERT_RETURN(! fReadyForPluginData, V3_INTERNAL_ERR);
-            fReadyForPluginData = true;
-            return V3_OK;
-        }
-
-        d_stdout("UIVst3 received unknown msg '%s'", msgid);
 
         return V3_NOT_IMPLEMENTED;
     }

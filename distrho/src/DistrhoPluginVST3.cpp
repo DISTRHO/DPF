@@ -1333,7 +1333,7 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // dpf_dsp_connection_point
+    // v3_connection_point interface calls
 
     void connect(v3_connection_point** const other)
     {
@@ -1341,16 +1341,12 @@ public:
 
         fConnection = other;
         fConnectedToUI = false;
-
-        d_stdout("---------------------------------------------------------- will send plugin state now");
     }
 
     void disconnect()
     {
         fConnection = nullptr;
         fConnectedToUI = false;
-
-        d_stdout("---------------------------------------------------------- ui conn now null");
     }
 
     v3_result notify(v3_message** const message)
@@ -1410,6 +1406,9 @@ public:
 #if DISTRHO_PLUGIN_HAS_UI
             for (uint32_t i=0; i<fRealParameterCount; ++i)
             {
+                if (! fChangedParameterValues[i])
+                    continue;
+
                 fChangedParameterValues[i] = false;
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -1461,14 +1460,13 @@ public:
 
             res = v3_cpp_obj(attrs)->get_int(attrs, "rindex", &rindex);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(rindex > 0, rindex, V3_INTERNAL_ERR);
 
             res = v3_cpp_obj(attrs)->get_float(attrs, "value", &value);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
 
-            rindex -= fParameterOffset;
-            DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INTERNAL_ERR);
-
-            return requestParameterValueChange(rindex, value) ? V3_OK : V3_INTERNAL_ERR;
+            const uint32_t index = static_cast<uint32_t>(rindex -= fParameterOffset);
+            return requestParameterValueChange(index, value) ? V3_OK : V3_INTERNAL_ERR;
         }
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -1622,15 +1620,20 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
 
         const uint32_t rindex = index + fParameterOffset;
-
-        if (v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, rindex) != V3_OK)
-            return false;
-
         const double normalized = fPlugin.getParameterRanges(index).getNormalizedValue(value);
-        const bool ret = v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, rindex, normalized) == V3_OK;
 
-        v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, rindex);
-        return ret;
+        const v3_result res_edit = v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, rindex);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(res_edit == V3_TRUE || res_edit == V3_FALSE, res_edit, res_edit);
+
+        const v3_result res_perf = v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, rindex, normalized);
+
+        if (res_perf == V3_TRUE)
+            fParameterValues[index] = value;
+
+        if (res_edit == V3_TRUE)
+            v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, rindex);
+
+        return res_perf == V3_TRUE;
     }
 
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
@@ -2089,8 +2092,8 @@ v3_message** dpf_message_create(const char* const id)
 
 enum ConnectionPointType {
     kConnectionPointComponent,
-    kConnectionControllerToComponent,
-    kConnectionControllerToView
+    kConnectionPointController,
+    kConnectionPointBridge
 };
 
 struct v3_connection_point_cpp : v3_funknown {
@@ -2102,12 +2105,14 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
     const ConnectionPointType type;
     v3_connection_point** other;
     v3_connection_point** bridge; // when type is controller this points to ctrl<->view point
+    bool shortcircuit; // plugin as controller, should pass directly to view
 
     dpf_dsp_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
         : vst3(v),
           type(t),
           other(nullptr),
-          bridge(nullptr)
+          bridge(nullptr),
+          shortcircuit(false)
     {
         static const uint8_t* kSupportedInterfaces[] = {
             v3_funknown_iid,
@@ -2211,22 +2216,30 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
                 }
 
             // message belongs to edit controller
-            case kConnectionControllerToComponent:
+            case kConnectionPointController:
                 if (target == 1)
                 {
+                    // we are in view<->dsp short-circuit, all happens in the controller without bridge
+                    if (point->shortcircuit)
+                        return vst3->notify(message);
+
                     // view -> edit controller -> component
                     return v3_cpp_obj(other)->notify(other, message);
                 }
                 else
                 {
+                    // we are in view<->dsp short-circuit, all happens in the controller without bridge
+                    if (point->shortcircuit)
+                        return v3_cpp_obj(other)->notify(other, message);
+
                     // message is from component to controller to view
                     v3_connection_point** const bridge = point->bridge;
                     DISTRHO_SAFE_ASSERT_RETURN(bridge != nullptr, V3_NOT_INITIALISED);
                     return v3_cpp_obj(bridge)->notify(bridge, message);
                 }
 
-            // message belongs to view (aka ui)
-            case kConnectionControllerToView:
+            // message belongs to bridge (aka ui)
+            case kConnectionPointBridge:
                 if (target == 1)
                 {
                     // view -> edit controller -> component
@@ -2255,8 +2268,8 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
-    ScopedPointer<dpf_dsp_connection_point> connectionComp; // kConnectionControllerToComponent
-    ScopedPointer<dpf_dsp_connection_point> connectionView; // kConnectionControllerToView
+    ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
+    ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
     // cached values
@@ -2298,7 +2311,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             if (v3_tuid_match(v3_connection_point_iid, iid))
             {
                 if (controller->connectionComp == nullptr)
-                    controller->connectionComp = new dpf_dsp_connection_point(kConnectionControllerToComponent,
+                    controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
                                                                               controller->vst3);
                 *iface = &controller->connectionComp;
                 return V3_OK;
@@ -2356,7 +2369,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #if 0
             return vst3->setComponentState(stream);
 #endif
-            return V3_NOT_IMPLEMENTED;
+
+            // TODO, returning ok to make renoise happy
+            return V3_OK;
         };
 
         controller.set_state = []V3_API(void* self, v3_bstream* stream) -> v3_result
@@ -2507,34 +2522,56 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
+#if DISTRHO_PLUGIN_HAS_UI
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
-#if DISTRHO_PLUGIN_HAS_UI
-            // we require a component connection
-            DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp != nullptr, nullptr);
-            DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp->other != nullptr, nullptr);
+            // if there is a component connection, we require it to be active
+            if (controller->connectionComp != nullptr)
+            {
+                DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp->other != nullptr, nullptr);
+            }
+            // otherwise short-circuit and deal with this ourselves (assume local usage)
+            else
+            {
+                controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
+                                                                          controller->vst3);
+                controller->connectionComp->shortcircuit = true;
+            }
 
             v3_plugin_view** const view = dpf_plugin_view_create(vst3->getInstancePointer(),
                                                                  vst3->getSampleRate());
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, nullptr);
 
-            v3_connection_point** connection = nullptr;
-            if (v3_cpp_obj_query_interface(view, v3_connection_point_iid, &connection) == V3_OK)
+            v3_connection_point** uiconn = nullptr;
+            if (v3_cpp_obj_query_interface(view, v3_connection_point_iid, &uiconn) == V3_OK)
             {
-                d_stdout("view connection query ok %p", connection);
+                d_stdout("view connection query ok %p | shortcircuit %d",
+                         uiconn, controller->connectionComp->shortcircuit);
 
-                v3_connection_point** const bridge = (v3_connection_point**)&controller->connectionComp;
-                controller->connectionView = new dpf_dsp_connection_point(kConnectionControllerToView,
-                                                                          controller->vst3);
+                v3_connection_point** const ctrlconn = (v3_connection_point**)&controller->connectionComp;
 
-                v3_connection_point** const other = (v3_connection_point**)&controller->connectionView;
-                v3_cpp_obj(connection)->connect(connection, other);
-                v3_cpp_obj(other)->connect(other, connection);
+                if (controller->connectionComp->shortcircuit)
+                {
+                    vst3->disconnect();
 
-                controller->connectionComp->bridge = other;
-                controller->connectionView->bridge = bridge;
+                    v3_cpp_obj(uiconn)->connect(uiconn, ctrlconn);
+                    v3_cpp_obj(ctrlconn)->connect(ctrlconn, uiconn);
 
+                    vst3->connect(ctrlconn);
+                }
+                else
+                {
+                    controller->connectionBridge = new dpf_dsp_connection_point(kConnectionPointBridge,
+                                                                                controller->vst3);
+
+                    v3_connection_point** const bridgeconn = (v3_connection_point**)&controller->connectionBridge;
+                    v3_cpp_obj(uiconn)->connect(uiconn, bridgeconn);
+                    v3_cpp_obj(bridgeconn)->connect(bridgeconn, uiconn);
+
+                    controller->connectionComp->bridge = bridgeconn;
+                    controller->connectionBridge->bridge = ctrlconn;
+                }
             }
 
             return view;
