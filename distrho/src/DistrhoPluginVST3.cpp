@@ -17,6 +17,10 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../extra/ScopedPointer.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI
+# include "../extra/RingBuffer.hpp"
+#endif
+
 #include "travesty/audio_processor.h"
 #include "travesty/component.h"
 #include "travesty/edit_controller.h"
@@ -976,6 +980,23 @@ public:
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         uint32_t midiEventCount = 0;
 
+# if DISTRHO_PLUGIN_HAS_UI
+        while (fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                break;
+
+            MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
+            midiEvent.frame = 0;
+            midiEvent.size  = 3;
+            std::memcpy(midiEvent.data, midiData, 3);
+
+            if (midiEventCount == kMaxMidiEvents)
+                break;
+        }
+# endif
+
         if (v3_event_list** const eventptr = data->input_events)
         {
             v3_event event;
@@ -1283,6 +1304,23 @@ public:
         v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
         DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr, V3_INVALID_ARG);
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
+        if (std::strcmp(msgid, "midi") == 0)
+        {
+            uint8_t* data;
+            uint32_t size;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_binary(attrs, "data", (const void**)&data, &size);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            // known maximum size
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(size == 3, size, V3_INTERNAL_ERR);
+
+            return fNotesRingBuffer.writeCustomData(data, size) && fNotesRingBuffer.commitWrite() ? V3_OK : V3_NOMEM;
+        }
+#endif
+
         if (std::strcmp(msgid, "parameter-edit") == 0)
         {
             DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
@@ -1368,6 +1406,9 @@ private:
     float* fParameterValues;
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
+# if DISTRHO_PLUGIN_HAS_UI
+    SmallStackRingBuffer fNotesRingBuffer;
+# endif
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     v3_event_list** fHostEventOutputHandle;
@@ -1870,13 +1911,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
+#if DISTRHO_PLUGIN_HAS_UI
             // if there is no connection yet we can still manage ourselves, but only if component is initialized
             DISTRHO_SAFE_ASSERT_RETURN((controller->connection != nullptr && controller->connection->connected) ||
                                        controller->vst3 != nullptr, nullptr);
 
             if (controller->connection != nullptr)
             {
-                // if there is a connection point alreay it needs to be connected
+                // if there is a connection point, it needs to be connected
                 DISTRHO_SAFE_ASSERT_RETURN(controller->connection->connected, nullptr);
             }
             else
@@ -1900,7 +1942,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 sampleRate = 44100.0;
             }
 
-#if DISTRHO_PLUGIN_HAS_UI
             return (v3_plugin_view**)dpf_plugin_view_create((v3_connection_point**)&controller->connection,
                                                             instancePointer, sampleRate);
 #else

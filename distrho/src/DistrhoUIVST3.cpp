@@ -316,14 +316,25 @@ private:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t /*channel*/, const uint8_t /*note*/, const uint8_t /*velocity*/)
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-//         uint8_t midiData[3];
-//         midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
-//         midiData[1] = note;
-//         midiData[2] = velocity;
-//         fNotesRingBuffer.writeCustomData(midiData, 3);
-//         fNotesRingBuffer.commitWrite();
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+
+        v3_message** const message = dpf_message_create("midi");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr,);
+
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+
+        v3_cpp_obj(attrs)->set_binary(attrs, "data", midiData, sizeof(midiData));
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
     }
 
     static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
@@ -332,6 +343,7 @@ private:
     }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
@@ -353,7 +365,6 @@ private:
         v3_cpp_obj_unref(message);
     }
 
-#if DISTRHO_PLUGIN_WANT_STATE
     static void setStateCallback(void* ptr, const char* key, const char* value)
     {
         ((UIVst3*)ptr)->setState(key, value);
