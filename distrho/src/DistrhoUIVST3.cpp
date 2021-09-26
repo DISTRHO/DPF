@@ -14,25 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoPluginChecks.h"
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-// #undef DISTRHO_PLUGIN_HAS_UI
-// #define DISTRHO_PLUGIN_HAS_UI 1
-
-#if DISTRHO_PLUGIN_HAS_UI
-
-// --------------------------------------------------------------------------------------------------------------------
-
 #include "DistrhoUIInternal.hpp"
 
 #include <atomic>
@@ -45,10 +26,9 @@
 #include "travesty/view.h"
 
 /* TODO items:
- * - disable UI if non-embed UI build
  * - sample rate change listener
- * - proper send of parameter, program and state changes to UI
- * - request current state of UI when created
+ * - ui mousewheel event
+ * - ui key down/up events
  */
 
 START_NAMESPACE_DISTRHO
@@ -119,6 +99,7 @@ public:
           fView(view),
           fConnection(nullptr),
           fFrame(nullptr),
+          fReadyForPluginData(false),
           fScaleFactor(scaleFactor)
     {
         // TESTING awful idea dont reuse
@@ -128,6 +109,9 @@ public:
     ~UIVst3() override
     {
         stopThread(5000);
+
+        if (fConnection != nullptr)
+            disconnect();
     }
 
     // TESTING awful idea dont reuse
@@ -135,6 +119,12 @@ public:
     {
         while (! shouldThreadExit())
         {
+            if (fReadyForPluginData)
+            {
+                fReadyForPluginData = false;
+                requestMorePluginData();
+            }
+
             fUI.plugin_idle();
             d_msleep(50);
         }
@@ -227,11 +217,40 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr,);
 
         fConnection = point;
+
+        d_stdout("requesting current plugin state");
+
+        v3_message** const message = dpf_message_create("init");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
     }
 
     void disconnect() noexcept
     {
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+
+        d_stdout("reporting UI closed");
+
+        v3_message** const message = dpf_message_create("close");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+
         fConnection = nullptr;
+        fReadyForPluginData = false;
     }
 
     v3_result notify(v3_message** const message)
@@ -301,6 +320,13 @@ public:
         }
 #endif
 
+        if (std::strcmp(msgid, "ready") == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(! fReadyForPluginData, V3_INTERNAL_ERR);
+            fReadyForPluginData = true;
+            return V3_OK;
+        }
+
         d_stdout("UIVst3 received unknown msg '%s'", msgid);
 
         return V3_NOT_IMPLEMENTED;
@@ -318,7 +344,27 @@ private:
     v3_plugin_frame** fFrame;
 
     // Temporary data
+    bool fReadyForPluginData;
     float fScaleFactor;
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // helper functions called during message passing
+
+    void requestMorePluginData() const
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+
+        v3_message** const message = dpf_message_create("idle");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
@@ -600,7 +646,6 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
 
         point.notify = []V3_API(void* self, struct v3_message** message) -> v3_result
         {
-            d_stdout("dpf_ui_connection_point::notify          => %p %p", self, message);
             dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
 
@@ -906,7 +951,3 @@ v3_plugin_view** dpf_plugin_view_create(void* const instancePointer, const doubl
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
-
-// --------------------------------------------------------------------------------------------------------------------
-
-#endif // DISTRHO_PLUGIN_HAS_UI

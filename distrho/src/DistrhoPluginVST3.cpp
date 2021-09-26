@@ -49,7 +49,7 @@
  * - hide program parameter?
  * - save and restore state
  * - save and restore current program
- * - proper send of parameter, program and state changes to UI
+ * - deal with parameter triggers
  * - send current state to UI on request
  * - midi cc parameter mapping
  * - full MIDI1 encode and decode
@@ -291,6 +291,11 @@ static constexpr const v3_tuid v3_attribute_list_utf8_iid =
 v3_message** dpf_message_create(const char* id);
 
 // --------------------------------------------------------------------------------------------------------------------
+// dpf_plugin_view_create (implemented on UI side)
+
+v3_plugin_view** dpf_plugin_view_create(void* instancePointer, double sampleRate);
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * VST3 DSP class.
@@ -321,10 +326,14 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
-          fConnectionToUI(nullptr),
+          fConnection(nullptr),
+          fConnectedToUI(false),
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr)
+#if DISTRHO_PLUGIN_HAS_UI
+        , fChangedParameterValues(nullptr)
+#endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
 #endif
@@ -405,6 +414,14 @@ public:
             for (uint32_t i=0; i < parameterCount; ++i)
                 fParameterValues[i] = fPlugin.getParameterDefault(i);
         }
+
+#if DISTRHO_PLUGIN_HAS_UI
+        if (fRealParameterCount != 0)
+        {
+            fChangedParameterValues = new bool[fRealParameterCount];
+            std::memset(fChangedParameterValues, 0, sizeof(bool)*fRealParameterCount);
+        }
+#endif
     }
 
     ~PluginVst3()
@@ -414,6 +431,14 @@ public:
             delete[] fParameterValues;
             fParameterValues = nullptr;
         }
+
+#if DISTRHO_PLUGIN_HAS_UI
+        if (fChangedParameterValues != nullptr)
+        {
+            delete[] fChangedParameterValues;
+            fChangedParameterValues = nullptr;
+        }
+#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -427,11 +452,6 @@ public:
     double getSampleRate() const noexcept
     {
         return fPlugin.getSampleRate();
-    }
-
-    void setConnectionToUI(v3_connection_point** const point) noexcept
-    {
-        fConnectionToUI = point;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1270,36 +1290,39 @@ public:
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
-        // TESTING remove this
-        sendParameterChangeToUI(rindex, value);
-
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
         {
             fCurrentProgram = std::round(value * fProgramCountMinusOne);
             fPlugin.loadProgram(fCurrentProgram);
-            return V3_OK;
         }
+        else
 #endif
-
-        const uint32_t index = rindex - fParameterOffset;
-        const uint32_t hints = fPlugin.getParameterHints(index);
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-
-        float realValue = ranges.getUnnormalizedValue(value);
-
-        if (hints & kParameterIsBoolean)
         {
-            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-            realValue = realValue > midRange ? ranges.max : ranges.min;
+            const uint32_t index = rindex - fParameterOffset;
+            const uint32_t hints = fPlugin.getParameterHints(index);
+            const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+            float realValue = ranges.getUnnormalizedValue(value);
+
+            if (hints & kParameterIsBoolean)
+            {
+                const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+                realValue = realValue > midRange ? ranges.max : ranges.min;
+            }
+
+            if (hints & kParameterIsInteger)
+            {
+                realValue = std::round(realValue);
+            }
+
+            fParameterValues[index] = realValue;
+            fPlugin.setParameterValue(index, realValue);
         }
 
-        if (hints & kParameterIsInteger)
-        {
-            realValue = std::round(realValue);
-        }
-
-        fPlugin.setParameterValue(index, realValue);
+#if DISTRHO_PLUGIN_HAS_UI
+        fChangedParameterValues[rindex] = true;
+#endif
         return V3_OK;
     }
 
@@ -1314,14 +1337,18 @@ public:
 
     void connect(v3_connection_point** const other)
     {
-        fConnectionToUI = other;
+        DISTRHO_SAFE_ASSERT(fConnectedToUI == false);
+
+        fConnection = other;
+        fConnectedToUI = false;
 
         d_stdout("---------------------------------------------------------- will send plugin state now");
     }
 
     void disconnect()
     {
-        fConnectionToUI = nullptr;
+        fConnection = nullptr;
+        fConnectedToUI = false;
 
         d_stdout("---------------------------------------------------------- ui conn now null");
     }
@@ -1351,9 +1378,63 @@ public:
         }
 #endif
 
+        if (std::strcmp(msgid, "init") == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
+            fConnectedToUI = true;
+
+            // report current state to UI
+            for (uint32_t i=0; i<fRealParameterCount; ++i)
+            {
+#if DISTRHO_PLUGIN_HAS_UI
+                fChangedParameterValues[i] = false;
+#endif
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+                if (i == 0)
+                    sendParameterChangeToUI(i, fCurrentProgram);
+                else
+#endif
+                    sendParameterChangeToUI(i, fPlugin.getParameterValue(i - fParameterOffset));
+            }
+
+            sendReadyToUI();
+            return V3_OK;
+        }
+
+        if (std::strcmp(msgid, "idle") == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
+            DISTRHO_SAFE_ASSERT_RETURN(fConnectedToUI, V3_INTERNAL_ERR);
+
+#if DISTRHO_PLUGIN_HAS_UI
+            for (uint32_t i=0; i<fRealParameterCount; ++i)
+            {
+                fChangedParameterValues[i] = false;
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+                if (i == 0)
+                    sendParameterChangeToUI(i, fCurrentProgram);
+                else
+#endif
+                    sendParameterChangeToUI(i, fParameterValues[i - fParameterOffset]);
+            }
+#endif
+
+            sendReadyToUI();
+            return V3_OK;
+        }
+
+        if (std::strcmp(msgid, "close") == 0)
+        {
+            fConnectedToUI = false;
+            DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
+            return V3_OK;
+        }
+
         if (std::strcmp(msgid, "parameter-edit") == 0)
         {
-            DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
+            DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, V3_INTERNAL_ERR);
 
             int64_t rindex;
             int64_t started;
@@ -1429,12 +1510,16 @@ private:
 
     // VST3 stuff
     v3_component_handler** fComponentHandler;
-    v3_connection_point** fConnectionToUI;
+    v3_connection_point** fConnection;
+    bool fConnectedToUI;
 
     // Temporary data
     const uint32_t fParameterOffset;
     const uint32_t fRealParameterCount; // regular parameters + current program
     float* fParameterValues;
+#if DISTRHO_PLUGIN_HAS_UI
+    bool* fChangedParameterValues;
+#endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 # if DISTRHO_PLUGIN_HAS_UI
@@ -1470,16 +1555,22 @@ private:
                     continue;
 
                 fParameterValues[i] = curValue;
+#if DISTRHO_PLUGIN_HAS_UI
+                fChangedParameterValues[i] = true;
+#endif
             }
-            else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
+            else if (fPlugin.isParameterTrigger(i))
             {
-                // NOTE: no trigger support in VST parameters, simulate it here
+                // NOTE: no trigger support in VST3 parameters, simulate it here
                 curValue = fPlugin.getParameterValue(i);
 
                 if (d_isEqual(curValue, fPlugin.getParameterDefault(i)))
                     continue;
 
                 fPlugin.setParameterValue(i, curValue);
+#if DISTRHO_PLUGIN_HAS_UI
+                fChangedParameterValues[i] = true;
+#endif
             }
             else
             {
@@ -1495,9 +1586,6 @@ private:
 
     void sendParameterChangeToUI(const v3_param_id rindex, const double value)
     {
-        d_stdout("will send message now");
-        DISTRHO_SAFE_ASSERT_RETURN(fConnectionToUI != nullptr,);
-
         v3_message** const message = dpf_message_create("parameter-set");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
@@ -1507,7 +1595,21 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
         v3_cpp_obj(attrlist)->set_int(attrlist, "rindex", rindex);
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", value);
-        v3_cpp_obj(fConnectionToUI)->notify(fConnectionToUI, message);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
+
+    void sendReadyToUI()
+    {
+        v3_message** const message = dpf_message_create("ready");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
 
         v3_cpp_obj_unref(message);
     }
@@ -1602,13 +1704,6 @@ private:
 /**
  * VST3 low-level pointer thingies follow, proceed with care.
  */
-
-#if DISTRHO_PLUGIN_HAS_UI
-// --------------------------------------------------------------------------------------------------------------------
-// dpf_plugin_view_create (called from DSP side)
-
-v3_plugin_view** dpf_plugin_view_create(void* instancePointer, double sampleRate);
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -1936,7 +2031,6 @@ struct dpf_message : v3_message_cpp {
 
         unref = []V3_API(void* const self) -> uint32_t
         {
-            d_stdout("dpf_message::unref                   => %p", self);
             dpf_message** const messageptr = static_cast<dpf_message**>(self);
             DISTRHO_SAFE_ASSERT_RETURN(messageptr != nullptr, 0);
             dpf_message* const message = *messageptr;
@@ -1955,7 +2049,6 @@ struct dpf_message : v3_message_cpp {
 
         msg.get_message_id = []V3_API(void* const self) -> const char*
         {
-            d_stdout("dpf_message::get_message_id => %p", self);
             dpf_message* const message = *(dpf_message**)self;
             DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
 
@@ -1973,7 +2066,6 @@ struct dpf_message : v3_message_cpp {
 
         msg.get_attributes = []V3_API(void* const self) -> v3_attribute_list**
         {
-            d_stdout("dpf_message::get_attributes => %p", self);
             dpf_message* const message = *(dpf_message**)self;
             DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
 
@@ -2086,7 +2178,6 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 
         point.notify = []V3_API(void* self, struct v3_message** message) -> v3_result
         {
-            d_stdout("dpf_dsp_connection_point::notify          => %p %p", self, message);
             dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
 
@@ -2102,68 +2193,52 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
             int64_t target = 0;
             const v3_result res = v3_cpp_obj(attrlist)->get_int(attrlist, "__dpf_msg_target__", &target);
             DISTRHO_SAFE_ASSERT_RETURN(res == V3_OK, res);
-            DISTRHO_SAFE_ASSERT_RETURN(target != 0, V3_INTERNAL_ERR);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(target == 1 || target == 2, target, V3_INTERNAL_ERR);
 
             switch (point->type)
             {
-            // pass message from component (aka plugin) to controller
+            // message belongs to component (aka plugin)
             case kConnectionPointComponent:
-            {
-                d_stdout("dpf_dsp_connection_point::notify kConnectionPointComponent");
-
-                switch (target)
+                if (target == 1)
                 {
-                case 1:
-                    // message is from view to controller to component
+                    // view -> edit controller -> component
                     return vst3->notify(message);
-                case 2:
+                }
+                else
+                {
                     // message is from component to controller to view
                     return v3_cpp_obj(other)->notify(other, message);
                 }
-                break;
-            }
 
-            // pass message from controller to component (aka plugin)
+            // message belongs to edit controller
             case kConnectionControllerToComponent:
-            {
-                d_stdout("dpf_dsp_connection_point::notify kConnectionControllerToComponent");
-
-                switch (target)
+                if (target == 1)
                 {
-                case 1:
-                    // message is from view to controller to component
+                    // view -> edit controller -> component
                     return v3_cpp_obj(other)->notify(other, message);
-                case 2:
+                }
+                else
                 {
                     // message is from component to controller to view
                     v3_connection_point** const bridge = point->bridge;
                     DISTRHO_SAFE_ASSERT_RETURN(bridge != nullptr, V3_NOT_INITIALISED);
                     return v3_cpp_obj(bridge)->notify(bridge, message);
                 }
-                }
-                break;
-            }
 
-            // pass message from from view (aka ui) to controller
+            // message belongs to view (aka ui)
             case kConnectionControllerToView:
-            {
-                d_stdout("dpf_dsp_connection_point::notify kConnectionControllerToView");
-
-                switch (target)
+                if (target == 1)
                 {
-                case 1:
-                {
-                    // message is from view to controller to component
+                    // view -> edit controller -> component
                     v3_connection_point** const bridge = point->bridge;
                     DISTRHO_SAFE_ASSERT_RETURN(bridge != nullptr, V3_NOT_INITIALISED);
                     return v3_cpp_obj(bridge)->notify(bridge, message);
                 }
-                case 2:
+                else
+                {
                     // message is from component to controller to view
                     return v3_cpp_obj(other)->notify(other, message);
                 }
-                break;
-            }
             }
 
             return V3_INTERNAL_ERR;

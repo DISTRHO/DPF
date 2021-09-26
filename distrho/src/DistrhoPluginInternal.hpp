@@ -541,6 +541,11 @@ public:
         return (getParameterHints(index) & kParameterIsOutput) != 0x0;
     }
 
+    bool isParameterTrigger(const uint32_t index) const noexcept
+    {
+        return (getParameterHints(index) & kParameterIsTrigger) == kParameterIsTrigger;
+    }
+
     bool isParameterOutputOrTrigger(const uint32_t index) const noexcept
     {
         const uint32_t hints = getParameterHints(index);
