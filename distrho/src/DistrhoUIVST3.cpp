@@ -14,12 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoUIInternal.hpp"
-
-#include <atomic>
-
-// TESTING awful idea dont reuse
-#include "../extra/Thread.hpp"
+#include "DistrhoPluginChecks.h"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
 # undef DISTRHO_PLUGIN_HAS_UI
@@ -34,9 +29,16 @@
 // #undef DISTRHO_PLUGIN_HAS_UI
 // #define DISTRHO_PLUGIN_HAS_UI 1
 
-// #if DISTRHO_PLUGIN_HAS_UI
-# include "DistrhoUIInternal.hpp"
-// #endif
+#if DISTRHO_PLUGIN_HAS_UI
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "DistrhoUIInternal.hpp"
+
+#include <atomic>
+
+// TESTING awful idea dont reuse
+#include "../extra/Thread.hpp"
 
 #include "travesty/edit_controller.h"
 #include "travesty/message.h"
@@ -48,12 +50,9 @@
 
 /* TODO items:
  * - disable UI if non-embed UI build
- * - parameter change listener
- * - program change listener
- * - program change sender
- * - state change listener
  * - sample rate change listener
- * - call component handler restart with params-changed flag when setting program?
+ * - proper send of parameter, program and state changes to UI
+ * - request current state of UI when created
  */
 
 START_NAMESPACE_DISTRHO
@@ -122,7 +121,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               nullptr, // TODO file request
-              nullptr,
+              nullptr, // bundlePath
               instancePointer,
               scaleFactor),
           fView(view),
@@ -263,12 +262,52 @@ public:
             res = v3_cpp_obj(attrs)->get_float(attrs, "value", &value);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
 
-            rindex -= fUI.getParameterOffset();
-            DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INTERNAL_ERR);
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+            if (rindex == 0)
+            {
+                DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0, V3_INTERNAL_ERR);
 
-            fUI.parameterChanged(rindex, value);
+                fUI.programLoaded(static_cast<uint32_t>(value + 0.5));
+            }
+            else
+#endif
+            {
+                rindex -= fUI.getParameterOffset();
+                DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INTERNAL_ERR);
+
+                fUI.parameterChanged(static_cast<uint32_t>(rindex), value);
+            }
+
             return V3_OK;
         }
+
+#if DISTRHO_PLUGIN_WANT_STATE
+        if (std::strcmp(msgid, "state-set") == 0)
+        {
+            int16_t* key16;
+            int16_t* value16;
+            uint32_t keySize, valueSize;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_binary(attrs, "key", (const void**)&key16, &keySize);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            res = v3_cpp_obj(attrs)->get_binary(attrs, "value", (const void**)&value16, &valueSize);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            // do cheap inline conversion
+            char* const key = (char*)key16;
+            char* const value = (char*)value16;
+
+            for (uint32_t i=0; i<keySize/sizeof(int16_t); ++i)
+                key[i] = key16[i];
+            for (uint32_t i=0; i<valueSize/sizeof(int16_t); ++i)
+                value[i] = value16[i];
+
+            fPlugin.stateChanged(key, value);
+            return V3_OK;
+        }
+#endif
 
         d_stdout("UIVst3 received unknown msg '%s'", msgid);
 
@@ -1257,3 +1296,7 @@ v3_plugin_view** dpf_plugin_view_create(void* const instancePointer, const doubl
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#endif // DISTRHO_PLUGIN_HAS_UI

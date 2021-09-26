@@ -17,6 +17,16 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../extra/ScopedPointer.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 # include "../extra/RingBuffer.hpp"
 #endif
@@ -35,8 +45,10 @@
  * - parameter enumeration as lists
  * - hide parameter outputs?
  * - hide program parameter?
- * - state support
+ * - save and restore state
  * - save and restore current program
+ * - proper send of parameter, program and state changes to UI
+ * - send current state to UI on request
  * - midi cc parameter mapping
  * - full MIDI1 encode and decode
  * - decode version number (0x102030 -> 1.2.3)
@@ -796,33 +808,6 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // v3_bstream interface calls (for state support)
-
-    v3_result read(void* /*buffer*/, int32_t /*num_bytes*/, int32_t* /*bytes_read*/)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    v3_result write(void* /*buffer*/, int32_t /*num_bytes*/, int32_t* /*bytes_written*/)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    v3_result seek(int64_t /*pos*/, int32_t /*seek_mode*/, int64_t* /*result*/)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    v3_result tell(int64_t* /*pos*/)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------
     // v3_audio_processor interface calls
 
     v3_result setBusArrangements(v3_speaker_arrangement*, int32_t, v3_speaker_arrangement*, int32_t)
@@ -1269,7 +1254,7 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
         // TESTING remove this
-        sendParameterChangeTest(rindex, value);
+        sendParameterChangeToUI(rindex, value);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
@@ -1491,7 +1476,7 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing, can block
 
-    void sendParameterChangeTest(const v3_param_id rindex, const double value)
+    void sendParameterChangeToUI(const v3_param_id rindex, const double value)
     {
         d_stdout("will send message now");
         DISTRHO_SAFE_ASSERT_RETURN(fConnectionToUI != nullptr,);
@@ -2051,7 +2036,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
-#if 1 // DISTRHO_PLUGIN_HAS_UI
+#if DISTRHO_PLUGIN_HAS_UI
             // we require a component connection
             DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp != nullptr, nullptr);
             DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp->other != nullptr, nullptr);
@@ -2300,104 +2285,6 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     }
 };
 
-#if 0
-// --------------------------------------------------------------------------------------------------------------------
-// dpf_state_stream
-
-struct v3_bstream_cpp : v3_funknown {
-    v3_bstream stream;
-};
-
-struct dpf_state_stream : v3_bstream_cpp {
-    ScopedPointer<PluginVst3>& vst3;
-
-    dpf_state_stream(ScopedPointer<PluginVst3>& v)
-        : vst3(v)
-    {
-        static const uint8_t* kSupportedInterfaces[] = {
-            v3_funknown_iid,
-            v3_bstream_iid
-        };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_funknown
-
-        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
-        {
-            d_stdout("dpf_factory::query_interface      => %p %s %p", self, tuid2str(iid), iface);
-            *iface = NULL;
-            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
-
-            for (const uint8_t* interface_iid : kSupportedInterfaces)
-            {
-                if (v3_tuid_match(interface_iid, iid))
-                {
-                    *iface = self;
-                    return V3_OK;
-                }
-            }
-
-            return V3_NO_INTERFACE;
-        };
-
-        // there is only a single instance of this, so we don't have to care here
-        ref = []V3_API(void*) -> uint32_t { return 1; };
-        unref = []V3_API(void*) -> uint32_t { return 0; };
-
-        // ------------------------------------------------------------------------------------------------------------
-        // v3_bstream
-
-        stream.read = []V3_API(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_read) -> v3_result
-        {
-            d_stdout("dpf_state_stream::read  => %p %p %i %p", self, buffer, num_bytes, bytes_read);
-            dpf_state_stream* const stream = *(dpf_state_stream**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
-
-            PluginVst3* const vst3 = stream->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
-
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        stream.write = []V3_API(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_written) -> v3_result
-        {
-            d_stdout("dpf_state_stream::write => %p %p %i %p", self, buffer, num_bytes, bytes_written);
-            dpf_state_stream* const stream = *(dpf_state_stream**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
-
-            PluginVst3* const vst3 = stream->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
-
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        stream.seek = []V3_API(void* self, int64_t pos, int32_t seek_mode, int64_t* result) -> v3_result
-        {
-            d_stdout("dpf_state_stream::seek  => %p %lu %i %p", self, pos, seek_mode, result);
-            dpf_state_stream* const stream = *(dpf_state_stream**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
-
-            PluginVst3* const vst3 = stream->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
-
-            return V3_NOT_IMPLEMENTED;
-        };
-
-        stream.tell = []V3_API(void* self, int64_t* pos) -> v3_result
-        {
-            d_stdout("dpf_state_stream::tell  => %p %p", self, pos);
-            dpf_state_stream* const stream = *(dpf_state_stream**)self;
-            DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr, V3_NOT_INITIALISED);
-
-            PluginVst3* const vst3 = stream->vst3;
-            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
-
-            return V3_NOT_IMPLEMENTED;
-        };
-    }
-};
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_component
 
@@ -2412,7 +2299,6 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_audio_processor> processor;
     ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
     ScopedPointer<dpf_edit_controller> controller;
-    // ScopedPointer<dpf_state_stream> stream;
     ScopedPointer<PluginVst3> vst3;
 
     dpf_component(ScopedPointer<dpf_component>* const s)
