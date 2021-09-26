@@ -257,6 +257,11 @@ static constexpr void (*const snprintf_f32_utf16)(int16_t*, float, size_t) = snp
 static constexpr void (*const snprintf_u32_utf16)(int16_t*, uint32_t, size_t) = snprintf_utf16_t<uint32_t, format_u32>;
 
 // --------------------------------------------------------------------------------------------------------------------
+// TESTING
+
+v3_message** dpf_message_create(const char* id);
+
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
  * VST3 DSP class.
@@ -287,6 +292,7 @@ public:
     PluginVst3()
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
+          fConnectionToUI(nullptr),
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr)
@@ -392,6 +398,11 @@ public:
     double getSampleRate() const noexcept
     {
         return fPlugin.getSampleRate();
+    }
+
+    void setConnectionToUI(v3_connection_point** const point) noexcept
+    {
+        fConnectionToUI = point;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1257,6 +1268,9 @@ public:
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
+        // TESTING remove this
+        sendParameterChangeTest(rindex, value);
+
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
         {
@@ -1294,7 +1308,21 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
-    // dpf_connection_point
+    // dpf_dsp_connection_point
+
+    void connect(v3_connection_point** const other)
+    {
+        fConnectionToUI = other;
+
+        d_stdout("---------------------------------------------------------- will send plugin state now");
+    }
+
+    void disconnect()
+    {
+        fConnectionToUI = nullptr;
+
+        d_stdout("---------------------------------------------------------- ui conn now null");
+    }
 
     v3_result notify(v3_message** const message)
     {
@@ -1399,6 +1427,7 @@ private:
 
     // VST3 stuff
     v3_component_handler** fComponentHandler;
+    v3_connection_point** fConnectionToUI;
 
     // Temporary data
     const uint32_t fParameterOffset;
@@ -1422,7 +1451,7 @@ private:
 #endif
 
     // ----------------------------------------------------------------------------------------------------------------
-    // functions called from the plugin side, RT no block
+    // helper functions called during process, cannot block
 
     void updateParameterOutputsAndTriggers()
     {
@@ -1457,6 +1486,28 @@ private:
 
             requestParameterValueChange(i, curValue);
         }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // helper functions called during message passing, can block
+
+    void sendParameterChangeTest(const v3_param_id rindex, const double value)
+    {
+        d_stdout("will send message now");
+        DISTRHO_SAFE_ASSERT_RETURN(fConnectionToUI != nullptr,);
+
+        v3_message** const message = dpf_message_create("parameter-set");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
+        v3_cpp_obj(attrlist)->set_int(attrlist, "rindex", rindex);
+        v3_cpp_obj(attrlist)->set_float(attrlist, "value", value);
+        v3_cpp_obj(fConnectionToUI)->notify(fConnectionToUI, message);
+
+        v3_cpp_obj_unref(message);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1554,25 +1605,33 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from DSP side)
 
-v3_funknown** dpf_plugin_view_create(v3_connection_point** connection, void* instancePointer, double sampleRate);
+v3_plugin_view** dpf_plugin_view_create(void* instancePointer, double sampleRate);
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_connection_point
+// dpf_dsp_connection_point
+
+enum ConnectionPointType {
+    kConnectionPointComponent,
+    kConnectionControllerToComponent,
+    kConnectionControllerToView
+};
 
 struct v3_connection_point_cpp : v3_funknown {
     v3_connection_point point;
 };
 
-struct dpf_connection_point : v3_connection_point_cpp {
+struct dpf_dsp_connection_point : v3_connection_point_cpp {
     ScopedPointer<PluginVst3>& vst3;
-    const bool controller; // component otherwise
-    bool connected;
+    const ConnectionPointType type;
+    v3_connection_point** other;
+    v3_connection_point** bridge; // when type is controller this points to ctrl<->view point
 
-    dpf_connection_point(const bool isEditCtrl, ScopedPointer<PluginVst3>& v)
+    dpf_dsp_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
         : vst3(v),
-          controller(isEditCtrl),
-          connected(false)
+          type(t),
+          other(nullptr),
+          bridge(nullptr)
     {
         static const uint8_t* kSupportedInterfaces[] = {
             v3_funknown_iid,
@@ -1584,7 +1643,7 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
         query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
         {
-            d_stdout("dpf_connection_point::query_interface => %p %s %p", self, tuid2str(iid), iface);
+            d_stdout("dpf_dsp_connection_point::query_interface => %p %s %p", self, tuid2str(iid), iface);
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 
@@ -1609,40 +1668,121 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
         point.connect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
         {
-            d_stdout("dpf_connection_point::connect         => %p %p", self, other);
-            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            d_stdout("dpf_dsp_connection_point::connect         => %p %p", self, other);
+            dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(point->other == nullptr, V3_INVALID_ARG);
+            DISTRHO_SAFE_ASSERT(point->bridge == nullptr);
 
-            const bool connected = point->connected;
-            DISTRHO_SAFE_ASSERT_RETURN(! connected, V3_INVALID_ARG);
+            point->other = other;
 
-            point->connected = true;
+            if (point->type == kConnectionPointComponent)
+                if (PluginVst3* const vst3 = point->vst3)
+                    vst3->connect((v3_connection_point**)self);
+
             return V3_OK;
         };
 
         point.disconnect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
         {
-            d_stdout("dpf_connection_point::disconnect      => %p %p", self, other);
-            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            d_stdout("dpf_dsp_connection_point::disconnect      => %p %p", self, other);
+            dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
+            DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
 
-            const bool connected = point->connected;
-            DISTRHO_SAFE_ASSERT_RETURN(connected, V3_INVALID_ARG);
+            point->other = nullptr;
+            point->bridge = nullptr;
 
-            point->connected = false;
+            if (point->type == kConnectionPointComponent)
+                if (PluginVst3* const vst3 = point->vst3)
+                    vst3->disconnect();
+
             return V3_OK;
         };
 
         point.notify = []V3_API(void* self, struct v3_message** message) -> v3_result
         {
-            d_stdout("dpf_connection_point::notify          => %p %p", self, message);
-            dpf_connection_point* const point = *(dpf_connection_point**)self;
+            d_stdout("dpf_dsp_connection_point::notify          => %p %p", self, message);
+            dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
 
             PluginVst3* const vst3 = point->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-            return vst3->notify(message);
+            v3_connection_point** const other = point->other;
+            DISTRHO_SAFE_ASSERT_RETURN(other != nullptr, V3_NOT_INITIALISED);
+
+            v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+            DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr, V3_INVALID_ARG);
+
+            int64_t target = 0;
+            const v3_result res = v3_cpp_obj(attrlist)->get_int(attrlist, "__dpf_msg_target__", &target);
+            DISTRHO_SAFE_ASSERT_RETURN(res == V3_OK, res);
+            DISTRHO_SAFE_ASSERT_RETURN(target != 0, V3_INTERNAL_ERR);
+
+            switch (point->type)
+            {
+            // pass message from component (aka plugin) to controller
+            case kConnectionPointComponent:
+            {
+                d_stdout("dpf_dsp_connection_point::notify kConnectionPointComponent");
+
+                switch (target)
+                {
+                case 1:
+                    // message is from view to controller to component
+                    return vst3->notify(message);
+                case 2:
+                    // message is from component to controller to view
+                    return v3_cpp_obj(other)->notify(other, message);
+                }
+                break;
+            }
+
+            // pass message from controller to component (aka plugin)
+            case kConnectionControllerToComponent:
+            {
+                d_stdout("dpf_dsp_connection_point::notify kConnectionControllerToComponent");
+
+                switch (target)
+                {
+                case 1:
+                    // message is from view to controller to component
+                    return v3_cpp_obj(other)->notify(other, message);
+                case 2:
+                {
+                    // message is from component to controller to view
+                    v3_connection_point** const bridge = point->bridge;
+                    DISTRHO_SAFE_ASSERT_RETURN(bridge != nullptr, V3_NOT_INITIALISED);
+                    return v3_cpp_obj(bridge)->notify(bridge, message);
+                }
+                }
+                break;
+            }
+
+            // pass message from from view (aka ui) to controller
+            case kConnectionControllerToView:
+            {
+                d_stdout("dpf_dsp_connection_point::notify kConnectionControllerToView");
+
+                switch (target)
+                {
+                case 1:
+                {
+                    // message is from view to controller to component
+                    v3_connection_point** const bridge = point->bridge;
+                    DISTRHO_SAFE_ASSERT_RETURN(bridge != nullptr, V3_NOT_INITIALISED);
+                    return v3_cpp_obj(bridge)->notify(bridge, message);
+                }
+                case 2:
+                    // message is from component to controller to view
+                    return v3_cpp_obj(other)->notify(other, message);
+                }
+                break;
+            }
+            }
+
+            return V3_INTERNAL_ERR;
         };
     }
 };
@@ -1656,15 +1796,18 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
-    ScopedPointer<dpf_connection_point> connection;
+    ScopedPointer<dpf_dsp_connection_point> connectionComp; // kConnectionControllerToComponent
+    ScopedPointer<dpf_dsp_connection_point> connectionView; // kConnectionControllerToView
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
     // cached values
+    v3_connection_point** connectionToUI;
     v3_component_handler** handler;
 
     dpf_edit_controller(ScopedPointer<PluginVst3>& v)
         : vst3(v),
           initialized(false),
+          connectionToUI(nullptr),
           handler(nullptr)
     {
         static const uint8_t* kSupportedInterfacesBase[] = {
@@ -1695,9 +1838,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
             if (v3_tuid_match(v3_connection_point_iid, iid))
             {
-                if (controller->connection == nullptr)
-                    controller->connection = new dpf_connection_point(true, controller->vst3);
-                *iface = &controller->connection;
+                if (controller->connectionComp == nullptr)
+                    controller->connectionComp = new dpf_dsp_connection_point(kConnectionControllerToComponent,
+                                                                              controller->vst3);
+                *iface = &controller->connectionComp;
                 return V3_OK;
             }
 
@@ -1734,6 +1878,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(initialized, V3_INVALID_ARG);
 
             controller->initialized = false;
+            controller->connectionToUI = nullptr;
             return V3_OK;
         };
 
@@ -1880,14 +2025,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             PluginVst3* const vst3 = controller->vst3;
             DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALISED);
 
-//             if (dpf_plugin_view* const view = controller->view)
-//             {
-//                 if (UIVst3* const uivst3 = view->uivst3)
-//                 {
-//                     uivst3->setParameterValueFromDSP(index, vst3->normalisedParameterToPlain(index, normalised));
-//                 }
-//             }
-
             return vst3->setParameterNormalized(index, normalised);
         };
 
@@ -1911,39 +2048,37 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, nullptr);
 
-#if DISTRHO_PLUGIN_HAS_UI
-            // if there is no connection yet we can still manage ourselves, but only if component is initialized
-            DISTRHO_SAFE_ASSERT_RETURN((controller->connection != nullptr && controller->connection->connected) ||
-                                       controller->vst3 != nullptr, nullptr);
+            PluginVst3* const vst3 = controller->vst3;
+            DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
-            if (controller->connection != nullptr)
+#if 1 // DISTRHO_PLUGIN_HAS_UI
+            // we require a component connection
+            DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp != nullptr, nullptr);
+            DISTRHO_SAFE_ASSERT_RETURN(controller->connectionComp->other != nullptr, nullptr);
+
+            v3_plugin_view** const view = dpf_plugin_view_create(vst3->getInstancePointer(),
+                                                                 vst3->getSampleRate());
+            DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, nullptr);
+
+            v3_connection_point** connection = nullptr;
+            if (v3_cpp_obj_query_interface(view, v3_connection_point_iid, &connection) == V3_OK)
             {
-                // if there is a connection point, it needs to be connected
-                DISTRHO_SAFE_ASSERT_RETURN(controller->connection->connected, nullptr);
-            }
-            else
-            {
-                // no connection point, let's do it ourselves (assume local usage)
-                controller->connection = new dpf_connection_point(true, controller->vst3);
-                controller->connection->connected = true;
+                d_stdout("view connection query ok %p", connection);
+
+                v3_connection_point** const bridge = (v3_connection_point**)&controller->connectionComp;
+                controller->connectionView = new dpf_dsp_connection_point(kConnectionControllerToView,
+                                                                          controller->vst3);
+
+                v3_connection_point** const other = (v3_connection_point**)&controller->connectionView;
+                v3_cpp_obj(connection)->connect(connection, other);
+                v3_cpp_obj(other)->connect(other, connection);
+
+                controller->connectionComp->bridge = other;
+                controller->connectionView->bridge = bridge;
+
             }
 
-            void* instancePointer;
-            double sampleRate;
-
-            if (PluginVst3* const vst3 = controller->vst3)
-            {
-                instancePointer = vst3->getInstancePointer();
-                sampleRate = vst3->getSampleRate();
-            }
-            else
-            {
-                instancePointer = nullptr;
-                sampleRate = 44100.0;
-            }
-
-            return (v3_plugin_view**)dpf_plugin_view_create((v3_connection_point**)&controller->connection,
-                                                            instancePointer, sampleRate);
+            return view;
 #else
             return nullptr;
 #endif
@@ -2275,7 +2410,7 @@ struct dpf_component : v3_component_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
-    ScopedPointer<dpf_connection_point> connection;
+    ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
     ScopedPointer<dpf_edit_controller> controller;
     // ScopedPointer<dpf_state_stream> stream;
     ScopedPointer<PluginVst3> vst3;
@@ -2321,7 +2456,8 @@ struct dpf_component : v3_component_cpp {
             if (v3_tuid_match(v3_connection_point_iid, iid))
             {
                 if (component->connection == nullptr)
-                    component->connection = new dpf_connection_point(false, component->vst3);
+                    component->connection = new dpf_dsp_connection_point(kConnectionPointComponent,
+                                                                         component->vst3);
                 *iface = &component->connection;
                 return V3_OK;
             }

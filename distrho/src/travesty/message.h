@@ -70,4 +70,24 @@ struct v3_connection_point {
 static constexpr const v3_tuid v3_connection_point_iid =
 	V3_ID(0x70A4156F, 0x6E6E4026, 0x989148BF, 0xAA60D8D1);
 
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_attribute_list_cpp : v3_funknown {
+    v3_attribute_list attrlist;
+};
+
+struct v3_message_cpp : v3_funknown {
+    v3_message msg;
+};
+
+struct v3_connection_point_cpp : v3_funknown {
+	v3_connection_point point;
+};
+
+#endif
+
 #include "align_pop.h"

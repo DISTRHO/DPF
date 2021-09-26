@@ -106,3 +106,27 @@ struct v3_plugin_view_parameter_finder {
 
 static constexpr const v3_tuid v3_plugin_view_parameter_finder_iid =
 	V3_ID(0x0F618302, 0x215D4587, 0xA512073C, 0x77B9D383);
+
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_plugin_view_cpp : v3_funknown {
+	v3_plugin_view view;
+};
+
+struct v3_plugin_frame_cpp : v3_funknown {
+	v3_plugin_frame frame;
+};
+
+struct v3_plugin_view_content_scale_cpp : v3_funknown {
+	v3_plugin_view_content_scale scale;
+};
+
+struct v3_plugin_view_parameter_finder_cpp : v3_funknown {
+	v3_plugin_view_parameter_finder finder;
+};
+
+#endif
