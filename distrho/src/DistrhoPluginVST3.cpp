@@ -63,8 +63,7 @@
  * - set factory sub_categories
  * - set factory email (needs new DPF API, useful for LV2 as well)
  * - do something with get_controller_class_id and set_io_mode?
- * - call component handler restart with params-changed flag after changing program (doesnt seem to be needed..?)
- * - call component handler restart with latency-changed flag when latency changes
+ * - replace dpf_message_create with host-side message creation
  */
 
 START_NAMESPACE_DISTRHO
@@ -333,6 +332,9 @@ public:
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fChangedParameterValues(nullptr)
+#endif
+#if DISTRHO_PLUGIN_WANT_LATENCY
+        , fLastKnownLatency(fPlugin.getLatency())
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
@@ -1295,6 +1297,16 @@ public:
         {
             fCurrentProgram = std::round(value * fProgramCountMinusOne);
             fPlugin.loadProgram(fCurrentProgram);
+
+            for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+            {
+                if (fPlugin.isParameterOutputOrTrigger(i))
+                    continue;
+                fParameterValues[i] = fPlugin.getParameterValue(i);
+            }
+
+            if (fComponentHandler != nullptr)
+                v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
         }
         else
 #endif
@@ -1518,6 +1530,9 @@ private:
 #if DISTRHO_PLUGIN_HAS_UI
     bool* fChangedParameterValues;
 #endif
+#if DISTRHO_PLUGIN_WANT_LATENCY
+    uint32_t fLastKnownLatency;
+#endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
 # if DISTRHO_PLUGIN_HAS_UI
@@ -1577,6 +1592,18 @@ private:
 
             requestParameterValueChange(i, curValue);
         }
+
+#if DISTRHO_PLUGIN_WANT_LATENCY
+        const uint32_t latency = fPlugin.getLatency();
+
+        if (fLastKnownLatency != latency)
+        {
+            fLastKnownLatency = latency;
+
+            if (fComponentHandler != nullptr)
+                v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_LATENCY_CHANGED);
+        }
+#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
