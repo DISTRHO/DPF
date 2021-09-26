@@ -113,6 +113,8 @@ const char* tuid2str(const v3_tuid iid)
 
     if (v3_tuid_match(iid, v3_audio_processor_iid))
         return "{v3_audio_processor}";
+    if (v3_tuid_match(iid, v3_attribute_list_iid))
+        return "{v3_attribute_list_iid}";
     if (v3_tuid_match(iid, v3_bstream_iid))
         return "{v3_bstream}";
     if (v3_tuid_match(iid, v3_component_iid))
@@ -1275,10 +1277,52 @@ public:
 
     v3_result notify(v3_message** const message)
     {
-        d_stdout("notify received %p -> %s", message, v3_cpp_obj(message)->get_message_id(message));
-        // TESTING, ensure host gets the message
-        requestParameterValueChange(2, 1.0f);
-        return V3_OK;
+        const char* const msgid = v3_cpp_obj(message)->get_message_id(message);
+        DISTRHO_SAFE_ASSERT_RETURN(msgid != nullptr, V3_INVALID_ARG);
+
+        v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr, V3_INVALID_ARG);
+
+        if (std::strcmp(msgid, "parameter-edit") == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
+
+            int64_t rindex;
+            int64_t started;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_int(attrs, "rindex", &rindex);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            res = v3_cpp_obj(attrs)->get_int(attrs, "started", &started);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            rindex -= fParameterOffset;
+            DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INTERNAL_ERR);
+
+            return started != 0 ? v3_cpp_obj(fComponentHandler)->begin_edit(fComponentHandler, rindex)
+                                : v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, rindex);
+        }
+
+        if (std::strcmp(msgid, "parameter-set") == 0)
+        {
+            int64_t rindex;
+            double value;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_int(attrs, "rindex", &rindex);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            res = v3_cpp_obj(attrs)->get_float(attrs, "value", &value);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            rindex -= fParameterOffset;
+            DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INTERNAL_ERR);
+
+            return requestParameterValueChange(rindex, value) ? V3_OK : V3_INTERNAL_ERR;
+        }
+
+        return V3_NOT_IMPLEMENTED;
     }
 
     // ----------------------------------------------------------------------------------------------------------------

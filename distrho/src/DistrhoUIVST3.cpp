@@ -42,6 +42,10 @@
 #include "travesty/message.h"
 #include "travesty/view.h"
 
+#include <atomic>
+#include <map>
+#include <string>
+
 /* TODO items:
  * - disable UI if non-embed UI build
  * - parameter change listener
@@ -71,19 +75,9 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 const char* tuid2str(const v3_tuid iid);
 
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_message (needed by the UI class, implementation comes later)
+// create message object (needed by the UI class, implementation comes later)
 
-struct v3_message_cpp : v3_funknown {
-    v3_message msg;
-};
-
-// NOTE value type must be POD
-template<typename T>
-struct dpf_message : v3_message_cpp {
-    dpf_message(ScopedPointer<dpf_message>* self, const char* id, T value);
-    struct PrivateData;
-    PrivateData* const pData;
-};
+static v3_message** dpf_message_create(const char* id);
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -238,14 +232,21 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-    void editParameter(const uint32_t /*rindex*/, const bool /*started*/) const
+    void editParameter(const uint32_t rindex, const bool started) const
     {
-//         DISTRHO_SAFE_ASSERT_RETURN(fHandler != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-//         if (started)
-//             v3_cpp_obj(fHandler)->begin_edit(fHandler, rindex);
-//         else
-//             v3_cpp_obj(fHandler)->end_edit(fHandler, rindex);
+        v3_message** const message = dpf_message_create("parameter-edit");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr,);
+
+        v3_cpp_obj(attrs)->set_int(attrs, "rindex", rindex);
+        v3_cpp_obj(attrs)->set_int(attrs, "started", started ? 1 : 0);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
     }
 
     static void editParameterCallback(void* ptr, uint32_t rindex, bool started)
@@ -256,16 +257,18 @@ private:
     void setParameterValue(const uint32_t rindex, const float realValue)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
-        d_stdout("setParameterValue %p %u %f", this, rindex, realValue);
 
-        struct IndexAndValue {
-            uint32_t index;
-            float value;
-        };
-        ScopedPointer<dpf_message<IndexAndValue>>* const messageptr = new ScopedPointer<dpf_message<IndexAndValue>>;
-        *messageptr = new dpf_message<IndexAndValue>(messageptr, "parameter-value-set", { rindex, realValue });
+        v3_message** const message = dpf_message_create("parameter-set");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
-        v3_cpp_obj(fConnection)->notify(fConnection, (v3_message**)messageptr);
+        v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr,);
+
+        v3_cpp_obj(attrs)->set_int(attrs, "rindex", rindex);
+        v3_cpp_obj(attrs)->set_float(attrs, "value", realValue);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
     }
 
     static void setParameterCallback(void* ptr, uint32_t rindex, float value)
@@ -334,116 +337,257 @@ private:
  */
 
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_message (implementation only, declaration already done as needed by UI class)
+// dpf_attribute_list
 
-template<typename T>
-struct dpf_message<T>::PrivateData {
-    std::atomic<int> refcounter;
-    ScopedPointer<dpf_message>* self;
-    String id;
-    const T value;
-
-    PrivateData(ScopedPointer<dpf_message>* const s, const char* const id2, T value2)
-        : refcounter(1),
-          self(s),
-          id(id2),
-          value(value2) {}
+struct dpf_attribute_value {
+    char type;
+    union {
+        int64_t integer;
+        double v_float;
+        int16_t* string;
+        struct {
+            void* ptr;
+            uint32_t size;
+        } binary;
+    };
 };
 
-static V3_API v3_result dpf_message__query_interface(void* self, const v3_tuid iid, void** iface)
-{
-    d_stdout("dpf_message::query_interface    => %p %s %p", self, tuid2str(iid), iface);
-    *iface = NULL;
-    DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+struct v3_attribute_list_cpp : v3_funknown {
+    v3_attribute_list attr;
+};
 
-    static const uint8_t* kSupportedInterfaces[] = {
-        v3_funknown_iid,
-        v3_message_iid
-    };
+struct dpf_attribute_list : v3_attribute_list_cpp {
+    std::map<std::string, dpf_attribute_value> attrs;
 
-    for (const uint8_t* interface_iid : kSupportedInterfaces)
+    dpf_attribute_list()
     {
-        if (v3_tuid_match(interface_iid, iid))
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_attribute_list_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
         {
-            *iface = self;
+            d_stdout("dpf_attribute_list::query_interface => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_attribute_list
+
+        attr.set_int = []V3_API(void* self, const char* id, int64_t value) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            dpf_attribute_value& attrval(attr->attrs[id]);
+            attrval.integer = value;
             return V3_OK;
-        }
+        };
+
+        attr.get_int = []V3_API(void* self, const char* id, int64_t* value) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            if (attr->attrs.find(id) == attr->attrs.end())
+                return V3_INVALID_ARG;
+
+            const dpf_attribute_value& attrval(attr->attrs[id]);
+            *value = attrval.integer;
+            return V3_OK;
+        };
+
+        attr.set_float = []V3_API(void* self, const char* id, double value) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            dpf_attribute_value& attrval(attr->attrs[id]);
+            attrval.v_float = value;
+            return V3_OK;
+        };
+
+        attr.get_float = []V3_API(void* self, const char* id, double* value) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            if (attr->attrs.find(id) == attr->attrs.end())
+                return V3_INVALID_ARG;
+
+            const dpf_attribute_value& attrval(attr->attrs[id]);
+            *value = attrval.v_float;
+            return V3_OK;
+        };
+
+        attr.set_string = []V3_API(void* self, const char* /*id*/, const int16_t* /*string*/) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        attr.get_string = []V3_API(void* self, const char* id, int16_t* /*string*/, uint32_t /*size*/) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            if (attr->attrs.find(id) == attr->attrs.end())
+                return V3_INVALID_ARG;
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        attr.set_binary = []V3_API(void* self, const char* /*id*/, const void* /*data*/, uint32_t /*size*/) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            return V3_NOT_IMPLEMENTED;
+        };
+
+        attr.get_binary = []V3_API(void* self, const char* id, const void** /*data*/, uint32_t* /*size*/) -> v3_result
+        {
+            dpf_attribute_list* const attr = *(dpf_attribute_list**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(attr != nullptr, V3_NOT_INITIALISED);
+
+            if (attr->attrs.find(id) == attr->attrs.end())
+                return V3_INVALID_ARG;
+
+            return V3_NOT_IMPLEMENTED;
+        };
     }
+};
 
-    return V3_NO_INTERFACE;
-}
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_message
 
-template<typename T>
-static V3_API uint32_t dpf_message__ref(void* const self)
+struct v3_message_cpp : v3_funknown {
+    v3_message msg;
+};
+
+struct dpf_message : v3_message_cpp {
+    std::atomic<int> refcounter;
+    ScopedPointer<dpf_message>* self;
+    ScopedPointer<dpf_attribute_list> attrlist;
+    String id;
+
+    dpf_message(ScopedPointer<dpf_message>* const s, const char* const id2)
+        : self(s),
+          id(id2)
+    {
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_message_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_plugin_view::query_interface         => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        ref = []V3_API(void* const self) -> uint32_t
+        {
+            d_stdout("dpf_message::ref                     => %p", self);
+            dpf_message** const messageptr = static_cast<dpf_message**>(self);
+            DISTRHO_SAFE_ASSERT_RETURN(messageptr != nullptr, 0);
+            dpf_message* const message = *messageptr;
+            DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
+
+            return ++message->refcounter;
+        };
+
+        unref = []V3_API(void* const self) -> uint32_t
+        {
+            d_stdout("dpf_message::unref                   => %p", self);
+            dpf_message** const messageptr = static_cast<dpf_message**>(self);
+            DISTRHO_SAFE_ASSERT_RETURN(messageptr != nullptr, 0);
+            dpf_message* const message = *messageptr;
+            DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
+
+            if (const int refcounter = --message->refcounter)
+                return refcounter;
+
+            *message->self = nullptr;
+            delete messageptr;
+            return 0;
+        };
+
+        msg.get_message_id = []V3_API(void* const self) -> const char*
+        {
+            d_stdout("dpf_message::get_message_id => %p", self);
+            dpf_message* const message = *(dpf_message**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
+
+            return message->id;
+        };
+
+        msg.set_message_id = []V3_API(void* const self, const char* const id) -> void
+        {
+            d_stdout("dpf_message::set_message_id => %p %s", self, id);
+            dpf_message* const message = *(dpf_message**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+            message->id = id;
+        };
+
+        msg.get_attributes = []V3_API(void* const self) -> v3_attribute_list**
+        {
+            d_stdout("dpf_message::get_attributes => %p", self);
+            dpf_message* const message = *(dpf_message**)self;
+            DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
+
+            if (message->attrlist == nullptr)
+                message->attrlist = new dpf_attribute_list();
+
+            return (v3_attribute_list**)&message->attrlist;
+        };
+    }
+};
+
+static v3_message** dpf_message_create(const char* const id)
 {
-    d_stdout("dpf_message::ref                     => %p", self);
-    dpf_message<T>* const message = *(dpf_message<T>**)self;
-    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
-
-    return ++message->pData->refcounter;
+    ScopedPointer<dpf_message>* const messageptr = new ScopedPointer<dpf_message>;
+    *messageptr = new dpf_message(messageptr, id);
+    return static_cast<v3_message**>(static_cast<void*>(messageptr));
 }
-
-template<typename T>
-static V3_API uint32_t dpf_message__unref(void* const self)
-{
-    d_stdout("dpf_message::unref                   => %p", self);
-    dpf_message<T>* const message = *(dpf_message<T>**)self;
-    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, 0);
-
-    if (const int refcounter = --message->pData->refcounter)
-        return refcounter;
-
-    dpf_message<T>* const messageptr = message->pData->self->release();
-    delete message->pData;
-    delete messageptr;
-    delete (dpf_message<T>**)self;
-    return 0;
-}
-
-template<typename T>
-static V3_API const char* dpf_message__get_message_id(void* const self)
-{
-    d_stdout("dpf_message::get_message_id => %p", self);
-    dpf_message<T>* const message = *(dpf_message<T>**)self;
-    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
-
-    return message->pData->id;
-}
-
-template<typename T>
-static V3_API void dpf_message__set_message_id(void* const self, const char* const id)
-{
-    d_stdout("dpf_message::set_message_id => %p %s", self, id);
-    dpf_message<T>* const message = *(dpf_message<T>**)self;
-    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
-
-    message->pData->id = id;
-}
-
-template<typename T>
-static V3_API v3_attribute_list* dpf_message__get_attributes(void* const self)
-{
-    d_stdout("dpf_message::get_attributes => %p", self);
-    dpf_message<T>* const message = *(dpf_message<T>**)self;
-    DISTRHO_SAFE_ASSERT_RETURN(message != nullptr, nullptr);
-
-    // TODO
-    return nullptr;
-}
-
-template<typename T>
-dpf_message<T>::dpf_message(ScopedPointer<dpf_message>* const self, const char* const id, const T value)
-    : pData(new PrivateData(self, id, value))
-{
-    query_interface = dpf_message__query_interface;
-    ref = dpf_message__ref<T>;
-    unref = dpf_message__unref<T>;
-    msg.get_message_id = dpf_message__get_message_id<T>;
-    msg.set_message_id = dpf_message__set_message_id<T>;
-    msg.get_attributes = dpf_message__get_attributes<T>;
-}
-
-template struct dpf_message<float>;
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_content_scale

@@ -21,17 +21,35 @@
 #include "align_push.h"
 
 /**
- * message
+ * attribute list
  */
 
-struct v3_attribute_list;
+struct v3_attribute_list {
+	struct v3_funknown;
+
+	V3_API v3_result (*set_int)(void* self, const char* id, int64_t value);
+	V3_API v3_result (*get_int)(void* self, const char* id, int64_t* value);
+	V3_API v3_result (*set_float)(void* self, const char* id, double value);
+	V3_API v3_result (*get_float)(void* self, const char* id, double* value);
+	V3_API v3_result (*set_string)(void* self, const char* id, const int16_t* string);
+	V3_API v3_result (*get_string)(void* self, const char* id, int16_t* string, uint32_t size);
+	V3_API v3_result (*set_binary)(void* self, const char* id, const void* data, uint32_t size);
+	V3_API v3_result (*get_binary)(void* self, const char* id, const void** data, uint32_t* size);
+};
+
+static constexpr const v3_tuid v3_attribute_list_iid =
+	V3_ID(0x1E5F0AEB, 0xCC7F4533, 0xA2544011, 0x38AD5EE4);
+
+/**
+ * message
+ */
 
 struct v3_message {
 	struct v3_funknown;
 
 	V3_API const char* (*get_message_id)(void* self);
 	V3_API void (*set_message_id)(void* self, const char* id);
-	V3_API v3_attribute_list* (*get_attributes)(void* self);
+	V3_API v3_attribute_list** (*get_attributes)(void* self);
 };
 
 static constexpr const v3_tuid v3_message_iid =

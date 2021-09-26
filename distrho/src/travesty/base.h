@@ -25,6 +25,15 @@
  */
 
 #ifdef __cplusplus
+/**
+ * cast object into its proper C++ type.
+ * this is needed because `struct v3_funknown;` on a C++ class does not inherit `v3_funknown`'s fields.
+ * we can use this as a little helper for keeping both C and C++ compatiblity.
+ * specialized templated calls are defined where required
+ * (that is, object inherits from something other than `v3_funknown`)
+ *
+ * example usage: `v3_cpp_obj(obj)->method(obj, args...);`
+ */
 template<class T> static inline
 constexpr T* v3_cpp_obj(T** obj)
 {
@@ -168,3 +177,14 @@ struct v3_plugin_base {
 
 static constexpr const v3_tuid v3_plugin_base_iid =
 	V3_ID(0x22888DDB, 0x156E45AE, 0x8358B348, 0x08190625);
+
+#ifdef __cplusplus
+/**
+ * helper C++ function to manually call unref on an object.
+ */
+template<class T> static inline
+uint32_t v3_cpp_obj_unref(T** obj)
+{
+	return static_cast<v3_funknown*>(static_cast<void*>(*obj))->unref(obj);
+}
+#endif
