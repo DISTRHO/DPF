@@ -26,17 +26,10 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-endif # HAVE_OPENGL
-
-ifeq ($(HAVE_OPENGL),true)
 TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
-endif
-
-TARGETS += vst
+TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 

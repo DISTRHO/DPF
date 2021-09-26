@@ -182,11 +182,11 @@ const char* tuid2str(const v3_tuid iid)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void strncpy(char* const dst, const char* const src, const size_t size)
+static void strncpy(char* const dst, const char* const src, const size_t length)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
 
-    if (const size_t len = std::min(std::strlen(src), size-1U))
+    if (const size_t len = std::min(std::strlen(src), length-1U))
     {
         std::memcpy(dst, src, len);
         dst[len] = '\0';
@@ -197,11 +197,11 @@ static void strncpy(char* const dst, const char* const src, const size_t size)
     }
 }
 
-static void strncpy_utf16(int16_t* const dst, const char* const src, const size_t size)
+void strncpy_utf16(int16_t* const dst, const char* const src, const size_t length)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
 
-    if (const size_t len = std::min(std::strlen(src), size-1U))
+    if (const size_t len = std::min(std::strlen(src), length-1U))
     {
         for (size_t i=0; i<len; ++i)
         {
@@ -1321,6 +1321,34 @@ public:
 
             return requestParameterValueChange(rindex, value) ? V3_OK : V3_INTERNAL_ERR;
         }
+
+#if DISTRHO_PLUGIN_WANT_STATE
+        if (std::strcmp(msgid, "state-set") == 0)
+        {
+            int16_t* key16;
+            int16_t* value16;
+            uint32_t keySize, valueSize;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_binary(attrs, "key", (const void**)&key16, &keySize);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            res = v3_cpp_obj(attrs)->get_binary(attrs, "value", (const void**)&value16, &valueSize);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+
+            // do cheap inline conversion
+            char* const key = (char*)key16;
+            char* const value = (char*)value16;
+
+            for (uint32_t i=0; i<keySize/sizeof(int16_t); ++i)
+                key[i] = key16[i];
+            for (uint32_t i=0; i<valueSize/sizeof(int16_t); ++i)
+                value[i] = value16[i];
+
+            fPlugin.setState(key, value);
+            return V3_OK;
+        }
+#endif
 
         return V3_NOT_IMPLEMENTED;
     }

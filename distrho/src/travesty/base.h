@@ -25,6 +25,7 @@
  */
 
 #ifdef __cplusplus
+
 /**
  * cast object into its proper C++ type.
  * this is needed because `struct v3_funknown;` on a C++ class does not inherit `v3_funknown`'s fields.
@@ -43,10 +44,13 @@ constexpr T* v3_cpp_obj(T** obj)
 	 */
 	return static_cast<T*>(static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*3));
 }
+
 #else
+
 # ifndef constexpr
 #  define constexpr
 # endif
+
 #endif
 
 /**
@@ -179,12 +183,27 @@ static constexpr const v3_tuid v3_plugin_base_iid =
 	V3_ID(0x22888DDB, 0x156E45AE, 0x8358B348, 0x08190625);
 
 #ifdef __cplusplus
+
 /**
- * helper C++ function to manually call unref on an object.
+ * helper C++ functions to manually call v3_funknown methods on an object.
  */
+
+template<class T, class M> static inline
+v3_result v3_cpp_obj_query_interface(T** obj, const v3_tuid iid, M*** obj2)
+{
+	return static_cast<v3_funknown*>(static_cast<void*>(*obj))->query_interface(obj, iid, (void**)obj2);
+}
+
+template<class T> static inline
+uint32_t v3_cpp_obj_ref(T** obj)
+{
+	return static_cast<v3_funknown*>(static_cast<void*>(*obj))->ref(obj);
+}
+
 template<class T> static inline
 uint32_t v3_cpp_obj_unref(T** obj)
 {
 	return static_cast<v3_funknown*>(static_cast<void*>(*obj))->unref(obj);
 }
+
 #endif
