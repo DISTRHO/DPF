@@ -26,7 +26,6 @@
 #include "travesty/view.h"
 
 /* TODO items:
- * - sample rate change listener
  * - mousewheel event
  * - key down/up events
  * - size constraints
@@ -329,6 +328,19 @@ public:
             return V3_OK;
         }
 #endif
+
+        if (std::strcmp(msgid, "sample-rate") == 0)
+        {
+            double sampleRate;
+            v3_result res;
+
+            res = v3_cpp_obj(attrs)->get_float(attrs, "value", &sampleRate);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_RETURN(sampleRate > 0, V3_INVALID_ARG);
+
+            fUI.setSampleRate(sampleRate, true);
+            return V3_OK;
+        }
 
         return V3_NOT_IMPLEMENTED;
     }

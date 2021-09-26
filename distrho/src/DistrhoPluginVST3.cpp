@@ -332,6 +332,7 @@ public:
           fParameterValues(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fChangedParameterValues(nullptr)
+        , fNextSampleRate(0.0)
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
         , fLastKnownLatency(fPlugin.getLatency())
@@ -340,8 +341,8 @@ public:
         , fHostEventOutputHandle(nullptr)
 #endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        , fCurrentProgram(0),
-          fProgramCountMinusOne(fPlugin.getProgramCount()-1)
+        , fCurrentProgram(0)
+        , fProgramCountMinusOne(fPlugin.getProgramCount()-1)
 #endif
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
@@ -879,6 +880,11 @@ public:
 
         // TODO process_mode can be V3_REALTIME, V3_PREFETCH, V3_OFFLINE
 
+#if DISTRHO_PLUGIN_HAS_UI
+        if (d_isNotEqual(setup->sample_rate, fPlugin.getSampleRate()))
+            fNextSampleRate = setup->sample_rate;
+#endif
+
         fPlugin.setSampleRate(setup->sample_rate, true);
         fPlugin.setBufferSize(setup->max_block_size, true);
 
@@ -1347,6 +1353,7 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point interface calls
 
+#if DISTRHO_PLUGIN_HAS_UI
     void connect(v3_connection_point** const other)
     {
         DISTRHO_SAFE_ASSERT(fConnectedToUI == false);
@@ -1369,7 +1376,7 @@ public:
         v3_attribute_list** const attrs = v3_cpp_obj(message)->get_attributes(message);
         DISTRHO_SAFE_ASSERT_RETURN(attrs != nullptr, V3_INVALID_ARG);
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (std::strcmp(msgid, "midi") == 0)
         {
             uint8_t* data;
@@ -1384,25 +1391,29 @@ public:
 
             return fNotesRingBuffer.writeCustomData(data, size) && fNotesRingBuffer.commitWrite() ? V3_OK : V3_NOMEM;
         }
-#endif
+# endif
 
         if (std::strcmp(msgid, "init") == 0)
         {
             DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
             fConnectedToUI = true;
 
+            if (const double sampleRate = fNextSampleRate)
+            {
+                fNextSampleRate = 0.0;
+                sendSampleRateToUI(sampleRate);
+            }
+
             // report current state to UI
             for (uint32_t i=0; i<fRealParameterCount; ++i)
             {
-#if DISTRHO_PLUGIN_HAS_UI
                 fChangedParameterValues[i] = false;
-#endif
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
                 if (i == 0)
                     sendParameterChangeToUI(i, fCurrentProgram);
                 else
-#endif
+# endif
                     sendParameterChangeToUI(i, fPlugin.getParameterValue(i - fParameterOffset));
             }
 
@@ -1415,7 +1426,6 @@ public:
             DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
             DISTRHO_SAFE_ASSERT_RETURN(fConnectedToUI, V3_INTERNAL_ERR);
 
-#if DISTRHO_PLUGIN_HAS_UI
             for (uint32_t i=0; i<fRealParameterCount; ++i)
             {
                 if (! fChangedParameterValues[i])
@@ -1423,14 +1433,13 @@ public:
 
                 fChangedParameterValues[i] = false;
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
                 if (i == 0)
                     sendParameterChangeToUI(i, fCurrentProgram);
                 else
-#endif
+# endif
                     sendParameterChangeToUI(i, fParameterValues[i - fParameterOffset]);
             }
-#endif
 
             sendReadyToUI();
             return V3_OK;
@@ -1481,7 +1490,7 @@ public:
             return requestParameterValueChange(index, value) ? V3_OK : V3_INTERNAL_ERR;
         }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+# if DISTRHO_PLUGIN_WANT_STATE
         if (std::strcmp(msgid, "state-set") == 0)
         {
             int16_t* key16;
@@ -1507,10 +1516,11 @@ public:
             fPlugin.setState(key, value);
             return V3_OK;
         }
-#endif
+# endif
 
         return V3_NOT_IMPLEMENTED;
     }
+#endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -1529,6 +1539,7 @@ private:
     float* fParameterValues;
 #if DISTRHO_PLUGIN_HAS_UI
     bool* fChangedParameterValues;
+    double fNextSampleRate; // if not zero, report to UI
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
     uint32_t fLastKnownLatency;
@@ -1608,6 +1619,21 @@ private:
 
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing, can block
+
+    void sendSampleRateToUI(const double sampleRate)
+    {
+        v3_message** const message = dpf_message_create("sample-rate");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
+        v3_cpp_obj(attrlist)->set_float(attrlist, "value", sampleRate);
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
 
     void sendParameterChangeToUI(const v3_param_id rindex, const double value)
     {
@@ -2114,6 +2140,7 @@ v3_message** dpf_message_create(const char* const id)
     return static_cast<v3_message**>(static_cast<void*>(messageptr));
 }
 
+#if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_dsp_connection_point
 
@@ -2285,6 +2312,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
         };
     }
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
@@ -2295,18 +2323,18 @@ struct v3_edit_controller_cpp : v3_funknown {
 };
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
+#if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
     ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
+#endif
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
     // cached values
-    v3_connection_point** connectionToUI;
     v3_component_handler** handler;
 
     dpf_edit_controller(ScopedPointer<PluginVst3>& v)
         : vst3(v),
           initialized(false),
-          connectionToUI(nullptr),
           handler(nullptr)
     {
         static const uint8_t* kSupportedInterfacesBase[] = {
@@ -2332,6 +2360,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 }
             }
 
+#if DISTRHO_PLUGIN_HAS_UI
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NO_INTERFACE);
 
@@ -2343,6 +2372,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 *iface = &controller->connectionComp;
                 return V3_OK;
             }
+#endif
 
             return V3_NO_INTERFACE;
         };
@@ -2377,7 +2407,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(initialized, V3_INVALID_ARG);
 
             controller->initialized = false;
-            controller->connectionToUI = nullptr;
             return V3_OK;
         };
 
@@ -2835,7 +2864,9 @@ struct dpf_component : v3_component_cpp {
     std::atomic<int> refcounter;
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
+#if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
+#endif
     ScopedPointer<dpf_edit_controller> controller;
     ScopedPointer<PluginVst3> vst3;
 
@@ -2877,6 +2908,7 @@ struct dpf_component : v3_component_cpp {
                 return V3_OK;
             }
 
+#if DISTRHO_PLUGIN_HAS_UI
             if (v3_tuid_match(v3_connection_point_iid, iid))
             {
                 if (component->connection == nullptr)
@@ -2885,6 +2917,7 @@ struct dpf_component : v3_component_cpp {
                 *iface = &component->connection;
                 return V3_OK;
             }
+#endif
 
             if (v3_tuid_match(v3_edit_controller_iid, iid))
             {
