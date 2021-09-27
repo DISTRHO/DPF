@@ -689,7 +689,7 @@ public:
     }
 
     /* state: we pack pairs of key-value strings each separated by a null/zero byte.
-     * states come first, then current-program and then parameters.
+     * current-program comes first, then dpf key/value states and then parameters.
      * parameters are simply converted to/from strings and floats.
      * the parameter symbol is used as the "key", so it is possible to reorder them or even remove and add safely.
      * there are markers for begin and end of state and parameters, so they never conflict.
