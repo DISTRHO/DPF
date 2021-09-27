@@ -50,7 +50,7 @@
  * - deal with parameter triggers
  * - midi cc parameter mapping
  * - full MIDI1 encode and decode
- * - decode version number (0x102030 -> 1.2.3)
+ * - decode version number (0x010203 -> 1.2.3)
  * - bus arrangements
  * - optional audio buses, create dummy buffer of max_block_size length for them
  * - routing info, do we care?
