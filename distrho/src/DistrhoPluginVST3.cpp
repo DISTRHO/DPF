@@ -47,10 +47,7 @@
  * - parameter enumeration as lists
  * - hide parameter outputs?
  * - hide program parameter?
- * - save and restore state
- * - save and restore current program
  * - deal with parameter triggers
- * - send current state to UI on request
  * - midi cc parameter mapping
  * - full MIDI1 encode and decode
  * - decode version number (0x102030 -> 1.2.3)
@@ -58,7 +55,7 @@
  * - optional audio buses, create dummy buffer of max_block_size length for them
  * - routing info, do we care?
  * - set sidechain bus name from port group
- * - implement getParameterValueForString
+ * - implement getParameterValueForString (use names from enumeration if available, fallback to std::atof)
  * - set factory class_flags
  * - set factory sub_categories
  * - set factory email (needs new DPF API, useful for LV2 as well)
@@ -692,82 +689,194 @@ public:
     }
 
     /* state: we pack pairs of key-value strings each separated by a null/zero byte.
-     * states come first, and then parameters. parameters are simply converted to/from strings and floats.
+     * states come first, then current-program and then parameters.
+     * parameters are simply converted to/from strings and floats.
      * the parameter symbol is used as the "key", so it is possible to reorder them or even remove and add safely.
-     * the number of states must remain constant though.
+     * there are markers for begin and end of state and parameters, so they never conflict.
      */
     v3_result setState(v3_bstream** const stream)
     {
-#if DISTRHO_PLUGIN_WANT_STATE
-        // TODO
+#if DISTRHO_PLUGIN_HAS_UI
+        const bool connectedToUI = fConnection != nullptr && fConnectedToUI;
 #endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        // TODO
-#endif
+        const uint32_t paramCount = fPlugin.getParameterCount();
 
-        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        String key, value;
+        bool fillingKey = true; // if filling key or value
+        char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
+
+        char buffer[512], orig;
+        buffer[sizeof(buffer)-1] = '\xff';
+        v3_result res;
+
+        for (int32_t pos = 0, term = 0, read; term == 0; pos += read)
         {
-            char buffer[32], orig;
-            String key, value;
-            v3_result res;
-            bool fillingKey = true;
+            res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
-            // temporarily set locale to "C" while converting floats
-            const ScopedSafeLocale ssl;
-
-            for (int32_t pos = 0, read;; pos += read)
+            for (int32_t i = 0; i < read; ++i)
             {
-                std::memset(buffer, '\xff', sizeof(buffer));
-                res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
-                DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
-                DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
-
-                for (int32_t i = 0; i < read; ++i)
+                // found terminator, stop here
+                if (buffer[i] == '\xfe')
                 {
-                    if (buffer[i] == '\0' && pos == 0 && i == 0)
-                        continue;
-
-                    orig = buffer[read];
-                    buffer[read] = '\0';
-
-                    if (fillingKey)
-                        key += buffer + i;
-                    else
-                        value += buffer + i;
-
-                    i += std::strlen(buffer + i);
-                    buffer[read] = orig;
-
-                    if (buffer[i] == '\0')
-                    {
-                        fillingKey = !fillingKey;
-
-                        if (value.isNotEmpty())
-                        {
-                            // find parameter with this symbol, and set its value
-                            for (uint32_t j=0; j<paramCount; ++j)
-                            {
-                                if (fPlugin.isParameterOutputOrTrigger(j))
-                                    continue;
-                                if (fPlugin.getParameterSymbol(j) != key)
-                                    continue;
-
-                                fPlugin.setParameterValue(j, std::atof(value.buffer()));
-                                break;
-                            }
-
-                            key.clear();
-                            value.clear();
-                        }
-
-                        if (buffer[i+1] == '\0')
-                            return V3_OK;
-                    }
+                    term = 1;
+                    break;
                 }
 
-                if (buffer[read] == '\0')
-                    return V3_OK;
+                // store character at read position
+                orig = buffer[read];
+
+                // place null character to create valid string
+                buffer[read] = '\0';
+
+                // append to temporary vars
+                if (fillingKey)
+                    key += buffer + i;
+                else
+                    value += buffer + i;
+
+                // increase buffer offset by length of string
+                i += std::strlen(buffer + i);
+
+                // restore read character
+                buffer[read] = orig;
+
+                // if buffer offset points to null, we found the end of a string, lets check
+                if (buffer[i] == '\0')
+                {
+                    // special keys
+                    if (key == "__dpf_state_begin__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i' || queryingType == 'n',
+                                                       queryingType, V3_INTERNAL_ERR);
+                        queryingType = 's';
+                        key.clear();
+                        value.clear();
+                        continue;
+                    }
+                    if (key == "__dpf_state_end__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 's', queryingType, V3_INTERNAL_ERR);
+                        queryingType = 'n';
+                        key.clear();
+                        value.clear();
+                        continue;
+                    }
+                    if (key == "__dpf_parameters_begin__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i' || queryingType == 'n',
+                                                       queryingType, V3_INTERNAL_ERR);
+                        queryingType = 'p';
+                        key.clear();
+                        value.clear();
+                        continue;
+                    }
+                    if (key == "__dpf_parameters_end__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'p', queryingType, V3_INTERNAL_ERR);
+                        queryingType = 'x';
+                        key.clear();
+                        value.clear();
+                        continue;
+                    }
+
+                    // no special key, swap between reading real key and value
+                    fillingKey = !fillingKey;
+
+                    // if there is no value yet keep reading until we have one (TODO check empty values on purpose)
+                    if (value.isEmpty())
+                        continue;
+
+                    if (key == "__dpf_program__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i', queryingType, V3_INTERNAL_ERR);
+                        queryingType = 'n';
+
+                        d_stdout("found program '%s'", value.buffer());
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+                        const int program = std::atoi(value.buffer());
+                        DISTRHO_SAFE_ASSERT_CONTINUE(program >= 0);
+
+                        fCurrentProgram = static_cast<uint32_t>(program);
+                        fPlugin.loadProgram(fCurrentProgram);
+
+# if DISTRHO_PLUGIN_HAS_UI
+                        if (connectedToUI)
+                        {
+                            fChangedParameterValues[0] = false;
+                            sendParameterChangeToUI(0, fCurrentProgram);
+                        }
+# endif
+#endif
+                    }
+                    else if (queryingType == 's')
+                    {
+                        d_stdout("found state '%s' '%s'", key.buffer(), value.buffer());
+
+#if DISTRHO_PLUGIN_WANT_STATE
+                        if (fPlugin.wantStateKey(key))
+                        {
+                            fStateMap[key] = value;
+                            fPlugin.setState(key, value);
+
+# if DISTRHO_PLUGIN_HAS_UI
+                            if (connectedToUI)
+                                sendStateChangeToUI(key, value);
+# endif
+                        }
+#endif
+                    }
+                    else if (queryingType == 'p')
+                    {
+                        d_stdout("found parameter '%s' '%s'", key.buffer(), value.buffer());
+
+                        // find parameter with this symbol, and set its value
+                        for (uint32_t j=0; j < paramCount; ++j)
+                        {
+                            if (fPlugin.isParameterOutputOrTrigger(j))
+                                continue;
+                            if (fPlugin.getParameterSymbol(j) != key)
+                                continue;
+
+                            const float fvalue = fParameterValues[i] = std::atof(value.buffer());
+                            fPlugin.setParameterValue(j, fvalue);
+#if DISTRHO_PLUGIN_HAS_UI
+                            if (connectedToUI)
+                            {
+                                // UI parameter updates are handled outside the read loop (after host param restart)
+                                fChangedParameterValues[j + fParameterOffset] = true;
+                            }
+#endif
+                            break;
+                        }
+
+                    }
+
+                    key.clear();
+                    value.clear();
+                }
             }
+        }
+
+        if (paramCount != 0)
+        {
+            if (fComponentHandler != nullptr)
+                v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
+
+#if DISTRHO_PLUGIN_HAS_UI
+            if (connectedToUI)
+            {
+                for (uint32_t i=0; i < paramCount; ++i)
+                {
+                    if (fPlugin.isParameterOutputOrTrigger(i))
+                        continue;
+                    fChangedParameterValues[i + fParameterOffset] = false;
+                    sendParameterChangeToUI(i + fParameterOffset, fParameterValues[i]);
+                }
+            }
+#endif
         }
 
         return V3_OK;
@@ -789,42 +898,54 @@ public:
             return v3_cpp_obj(stream)->write(stream, &buffer, 1, &ignored);
         }
 
-        String state;
-
 #if DISTRHO_PLUGIN_WANT_FULL_STATE
-        /*
         // Update current state
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
             fStateMap[key] = fPlugin.getState(key);
         }
-        */
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
-        /*
-        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
-        {
-            const String& key   = cit->first;
-            const String& value = cit->second;
+        String state;
 
-            // join key and value
-            String tmpStr;
-            tmpStr  = key;
-            tmpStr += "\xff";
-            tmpStr += value;
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        {
+            String tmpStr("__dpf_program__\xff");
+            tmpStr += String(fCurrentProgram);
             tmpStr += "\xff";
 
             state += tmpStr;
         }
-        */
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+        if (stateCount != 0)
+        {
+            state += "__dpf_state_begin__\xff";
+
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key   = cit->first;
+                const String& value = cit->second;
+
+                // join key and value
+                String tmpStr;
+                tmpStr  = key;
+                tmpStr += "\xff";
+                tmpStr += value;
+                tmpStr += "\xff";
+
+                state += tmpStr;
+            }
+
+            state += "__dpf_state_end__\xff";
+        }
 #endif
 
         if (paramCount != 0)
         {
-            // add another separator
-            state += "\xff";
+            state += "__dpf_parameters_begin__\xff";
 
             for (uint32_t i=0; i<paramCount; ++i)
             {
@@ -840,7 +961,12 @@ public:
 
                 state += tmpStr;
             }
+
+            state += "__dpf_parameters_end__\xff";
         }
+
+        // terminator
+        state += "\xfe";
 
         state.replace('\xff', '\0');
 
@@ -874,7 +1000,7 @@ public:
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     uint32_t getLatencySamples() const noexcept
     {
@@ -1265,7 +1391,7 @@ public:
 
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     double normalisedParameterToPlain(const v3_param_id rindex, const double normalised)
     {
@@ -1278,7 +1404,7 @@ public:
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         return ranges.getUnnormalizedValue(normalised);
-    };
+    }
 
     double plainParameterToNormalised(const v3_param_id rindex, const double plain)
     {
@@ -1291,7 +1417,7 @@ public:
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
         return ranges.getNormalizedValue(plain);
-    };
+    }
 
     double getParameterNormalized(const v3_param_id rindex)
     {
@@ -1513,7 +1639,7 @@ public:
 
             res = v3_cpp_obj(attrs)->get_int(attrs, "rindex", &rindex);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
-            DISTRHO_SAFE_ASSERT_INT_RETURN(rindex > 0, rindex, V3_INTERNAL_ERR);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(rindex >= fParameterOffset, rindex, V3_INTERNAL_ERR);
 
             res = v3_cpp_obj(attrs)->get_float(attrs, "value", &value);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
@@ -1965,7 +2091,7 @@ struct dpf_attribute_list : v3_attribute_list_cpp {
 
         query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
         {
-            d_stdout("dpf_attribute_list::query_interface => %p %s %p", self, tuid2str(iid), iface);
+            // d_stdout("dpf_attribute_list::query_interface => %p %s %p", self, tuid2str(iid), iface);
             *iface = NULL;
             DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
 

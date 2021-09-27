@@ -37,7 +37,8 @@ endif # HAVE_LIBLO
 endif # MACOS_OR_WINDOWS
 
 TARGETS += lv2_sep
-TARGETS += vst
+TARGETS += vst2
+TARGETS += vst3
 
 endif # HAVE_OPENGL
 

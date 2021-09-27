@@ -29,6 +29,10 @@
  * - mousewheel event
  * - key down/up events
  * - size constraints
+ * - host-side resize
+ * - oddities with init and size callback (triggered too early?)
+ * - win/mac native idle loop
+ * - linux runloop
  */
 
 START_NAMESPACE_DISTRHO
@@ -137,19 +141,19 @@ public:
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     v3_result onKeyDown(int16_t /*key_char*/, int16_t /*key_code*/, int16_t /*modifiers*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     v3_result onKeyUp(int16_t /*key_char*/, int16_t /*key_code*/, int16_t /*modifiers*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
     {
@@ -268,8 +272,6 @@ public:
             return V3_OK;
         }
 
-        d_stdout("UIVst3 received msg '%s'", msgid);
-
         if (std::strcmp(msgid, "parameter-set") == 0)
         {
             int64_t rindex;
@@ -341,6 +343,8 @@ public:
             fUI.setSampleRate(sampleRate, true);
             return V3_OK;
         }
+
+        d_stdout("UIVst3 received unknown msg '%s'", msgid);
 
         return V3_NOT_IMPLEMENTED;
     }
