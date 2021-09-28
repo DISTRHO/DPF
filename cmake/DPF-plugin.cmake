@@ -341,12 +341,61 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
   endif()
 endfunction()
 
+# dpf__determine_vst3_package_architecture
+# ------------------------------------------------------------------------------
+#
+# Determines the package architecture for a VST3 plugin target.
+#
+function(dpf__determine_vst3_package_architecture OUTPUT_VARIABLE)
+  # if set by variable, override the detection
+  if(DPF_VST3_ARCHITECTURE)
+    set("${OUTPUT_VARIABLE}" "${DPF_VST3_ARCHITECTURE}" PARENT_SCOPE)
+    return()
+  endif()
+
+  # not used on Apple, which supports universal binary
+  if(APPLE)
+    set("${OUTPUT_VARIABLE}" "universal" PARENT_SCOPE)
+    return()
+  endif()
+
+  # identify the target processor (special case of MSVC, problematic sometimes)
+  if(MSVC)
+    set(vst3_system_arch "${MSVC_CXX_ARCHITECTURE_ID}")
+  else()
+    set(vst3_system_arch "${CMAKE_SYSTEM_PROCESSOR}")
+  endif()
+
+  # transform the processor name to a format that VST3 recognizes
+  if(vst3_system_arch MATCHES "^(x86_64|amd64|AMD64|x64|X64)$")
+    set(vst3_package_arch "x86_64")
+  elseif(vst3_system_arch MATCHES "^(i.86|x86|X86)$")
+    if(WIN32)
+      set(vst3_package_arch "x86")
+    else()
+      set(vst3_package_arch "i386")
+    endif()
+  elseif(vst3_system_arch MATCHES "^(armv[3-8][a-z]*)$")
+    set(vst3_package_arch "${vst3_system_arch}")
+  elseif(vst3_system_arch MATCHES "^(aarch64)$")
+    set(vst3_package_arch "aarch64")
+  else()
+    message(FATAL_ERROR "We don't know this architecture for VST3: ${vst3_system_arch}.")
+  endif()
+
+  # TODO: the detections for Windows arm/arm64 when supported
+
+  set("${OUTPUT_VARIABLE}" "${vst3_package_arch}" PARENT_SCOPE)
+endfunction()
+
 # dpf__build_vst3
 # ------------------------------------------------------------------------------
 #
 # Add build rules for a VST3 plugin.
 #
 function(dpf__build_vst3 NAME DGL_LIBRARY)
+  dpf__determine_vst3_package_architecture(vst3_arch)
+
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-vst3" ${_no_srcs})
@@ -355,22 +404,30 @@ function(dpf__build_vst3 NAME DGL_LIBRARY)
   dpf__set_module_export_list("${NAME}-vst3" "vst3")
   target_link_libraries("${NAME}-vst3" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-vst3" PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst3/$<0:>"
-    OUTPUT_NAME "${NAME}-vst3"
+    OUTPUT_NAME "${NAME}"
     PREFIX "")
-  # TODO set correct output directory for VST3 packaging
-  #if(APPLE)
-    #set_target_properties("${NAME}-vst3" PROPERTIES
-      #LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/MacOS/$<0:>"
-      #OUTPUT_NAME "${NAME}"
-      #SUFFIX "")
+
+  if(APPLE)
+    set_target_properties("${NAME}-vst3" PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/MacOS/$<0:>"
+      SUFFIX "")
+  elseif(WIN32)
+    set_target_properties("${NAME}-vst3" PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/${vst3_arch}-win/$<0:>")
+  else()
+    set_target_properties("${NAME}-vst3" PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/${vst3_arch}-linux/$<0:>")
+  endif()
+
+  if(APPLE)
+    # TODO: the Info.plist and PkgInfo files (to be found in `utils/plugin.vst3`)
     #set(INFO_PLIST_PROJECT_NAME "${NAME}")
     #configure_file("${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/Info.plist"
-      #"${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
+    #  "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
     #file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/PkgInfo"
-      #DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
-  #endif()
+    #  DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
+  endif()
 endfunction()
 
 # dpf__add_dgl_cairo
