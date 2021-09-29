@@ -5,17 +5,17 @@ The limitations could be due to the plugin format itself or within DPF.
 
 | Feature           | JACK/Standalone | LADSPA | DSSI | LV2           | VST2   | VST3   |
 |-------------------|-----------------|--------|------|---------------|--------|--------|
-| Audio port groups | [Yes*](FEATURES.md#JACK parameters and programs)            | No     | No   | Yes | No   | No*  |
-| Audio port as CV  | Yes             | No     | No   | Yes           | No     | [No*](FEATURES.md#VST3 is work in progress)  |
+| Audio port groups | [Yes*](FEATURES.md#jack-parameters-and-programs)            | No     | No   | Yes | No   | No*  |
+| Audio port as CV  | Yes             | No     | No   | Yes           | No     | [No*](FEATURES.md#vst3-is-work-in-progress)  |
 | MIDI input        | Yes             | No     | Yes  | Yes           | Yes    | Yes    |
 | MIDI output       | Yes             | No     | No   | Yes           | Yes    | Yes    |
-| Parameter changes | Yes             | No     | No   | [No*](FEATURES.md#LV2 parameter changes)         | Yes    | Yes    |
-| Parameter groups  | No              | No     | No   | Yes           | Yes*   | [No*](FEATURES.md#VST3 is work in progress)  |
-| Parameter outs    | No              | No     | No   | Yes           | Yes    | [No*](FEATURES.md#VST3 is work in progress)  |
+| Parameter changes | Yes             | No     | No   | [No*](FEATURES.md#lv2-parameter-changes)         | Yes    | Yes    |
+| Parameter groups  | No              | No     | No   | Yes           | Yes*   | [No*](FEATURES.md#vst3-is-work-in-progress)  |
+| Parameter outs    | No              | No     | No   | Yes           | Yes    | [No*](FEATURES.md#vst3-is-work-in-progress)  |
 | Programs          | Yes*            | No*    | Yes* | Yes           | No*    | Yes    |
 | States            | Yes             | No     | Yes* | Yes           | Yes    | Yes    |
-| UI                | Yes*            | No     | Ext. | Embed or Ext. | Embed  | Embed  |
-| UI host-resize    | Yes             | No     | Yes  | Yes           | No     | [No*](FEATURES.md#VST3 is work in progress)  |
+| UI                | [Yes*](FEATURES.md#jack-custom-ui-only)            | No     | Ext. | Embed or Ext. | Embed  | Embed  |
+| UI host-resize    | Yes             | No     | Yes  | Yes           | No     | [No*](FEATURES.md#vst3-is-work-in-progress)  |
 | UI sendNote       | Yes             | No     | Yes  | Yes           | Yes    | Yes    |
 
 # Special notes
