@@ -1,7 +1,7 @@
 # DPF - DISTRHO Plugin Framework
 
 Even though DPF is quite liberally licensed, not all plugin formats follow the same ideals.  
-This usually due to plugin APIs/headers being tied to a specific license or having commercial restrictions.  
+This is usually due to plugin APIs/headers being tied to a specific license or having commercial restrictions.  
 This file describes the licensing that applies to each individual plugin format as a way to make it clear what is possible and compatible.  
 Note that if you are making GPLv2+ licensed plugins this does not apply to you, as so far everything is GPLv2+ compatible.
 
