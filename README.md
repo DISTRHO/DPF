@@ -19,6 +19,12 @@ Getting time information from the host is possible.<br/>
 It uses the same format as the JACK Transport API, making porting some code easier.<br/>
 
 
+## Licensing
+
+DPF is released under ISC, which basically means you can do whatever you want as long as you credit the original authors.  
+Some plugin formats may have additional restrictions, see [LICENSING.md](LICENSING.md) for details.
+
+
 ## Help and documentation
 
 Bug reports happen on the [DPF github project](https://github.com/DISTRHO/DPF/issues).
