@@ -85,7 +85,7 @@ public:
 
         setResizable(true);
         setSize(500, 500);
-        // setGeometryConstraints(500, 500, false);
+        setGeometryConstraints(500, 500, false, true);
         setTitle("NanoImage");
         done();
 

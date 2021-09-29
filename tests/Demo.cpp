@@ -103,12 +103,13 @@ protected:
     void onDisplay() override
     {
         const GraphicsContext& context(getGraphicsContext());
+        const double scaleFactor = getWindow().getScaleFactor();
         const int iconSize = bgIcon.getWidth();
 
         Color(0.027f, 0.027f, 0.027f).setFor(context);
         Rectangle<uint>(0, 0, getSize()).draw(context);
 
-        bgIcon.setY(curPage*iconSize + curPage*3);
+        bgIcon.setY(curPage * iconSize + curPage * 3 * scaleFactor);
 
         Color(0.129f, 0.129f, 0.129f).setFor(context);
         bgIcon.draw(context);
@@ -118,7 +119,8 @@ protected:
 
         if (curHover != curPage && curHover != -1)
         {
-            Rectangle<int> rHover(1, curHover*iconSize + curHover*3, iconSize-2, iconSize-2);
+            Rectangle<int> rHover(1 * scaleFactor, curHover * iconSize + curHover * 3 * scaleFactor,
+                                  iconSize - 2 * scaleFactor, iconSize - 2 * scaleFactor);
 
             Color(0.071f, 0.071f, 0.071f).setFor(context);
             rHover.draw(context);
@@ -146,13 +148,13 @@ protected:
         // draw some text
         nvg.beginFrame(this);
 
-        nvg.fontSize(23.0f);
+        nvg.fontSize(23.0f * scaleFactor);
         nvg.textAlign(NanoVG::ALIGN_LEFT|NanoVG::ALIGN_TOP);
         //nvg.textLineHeight(20.0f);
 
         nvg.fillColor(220,220,220,220);
-        nvg.textBox(10, 420, iconSize, "Haha,", nullptr);
-        nvg.textBox(15, 440, iconSize, "Look!", nullptr);
+        nvg.textBox(10 * scaleFactor, 420 * scaleFactor, iconSize, "Haha,", nullptr);
+        nvg.textBox(15 * scaleFactor, 440 * scaleFactor, iconSize, "Look!", nullptr);
 
         nvg.endFrame();
 #endif
@@ -226,9 +228,10 @@ protected:
     {
         const uint width  = ev.size.getWidth();
         const uint height = ev.size.getHeight();
+        const double scaleFactor = getWindow().getScaleFactor();
 
-        bgIcon.setWidth(width-4);
-        bgIcon.setHeight(width-4);
+        bgIcon.setWidth(width - 4 * scaleFactor);
+        bgIcon.setHeight(width - 4 * scaleFactor);
 
         lineSep.setStartPos(width, 0);
         lineSep.setEndPos(width, height);
@@ -420,30 +423,31 @@ public:
           curWidget(nullptr)
     {
         const ScopedGraphicsContext sgc(*this);
+        const double scaleFactor = getScaleFactor();
 
         wColor = new ExampleColorSubWidget(this);
         wColor->hide();
-        wColor->setAbsoluteX(kSidebarWidth);
+        wColor->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wImages = new ExampleImagesSubWidget(this);
         wImages->hide();
-        wImages->setAbsoluteX(kSidebarWidth);
+        wImages->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wRects = new ExampleRectanglesSubWidget(this);
         wRects->hide();
-        wRects->setAbsoluteX(kSidebarWidth);
+        wRects->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wShapes = new ExampleShapesSubWidget(this);
         wShapes->hide();
-        wShapes->setAbsoluteX(kSidebarWidth);
+        wShapes->setAbsoluteX(kSidebarWidth * scaleFactor);
 
 #ifdef DGL_OPENGL
         wText = new ExampleTextSubWidget(this),
         wText->hide();
-        wText->setAbsoluteX(kSidebarWidth);
+        wText->setAbsoluteX(kSidebarWidth * scaleFactor);
 #endif
         wLeft = new LeftSideWidget(this, this),
-        wLeft->setAbsolutePos(2, 2);
+        wLeft->setAbsolutePos(2 * scaleFactor, 2 * scaleFactor);
 
         resizer = new ResizeHandle(this);
 
@@ -493,10 +497,12 @@ protected:
     {
         StandaloneWindow::onReshape(width, height);
 
-        if (width < kSidebarWidth)
+        const double scaleFactor = getScaleFactor();
+
+        if (width < kSidebarWidth * scaleFactor)
             return;
 
-        Size<uint> size(width-kSidebarWidth, height);
+        const Size<uint> size(width - kSidebarWidth * scaleFactor, height);
         wColor->setSize(size);
         wImages->setSize(size);
         wRects->setSize(size);
@@ -504,7 +510,7 @@ protected:
 #ifdef DGL_OPENGL
         wText->setSize(size);
 #endif
-        wLeft->setSize(kSidebarWidth-4, height-4);
+        wLeft->setSize((kSidebarWidth - 4) * scaleFactor, (height - 4) * scaleFactor);
     }
 
 private:
@@ -528,8 +534,9 @@ template <class ExampleWidgetStandaloneWindow>
 void createAndShowExampleWidgetStandaloneWindow(Application& app)
 {
     ExampleWidgetStandaloneWindow swin(app);
+    const double scaleFactor = swin.getScaleFactor();
     swin.setResizable(true);
-    swin.setSize(600, 500);
+    swin.setSize(600 * scaleFactor, 500 * scaleFactor);
     swin.setTitle(ExampleWidgetStandaloneWindow::kExampleWidgetName);
     swin.show();
     app.exec();
