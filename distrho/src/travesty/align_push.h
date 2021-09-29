@@ -16,9 +16,16 @@
 
 #if defined(__APPLE__)
 
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunknown-warning-option"
-# pragma GCC diagnostic ignored "-Wpragma-pack"
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wunknown-warning-option"
+#  pragma clang diagnostic ignored "-Wpragma-pack"
+# elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#  pragma GCC diagnostic ignored "-Wpragma-pack"
+# endif
+
 # if defined(__LP64__) || defined(_LP64)
 #  pragma pack(push, 16)
 # else
