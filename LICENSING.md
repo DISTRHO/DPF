@@ -11,8 +11,21 @@ See the [LICENSE](LICENSE) file for copyright details.
 | Target          | License(s)           | License restrictions  | Attribution |
 |-----------------|----------------------|-----------------------|-------------|
 | JACK/Standalone | MIT (RtAudio)        | Copyright attribution | **RtAudio**: 2001-2019 Gary P. Scavone |
-| LADSPA          | LGPLv2.1+            | ???                   | 2000-2002 Richard W. E. Furse, Paul Barton-Davis, Stefan Westerfeld |
-| DSSI            | LGPLv2.1+            | ???                   | **DSSI**: 2004, 2009 Chris Cannam, Steve Harris and Sean Bolton;<br/> **ALSA**: 1998-2001 Jaroslav Kysela, Abramo Bagnara, Takashi Iwai |
+| LADSPA          | LGPLv2.1+            | ??? (*)               | 2000-2002 Richard W. E. Furse, Paul Barton-Davis, Stefan Westerfeld |
+| DSSI            | LGPLv2.1+            | ??? (*)               | **DSSI**: 2004, 2009 Chris Cannam, Steve Harris and Sean Bolton;<br/> **ALSA**: 1998-2001 Jaroslav Kysela, Abramo Bagnara, Takashi Iwai |
 | LV2             | ISC                  | Copyright attribution | 2006-2020 Steve Harris, David Robillard;<br/> 2000-2002 Richard W.E. Furse, Paul Barton-Davis, Stefan Westerfeld |
 | VST2            | GPLv2+ or commercial | Must be GPLv2+ compatible or alternatively use Steingberg VST2 SDK (no longer available for new plugins) | GPLv2+ compatible license or custom agreement with Steingberg |
 | VST3            | ISC                  | Copyright attribution | (none, only DPF files used) |
+
+### LADSPA and DSSI special note
+
+The header files on LADSPA and DSSI are LGPLv2.1+ licensed, which is unusual for pure APIs without libraries.  
+LADSPA authors mention this on ladspa.org homepage:
+
+> LADSPA has been released under LGPL (GNU Lesser General Public License).
+> This is not intended to be the final license for LADSPA.
+> In the long term it is hoped that LADSPA will have a public license that is even less restrictive, so that commercial applications can use it (in a protected way) without having to use a derived LGPL library.
+> It may be that LGPL is already free enough for this, but we aren't sure.
+
+So the situation for LADSPA/DSSI plugins is unclear for commercial plugins.  
+These formats are very limited and not much used anymore anyway, feel free to skip them if this situation is a potential issue for you.
