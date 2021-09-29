@@ -421,12 +421,12 @@ function(dpf__build_vst3 NAME DGL_LIBRARY)
   endif()
 
   if(APPLE)
-    # TODO: the Info.plist and PkgInfo files (to be found in `utils/plugin.vst3`)
-    #set(INFO_PLIST_PROJECT_NAME "${NAME}")
-    #configure_file("${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/Info.plist"
-    #  "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
-    #file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst3/Contents/PkgInfo"
-    #  DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
+    # Uses the same macOS bundle template as VST2
+    set(INFO_PLIST_PROJECT_NAME "${NAME}")
+    configure_file("${DPF_ROOT_DIR}/utils/plugin.vst/Contents/Info.plist"
+     "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
+    file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst/Contents/PkgInfo"
+     DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
   endif()
 endfunction()
 
