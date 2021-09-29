@@ -27,10 +27,10 @@ enum v3_seek_mode {
 struct v3_bstream {
 	struct v3_funknown;
 
-	V3_API v3_result (*read)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_read);
-	V3_API v3_result (*write)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_written);
-	V3_API v3_result (*seek)(void* self, int64_t pos, int32_t seek_mode, int64_t* result);
-	V3_API v3_result (*tell)(void* self, int64_t* pos);
+	v3_result (V3_API *read)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_read);
+	v3_result (V3_API *write)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_written);
+	v3_result (V3_API *seek)(void* self, int64_t pos, int32_t seek_mode, int64_t* result);
+	v3_result (V3_API *tell)(void* self, int64_t* pos);
 };
 
 static constexpr const v3_tuid v3_bstream_iid =
