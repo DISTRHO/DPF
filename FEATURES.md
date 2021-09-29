@@ -1,31 +1,32 @@
 # DPF - DISTRHO Plugin Framework
 
 This file describes the available features for each plugin format.  
-The limitations could be due to the plugin format itself or within DPF.
+The limitations could be due to the plugin format itself or within DPF.  
+If the limitation is within DPF, a link is provided to a description below on the reason for it.
 
-| Feature             | JACK/Standalone                                  | LADSPA                             | DSSI | LV2           | VST2   | VST3   |
-|---------------------|--------------------------------------------------|------------------------------------|------|---------------|--------|--------|
-| Audio port groups   | [Yes*](FEATURES.md#jack-audio-port-groups)       | No                                 | No   | Yes           | No     | No*    |
-| Audio port as CV    | Yes                                              | No                                 | No   | Yes           | No     | [No*](#vst3-is-work-in-progress)  |
-| Audio sidechan      | Yes                                              | No                                 | No   | Yes           | [No*](#vst2-potential-support)  | [No*](FEATURES.md#vst3-is-work-in-progress)  |
-| Bypass control
-| MIDI input          | Yes                                              | No                                 | Yes  | Yes           | Yes    | Yes    |
-| MIDI output         | Yes                                              | No                                 | No   | Yes           | Yes    | Yes    |
-| Parameter changes   | Yes                                              | No                                 | No   | [No*](FEATURES.md#lv2-parameter-changes)         | Yes    | Yes    |
-| Parameter groups    | No                                               | No                                 | No   | Yes           | Yes*   | [No*](FEATURES.md#vst3-is-work-in-progress)  |
-| Parameter outputs   | No                                               | No                                 | No   | Yes           | Yes    | [No*](FEATURES.md#vst3-is-work-in-progress)  |
-| Parameter triggers  |
-| Programs            | [Yes*](FEATURES.md#jack-parameters-and-programs) | [No*](FEATURES.md#ladspa-programs) | Yes* | Yes           | No*    | Yes    |
-| States              | Yes                                              | No                                 | Yes* | Yes           | Yes    | Yes    |
-| Full/internal state
-| Time position
-| UI                  | [Yes*](FEATURES.md#jack-custom-ui-only)          | No                                 | Ext. | Embed or Ext. | Embed  | Embed  |
-| UI bg/fg colors
-| UI direct access
-| UI host-filebrowser
-| UI host-resize      | Yes                                              | No                                 | Yes  | Yes           | No     | [No*](FEATURES.md#vst3-is-work-in-progress)  |
-| UI remote control
-| UI sendNote         | Yes                                              | No                                 | Yes  | Yes           | Yes    | Yes    |
+| Feature             | JACK/Standalone                       | LADSPA                  | DSSI                | LV2                           | VST2                           | VST3                             |
+|---------------------|---------------------------------------|-------------------------|---------------------|-------------------------------|--------------------------------|----------------------------------|
+| Audio port groups   | [Yes*](#jack-audio-port-groups)       | No                      | No                  | Yes                           | No                             | [No*](#vst3-is-work-in-progress) |
+| Audio port as CV    | Yes                                   | No                      | No                  | Yes                           | No                             | [No*](#vst3-is-work-in-progress) |
+| Audio sidechan      | Yes                                   | No                      | No                  | Yes                           | [No*](#vst2-potential-support) | [No*](#vst3-is-work-in-progress) |
+| Bypass control      | No                                    | No                      | No                  | Yes                           | [No*](#vst2-potential-support) | [No*](#vst3-is-work-in-progress) |
+| MIDI input          | Yes                                   | No                      | Yes                 | Yes                           | Yes                            | Yes                              |
+| MIDI output         | Yes                                   | No                      | No                  | Yes                           | Yes                            | Yes                              |
+| Parameter changes   | Yes                                   | No                      | No                  | [No*](#lv2-parameter-changes) | Yes                            | Yes                              |
+| Parameter groups    | No                                    | No                      | No                  | Yes                           | Yes                            | [No*](#vst3-is-work-in-progress) |
+| Parameter outputs   | No                                    | No                      | No                  | Yes                           | No                             | [No*](#vst3-is-work-in-progress) |
+| Parameter triggers  | Yes                                   | No                      | No                  | Yes                           | [No*](#parameter-triggers)     | [No*](#parameter-triggers)       |
+| Programs            | [Yes*](#jack-parameters-and-programs) | [No*](#ladspa-programs) | [Yes*](#dssi-state) | Yes                           | [No*](#vst2-programs)          | Yes                              |
+| States              | Yes                                   | No                      | [Yes*](#dssi-state) | Yes                           | Yes                            | Yes                              |
+| Full/internal state | Yes                                   | No                      | No                  | Yes                           | Yes                            | Yes                              |
+| Time position       | Yes                                   | No                      | No                  | Yes                           | Yes                            | Yes                              |
+| UI                  | [Yes*](#jack-custom-ui-only)          | No                      | External only       | Yes                           | Embed only                     | Embed only                       |
+| UI bg/fg colors     | No                                    | No                      | No                  | Yes                           | No                             | No?                              |
+| UI direct access    | Yes                                   | No                      | No                  | Yes                           | Yes                            | Yes                              |
+| UI host-filebrowser | No                                    | No                      | No                  | Yes                           | [No*](#vst2-potential-support) | [No*](#vst3-is-work-in-progress) |
+| UI host-resize      | Yes                                   | No                      | Yes                 | Yes                           | No                             | [No*](#vst3-is-work-in-progress) |
+| UI remote control   | No                                    | No                      | Yes                 | Yes                           | No                             | Yes                              |
+| UI send midi note   | Yes                                   | No                      | Yes                 | Yes                           | Yes                            | Yes                              |
 
 For things that could be unclear:
 
@@ -33,8 +34,14 @@ For things that could be unclear:
 - "Full state" refers to plugins updating their state internally without outside intervention (like host or UI)
 - "UI direct access" means `DISTRHO_PLUGIN_WANT_DIRECT_ACCESS` is possible, that is, running DSP and UI on the same process
 - "UI remote control" means running the UI on a separate machine (for example over the network)
+- An external UI on this table means that it cannot be embed into the host window, but the plugin can still provide one
 
 # Special notes
+
+## Parameter triggers
+
+Trigger-style parameters (parameters which value is reset to its default every run) are only supported in JACK and LV2.  
+For all other plugin formats DPF will simulate the behaviour through a parameter change request.
 
 ## JACK audio port groups
 
@@ -58,12 +65,18 @@ Programs for LADSPA could be done via LRDF but this is not supported in DPF.
 
 ## DSSI State
 
-DSSI only supports states when called via UI, no "full state" possible
+DSSI only supports state changes when called via UI, no "full state" possible.  
+This also makes it impossibe to use programs and state at the same time with DSSI,
+because in DPF changing programs can lead to state changes but there is no way to fetch this information on DSSI plugins.
+
+To make it simpler to understand, think of DSSI programs and states as UI properties.  
+Because in DPF changing the state happens from UI to DSP side, regular DSSI can be supported.  
+But if we involve programs, they would need to pass through the UI in order to work. Which goes against DPF's design.
 
 ## LV2 parameter changes
 
-Possible through a custom extension, not implemented on most hosts.  
-For now you can pretty much assume it is not supported.
+Although this is already implemented in DPF (through a custom extension), this is not implemented on most hosts.  
+So for now you can pretty much treat it as if not supported.
 
 ## VST2 potential support
 
