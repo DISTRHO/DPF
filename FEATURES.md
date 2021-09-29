@@ -3,20 +3,22 @@
 This file describes the available features for each plugin format.  
 The limitations could be due to the plugin format itself or within DPF.
 
-| Format | Param outs | Programs | States | UI sendNote | CV | MIDI in | MIDI out | Port groups |
-|--------|------------|----------|--------|-------------|----|---------|----------|-------------|
-| JACK   | Yes* | Yes* | Yes | Yes | Yes | Yes | Yes | Yes* |
-| LADSPA | Yes | No* | No | No | No | No | No | No |
-| DSSI   | Yes | Yes* | Yes* | Yes | No | Yes | No | No |
-| LV2    | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| VST2   | No   | No* | Yes | Yes | No | Yes | Yes | Yes* |
-| VST3   | Yes? | Yes | Yes | Yes | NO* | Yes | Yes | No* |
+| Feature     | JACK/Standalone | LADSPA | DSSI | LV2 | VST2 | VST3 |
+|-------------|-----------------|--------|------|-----|------|------|
+| Param outs  | Yes*            | Yes    | Yes  | Yes | No   | Yes? |
+| Programs    | Yes*            | No*    | Yes* | Yes | No*  | Yes  |
+| States      | Yes             | No     | Yes* | Yes | Yes  | Yes  |
+| UI sendNote | Yes             | No     | Yes  | Yes | Yes  | Yes  |
+| CV          | Yes             | No     | No   | Yes | No   | No*  |
+| MIDI in     | Yes             | No     | Yes  | Yes | Yes  | Yes  |
+| MIDI out    | Yes             | No     | No   | Yes | Yes  | Yes  |
+| Port groups | Yes*            | No     | No   | Yes | Yes* | No*  |
 
 Special notes:
 
 | Format | Notes |
 |--------|-------|
-| JACK   | Parameters have programs mapped to MIDI CC, there is no generic plugin editor; Port groups as JACK metadata |
+| JACK   | Parameters and programs are mapped to MIDI events, there is no generic plugin editor; Audio port groups are set as JACK metadata |
 | LADSPA | LADSPA only supports basic parameters and audio;<br/> Programs could be done via LRDF but not supported in DPF |
 | DSSI   | DSSI only supports States via UI, no "full state" possible |
 | LV2    | Everything supported :) |
