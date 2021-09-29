@@ -8,8 +8,8 @@ Note that if you are making GPLv2+ licensed plugins this does not apply to you, 
 Regardless of target format, DPF itself needs to be mentioned in attribution.
 See the [LICENSE](LICENSE) file for copyright details.
 
-| Target          | License(s)           | License restrictions  | Attribution |
-|-----------------|----------------------|-----------------------|-------------|
+| Target          | License(s)           | License restrictions  | Additional attribution |
+|-----------------|----------------------|-----------------------|------------------------|
 | JACK/Standalone | MIT (RtAudio)        | Copyright attribution | **RtAudio**: 2001-2019 Gary P. Scavone |
 | LADSPA          | LGPLv2.1+            | ??? (*)               | 2000-2002 Richard W. E. Furse, Paul Barton-Davis, Stefan Westerfeld |
 | DSSI            | LGPLv2.1+            | ??? (*)               | **DSSI**: 2004, 2009 Chris Cannam, Steve Harris and Sean Bolton;<br/> **ALSA**: 1998-2001 Jaroslav Kysela, Abramo Bagnara, Takashi Iwai |
@@ -29,3 +29,19 @@ LADSPA authors mention this on ladspa.org homepage:
 
 So the situation for LADSPA/DSSI plugins is unclear for commercial plugins.  
 These formats are very limited and not much used anymore anyway, feel free to skip them if this situation is a potential issue for you.
+
+### VST2 special note
+
+By default DPF uses the free reverse-engineered [vestige header](distrho/src/vestige/vestige.h) file.  
+This file is GPLv2+ licensed, so that applies to plugins built with it as well.  
+You can alternatively build DPF-based VST2 plugins using the official VST2 SDK,
+simply set the `VESTIGE_HEADER` compiler macro to `0` during build.  
+You will need to provide your own VST2 SDK files then, as DPF does not ship with them.  
+Note there are legal issues surrounding releasing new VST2 plugins using the official SDK, as that is no longer supported by the vendor.
+
+### VST3 special note
+
+Contrary to most plugins, DPF does not use the official VST3 SDK.  
+Instead, the API definitions are provided by the [travesty](distrho/src/travesty/) sub-project, licensed in the same way as DPF.
+This allows us to freely build plugins without being encumbered by restrictive licensing deals.  
+It makes the internal implementation much harder for DPF, but this is not an issue for external developers.
