@@ -27,14 +27,14 @@
 struct v3_attribute_list {
 	struct v3_funknown;
 
-	V3_API v3_result (*set_int)(void* self, const char* id, int64_t value);
-	V3_API v3_result (*get_int)(void* self, const char* id, int64_t* value);
-	V3_API v3_result (*set_float)(void* self, const char* id, double value);
-	V3_API v3_result (*get_float)(void* self, const char* id, double* value);
-	V3_API v3_result (*set_string)(void* self, const char* id, const int16_t* string);
-	V3_API v3_result (*get_string)(void* self, const char* id, int16_t* string, uint32_t size);
-	V3_API v3_result (*set_binary)(void* self, const char* id, const void* data, uint32_t size);
-	V3_API v3_result (*get_binary)(void* self, const char* id, const void** data, uint32_t* size);
+	v3_result (V3_API *set_int)(void* self, const char* id, int64_t value);
+	v3_result (V3_API *get_int)(void* self, const char* id, int64_t* value);
+	v3_result (V3_API *set_float)(void* self, const char* id, double value);
+	v3_result (V3_API *get_float)(void* self, const char* id, double* value);
+	v3_result (V3_API *set_string)(void* self, const char* id, const int16_t* string);
+	v3_result (V3_API *get_string)(void* self, const char* id, int16_t* string, uint32_t size);
+	v3_result (V3_API *set_binary)(void* self, const char* id, const void* data, uint32_t size);
+	v3_result (V3_API *get_binary)(void* self, const char* id, const void** data, uint32_t* size);
 };
 
 static constexpr const v3_tuid v3_attribute_list_iid =
@@ -47,9 +47,9 @@ static constexpr const v3_tuid v3_attribute_list_iid =
 struct v3_message {
 	struct v3_funknown;
 
-	V3_API const char* (*get_message_id)(void* self);
-	V3_API void (*set_message_id)(void* self, const char* id);
-	V3_API v3_attribute_list** (*get_attributes)(void* self);
+	const char* (V3_API *get_message_id)(void* self);
+	void (V3_API *set_message_id)(void* self, const char* id);
+	v3_attribute_list** (V3_API *get_attributes)(void* self);
 };
 
 static constexpr const v3_tuid v3_message_iid =
@@ -62,9 +62,9 @@ static constexpr const v3_tuid v3_message_iid =
 struct v3_connection_point {
 	struct v3_funknown;
 
-	V3_API v3_result (*connect)(void* self, struct v3_connection_point** other);
-	V3_API v3_result (*disconnect)(void* self, struct v3_connection_point** other);
-	V3_API v3_result (*notify)(void* self, struct v3_message** message);
+	v3_result (V3_API *connect)(void* self, struct v3_connection_point** other);
+	v3_result (V3_API *disconnect)(void* self, struct v3_connection_point** other);
+	v3_result (V3_API *notify)(void* self, struct v3_message** message);
 };
 
 static constexpr const v3_tuid v3_connection_point_iid =

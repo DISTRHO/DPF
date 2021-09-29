@@ -91,17 +91,17 @@ struct v3_routing_info;
 struct v3_component {
 	struct v3_plugin_base;
 
-	V3_API v3_result (*get_controller_class_id)(void* self, v3_tuid class_id);
-	V3_API v3_result (*set_io_mode)(void* self, int32_t io_mode);
-	V3_API int32_t (*get_bus_count)(void* self, int32_t media_type, int32_t bus_direction);
-	V3_API v3_result (*get_bus_info)(void* self, int32_t media_type, int32_t bus_direction,
+	v3_result (V3_API *get_controller_class_id)(void* self, v3_tuid class_id);
+	v3_result (V3_API *set_io_mode)(void* self, int32_t io_mode);
+	int32_t (V3_API *get_bus_count)(void* self, int32_t media_type, int32_t bus_direction);
+	v3_result (V3_API *get_bus_info)(void* self, int32_t media_type, int32_t bus_direction,
                                      int32_t bus_idx, struct v3_bus_info* bus_info);
-	V3_API v3_result (*get_routing_info)(void* self, struct v3_routing_info* input, struct v3_routing_info* output);
-	V3_API v3_result (*activate_bus)(void* self, int32_t media_type, int32_t bus_direction,
+	v3_result (V3_API *get_routing_info)(void* self, struct v3_routing_info* input, struct v3_routing_info* output);
+	v3_result (V3_API *activate_bus)(void* self, int32_t media_type, int32_t bus_direction,
                                      int32_t bus_idx, v3_bool state);
-	V3_API v3_result (*set_active)(void* self, v3_bool state);
-	V3_API v3_result (*set_state)(void* self, struct v3_bstream **);
-	V3_API v3_result (*get_state)(void* self, struct v3_bstream **);
+	v3_result (V3_API *set_active)(void* self, v3_bool state);
+	v3_result (V3_API *set_state)(void* self, struct v3_bstream **);
+	v3_result (V3_API *get_state)(void* self, struct v3_bstream **);
 };
 
 static constexpr const v3_tuid v3_component_iid =

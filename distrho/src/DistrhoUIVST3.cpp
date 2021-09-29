@@ -58,8 +58,8 @@ v3_message** dpf_message_create(const char* id);
 
 struct v3_attribute_list_utf8 {
     struct v3_funknown;
-    V3_API v3_result (*set_string_utf8)(void* self, const char* id, const char* string);
-    V3_API v3_result (*get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
+    v3_result (V3_API *set_string_utf8)(void* self, const char* id, const char* string);
+    v3_result (V3_API *get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
 };
 
 static constexpr const v3_tuid v3_attribute_list_utf8_iid =
@@ -542,7 +542,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_fn(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_fn(void* self, const v3_tuid iid, void** iface)
     {
         d_stdout("dpf_plugin_view_content_scale::query_interface    => %p %s %p", self, tuid2str(iid), iface);
         *iface = NULL;
@@ -566,13 +566,13 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     }
 
     // there is only a single instance of this, so we don't have to care here
-    static V3_API uint32_t ref_fn(void*) { return 1; };
-    static V3_API uint32_t unref_fn(void*) { return 0; };
+    static uint32_t V3_API ref_fn(void*) { return 1; };
+    static uint32_t V3_API unref_fn(void*) { return 0; };
 
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view_content_scale_steinberg
 
-    static V3_API v3_result set_content_scale_factor_fn(void* self, float factor)
+    static v3_result V3_API set_content_scale_factor_fn(void* self, float factor)
     {
         d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
         dpf_plugin_view_content_scale* const scale = *(dpf_plugin_view_content_scale**)self;

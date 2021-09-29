@@ -39,10 +39,10 @@ struct v3_class_info {
 struct v3_plugin_factory {
 	struct v3_funknown;
 
-	V3_API v3_result (*get_factory_info)(void* self, struct v3_factory_info*);
-	V3_API int32_t (*num_classes)(void* self);
-	V3_API v3_result (*get_class_info)(void* self, int32_t idx, struct v3_class_info*);
-	V3_API v3_result (*create_instance)(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance);
+	v3_result (V3_API *get_factory_info)(void* self, struct v3_factory_info*);
+	int32_t (V3_API *num_classes)(void* self);
+	v3_result (V3_API *get_class_info)(void* self, int32_t idx, struct v3_class_info*);
+	v3_result (V3_API *create_instance)(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance);
 };
 
 static constexpr const v3_tuid v3_plugin_factory_iid =
@@ -67,7 +67,7 @@ struct v3_class_info_2 {
 struct v3_plugin_factory_2 {
 	struct v3_plugin_factory;
 
-	V3_API v3_result (*get_class_info_2)(void* self, int32_t idx, struct v3_class_info_2*);
+	v3_result (V3_API *get_class_info_2)(void* self, int32_t idx, struct v3_class_info_2*);
 };
 
 static constexpr const v3_tuid v3_plugin_factory_2_iid =
@@ -95,8 +95,8 @@ struct v3_class_info_3 {
 struct v3_plugin_factory_3 {
 	struct v3_plugin_factory_2;
 
-	V3_API v3_result (*get_class_info_utf16)(void* self, int32_t idx, struct v3_class_info_3*);
-	V3_API v3_result (*set_host_context)(void* self, struct v3_funknown* host);
+	v3_result (V3_API *get_class_info_utf16)(void* self, int32_t idx, struct v3_class_info_3*);
+	v3_result (V3_API *set_host_context)(void* self, struct v3_funknown* host);
 };
 
 static constexpr const v3_tuid v3_plugin_factory_3_iid =

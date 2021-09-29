@@ -137,9 +137,9 @@ struct v3_event {
 struct v3_event_list {
 	struct v3_funknown;
 
-	V3_API uint32_t (*get_event_count)(void* self);
-	V3_API v3_result (*get_event)(void* self, int32_t idx, struct v3_event* event);
-	V3_API v3_result (*add_event)(void* self, struct v3_event* event);
+	uint32_t (V3_API *get_event_count)(void* self);
+	v3_result (V3_API *get_event)(void* self, int32_t idx, struct v3_event* event);
+	v3_result (V3_API *add_event)(void* self, struct v3_event* event);
 };
 
 static constexpr const v3_tuid v3_event_list_iid =

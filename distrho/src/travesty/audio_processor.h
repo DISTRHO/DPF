@@ -92,10 +92,10 @@ struct v3_process_setup {
 struct v3_param_value_queue {
 	struct v3_funknown;
 
-	V3_API v3_param_id (*get_param_id)(void* self);
-	V3_API int32_t (*get_point_count)(void* self);
-	V3_API v3_result (*get_point)(void* self, int32_t idx, int32_t* sample_offset, double* value);
-	V3_API v3_result (*add_point)(void* self, int32_t sample_offset, double value, int32_t* idx);
+	v3_param_id (V3_API *get_param_id)(void* self);
+	int32_t (V3_API *get_point_count)(void* self);
+	v3_result (V3_API *get_point)(void* self, int32_t idx, int32_t* sample_offset, double* value);
+	v3_result (V3_API *add_point)(void* self, int32_t sample_offset, double value, int32_t* idx);
 };
 
 static constexpr const v3_tuid v3_param_value_queue_iid =
@@ -104,9 +104,9 @@ static constexpr const v3_tuid v3_param_value_queue_iid =
 struct v3_param_changes {
 	struct v3_funknown;
 
-	V3_API int32_t (*get_param_count)(void* self);
-	V3_API struct v3_param_value_queue** (*get_param_data)(void* self, int32_t idx);
-	V3_API struct v3_param_value_queue** (*add_param_data)(void* self, v3_param_id* id, int32_t* index);
+	int32_t (V3_API *get_param_count)(void* self);
+	struct v3_param_value_queue** (V3_API *get_param_data)(void* self, int32_t idx);
+	struct v3_param_value_queue** (V3_API *add_param_data)(void* self, v3_param_id* id, int32_t* index);
 };
 
 static constexpr const v3_tuid v3_param_changes_iid =
@@ -183,7 +183,7 @@ enum {
 struct v3_process_context_requirements {
 	struct v3_funknown;
 
-	V3_API uint32_t (*get_process_context_requirements)(void* self);
+	uint32_t (V3_API *get_process_context_requirements)(void* self);
 };
 
 static constexpr const v3_tuid v3_process_context_requirements_iid =
@@ -224,15 +224,15 @@ struct v3_process_data {
 struct v3_audio_processor {
 	struct v3_funknown;
 
-	V3_API v3_result (*set_bus_arrangements)(void* self, v3_speaker_arrangement* inputs, int32_t num_inputs,
+	v3_result (V3_API *set_bus_arrangements)(void* self, v3_speaker_arrangement* inputs, int32_t num_inputs,
 	                                         v3_speaker_arrangement* outputs, int32_t num_outputs);
-	V3_API v3_result (*get_bus_arrangement)(void* self, int32_t bus_direction, int32_t idx, v3_speaker_arrangement*);
-	V3_API v3_result (*can_process_sample_size)(void* self, int32_t symbolic_sample_size);
-	V3_API uint32_t (*get_latency_samples)(void* self);
-	V3_API v3_result (*setup_processing)(void* self, struct v3_process_setup* setup);
-	V3_API v3_result (*set_processing)(void* self, v3_bool state);
-	V3_API v3_result (*process)(void* self, struct v3_process_data* data);
-	V3_API uint32_t (*get_tail_samples)(void* self);
+	v3_result (V3_API *get_bus_arrangement)(void* self, int32_t bus_direction, int32_t idx, v3_speaker_arrangement*);
+	v3_result (V3_API *can_process_sample_size)(void* self, int32_t symbolic_sample_size);
+	uint32_t (V3_API *get_latency_samples)(void* self);
+	v3_result (V3_API *setup_processing)(void* self, struct v3_process_setup* setup);
+	v3_result (V3_API *set_processing)(void* self, v3_bool state);
+	v3_result (V3_API *process)(void* self, struct v3_process_data* data);
+	uint32_t (V3_API *get_tail_samples)(void* self);
 };
 
 static constexpr const v3_tuid v3_audio_processor_iid =

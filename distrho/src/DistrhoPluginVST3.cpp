@@ -106,8 +106,8 @@ static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
 
 struct v3_attribute_list_utf8 {
     struct v3_funknown;
-    V3_API v3_result (*set_string_utf8)(void* self, const char* id, const char* string);
-    V3_API v3_result (*get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
+    v3_result (V3_API *set_string_utf8)(void* self, const char* id, const char* string);
+    v3_result (V3_API *get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
 };
 
 static constexpr const v3_tuid v3_attribute_list_utf8_iid =
