@@ -1,3 +1,13 @@
+/**
+ * \file include/seq_event.h
+ * \brief Application interface library for the ALSA driver
+ * \author Jaroslav Kysela <perex@perex.cz>
+ * \author Abramo Bagnara <abramo@alsa-project.org>
+ * \author Takashi Iwai <tiwai@suse.de>
+ * \date 1998-2001
+ *
+ * Application interface library for the ALSA driver
+ */
 /*
  *   This library is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU Lesser General Public License as
