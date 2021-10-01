@@ -140,6 +140,8 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_connection_point_iid}";
     if (v3_tuid_match(iid, v3_edit_controller_iid))
         return "{v3_edit_controller}";
+    if (v3_tuid_match(iid, v3_event_handler_iid))
+        return "{v3_event_handler_iid}";
     if (v3_tuid_match(iid, v3_event_list_iid))
         return "{v3_event_list}";
     if (v3_tuid_match(iid, v3_funknown_iid))
@@ -172,6 +174,10 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_plugin_view_parameter_finder}";
     if (v3_tuid_match(iid, v3_process_context_requirements_iid))
         return "{v3_process_context_requirements}";
+    if (v3_tuid_match(iid, v3_run_loop_iid))
+        return "{v3_run_loop_iid}";
+    if (v3_tuid_match(iid, v3_timer_handler_iid))
+        return "{v3_timer_handler_iid}";
 
     if (std::memcmp(iid, dpf_tuid_class, sizeof(dpf_tuid)) == 0)
         return "{dpf_tuid_class}";
