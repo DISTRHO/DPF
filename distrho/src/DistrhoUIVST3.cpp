@@ -52,20 +52,12 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 const char* tuid2str(const v3_tuid iid);
 void strncpy_utf16(int16_t* dst, const char* src, size_t length);
 
-// --------------------------------------------------------------------------------------------------------------------
-// custom attribute list struct, used for sending utf8 strings
-
-struct v3_attribute_list_utf8 {
-    struct v3_funknown;
-    v3_result (V3_API *set_string_utf8)(void* self, const char* id, const char* string);
-    v3_result (V3_API *get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
+struct ScopedUTF16String {
+    int16_t* str;
+    ScopedUTF16String(const char* const s) noexcept;
+    ~ScopedUTF16String() noexcept;
+    operator int16_t*() const noexcept;
 };
-
-static constexpr const v3_tuid v3_attribute_list_utf8_iid =
-    V3_ID(d_cconst('D','P','F',' '),
-          d_cconst('c','l','a','s'),
-          d_cconst('a','t','t','r'),
-          d_cconst('u','t','f','8'));
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -234,6 +226,7 @@ public:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -253,6 +246,7 @@ public:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
 
         fConnection = nullptr;
@@ -397,6 +391,7 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -418,6 +413,7 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "started", started ? 1 : 0);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -441,6 +437,7 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", realValue);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -493,6 +490,7 @@ private:
         v3_cpp_obj(attrlist)->set_binary(attrlist, "data", midiData, sizeof(midiData));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -513,15 +511,12 @@ private:
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
         DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
 
-        v3_attribute_list_utf8** utf8attrlist = nullptr;
-        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj_query_interface(attrlist, v3_attribute_list_utf8_iid, &utf8attrlist) == V3_OK,);
-        DISTRHO_SAFE_ASSERT_RETURN(utf8attrlist != nullptr,);
-
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
-        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "key", key);
-        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "value", value);
+        v3_cpp_obj(attrlist)->set_string(attrlist, "key", ScopedUTF16String(key));
+        v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -537,6 +532,9 @@ private:
 /**
  * VST3 low-level pointer thingies follow, proceed with care.
  */
+
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_content_scale

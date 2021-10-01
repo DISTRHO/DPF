@@ -102,21 +102,6 @@ static dpf_tuid dpf_tuid_processor = { dpf_id_entry, dpf_id_proc, 0, 0 };
 static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// custom attribute list struct, used for sending utf8 strings
-
-struct v3_attribute_list_utf8 {
-    struct v3_funknown;
-    v3_result (V3_API *set_string_utf8)(void* self, const char* id, const char* string);
-    v3_result (V3_API *get_string_utf8)(void* self, const char* id, char* string, uint32_t size);
-};
-
-static constexpr const v3_tuid v3_attribute_list_utf8_iid =
-    V3_ID(d_cconst('D','P','F',' '),
-          d_cconst('c','l','a','s'),
-          d_cconst('a','t','t','r'),
-          d_cconst('u','t','f','8'));
-
-// --------------------------------------------------------------------------------------------------------------------
 // Utility functions
 
 const char* tuid2str(const v3_tuid iid)
@@ -145,8 +130,6 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_audio_processor}";
     if (v3_tuid_match(iid, v3_attribute_list_iid))
         return "{v3_attribute_list_iid}";
-    if (v3_tuid_match(iid, v3_attribute_list_utf8_iid))
-        return "{v3_attribute_list_utf8_iid|CUSTOM}";
     if (v3_tuid_match(iid, v3_bstream_iid))
         return "{v3_bstream}";
     if (v3_tuid_match(iid, v3_component_iid))
@@ -287,6 +270,37 @@ static constexpr const char format_u32[] = "%u";
 static constexpr void (*const snprintf_u32)(char*, uint32_t, size_t) = snprintf_t<uint32_t, format_u32>;
 static constexpr void (*const snprintf_f32_utf16)(int16_t*, float, size_t) = snprintf_utf16_t<float, format_f32>;
 static constexpr void (*const snprintf_u32_utf16)(int16_t*, uint32_t, size_t) = snprintf_utf16_t<uint32_t, format_u32>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// handy way to create a utf16 string during the current function scope, used for DSP->UI communication
+
+struct ScopedUTF16String {
+    int16_t* str;
+    ScopedUTF16String(const char* const s) noexcept;
+    ~ScopedUTF16String() noexcept;
+    operator int16_t*() const noexcept;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+ScopedUTF16String::ScopedUTF16String(const char* const s) noexcept
+    : str(nullptr)
+{
+    const size_t len = strlen(s);
+    str = (int16_t*)malloc(sizeof(int16_t) * len);
+    DISTRHO_SAFE_ASSERT_RETURN(str != nullptr,);
+    strncpy_utf16(str, s, len);
+}
+
+ScopedUTF16String::~ScopedUTF16String() noexcept
+{
+    std::free(str);
+}
+
+ScopedUTF16String::operator int16_t*() const noexcept
+{
+    return str;
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (implemented on UI side)
@@ -1967,6 +1981,7 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", sampleRate);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -1983,6 +1998,7 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", value);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -1994,15 +2010,12 @@ private:
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
         DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
 
-        v3_attribute_list_utf8** utf8attrlist = nullptr;
-        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj_query_interface(attrlist, v3_attribute_list_utf8_iid, &utf8attrlist) == V3_OK,);
-        DISTRHO_SAFE_ASSERT_RETURN(utf8attrlist != nullptr,);
-
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
-        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "key", key);
-        v3_cpp_obj(utf8attrlist)->set_string_utf8(utf8attrlist, "value", value);
+        v3_cpp_obj(attrlist)->set_string(attrlist, "key", ScopedUTF16String(key));
+        v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -2017,6 +2030,7 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
+        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 #endif
