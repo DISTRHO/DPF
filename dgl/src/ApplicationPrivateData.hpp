@@ -84,6 +84,9 @@ struct Application::PrivateData {
     /** Run Pugl world update for @a timeoutInMs, and then each idle callback in order of registration. */
     void idle(uint timeoutInMs);
 
+    /** Run each idle callback without updating pugl world. */
+    void triggerIdleCallbacks();
+
     /** Set flag indicating application is quitting, and close all windows in reverse order of registration.
         For standalone mode only. */
     void quit();

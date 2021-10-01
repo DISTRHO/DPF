@@ -22,7 +22,7 @@
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include "../extra/Sleep.hpp"
 #else
-# include "../../dgl/Application.hpp"
+# include "../../dgl/src/ApplicationPrivateData.hpp"
 # include "../../dgl/src/WindowPrivateData.hpp"
 # include "../../dgl/src/pugl.hpp"
 #endif
@@ -98,6 +98,7 @@ struct PluginApplication
     // these are not needed
     void idle() {}
     void quit() {}
+    void triggerIdleCallbacks() {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
 };
@@ -117,6 +118,11 @@ public:
             "-" DISTRHO_PLUGIN_NAME
         );
         setClassName(className);
+    }
+
+    void triggerIdleCallbacks()
+    {
+        pData->triggerIdleCallbacks();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)

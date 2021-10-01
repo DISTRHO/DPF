@@ -28,8 +28,15 @@
  * - size constraints
  * - host-side resize
  * - oddities with init and size callback (triggered too early?)
- * - win/mac native idle loop
  */
+
+#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
+# define DPF_VST3_USING_HOST_RUN_LOOP
+#endif
+
+#ifndef DPF_VST3_TIMER_INTERVAL
+# define DPF_VST3_TIMER_INTERVAL 16 /* ~60 fps */
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -70,6 +77,9 @@ struct ScopedUTF16String {
  * The low-level VST3 stuff comes after.
  */
 class UIVst3
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+  : public IdleCallback
+#endif
 {
 public:
     UIVst3(v3_plugin_view** const view,
@@ -95,10 +105,16 @@ public:
           fReadyForPluginData(false),
           fScaleFactor(scaleFactor)
     {
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+#endif
     }
 
     ~UIVst3()
     {
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+        fUI.removeIdleCallbackForVST3(this);
+#endif
         if (fConnection != nullptr)
             disconnect();
     }
@@ -321,6 +337,21 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // special idle callback on macOS and Windows
+
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+    void idleCallback() override
+    {
+        if (fReadyForPluginData)
+        {
+            fReadyForPluginData = false;
+            requestMorePluginData();
+        }
+
+        fUI.idleForVST3();
+    }
+#else
+    // ----------------------------------------------------------------------------------------------------------------
     // v3_timer_handler interface calls
 
     void onTimer()
@@ -333,6 +364,7 @@ public:
 
         fUI.plugin_idle();
     }
+#endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -676,6 +708,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     }
 };
 
+#ifdef DPF_VST3_USING_HOST_RUN_LOOP
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_timer_handler
 
@@ -732,6 +765,7 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
         handler->uivst3->onTimer();
     }
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view
@@ -741,7 +775,9 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     ScopedPointer<dpf_plugin_view>* self;
     ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<dpf_plugin_view_content_scale> scale;
+#ifdef DPF_VST3_USING_HOST_RUN_LOOP
     ScopedPointer<dpf_timer_handler> timer;
+#endif
     ScopedPointer<UIVst3> uivst3;
     // cached values
     v3_host_application** const host;
@@ -869,12 +905,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             {
                 if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
                 {
-                    // find host run loop to plug ourselves into (required)
+                   #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+                    // find host run loop to plug ourselves into (required on some systems)
                     DISTRHO_SAFE_ASSERT_RETURN(view->frame != nullptr, V3_INVALID_ARG);
 
                     v3_run_loop** runloop = nullptr;
                     v3_cpp_obj_query_interface(view->frame, v3_run_loop_iid, &runloop);
                     DISTRHO_SAFE_ASSERT_RETURN(runloop != nullptr, V3_INVALID_ARG);
+                   #endif
 
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                     view->uivst3 = new UIVst3((v3_plugin_view**)view->self,
@@ -890,9 +928,13 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
                     view->uivst3->setFrame(view->frame);
 
+                   #ifdef DPF_VST3_USING_HOST_RUN_LOOP
                     // register a timer host run loop stuff
                     view->timer = new dpf_timer_handler(view->uivst3);
-                    v3_cpp_obj(runloop)->register_timer(runloop, (v3_timer_handler**)&view->timer, 16);
+                    v3_cpp_obj(runloop)->register_timer(runloop,
+                                                        (v3_timer_handler**)&view->timer,
+                                                        DPF_VST3_TIMER_INTERVAL);
+                   #endif
 
                     return V3_OK;
                 }
@@ -908,6 +950,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALISED);
             DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
 
+            #ifdef DPF_VST3_USING_HOST_RUN_LOOP
             // unregister our timer as needed
             if (view->timer != nullptr)
             {
@@ -917,6 +960,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
                 view->timer = nullptr;
             }
+           #endif
 
             view->uivst3 = nullptr;
             return V3_OK;

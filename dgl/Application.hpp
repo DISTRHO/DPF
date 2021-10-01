@@ -107,6 +107,7 @@ public:
 private:
     struct PrivateData;
     PrivateData* const pData;
+    friend class PluginApplication;
     friend class Window;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Application)

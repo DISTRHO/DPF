@@ -234,6 +234,28 @@ public:
 
     // -------------------------------------------------------------------
 
+#if defined(DISTRHO_PLUGIN_TARGET_VST3) && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
+    void addIdleCallbackForVST3(IdleCallback* const cb, const uint timerFrequencyInMs)
+    {
+        uiData->window->addIdleCallback(cb, timerFrequencyInMs);
+    }
+
+    void removeIdleCallbackForVST3(IdleCallback* const cb)
+    {
+        uiData->window->removeIdleCallback(cb);
+    }
+
+    void idleForVST3()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
+
+        uiData->app.triggerIdleCallbacks();
+        ui->uiIdle();
+    }
+#endif
+
+    // -------------------------------------------------------------------
+
     void setWindowTitle(const char* const uiTitle)
     {
         uiData->window->setTitle(uiTitle);
