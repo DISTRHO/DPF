@@ -22,9 +22,6 @@
 
 /**
  * note events
- *
- * i know there's others, but we don't need them right now. whatever.
- * handle them later.
  */
 
 struct v3_event_note_on {
@@ -62,14 +59,14 @@ struct v3_event_chord {
 	int16_t bass_note;
 	int16_t mask;
 	uint16_t text_len;
-	const int16_t *text;
+	const int16_t* text;
 };
 
 struct v3_event_scale {
 	int16_t root;
 	int16_t mask;
 	uint16_t text_len;
-	const int16_t *text;
+	const int16_t* text;
 };
 
 struct v3_event_legacy_midi_cc_out {
@@ -88,7 +85,7 @@ struct v3_event_note_expression_value {
 struct v3_event_note_expression_text {
 	int32_t note_id;
 	uint32_t text_len;
-	const int16_t *text;
+	const int16_t* text;
 };
 
 /**
@@ -137,9 +134,9 @@ struct v3_event {
 struct v3_event_list {
 	struct v3_funknown;
 
-	uint32_t (V3_API *get_event_count)(void* self);
-	v3_result (V3_API *get_event)(void* self, int32_t idx, struct v3_event* event);
-	v3_result (V3_API *add_event)(void* self, struct v3_event* event);
+	uint32_t (V3_API* get_event_count)(void* self);
+	v3_result (V3_API* get_event)(void* self, int32_t idx, struct v3_event* event);
+	v3_result (V3_API* add_event)(void* self, struct v3_event* event);
 };
 
 static constexpr const v3_tuid v3_event_list_iid =

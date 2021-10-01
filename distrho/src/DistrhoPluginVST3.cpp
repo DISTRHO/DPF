@@ -331,10 +331,10 @@ public:
 #endif
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
-          fParameterValues(nullptr)
+          fParameterValues(nullptr),
+          fChangedParameterValues(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fConnectedToUI(false)
-        , fChangedParameterValues(nullptr)
         , fNextSampleRate(0.0)
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
@@ -421,13 +421,11 @@ public:
                 fParameterValues[i] = fPlugin.getParameterDefault(i);
         }
 
-#if DISTRHO_PLUGIN_HAS_UI
         if (fRealParameterCount != 0)
         {
             fChangedParameterValues = new bool[fRealParameterCount];
             std::memset(fChangedParameterValues, 0, sizeof(bool)*fRealParameterCount);
         }
-#endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
@@ -446,13 +444,11 @@ public:
             fParameterValues = nullptr;
         }
 
-#if DISTRHO_PLUGIN_HAS_UI
         if (fChangedParameterValues != nullptr)
         {
             delete[] fChangedParameterValues;
             fChangedParameterValues = nullptr;
         }
-#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1294,7 +1290,7 @@ public:
         return fRealParameterCount;
     }
 
-    v3_result getParameterInfo(const int32_t rindex, v3_param_info* const info) const noexcept
+    v3_result getParameterInfo(int32_t rindex, v3_param_info* const info) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INVALID_ARG);
 
@@ -1309,9 +1305,26 @@ public:
             strncpy_utf16(info->short_title, "Program", 128);
             return V3_OK;
         }
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+        {
+            std::memset(info, 0, sizeof(v3_param_info));
+            info->param_id = rindex;
+            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_HIDDEN;
+            info->step_count = 127;
+            char ccstr[24];
+            snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", rindex / 130 + 1, rindex % 130);
+            strncpy_utf16(info->title, ccstr, 128);
+            snprintf(ccstr, sizeof(ccstr)-1, "Ch.%d CC%d", rindex / 130 + 1, rindex % 130);
+            strncpy_utf16(info->short_title, ccstr+5, 128);
+            return V3_OK;
+        }
+        rindex -= 130*16;
 #endif
 
-        const uint32_t index = static_cast<uint32_t>(rindex) - fParameterOffset;
+        const uint32_t index = static_cast<uint32_t>(rindex);
         DISTRHO_SAFE_ASSERT_UINT_RETURN(index < fPlugin.getParameterCount(), index, V3_INVALID_ARG);
 
         // set up flags
@@ -1346,7 +1359,7 @@ public:
             step_count = ranges.max - ranges.min - 1;
 
         std::memset(info, 0, sizeof(v3_param_info));
-        info->param_id = rindex;
+        info->param_id = index + fParameterOffset;
         info->flags = flags;
         info->step_count = step_count;
         info->default_normalised_value = ranges.getNormalizedValue(ranges.def);
@@ -1357,27 +1370,36 @@ public:
         return V3_OK;
     }
 
-    v3_result getParameterStringForValue(const v3_param_id rindex, const double normalised, v3_str_128 output)
+    v3_result getParameterStringForValue(v3_param_id rindex, const double normalised, v3_str_128 output)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
+
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
         {
-            DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
-
             const uint32_t program = std::round(normalised * fProgramCountMinusOne);
             strncpy_utf16(output, fPlugin.getProgramName(program), 128);
             return V3_OK;
         }
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+        {
+            snprintf_f32_utf16(output, std::round(normalised * 127), 128);
+            return V3_OK;
+        }
+        rindex -= 130*16;
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         snprintf_f32_utf16(output, ranges.getUnnormalizedValue(normalised), 128);
         return V3_OK;
     }
 
-    v3_result getParameterValueForString(const v3_param_id rindex, int16_t*, double*)
+    v3_result getParameterValueForString(v3_param_id rindex, int16_t*, double*)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
 
@@ -1387,57 +1409,91 @@ public:
             // TODO find program index based on name
             return V3_NOT_IMPLEMENTED;
         }
+        --rindex;
 #endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+        {
+            // TODO
+            return V3_NOT_IMPLEMENTED;
+        }
+        rindex -= 130*16;
+#endif
+
 
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    double normalisedParameterToPlain(const v3_param_id rindex, const double normalised)
+    double normalisedParameterToPlain(v3_param_id rindex, const double normalised)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
             return std::round(normalised * fProgramCountMinusOne);
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+            return std::round(normalised * 127);
+        rindex -= 130*16;
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         return ranges.getUnnormalizedValue(normalised);
     }
 
-    double plainParameterToNormalised(const v3_param_id rindex, const double plain)
+    double plainParameterToNormalised(v3_param_id rindex, const double plain)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
             return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+            return std::max(0.0, std::min(1.0, plain / 127));
+        rindex -= 130*16;
 #endif
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         return ranges.getNormalizedValue(plain);
     }
 
-    double getParameterNormalized(const v3_param_id rindex)
+    double getParameterNormalized(v3_param_id rindex)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
             return std::max(0.0, std::min(1.0, (double)fCurrentProgram / fProgramCountMinusOne));
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
+        {
+            // TODO
+            return 0.0;
+        }
+        rindex -= 130*16;
 #endif
 
-        const float value = fPlugin.getParameterValue(rindex - fParameterOffset);
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex - fParameterOffset));
+        const float value = fPlugin.getParameterValue(rindex);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         return ranges.getNormalizedValue(value);
     }
 
-    v3_result setParameterNormalized(const v3_param_id rindex, const double value)
+    v3_result setParameterNormalized(v3_param_id rindex, const double value)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
 
+#if DISTRHO_PLUGIN_HAS_UI
+        const uint32_t orindex = rindex;
+#endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
         {
@@ -1453,33 +1509,44 @@ public:
 
             if (fComponentHandler != nullptr)
                 v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
+
+# if DISTRHO_PLUGIN_HAS_UI
+            fChangedParameterValues[rindex] = true;
+# endif
+            return V3_OK;
         }
-        else
+        --rindex;
 #endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (rindex <= 130*16)
         {
-            const uint32_t index = rindex - fParameterOffset;
-            const uint32_t hints = fPlugin.getParameterHints(index);
-            const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+            // TODO
+            fChangedParameterValues[rindex] = true;
+            return V3_NOT_IMPLEMENTED;
+        }
+        rindex -= 130*16;
+#endif
 
-            float realValue = ranges.getUnnormalizedValue(value);
+        const uint32_t hints = fPlugin.getParameterHints(rindex);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
 
-            if (hints & kParameterIsBoolean)
-            {
-                const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-                realValue = realValue > midRange ? ranges.max : ranges.min;
-            }
+        float realValue = ranges.getUnnormalizedValue(value);
 
-            if (hints & kParameterIsInteger)
-            {
-                realValue = std::round(realValue);
-            }
-
-            fParameterValues[index] = realValue;
-            fPlugin.setParameterValue(index, realValue);
+        if (hints & kParameterIsBoolean)
+        {
+            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+            realValue = realValue > midRange ? ranges.max : ranges.min;
         }
 
+        if (hints & kParameterIsInteger)
+        {
+            realValue = std::round(realValue);
+        }
+
+        fParameterValues[rindex] = realValue;
+        fPlugin.setParameterValue(rindex, realValue);
 #if DISTRHO_PLUGIN_HAS_UI
-        fChangedParameterValues[rindex] = true;
+        fChangedParameterValues[orindex] = true;
 #endif
         return V3_OK;
     }
@@ -1584,19 +1651,29 @@ public:
             DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr, V3_INTERNAL_ERR);
             DISTRHO_SAFE_ASSERT_RETURN(fConnectedToUI, V3_INTERNAL_ERR);
 
-            for (uint32_t i=0; i<fRealParameterCount; ++i)
+            for (uint32_t i=0, rindex; i<fRealParameterCount; ++i)
             {
                 if (! fChangedParameterValues[i])
                     continue;
 
                 fChangedParameterValues[i] = false;
 
+                rindex = i;
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
-                if (i == 0)
-                    sendParameterChangeToUI(i, fCurrentProgram);
-                else
+                if (rindex == 0)
+                {
+                    sendParameterChangeToUI(rindex, fCurrentProgram);
+                    continue;
+                }
+                --rindex;
 # endif
-                    sendParameterChangeToUI(i, fParameterValues[i - fParameterOffset]);
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                if (rindex <= 130*16)
+                    continue;
+                rindex -= 130*16;
+# endif
+
+                sendParameterChangeToUI(rindex + fParameterOffset, fParameterValues[rindex]);
             }
 
             sendReadyToUI();
@@ -1644,7 +1721,7 @@ public:
             res = v3_cpp_obj(attrs)->get_float(attrs, "value", &value);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
 
-            const uint32_t index = static_cast<uint32_t>(rindex -= fParameterOffset);
+            const uint32_t index = static_cast<uint32_t>(rindex - fParameterOffset);
             return requestParameterValueChange(index, value) ? V3_OK : V3_INTERNAL_ERR;
         }
 
@@ -1714,9 +1791,9 @@ private:
     const uint32_t fParameterOffset;
     const uint32_t fRealParameterCount; // regular parameters + current program
     float* fParameterValues;
+    bool* fChangedParameterValues;
 #if DISTRHO_PLUGIN_HAS_UI
     bool fConnectedToUI;
-    bool* fChangedParameterValues;
     double fNextSampleRate; // if not zero, report to UI
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY

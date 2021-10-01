@@ -173,6 +173,9 @@ struct Plugin::PrivateData {
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        parameterOffset += 130 * 16; // all MIDI CCs plus aftertouch and pitchbend
+# endif
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
         parameterOffset += 1;
 # endif
