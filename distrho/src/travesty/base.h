@@ -160,9 +160,9 @@ enum {
  */
 
 struct v3_funknown {
-	v3_result (V3_API *query_interface)(void* self, const v3_tuid iid, void** obj);
-	uint32_t (V3_API *ref)(void* self);
-	uint32_t (V3_API *unref)(void* self);
+	v3_result (V3_API* query_interface)(void* self, const v3_tuid iid, void** obj);
+	uint32_t (V3_API* ref)(void* self);
+	uint32_t (V3_API* unref)(void* self);
 };
 
 static constexpr const v3_tuid v3_funknown_iid =
@@ -175,8 +175,8 @@ static constexpr const v3_tuid v3_funknown_iid =
 struct v3_plugin_base {
 	struct v3_funknown;
 
-	v3_result (V3_API *initialise)(void* self, struct v3_funknown* context);
-	v3_result (V3_API *terminate)(void* self);
+	v3_result (V3_API* initialize)(void* self, struct v3_funknown** context);
+	v3_result (V3_API* terminate)(void* self);
 };
 
 static constexpr const v3_tuid v3_plugin_base_iid =

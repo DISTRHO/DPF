@@ -107,4 +107,28 @@ struct v3_component {
 static constexpr const v3_tuid v3_component_iid =
 	V3_ID(0xE831FF31, 0xF2D54301, 0x928EBBEE, 0x25697802);
 
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_component_cpp : v3_funknown {
+	v3_plugin_base base;
+	v3_component comp;
+};
+
+template<> inline
+constexpr v3_component* v3_cpp_obj(v3_component** obj)
+{
+	/**
+	 * this ugly piece of code is required due to C++ assuming `reinterpret_cast` by default,
+	 * but we need everything to be `static_cast` for it to be `constexpr` compatible.
+	 */
+	return static_cast<v3_component*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*5));
+}
+
+#endif
+
 #include "align_pop.h"

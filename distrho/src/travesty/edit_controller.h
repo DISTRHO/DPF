@@ -118,7 +118,7 @@ static constexpr const v3_tuid v3_midi_mapping_iid =
 
 struct v3_edit_controller_cpp : v3_funknown {
 	v3_plugin_base base;
-	v3_edit_controller controller;
+	v3_edit_controller ctrl;
 };
 
 struct v3_midi_mapping_cpp : v3_funknown {

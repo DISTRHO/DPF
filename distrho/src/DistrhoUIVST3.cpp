@@ -22,7 +22,7 @@
 #include "../extra/Thread.hpp"
 
 #include "travesty/edit_controller.h"
-#include "travesty/message.h"
+#include "travesty/host.h"
 #include "travesty/view.h"
 
 /* TODO items:
@@ -51,7 +51,6 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 
 const char* tuid2str(const v3_tuid iid);
 void strncpy_utf16(int16_t* dst, const char* src, size_t length);
-v3_message** dpf_message_create(const char* id);
 
 // --------------------------------------------------------------------------------------------------------------------
 // custom attribute list struct, used for sending utf8 strings
@@ -86,6 +85,7 @@ class UIVst3 : public Thread
 {
 public:
     UIVst3(v3_plugin_view** const view,
+           v3_host_application** const host,
            const intptr_t winId,
            const float scaleFactor,
            const double sampleRate,
@@ -101,6 +101,7 @@ public:
               instancePointer,
               scaleFactor),
           fView(view),
+          fHostContext(host),
           fConnection(nullptr),
           fFrame(nullptr),
           fReadyForPluginData(false),
@@ -224,7 +225,7 @@ public:
 
         d_stdout("requesting current plugin state");
 
-        v3_message** const message = dpf_message_create("init");
+        v3_message** const message = createMessage("init");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -243,7 +244,7 @@ public:
         d_stdout("reporting UI closed");
         fReadyForPluginData = false;
 
-        v3_message** const message = dpf_message_create("close");
+        v3_message** const message = createMessage("close");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -357,6 +358,7 @@ private:
 
     // VST3 stuff
     v3_plugin_view** const fView;
+    v3_host_application** const fHostContext;
     v3_connection_point** fConnection;
     v3_plugin_frame** fFrame;
 
@@ -367,11 +369,26 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing
 
+    v3_message** createMessage(const char* const id) const
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fHostContext != nullptr, nullptr);
+
+        v3_tuid iid;
+        memcpy(iid, v3_message_iid, sizeof(v3_tuid));
+        v3_message** msg = nullptr;
+        const v3_result res = v3_cpp_obj(fHostContext)->create_instance(fHostContext, iid, iid, (void**)&msg);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_TRUE, res, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(msg != nullptr, nullptr);
+
+        v3_cpp_obj(msg)->set_message_id(msg, id);
+        return msg;
+    }
+
     void requestMorePluginData() const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        v3_message** const message = dpf_message_create("idle");
+        v3_message** const message = createMessage("idle");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -390,7 +407,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        v3_message** const message = dpf_message_create("parameter-edit");
+        v3_message** const message = createMessage("parameter-edit");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -413,7 +430,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        v3_message** const message = dpf_message_create("parameter-set");
+        v3_message** const message = createMessage("parameter-set");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -461,7 +478,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        v3_message** const message = dpf_message_create("midi");
+        v3_message** const message = createMessage("midi");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -490,7 +507,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        v3_message** const message = dpf_message_create("state-set");
+        v3_message** const message = createMessage("state-set");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
 
         v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
@@ -631,7 +648,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
         // ------------------------------------------------------------------------------------------------------------
         // v3_connection_point
 
-        point.connect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
+        point.connect = []V3_API(void* self, v3_connection_point** other) -> v3_result
         {
             d_stdout("dpf_ui_connection_point::connect         => %p %p", self, other);
             dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
@@ -646,7 +663,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
             return V3_OK;
         };
 
-        point.disconnect = []V3_API(void* self, struct v3_connection_point** other) -> v3_result
+        point.disconnect = []V3_API(void* self, v3_connection_point** other) -> v3_result
         {
             d_stdout("dpf_ui_connection_point::disconnect      => %p %p", self, other);
             dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
@@ -661,7 +678,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
             return V3_OK;
         };
 
-        point.notify = []V3_API(void* self, struct v3_message** message) -> v3_result
+        point.notify = []V3_API(void* self, v3_message** message) -> v3_result
         {
             dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
             DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALISED);
@@ -684,13 +701,16 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<UIVst3> uivst3;
     // cached values
+    v3_host_application** const host;
     void* const instancePointer;
     double sampleRate;
     v3_plugin_frame** frame = nullptr;
 
-    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr, void* const instance, const double sr)
+    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr,
+                    v3_host_application** const h, void* const instance, const double sr)
         : refcounter(1),
           self(selfptr),
+          host(h),
           instancePointer(instance),
           sampleRate(sr),
           frame(nullptr)
@@ -808,6 +828,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 {
                     const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                     view->uivst3 = new UIVst3((v3_plugin_view**)view->self,
+                                              view->host,
                                               (uintptr_t)parent,
                                               scaleFactor,
                                               view->sampleRate,
@@ -956,12 +977,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (called from plugin side)
 
-v3_plugin_view** dpf_plugin_view_create(void* instancePointer, double sampleRate);
+v3_plugin_view** dpf_plugin_view_create(v3_host_application** host, void* instancePointer, double sampleRate);
 
-v3_plugin_view** dpf_plugin_view_create(void* const instancePointer, const double sampleRate)
+v3_plugin_view** dpf_plugin_view_create(v3_host_application** const host,
+                                        void* const instancePointer,
+                                        const double sampleRate)
 {
     ScopedPointer<dpf_plugin_view>* const viewptr = new ScopedPointer<dpf_plugin_view>;
-    *viewptr = new dpf_plugin_view(viewptr, instancePointer, sampleRate);
+    *viewptr = new dpf_plugin_view(viewptr, host, instancePointer, sampleRate);
     return (v3_plugin_view**)static_cast<void*>(viewptr);
 }
 
