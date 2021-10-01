@@ -48,8 +48,8 @@
  * - hide parameter outputs?
  * - hide program parameter?
  * - deal with parameter triggers
- * - midi cc parameter mapping
- * - full MIDI1 encode and decode
+ * - MIDI program changes
+ * - append MIDI input events in a sorted way
  * - decode version number (0x010203 -> 1.2.3)
  * - bus arrangements
  * - optional audio buses, create dummy buffer of max_block_size length for them
@@ -130,7 +130,6 @@ const char* tuid2str(const v3_tuid iid)
         { V3_ID(0xF040B4B3,0xA36045EC,0xABCDC045,0xB4D5A2CC), "{v3_component_handler2|NOT}" },
         { V3_ID(0x7F4EFE59,0xF3204967,0xAC27A3AE,0xAFB63038), "{v3_edit_controller2|NOT}" },
         { V3_ID(0x067D02C1,0x5B4E274D,0xA92D90FD,0x6EAF7240), "{v3_component_handler_bus_activation|NOT}" },
-        { V3_ID(0xDF0FF9F7,0x49B74669,0xB63AB732,0x7ADBF5E5), "{v3_midi_mapping|NOT}" },
         { V3_ID(0xC1271208,0x70594098,0xB9DD34B3,0x6BB0195E), "{v3_edit_controller_host_editing|NOT}" },
         // units
         { V3_ID(0x8683B01F,0x7B354F70,0xA2651DEC,0x353AF4FF), "{v3_program_list_data|NOT}" },
@@ -164,6 +163,8 @@ const char* tuid2str(const v3_tuid iid)
         return "{v3_funknown}";
     if (v3_tuid_match(iid, v3_message_iid))
         return "{v3_message_iid}";
+    if (v3_tuid_match(iid, v3_midi_mapping_iid))
+        return "{v3_midi_mapping_iid}";
     if (v3_tuid_match(iid, v3_param_value_queue_iid))
         return "{v3_param_value_queue}";
     if (v3_tuid_match(iid, v3_param_changes_iid))
@@ -1189,12 +1190,12 @@ public:
                 case V3_EVENT_NOTE_OFF:
                 // case V3_EVENT_DATA:
                 case V3_EVENT_POLY_PRESSURE:
+                    break;
                 // case V3_EVENT_NOTE_EXP_VALUE:
                 // case V3_EVENT_NOTE_EXP_TEXT:
                 // case V3_EVENT_CHORD:
                 // case V3_EVENT_SCALE:
-                case V3_EVENT_LEGACY_MIDI_CC_OUT:
-                    break;
+                // case V3_EVENT_LEGACY_MIDI_CC_OUT:
                 default:
                     continue;
                 }
@@ -1226,14 +1227,6 @@ public:
                     midiEvent.data[2] = std::max(0, std::min(127, (int)(event.poly_pressure.pressure * 127)));
                     midiEvent.data[3] = 0;
                     break;
-                case V3_EVENT_LEGACY_MIDI_CC_OUT:
-                    midiEvent.size = 3;
-                    midiEvent.data[0] = 0xB0 | (event.midi_cc_out.channel & 0xf);
-                    midiEvent.data[1] = event.midi_cc_out.cc_number;
-                    midiEvent.data[2] = event.midi_cc_out.value;
-                    midiEvent.data[3] = 0;
-                    // midiEvent.data[3] = event.midi_cc_out.value2; // TODO check when size should be 4
-                    break;
                 default:
                     midiEvent.size = 0;
                     break;
@@ -1243,6 +1236,75 @@ public:
                     break;
             }
         }
+
+        // TODO append MIDI events in a sorted way
+        if (v3_param_changes** const inparamsptr = data->input_params)
+        {
+            v3_param_value_queue** queue;
+            int32_t offset;
+            double value;
+
+            for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
+            {
+                queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
+                DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+
+                v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
+                DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
+
+                // not supported yet
+                if (rindex >= fParameterOffset)
+                    continue;
+
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+                if (rindex == 0)
+                    continue;
+                --rindex;
+# endif
+
+                for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
+                {
+                    if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
+                        break;
+
+                    DISTRHO_SAFE_ASSERT_BREAK(offset < data->nframes);
+
+                    MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
+                    midiEvent.frame = offset;
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = (rindex / 130) & 0xf;
+
+                    switch (rindex)
+                    {
+                    case 128: // channel pressure
+                        midiEvent.data[0] |= 0xD0;
+                        midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
+                        midiEvent.data[2] = 0;
+                        midiEvent.data[3] = 0;
+                        break;
+                    case 129: // pitchbend
+                        midiEvent.data[0] |= 0xE0;
+                        midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
+                        midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
+                        midiEvent.data[3] = 0;
+                        break;
+                    default:
+                        midiEvent.data[0] |= 0xB0;
+                        midiEvent.data[1] = rindex % 130;
+                        midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
+                        midiEvent.data[3] = 0;
+                        break;
+                    }
+
+                    if (midiEventCount == kMaxMidiEvents)
+                        break;
+                }
+
+                if (midiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
+
 
         fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
 #else
@@ -2018,7 +2080,25 @@ private:
             event.midi_cc_out.channel = data[0] & 0xf;
             event.midi_cc_out.cc_number = data[1];
             event.midi_cc_out.value = data[2];
-            event.midi_cc_out.value2 = midiEvent.size == 4 ? data[3] : 0;
+            if (midiEvent.size == 4)
+                event.midi_cc_out.value2 = midiEvent.size == 4;
+            break;
+        /* TODO how do we deal with program changes??
+        case 0xC0:
+            break;
+        */
+        case 0xD0:
+            event.type = V3_EVENT_LEGACY_MIDI_CC_OUT;
+            event.midi_cc_out.channel = data[0] & 0xf;
+            event.midi_cc_out.cc_number = 128;
+            event.midi_cc_out.value = data[1];
+            break;
+        case 0xE0:
+            event.type = V3_EVENT_LEGACY_MIDI_CC_OUT;
+            event.midi_cc_out.channel = data[0] & 0xf;
+            event.midi_cc_out.cc_number = 129;
+            event.midi_cc_out.value = data[1];
+            event.midi_cc_out.value2 = data[2];
             break;
         default:
             return true;
@@ -2594,18 +2674,78 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 };
 #endif
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+// --------------------------------------------------------------------------------------------------------------------
+// dpf_midi_mapping
+
+struct dpf_midi_mapping : v3_midi_mapping_cpp {
+    ScopedPointer<PluginVst3>& vst3;
+
+    dpf_midi_mapping(ScopedPointer<PluginVst3>& v)
+        : vst3(v)
+    {
+        static const uint8_t* kSupportedInterfaces[] = {
+            v3_funknown_iid,
+            v3_midi_mapping_iid
+        };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_funknown
+
+        query_interface = []V3_API(void* self, const v3_tuid iid, void** iface) -> v3_result
+        {
+            d_stdout("dpf_midi_mapping::query_interface               => %p %s %p", self, tuid2str(iid), iface);
+            *iface = NULL;
+            DISTRHO_SAFE_ASSERT_RETURN(self != nullptr, V3_NO_INTERFACE);
+
+            for (const uint8_t* interface_iid : kSupportedInterfaces)
+            {
+                if (v3_tuid_match(interface_iid, iid))
+                {
+                    *iface = self;
+                    return V3_OK;
+                }
+            }
+
+            return V3_NO_INTERFACE;
+        };
+
+        // there is only a single instance of this, so we don't have to care here
+        ref = []V3_API(void*) -> uint32_t { return 1; };
+        unref = []V3_API(void*) -> uint32_t { return 0; };
+
+        // ------------------------------------------------------------------------------------------------------------
+        // v3_midi_mapping
+
+        map.get_midi_controller_assignment = []V3_API(void*, int32_t bus, int16_t channel, int16_t cc, v3_param_id* id) -> v3_result
+        {
+            DISTRHO_SAFE_ASSERT_INT_RETURN(bus == 0, bus, V3_FALSE);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(channel >= 0 && channel < 16, channel, V3_FALSE);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(cc >= 0 && cc < 130, cc, V3_FALSE);
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+            static constexpr const v3_param_id offset = 1;
+#else
+            static const constexpr v3_param_id offset = 0;
+#endif
+
+            *id = offset + channel * 130 + cc;
+            return V3_OK;
+        };
+    }
+};
+#endif
+
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_edit_controller
-
-struct v3_edit_controller_cpp : v3_funknown {
-    v3_plugin_base base;
-    v3_edit_controller controller;
-};
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
 #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
     ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    ScopedPointer<dpf_midi_mapping> midiMapping;
 #endif
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
@@ -2640,16 +2780,26 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 }
             }
 
-#if DISTRHO_PLUGIN_HAS_UI
             dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
             DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NO_INTERFACE);
 
+#if DISTRHO_PLUGIN_HAS_UI
             if (v3_tuid_match(v3_connection_point_iid, iid))
             {
                 if (controller->connectionComp == nullptr)
                     controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
                                                                               controller->vst3);
                 *iface = &controller->connectionComp;
+                return V3_OK;
+            }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            if (v3_tuid_match(v3_midi_mapping_iid, iid))
+            {
+                if (controller->midiMapping == nullptr)
+                    controller->midiMapping = new dpf_midi_mapping(controller->vst3);
+                *iface = &controller->midiMapping;
                 return V3_OK;
             }
 #endif

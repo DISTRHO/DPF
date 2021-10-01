@@ -42,10 +42,10 @@ enum {
 struct v3_component_handler {
 	struct v3_funknown;
 
-	v3_result (V3_API *begin_edit)(void* self, v3_param_id);
-	v3_result (V3_API *perform_edit)(void* self, v3_param_id, double value_normalised);
-	v3_result (V3_API *end_edit)(void* self, v3_param_id);
-	v3_result (V3_API *restart_component)(void* self, int32_t flags);
+	v3_result (V3_API* begin_edit)(void* self, v3_param_id);
+	v3_result (V3_API* perform_edit)(void* self, v3_param_id, double value_normalised);
+	v3_result (V3_API* end_edit)(void* self, v3_param_id);
+	v3_result (V3_API* restart_component)(void* self, int32_t flags);
 };
 
 static constexpr const v3_tuid v3_component_handler_iid =
@@ -79,25 +79,52 @@ struct v3_param_info {
 struct v3_edit_controller {
 	struct v3_plugin_base;
 
-	v3_result (V3_API *set_component_state)(void* self, struct v3_bstream*);
-	v3_result (V3_API *set_state)(void* self, struct v3_bstream*);
-	v3_result (V3_API *get_state)(void* self, struct v3_bstream*);
-	int32_t (V3_API *get_parameter_count)(void* self);
-	v3_result (V3_API *get_parameter_info)(void* self, int32_t param_idx, struct v3_param_info*);
-	v3_result (V3_API *get_parameter_string_for_value)(void* self, v3_param_id, double normalised, v3_str_128 output);
-	v3_result (V3_API *get_parameter_value_for_string)(void* self, v3_param_id, int16_t* input, double* output);
-	double (V3_API *normalised_parameter_to_plain)(void* self, v3_param_id, double normalised);
-	double (V3_API *plain_parameter_to_normalised)(void* self, v3_param_id, double plain);
-	double (V3_API *get_parameter_normalised)(void* self, v3_param_id);
-	v3_result (V3_API *set_parameter_normalised)(void* self, v3_param_id, double normalised);
-	v3_result (V3_API *set_component_handler)(void* self, struct v3_component_handler**);
-	struct v3_plugin_view** (V3_API *create_view)(void* self, const char* name);
+	v3_result (V3_API* set_component_state)(void* self, struct v3_bstream*);
+	v3_result (V3_API* set_state)(void* self, struct v3_bstream*);
+	v3_result (V3_API* get_state)(void* self, struct v3_bstream*);
+	int32_t (V3_API* get_parameter_count)(void* self);
+	v3_result (V3_API* get_parameter_info)(void* self, int32_t param_idx, struct v3_param_info*);
+	v3_result (V3_API* get_parameter_string_for_value)(void* self, v3_param_id, double normalised, v3_str_128 output);
+	v3_result (V3_API* get_parameter_value_for_string)(void* self, v3_param_id, int16_t* input, double* output);
+	double (V3_API* normalised_parameter_to_plain)(void* self, v3_param_id, double normalised);
+	double (V3_API* plain_parameter_to_normalised)(void* self, v3_param_id, double plain);
+	double (V3_API* get_parameter_normalised)(void* self, v3_param_id);
+	v3_result (V3_API* set_parameter_normalised)(void* self, v3_param_id, double normalised);
+	v3_result (V3_API* set_component_handler)(void* self, struct v3_component_handler**);
+	struct v3_plugin_view** (V3_API* create_view)(void* self, const char* name);
 };
 
 static constexpr const v3_tuid v3_edit_controller_iid =
 	V3_ID(0xDCD7BBE3, 0x7742448D, 0xA874AACC, 0x979C759E);
 
+/**
+ * midi mapping
+ */
+
+struct v3_midi_mapping {
+	struct v3_funknown;
+
+	v3_result (V3_API* get_midi_controller_assignment)(void* self, int32_t bus, int16_t channel, int16_t cc, v3_param_id* id);
+};
+
+static constexpr const v3_tuid v3_midi_mapping_iid =
+	V3_ID(0xDF0FF9F7, 0x49B74669, 0xB63AB732, 0x7ADBF5E5);
+
 #ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_edit_controller_cpp : v3_funknown {
+	v3_plugin_base base;
+	v3_edit_controller controller;
+};
+
+struct v3_midi_mapping_cpp : v3_funknown {
+	v3_midi_mapping map;
+};
+
 template<> inline
 constexpr v3_edit_controller* v3_cpp_obj(v3_edit_controller** obj)
 {
@@ -108,6 +135,7 @@ constexpr v3_edit_controller* v3_cpp_obj(v3_edit_controller** obj)
 	return static_cast<v3_edit_controller*>(
 		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*5));
 }
+
 #endif
 
 #include "align_pop.h"
