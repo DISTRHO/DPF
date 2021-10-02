@@ -101,3 +101,17 @@ struct v3_plugin_factory_3 {
 
 static constexpr const v3_tuid v3_plugin_factory_3_iid =
 	V3_ID(0x4555A2AB, 0xC1234E57, 0x9B122910, 0x36878931);
+
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_plugin_factory_cpp : v3_funknown {
+	v3_plugin_factory   v1;
+	v3_plugin_factory_2 v2;
+	v3_plugin_factory_3 v3;
+};
+
+#endif

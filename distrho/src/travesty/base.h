@@ -128,7 +128,7 @@ enum {
 	V3_INVALID_ARG,
 	V3_NOT_IMPLEMENTED,
 	V3_INTERNAL_ERR,
-	V3_NOT_INITIALISED,
+	V3_NOT_INITIALIZED,
 	V3_NOMEM
 };
 
@@ -154,6 +154,10 @@ enum {
 	((d) & 0x000000FF),        \
 }
 #endif // V3_COM_COMPAT
+
+#define V3_ID_COPY(iid) \
+	{ iid[0], iid[1], iid[ 2], iid[ 3], iid[ 4], iid[ 5], iid[ 6], iid[ 7], \
+	  iid[8], iid[9], iid[10], iid[11], iid[12], iid[13], iid[14], iid[15]  }
 
 /**
  * funknown

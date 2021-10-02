@@ -77,11 +77,11 @@ static constexpr const v3_tuid v3_connection_point_iid =
  */
 
 struct v3_attribute_list_cpp : v3_funknown {
-    v3_attribute_list attrlist;
+	v3_attribute_list attrlist;
 };
 
 struct v3_message_cpp : v3_funknown {
-    v3_message msg;
+	v3_message msg;
 };
 
 struct v3_connection_point_cpp : v3_funknown {

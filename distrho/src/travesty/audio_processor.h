@@ -238,4 +238,28 @@ struct v3_audio_processor {
 static constexpr const v3_tuid v3_audio_processor_iid =
 	V3_ID(0x42043F99, 0xB7DA453C, 0xA569E79D, 0x9AAEC33D);
 
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_param_value_queue_cpp : v3_funknown {
+	v3_param_value_queue queue;
+};
+
+struct v3_param_changes_cpp : v3_funknown {
+	v3_param_changes changes;
+};
+
+struct v3_process_context_requirements_cpp : v3_funknown {
+	v3_process_context_requirements req;
+};
+
+struct v3_audio_processor_cpp : v3_funknown {
+	v3_audio_processor proc;
+};
+
+#endif
+
 #include "align_pop.h"
