@@ -57,7 +57,6 @@ namespace std {
 #include <vector>
 
 /* TODO items:
- * - base component refcount handling
  * - parameter enumeration as lists
  * - hide parameter outputs?
  * - hide program parameter?
@@ -3074,9 +3073,9 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 
 struct dpf_component;
 
-std::vector<ScopedPointer<dpf_component>*> gComponentGarbage;
+std::vector<dpf_component**> gComponentGarbage;
 
-static v3_result handleUncleanComponent(ScopedPointer<dpf_component>* const componentptr)
+static v3_result handleUncleanComponent(dpf_component** const componentptr)
 {
     gComponentGarbage.push_back(componentptr);
     return V3_INVALID_ARG;
@@ -3087,7 +3086,6 @@ static v3_result handleUncleanComponent(ScopedPointer<dpf_component>* const comp
 
 struct dpf_component : v3_component_cpp {
     std::atomic_int refcounter;
-    ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
 #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
@@ -3097,9 +3095,8 @@ struct dpf_component : v3_component_cpp {
     v3_host_application** const hostContextFromFactory;
     v3_host_application** hostContextFromInitialize;
 
-    dpf_component(ScopedPointer<dpf_component>* const s, v3_host_application** const h)
+    dpf_component(v3_host_application** const h)
         : refcounter(1),
-          self(s),
           hostContextFromFactory(h),
           hostContextFromInitialize(nullptr)
     {
@@ -3208,7 +3205,7 @@ struct dpf_component : v3_component_cpp {
 
     static V3_API uint32_t unref_component(void* self)
     {
-        ScopedPointer<dpf_component>* const componentptr = (ScopedPointer<dpf_component>*)self;
+        dpf_component** const componentptr = (dpf_component**)self;
         dpf_component* const component = *componentptr;
 
         if (const int refcount = --component->refcounter)
@@ -3281,7 +3278,7 @@ struct dpf_component : v3_component_cpp {
         if (component->hostContextFromFactory != nullptr)
             v3_cpp_obj_unref(component->hostContextFromFactory);
 
-        *(component->self) = nullptr;
+        delete component;
         delete componentptr;
         return 0;
     }
@@ -3517,13 +3514,13 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
         d_stdout("DPF notice: cleaning up previously undeleted components now");
 
-        for (std::vector<ScopedPointer<dpf_component>*>::iterator it = gComponentGarbage.begin();
+        for (std::vector<dpf_component**>::iterator it = gComponentGarbage.begin();
             it != gComponentGarbage.end(); ++it)
         {
-            ScopedPointer<dpf_component>* const componentptr = *it;
+            dpf_component** const componentptr = *it;
             dpf_component* const component = *componentptr;
             component->cleanup();
-            *(component->self) = nullptr;
+            delete component;
             delete componentptr;
         }
 
@@ -3595,8 +3592,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static V3_API v3_result create_instance(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance)
     {
         d_stdout("dpf_factory::create_instance      => %p %s %s %p", self, tuid2str(class_id), tuid2str(iid), instance);
-        DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(v3_tuid*)&dpf_tuid_class) &&
-                                    v3_tuid_match(iid, v3_component_iid), V3_NO_INTERFACE);
+        DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) &&
+                                   v3_tuid_match(iid, v3_component_iid), V3_NO_INTERFACE);
 
         dpf_factory* const factory = *(dpf_factory**)self;
         DISTRHO_SAFE_ASSERT_RETURN(factory != nullptr, V3_NOT_INITIALIZED);
@@ -3606,9 +3603,9 @@ struct dpf_factory : v3_plugin_factory_cpp {
         if (factory->hostContext != nullptr)
             v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &host);
 
-        ScopedPointer<dpf_component>* const componentptr = new ScopedPointer<dpf_component>;
-        *componentptr = new dpf_component(componentptr, host);
-        *instance = componentptr;
+        dpf_component** const componentptr = new dpf_component*;
+        *componentptr = new dpf_component(host);
+        *instance = static_cast<void*>(componentptr);
         return V3_OK;
     }
 

@@ -810,7 +810,6 @@ static const char* const kSupportedPlatforms[] = {
 
 struct dpf_plugin_view : v3_plugin_view_cpp {
     std::atomic_int refcounter;
-    dpf_plugin_view** const self;
     ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<dpf_plugin_view_content_scale> scale;
 #ifdef DPF_VST3_USING_HOST_RUN_LOOP
@@ -823,9 +822,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     double sampleRate;
     v3_plugin_frame** frame;
 
-    dpf_plugin_view(dpf_plugin_view** const s, v3_host_application** const h, void* const instance, const double sr)
+    dpf_plugin_view(v3_host_application** const h, void* const instance, const double sr)
         : refcounter(1),
-          self(s),
           host(h),
           instancePointer(instance),
           sampleRate(sr),
@@ -916,8 +914,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         d_stdout("dpf_plugin_view::unref                   => %p | refcount is zero, deleting everything now!", self);
 
-        DISTRHO_SAFE_ASSERT_RETURN(viewptr == view->self, V3_INTERNAL_ERR);
-
         if (view->connection != nullptr && view->connection->other)
             v3_cpp_obj(view->connection->other)->disconnect(view->connection->other,
                                                             (v3_connection_point**)&view->connection);
@@ -984,7 +980,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                #endif
 
                 const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-                view->uivst3 = new UIVst3((v3_plugin_view**)view->self,
+                view->uivst3 = new UIVst3((v3_plugin_view**)self,
                                           view->host,
                                           (uintptr_t)parent,
                                           scaleFactor,
@@ -1107,8 +1103,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
-                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                          view->instancePointer, scaleFactor);
+                         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                         view->instancePointer, scaleFactor);
         rect->right = tmpUI.getWidth();
         rect->bottom = tmpUI.getHeight();
         return V3_OK;
@@ -1185,7 +1181,7 @@ v3_plugin_view** dpf_plugin_view_create(v3_host_application** const host,
                                         const double sampleRate)
 {
     dpf_plugin_view** const viewptr = new dpf_plugin_view*;
-    *viewptr = new dpf_plugin_view(viewptr, host, instancePointer, sampleRate);
+    *viewptr = new dpf_plugin_view(host, instancePointer, sampleRate);
     return (v3_plugin_view**)static_cast<void*>(viewptr);
 }
 
