@@ -379,8 +379,8 @@ public:
           fComponentHandler(nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
           fConnection(nullptr),
-#endif
           fHostContext(context),
+#endif
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr),
@@ -485,6 +485,11 @@ public:
             const String& dkey(fPlugin.getStateKey(i));
             fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
+#endif
+
+#if !DISTRHO_PLUGIN_HAS_UI
+        // unused
+        return; (void)context;
 #endif
     }
 
@@ -1896,8 +1901,8 @@ private:
     v3_component_handler** fComponentHandler;
 #if DISTRHO_PLUGIN_HAS_UI
     v3_connection_point** fConnection;
-#endif
     v3_host_application** const fHostContext;
+#endif
 
     // Temporary data
     const uint32_t fParameterOffset;
@@ -2187,67 +2192,29 @@ private:
  */
 
 // --------------------------------------------------------------------------------------------------------------------
-// v3_funknown for static and single instances of classes
+// v3_funknown for static instances
 
-template<const v3_tuid& v3_interface>
-static V3_API v3_result dpf_static__query_interface(void* self, const v3_tuid iid, void** iface)
-{
-    if (v3_tuid_match(iid, v3_funknown_iid))
-    {
-        *iface = self;
-        return V3_OK;
-    }
-
-    if (v3_tuid_match(iid, v3_interface))
-    {
-        *iface = self;
-        return V3_OK;
-    }
-
-    *iface = NULL;
-    return V3_NO_INTERFACE;
-}
-
-template<const v3_tuid& v3_interface1, const v3_tuid& v3_interface2, const v3_tuid& v3_interface3>
-static V3_API v3_result dpf_static__query_interface(void* self, const v3_tuid iid, void** iface)
-{
-    if (v3_tuid_match(iid, v3_funknown_iid))
-    {
-        *iface = self;
-        return V3_OK;
-    }
-
-    if (v3_tuid_match(iid, v3_interface1) || v3_tuid_match(iid, v3_interface2) || v3_tuid_match(iid, v3_interface3))
-    {
-        *iface = self;
-        return V3_OK;
-    }
-
-    *iface = NULL;
-    return V3_NO_INTERFACE;
-}
-
-static V3_API uint32_t dpf_static__ref(void*) { return 1; }
-static V3_API uint32_t dpf_static__unref(void*) { return 0; }
+static V3_API uint32_t dpf_static_ref(void*) { return 1; }
+static V3_API uint32_t dpf_static_unref(void*) { return 0; }
 
 // --------------------------------------------------------------------------------------------------------------------
-// v3_funknown with refcounter
+// v3_funknown for classes with a single instance
 
 template<class T>
-static V3_API uint32_t dpf_refcounter__ref(void* self)
+static V3_API uint32_t dpf_single_instance_ref(void* self)
 {
     return ++(*(T**)self)->refcounter;
 }
 
 template<class T>
-static V3_API uint32_t dpf_refcounter__unref(void* self)
+static V3_API uint32_t dpf_single_instance_unref(void* self)
 {
     return --(*(T**)self)->refcounter;
 }
 
 #if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_dsp_connection_point
+// dpf_connection_point
 
 enum ConnectionPointType {
     kConnectionPointComponent,
@@ -2255,7 +2222,7 @@ enum ConnectionPointType {
     kConnectionPointBridge
 };
 
-struct dpf_dsp_connection_point : v3_connection_point_cpp {
+struct dpf_connection_point : v3_connection_point_cpp {
     std::atomic_int refcounter;
     ScopedPointer<PluginVst3>& vst3;
     const ConnectionPointType type;
@@ -2263,7 +2230,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
     v3_connection_point** bridge; // when type is controller this points to ctrl<->view point
     bool shortcircuit; // plugin as controller, should pass directly to view
 
-    dpf_dsp_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
+    dpf_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
         : refcounter(1),
           vst3(v),
           type(t),
@@ -2271,12 +2238,10 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
           bridge(nullptr),
           shortcircuit(false)
     {
-        static constexpr const v3_tuid interface = V3_ID_COPY(v3_connection_point_iid);
-
         // v3_funknown, single instance
-        query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_refcounter__ref<dpf_dsp_connection_point>;
-        unref = dpf_refcounter__unref<dpf_dsp_connection_point>;
+        query_interface = query_interface_connection_point;
+        ref = dpf_single_instance_ref<dpf_connection_point>;
+        unref = dpf_single_instance_unref<dpf_connection_point>;
 
         // v3_connection_point
         point.connect = connect;
@@ -2285,12 +2250,33 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // v3_funknown
+
+    static V3_API v3_result query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
+    {
+        if (v3_tuid_match(iid, v3_funknown_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_connection_point_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        *iface = NULL;
+        return V3_NO_INTERFACE;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point
 
     static V3_API v3_result connect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_dsp_connection_point::connect         => %p %p", self, other);
-        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
+        d_stdout("dpf_connection_point::connect         => %p %p", self, other);
+        dpf_connection_point* const point = *(dpf_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(point->other == nullptr, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT(point->bridge == nullptr);
@@ -2306,8 +2292,8 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result disconnect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_dsp_connection_point::disconnect      => %p %p", self, other);
-        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
+        d_stdout("dpf_connection_point::disconnect      => %p %p", self, other);
+        dpf_connection_point* const point = *(dpf_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
 
@@ -2326,7 +2312,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result notify(void* self, v3_message** message)
     {
-        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
+        dpf_connection_point* const point = *(dpf_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
 
         PluginVst3* const vst3 = point->vst3;
@@ -2409,15 +2395,34 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 struct dpf_midi_mapping : v3_midi_mapping_cpp {
     dpf_midi_mapping()
     {
-        static constexpr const v3_tuid interface = V3_ID_COPY(v3_midi_mapping_iid);
-
-        // v3_funknown, used statically
-        query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        // v3_funknown, static
+        query_interface = query_interface_midi_mapping;
+        ref = dpf_static_ref;
+        unref = dpf_static_unref;
 
         // v3_midi_mapping
         map.get_midi_controller_assignment = get_midi_controller_assignment;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_funknown
+
+    static V3_API v3_result query_interface_midi_mapping(void* self, const v3_tuid iid, void** iface)
+    {
+        if (v3_tuid_match(iid, v3_funknown_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_midi_mapping_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        *iface = NULL;
+        return V3_NO_INTERFACE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2436,7 +2441,7 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 # endif
 
         *id = offset + channel * 130 + cc;
-        return V3_OK;
+        return V3_TRUE;
     }
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
@@ -2449,8 +2454,8 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic_int refcounter;
 #if DISTRHO_PLUGIN_HAS_UI
-    ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
-    ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
+    ScopedPointer<dpf_connection_point> connectionComp;   // kConnectionPointController
+    ScopedPointer<dpf_connection_point> connectionBridge; // kConnectionPointBridge
 #endif
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
@@ -2467,10 +2472,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
           originalHostContext(h),
           hostContext(nullptr)
     {
-        // v3_funknown, single instance with custom query
+        // v3_funknown, single instance
         query_interface = query_interface_edit_controller;
-        ref = dpf_refcounter__ref<dpf_edit_controller>;
-        unref = dpf_refcounter__unref<dpf_edit_controller>;
+        ref = dpf_single_instance_ref<dpf_edit_controller>;
+        unref = dpf_single_instance_unref<dpf_edit_controller>;
 
         // v3_plugin_base
         base.initialize = initialize;
@@ -2522,7 +2527,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             if (controller->connectionComp == nullptr)
-                controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
+                controller->connectionComp = new dpf_connection_point(kConnectionPointController,
                                                                           controller->vst3);
             else
                 ++controller->connectionComp->refcounter;
@@ -2780,7 +2785,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // otherwise short-circuit and deal with this ourselves (assume local usage)
         else
         {
-            controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
+            controller->connectionComp = new dpf_connection_point(kConnectionPointController,
                                                                       controller->vst3);
             controller->connectionComp->shortcircuit = true;
         }
@@ -2809,7 +2814,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             }
             else
             {
-                controller->connectionBridge = new dpf_dsp_connection_point(kConnectionPointBridge,
+                controller->connectionBridge = new dpf_connection_point(kConnectionPointBridge,
                                                                             controller->vst3);
 
                 v3_connection_point** const bridgeconn = (v3_connection_point**)&controller->connectionBridge;
@@ -2834,15 +2839,34 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
     dpf_process_context_requirements()
     {
-        static constexpr const v3_tuid interface = V3_ID_COPY(v3_process_context_requirements_iid);
-
-        // v3_funknown, used statically
-        query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        // v3_funknown, static
+        query_interface = query_interface_process_context_requirements;
+        ref = dpf_static_ref;
+        unref = dpf_static_unref;
 
         // v3_process_context_requirements
         req.get_process_context_requirements = get_process_context_requirements;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_funknown
+
+    static V3_API v3_result query_interface_process_context_requirements(void* self, const v3_tuid iid, void** iface)
+    {
+        if (v3_tuid_match(iid, v3_funknown_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_process_context_requirements_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        *iface = NULL;
+        return V3_NO_INTERFACE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2876,10 +2900,10 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         : refcounter(1),
           vst3(v)
     {
-        // v3_funknown, single instance with custom query
-        query_interface = query_interface_with_proc_ctx_reqs;
-        ref = dpf_refcounter__ref<dpf_audio_processor>;
-        unref = dpf_refcounter__unref<dpf_audio_processor>;
+        // v3_funknown, single instance
+        query_interface = query_interface_audio_processor;
+        ref = dpf_single_instance_ref<dpf_audio_processor>;
+        unref = dpf_single_instance_unref<dpf_audio_processor>;
 
         // v3_audio_processor
         proc.set_bus_arrangements = set_bus_arrangements;
@@ -2895,12 +2919,19 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_with_proc_ctx_reqs(void* self, const v3_tuid iid, void** iface)
+    static V3_API v3_result query_interface_audio_processor(void* self, const v3_tuid iid, void** iface)
     {
-        static constexpr const v3_tuid interface = V3_ID_COPY(v3_audio_processor_iid);
-
-        if (dpf_static__query_interface<interface>(self, iid, iface) == V3_OK)
+        if (v3_tuid_match(iid, v3_funknown_iid))
+        {
+            *iface = self;
             return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_audio_processor_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
 
         if (v3_tuid_match(iid, v3_process_context_requirements_iid))
         {
@@ -3036,7 +3067,7 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
 #if DISTRHO_PLUGIN_HAS_UI
-    ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
+    ScopedPointer<dpf_connection_point> connection; // kConnectionPointComponent
 #endif
     ScopedPointer<dpf_edit_controller> controller;
     ScopedPointer<PluginVst3> vst3;
@@ -3108,7 +3139,7 @@ struct dpf_component : v3_component_cpp {
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             if (component->connection == nullptr)
-                component->connection = new dpf_dsp_connection_point(kConnectionPointComponent,
+                component->connection = new dpf_connection_point(kConnectionPointComponent,
                                                                       component->vst3);
             else
                 ++component->connection->refcounter;
@@ -3164,7 +3195,7 @@ struct dpf_component : v3_component_cpp {
         }
 
 #if DISTRHO_PLUGIN_HAS_UI
-        if (dpf_dsp_connection_point* const conn = component->connection)
+        if (dpf_connection_point* const conn = component->connection)
         {
             if (const int refcount = conn->refcounter)
             {
@@ -3183,7 +3214,7 @@ struct dpf_component : v3_component_cpp {
             }
 
 #if DISTRHO_PLUGIN_HAS_UI
-            if (dpf_dsp_connection_point* const comp = ctrl->connectionComp)
+            if (dpf_connection_point* const comp = ctrl->connectionComp)
             {
                 if (const int refcount = comp->refcounter)
                 {
@@ -3192,7 +3223,7 @@ struct dpf_component : v3_component_cpp {
                 }
             }
 
-            if (dpf_dsp_connection_point* const bridge = ctrl->connectionBridge)
+            if (dpf_connection_point* const bridge = ctrl->connectionBridge)
             {
                 if (const int refcount = bridge->refcounter)
                 {
@@ -3406,17 +3437,13 @@ struct dpf_factory : v3_plugin_factory_cpp {
     dpf_factory()
       : hostContext(nullptr)
     {
-        static constexpr const v3_tuid interface_v1 = V3_ID_COPY(v3_plugin_factory_iid);
-        static constexpr const v3_tuid interface_v2 = V3_ID_COPY(v3_plugin_factory_2_iid);
-        static constexpr const v3_tuid interface_v3 = V3_ID_COPY(v3_plugin_factory_3_iid);
-
         dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
             = dpf_tuid_processor[2] = dpf_tuid_view[2] = getPluginInfo().getUniqueId();
 
-        // v3_funknown, used statically
-        query_interface = dpf_static__query_interface<interface_v1, interface_v2, interface_v3>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        // v3_funknown, static
+        query_interface = query_interface_factory;
+        ref = dpf_static_ref;
+        unref = dpf_static_unref;
 
         // v3_plugin_factory
         v1.get_factory_info = get_factory_info;
@@ -3454,6 +3481,39 @@ struct dpf_factory : v3_plugin_factory_cpp {
         }
 
         gComponentGarbage.clear();
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // v3_funknown
+
+    static V3_API v3_result query_interface_factory(void* self, const v3_tuid iid, void** iface)
+    {
+        if (v3_tuid_match(iid, v3_funknown_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_plugin_factory_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_plugin_factory_2_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        if (v3_tuid_match(iid, v3_plugin_factory_3_iid))
+        {
+            *iface = self;
+            return V3_OK;
+        }
+
+        *iface = NULL;
+        return V3_NO_INTERFACE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------

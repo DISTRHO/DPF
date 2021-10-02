@@ -21,6 +21,8 @@ START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
 
+static constexpr const float kMaxHoldTime = 1.0f;
+
 /**
   Simple plugin to demonstrate how to modify input/output port type in DPF.
   The plugin outputs sample & hold (S&H) value of input signal.
@@ -28,8 +30,6 @@ START_NAMESPACE_DISTRHO
  */
 class ExamplePluginCVPort : public Plugin
 {
-    static constexpr const float kMaxHoldTime = 1.0f;
-
 public:
     ExamplePluginCVPort()
         : Plugin(1, 0, 0), // 1 parameters, 0 programs, 0 states
