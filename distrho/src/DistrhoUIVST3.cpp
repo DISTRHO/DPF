@@ -584,22 +584,22 @@ static V3_API uint32_t dpf_single_instance_unref(void* self)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_connection_point
+// dpf_ui_connection_point
 
-struct dpf_connection_point : v3_connection_point_cpp {
+struct dpf_ui_connection_point : v3_connection_point_cpp {
     std::atomic_int refcounter;
     ScopedPointer<UIVst3>& uivst3;
     v3_connection_point** other;
 
-    dpf_connection_point(ScopedPointer<UIVst3>& v)
+    dpf_ui_connection_point(ScopedPointer<UIVst3>& v)
         : refcounter(1),
           uivst3(v),
           other(nullptr)
     {
         // v3_funknown, single instance
         query_interface = query_interface_connection_point;
-        ref = dpf_single_instance_ref<dpf_connection_point>;
-        unref = dpf_single_instance_unref<dpf_connection_point>;
+        ref = dpf_single_instance_ref<dpf_ui_connection_point>;
+        unref = dpf_single_instance_unref<dpf_ui_connection_point>;
 
         // v3_connection_point
         point.connect = connect;
@@ -612,6 +612,8 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
     {
+        d_stdout("UI|query_interface_connection_point => %p", self);
+
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
             *iface = self;
@@ -633,8 +635,8 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result connect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_connection_point::connect         => %p %p", self, other);
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        d_stdout("UI|dpf_ui_connection_point::connect         => %p %p", self, other);
+        dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(point->other == nullptr, V3_INVALID_ARG);
 
@@ -648,8 +650,8 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result disconnect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_connection_point::disconnect      => %p %p", self, other);
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        d_stdout("UI|dpf_ui_connection_point::disconnect      => %p %p", self, other);
+        dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
 
@@ -663,7 +665,7 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result notify(void* self, v3_message** message)
     {
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
 
         UIVst3* const uivst3 = point->uivst3;
@@ -809,7 +811,7 @@ static const char* const kSupportedPlatforms[] = {
 struct dpf_plugin_view : v3_plugin_view_cpp {
     std::atomic_int refcounter;
     dpf_plugin_view** const self;
-    ScopedPointer<dpf_connection_point> connection;
+    ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<dpf_plugin_view_content_scale> scale;
 #ifdef DPF_VST3_USING_HOST_RUN_LOOP
     ScopedPointer<dpf_timer_handler> timer;
@@ -876,7 +878,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (v3_tuid_match(v3_connection_point_iid, iid))
         {
             if (view->connection == nullptr)
-                view->connection = new dpf_connection_point(view->uivst3);
+                view->connection = new dpf_ui_connection_point(view->uivst3);
             else
                 ++view->connection->refcounter;
             *iface = &view->connection;
@@ -920,7 +922,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             v3_cpp_obj(view->connection->other)->disconnect(view->connection->other,
                                                             (v3_connection_point**)&view->connection);
 
-        if (dpf_connection_point* const conn = view->connection)
+        if (dpf_ui_connection_point* const conn = view->connection)
         {
             if (const int refcount = conn->refcounter)
             {
@@ -989,7 +991,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                                           view->sampleRate,
                                           view->instancePointer);
 
-                if (dpf_connection_point* const point = view->connection)
+                if (dpf_ui_connection_point* const point = view->connection)
                     if (point->other != nullptr)
                         view->uivst3->connect(point->other);
 

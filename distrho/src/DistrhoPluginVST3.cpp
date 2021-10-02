@@ -893,7 +893,7 @@ public:
                             if (fPlugin.getParameterSymbol(j) != key)
                                 continue;
 
-                            const float fvalue = fParameterValues[i] = std::atof(value.buffer());
+                            const float fvalue = fParameterValues[j] = std::atof(value.buffer());
                             fPlugin.setParameterValue(j, fvalue);
 #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
@@ -2214,7 +2214,7 @@ static V3_API uint32_t dpf_single_instance_unref(void* self)
 
 #if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_connection_point
+// dpf_dsp_connection_point
 
 enum ConnectionPointType {
     kConnectionPointComponent,
@@ -2222,7 +2222,22 @@ enum ConnectionPointType {
     kConnectionPointBridge
 };
 
-struct dpf_connection_point : v3_connection_point_cpp {
+static const char* ConnectionPointType2str(const ConnectionPointType type)
+{
+    switch (type)
+    {
+    case kConnectionPointComponent:
+        return "kConnectionPointComponent";
+    case kConnectionPointController:
+        return "kConnectionPointController";
+    case kConnectionPointBridge:
+        return "kConnectionPointBridge";
+    }
+
+    return "[unknown]";
+}
+
+struct dpf_dsp_connection_point : v3_connection_point_cpp {
     std::atomic_int refcounter;
     ScopedPointer<PluginVst3>& vst3;
     const ConnectionPointType type;
@@ -2230,7 +2245,7 @@ struct dpf_connection_point : v3_connection_point_cpp {
     v3_connection_point** bridge; // when type is controller this points to ctrl<->view point
     bool shortcircuit; // plugin as controller, should pass directly to view
 
-    dpf_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
+    dpf_dsp_connection_point(const ConnectionPointType t, ScopedPointer<PluginVst3>& v)
         : refcounter(1),
           vst3(v),
           type(t),
@@ -2240,8 +2255,8 @@ struct dpf_connection_point : v3_connection_point_cpp {
     {
         // v3_funknown, single instance
         query_interface = query_interface_connection_point;
-        ref = dpf_single_instance_ref<dpf_connection_point>;
-        unref = dpf_single_instance_unref<dpf_connection_point>;
+        ref = dpf_single_instance_ref<dpf_dsp_connection_point>;
+        unref = dpf_single_instance_unref<dpf_dsp_connection_point>;
 
         // v3_connection_point
         point.connect = connect;
@@ -2275,9 +2290,10 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result connect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_connection_point::connect         => %p %p", self, other);
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
+        d_stdout("DSP|dpf_dsp_connection_point::connect    => %p %p | %d:%s %d",
+                 self, other, point->type, ConnectionPointType2str(point->type), point->shortcircuit);
         DISTRHO_SAFE_ASSERT_RETURN(point->other == nullptr, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT(point->bridge == nullptr);
 
@@ -2292,9 +2308,10 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result disconnect(void* self, v3_connection_point** other)
     {
-        d_stdout("dpf_connection_point::disconnect      => %p %p", self, other);
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
+        d_stdout("DSP|dpf_dsp_connection_point::disconnect => %p %p | %d:%s %d",
+                 self, other, point->type, ConnectionPointType2str(point->type), point->shortcircuit);
         DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
 
         if (point->type == kConnectionPointComponent)
@@ -2312,7 +2329,7 @@ struct dpf_connection_point : v3_connection_point_cpp {
 
     static V3_API v3_result notify(void* self, v3_message** message)
     {
-        dpf_connection_point* const point = *(dpf_connection_point**)self;
+        dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
 
         PluginVst3* const vst3 = point->vst3;
@@ -2454,8 +2471,8 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic_int refcounter;
 #if DISTRHO_PLUGIN_HAS_UI
-    ScopedPointer<dpf_connection_point> connectionComp;   // kConnectionPointController
-    ScopedPointer<dpf_connection_point> connectionBridge; // kConnectionPointBridge
+    ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
+    ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
 #endif
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
@@ -2527,7 +2544,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             if (controller->connectionComp == nullptr)
-                controller->connectionComp = new dpf_connection_point(kConnectionPointController,
+                controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
                                                                           controller->vst3);
             else
                 ++controller->connectionComp->refcounter;
@@ -2785,7 +2802,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // otherwise short-circuit and deal with this ourselves (assume local usage)
         else
         {
-            controller->connectionComp = new dpf_connection_point(kConnectionPointController,
+            controller->connectionComp = new dpf_dsp_connection_point(kConnectionPointController,
                                                                       controller->vst3);
             controller->connectionComp->shortcircuit = true;
         }
@@ -2814,8 +2831,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             }
             else
             {
-                controller->connectionBridge = new dpf_connection_point(kConnectionPointBridge,
-                                                                            controller->vst3);
+                controller->connectionBridge = new dpf_dsp_connection_point(kConnectionPointBridge,
+                                                                        controller->vst3);
 
                 v3_connection_point** const bridgeconn = (v3_connection_point**)&controller->connectionBridge;
                 v3_cpp_obj(uiconn)->connect(uiconn, bridgeconn);
@@ -3067,7 +3084,7 @@ struct dpf_component : v3_component_cpp {
     ScopedPointer<dpf_component>* self;
     ScopedPointer<dpf_audio_processor> processor;
 #if DISTRHO_PLUGIN_HAS_UI
-    ScopedPointer<dpf_connection_point> connection; // kConnectionPointComponent
+    ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
 #endif
     ScopedPointer<dpf_edit_controller> controller;
     ScopedPointer<PluginVst3> vst3;
@@ -3139,7 +3156,7 @@ struct dpf_component : v3_component_cpp {
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             if (component->connection == nullptr)
-                component->connection = new dpf_connection_point(kConnectionPointComponent,
+                component->connection = new dpf_dsp_connection_point(kConnectionPointComponent,
                                                                       component->vst3);
             else
                 ++component->connection->refcounter;
@@ -3195,7 +3212,7 @@ struct dpf_component : v3_component_cpp {
         }
 
 #if DISTRHO_PLUGIN_HAS_UI
-        if (dpf_connection_point* const conn = component->connection)
+        if (dpf_dsp_connection_point* const conn = component->connection)
         {
             if (const int refcount = conn->refcounter)
             {
@@ -3214,7 +3231,7 @@ struct dpf_component : v3_component_cpp {
             }
 
 #if DISTRHO_PLUGIN_HAS_UI
-            if (dpf_connection_point* const comp = ctrl->connectionComp)
+            if (dpf_dsp_connection_point* const comp = ctrl->connectionComp)
             {
                 if (const int refcount = comp->refcounter)
                 {
@@ -3223,7 +3240,7 @@ struct dpf_component : v3_component_cpp {
                 }
             }
 
-            if (dpf_connection_point* const bridge = ctrl->connectionBridge)
+            if (dpf_dsp_connection_point* const bridge = ctrl->connectionBridge)
             {
                 if (const int refcount = bridge->refcounter)
                 {
