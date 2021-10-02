@@ -1032,6 +1032,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             {
                 v3_cpp_obj(runloop)->unregister_timer(runloop, (v3_timer_handler**)&view->timer);
 
+                // we query it 2 times in total, so lets unref 2 times as well
+                v3_cpp_obj_unref(runloop);
+                v3_cpp_obj_unref(runloop);
+
                 if (const int refcount = --view->timer->refcounter)
                 {
                     view->timer->valid = false;

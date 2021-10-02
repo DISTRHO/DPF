@@ -345,7 +345,7 @@ v3_plugin_view** dpf_plugin_view_create(v3_host_application** host, void* instan
  * VST3 DSP class.
  *
  * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
- * The DSP is created during the "initialise" component event, and destroyed during "terminate".
+ * The DSP is created during the "initialize" component event, and destroyed during "terminate".
  *
  * The low-level VST3 stuff comes after.
  */
@@ -2478,16 +2478,16 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     bool initialized;
     // cached values
     v3_component_handler** handler;
-    v3_host_application** const originalHostContext;
-    v3_plugin_base::v3_funknown** hostContext;
+    v3_host_application** const hostContextFromFactory;
+    v3_host_application** hostContextFromInitialize;
 
     dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const h)
         : refcounter(1),
           vst3(v),
           initialized(false),
           handler(nullptr),
-          originalHostContext(h),
-          hostContext(nullptr)
+          hostContextFromFactory(h),
+          hostContextFromInitialize(nullptr)
     {
         // v3_funknown, single instance
         query_interface = query_interface_edit_controller;
@@ -2579,8 +2579,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         const bool initialized = controller->initialized;
         DISTRHO_SAFE_ASSERT_RETURN(! initialized, V3_INVALID_ARG);
 
+        // query for host context
+        v3_host_application** host = nullptr;
+        v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
+
+        // save it for later so we can unref it
+        controller->hostContextFromInitialize = host;
+
         controller->initialized = true;
-        controller->hostContext = context;
         return V3_OK;
     }
 
@@ -2594,7 +2600,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(initialized, V3_INVALID_ARG);
 
         controller->initialized = false;
-        controller->hostContext = nullptr;
 
 #if DISTRHO_PLUGIN_HAS_UI
         // take the chance to do some cleanup if possible (we created the bridge, we need to destroy it)
@@ -2606,6 +2611,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             if (controller->connectionComp->refcounter == 1)
                 controller->connectionComp = nullptr;
 #endif
+
+        if (controller->hostContextFromInitialize != nullptr)
+        {
+            v3_cpp_obj_unref(controller->hostContextFromInitialize);
+            controller->hostContextFromInitialize = nullptr;
+        }
 
         return V3_OK;
     }
@@ -2783,15 +2794,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
-        // we require host context for message creation
-        v3_host_application** host = nullptr;
-
-        if (controller->hostContext != nullptr)
-            v3_cpp_obj_query_interface(controller->hostContext, v3_host_application_iid, &host);
-
-        if (host == nullptr)
-            host = controller->originalHostContext;
-
+        // we require a host context for message creation
+        v3_host_application** host = controller->hostContextFromInitialize != nullptr
+                                   ? controller->hostContextFromInitialize
+                                   : controller->hostContextFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
         // if there is a component connection, we require it to be active
@@ -3088,12 +3094,14 @@ struct dpf_component : v3_component_cpp {
 #endif
     ScopedPointer<dpf_edit_controller> controller;
     ScopedPointer<PluginVst3> vst3;
-    v3_host_application** const hostContext;
+    v3_host_application** const hostContextFromFactory;
+    v3_host_application** hostContextFromInitialize;
 
     dpf_component(ScopedPointer<dpf_component>* const s, v3_host_application** const h)
         : refcounter(1),
           self(s),
-          hostContext(h)
+          hostContextFromFactory(h),
+          hostContextFromInitialize(nullptr)
     {
         // v3_funknown, everything custom
         query_interface = query_interface_component;
@@ -3114,6 +3122,19 @@ struct dpf_component : v3_component_cpp {
         comp.set_active = set_active;
         comp.set_state = set_state;
         comp.get_state = get_state;
+    }
+
+    void cleanup()
+    {
+        vst3 = nullptr;
+        processor = nullptr;
+#if DISTRHO_PLUGIN_HAS_UI
+        connection = nullptr;
+#endif
+        controller = nullptr;
+
+        if (hostContextFromFactory != nullptr)
+            v3_cpp_obj_unref(hostContextFromFactory);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -3157,7 +3178,7 @@ struct dpf_component : v3_component_cpp {
         {
             if (component->connection == nullptr)
                 component->connection = new dpf_dsp_connection_point(kConnectionPointComponent,
-                                                                      component->vst3);
+                                                                     component->vst3);
             else
                 ++component->connection->refcounter;
             *iface = &component->connection;
@@ -3168,7 +3189,8 @@ struct dpf_component : v3_component_cpp {
         if (v3_tuid_match(iid, v3_edit_controller_iid))
         {
             if (component->controller == nullptr)
-                component->controller = new dpf_edit_controller(component->vst3, component->hostContext);
+                component->controller = new dpf_edit_controller(component->vst3,
+                                                                component->hostContextFromFactory);
             else
                 ++component->controller->refcounter;
             *iface = &component->controller;
@@ -3255,6 +3277,10 @@ struct dpf_component : v3_component_cpp {
             return handleUncleanComponent(componentptr);
 
         d_stdout("dpf_component::unref                   => %p | refcount is zero, deleting everything now!", self);
+
+        if (component->hostContextFromFactory != nullptr)
+            v3_cpp_obj_unref(component->hostContextFromFactory);
+
         *(component->self) = nullptr;
         delete componentptr;
         return 0;
@@ -3268,11 +3294,19 @@ struct dpf_component : v3_component_cpp {
         d_stdout("dpf_component::initialize              => %p %p", self, context);
         dpf_component* const component = *(dpf_component**)self;
         DISTRHO_SAFE_ASSERT_RETURN(component != nullptr, V3_NOT_INITIALIZED);
+        DISTRHO_SAFE_ASSERT_RETURN(component->vst3 == nullptr, V3_INVALID_ARG);
 
-        PluginVst3* const vst3 = component->vst3;
-        DISTRHO_SAFE_ASSERT_RETURN(vst3 == nullptr, V3_INVALID_ARG);
+        // query for host context
+        v3_host_application** host = nullptr;
+        if (context != nullptr)
+            v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
 
-        d_lastCanRequestParameterValueChanges = true;
+        // save it for later so we can unref it
+        component->hostContextFromInitialize = host;
+
+        // provide the factory context to the plugin if this new one is invalid
+        if (host == nullptr)
+            host = component->hostContextFromFactory;
 
         // default early values
         if (d_lastBufferSize == 0)
@@ -3280,12 +3314,7 @@ struct dpf_component : v3_component_cpp {
         if (d_lastSampleRate <= 0.0)
             d_lastSampleRate = 44100.0;
 
-        // query for host context
-        v3_host_application** host = nullptr;
-        v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
-
-        if (host == nullptr)
-            host = component->hostContext;
+        d_lastCanRequestParameterValueChanges = true;
 
         component->vst3 = new PluginVst3(host);
         return V3_OK;
@@ -3296,11 +3325,16 @@ struct dpf_component : v3_component_cpp {
         d_stdout("dpf_component::terminate               => %p", self);
         dpf_component* const component = *(dpf_component**)self;
         DISTRHO_SAFE_ASSERT_RETURN(component != nullptr, V3_NOT_INITIALIZED);
-
-        PluginVst3* const vst3 = component->vst3;
-        DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(component->vst3 != nullptr, V3_INVALID_ARG);
 
         component->vst3 = nullptr;
+
+        if (component->hostContextFromInitialize != nullptr)
+        {
+            v3_cpp_obj_unref(component->hostContextFromInitialize);
+            component->hostContextFromInitialize = nullptr;
+        }
+
         return V3_OK;
     }
 
@@ -3488,11 +3522,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         {
             ScopedPointer<dpf_component>* const componentptr = *it;
             dpf_component* const component = *componentptr;
-#if DISTRHO_PLUGIN_HAS_UI
-            component->connection = nullptr;
-#endif
-            component->processor = nullptr;
-            component->controller = nullptr;
+            component->cleanup();
             *(component->self) = nullptr;
             delete componentptr;
         }
