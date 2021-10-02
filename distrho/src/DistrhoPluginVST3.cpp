@@ -2889,7 +2889,7 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_process_context_requirements
 
-    static uint32_t get_process_context_requirements(void*)
+    static V3_API uint32_t get_process_context_requirements(void*)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         return 0x0
