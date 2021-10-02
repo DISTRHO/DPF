@@ -61,10 +61,10 @@ namespace std {
  * - hide parameter outputs?
  * - hide program parameter?
  * - deal with parameter triggers
+ * - MIDI CC changes (need to store value to give to the host?)
  * - MIDI program changes
  * - MIDI sysex
  * - append MIDI input events in a sorted way
- * - decode version number (0x010203 -> 1.2.3)
  * - bus arrangements
  * - optional audio buses, create dummy buffer of max_block_size length for them
  * - routing info, do we care?
@@ -292,12 +292,6 @@ static inline
 void snprintf_f32_utf16(int16_t* const dst, const float value, const size_t size)
 {
     return snprintf_utf16_t<float>(dst, value, "%f", size);
-}
-
-static inline
-void snprintf_u32_utf16(int16_t* const dst, const uint32_t value, const size_t size)
-{
-    return snprintf_utf16_t<uint32_t>(dst, value, "%u", size);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -3493,6 +3487,26 @@ static const char* getPluginCategories()
     return categories.buffer();
 }
 
+static const char* getPluginVersion()
+{
+    static String version;
+
+    if (version.isEmpty())
+    {
+        const uint32_t versionNum = getPluginInfo().getVersion();
+
+        char versionBuf[64];
+        snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
+                 (versionNum >> 16) & 0xff,
+                 (versionNum >>  8) & 0xff,
+                 (versionNum >>  0) & 0xff);
+        versionBuf[sizeof(versionBuf)-1] = '\0';
+        version = versionBuf;
+    }
+
+    return version.buffer();
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_factory
 
@@ -3641,10 +3655,14 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
 
+#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         info->class_flags = 0;
+#else
+        info->class_flags = V3_DISTRIBUTABLE;
+#endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
-        DISTRHO_NAMESPACE::snprintf_u32(info->version, getPluginInfo().getVersion(), ARRAY_SIZE(info->version)); // FIXME
+        DISTRHO_NAMESPACE::strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version));
         return V3_OK;
     }
@@ -3668,8 +3686,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         info->class_flags = V3_DISTRIBUTABLE;
 #endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
-        DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, getPluginInfo().getMaker(), sizeof(info->vendor));
-        DISTRHO_NAMESPACE::snprintf_u32_utf16(info->version, getPluginInfo().getVersion(), ARRAY_SIZE(info->version)); // FIXME
+        DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
+        DISTRHO_NAMESPACE::strncpy_utf16(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version));
         return V3_OK;
     }
