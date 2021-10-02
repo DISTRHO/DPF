@@ -30,6 +30,7 @@ namespace std {
         explicit atomic_int(volatile int v) noexcept : value(v) {}
         int operator++() volatile noexcept { return __atomic_add_fetch(&value, 1, __ATOMIC_RELAXED); }
         int operator--() volatile noexcept { return __atomic_sub_fetch(&value, 1, __ATOMIC_RELAXED); }
+        operator int() volatile noexcept { return __atomic_load_n(&value, __ATOMIC_RELAXED); }
     };
 };
 #endif
@@ -593,22 +594,39 @@ static V3_API uint32_t dpf_static__ref(void*) { return 1; }
 static V3_API uint32_t dpf_static__unref(void*) { return 0; }
 
 // --------------------------------------------------------------------------------------------------------------------
+// v3_funknown with refcounter
+
+template<class T>
+static V3_API uint32_t dpf_refcounter__ref(void* self)
+{
+    return ++(*(T**)self)->refcounter;
+}
+
+template<class T>
+static V3_API uint32_t dpf_refcounter__unref(void* self)
+{
+    return --(*(T**)self)->refcounter;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // dpf_ui_connection_point
 
 struct dpf_ui_connection_point : v3_connection_point_cpp {
+    std::atomic_int refcounter;
     ScopedPointer<UIVst3>& uivst3;
     v3_connection_point** other;
 
     dpf_ui_connection_point(ScopedPointer<UIVst3>& v)
-        : uivst3(v),
+        : refcounter(1),
+          uivst3(v),
           other(nullptr)
     {
         static constexpr const v3_tuid interface = V3_ID_COPY(v3_connection_point_iid);
 
         // v3_funknown, single instance
         query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        ref = dpf_refcounter__ref<dpf_ui_connection_point>;
+        unref = dpf_refcounter__unref<dpf_ui_connection_point>;
 
         // v3_connection_point
         point.connect = connect;
@@ -665,20 +683,22 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
 // dpf_plugin_view_content_scale
 
 struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
+    std::atomic_int refcounter;
     ScopedPointer<UIVst3>& uivst3;
     // cached values
     float scaleFactor;
 
     dpf_plugin_view_content_scale(ScopedPointer<UIVst3>& v)
-        : uivst3(v),
+        : refcounter(1),
+          uivst3(v),
           scaleFactor(0.0f)
     {
         static constexpr const v3_tuid interface = V3_ID_COPY(v3_plugin_view_content_scale_iid);
 
         // v3_funknown, single instance
         query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        ref = dpf_refcounter__ref<dpf_plugin_view_content_scale>;
+        unref = dpf_refcounter__unref<dpf_plugin_view_content_scale>;
 
         // v3_plugin_view_content_scale
         scale.set_content_scale_factor = set_content_scale_factor;
@@ -751,7 +771,7 @@ static const char* const kSupportedPlatforms[] = {
 
 struct dpf_plugin_view : v3_plugin_view_cpp {
     std::atomic_int refcounter;
-    ScopedPointer<dpf_plugin_view>* self;
+    dpf_plugin_view** const self;
     ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<dpf_plugin_view_content_scale> scale;
 #ifdef DPF_VST3_USING_HOST_RUN_LOOP
@@ -762,12 +782,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     v3_host_application** const host;
     void* const instancePointer;
     double sampleRate;
-    v3_plugin_frame** frame = nullptr;
+    v3_plugin_frame** frame;
 
-    dpf_plugin_view(ScopedPointer<dpf_plugin_view>* selfptr,
-                    v3_host_application** const h, void* const instance, const double sr)
+    dpf_plugin_view(dpf_plugin_view** const s, v3_host_application** const h, void* const instance, const double sr)
         : refcounter(1),
-          self(selfptr),
+          self(s),
           host(h),
           instancePointer(instance),
           sampleRate(sr),
@@ -843,7 +862,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static V3_API uint32_t unref_view(void* self)
     {
-        ScopedPointer<dpf_plugin_view>* const viewptr = (ScopedPointer<dpf_plugin_view>*)self;
+        dpf_plugin_view** const viewptr = (dpf_plugin_view**)self;
         dpf_plugin_view* const view = *viewptr;
 
         if (const int refcount = --view->refcounter)
@@ -854,11 +873,31 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         d_stdout("dpf_plugin_view::unref                   => %p | refcount is zero, deleting everything now!", self);
 
+        DISTRHO_SAFE_ASSERT_RETURN(viewptr == view->self, V3_INTERNAL_ERR);
+
         if (view->connection != nullptr && view->connection->other)
             v3_cpp_obj(view->connection->other)->disconnect(view->connection->other,
                                                             (v3_connection_point**)&view->connection);
 
-        *(view->self) = nullptr;
+        if (dpf_ui_connection_point* const conn = view->connection)
+        {
+            if (const int refcount = conn->refcounter)
+            {
+                d_stderr("DPF warning: asked to delete view while connection point still active (refcount %d)", refcount);
+                return V3_INVALID_ARG;
+            }
+        }
+
+        if (dpf_plugin_view_content_scale* const scale = view->scale)
+        {
+            if (const int refcount = scale->refcounter)
+            {
+                d_stderr("DPF warning: asked to delete view while content scale still active (refcount %d)", refcount);
+                return V3_INVALID_ARG;
+            }
+        }
+
+        delete view;
         delete viewptr;
         return 0;
     }
@@ -879,7 +918,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         }
 
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     static V3_API v3_result attached(void* self, void* parent, const char* platform_type)
     {
@@ -892,14 +931,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         {
             if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
             {
-                #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+               #ifdef DPF_VST3_USING_HOST_RUN_LOOP
                 // find host run loop to plug ourselves into (required on some systems)
                 DISTRHO_SAFE_ASSERT_RETURN(view->frame != nullptr, V3_INVALID_ARG);
 
                 v3_run_loop** runloop = nullptr;
                 v3_cpp_obj_query_interface(view->frame, v3_run_loop_iid, &runloop);
                 DISTRHO_SAFE_ASSERT_RETURN(runloop != nullptr, V3_INVALID_ARG);
-                #endif
+               #endif
 
                 const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                 view->uivst3 = new UIVst3((v3_plugin_view**)view->self,
@@ -915,20 +954,20 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
                 view->uivst3->setFrame(view->frame);
 
-                #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+               #ifdef DPF_VST3_USING_HOST_RUN_LOOP
                 // register a timer host run loop stuff
                 view->timer = new dpf_timer_handler(view->uivst3);
                 v3_cpp_obj(runloop)->register_timer(runloop,
                                                     (v3_timer_handler**)&view->timer,
                                                     DPF_VST3_TIMER_INTERVAL);
-                #endif
+               #endif
 
                 return V3_OK;
             }
         }
 
         return V3_NOT_IMPLEMENTED;
-    };
+    }
 
     static V3_API v3_result removed(void* self)
     {
@@ -937,21 +976,23 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
 
-        #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+       #ifdef DPF_VST3_USING_HOST_RUN_LOOP
         // unregister our timer as needed
         if (view->timer != nullptr)
         {
             v3_run_loop** runloop = nullptr;
-            if (v3_cpp_obj_query_interface(view->host, v3_run_loop_iid, &runloop) == V3_OK && runloop != nullptr)
+            v3_cpp_obj_query_interface(view->host, v3_run_loop_iid, &runloop);
+
+            if (runloop != nullptr)
                 v3_cpp_obj(runloop)->unregister_timer(runloop, (v3_timer_handler**)&view->timer);
 
             view->timer = nullptr;
         }
-        #endif
+       #endif
 
         view->uivst3 = nullptr;
         return V3_OK;
-    };
+    }
 
     static V3_API v3_result on_wheel(void* self, float distance)
     {
@@ -963,7 +1004,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onWheel(distance);
-    };
+    }
 
     static V3_API v3_result on_key_down(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
@@ -975,7 +1016,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyDown(key_char, key_code, modifiers);
-    };
+    }
 
     static V3_API v3_result on_key_up(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
@@ -987,7 +1028,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyUp(key_char, key_code, modifiers);
-    };
+    }
 
     static V3_API v3_result get_size(void* self, v3_view_rect* rect)
     {
@@ -1007,7 +1048,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         rect->right = tmpUI.getWidth();
         rect->bottom = tmpUI.getHeight();
         return V3_OK;
-    };
+    }
 
     static V3_API v3_result on_size(void* self, v3_view_rect* rect)
     {
@@ -1019,7 +1060,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onSize(rect);
-    };
+    }
 
     static V3_API v3_result on_focus(void* self, v3_bool state)
     {
@@ -1031,7 +1072,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onFocus(state);
-    };
+    }
 
     static V3_API v3_result set_frame(void* self, v3_plugin_frame** frame)
     {
@@ -1045,7 +1086,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return uivst3->setFrame(frame);
 
         return V3_NOT_INITIALIZED;
-    };
+    }
 
     static V3_API v3_result can_resize(void* self)
     {
@@ -1055,7 +1096,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 // #else
         return V3_NOT_IMPLEMENTED;
 // #endif
-    };
+    }
 
     static V3_API v3_result check_size_constraint(void* self, v3_view_rect* rect)
     {
@@ -1067,7 +1108,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->checkSizeConstraint(rect);
-    };
+    }
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1079,7 +1120,7 @@ v3_plugin_view** dpf_plugin_view_create(v3_host_application** const host,
                                         void* const instancePointer,
                                         const double sampleRate)
 {
-    ScopedPointer<dpf_plugin_view>* const viewptr = new ScopedPointer<dpf_plugin_view>;
+    dpf_plugin_view** const viewptr = new dpf_plugin_view*;
     *viewptr = new dpf_plugin_view(viewptr, host, instancePointer, sampleRate);
     return (v3_plugin_view**)static_cast<void*>(viewptr);
 }

@@ -96,7 +96,7 @@ struct v3_plugin_factory_3 {
 	struct v3_plugin_factory_2;
 
 	v3_result (V3_API *get_class_info_utf16)(void* self, int32_t idx, struct v3_class_info_3*);
-	v3_result (V3_API *set_host_context)(void* self, struct v3_funknown* host);
+	v3_result (V3_API *set_host_context)(void* self, struct v3_funknown** host);
 };
 
 static constexpr const v3_tuid v3_plugin_factory_3_iid =

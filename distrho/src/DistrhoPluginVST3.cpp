@@ -2311,12 +2311,15 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
         DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
 
-        point->other = nullptr;
-        point->bridge = nullptr;
-
         if (point->type == kConnectionPointComponent)
             if (PluginVst3* const vst3 = point->vst3)
                 vst3->disconnect();
+
+        if (point->type == kConnectionPointBridge)
+            v3_cpp_obj_unref(point->other);
+
+        point->other = nullptr;
+        point->bridge = nullptr;
 
         return V3_OK;
     }
@@ -2453,13 +2456,15 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     bool initialized;
     // cached values
     v3_component_handler** handler;
+    v3_host_application** const originalHostContext;
     v3_plugin_base::v3_funknown** hostContext;
 
-    dpf_edit_controller(ScopedPointer<PluginVst3>& v)
+    dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const h)
         : refcounter(1),
           vst3(v),
           initialized(false),
           handler(nullptr),
+          originalHostContext(h),
           hostContext(nullptr)
     {
         // v3_funknown, single instance with custom query
@@ -2757,10 +2762,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
 
         // we require host context for message creation
-        DISTRHO_SAFE_ASSERT_RETURN(controller->hostContext != nullptr, nullptr);
-
         v3_host_application** host = nullptr;
-        v3_cpp_obj_query_interface(controller->hostContext, v3_host_application_iid, &host);
+
+        if (controller->hostContext != nullptr)
+            v3_cpp_obj_query_interface(controller->hostContext, v3_host_application_iid, &host);
+
+        if (host == nullptr)
+            host = controller->originalHostContext;
+
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
         // if there is a component connection, we require it to be active
@@ -3031,10 +3040,12 @@ struct dpf_component : v3_component_cpp {
 #endif
     ScopedPointer<dpf_edit_controller> controller;
     ScopedPointer<PluginVst3> vst3;
+    v3_host_application** const hostContext;
 
-    dpf_component(ScopedPointer<dpf_component>* const s)
+    dpf_component(ScopedPointer<dpf_component>* const s, v3_host_application** const h)
         : refcounter(1),
-          self(s)
+          self(s),
+          hostContext(h)
     {
         // v3_funknown, everything custom
         query_interface = query_interface_component;
@@ -3109,7 +3120,7 @@ struct dpf_component : v3_component_cpp {
         if (v3_tuid_match(iid, v3_edit_controller_iid))
         {
             if (component->controller == nullptr)
-                component->controller = new dpf_edit_controller(component->vst3);
+                component->controller = new dpf_edit_controller(component->vst3, component->hostContext);
             else
                 ++component->controller->refcounter;
             *iface = &component->controller;
@@ -3224,6 +3235,9 @@ struct dpf_component : v3_component_cpp {
         // query for host context
         v3_host_application** host = nullptr;
         v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
+
+        if (host == nullptr)
+            host = component->hostContext;
 
         component->vst3 = new PluginVst3(host);
         return V3_OK;
@@ -3373,9 +3387,6 @@ static const PluginExporter& _getPluginInfo()
     d_lastSampleRate = 0.0;
     d_lastCanRequestParameterValueChanges = false;
 
-    dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
-        = dpf_tuid_processor[2] = dpf_tuid_view[2] = gPluginInfo.getUniqueId();
-
     return gPluginInfo;
 }
 
@@ -3389,11 +3400,18 @@ static const PluginExporter& getPluginInfo()
 // dpf_factory
 
 struct dpf_factory : v3_plugin_factory_cpp {
+    // cached values
+    v3_funknown** hostContext;
+
     dpf_factory()
+      : hostContext(nullptr)
     {
         static constexpr const v3_tuid interface_v1 = V3_ID_COPY(v3_plugin_factory_iid);
         static constexpr const v3_tuid interface_v2 = V3_ID_COPY(v3_plugin_factory_2_iid);
         static constexpr const v3_tuid interface_v3 = V3_ID_COPY(v3_plugin_factory_3_iid);
+
+        dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
+            = dpf_tuid_processor[2] = dpf_tuid_view[2] = getPluginInfo().getUniqueId();
 
         // v3_funknown, used statically
         query_interface = dpf_static__query_interface<interface_v1, interface_v2, interface_v3>;
@@ -3476,8 +3494,12 @@ struct dpf_factory : v3_plugin_factory_cpp {
         dpf_factory* const factory = *(dpf_factory**)self;
         DISTRHO_SAFE_ASSERT_RETURN(factory != nullptr, V3_NOT_INITIALIZED);
 
+        // query for host context
+        v3_host_application** host = nullptr;
+        v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &host);
+
         ScopedPointer<dpf_component>* const componentptr = new ScopedPointer<dpf_component>;
-        *componentptr = new dpf_component(componentptr);
+        *componentptr = new dpf_component(componentptr, host);
         *instance = componentptr;
         return V3_OK;
     }
@@ -3524,10 +3546,14 @@ struct dpf_factory : v3_plugin_factory_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result set_host_context(void* self, v3_funknown* host)
+    static V3_API v3_result set_host_context(void* self, v3_funknown** context)
     {
-        d_stdout("dpf_factory::set_host_context     => %p %p", self, host);
-        return V3_NOT_IMPLEMENTED;
+        d_stdout("dpf_factory::set_host_context     => %p %p", self, context);
+        dpf_factory* const factory = *(dpf_factory**)self;
+        DISTRHO_SAFE_ASSERT_RETURN(factory != nullptr, V3_NOT_INITIALIZED);
+
+        factory->hostContext = context;
+        return V3_OK;
     }
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
