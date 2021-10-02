@@ -620,6 +620,95 @@ START_NAMESPACE_DISTRHO
  */
 #define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
 
+/**
+   Custom LV2 category for the plugin.@n
+   This can be one of the following values:
+
+      - lv2:Plugin
+      - lv2:AllpassPlugin
+      - lv2:AmplifierPlugin
+      - lv2:AnalyserPlugin
+      - lv2:BandpassPlugin
+      - lv2:ChorusPlugin
+      - lv2:CombPlugin
+      - lv2:CompressorPlugin
+      - lv2:ConstantPlugin
+      - lv2:ConverterPlugin
+      - lv2:DelayPlugin
+      - lv2:DistortionPlugin
+      - lv2:DynamicsPlugin
+      - lv2:EQPlugin
+      - lv2:EnvelopePlugin
+      - lv2:ExpanderPlugin
+      - lv2:FilterPlugin
+      - lv2:FlangerPlugin
+      - lv2:FunctionPlugin
+      - lv2:GatePlugin
+      - lv2:GeneratorPlugin
+      - lv2:HighpassPlugin
+      - lv2:InstrumentPlugin
+      - lv2:LimiterPlugin
+      - lv2:LowpassPlugin
+      - lv2:MIDIPlugin
+      - lv2:MixerPlugin
+      - lv2:ModulatorPlugin
+      - lv2:MultiEQPlugin
+      - lv2:OscillatorPlugin
+      - lv2:ParaEQPlugin
+      - lv2:PhaserPlugin
+      - lv2:PitchPlugin
+      - lv2:ReverbPlugin
+      - lv2:SimulatorPlugin
+      - lv2:SpatialPlugin
+      - lv2:SpectralPlugin
+      - lv2:UtilityPlugin
+      - lv2:WaveshaperPlugin
+
+   See http://lv2plug.in/ns/lv2core for more information.
+ */
+#define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:Plugin"
+
+/**
+   Custom VST3 categories for the plugin.@n
+   This is a list of categories, separated by a @c |.
+
+   Each effect category can be one of the following values:
+
+      - Fx
+      - Fx|Ambisonics
+      - Fx|Analyzer
+      - Fx|Delay
+      - Fx|Distortion
+      - Fx|Dynamics
+      - Fx|EQ
+      - Fx|Filter
+      - Fx|Instrument
+      - Fx|Instrument|External
+      - Fx|Spatial
+      - Fx|Generator
+      - Fx|Mastering
+      - Fx|Modulation
+      - Fx|Network
+      - Fx|Pitch Shift
+      - Fx|Restoration
+      - Fx|Reverb
+      - Fx|Surround
+      - Fx|Tools
+
+   Each instrument category can be one of the following values:
+
+      - Instrument
+      - Instrument|Drum
+      - Instrument|External
+      - Instrument|Piano
+      - Instrument|Sampler
+      - Instrument|Synth
+      - Instrument|Synth|Sampler
+
+   @note DPF will automatically set Mono and Stereo categories when appropriate.
+ */
+#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx"
+
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------

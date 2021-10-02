@@ -70,8 +70,6 @@ namespace std {
  * - routing info, do we care?
  * - set sidechain bus name from port group
  * - implement getParameterValueForString (use names from enumeration if available, fallback to std::atof)
- * - set factory class_flags
- * - set factory sub_categories
  * - set factory email (needs new DPF API, useful for LV2 as well)
  * - do something with get_controller_class_id and set_io_mode?
  */
@@ -3468,6 +3466,33 @@ static const PluginExporter& getPluginInfo()
     return info;
 }
 
+static const char* getPluginCategories()
+{
+    static String categories;
+    static bool firstInit = true;
+
+    if (firstInit)
+    {
+#ifdef DISTRHO_PLUGIN_VST3_CATEGORIES
+        categories = DISTRHO_PLUGIN_VST3_CATEGORIES;
+#elif DISTRHO_PLUGIN_IS_SYNTH
+        categories = "Instrument";
+#endif
+#if (DISTRHO_PLUGIN_NUM_INPUTS == 0 || DISTRHO_PLUGIN_NUM_INPUTS == 1) && DISTRHO_PLUGIN_NUM_OUTPUTS == 1
+        if (categories.isNotEmpty())
+            categories += "|";
+        categories += "Mono";
+#elif (DISTRHO_PLUGIN_NUM_INPUTS == 0 || DISTRHO_PLUGIN_NUM_INPUTS == 2) && DISTRHO_PLUGIN_NUM_OUTPUTS == 2
+        if (categories.isNotEmpty())
+            categories += "|";
+        categories += "Stereo";
+#endif
+        firstInit = false;
+    }
+
+    return categories.buffer();
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_factory
 
@@ -3559,9 +3584,10 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static V3_API v3_result get_factory_info(void*, v3_factory_info* const info)
     {
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), sizeof(info->vendor));
-        DISTRHO_NAMESPACE::strncpy(info->url, getPluginInfo().getHomePage(), sizeof(info->url));
-        // DISTRHO_NAMESPACE::strncpy(info->email, "", sizeof(info->email)); // TODO
+        DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
+        DISTRHO_NAMESPACE::strncpy(info->url, getPluginInfo().getHomePage(), ARRAY_SIZE(info->url));
+        // DISTRHO_NAMESPACE::strncpy(info->email, "", ARRAY_SIZE(info->email)); // TODO
+        info->flags = 0x10;
         return V3_OK;
     }
 
@@ -3573,18 +3599,18 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static V3_API v3_result get_class_info(void*, int32_t idx, v3_class_info* const info)
     {
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
+        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
 
         std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
         info->cardinality = 0x7FFFFFFF;
-        DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", sizeof(info->category));
-        DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), sizeof(info->name));
+        DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+        DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
         return V3_OK;
     }
 
     static V3_API v3_result create_instance(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance)
     {
-        d_stdout("dpf_factory::create_instance      => %p %s %s %p", self, tuid2str(class_id), tuid2str(iid), instance);
+        d_stdout("dpf_factory::create_instance => %p %s %s %p", self, tuid2str(class_id), tuid2str(iid), instance);
         DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) &&
                                    v3_tuid_match(iid, v3_component_iid), V3_NO_INTERFACE);
 
@@ -3608,7 +3634,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static V3_API v3_result get_class_info_2(void*, int32_t idx, v3_class_info_2* info)
     {
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
+        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
 
         std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
         info->cardinality = 0x7FFFFFFF;
@@ -3616,10 +3642,10 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
 
         info->class_flags = 0;
-        // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", sizeof(info->sub_categories)); // TODO
+        DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::snprintf_u32(info->version, getPluginInfo().getVersion(), ARRAY_SIZE(info->version)); // FIXME
-        DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
+        DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version));
         return V3_OK;
     }
 
@@ -3629,27 +3655,29 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static V3_API v3_result get_class_info_utf16(void*, int32_t idx, v3_class_info_3* info)
     {
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_NO_INTERFACE);
+        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
 
         std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
         info->cardinality = 0x7FFFFFFF;
         DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         DISTRHO_NAMESPACE::strncpy_utf16(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
 
+#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
         info->class_flags = 0;
-        // DISTRHO_NAMESPACE::strncpy(info->sub_categories, "", ARRAY_SIZE(info->sub_categories)); // TODO
+#else
+        info->class_flags = V3_DISTRIBUTABLE;
+#endif
+        DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, getPluginInfo().getMaker(), sizeof(info->vendor));
         DISTRHO_NAMESPACE::snprintf_u32_utf16(info->version, getPluginInfo().getVersion(), ARRAY_SIZE(info->version)); // FIXME
-        DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version)); // TESTING use "VST 3.7" ?
+        DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty", ARRAY_SIZE(info->sdk_version));
         return V3_OK;
     }
 
     static V3_API v3_result set_host_context(void* self, v3_funknown** context)
     {
-        d_stdout("dpf_factory::set_host_context     => %p %p", self, context);
-        dpf_factory* const factory = *(dpf_factory**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(factory != nullptr, V3_NOT_INITIALIZED);
-
+        d_stdout("dpf_factory::set_host_context => %p %p", self, context);
+        dpf_factory* const factory = *static_cast<dpf_factory**>(self);
         factory->hostContext = context;
         return V3_OK;
     }

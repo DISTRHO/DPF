@@ -26,12 +26,12 @@ struct v3_factory_info {
 	char vendor[64];
 	char url[256];
 	char email[128];
-	int32_t flags;
+	int32_t flags; // set to 0x10 (unicode)
 };
 
 struct v3_class_info {
 	v3_tuid class_id;
-	int32_t cardinality; // set to 0x7FFFFFFF
+	int32_t cardinality; // set to 0x7FFFFFFF (many instances)
 	char category[32];
 	char name[64];
 };
@@ -51,6 +51,11 @@ static constexpr const v3_tuid v3_plugin_factory_iid =
 /**
  * plugin factory v2
  */
+
+enum {
+	V3_DISTRIBUTABLE = 1 << 0,
+	V3_SIMPLE_MODE   = 1 << 1
+};
 
 struct v3_class_info_2 {
 	v3_tuid class_id;
