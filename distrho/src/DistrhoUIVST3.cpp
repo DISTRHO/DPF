@@ -573,13 +573,13 @@ private:
 // v3_funknown for classes with a single instance
 
 template<class T>
-static V3_API uint32_t dpf_single_instance_ref(void* self)
+static uint32_t V3_API dpf_single_instance_ref(void* self)
 {
     return ++(*(T**)self)->refcounter;
 }
 
 template<class T>
-static V3_API uint32_t dpf_single_instance_unref(void* self)
+static uint32_t V3_API dpf_single_instance_unref(void* self)
 {
     return --(*(T**)self)->refcounter;
 }
@@ -611,7 +611,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
     {
         d_stdout("UI|query_interface_connection_point => %p", self);
 
@@ -634,7 +634,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point
 
-    static V3_API v3_result connect(void* self, v3_connection_point** other)
+    static v3_result V3_API connect(void* self, v3_connection_point** other)
     {
         d_stdout("UI|dpf_ui_connection_point::connect         => %p %p", self, other);
         dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
@@ -649,7 +649,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
         return V3_OK;
     };
 
-    static V3_API v3_result disconnect(void* self, v3_connection_point** other)
+    static v3_result V3_API disconnect(void* self, v3_connection_point** other)
     {
         d_stdout("UI|dpf_ui_connection_point::disconnect      => %p %p", self, other);
         dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
@@ -664,7 +664,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
         return V3_OK;
     };
 
-    static V3_API v3_result notify(void* self, v3_message** message)
+    static v3_result V3_API notify(void* self, v3_message** message)
     {
         dpf_ui_connection_point* const point = *(dpf_ui_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
@@ -702,7 +702,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_view_content_scale(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_view_content_scale(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -723,7 +723,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view_content_scale
 
-    static V3_API v3_result set_content_scale_factor(void* self, float factor)
+    static v3_result V3_API set_content_scale_factor(void* self, float factor)
     {
         d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
         dpf_plugin_view_content_scale* const scale = *(dpf_plugin_view_content_scale**)self;
@@ -764,7 +764,7 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_timer_handler(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_timer_handler(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -785,7 +785,7 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_timer_handler
 
-    static V3_API void on_timer(void* self)
+    static void V3_API on_timer(void* self)
     {
         dpf_timer_handler* const handler = *(dpf_timer_handler**)self;
         DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
@@ -853,7 +853,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_view(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_view(void* self, const v3_tuid iid, void** iface)
     {
         d_stdout("dpf_plugin_view::query_interface         => %p %s %p", self, tuid2str(iid), iface);
         *iface = NULL;
@@ -897,12 +897,12 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_NO_INTERFACE;
     }
 
-    static V3_API uint32_t ref_view(void* self)
+    static uint32_t V3_API ref_view(void* self)
     {
         return ++(*(dpf_plugin_view**)self)->refcounter;
     }
 
-    static V3_API uint32_t unref_view(void* self)
+    static uint32_t V3_API unref_view(void* self)
     {
         dpf_plugin_view** const viewptr = (dpf_plugin_view**)self;
         dpf_plugin_view* const view = *viewptr;
@@ -945,7 +945,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view
 
-    static V3_API v3_result is_platform_type_supported(void* self, const char* platform_type)
+    static v3_result V3_API is_platform_type_supported(void* self, const char* platform_type)
     {
         d_stdout("dpf_plugin_view::is_platform_type_supported => %p %s", self, platform_type);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -960,7 +960,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API v3_result attached(void* self, void* parent, const char* platform_type)
+    static v3_result V3_API attached(void* self, void* parent, const char* platform_type)
     {
         d_stdout("dpf_plugin_view::attached                   => %p %p %s", self, parent, platform_type);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1007,7 +1007,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API v3_result removed(void* self)
+    static v3_result V3_API removed(void* self)
     {
         d_stdout("dpf_plugin_view::removed                    => %p", self);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1053,7 +1053,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result on_wheel(void* self, float distance)
+    static v3_result V3_API on_wheel(void* self, float distance)
     {
         d_stdout("dpf_plugin_view::on_wheel                   => %p %f", self, distance);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1065,7 +1065,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return uivst3->onWheel(distance);
     }
 
-    static V3_API v3_result on_key_down(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
+    static v3_result V3_API on_key_down(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
         d_stdout("dpf_plugin_view::on_key_down                => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1077,7 +1077,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return uivst3->onKeyDown(key_char, key_code, modifiers);
     }
 
-    static V3_API v3_result on_key_up(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
+    static v3_result V3_API on_key_up(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
         d_stdout("dpf_plugin_view::on_key_up                  => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1089,7 +1089,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return uivst3->onKeyUp(key_char, key_code, modifiers);
     }
 
-    static V3_API v3_result get_size(void* self, v3_view_rect* rect)
+    static v3_result V3_API get_size(void* self, v3_view_rect* rect)
     {
         d_stdout("dpf_plugin_view::get_size                   => %p", self);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1109,7 +1109,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result on_size(void* self, v3_view_rect* rect)
+    static v3_result V3_API on_size(void* self, v3_view_rect* rect)
     {
         d_stdout("dpf_plugin_view::on_size                    => %p %p", self, rect);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1121,7 +1121,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return uivst3->onSize(rect);
     }
 
-    static V3_API v3_result on_focus(void* self, v3_bool state)
+    static v3_result V3_API on_focus(void* self, v3_bool state)
     {
         d_stdout("dpf_plugin_view::on_focus                   => %p %u", self, state);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1133,7 +1133,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return uivst3->onFocus(state);
     }
 
-    static V3_API v3_result set_frame(void* self, v3_plugin_frame** frame)
+    static v3_result V3_API set_frame(void* self, v3_plugin_frame** frame)
     {
         d_stdout("dpf_plugin_view::set_frame                  => %p %p", self, frame);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;
@@ -1147,7 +1147,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         return V3_NOT_INITIALIZED;
     }
 
-    static V3_API v3_result can_resize(void* self)
+    static v3_result V3_API can_resize(void* self)
     {
         d_stdout("dpf_plugin_view::can_resize                 => %p", self);
 // #if DISTRHO_UI_USER_RESIZABLE
@@ -1157,7 +1157,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 // #endif
     }
 
-    static V3_API v3_result check_size_constraint(void* self, v3_view_rect* rect)
+    static v3_result V3_API check_size_constraint(void* self, v3_view_rect* rect)
     {
         d_stdout("dpf_plugin_view::check_size_constraint      => %p %p", self, rect);
         dpf_plugin_view* const view = *(dpf_plugin_view**)self;

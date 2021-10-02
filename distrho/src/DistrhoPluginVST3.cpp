@@ -2181,20 +2181,20 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 // v3_funknown for static instances
 
-static V3_API uint32_t dpf_static_ref(void*) { return 1; }
-static V3_API uint32_t dpf_static_unref(void*) { return 0; }
+static uint32_t V3_API dpf_static_ref(void*) { return 1; }
+static uint32_t V3_API dpf_static_unref(void*) { return 0; }
 
 // --------------------------------------------------------------------------------------------------------------------
 // v3_funknown for classes with a single instance
 
 template<class T>
-static V3_API uint32_t dpf_single_instance_ref(void* self)
+static uint32_t V3_API dpf_single_instance_ref(void* self)
 {
     return ++(*(T**)self)->refcounter;
 }
 
 template<class T>
-static V3_API uint32_t dpf_single_instance_unref(void* self)
+static uint32_t V3_API dpf_single_instance_unref(void* self)
 {
     return --(*(T**)self)->refcounter;
 }
@@ -2254,7 +2254,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -2275,7 +2275,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point
 
-    static V3_API v3_result connect(void* self, v3_connection_point** other)
+    static v3_result V3_API connect(void* self, v3_connection_point** other)
     {
         dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
@@ -2293,7 +2293,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result disconnect(void* self, v3_connection_point** other)
+    static v3_result V3_API disconnect(void* self, v3_connection_point** other)
     {
         dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
@@ -2314,7 +2314,7 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result notify(void* self, v3_message** message)
+    static v3_result V3_API notify(void* self, v3_message** message)
     {
         dpf_dsp_connection_point* const point = *(dpf_dsp_connection_point**)self;
         DISTRHO_SAFE_ASSERT_RETURN(point != nullptr, V3_NOT_INITIALIZED);
@@ -2411,7 +2411,7 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_midi_mapping(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_midi_mapping(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -2432,7 +2432,7 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_midi_mapping
 
-    static V3_API v3_result get_midi_controller_assignment(void*, int32_t bus, int16_t channel, int16_t cc, v3_param_id* id)
+    static v3_result V3_API get_midi_controller_assignment(void*, int32_t bus, int16_t channel, int16_t cc, v3_param_id* id)
     {
         DISTRHO_SAFE_ASSERT_INT_RETURN(bus == 0, bus, V3_FALSE);
         DISTRHO_SAFE_ASSERT_INT_RETURN(channel >= 0 && channel < 16, channel, V3_FALSE);
@@ -2504,7 +2504,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_edit_controller(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_edit_controller(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -2557,7 +2557,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_base
 
-    static V3_API v3_result initialize(void* self, v3_plugin_base::v3_funknown** context)
+    static v3_result V3_API initialize(void* self, v3_plugin_base::v3_funknown** context)
     {
         d_stdout("dpf_edit_controller::initialize                 => %p %p", self, context);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2577,7 +2577,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result terminate(void* self)
+    static v3_result V3_API terminate(void* self)
     {
         d_stdout("dpf_edit_controller::terminate                  => %p", self);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2611,7 +2611,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_edit_controller
 
-    static V3_API v3_result set_component_state(void* self, v3_bstream* stream)
+    static v3_result V3_API set_component_state(void* self, v3_bstream* stream)
     {
         d_stdout("dpf_edit_controller::set_component_state        => %p %p", self, stream);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2628,7 +2628,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result set_state(void* self, v3_bstream* stream)
+    static v3_result V3_API set_state(void* self, v3_bstream* stream)
     {
         d_stdout("dpf_edit_controller::set_state                  => %p %p", self, stream);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2643,7 +2643,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API v3_result get_state(void* self, v3_bstream* stream)
+    static v3_result V3_API get_state(void* self, v3_bstream* stream)
     {
         d_stdout("dpf_edit_controller::get_state                  => %p %p", self, stream);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2658,7 +2658,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API int32_t get_parameter_count(void* self)
+    static int32_t V3_API get_parameter_count(void* self)
     {
         // d_stdout("dpf_edit_controller::get_parameter_count        => %p", self);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2670,7 +2670,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterCount();
     }
 
-    static V3_API v3_result get_parameter_info(void* self, int32_t param_idx, v3_param_info* param_info)
+    static v3_result V3_API get_parameter_info(void* self, int32_t param_idx, v3_param_info* param_info)
     {
         // d_stdout("dpf_edit_controller::get_parameter_info         => %p %i", self, param_idx);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2682,7 +2682,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterInfo(param_idx, param_info);
     }
 
-    static V3_API v3_result get_parameter_string_for_value(void* self, v3_param_id index, double normalised, v3_str_128 output)
+    static v3_result V3_API get_parameter_string_for_value(void* self, v3_param_id index, double normalised, v3_str_128 output)
     {
         // NOTE very noisy, called many times
         // d_stdout("dpf_edit_controller::get_parameter_string_for_value => %p %u %f %p", self, index, normalised, output);
@@ -2695,7 +2695,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterStringForValue(index, normalised, output);
     }
 
-    static V3_API v3_result get_parameter_value_for_string(void* self, v3_param_id index, int16_t* input, double* output)
+    static v3_result V3_API get_parameter_value_for_string(void* self, v3_param_id index, int16_t* input, double* output)
     {
         d_stdout("dpf_edit_controller::get_parameter_value_for_string => %p %u %p %p", self, index, input, output);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2707,7 +2707,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterValueForString(index, input, output);
     }
 
-    static V3_API double normalised_parameter_to_plain(void* self, v3_param_id index, double normalised)
+    static double V3_API normalised_parameter_to_plain(void* self, v3_param_id index, double normalised)
     {
         d_stdout("dpf_edit_controller::normalised_parameter_to_plain  => %p %u %f", self, index, normalised);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2719,7 +2719,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->normalisedParameterToPlain(index, normalised);
     }
 
-    static V3_API double plain_parameter_to_normalised(void* self, v3_param_id index, double plain)
+    static double V3_API plain_parameter_to_normalised(void* self, v3_param_id index, double plain)
     {
         d_stdout("dpf_edit_controller::plain_parameter_to_normalised  => %p %u %f", self, index, plain);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2731,7 +2731,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->plainParameterToNormalised(index, plain);
     }
 
-    static V3_API double get_parameter_normalised(void* self, v3_param_id index)
+    static double V3_API get_parameter_normalised(void* self, v3_param_id index)
     {
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
         DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0.0);
@@ -2742,7 +2742,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterNormalized(index);
     }
 
-    static V3_API v3_result set_parameter_normalised(void* self, v3_param_id index, double normalised)
+    static v3_result V3_API set_parameter_normalised(void* self, v3_param_id index, double normalised)
     {
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
         DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALIZED);
@@ -2753,7 +2753,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->setParameterNormalized(index, normalised);
     }
 
-    static V3_API v3_result set_component_handler(void* self, v3_component_handler** handler)
+    static v3_result V3_API set_component_handler(void* self, v3_component_handler** handler)
     {
         d_stdout("dpf_edit_controller::set_component_handler      => %p %p", self, handler);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2767,7 +2767,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return V3_NOT_INITIALIZED;
     }
 
-    static V3_API v3_plugin_view** create_view(void* self, const char* name)
+    static v3_plugin_view** V3_API create_view(void* self, const char* name)
     {
         d_stdout("dpf_edit_controller::create_view                => %p %s", self, name);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
@@ -2858,7 +2858,7 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_process_context_requirements(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_process_context_requirements(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -2879,7 +2879,7 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_process_context_requirements
 
-    static V3_API uint32_t get_process_context_requirements(void*)
+    static uint32_t V3_API get_process_context_requirements(void*)
     {
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         return 0x0
@@ -2926,7 +2926,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_audio_processor(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_audio_processor(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -2955,7 +2955,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_audio_processor
 
-    static V3_API v3_result set_bus_arrangements(void* self,
+    static v3_result V3_API set_bus_arrangements(void* self,
                                                  v3_speaker_arrangement* inputs, int32_t num_inputs,
                                                  v3_speaker_arrangement* outputs, int32_t num_outputs)
     {
@@ -2970,7 +2970,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->setBusArrangements(inputs, num_inputs, outputs, num_outputs);
     }
 
-    static V3_API v3_result get_bus_arrangement(void* self, int32_t bus_direction,
+    static v3_result V3_API get_bus_arrangement(void* self, int32_t bus_direction,
                                                 int32_t idx, v3_speaker_arrangement* arr)
     {
         d_stdout("dpf_audio_processor::get_bus_arrangement     => %p %i %i %p", self, bus_direction, idx, arr);
@@ -2983,13 +2983,13 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->getBusArrangement(bus_direction, idx, arr);
     }
 
-    static V3_API v3_result can_process_sample_size(void* self, int32_t symbolic_sample_size)
+    static v3_result V3_API can_process_sample_size(void* self, int32_t symbolic_sample_size)
     {
         d_stdout("dpf_audio_processor::can_process_sample_size => %p %i", self, symbolic_sample_size);
         return symbolic_sample_size == V3_SAMPLE_32 ? V3_OK : V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API uint32_t get_latency_samples(void* self)
+    static uint32_t V3_API get_latency_samples(void* self)
     {
         d_stdout("dpf_audio_processor::get_latency_samples     => %p", self);
         dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
@@ -3001,7 +3001,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->getLatencySamples();
     }
 
-    static V3_API v3_result setup_processing(void* self, v3_process_setup* setup)
+    static v3_result V3_API setup_processing(void* self, v3_process_setup* setup)
     {
         d_stdout("dpf_audio_processor::setup_processing        => %p", self);
         dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
@@ -3015,7 +3015,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->setupProcessing(setup);
     }
 
-    static V3_API v3_result set_processing(void* self, v3_bool state)
+    static v3_result V3_API set_processing(void* self, v3_bool state)
     {
         d_stdout("dpf_audio_processor::set_processing          => %p %u", self, state);
         dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
@@ -3027,7 +3027,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->setProcessing(state);
     }
 
-    static V3_API v3_result process(void* self, v3_process_data* data)
+    static v3_result V3_API process(void* self, v3_process_data* data)
     {
         // NOTE runs during RT
         // d_stdout("dpf_audio_processor::process                 => %p", self);
@@ -3040,7 +3040,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         return processor->vst3->process(data);
     }
 
-    static V3_API uint32_t get_tail_samples(void* self)
+    static uint32_t V3_API get_tail_samples(void* self)
     {
         d_stdout("dpf_audio_processor::get_tail_samples        => %p", self);
         dpf_audio_processor* const processor = *(dpf_audio_processor**)self;
@@ -3122,7 +3122,7 @@ struct dpf_component : v3_component_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_component(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_component(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -3183,12 +3183,12 @@ struct dpf_component : v3_component_cpp {
         return V3_NO_INTERFACE;
     }
 
-    static V3_API uint32_t ref_component(void* self)
+    static uint32_t V3_API ref_component(void* self)
     {
         return ++(*(dpf_component**)self)->refcounter;
     }
 
-    static V3_API uint32_t unref_component(void* self)
+    static uint32_t V3_API unref_component(void* self)
     {
         dpf_component** const componentptr = (dpf_component**)self;
         dpf_component* const component = *componentptr;
@@ -3271,7 +3271,7 @@ struct dpf_component : v3_component_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_base
 
-    static V3_API v3_result initialize(void* self, v3_plugin_base::v3_funknown** context)
+    static v3_result V3_API initialize(void* self, v3_plugin_base::v3_funknown** context)
     {
         d_stdout("dpf_component::initialize              => %p %p", self, context);
         dpf_component* const component = *(dpf_component**)self;
@@ -3302,7 +3302,7 @@ struct dpf_component : v3_component_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result terminate(void* self)
+    static v3_result V3_API terminate(void* self)
     {
         d_stdout("dpf_component::terminate               => %p", self);
         dpf_component* const component = *(dpf_component**)self;
@@ -3323,7 +3323,7 @@ struct dpf_component : v3_component_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_component
 
-    static V3_API v3_result get_controller_class_id(void* self, v3_tuid class_id)
+    static v3_result V3_API get_controller_class_id(void* self, v3_tuid class_id)
     {
         d_stdout("dpf_component::get_controller_class_id => %p %s", self, tuid2str(class_id));
         dpf_component* const component = *(dpf_component**)self;
@@ -3336,7 +3336,7 @@ struct dpf_component : v3_component_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API v3_result set_io_mode(void* self, int32_t io_mode)
+    static v3_result V3_API set_io_mode(void* self, int32_t io_mode)
     {
         d_stdout("dpf_component::set_io_mode             => %p %i", self, io_mode);
         dpf_component* const component = *(dpf_component**)self;
@@ -3349,7 +3349,7 @@ struct dpf_component : v3_component_cpp {
         return V3_NOT_IMPLEMENTED;
     }
 
-    static V3_API int32_t get_bus_count(void* self, int32_t media_type, int32_t bus_direction)
+    static int32_t V3_API get_bus_count(void* self, int32_t media_type, int32_t bus_direction)
     {
         // NOTE runs during RT
         // d_stdout("dpf_component::get_bus_count           => %p %i %i", self, media_type, bus_direction);
@@ -3362,7 +3362,7 @@ struct dpf_component : v3_component_cpp {
         return vst3->getBusCount(media_type, bus_direction);
     }
 
-    static V3_API v3_result get_bus_info(void* self, int32_t media_type, int32_t bus_direction,
+    static v3_result V3_API get_bus_info(void* self, int32_t media_type, int32_t bus_direction,
                                   int32_t bus_idx, v3_bus_info* info)
     {
         d_stdout("dpf_component::get_bus_info            => %p %i %i %i %p", self, media_type, bus_direction, bus_idx, info);
@@ -3375,7 +3375,7 @@ struct dpf_component : v3_component_cpp {
         return vst3->getBusInfo(media_type, bus_direction, bus_idx, info);
     }
 
-    static V3_API v3_result get_routing_info(void* self, v3_routing_info* input, v3_routing_info* output)
+    static v3_result V3_API get_routing_info(void* self, v3_routing_info* input, v3_routing_info* output)
     {
         d_stdout("dpf_component::get_routing_info        => %p %p %p", self, input, output);
         dpf_component* const component = *(dpf_component**)self;
@@ -3387,7 +3387,7 @@ struct dpf_component : v3_component_cpp {
         return vst3->getRoutingInfo(input, output);
     }
 
-    static V3_API v3_result activate_bus(void* self, int32_t media_type, int32_t bus_direction,
+    static v3_result V3_API activate_bus(void* self, int32_t media_type, int32_t bus_direction,
                                   int32_t bus_idx, v3_bool state)
     {
         // NOTE this is called a bunch of times
@@ -3401,7 +3401,7 @@ struct dpf_component : v3_component_cpp {
         return vst3->activateBus(media_type, bus_direction, bus_idx, state);
     }
 
-    static V3_API v3_result set_active(void* self, v3_bool state)
+    static v3_result V3_API set_active(void* self, v3_bool state)
     {
         d_stdout("dpf_component::set_active              => %p %u", self, state);
         dpf_component* const component = *(dpf_component**)self;
@@ -3413,7 +3413,7 @@ struct dpf_component : v3_component_cpp {
         return component->vst3->setActive(state);
     }
 
-    static V3_API v3_result set_state(void* self, v3_bstream** stream)
+    static v3_result V3_API set_state(void* self, v3_bstream** stream)
     {
         d_stdout("dpf_component::set_state               => %p", self);
         dpf_component* const component = *(dpf_component**)self;
@@ -3425,7 +3425,7 @@ struct dpf_component : v3_component_cpp {
         return vst3->setState(stream);
     }
 
-    static V3_API v3_result get_state(void* self, v3_bstream** stream)
+    static v3_result V3_API get_state(void* self, v3_bstream** stream)
     {
         d_stdout("dpf_component::get_state               => %p %p", self, stream);
         dpf_component* const component = *(dpf_component**)self;
@@ -3562,7 +3562,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_funknown
 
-    static V3_API v3_result query_interface_factory(void* self, const v3_tuid iid, void** iface)
+    static v3_result V3_API query_interface_factory(void* self, const v3_tuid iid, void** iface)
     {
         if (v3_tuid_match(iid, v3_funknown_iid))
         {
@@ -3595,7 +3595,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_factory
 
-    static V3_API v3_result get_factory_info(void*, v3_factory_info* const info)
+    static v3_result V3_API get_factory_info(void*, v3_factory_info* const info)
     {
         std::memset(info, 0, sizeof(*info));
         DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
@@ -3605,12 +3605,12 @@ struct dpf_factory : v3_plugin_factory_cpp {
         return V3_OK;
     }
 
-    static V3_API int32_t num_classes(void*)
+    static int32_t V3_API num_classes(void*)
     {
         return 1;
     }
 
-    static V3_API v3_result get_class_info(void*, int32_t idx, v3_class_info* const info)
+    static v3_result V3_API get_class_info(void*, int32_t idx, v3_class_info* const info)
     {
         std::memset(info, 0, sizeof(*info));
         DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
@@ -3622,7 +3622,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result create_instance(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance)
+    static v3_result V3_API create_instance(void* self, const v3_tuid class_id, const v3_tuid iid, void** instance)
     {
         d_stdout("dpf_factory::create_instance => %p %s %s %p", self, tuid2str(class_id), tuid2str(iid), instance);
         DISTRHO_SAFE_ASSERT_RETURN(v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) &&
@@ -3645,7 +3645,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_factory_2
 
-    static V3_API v3_result get_class_info_2(void*, int32_t idx, v3_class_info_2* info)
+    static v3_result V3_API get_class_info_2(void*, int32_t idx, v3_class_info_2* info)
     {
         std::memset(info, 0, sizeof(*info));
         DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
@@ -3670,7 +3670,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
     // ------------------------------------------------------------------------------------------------------------
     // v3_plugin_factory_3
 
-    static V3_API v3_result get_class_info_utf16(void*, int32_t idx, v3_class_info_3* info)
+    static v3_result V3_API get_class_info_utf16(void*, int32_t idx, v3_class_info_3* info)
     {
         std::memset(info, 0, sizeof(*info));
         DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
@@ -3692,7 +3692,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         return V3_OK;
     }
 
-    static V3_API v3_result set_host_context(void* self, v3_funknown** context)
+    static v3_result V3_API set_host_context(void* self, v3_funknown** context)
     {
         d_stdout("dpf_factory::set_host_context => %p %p", self, context);
         dpf_factory* const factory = *static_cast<dpf_factory**>(self);
