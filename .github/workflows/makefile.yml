@@ -40,7 +40,7 @@ jobs:
         CXXFLAGS: -Werror -std=gnu++98
       run: |
         make clean >/dev/null
-        make -j $(nproc) VST3_FILENAME=
+        make -j $(nproc)
     - name: No namespace
       env:
         CFLAGS: -Werror
