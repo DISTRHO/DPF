@@ -486,17 +486,17 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
         d_stdout("from UI setSize %u %u | %p %p", width, height, fView, fFrame);
 
-// #ifdef DISTRHO_OS_MAC
-//         const double scaleFactor = fUI.getScaleFactor();
-//         width /= scaleFactor;
-//         height /= scaleFactor;
-// #endif
-//
-//         v3_view_rect rect;
-//         std::memset(&rect, 0, sizeof(rect));
-//         rect.right = width;
-//         rect.bottom = height;
-//         v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+#endif
+
+        v3_view_rect rect;
+        std::memset(&rect, 0, sizeof(rect));
+        rect.right = width;
+        rect.bottom = height;
+        v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
     }
 
     static void setSizeCallback(void* ptr, uint width, uint height)

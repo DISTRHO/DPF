@@ -99,6 +99,8 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(uiPtr != nullptr,);
         ui = uiPtr;
 
+        uiData->initializing = false;
+
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         // unused
         (void)bundlePath;

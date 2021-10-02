@@ -33,7 +33,11 @@
 #define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-# include <cinttypes>
+# ifdef DISTRHO_PROPER_CPP11_SUPPORT
+#  include <cinttypes>
+# else
+#  include <inttypes.h>
+# endif
 #endif
 
 START_NAMESPACE_DGL
