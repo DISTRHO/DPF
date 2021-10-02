@@ -2022,7 +2022,6 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", sampleRate);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -2039,7 +2038,6 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", value);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -2056,7 +2054,6 @@ private:
         v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -2071,7 +2068,6 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 2);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 #endif
@@ -2745,8 +2741,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
     static V3_API double get_parameter_normalised(void* self, v3_param_id index)
     {
-        // NOTE very noisy, called many times
-        // d_stdout("dpf_edit_controller::get_parameter_normalised       => %p %u", self, index);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
         DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, 0.0);
 
@@ -2758,7 +2752,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
     static V3_API v3_result set_parameter_normalised(void* self, v3_param_id index, double normalised)
     {
-        d_stdout("dpf_edit_controller::set_parameter_normalised       => %p %u %f", self, index, normalised);
         dpf_edit_controller* const controller = *(dpf_edit_controller**)self;
         DISTRHO_SAFE_ASSERT_RETURN(controller != nullptr, V3_NOT_INITIALIZED);
 
@@ -2813,8 +2806,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         }
 
         v3_plugin_view** const view = dpf_plugin_view_create(host,
-                                                              vst3->getInstancePointer(),
-                                                              vst3->getSampleRate());
+                                                             vst3->getInstancePointer(),
+                                                             vst3->getSampleRate());
         DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, nullptr);
 
         v3_connection_point** uiconn = nullptr;

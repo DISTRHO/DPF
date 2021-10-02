@@ -97,11 +97,19 @@ class UIVst3
 public:
     UIVst3(v3_plugin_view** const view,
            v3_host_application** const host,
+           v3_connection_point** const connection,
+           v3_plugin_frame** const frame,
            const intptr_t winId,
            const float scaleFactor,
            const double sampleRate,
            void* const instancePointer)
-        : fUI(this, winId, sampleRate,
+        : fView(view),
+          fHostContext(host),
+          fConnection(connection),
+          fFrame(frame),
+          fReadyForPluginData(false),
+          fScaleFactor(scaleFactor),
+          fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
               setStateCallback,
@@ -110,13 +118,7 @@ public:
               nullptr, // TODO file request
               nullptr, // bundlePath
               instancePointer,
-              scaleFactor),
-          fView(view),
-          fHostContext(host),
-          fConnection(nullptr),
-          fFrame(nullptr),
-          fReadyForPluginData(false),
-          fScaleFactor(scaleFactor)
+              scaleFactor)
     {
 #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
         fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
@@ -130,6 +132,12 @@ public:
 #endif
         if (fConnection != nullptr)
             disconnect();
+    }
+
+    void reconnectIfNeeded()
+    {
+        if (fConnection != nullptr)
+            connect(fConnection);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -218,7 +226,6 @@ public:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -238,7 +245,6 @@ public:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
 
         fConnection = nullptr;
@@ -382,9 +388,6 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
 
 private:
-    // Plugin UI
-    UIExporter fUI;
-
     // VST3 stuff
     v3_plugin_view** const fView;
     v3_host_application** const fHostContext;
@@ -394,6 +397,9 @@ private:
     // Temporary data
     bool fReadyForPluginData;
     float fScaleFactor;
+
+    // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
+    UIExporter fUI;
 
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing
@@ -426,7 +432,6 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -448,7 +453,6 @@ private:
         v3_cpp_obj(attrlist)->set_int(attrlist, "started", started ? 1 : 0);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -472,7 +476,6 @@ private:
         v3_cpp_obj(attrlist)->set_float(attrlist, "value", realValue);
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -525,7 +528,6 @@ private:
         v3_cpp_obj(attrlist)->set_binary(attrlist, "data", midiData, sizeof(midiData));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -551,7 +553,6 @@ private:
         v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
         v3_cpp_obj(fConnection)->notify(fConnection, message);
 
-        v3_cpp_obj_unref(attrlist);
         v3_cpp_obj_unref(message);
     }
 
@@ -982,16 +983,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                 view->uivst3 = new UIVst3((v3_plugin_view**)self,
                                           view->host,
+                                          view->connection != nullptr ? view->connection->other : nullptr,
+                                          view->frame,
                                           (uintptr_t)parent,
                                           scaleFactor,
                                           view->sampleRate,
                                           view->instancePointer);
 
-                if (dpf_ui_connection_point* const point = view->connection)
-                    if (point->other != nullptr)
-                        view->uivst3->connect(point->other);
-
-                view->uivst3->setFrame(view->frame);
+                view->uivst3->reconnectIfNeeded();
 
                #ifdef DPF_VST3_USING_HOST_RUN_LOOP
                 // register a timer host run loop stuff

@@ -39,3 +39,10 @@
    fun:XInitThreads
    ...
 }
+{
+   ignore XrmGetStringDatabase
+   Memcheck:Leak
+   ...
+   fun:XrmGetStringDatabase
+   ...
+}

@@ -636,7 +636,7 @@ struct MidiEvent {
       If size > kDataSize, dataExt is used (otherwise null).
 
       When dataExt is used, the event holder is responsible for
-      keeping the pointer valid during the entirity of the run function.
+      keeping the pointer valid during the entirety of the run function.
     */
     uint8_t        data[kDataSize];
     const uint8_t* dataExt;

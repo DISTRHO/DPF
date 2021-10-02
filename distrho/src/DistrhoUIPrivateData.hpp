@@ -285,7 +285,6 @@ struct UI::PrivateData {
     void*    dspPtr;
 
     // UI
-    bool initializing;
     uint bgColor;
     uint fgColor;
     double scaleFactor;
@@ -309,7 +308,6 @@ struct UI::PrivateData {
           sampleRate(0),
           parameterOffset(0),
           dspPtr(nullptr),
-          initializing(true),
           bgColor(0),
           fgColor(0xffffffff),
           scaleFactor(1.0),
@@ -360,40 +358,30 @@ struct UI::PrivateData {
 
     void editParamCallback(const uint32_t rindex, const bool started)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!initializing,);
-
         if (editParamCallbackFunc != nullptr)
             editParamCallbackFunc(callbacksPtr, rindex, started);
     }
 
     void setParamCallback(const uint32_t rindex, const float value)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!initializing,);
-
         if (setParamCallbackFunc != nullptr)
             setParamCallbackFunc(callbacksPtr, rindex, value);
     }
 
     void setStateCallback(const char* const key, const char* const value)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!initializing,);
-
         if (setStateCallbackFunc != nullptr)
             setStateCallbackFunc(callbacksPtr, key, value);
     }
 
     void sendNoteCallback(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!initializing,);
-
         if (sendNoteCallbackFunc != nullptr)
             sendNoteCallbackFunc(callbacksPtr, channel, note, velocity);
     }
 
     void setSizeCallback(const uint width, const uint height)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!initializing,);
-
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(callbacksPtr, width, height);
     }

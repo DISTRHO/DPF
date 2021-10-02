@@ -91,15 +91,13 @@ public:
         g_nextScaleFactor = 0.0;
         g_nextBundlePath  = nullptr;
 #else
-        // Leave context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
+        // enter context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
         uiData->window->leaveContext();
 #endif
         UI::PrivateData::s_nextPrivateData = nullptr;
 
         DISTRHO_SAFE_ASSERT_RETURN(uiPtr != nullptr,);
         ui = uiPtr;
-
-        uiData->initializing = false;
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         // unused
