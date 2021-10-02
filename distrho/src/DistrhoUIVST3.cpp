@@ -590,8 +590,8 @@ static V3_API v3_result dpf_static__query_interface(void* self, const v3_tuid ii
     return V3_NO_INTERFACE;
 }
 
-static V3_API uint32_t dpf_static__ref(void*) { return 1; }
-static V3_API uint32_t dpf_static__unref(void*) { return 0; }
+// static V3_API uint32_t dpf_static__ref(void*) { return 1; }
+// static V3_API uint32_t dpf_static__unref(void*) { return 0; }
 
 // --------------------------------------------------------------------------------------------------------------------
 // v3_funknown with refcounter
@@ -727,17 +727,21 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
 // dpf_timer_handler
 
 struct dpf_timer_handler : v3_timer_handler_cpp {
+    std::atomic_int refcounter;
     ScopedPointer<UIVst3>& uivst3;
+    bool valid;
 
     dpf_timer_handler(ScopedPointer<UIVst3>& v)
-        : uivst3(v)
+        : refcounter(1),
+          uivst3(v),
+          valid(true)
     {
         static constexpr const v3_tuid interface = V3_ID_COPY(v3_timer_handler_iid);
 
         // v3_funknown, single instance
         query_interface = dpf_static__query_interface<interface>;
-        ref = dpf_static__ref;
-        unref = dpf_static__unref;
+        ref = dpf_refcounter__ref<dpf_timer_handler>;
+        unref = dpf_refcounter__unref<dpf_timer_handler>;
 
         // v3_timer_handler
         handler.on_timer = on_timer;
@@ -750,6 +754,7 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
     {
         dpf_timer_handler* const handler = *(dpf_timer_handler**)self;
         DISTRHO_SAFE_ASSERT_RETURN(handler != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(handler->valid,);
 
         handler->uivst3->onTimer();
     }
@@ -840,6 +845,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         {
             if (view->connection == nullptr)
                 view->connection = new dpf_ui_connection_point(view->uivst3);
+            else
+                ++view->connection->refcounter;
             *iface = &view->connection;
             return V3_OK;
         }
@@ -848,6 +855,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         {
             if (view->scale == nullptr)
                 view->scale = new dpf_plugin_view_content_scale(view->uivst3);
+            else
+                ++view->scale->refcounter;
             *iface = &view->scale;
             return V3_OK;
         }
@@ -981,12 +990,29 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (view->timer != nullptr)
         {
             v3_run_loop** runloop = nullptr;
-            v3_cpp_obj_query_interface(view->host, v3_run_loop_iid, &runloop);
+
+            if (view->frame != nullptr)
+                v3_cpp_obj_query_interface(view->frame, v3_run_loop_iid, &runloop);
 
             if (runloop != nullptr)
+            {
                 v3_cpp_obj(runloop)->unregister_timer(runloop, (v3_timer_handler**)&view->timer);
 
-            view->timer = nullptr;
+                if (const int refcount = --view->timer->refcounter)
+                {
+                    view->timer->valid = false;
+                    d_stderr("VST3 warning: Host run loop did not give away timer (refcount %d)", refcount);
+                }
+                else
+                {
+                    view->timer = nullptr;
+                }
+            }
+            else
+            {
+                view->timer->valid = false;
+                d_stderr("VST3 warning: Host run loop not available during dpf_plugin_view::removed");
+            }
         }
        #endif
 

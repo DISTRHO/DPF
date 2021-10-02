@@ -3496,7 +3496,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
         // query for host context
         v3_host_application** host = nullptr;
-        v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &host);
+        if (factory->hostContext != nullptr)
+            v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &host);
 
         ScopedPointer<dpf_component>* const componentptr = new ScopedPointer<dpf_component>;
         *componentptr = new dpf_component(componentptr, host);
