@@ -13,4 +13,4 @@ jobs:
         channel: '#kxstudio'
         nickname: kxstudio-bot
         message: |-
-          ${{ github.actor }} pushed ${{ github.event.ref }} ${{ github.event.compare }}
+          ${{ github.actor }} pushed ${{ github.event.head_commit.message }} ${{ github.event.compare }}
