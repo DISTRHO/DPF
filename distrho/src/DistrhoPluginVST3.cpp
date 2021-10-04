@@ -1402,11 +1402,11 @@ public:
     v3_result getParameterInfo(int32_t rindex, v3_param_info* const info) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INVALID_ARG);
+        std::memset(info, 0, sizeof(v3_param_info));
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex == 0)
         {
-            std::memset(info, 0, sizeof(v3_param_info));
             info->param_id = rindex;
             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
             info->step_count = fProgramCountMinusOne;
@@ -1417,10 +1417,12 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
         {
-            std::memset(info, 0, sizeof(v3_param_info));
             info->param_id = rindex;
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+            ++info->param_id;
+# endif
             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_HIDDEN;
             info->step_count = 127;
             char ccstr[24];
@@ -1465,7 +1467,6 @@ public:
         if ((hints & kParameterIsInteger) && ranges.max - ranges.min > 1)
             step_count = ranges.max - ranges.min - 1;
 
-        std::memset(info, 0, sizeof(v3_param_info));
         info->param_id = index + fParameterOffset;
         info->flags = flags;
         info->step_count = step_count;
@@ -1493,7 +1494,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
         {
             snprintf_f32_utf16(output, std::round(normalised * 127), 128);
             return V3_OK;
@@ -1519,7 +1520,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
         {
             // TODO
             return V3_NOT_IMPLEMENTED;
@@ -1542,7 +1543,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
             return std::round(normalised * 127);
         rindex -= 130*16;
 #endif
@@ -1561,7 +1562,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
             return std::max(0.0, std::min(1.0, plain / 127));
         rindex -= 130*16;
 #endif
@@ -1580,7 +1581,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
         {
             // TODO
             return 0.0;
@@ -1625,7 +1626,7 @@ public:
         --rindex;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex <= 130*16)
+        if (rindex < 130*16)
         {
             // TODO
             fChangedParameterValues[rindex] = true;
@@ -1775,7 +1776,7 @@ public:
                 --rindex;
 # endif
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                if (rindex <= 130*16)
+                if (rindex < 130*16)
                     continue;
                 rindex -= 130*16;
 # endif
