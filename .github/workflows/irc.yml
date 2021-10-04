@@ -1,0 +1,14 @@
+on: [push]
+
+jobs:
+  notification:
+    runs-on: ubuntu-latest
+    name: IRC notification
+    steps:
+    - name: IRC notification
+      uses: Gottox/irc-message-action@v2
+      with:
+        channel: '#kxstudio'
+        nickname: kxstudio-bot
+        message: |-
+          ${{ github.actor }} pushed ${{ github.event.ref }} ${{ github.event.compare }}
