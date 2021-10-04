@@ -1,3 +1,5 @@
+name: irc
+
 on: [push]
 
 jobs:
