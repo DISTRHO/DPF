@@ -17,4 +17,4 @@ jobs:
         with:
           channel: '#kxstudio'
           nickname: kxstudio-bot
-          message: steps.message.outputs.message
+          message: ${{ steps.message.outputs.message }}
