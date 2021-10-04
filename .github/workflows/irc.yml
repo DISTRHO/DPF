@@ -7,15 +7,14 @@ jobs:
     runs-on: ubuntu-latest
     name: IRC notification
     steps:
-      - uses: jungwinter/split@v2
-        id: split
-        with:
-          msg: ${{ github.event.commits[0].message }}
-          separator: '\n'
+      - name: Format message
+        id: message
+        run: |
+          message="${{ github.actor }} pushed ${{ github.event.commits[0].message }} ${{ github.event.commits[0].url }}"
+          echo ::set-output name=message::"${message}"
       - name: IRC notification
         uses: Gottox/irc-message-action@v2
         with:
           channel: '#kxstudio'
           nickname: kxstudio-bot
-          message: |-
-            ${{ github.actor }} pushed ${{ steps.split.outputs._0 }} ${{ github.event.commits[0].url }}
+          message: steps.message.outputs.message
