@@ -3085,6 +3085,10 @@ struct dpf_component : v3_component_cpp {
           hostContextFromFactory(h),
           hostContextFromInitialize(nullptr)
     {
+        // make sure context is valid through this component lifetime
+        if (hostContextFromFactory != nullptr)
+            v3_cpp_obj_ref(hostContextFromFactory);
+
         // v3_funknown, everything custom
         query_interface = query_interface_component;
         ref = ref_component;
@@ -3541,6 +3545,10 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
     ~dpf_factory()
     {
+        // unref old context if there is one
+        if (hostContext != nullptr)
+            v3_cpp_obj_unref(hostContext);
+
         if (gComponentGarbage.size() == 0)
             return;
 
@@ -3696,7 +3704,18 @@ struct dpf_factory : v3_plugin_factory_cpp {
     {
         d_stdout("dpf_factory::set_host_context => %p %p", self, context);
         dpf_factory* const factory = *static_cast<dpf_factory**>(self);
+
+        // unref old context if there is one
+        if (factory->hostContext != nullptr)
+            v3_cpp_obj_unref(factory->hostContext);
+
+        // store new context
         factory->hostContext = context;
+
+        // make sure the object keeps being valid for a while
+        if (context != nullptr)
+            v3_cpp_obj_ref(context);
+
         return V3_OK;
     }
 
