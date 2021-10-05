@@ -132,6 +132,11 @@ public:
         return uiData->window->getScaleFactor();
     }
 
+    Size<uint> getMinimumSizeConstraint()
+    {
+        return uiData->window->getMinimumSizeConstraint();
+    }
+
     bool isVisible() const noexcept
     {
         return uiData->window->isVisible();
@@ -258,6 +263,15 @@ public:
 #endif
 
     // -------------------------------------------------------------------
+
+    /*
+    void setWindowSizeForVST3(const uint width, const uint height)
+    {
+        // ui->setSize(width, height);
+        uiData->window->setSize(width, height);
+        // uiData->app.idle();
+    }
+    */
 
     void setWindowTitle(const char* const uiTitle)
     {

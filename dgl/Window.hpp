@@ -397,6 +397,12 @@ public:
     void runAsModal(bool blockWait = false);
 
    /**
+      Get the size constraint set for the Window.
+      @see setGeometryConstraints
+    */
+    Size<uint> getMinimumSizeConstraint();
+
+   /**
       Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.
     */
     void setGeometryConstraints(uint minimumWidth,
