@@ -183,10 +183,18 @@ public:
         if (pData->view == nullptr)
             return;
 
+        // this is called just before creating UI, ensuring proper context to it
         if (pData->initPost())
             puglBackendEnter(pData->view);
     }
 
+    ~PluginWindow()
+    {
+        if (pData->view != nullptr)
+            puglBackendLeave(pData->view);
+    }
+
+    // called after creating UI, restoring proper context
     void leaveContext()
     {
         if (pData->view == nullptr)
@@ -199,9 +207,17 @@ public:
         puglBackendLeave(pData->view);
     }
 
+    // used for temporary windows (VST2/3 get size without active/visible view)
     void setIgnoreIdleCallbacks(const bool ignore = true)
     {
         pData->ignoreIdleCallbacks = ignore;
+    }
+
+    // called right before deleting UI, ensuring correct context
+    void enterContextForDeletion()
+    {
+        if (pData->view != nullptr)
+            puglBackendEnter(pData->view);
     }
 
 protected:

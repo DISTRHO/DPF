@@ -108,6 +108,9 @@ public:
     ~UIExporter()
     {
         quit();
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        uiData->window->enterContextForDeletion();
+#endif
         delete ui;
         delete uiData;
     }
