@@ -2489,20 +2489,26 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // cached values
     v3_component_handler** handler;
     v3_host_application** const hostContextFromFactory;
+    v3_host_application** hostContextFromComponent;
     v3_host_application** hostContextFromInitialize;
 
-    dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const h)
+    dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const hf, v3_host_application** const hc)
         : refcounter(1),
           vst3(v),
           initialized(false),
           handler(nullptr),
-          hostContextFromFactory(h),
+          hostContextFromFactory(hf),
+          hostContextFromComponent(hc),
           hostContextFromInitialize(nullptr)
     {
-        // v3_funknown, single instance
+        // make sure context is valid through this controller lifetime
+        if (hostContextFromComponent != nullptr)
+            v3_cpp_obj_ref(hostContextFromComponent);
+
+        // v3_funknown, everything custom
         query_interface = query_interface_edit_controller;
-        ref = dpf_single_instance_ref<dpf_edit_controller>;
-        unref = dpf_single_instance_unref<dpf_edit_controller>;
+        ref = ref_edit_controller;
+        unref = unref_edit_controller;
 
         // v3_plugin_base
         base.initialize = initialize;
@@ -2522,6 +2528,15 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         ctrl.set_parameter_normalised = set_parameter_normalised;
         ctrl.set_component_handler = set_component_handler;
         ctrl.create_view = create_view;
+    }
+
+    void cleanup()
+    {
+        if (hostContextFromComponent != nullptr)
+        {
+            v3_cpp_obj_unref(hostContextFromComponent);
+            hostContextFromComponent = nullptr;
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2575,6 +2590,26 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         *iface = NULL;
         return V3_NO_INTERFACE;
+    }
+
+    static uint32_t V3_API ref_edit_controller(void* self)
+    {
+        return ++(*(dpf_edit_controller**)self)->refcounter;
+    }
+
+    static uint32_t V3_API unref_edit_controller(void* self)
+    {
+        dpf_edit_controller** const controllerptr = (dpf_edit_controller**)self;
+        dpf_edit_controller* const controller = *controllerptr;
+
+        if (const int refcount = --controller->refcounter)
+        {
+            d_stdout("dpf_edit_controller::unref => %p | refcount %i", self, refcount);
+            return refcount;
+        }
+
+        controller->cleanup();
+        return 0;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2804,6 +2839,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // we require a host context for message creation
         v3_host_application** host = controller->hostContextFromInitialize != nullptr
                                    ? controller->hostContextFromInitialize
+                                   : controller->hostContextFromComponent != nullptr
+                                   ? controller->hostContextFromComponent
                                    : controller->hostContextFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
@@ -3140,7 +3177,11 @@ struct dpf_component : v3_component_cpp {
 #if DISTRHO_PLUGIN_HAS_UI
         connection = nullptr;
 #endif
-        controller = nullptr;
+        if (controller != nullptr)
+        {
+            controller->cleanup();
+            controller = nullptr;
+        }
 
         if (hostContextFromFactory != nullptr)
             v3_cpp_obj_unref(hostContextFromFactory);
@@ -3199,7 +3240,8 @@ struct dpf_component : v3_component_cpp {
         {
             if (component->controller == nullptr)
                 component->controller = new dpf_edit_controller(component->vst3,
-                                                                component->hostContextFromFactory);
+                                                                component->hostContextFromFactory,
+                                                                component->hostContextFromInitialize);
             else
                 ++component->controller->refcounter;
             *iface = &component->controller;
