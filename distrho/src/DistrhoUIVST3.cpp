@@ -75,8 +75,8 @@ struct ScopedUTF16String {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static bool checkSizeConstraint(const uint minimumWidth, const uint minimumHeight, const bool keepAspectRatio,
-                                v3_view_rect* const rect)
+static bool applyGeometryConstraints(const uint minimumWidth, const uint minimumHeight, const bool keepAspectRatio,
+                                     v3_view_rect* const rect)
 {
     const int32_t minWidth = static_cast<int32_t>(minimumWidth);
     const int32_t minHeight = static_cast<int32_t>(minimumHeight);
@@ -259,7 +259,7 @@ public:
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         fUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-        return ::checkSizeConstraint(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        return applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1266,7 +1266,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-        return ::checkSizeConstraint(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        return applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 };
 
