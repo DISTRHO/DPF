@@ -191,16 +191,62 @@ public:
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result onKeyDown(int16_t /*key_char*/, int16_t /*key_code*/, int16_t /*modifiers*/)
+    v3_result onKeyDown(const int16_t keychar, const int16_t keycode, const int16_t modifiers)
     {
+        d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
+
         // TODO
-        return V3_NOT_IMPLEMENTED;
+        uint dglcode = 0;
+
+        // TODO verify these
+        uint dglmods = 0;
+        if (modifiers & (1 << 0))
+            dglmods |= kModifierShift;
+        if (modifiers & (1 << 1))
+            dglmods |= kModifierAlt;
+#ifdef DISTRHO_OS_MAC
+        if (modifiers & (1 << 2))
+            dglmods |= kModifierSuper;
+        if (modifiers & (1 << 3))
+            dglmods |= kModifierControl;
+#else
+        if (modifiers & (1 << 2))
+            dglmods |= kModifierControl;
+        if (modifiers & (1 << 3))
+            dglmods |= kModifierSuper;
+#endif
+
+        return fUI.handlePluginKeyboardVST3(true, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
 
-    v3_result onKeyUp(int16_t /*key_char*/, int16_t /*key_code*/, int16_t /*modifiers*/)
+    v3_result onKeyUp(const int16_t keychar, const int16_t keycode, const int16_t modifiers)
     {
+        d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
+
         // TODO
-        return V3_NOT_IMPLEMENTED;
+        uint dglcode = 0;
+
+        // TODO verify these
+        uint dglmods = 0;
+        if (modifiers & (1 << 0))
+            dglmods |= kModifierShift;
+        if (modifiers & (1 << 1))
+            dglmods |= kModifierAlt;
+#ifdef DISTRHO_OS_MAC
+        if (modifiers & (1 << 2))
+            dglmods |= kModifierSuper;
+        if (modifiers & (1 << 3))
+            dglmods |= kModifierControl;
+#else
+        if (modifiers & (1 << 2))
+            dglmods |= kModifierControl;
+        if (modifiers & (1 << 3))
+            dglmods |= kModifierSuper;
+#endif
+
+        return fUI.handlePluginKeyboardVST3(false, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
