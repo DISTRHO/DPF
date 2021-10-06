@@ -152,6 +152,12 @@ public:
     void setTitle(const char* const title) { ui->setTitle(title); }
     void setVisible(const bool visible) { ui->setVisible(visible); }
     uintptr_t getNativeWindowHandle() const noexcept { return ui->getNativeWindowHandle(); }
+    void getGeometryConstraints(uint& minimumWidth, uint& minimumHeight, bool& keepAspectRatio) const noexcept
+    {
+        minimumWidth = ui->pData.minWidth;
+        minimumHeight = ui->pData.minHeight;
+        keepAspectRatio = ui->pData.keepAspectRatio;
+    }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };

@@ -132,9 +132,16 @@ public:
         return uiData->window->getScaleFactor();
     }
 
-    Size<uint> getMinimumSizeConstraint(bool& keepAspectRatio)
+    bool getGeometryConstraints(uint& minimumWidth, uint& minimumHeight, bool& keepAspectRatio) const noexcept
     {
-        return uiData->window->getMinimumSizeConstraint(keepAspectRatio);
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        uiData->window->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+#else
+        const Size<uint> size(uiData->window->getGeometryConstraints(keepAspectRatio));
+        minimumWidth = size.getWidth();
+        minimumHeight = size.getHeight();
+#endif
+        return true;
     }
 
     bool isResizable() const noexcept
@@ -272,8 +279,10 @@ public:
     void setWindowSizeForVST3(const uint width, const uint height)
     {
         ui->setSize(width, height);
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         uiData->window->setSize(width, height);
         // uiData->app.idle();
+#endif
     }
 
     void setWindowTitle(const char* const uiTitle)

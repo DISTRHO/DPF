@@ -75,10 +75,11 @@ struct ScopedUTF16String {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static bool checkSizeConstraint(const Size<uint>& size, const bool keepAspectRatio, v3_view_rect* const rect)
+static bool checkSizeConstraint(const uint minimumWidth, const uint minimumHeight, const bool keepAspectRatio,
+                                v3_view_rect* const rect)
 {
-    const int32_t minWidth = static_cast<int32_t>(size.getWidth());
-    const int32_t minHeight = static_cast<int32_t>(size.getHeight());
+    const int32_t minWidth = static_cast<int32_t>(minimumWidth);
+    const int32_t minHeight = static_cast<int32_t>(minimumHeight);
     bool changed = false;
 
     if (keepAspectRatio)
@@ -92,10 +93,10 @@ static bool checkSizeConstraint(const Size<uint>& size, const bool keepAspectRat
 
             // fix width
             if (reqRatio > ratio)
-                rect->right = static_cast<uint>(rect->bottom * ratio + 0.5);
+                rect->right = static_cast<int32_t>(rect->bottom * ratio + 0.5);
             // fix height
             else
-                rect->bottom = static_cast<uint>(static_cast<double>(rect->right) / ratio + 0.5);
+                rect->bottom = static_cast<int32_t>(static_cast<double>(rect->right) / ratio + 0.5);
         }
     }
 
@@ -255,9 +256,10 @@ public:
 
     v3_result checkSizeConstraint(v3_view_rect* const rect)
     {
+        uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
-        const Size<uint> size(fUI.getMinimumSizeConstraint(keepAspectRatio));
-        return ::checkSizeConstraint(size, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        fUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+        return ::checkSizeConstraint(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1261,9 +1263,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                          view->instancePointer, scaleFactor);
+        uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
-        const Size<uint> size(tmpUI.getMinimumSizeConstraint(keepAspectRatio));
-        return ::checkSizeConstraint(size, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+        return ::checkSizeConstraint(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 };
 

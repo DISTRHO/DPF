@@ -295,7 +295,8 @@ public:
     */
     void setSize(uint width, uint height)
     {
-        DISTRHO_SAFE_ASSERT_UINT2_RETURN(width > 1 && height > 1, width, height,);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(width > 1, width,);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(height > 1, height,);
 
         if (pData.width == width && pData.height == height)
             return;
@@ -314,8 +315,22 @@ public:
     {
         if (pData.title == title)
             return;
+
         pData.title = title;
         titleChanged(title);
+    }
+
+   /**
+      Set geometry constraints for the Window when resized by the user.
+    */
+    void setGeometryConstraints(uint minimumWidth, uint minimumHeight, bool keepAspectRatio = false)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(minimumWidth > 0, minimumWidth,);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(minimumHeight > 0, minimumHeight,);
+
+        pData.minWidth = minimumWidth;
+        pData.minHeight = minimumHeight;
+        pData.keepAspectRatio = keepAspectRatio;
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -339,6 +354,7 @@ public:
     {
         if (pData.visible == visible)
             return;
+
         pData.visible = visible;
         visibilityChanged(visible);
     }
@@ -351,6 +367,7 @@ public:
     {
         if (pData.transientWinId == winId)
             return;
+
         pData.transientWinId = winId;
         transientParentWindowChanged(winId);
     }
@@ -388,39 +405,35 @@ protected:
       A callback for when the window size changes.
       @note WIP this might need to get fed back into the host somehow.
     */
-    virtual void sizeChanged(uint width, uint height)
+    virtual void sizeChanged(uint /* width */, uint /* height */)
     {
         // unused, meant for custom implementations
-        return; (void)width; (void)height;
     }
 
    /**
       A callback for when the window title changes.
       @note WIP this might need to get fed back into the host somehow.
     */
-    virtual void titleChanged(const char* title)
+    virtual void titleChanged(const char* /* title */)
     {
         // unused, meant for custom implementations
-        return; (void)title;
     }
 
    /**
       A callback for when the window visibility changes.
       @note WIP this might need to get fed back into the host somehow.
     */
-    virtual void visibilityChanged(bool visible)
+    virtual void visibilityChanged(bool /* visible */)
     {
         // unused, meant for custom implementations
-        return; (void)visible;
     }
 
    /**
       A callback for when the transient parent window changes.
     */
-    virtual void transientParentWindowChanged(uintptr_t winId)
+    virtual void transientParentWindowChanged(uintptr_t /* winId */)
     {
         // unused, meant for custom implementations
-        return; (void)winId;
     }
 
 private:
@@ -533,6 +546,9 @@ private:
         uint height;
         double scaleFactor;
         String title;
+        uint minWidth;
+        uint minHeight;
+        bool keepAspectRatio;
         bool isQuitting;
         bool isStandalone;
         bool visible;
@@ -544,6 +560,9 @@ private:
               height(1),
               scaleFactor(1.0),
               title(),
+              minWidth(0),
+              minHeight(0),
+              keepAspectRatio(false),
               isQuitting(false),
               isStandalone(false),
               visible(false) {}

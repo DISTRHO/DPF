@@ -397,10 +397,10 @@ public:
     void runAsModal(bool blockWait = false);
 
    /**
-      Get the size constraint set for the Window.
+      Get the geometry constraints set for the Window.
       @see setGeometryConstraints
     */
-    Size<uint> getMinimumSizeConstraint(bool& keepAspectRatio);
+    Size<uint> getGeometryConstraints(bool& keepAspectRatio);
 
    /**
       Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.
