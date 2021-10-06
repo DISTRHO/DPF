@@ -2628,6 +2628,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         v3_host_application** host = nullptr;
         v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
 
+        d_stdout("dpf_edit_controller::initialize                 => %p %p | host %p", self, context, host);
+
         // save it for later so we can unref it
         controller->hostContextFromInitialize = host;
 
@@ -2835,6 +2837,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // plugin must be initialized
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
+
+        d_stdout("dpf_edit_controller::create_view                => %p %s | edit-ctrl %p, host %p, factory %p",
+                 self, name,
+                 controller->hostContextFromInitialize,
+                 controller->hostContextFromComponent,
+                 controller->hostContextFromFactory);
 
         // we require a host context for message creation
         v3_host_application** host = controller->hostContextFromInitialize != nullptr
@@ -3351,6 +3359,8 @@ struct dpf_component : v3_component_cpp {
         v3_host_application** host = nullptr;
         if (context != nullptr)
             v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
+
+        d_stdout("dpf_component::initialize              => %p %s | host %p", self, context, host);
 
         // save it for later so we can unref it
         component->hostContextFromInitialize = host;
