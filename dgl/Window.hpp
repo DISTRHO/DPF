@@ -400,7 +400,7 @@ public:
       Get the size constraint set for the Window.
       @see setGeometryConstraints
     */
-    Size<uint> getMinimumSizeConstraint();
+    Size<uint> getMinimumSizeConstraint(bool& keepAspectRatio);
 
    /**
       Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.

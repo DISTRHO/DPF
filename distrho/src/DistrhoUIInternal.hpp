@@ -132,9 +132,14 @@ public:
         return uiData->window->getScaleFactor();
     }
 
-    Size<uint> getMinimumSizeConstraint()
+    Size<uint> getMinimumSizeConstraint(bool& keepAspectRatio)
     {
-        return uiData->window->getMinimumSizeConstraint();
+        return uiData->window->getMinimumSizeConstraint(keepAspectRatio);
+    }
+
+    bool isResizable() const noexcept
+    {
+        return uiData->window->isResizable();
     }
 
     bool isVisible() const noexcept
@@ -264,14 +269,12 @@ public:
 
     // -------------------------------------------------------------------
 
-    /*
     void setWindowSizeForVST3(const uint width, const uint height)
     {
-        // ui->setSize(width, height);
+        ui->setSize(width, height);
         uiData->window->setSize(width, height);
         // uiData->app.idle();
     }
-    */
 
     void setWindowTitle(const char* const uiTitle)
     {

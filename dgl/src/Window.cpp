@@ -346,8 +346,9 @@ void Window::runAsModal(bool blockWait)
     pData->runAsModal(blockWait);
 }
 
-Size<uint> Window::getMinimumSizeConstraint()
+Size<uint> Window::getMinimumSizeConstraint(bool& keepAspectRatio)
 {
+    keepAspectRatio = pData->keepAspectRatio;
     return Size<uint>(pData->minWidth, pData->minHeight);
 }
 

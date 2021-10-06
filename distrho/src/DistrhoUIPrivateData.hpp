@@ -38,12 +38,6 @@
 # define DISTRHO_UI_USER_RESIZABLE 0
 #endif
 
-// TODO figure out how to detect host support
-#if defined(DISTRHO_PLUGIN_TARGET_VST3)
-# undef DISTRHO_UI_USER_RESIZABLE
-# define DISTRHO_UI_USER_RESIZABLE 0
-#endif
-
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI

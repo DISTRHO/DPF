@@ -39,7 +39,6 @@ namespace std {
 /* TODO items:
  * - mousewheel event
  * - key down/up events
- * - host-side resize
  */
 
 #if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
@@ -76,6 +75,42 @@ struct ScopedUTF16String {
 
 // --------------------------------------------------------------------------------------------------------------------
 
+static bool checkSizeConstraint(const Size<uint>& size, const bool keepAspectRatio, v3_view_rect* const rect)
+{
+    const int32_t minWidth = static_cast<int32_t>(size.getWidth());
+    const int32_t minHeight = static_cast<int32_t>(size.getHeight());
+    bool changed = false;
+
+    if (keepAspectRatio)
+    {
+        const double ratio = static_cast<double>(minWidth) / static_cast<double>(minHeight);
+        const double reqRatio = static_cast<double>(rect->right) / static_cast<double>(rect->bottom);
+
+        if (d_isNotEqual(ratio, reqRatio))
+        {
+            changed = true;
+
+            // fix width
+            if (reqRatio > ratio)
+                rect->right = static_cast<uint>(rect->bottom * ratio + 0.5);
+            // fix height
+            else
+                rect->bottom = static_cast<uint>(static_cast<double>(rect->right) / ratio + 0.5);
+        }
+    }
+
+    if (minWidth > rect->right || minHeight > rect->bottom)
+    {
+        changed = true;
+        rect->right = minWidth;
+        rect->bottom = minHeight;
+    }
+
+    return changed;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 /**
  * VST3 UI class.
  *
@@ -102,14 +137,15 @@ public:
            const float scaleFactor,
            const double sampleRate,
            void* const instancePointer,
-           const bool ignoreSizeCallback)
+           const bool willResizeFromHost)
         : fView(view),
           fHostContext(host),
           fConnection(connection),
           fFrame(frame),
           fReadyForPluginData(false),
           fScaleFactor(scaleFactor),
-          fIgnoreSizeCallback(ignoreSizeCallback),
+          fIsResizingFromPlugin(false),
+          fIsResizingFromHost(willResizeFromHost),
           fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
@@ -121,9 +157,6 @@ public:
               instancePointer,
               scaleFactor)
     {
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
-#endif
     }
 
     ~UIVst3()
@@ -137,18 +170,15 @@ public:
 
     void postInit(const Size<uint>& requestedSize)
     {
-        if (fIgnoreSizeCallback)
-        {
-            fIgnoreSizeCallback = false;
-
-            /*
-            if (requestedSize.isValid())
-                fUI.setWindowSizeForVST3(requestedSize.getWidth(), requestedSize.getHeight());
-            */
-        }
+        if (fIsResizingFromHost && requestedSize.isValid())
+            fUI.setWindowSizeForVST3(requestedSize.getWidth(), requestedSize.getHeight());
 
         if (fConnection != nullptr)
             connect(fConnection);
+
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -185,14 +215,20 @@ public:
         return V3_OK;
     }
 
-    /*
     v3_result onSize(v3_view_rect* const rect)
     {
-        d_stdout("host->plugin onSize request %i %i", rect->right - rect->left, rect->bottom - rect->top);
+        if (fIsResizingFromPlugin)
+        {
+            d_stdout("host->plugin onSize request %i %i (IGNORED, plugin resize active)",
+                     rect->right - rect->left, rect->bottom - rect->top);
+            return V3_OK;
+        }
+
+        d_stdout("host->plugin onSize request %i %i (OK)", rect->right - rect->left, rect->bottom - rect->top);
+        fIsResizingFromHost = true;
         fUI.setWindowSizeForVST3(rect->right - rect->left, rect->bottom - rect->top);
-        return V3_NOT_IMPLEMENTED;
+        return V3_OK;
     }
-    */
 
     v3_result onFocus(const bool state)
     {
@@ -212,20 +248,16 @@ public:
         return V3_OK;
     }
 
+    v3_result canResize() noexcept
+    {
+        return fUI.isResizable() ? V3_TRUE : V3_FALSE;
+    }
+
     v3_result checkSizeConstraint(v3_view_rect* const rect)
     {
-        const Size<uint> size(fUI.getMinimumSizeConstraint());
-        const int32_t minright = static_cast<int32_t>(size.getWidth());
-        const int32_t minbottom = static_cast<int32_t>(size.getHeight());
-        if (minright > rect->right || minbottom > rect->bottom)
-        {
-            rect->right = minright;
-            rect->bottom = minbottom;
-            d_stdout("host->plugin checkSizeConstraint FALSE %i %i", rect->right, rect->bottom);
-            return V3_FALSE;
-        }
-        d_stdout("host->plugin checkSizeConstraint TRUE %i %i", rect->right, rect->bottom);
-        return V3_TRUE;
+        bool keepAspectRatio;
+        const Size<uint> size(fUI.getMinimumSizeConstraint(keepAspectRatio));
+        return ::checkSizeConstraint(size, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -402,13 +434,8 @@ public:
 #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
     void idleCallback() override
     {
-        if (fReadyForPluginData)
-        {
-            fReadyForPluginData = false;
-            requestMorePluginData();
-        }
-
         fUI.idleForVST3();
+        doIdleStuff();
     }
 #else
     // ----------------------------------------------------------------------------------------------------------------
@@ -416,15 +443,31 @@ public:
 
     void onTimer()
     {
+        fUI.plugin_idle();
+        doIdleStuff();
+    }
+#endif
+
+    void doIdleStuff()
+    {
         if (fReadyForPluginData)
         {
             fReadyForPluginData = false;
             requestMorePluginData();
         }
 
-        fUI.plugin_idle();
+        if (fIsResizingFromHost)
+        {
+            fIsResizingFromHost = false;
+            d_stdout("was resizing from host, now stopped");
+        }
+
+        if (fIsResizingFromPlugin)
+        {
+            fIsResizingFromPlugin = false;
+            d_stdout("was resizing from plugin, now stopped");
+        }
     }
-#endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -438,7 +481,8 @@ private:
     // Temporary data
     bool fReadyForPluginData;
     float fScaleFactor;
-    bool fIgnoreSizeCallback;
+    bool fIsResizingFromPlugin;
+    bool fIsResizingFromHost;
 
     // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
     UIExporter fUI;
@@ -531,19 +575,21 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
 
-        if (fIgnoreSizeCallback)
+        if (fIsResizingFromHost)
         {
-            d_stdout("plugin->host setSize %u %u (IGNORED)", width, height);
+            d_stdout("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
             return;
         }
 
-        d_stdout("plugin->host setSize %u %u", width, height);
+        d_stdout("plugin->host setSize %u %u (OK)", width, height);
 
 #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         width /= scaleFactor;
         height /= scaleFactor;
 #endif
+
+        fIsResizingFromPlugin = true;
 
         v3_view_rect rect;
         rect.left = rect.top = 0;
@@ -923,8 +969,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return V3_OK;
         }
 
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NO_INTERFACE);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         if (v3_tuid_match(v3_connection_point_iid, iid))
         {
@@ -951,12 +996,12 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static uint32_t V3_API ref_view(void* self)
     {
-        return ++(*(dpf_plugin_view**)self)->refcounter;
+        return ++(*static_cast<dpf_plugin_view**>(self))->refcounter;
     }
 
     static uint32_t V3_API unref_view(void* self)
     {
-        dpf_plugin_view** const viewptr = (dpf_plugin_view**)self;
+        dpf_plugin_view** const viewptr = static_cast<dpf_plugin_view**>(self);
         dpf_plugin_view* const view = *viewptr;
 
         if (const int refcount = --view->refcounter)
@@ -1000,8 +1045,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API is_platform_type_supported(void* self, const char* platform_type)
     {
         d_stdout("dpf_plugin_view::is_platform_type_supported => %p %s", self, platform_type);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
 
         for (size_t i=0; i<ARRAY_SIZE(kSupportedPlatforms); ++i)
         {
@@ -1015,8 +1058,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API attached(void* self, void* parent, const char* platform_type)
     {
         d_stdout("dpf_plugin_view::attached                   => %p %p %s", self, parent, platform_type);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 == nullptr, V3_INVALID_ARG);
 
         for (size_t i=0; i<ARRAY_SIZE(kSupportedPlatforms); ++i)
@@ -1041,7 +1083,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                                           scaleFactor,
                                           view->sampleRate,
                                           view->instancePointer,
-                                          view->nextSize.isNotNull());
+                                          view->nextSize.isValid());
 
                 view->uivst3->postInit(view->nextSize);
                 view->nextSize = Size<uint>();
@@ -1064,8 +1106,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API removed(void* self)
     {
         d_stdout("dpf_plugin_view::removed                    => %p", self);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
 
        #ifdef DPF_VST3_USING_HOST_RUN_LOOP
@@ -1110,8 +1151,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_wheel(void* self, float distance)
     {
         d_stdout("dpf_plugin_view::on_wheel                   => %p %f", self, distance);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
@@ -1122,8 +1162,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_key_down(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
         d_stdout("dpf_plugin_view::on_key_down                => %p %i %i %i", self, key_char, key_code, modifiers);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
@@ -1134,8 +1173,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_key_up(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
         d_stdout("dpf_plugin_view::on_key_up                  => %p %i %i %i", self, key_char, key_code, modifiers);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
@@ -1146,13 +1184,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API get_size(void* self, v3_view_rect* rect)
     {
         d_stdout("dpf_plugin_view::get_size                   => %p", self);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
-
-        // special case: allow UI to not be attached yet, as a way to get size before window creation
 
         const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
@@ -1166,29 +1201,19 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_size(void* self, v3_view_rect* rect)
     {
-        d_stdout("dpf_plugin_view::on_size                    => %p %p", self, rect);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
-        // TODO make this work
-        return V3_NOT_IMPLEMENTED;
-
-        /*
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->onSize(rect);
 
-        // special case: allow UI to not be attached yet, as a way to set size before window creation
-
         view->nextSize = Size<uint>(rect->right - rect->left, rect->bottom - rect->top);
         return V3_OK;
-        */
     }
 
     static v3_result V3_API on_focus(void* self, v3_bool state)
     {
         d_stdout("dpf_plugin_view::on_focus                   => %p %u", self, state);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
@@ -1198,9 +1223,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API set_frame(void* self, v3_plugin_frame** frame)
     {
-        d_stdout("dpf_plugin_view::set_frame                  => %p %p", self, frame);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         view->frame = frame;
 
@@ -1212,39 +1235,35 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API can_resize(void* self)
     {
-        d_stdout("dpf_plugin_view::can_resize                 => %p", self);
-// #if DISTRHO_UI_USER_RESIZABLE
-//         return V3_TRUE;
-// #else
+#if DISTRHO_UI_USER_RESIZABLE
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
+
+        if (UIVst3* const uivst3 = view->uivst3)
+            return uivst3->canResize();
+
+        return V3_TRUE;
+#else
         return V3_FALSE;
-// #endif
+
+        // unused
+        (void)self;
+#endif
     }
 
     static v3_result V3_API check_size_constraint(void* self, v3_view_rect* rect)
     {
-        d_stdout("dpf_plugin_view::check_size_constraint      => %p %p", self, rect);
-        dpf_plugin_view* const view = *(dpf_plugin_view**)self;
-        DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, V3_NOT_INITIALIZED);
+        dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->checkSizeConstraint(rect);
-
-        // special case: allow UI to not be attached yet, as a way to get size constraint before window creation
 
         const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                          view->instancePointer, scaleFactor);
-        const Size<uint> size(tmpUI.getMinimumSizeConstraint());
-        const int32_t minright = static_cast<int32_t>(size.getWidth());
-        const int32_t minbottom = static_cast<int32_t>(size.getHeight());
-        if (minright > rect->right || minbottom > rect->bottom)
-        {
-            rect->right = minright;
-            rect->bottom = minbottom;
-            return V3_FALSE;
-        }
-        return V3_TRUE;
+        bool keepAspectRatio;
+        const Size<uint> size(tmpUI.getMinimumSizeConstraint(keepAspectRatio));
+        return ::checkSizeConstraint(size, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
     }
 };
 
