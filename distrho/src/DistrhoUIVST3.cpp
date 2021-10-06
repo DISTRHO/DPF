@@ -196,6 +196,8 @@ public:
         d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
 
+        using namespace DGL_NAMESPACE;
+
         // TODO
         uint dglcode = 0;
 
@@ -224,6 +226,8 @@ public:
     {
         d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
+
+        using namespace DGL_NAMESPACE;
 
         // TODO
         uint dglcode = 0;
