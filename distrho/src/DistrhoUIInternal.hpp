@@ -137,7 +137,7 @@ public:
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         uiData->window->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
 #else
-        const Size<uint> size(uiData->window->getGeometryConstraints(keepAspectRatio));
+        const DGL_NAMESPACE::Size<uint> size(uiData->window->getGeometryConstraints(keepAspectRatio));
         minimumWidth = size.getWidth();
         minimumHeight = size.getHeight();
 #endif
