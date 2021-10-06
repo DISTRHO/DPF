@@ -276,14 +276,16 @@ public:
 
     // -------------------------------------------------------------------
 
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
     void setWindowSizeForVST3(const uint width, const uint height)
     {
         ui->setSize(width, height);
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         uiData->window->setSize(width, height);
         // uiData->app.idle();
-#endif
+# endif
     }
+#endif
 
     void setWindowTitle(const char* const uiTitle)
     {

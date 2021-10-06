@@ -169,10 +169,10 @@ public:
             disconnect();
     }
 
-    void postInit(const Size<uint>& requestedSize)
+    void postInit(const int32_t nextWidth, const int32_t nextHeight)
     {
-        if (fIsResizingFromHost && requestedSize.isValid())
-            fUI.setWindowSizeForVST3(requestedSize.getWidth(), requestedSize.getHeight());
+        if (fIsResizingFromHost && nextWidth > 0 && nextHeight > 0)
+            fUI.setWindowSizeForVST3(nextWidth, nextHeight);
 
         if (fConnection != nullptr)
             connect(fConnection);
@@ -921,14 +921,16 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     void* const instancePointer;
     double sampleRate;
     v3_plugin_frame** frame;
-    Size<uint> nextSize;
+    int32_t nextWidth, nextHeight;
 
     dpf_plugin_view(v3_host_application** const h, void* const instance, const double sr)
         : refcounter(1),
           host(h),
           instancePointer(instance),
           sampleRate(sr),
-          frame(nullptr)
+          frame(nullptr),
+          nextWidth(0),
+          nextHeight(0)
     {
         // v3_funknown, everything custom
         query_interface = query_interface_view;
@@ -1085,10 +1087,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                                           scaleFactor,
                                           view->sampleRate,
                                           view->instancePointer,
-                                          view->nextSize.isValid());
+                                          view->nextWidth > 0 && view->nextHeight > 0);
 
-                view->uivst3->postInit(view->nextSize);
-                view->nextSize = Size<uint>();
+                view->uivst3->postInit(view->nextWidth, view->nextHeight);
+                view->nextWidth = 0;
+                view->nextHeight = 0;
 
                #ifdef DPF_VST3_USING_HOST_RUN_LOOP
                 // register a timer host run loop stuff
@@ -1208,7 +1211,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->onSize(rect);
 
-        view->nextSize = Size<uint>(rect->right - rect->left, rect->bottom - rect->top);
+        view->nextWidth = rect->right - rect->left;
+        view->nextHeight = rect->bottom - rect->top;
         return V3_OK;
     }
 
