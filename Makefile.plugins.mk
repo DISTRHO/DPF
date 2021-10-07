@@ -312,7 +312,7 @@ $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
 jack: $(jack)
 
 ifeq ($(HAVE_DGL),true)
-$(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o $(DGL_LIB)
+$(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o $(DGL_LIB) $(EXTRA_LIBS)
 else
 $(jack): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o
 endif
@@ -355,7 +355,7 @@ lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
 ifeq ($(HAVE_DGL),true)
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
+$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB) $(EXTRA_LIBS)
 else
 $(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 endif
@@ -379,7 +379,7 @@ $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 vst2 vst: $(vst2)
 
 ifeq ($(HAVE_DGL),true)
-$(vst2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.o $(DGL_LIB)
+$(vst2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.o $(DGL_LIB) $(EXTRA_LIBS)
 else
 $(vst2): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o
 endif
@@ -393,7 +393,7 @@ endif
 vst3: $(vst3)
 
 ifeq ($(HAVE_DGL),true)
-$(vst3): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.o $(DGL_LIB)
+$(vst3): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.o $(DGL_LIB) $(EXTRA_LIBS)
 else
 $(vst3): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o
 endif
