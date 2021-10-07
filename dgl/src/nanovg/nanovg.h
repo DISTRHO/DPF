@@ -279,6 +279,10 @@ void nvgLineJoin(NVGcontext* ctx, int join);
 // Sets the transparency applied to all rendered shapes.
 // Already transparent paths will get proportionally more transparent as well.
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
+void nvgGlobalTint(NVGcontext* ctx, NVGcolor tint);
+NVGcolor nvgGetGlobalTint(NVGcontext* ctx);
+void nvgAlpha(NVGcontext* ctx, float alpha);
+void nvgTint(NVGcontext* ctx, NVGcolor tint);
 
 //
 // Transforms
@@ -385,7 +389,7 @@ int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int 
 
 // Creates image from specified image data and texture format.
 // Returns handle to the image.
-int nvgCreateImageRaw(NVGcontext* ctx, int w, int h, int imageFlags, NVGtexture format, const unsigned char* data);
+int nvgCreateImageRaw(NVGcontext* ctx, int w, int h, int imageFlags, enum NVGtexture format, const unsigned char* data);
 
 // Creates image from specified image data.
 // Returns handle to the image.
