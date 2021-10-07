@@ -111,9 +111,6 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Set plugin symbols to export
 
-ifneq ($(DEBUG),true)
-ifneq ($(SKIP_STRIPPING),true)
-
 ifeq ($(MACOS),true)
 SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
 SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
@@ -130,7 +127,7 @@ SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
 SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
 SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
 SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
-else
+else ifneq ($(DEBUG),true)
 SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
 SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
 SYMBOLS_LV2DSP = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-dsp.version
@@ -138,9 +135,6 @@ SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
 SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
 SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
 SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
-endif
-
-endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
