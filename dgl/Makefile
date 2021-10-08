@@ -62,8 +62,11 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_opengl = $(OBJS_common) \
-	../build/dgl/OpenGL.cpp.opengl.o \
-	../build/dgl/NanoVG.cpp.opengl.o
+	../build/dgl/OpenGL.cpp.opengl.o
+
+ifneq ($(SKIP_NANOVG),true)
+OBJS_opengl += ../build/dgl/NanoVG.cpp.opengl.o
+endif
 
 ifeq ($(MACOS),true)
 OBJS_opengl += ../build/dgl/pugl.mm.opengl.o
