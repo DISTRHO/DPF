@@ -83,7 +83,11 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 #endif
 
 #include "nanovg/nanovg_gl.h"
-#include "nanovg/nanovg_gl_utils.h"
+
+#ifdef DGL_USE_NANOVG_FBO
+# define NANOVG_FBO_VALID 1
+# include "nanovg/nanovg_gl_utils.h"
+#endif
 
 #if defined(NANOVG_GL2)
 # define nvgCreateGL nvgCreateGL2

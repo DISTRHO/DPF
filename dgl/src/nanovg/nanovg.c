@@ -698,7 +698,8 @@ void nvgLineJoin(NVGcontext* ctx, int join)
 
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha)
 {
-	nvgGlobalTint(ctx, nvgRGBAf(1, 1, 1, alpha));
+	NVGstate* state = nvg__getState(ctx);
+	state->tint.a = alpha;
 }
 
 void nvgGlobalTint(NVGcontext* ctx, NVGcolor tint)

@@ -16,6 +16,9 @@ LINK_FLAGS      += $(DGL_LIBS)
 ifeq ($(USE_OPENGL3),true)
 BUILD_CXX_FLAGS += -DDGL_USE_OPENGL3
 endif
+ifneq ($(USE_NANOVG_FBO),true)
+BUILD_CXX_FLAGS += -DDGL_USE_NANOVG_FBO
+endif
 
 # TODO fix these after pugl-upstream is done
 BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers
@@ -62,11 +65,8 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_opengl = $(OBJS_common) \
-	../build/dgl/OpenGL.cpp.opengl.o
-
-ifneq ($(SKIP_NANOVG),true)
-OBJS_opengl += ../build/dgl/NanoVG.cpp.opengl.o
-endif
+	../build/dgl/OpenGL.cpp.opengl.o \
+	../build/dgl/NanoVG.cpp.opengl.o
 
 ifeq ($(MACOS),true)
 OBJS_opengl += ../build/dgl/pugl.mm.opengl.o
