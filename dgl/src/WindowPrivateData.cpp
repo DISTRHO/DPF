@@ -249,7 +249,11 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     puglSetHandle(view, this);
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
+#if DGL_USE_RGBA
+    puglSetViewHint(view, PUGL_DEPTH_BITS, 24);
+#else
     puglSetViewHint(view, PUGL_DEPTH_BITS, 16);
+#endif
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
 #ifdef DGL_USE_OPENGL3
     puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
