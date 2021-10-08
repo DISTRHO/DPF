@@ -16,8 +16,11 @@ LINK_FLAGS      += $(DGL_LIBS)
 ifeq ($(USE_OPENGL3),true)
 BUILD_CXX_FLAGS += -DDGL_USE_OPENGL3
 endif
-ifneq ($(USE_NANOVG_FBO),true)
+ifeq ($(USE_NANOVG_FBO),true)
 BUILD_CXX_FLAGS += -DDGL_USE_NANOVG_FBO
+endif
+ifeq ($(USE_RGBA),true)
+BUILD_CXX_FLAGS += -DDGL_USE_RGBA
 endif
 
 # TODO fix these after pugl-upstream is done
