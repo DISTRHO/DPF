@@ -430,7 +430,7 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx, float x, float y, float w, float h,
 NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float outr,
 						   NVGcolor icol, NVGcolor ocol);
 
-// Creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
+// Creates and returns an image pattern. Parameters (ox,oy) specify the left-top location of the image pattern,
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
@@ -671,7 +671,7 @@ typedef struct NVGpath NVGpath;
 struct NVGparams {
 	void* userPtr;
 	int edgeAntiAlias;
-	int (*renderCreate)(void* uptr);
+	int (*renderCreate)(void* uptr, void* otherUptr);
 	int (*renderCreateTexture)(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
 	int (*renderDeleteTexture)(void* uptr, int image);
 	int (*renderUpdateTexture)(void* uptr, int image, int x, int y, int w, int h, const unsigned char* data);
@@ -687,7 +687,7 @@ struct NVGparams {
 typedef struct NVGparams NVGparams;
 
 // Constructor and destructor, called by the render back-end.
-NVGcontext* nvgCreateInternal(NVGparams* params);
+NVGcontext* nvgCreateInternal(NVGparams* params, NVGcontext* other);
 void nvgDeleteInternal(NVGcontext* ctx);
 
 NVGparams* nvgInternalParams(NVGcontext* ctx);

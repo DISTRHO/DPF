@@ -943,6 +943,7 @@ private:
     inline void onDisplay() override
     {
         // NOTE maybe should use BaseWidget::getWindow().getScaleFactor() as 3rd arg ?
+        NanoVG::reset();
         NanoVG::beginFrame(BaseWidget::getWidth(), BaseWidget::getHeight());
         onNanoDisplay();
         NanoVG::endFrame();
