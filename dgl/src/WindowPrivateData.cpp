@@ -822,7 +822,7 @@ void Window::PrivateData::onPuglKey(const Widget::KeyboardEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->keyboardEvent(ev))
+        if (widget->isVisible() && widget->onKeyboard(ev))
             break;
     }
 #endif
@@ -840,7 +840,7 @@ void Window::PrivateData::onPuglText(const Widget::CharacterInputEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->characterInputEvent(ev))
+        if (widget->isVisible() && widget->onCharacterInput(ev))
             break;
     }
 #endif
@@ -858,7 +858,7 @@ void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->mouseEvent(ev))
+        if (widget->isVisible() && widget->onMouse(ev))
             break;
     }
 #endif
@@ -876,7 +876,7 @@ void Window::PrivateData::onPuglMotion(const Widget::MotionEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->motionEvent(ev))
+        if (widget->isVisible() && widget->onMotion(ev))
             break;
     }
 #endif
@@ -894,7 +894,7 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->scrollEvent(ev))
+        if (widget->isVisible() && widget->onScroll(ev))
             break;
     }
 #endif
