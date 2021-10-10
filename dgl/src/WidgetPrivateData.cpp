@@ -112,18 +112,15 @@ bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY());
         }
     }
 
@@ -151,18 +148,15 @@ bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY());
         }
     }
 
@@ -190,18 +184,15 @@ bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY());
         }
     }
 
