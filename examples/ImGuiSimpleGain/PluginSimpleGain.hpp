@@ -29,6 +29,7 @@
 
 #include "DistrhoPlugin.hpp"
 #include "CParamSmooth.hpp"
+#include "extra/ScopedPointer.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -59,57 +60,50 @@ public:
 
     PluginSimpleGain();
 
-    ~PluginSimpleGain();
-
 protected:
     // -------------------------------------------------------------------
     // Information
 
-    const char* getLabel() const noexcept override {
+    const char* getLabel() const noexcept override
+    {
         return "SimpleGain";
     }
 
-    const char* getDescription() const override {
-        return "A simple audio volume gain plugin";
+    const char* getDescription() const override
+    {
+        return "A simple audio volume gain plugin with ImGui for its GUI";
     }
 
-    const char* getMaker() const noexcept override {
-        return "example.com";
+    const char* getMaker() const noexcept override
+    {
+        return "Jean Pierre Cimalando, falkTX";
     }
 
-    const char* getHomePage() const override {
-        return "https://example.com/plugins/simplegain";
+    const char* getLicense() const noexcept override
+    {
+        return "MIT";
     }
 
-    const char* getLicense() const noexcept override {
-        return "https://spdx.org/licenses/MIT";
+    uint32_t getVersion() const noexcept override
+    {
+        return d_version(1, 0, 0);
     }
 
-    uint32_t getVersion() const noexcept override {
-        return d_version(0, 1, 0);
-    }
-
-    // Go to:
-    //
-    // http://service.steinberg.de/databases/plugin.nsf/plugIn
-    //
-    // Get a proper plugin UID and fill it in here!
-    int64_t getUniqueId() const noexcept override {
-        return d_cconst('a', 'b', 'c', 'd');
+    int64_t getUniqueId() const noexcept override
+    {
+        return d_cconst('d', 'I', 'm', 'G');
     }
 
     // -------------------------------------------------------------------
     // Init
 
     void initParameter(uint32_t index, Parameter& parameter) override;
-    void initProgramName(uint32_t index, String& programName) override;
 
     // -------------------------------------------------------------------
     // Internal data
 
     float getParameterValue(uint32_t index) const override;
     void setParameterValue(uint32_t index, float value) override;
-    void loadProgram(uint32_t index) override;
 
     // -------------------------------------------------------------------
     // Optional
@@ -121,38 +115,18 @@ protected:
     // Process
 
     void activate() override;
-
     void run(const float**, float** outputs, uint32_t frames) override;
-
 
     // -------------------------------------------------------------------
 
 private:
-    float           fParams[paramCount];
-    double          fSampleRate;
-    float           gain;
-    CParamSmooth    *smooth_gain;
+    double fSampleRate;
+    float  fGainDB;
+    float  fGainLinear;
+    ScopedPointer<CParamSmooth> fSmoothGain;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginSimpleGain)
 };
-
-struct Preset {
-    const char* name;
-    float params[PluginSimpleGain::paramCount];
-};
-
-const Preset factoryPresets[] = {
-    {
-        "Unity Gain",
-        {0.0f}
-    }
-    //,{
-    //    "Another preset",  // preset name
-    //    {-14.0f, ...}      // array of presetCount float param values
-    //}
-};
-
-const uint presetCount = sizeof(factoryPresets) / sizeof(Preset);
 
 // -----------------------------------------------------------------------
 

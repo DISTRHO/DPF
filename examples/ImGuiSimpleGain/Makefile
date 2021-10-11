@@ -7,7 +7,7 @@
 # --------------------------------------------------------------
 # Project name, used for binaries
 
-NAME = d_ImguiSimpleGain
+NAME = d_ImGuiSimpleGain
 
 # --------------------------------------------------------------
 # Files to build
@@ -30,7 +30,7 @@ BUILD_CXX_FLAGS += -I../../../DPF-Widgets/opengl/
 # --------------------------------------------------------------
 # Enable all selected plugin types
 
-TARGETS += jack lv2_sep vst3
+TARGETS += jack lv2_sep vst2 vst3
 
 ifeq ($(HAVE_LIBLO),true)
 TARGETS += dssi

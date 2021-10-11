@@ -32,13 +32,15 @@ START_NAMESPACE_DISTRHO
 // Init / Deinit
 
 UISimpleGain::UISimpleGain()
-  : UI(600, 400)
+  : UI(600, 400),
+    fGain(0.0f),
+    fResizeHandle(this)
 {
     setGeometryConstraints(600, 400, true);
-}
 
-UISimpleGain::~UISimpleGain()
-{
+    // hide handle if UI is resizable
+    if (isResizable())
+        fResizeHandle.hide();
 }
 
 // -----------------------------------------------------------------------
@@ -50,45 +52,14 @@ UISimpleGain::~UISimpleGain()
 */
 void UISimpleGain::parameterChanged(uint32_t index, float value)
 {
-    params[index] = value;
+    DISTRHO_SAFE_ASSERT_RETURN(index == 0,);
 
-    switch (index)
-    {
-    case PluginSimpleGain::paramGain:
-        // do something when Gain param is set, such as update a widget
-        break;
-    }
-
-    (void)value;
-}
-
-/**
-  A program has been loaded on the plugin side.
-  This is called by the host to inform the UI about program changes.
-*/
-void UISimpleGain::programLoaded(uint32_t index)
-{
-    if (index < presetCount)
-    {
-        for (int i=0; i < PluginSimpleGain::paramCount; i++)
-        {
-            // set values for each parameter and update their widgets
-            parameterChanged(i, factoryPresets[index].params[i]);
-        }
-    }
-}
-
-/**
-  Optional callback to inform the UI about a sample rate change on the plugin side.
-*/
-void UISimpleGain::sampleRateChanged(double newSampleRate)
-{
-    (void)newSampleRate;
+    fGain = value;
+    repaint();
 }
 
 // -----------------------------------------------------------------------
 // Widget callbacks
-
 
 /**
   A function called to draw the view contents.
@@ -97,28 +68,27 @@ void UISimpleGain::onImGuiDisplay()
 {
     const float width = getWidth();
     const float height = getHeight();
-    const float margin = 20.0f;
+    const float margin = 20.0f * getScaleFactor();
 
     ImGui::SetNextWindowPos(ImVec2(margin, margin));
     ImGui::SetNextWindowSize(ImVec2(width - 2 * margin, height - 2 * margin));
 
-    if (ImGui::Begin("Simple gain")) {
-        static char aboutText[256] =
-            "This is a demo plugin made with ImGui.\n";
+    if (ImGui::Begin("Simple gain", nullptr, ImGuiWindowFlags_NoResize))
+    {
+        static char aboutText[256] = "This is a demo plugin made with ImGui.\n";
         ImGui::InputTextMultiline("About", aboutText, sizeof(aboutText));
 
-        float& gain = params[PluginSimpleGain::paramGain];
-        if (ImGui::SliderFloat("Gain (dB)", &gain, -90.0f, 30.0f))
+        if (ImGui::SliderFloat("Gain (dB)", &fGain, -90.0f, 30.0f))
         {
             if (ImGui::IsItemActivated())
-            {
-                editParameter(PluginSimpleGain::paramGain, true);
-            }
-            setParameterValue(PluginSimpleGain::paramGain, gain);
+                editParameter(0, true);
+
+            setParameterValue(0, fGain);
         }
+
         if (ImGui::IsItemDeactivated())
         {
-            editParameter(PluginSimpleGain::paramGain, false);
+            editParameter(0, false);
         }
     }
     ImGui::End();

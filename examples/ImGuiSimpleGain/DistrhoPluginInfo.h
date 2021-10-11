@@ -22,7 +22,7 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "ImguiSimpleGain"
+#define DISTRHO_PLUGIN_NAME "ImGuiSimpleGain"
 
 /**
    Number of audio inputs the plugin has.
@@ -93,7 +93,7 @@
    @see Plugin::initProgramName(uint32_t, String&)
    @see Plugin::loadProgram(uint32_t)
  */
-#define DISTRHO_PLUGIN_WANT_PROGRAMS 1
+#define DISTRHO_PLUGIN_WANT_PROGRAMS 0
 
 /**
    Wherever the plugin uses internal non-parameter data.

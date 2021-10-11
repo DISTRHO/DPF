@@ -30,6 +30,10 @@ public:
         }
     }
 
+    inline void flush() {
+        z = 0.0f;
+    }
+
     inline float process(float in) {
         return z = (in * b) + (z * a);
     }

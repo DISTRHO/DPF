@@ -31,109 +31,65 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 
 PluginSimpleGain::PluginSimpleGain()
-    : Plugin(paramCount, presetCount, 0)  // paramCount param(s), presetCount program(s), 0 states
+    : Plugin(paramCount, 0, 0), // parameters, programs, states
+      fSampleRate(getSampleRate()),
+      fGainDB(0.0f),
+      fGainLinear(1.0f)
 {
-    smooth_gain = new CParamSmooth(20.0f, getSampleRate());
-
-    for (unsigned p = 0; p < paramCount; ++p) {
-        Parameter param;
-        initParameter(p, param);
-        setParameterValue(p, param.ranges.def);
-    }
-}
-
-PluginSimpleGain::~PluginSimpleGain() {
-    delete smooth_gain;
+    fSmoothGain = new CParamSmooth(20.0f, fSampleRate);
 }
 
 // -----------------------------------------------------------------------
 // Init
 
-void PluginSimpleGain::initParameter(uint32_t index, Parameter& parameter) {
-    if (index >= paramCount)
-        return;
+void PluginSimpleGain::initParameter(uint32_t index, Parameter& parameter)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(index == 0,);
 
     parameter.ranges.min = -90.0f;
     parameter.ranges.max = 30.0f;
     parameter.ranges.def = -0.0f;
-    parameter.unit = "db";
     parameter.hints = kParameterIsAutomable;
-
-    switch (index) {
-        case paramGain:
-            parameter.name = "Gain (dB)";
-            parameter.shortName = "Gain";
-            parameter.symbol = "gain";
-            break;
-    }
-}
-
-/**
-  Set the name of the program @a index.
-  This function will be called once, shortly after the plugin is created.
-*/
-void PluginSimpleGain::initProgramName(uint32_t index, String& programName) {
-    if (index < presetCount) {
-        programName = factoryPresets[index].name;
-    }
+    parameter.name = "Gain";
+    parameter.shortName = "Gain";
+    parameter.symbol = "gain";
+    parameter.unit = "dB";
 }
 
 // -----------------------------------------------------------------------
 // Internal data
 
 /**
-  Optional callback to inform the plugin about a sample rate change.
-*/
-void PluginSimpleGain::sampleRateChanged(double newSampleRate) {
-    fSampleRate = newSampleRate;
-    smooth_gain->setSampleRate(newSampleRate);
-}
-
-/**
   Get the current value of a parameter.
 */
-float PluginSimpleGain::getParameterValue(uint32_t index) const {
-    return fParams[index];
+float PluginSimpleGain::getParameterValue(uint32_t index) const
+{
+    DISTRHO_SAFE_ASSERT_RETURN(index == 0, 0.0f);
+
+    return fGainDB;
 }
 
 /**
   Change a parameter value.
 */
-void PluginSimpleGain::setParameterValue(uint32_t index, float value) {
-    fParams[index] = value;
+void PluginSimpleGain::setParameterValue(uint32_t index, float value)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(index == 0,);
 
-    switch (index) {
-        case paramGain:
-            gain = DB_CO(CLAMP(fParams[paramGain], -90.0, 30.0));
-            break;
-    }
-}
-
-/**
-  Load a program.
-  The host may call this function from any context,
-  including realtime processing.
-*/
-void PluginSimpleGain::loadProgram(uint32_t index) {
-    if (index < presetCount) {
-        for (int i=0; i < paramCount; i++) {
-            setParameterValue(i, factoryPresets[index].params[i]);
-        }
-    }
+    fGainDB = value;
+    fGainLinear = DB_CO(CLAMP(value, -90.0, 30.0));
 }
 
 // -----------------------------------------------------------------------
 // Process
 
-void PluginSimpleGain::activate() {
-    // plugin is activated
+void PluginSimpleGain::activate()
+{
+    fSmoothGain->flush();
 }
 
-
-
-void PluginSimpleGain::run(const float** inputs, float** outputs,
-                           uint32_t frames) {
-
+void PluginSimpleGain::run(const float** inputs, float** outputs, uint32_t frames)
+{
     // get the left and right audio inputs
     const float* const inpL = inputs[0];
     const float* const inpR = inputs[1];
@@ -143,16 +99,29 @@ void PluginSimpleGain::run(const float** inputs, float** outputs,
     float* const outR = outputs[1];
 
     // apply gain against all samples
-    for (uint32_t i=0; i < frames; ++i) {
-        float gainval = smooth_gain->process(gain);
-        outL[i] = inpL[i] * gainval;
-        outR[i] = inpR[i] * gainval;
+    for (uint32_t i=0; i < frames; ++i)
+    {
+        const float gain = fSmoothGain->process(fGainLinear);
+        outL[i] = inpL[i] * gain;
+        outR[i] = inpR[i] * gain;
     }
 }
 
 // -----------------------------------------------------------------------
 
-Plugin* createPlugin() {
+/**
+  Optional callback to inform the plugin about a sample rate change.
+*/
+void PluginSimpleGain::sampleRateChanged(double newSampleRate)
+{
+    fSampleRate = newSampleRate;
+    fSmoothGain->setSampleRate(newSampleRate);
+}
+
+// -----------------------------------------------------------------------
+
+Plugin* createPlugin()
+{
     return new PluginSimpleGain();
 }
 

@@ -28,24 +28,25 @@
 #define UI_SIMPLEGAIN_H
 
 #include "DistrhoUI.hpp"
-#include "PluginSimpleGain.hpp"
+#include "../generic/ResizeHandle.hpp"
 
 START_NAMESPACE_DISTRHO
 
-class UISimpleGain : public UI {
+class UISimpleGain : public UI
+{
 public:
     UISimpleGain();
-    ~UISimpleGain();
 
 protected:
+    // DSP/Plugin callbacks
     void parameterChanged(uint32_t, float value) override;
-    void programLoaded(uint32_t index) override;
-    void sampleRateChanged(double newSampleRate) override;
 
+    // Widget callbacks
     void onImGuiDisplay() override;
 
 private:
-    float params[PluginSimpleGain::paramCount] {};
+    float fGain;
+    ResizeHandle fResizeHandle;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UISimpleGain)
 };
