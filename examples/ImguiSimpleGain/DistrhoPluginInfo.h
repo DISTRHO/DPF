@@ -131,7 +131,7 @@
    This path must be relative to dpf/distrho/DistrhoUI.hpp
    @see DISTRHO_UI_USE_CUSTOM
  */
-#define DISTRHO_UI_CUSTOM_INCLUDE_PATH "ImGuiUI.hpp"
+#define DISTRHO_UI_CUSTOM_INCLUDE_PATH "DearImGui.hpp"
 
 /**
    The top-level-widget typedef to use for the custom toolkit.
@@ -140,6 +140,6 @@
    and define widget type as e.g. DGL_NAMESPACE::MyCustomTopLevelWidget.
    @see DISTRHO_UI_USE_CUSTOM
  */
-#define DISTRHO_UI_CUSTOM_WIDGET_TYPE DGL_NAMESPACE::ImGuiUI
+#define DISTRHO_UI_CUSTOM_WIDGET_TYPE DGL_NAMESPACE::ImGuiTopLevelWidget
 
 #define DISTRHO_UI_USER_RESIZABLE   1

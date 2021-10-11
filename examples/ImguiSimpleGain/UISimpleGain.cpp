@@ -25,8 +25,6 @@
  */
 
 #include "UISimpleGain.hpp"
-#include <imgui.h>
-// #include "Window.hpp"
 
 START_NAMESPACE_DISTRHO
 
@@ -34,13 +32,13 @@ START_NAMESPACE_DISTRHO
 // Init / Deinit
 
 UISimpleGain::UISimpleGain()
-: UI(600, 400)
+  : UI(600, 400)
 {
     setGeometryConstraints(600, 400, true);
 }
 
-UISimpleGain::~UISimpleGain() {
-
+UISimpleGain::~UISimpleGain()
+{
 }
 
 // -----------------------------------------------------------------------
@@ -50,13 +48,15 @@ UISimpleGain::~UISimpleGain() {
   A parameter has changed on the plugin side.
   This is called by the host to inform the UI about parameter changes.
 */
-void UISimpleGain::parameterChanged(uint32_t index, float value) {
+void UISimpleGain::parameterChanged(uint32_t index, float value)
+{
     params[index] = value;
 
-    switch (index) {
-        case PluginSimpleGain::paramGain:
-            // do something when Gain param is set, such as update a widget
-            break;
+    switch (index)
+    {
+    case PluginSimpleGain::paramGain:
+        // do something when Gain param is set, such as update a widget
+        break;
     }
 
     (void)value;
@@ -66,9 +66,12 @@ void UISimpleGain::parameterChanged(uint32_t index, float value) {
   A program has been loaded on the plugin side.
   This is called by the host to inform the UI about program changes.
 */
-void UISimpleGain::programLoaded(uint32_t index) {
-    if (index < presetCount) {
-        for (int i=0; i < PluginSimpleGain::paramCount; i++) {
+void UISimpleGain::programLoaded(uint32_t index)
+{
+    if (index < presetCount)
+    {
+        for (int i=0; i < PluginSimpleGain::paramCount; i++)
+        {
             // set values for each parameter and update their widgets
             parameterChanged(i, factoryPresets[index].params[i]);
         }
@@ -78,7 +81,8 @@ void UISimpleGain::programLoaded(uint32_t index) {
 /**
   Optional callback to inform the UI about a sample rate change on the plugin side.
 */
-void UISimpleGain::sampleRateChanged(double newSampleRate) {
+void UISimpleGain::sampleRateChanged(double newSampleRate)
+{
     (void)newSampleRate;
 }
 
@@ -89,10 +93,11 @@ void UISimpleGain::sampleRateChanged(double newSampleRate) {
 /**
   A function called to draw the view contents.
 */
-void UISimpleGain::onImGuiDisplay() {
-    float width = getWidth();
-    float height = getHeight();
-    float margin = 20.0f;
+void UISimpleGain::onImGuiDisplay()
+{
+    const float width = getWidth();
+    const float height = getHeight();
+    const float margin = 20.0f;
 
     ImGui::SetNextWindowPos(ImVec2(margin, margin));
     ImGui::SetNextWindowSize(ImVec2(width - 2 * margin, height - 2 * margin));
@@ -121,7 +126,8 @@ void UISimpleGain::onImGuiDisplay() {
 
 // -----------------------------------------------------------------------
 
-UI* createUI() {
+UI* createUI()
+{
     return new UISimpleGain();
 }
 
