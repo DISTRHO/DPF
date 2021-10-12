@@ -354,17 +354,18 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
 {
     view->defaultWidth  = width;
     view->defaultHeight = height;
+    view->frame.width   = width;
+    view->frame.height  = height;
 
-#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
-    // replace the 2 views setFrame with setFrameSize
-    const PuglRect frame = { view->frame.x, view->frame.y, (double)width, (double)height };
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
+    // replace setFrame with setFrameSize
     PuglInternals* const impl = view->impl;
 
-    // Update view frame to exactly the requested frame in Pugl coordinates
-    view->frame = frame;
-
+    const PuglRect frame = view->frame;
     const NSRect framePx = rectToNsRect(frame);
     const NSRect framePt = nsRectToPoints(view, framePx);
+
     if (impl->window)
     {
         // Resize window to fit new content rect
@@ -418,8 +419,6 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
     }
 #endif
 
-    view->frame.width = width;
-    view->frame.height = height;
     return PUGL_SUCCESS;
 }
 
