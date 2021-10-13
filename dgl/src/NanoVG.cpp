@@ -513,6 +513,12 @@ void NanoVG::globalAlpha(float alpha)
         nvgGlobalAlpha(fContext, alpha);
 }
 
+void NanoVG::globalTint(Color tint)
+{
+    if (fContext != nullptr)
+        nvgGlobalTint(fContext, tint);
+}
+
 // -----------------------------------------------------------------------
 // Transforms
 
