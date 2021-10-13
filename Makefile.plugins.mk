@@ -238,32 +238,32 @@ all:
 # ---------------------------------------------------------------------------------------------------------------------
 # Common
 
-$(BUILD_DIR)/%.S.o: %.S $(EXTRA_LIBS)
+$(BUILD_DIR)/%.S.o: %.S $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.c.o: %.c $(EXTRA_LIBS)
+$(BUILD_DIR)/%.c.o: %.c $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.cc.o: %.cc $(EXTRA_LIBS)
+$(BUILD_DIR)/%.cc.o: %.cc $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.cpp.o: %.cpp $(EXTRA_LIBS)
+$(BUILD_DIR)/%.cpp.o: %.cpp $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.m.o: %.m $(EXTRA_LIBS)
+$(BUILD_DIR)/%.m.o: %.m $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
 
-$(BUILD_DIR)/%.mm.o: %.mm $(EXTRA_LIBS)
+$(BUILD_DIR)/%.mm.o: %.mm $(EXTRA_DEPENDENCIES)
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
@@ -291,27 +291,27 @@ $(DPF_PATH)/build/libdgl-vulkan.a:
 
 AS_PUGL_NAMESPACE = $(subst -,_,$(1))
 
-$(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
+$(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
 
-$(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
+$(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
 
-$(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm
+$(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm $(EXTRA_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUI_macOS.mm ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DPUGL_NAMESPACE=$(call AS_PUGL_NAMESPACE,$*) -DGL_SILENCE_DEPRECATION -Wno-deprecated-declarations -I$(DPF_PATH)/dgl/src -I$(DPF_PATH)/dgl/src/pugl-upstream/include -ObjC++ -c -o $@
 
-$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp
+$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK $(JACK_FLAGS) -c -o $@
 
-$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp
+$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(LIBLO_FLAGS) -DDISTRHO_PLUGIN_TARGET_DSSI -c -o $@
