@@ -422,7 +422,7 @@ protected:
 
             for (uint32_t i=0; i < eventCount; ++i)
             {
-                if (jackbridge_midi_event_get(&jevent, midiInBuf, i) != 0)
+                if (! jackbridge_midi_event_get(&jevent, midiInBuf, i))
                     break;
 
                 // Check if message is control change on channel 1
@@ -735,7 +735,7 @@ private:
         return jackbridge_midi_event_write(fPortMidiOutBuffer,
                                            midiEvent.frame,
                                            midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
-                                           midiEvent.size) == 0;
+                                           midiEvent.size);
     }
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
