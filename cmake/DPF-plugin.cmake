@@ -414,7 +414,7 @@ function(dpf__build_vst3 NAME DGL_LIBRARY)
       SUFFIX "")
   elseif(WIN32)
     set_target_properties("${NAME}-vst3" PROPERTIES
-      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/${vst3_arch}-win/$<0:>")
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/${vst3_arch}-win/$<0:>" SUFFIX ".vst3")
   else()
     set_target_properties("${NAME}-vst3" PROPERTIES
       LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/${vst3_arch}-linux/$<0:>")
