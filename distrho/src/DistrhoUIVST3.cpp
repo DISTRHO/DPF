@@ -125,7 +125,7 @@ static bool applyGeometryConstraints(const uint minimumWidth, const uint minimum
  * The low-level VST3 stuff comes after.
  */
 class UIVst3
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
   : public IdleCallback
 #endif
 {
@@ -162,7 +162,7 @@ public:
 
     ~UIVst3()
     {
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
         fUI.removeIdleCallbackForVST3(this);
 #endif
         if (fConnection != nullptr)
@@ -177,7 +177,7 @@ public:
         if (fConnection != nullptr)
             connect(fConnection);
 
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
         fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
 #endif
     }
@@ -185,6 +185,7 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view interface calls
 
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     v3_result onWheel(float /*distance*/)
     {
         // TODO
@@ -207,17 +208,17 @@ public:
             dglmods |= kModifierShift;
         if (modifiers & (1 << 1))
             dglmods |= kModifierAlt;
-#ifdef DISTRHO_OS_MAC
+# ifdef DISTRHO_OS_MAC
         if (modifiers & (1 << 2))
             dglmods |= kModifierSuper;
         if (modifiers & (1 << 3))
             dglmods |= kModifierControl;
-#else
+# else
         if (modifiers & (1 << 2))
             dglmods |= kModifierControl;
         if (modifiers & (1 << 3))
             dglmods |= kModifierSuper;
-#endif
+# endif
 
         return fUI.handlePluginKeyboardVST3(true, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
@@ -238,20 +239,27 @@ public:
             dglmods |= kModifierShift;
         if (modifiers & (1 << 1))
             dglmods |= kModifierAlt;
-#ifdef DISTRHO_OS_MAC
+# ifdef DISTRHO_OS_MAC
         if (modifiers & (1 << 2))
             dglmods |= kModifierSuper;
         if (modifiers & (1 << 3))
             dglmods |= kModifierControl;
-#else
+# else
         if (modifiers & (1 << 2))
             dglmods |= kModifierControl;
         if (modifiers & (1 << 3))
             dglmods |= kModifierSuper;
-#endif
+# endif
 
         return fUI.handlePluginKeyboardVST3(false, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
+
+    v3_result onFocus(const bool state)
+    {
+        fUI.notifyFocusChanged(state);
+        return V3_OK;
+    }
+#endif
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
     {
@@ -279,18 +287,6 @@ public:
         fIsResizingFromHost = true;
         fUI.setWindowSizeForVST3(rect->right - rect->left, rect->bottom - rect->top);
         return V3_OK;
-    }
-
-    v3_result onFocus(const bool state)
-    {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        fUI.notifyFocusChanged(state);
-        return V3_OK;
-#else
-        return V3_NOT_IMPLEMENTED;
-        // unused
-        (void)state;
-#endif
     }
 
     v3_result setFrame(v3_plugin_frame** const frame) noexcept
@@ -483,7 +479,7 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // special idle callback on macOS and Windows
 
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
     void idleCallback() override
     {
         fUI.idleForVST3();
@@ -1205,6 +1201,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_wheel(void* self, float distance)
     {
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("dpf_plugin_view::on_wheel                   => %p %f", self, distance);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1212,10 +1209,16 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onWheel(distance);
+#else
+        return V3_NOT_IMPLEMENTED;
+        // unused
+        (void)self; (void)distance;
+#endif
     }
 
     static v3_result V3_API on_key_down(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("dpf_plugin_view::on_key_down                => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1223,10 +1226,16 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyDown(key_char, key_code, modifiers);
+#else
+        return V3_NOT_IMPLEMENTED;
+        // unused
+        (void)self; (void)key_char; (void)key_code; (void)modifiers;
+#endif
     }
 
     static v3_result V3_API on_key_up(void* self, int16_t key_char, int16_t key_code, int16_t modifiers)
     {
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("dpf_plugin_view::on_key_up                  => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1234,6 +1243,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyUp(key_char, key_code, modifiers);
+#else
+        return V3_NOT_IMPLEMENTED;
+        // unused
+        (void)self; (void)key_char; (void)key_code; (void)modifiers;
+#endif
     }
 
     static v3_result V3_API get_size(void* self, v3_view_rect* rect)
@@ -1268,6 +1282,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_focus(void* self, v3_bool state)
     {
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_stdout("dpf_plugin_view::on_focus                   => %p %u", self, state);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1275,6 +1290,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onFocus(state);
+#else
+        return V3_NOT_IMPLEMENTED;
+        // unused
+        (void)self; (void)state;
+#endif
     }
 
     static v3_result V3_API set_frame(void* self, v3_plugin_frame** frame)

@@ -254,7 +254,7 @@ public:
 
     // -------------------------------------------------------------------
 
-#if defined(DISTRHO_PLUGIN_TARGET_VST3) && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && defined(DISTRHO_PLUGIN_TARGET_VST3) && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
     void addIdleCallbackForVST3(IdleCallback* const cb, const uint timerFrequencyInMs)
     {
         uiData->window->addIdleCallback(cb, timerFrequencyInMs);
@@ -281,8 +281,8 @@ public:
     {
         ui->setSize(width, height);
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        // NOTE in external uis, the ui and window refer to the same object
         uiData->window->setSize(width, height);
-        // uiData->app.idle();
 # endif
     }
 #endif
