@@ -195,7 +195,7 @@ public:
     {
         d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
-
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         using namespace DGL_NAMESPACE;
 
         // TODO
@@ -220,13 +220,16 @@ public:
 #endif
 
         return fUI.handlePluginKeyboardVST3(true, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
+#else
+        return V3_NOT_IMPLEMENTED;
+#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     }
 
     v3_result onKeyUp(const int16_t keychar, const int16_t keycode, const int16_t modifiers)
     {
         d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
-
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         using namespace DGL_NAMESPACE;
 
         // TODO
@@ -251,6 +254,9 @@ public:
 #endif
 
         return fUI.handlePluginKeyboardVST3(false, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
+#else
+        return V3_NOT_IMPLEMENTED;
+#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     }
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
