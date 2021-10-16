@@ -119,8 +119,8 @@ bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
     {
         if (selfw->pData->needsViewportScaling)
         {
-            ev.absolutePos.setX(x - selfw->getAbsoluteX());
-            ev.absolutePos.setY(y - selfw->getAbsoluteY());
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 
@@ -155,8 +155,8 @@ bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
     {
         if (selfw->pData->needsViewportScaling)
         {
-            ev.absolutePos.setX(x - selfw->getAbsoluteX());
-            ev.absolutePos.setY(y - selfw->getAbsoluteY());
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 
@@ -191,8 +191,8 @@ bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
     {
         if (selfw->pData->needsViewportScaling)
         {
-            ev.absolutePos.setX(x - selfw->getAbsoluteX());
-            ev.absolutePos.setY(y - selfw->getAbsoluteY());
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 

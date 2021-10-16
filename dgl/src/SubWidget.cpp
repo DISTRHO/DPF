@@ -35,8 +35,8 @@ template<typename T>
 bool SubWidget::contains(const T x, const T y) const noexcept
 {
     return Rectangle<double>(0, 0,
-                             static_cast<double>(getWidth()) - pData->margin.getX(),
-                             static_cast<double>(getHeight()) - pData->margin.getY()).contains(x, y);
+                             static_cast<double>(getWidth()),
+                             static_cast<double>(getHeight())).contains(x, y);
 }
 
 template<typename T>
@@ -67,9 +67,18 @@ Rectangle<int> SubWidget::getAbsoluteArea() const noexcept
 
 Rectangle<uint> SubWidget::getConstrainedAbsoluteArea() const noexcept
 {
-    return Rectangle<uint>(static_cast<uint>(std::max(0, getAbsoluteX())),
-                           static_cast<uint>(std::max(0, getAbsoluteY())),
-                           getSize());
+    const int x = getAbsoluteX();
+    const int y = getAbsoluteY();
+
+    if (x >= 0 && y >= 0)
+        return Rectangle<uint>(x, y, getSize());
+
+    const int xOffset = std::min(0, x);
+    const int yOffset = std::min(0, y);
+    const int width   = std::max(0, static_cast<int>(getWidth()) + xOffset);
+    const int height  = std::max(0, static_cast<int>(getHeight()) + yOffset);
+
+    return Rectangle<uint>(0, 0, static_cast<uint>(width), static_cast<uint>(height));
 }
 
 void SubWidget::setAbsoluteX(const int x) noexcept
