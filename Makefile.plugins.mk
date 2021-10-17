@@ -238,32 +238,32 @@ all:
 # ---------------------------------------------------------------------------------------------------------------------
 # Common
 
-$(BUILD_DIR)/%.S.o: %.S $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.S.o: %.S
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.c.o: %.c $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.c.o: %.c
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.cc.o: %.cc $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.cc.o: %.cc
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.cpp.o: %.cpp $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.cpp.o: %.cpp
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
-$(BUILD_DIR)/%.m.o: %.m $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.m.o: %.m
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
 
-$(BUILD_DIR)/%.mm.o: %.mm $(EXTRA_DEPENDENCIES)
+$(BUILD_DIR)/%.mm.o: %.mm
 	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
