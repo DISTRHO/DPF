@@ -245,9 +245,6 @@ struct GLNVGcontext {
 	GLNVGshader shader;
 	GLNVGtextureContext* textureContext;
 	float view[2];
-	int ntextures;
-	int ctextures;
-	int textureId;
 	GLuint vertBuf;
 #if defined NANOVG_GL3
 	GLuint vertArr;
