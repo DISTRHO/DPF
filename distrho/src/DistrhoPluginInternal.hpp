@@ -122,6 +122,8 @@ struct Plugin::PrivateData {
 
     uint32_t bufferSize;
     double   sampleRate;
+    char*    binaryFilename;
+    char*    bundlePath;
     bool     canRequestParameterValueChanges;
 
     PrivateData() noexcept
@@ -151,6 +153,8 @@ struct Plugin::PrivateData {
           requestParameterValueChangeCallbackFunc(nullptr),
           bufferSize(d_lastBufferSize),
           sampleRate(d_lastSampleRate),
+          binaryFilename(nullptr),
+          bundlePath(nullptr),
           canRequestParameterValueChanges(d_lastCanRequestParameterValueChanges)
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
@@ -225,6 +229,18 @@ struct Plugin::PrivateData {
             stateDefValues = nullptr;
         }
 #endif
+
+        if (binaryFilename != nullptr)
+        {
+            std::free(binaryFilename);
+            binaryFilename = nullptr;
+        }
+
+        if (bundlePath != nullptr)
+        {
+            std::free(bundlePath);
+            bundlePath = nullptr;
+        }
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT

@@ -22,6 +22,19 @@
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
+// misc functions
+
+/**
+   Get a string representation of the current plugin format we are building against.@n
+   This can be "JACK/Standalone", "LADSPA", "DSSI", "LV2", "VST2" or "VST3".@n
+   This string is purely informational and must not be used to tweak plugin behaviour.
+
+   @note DO NOT CHANGE PLUGIN BEHAVIOUR BASED ON PLUGIN FORMAT.
+*/
+const char* getPluginFormatName() noexcept;
+
+// -----------------------------------------------------------------------------------------------------------
+// Plugin helper classes
 
 /**
    Handy class to help keep audio buffer in sync with incoming MIDI events.

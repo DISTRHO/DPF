@@ -217,6 +217,16 @@ double UI::getSampleRate() const noexcept
     return uiData->sampleRate;
 }
 
+const char* UI::getBinaryFilename() const noexcept
+{
+    return uiData->binaryFilename;
+}
+
+const char* UI::getBundlePath() const noexcept
+{
+    return uiData->bundlePath;
+}
+
 void UI::editParameter(uint32_t index, bool started)
 {
     uiData->editParamCallback(index + uiData->parameterOffset, started);

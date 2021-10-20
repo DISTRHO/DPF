@@ -837,6 +837,18 @@ public:
     */
     double getSampleRate() const noexcept;
 
+   /**
+      Get the absolute filename of the plugin binary.
+      Under certain systems or plugin formats the binary will be inside the plugin bundle.
+    */
+    const char* getBinaryFilename() const noexcept;
+
+   /**
+      Get the bundle path where the plugin resides.
+      Can return null if the plugin is not available in a bundle (if it is a single binary).
+    */
+    const char* getBundlePath() const noexcept;
+
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
    /**
       Get the current host transport time position.@n

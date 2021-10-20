@@ -132,6 +132,19 @@ public:
     double getSampleRate() const noexcept;
 
    /**
+      Get the absolute filename of the UI binary.@n
+      Under certain systems or plugin formats the binary will be inside the plugin bundle.@n
+      Also, in some formats or setups, this file might not be the same as the DSP/plugin side (because of DSP/UI separation).
+    */
+    const char* getBinaryFilename() const noexcept;
+
+   /**
+      Get the bundle path where the UI resides.@n
+      Can return null if the UI is not available in a bundle (if it is a single binary).
+    */
+    const char* getBundlePath() const noexcept;
+
+   /**
       editParameter.
 
       Touch/pressed-down event.

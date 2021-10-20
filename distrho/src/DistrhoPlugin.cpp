@@ -100,6 +100,16 @@ double Plugin::getSampleRate() const noexcept
     return pData->sampleRate;
 }
 
+const char* Plugin::getBinaryFilename() const noexcept
+{
+    return pData->binaryFilename;
+}
+
+const char* Plugin::getBundlePath() const noexcept
+{
+    return pData->bundlePath;
+}
+
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
 const TimePosition& Plugin::getTimePosition() const noexcept
 {

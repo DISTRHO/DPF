@@ -308,6 +308,8 @@ struct UI::PrivateData {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
     char* uiStateFileKeyRequest;
 #endif
+    char* binaryFilename;
+    char* bundlePath;
 
     // Callbacks
     void*           callbacksPtr;
@@ -331,6 +333,8 @@ struct UI::PrivateData {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
           uiStateFileKeyRequest(nullptr),
 #endif
+          binaryFilename(nullptr),
+          bundlePath(nullptr),
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),
@@ -370,6 +374,8 @@ struct UI::PrivateData {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !defined(DGL_FILE_BROWSER_DISABLED)
         std::free(uiStateFileKeyRequest);
 #endif
+        std::free(binaryFilename);
+        std::free(bundlePath);
     }
 
     void editParamCallback(const uint32_t rindex, const bool started)
