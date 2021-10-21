@@ -20,7 +20,9 @@
 
 #include "../extra/String.hpp"
 
-#ifndef DISTRHO_OS_WINDOWS
+#ifdef DISTRHO_OS_WINDOWS
+# include <windows.h>
+#else
 # include <dlfcn.h>
 #endif
 
