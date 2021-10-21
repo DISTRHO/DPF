@@ -50,7 +50,7 @@ const char* getBinaryFilename()
         return filename;
 
 #ifdef DISTRHO_OS_WINDOWS
-# if !DISTRHO_IS_STANDALONE
+# if DISTRHO_IS_STANDALONE
     constexpr const HINSTANCE hInstance = nullptr;
 # endif
     CHAR filenameBuf[MAX_PATH];
