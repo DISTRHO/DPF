@@ -1296,7 +1296,7 @@ private:
 
 // -----------------------------------------------------------------------
 
-static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, const char*, const LV2_Feature* const* features)
+static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, const char* bundlePath, const LV2_Feature* const* features)
 {
     const LV2_Options_Option* options = nullptr;
     const LV2_URID_Map*       uridMap = nullptr;
@@ -1339,7 +1339,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
     mod_license_check(features, DISTRHO_PLUGIN_URI);
 #endif
 
-    d_lastBufferSize = 0;
+    d_nextBufferSize = 0;
     bool usingNominal = false;
 
     for (int i=0; options[i].key != 0; ++i)
@@ -1348,7 +1348,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
         {
             if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Int))
             {
-                d_lastBufferSize = *(const int*)options[i].value;
+                d_nextBufferSize = *(const int*)options[i].value;
                 usingNominal = true;
             }
             else
@@ -1361,7 +1361,7 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
         if (options[i].key == uridMap->map(uridMap->handle, LV2_BUF_SIZE__maxBlockLength))
         {
             if (options[i].type == uridMap->map(uridMap->handle, LV2_ATOM__Int))
-                d_lastBufferSize = *(const int*)options[i].value;
+                d_nextBufferSize = *(const int*)options[i].value;
             else
                 d_stderr("Host provides maxBlockLength but has wrong value type");
 
@@ -1369,14 +1369,15 @@ static LV2_Handle lv2_instantiate(const LV2_Descriptor*, double sampleRate, cons
         }
     }
 
-    if (d_lastBufferSize == 0)
+    if (d_nextBufferSize == 0)
     {
         d_stderr("Host does not provide nominalBlockLength or maxBlockLength options");
-        d_lastBufferSize = 2048;
+        d_nextBufferSize = 2048;
     }
 
-    d_lastSampleRate = sampleRate;
-    d_lastCanRequestParameterValueChanges = ctrlInPortChangeReq != nullptr;
+    d_nextSampleRate = sampleRate;
+    d_nextBundlePath = bundlePath;
+    d_nextCanRequestParameterValueChanges = ctrlInPortChangeReq != nullptr;
 
     return new PluginLv2(sampleRate, uridMap, worker, ctrlInPortChangeReq, usingNominal);
 }

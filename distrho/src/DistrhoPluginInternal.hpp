@@ -31,9 +31,10 @@ static const uint32_t kMaxMidiEvents = 512;
 // -----------------------------------------------------------------------
 // Static data, see DistrhoPlugin.cpp
 
-extern uint32_t d_lastBufferSize;
-extern double   d_lastSampleRate;
-extern bool     d_lastCanRequestParameterValueChanges;
+extern uint32_t    d_nextBufferSize;
+extern double      d_nextSampleRate;
+extern const char* d_nextBundlePath;
+extern bool        d_nextCanRequestParameterValueChanges;
 
 // -----------------------------------------------------------------------
 // DSP callbacks
@@ -122,7 +123,6 @@ struct Plugin::PrivateData {
 
     uint32_t bufferSize;
     double   sampleRate;
-    char*    binaryFilename;
     char*    bundlePath;
     bool     canRequestParameterValueChanges;
 
@@ -151,11 +151,10 @@ struct Plugin::PrivateData {
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
           requestParameterValueChangeCallbackFunc(nullptr),
-          bufferSize(d_lastBufferSize),
-          sampleRate(d_lastSampleRate),
-          binaryFilename(nullptr),
-          bundlePath(nullptr),
-          canRequestParameterValueChanges(d_lastCanRequestParameterValueChanges)
+          bufferSize(d_nextBufferSize),
+          sampleRate(d_nextSampleRate),
+          bundlePath(d_nextBundlePath != nullptr ? strdup(d_nextBundlePath) : nullptr),
+          canRequestParameterValueChanges(d_nextCanRequestParameterValueChanges)
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
@@ -229,12 +228,6 @@ struct Plugin::PrivateData {
             stateDefValues = nullptr;
         }
 #endif
-
-        if (binaryFilename != nullptr)
-        {
-            std::free(binaryFilename);
-            binaryFilename = nullptr;
-        }
 
         if (bundlePath != nullptr)
         {

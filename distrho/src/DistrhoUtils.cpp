@@ -14,12 +14,59 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifndef DISTRHO_IS_STANDALONE
+# error Wrong build configuration
+#endif
+
+#include "extra/String.hpp"
+
+#ifndef DISTRHO_OS_WINDOWS
+# include <dlfcn.h>
+#endif
+
+#if defined(DISTRHO_OS_WINDOWS) && !DISTRHO_IS_STANDALONE
+static HINSTANCE hInstance = nullptr;
+
+DISTRHO_PLUGIN_EXPORT
+BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
+{
+    if (reason == DLL_PROCESS_ATTACH)
+        hInstance = hInst;
+    return 1;
+}
+#endif
+
 START_NAMESPACE_DISTRHO
 
 #ifdef DISTRHO_PLUGIN_TARGET_JACK
 #endif
 
 // -----------------------------------------------------------------------
+
+const char* getBinaryFilename()
+{
+    static String filename;
+
+    if (filename.isNotEmpty())
+        return filename;
+
+#ifdef DISTRHO_OS_WINDOWS
+# if DISTRHO_IS_STANDALONE
+    // TODO
+# else
+    CHAR filenameBuf[MAX_PATH + 256];
+    filenameBuf[0] = '\0';
+    GetModuleFileName(hInstance, filenameBuf, sizeof(filenameBuf));
+    filename = filenameBuf;
+# endif
+#else
+    Dl_info info;
+    dladdr((void*)getBinaryFilename, &info);
+    filename = info.dli_fname;
+#endif
+
+    return filename;
+}
 
 const char* getPluginFormatName() noexcept
 {

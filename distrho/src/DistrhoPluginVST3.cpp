@@ -3094,8 +3094,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         PluginVst3* const vst3 = processor->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
-        d_lastBufferSize = setup->max_block_size;
-        d_lastSampleRate = setup->sample_rate;
+        d_nextBufferSize = setup->max_block_size;
+        d_nextSampleRate = setup->sample_rate;
         return processor->vst3->setupProcessing(setup);
     }
 
@@ -3389,12 +3389,12 @@ struct dpf_component : v3_component_cpp {
             host = component->hostContextFromFactory;
 
         // default early values
-        if (d_lastBufferSize == 0)
-            d_lastBufferSize = 2048;
-        if (d_lastSampleRate <= 0.0)
-            d_lastSampleRate = 44100.0;
+        if (d_nextBufferSize == 0)
+            d_nextBufferSize = 2048;
+        if (d_nextSampleRate <= 0.0)
+            d_nextSampleRate = 44100.0;
 
-        d_lastCanRequestParameterValueChanges = true;
+        d_nextCanRequestParameterValueChanges = true;
 
         component->vst3 = new PluginVst3(host);
         return V3_OK;
@@ -3541,13 +3541,13 @@ struct dpf_component : v3_component_cpp {
 
 static const PluginExporter& _getPluginInfo()
 {
-    d_lastBufferSize = 512;
-    d_lastSampleRate = 44100.0;
-    d_lastCanRequestParameterValueChanges = true;
+    d_nextBufferSize = 512;
+    d_nextSampleRate = 44100.0;
+    d_nextCanRequestParameterValueChanges = true;
     static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr);
-    d_lastBufferSize = 0;
-    d_lastSampleRate = 0.0;
-    d_lastCanRequestParameterValueChanges = false;
+    d_nextBufferSize = 0;
+    d_nextSampleRate = 0.0;
+    d_nextCanRequestParameterValueChanges = false;
 
     return gPluginInfo;
 }

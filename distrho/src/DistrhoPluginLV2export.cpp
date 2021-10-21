@@ -224,11 +224,11 @@ void lv2_generate_ttl(const char* const basename)
     USE_NAMESPACE_DISTRHO
 
     // Dummy plugin to get data from
-    d_lastBufferSize = 512;
-    d_lastSampleRate = 44100.0;
+    d_nextBufferSize = 512;
+    d_nextSampleRate = 44100.0;
     PluginExporter plugin(nullptr, nullptr, nullptr);
-    d_lastBufferSize = 0;
-    d_lastSampleRate = 0.0;
+    d_nextBufferSize = 0;
+    d_nextSampleRate = 0.0;
 
     const String pluginDLL(basename);
     const String pluginTTL(pluginDLL + ".ttl");

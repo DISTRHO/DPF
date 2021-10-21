@@ -22,7 +22,14 @@
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------------------------------------
-// misc functions
+// plugin related utilities
+
+/**
+   Get the absolute filename of the plugin DSP/UI binary.@n
+   Under certain systems or plugin formats the binary will be inside the plugin bundle.@n
+   Also, in some formats or setups, the DSP and UI binaries are in different files.
+*/
+const char* getBinaryFilename();
 
 /**
    Get a string representation of the current plugin format we are building against.@n

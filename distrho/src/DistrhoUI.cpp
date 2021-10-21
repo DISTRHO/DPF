@@ -32,14 +32,16 @@
 
 START_NAMESPACE_DISTRHO
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * Static data, see DistrhoUIInternal.hpp */
 
+const char* g_nextBundlePath  = nullptr;
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 uintptr_t   g_nextWindowId    = 0;
 double      g_nextScaleFactor = 1.0;
-const char* g_nextBundlePath  = nullptr;
+#endif
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * get global scale factor */
 
@@ -217,11 +219,6 @@ double UI::getSampleRate() const noexcept
     return uiData->sampleRate;
 }
 
-const char* UI::getBinaryFilename() const noexcept
-{
-    return uiData->binaryFilename;
-}
-
 const char* UI::getBundlePath() const noexcept
 {
     return uiData->bundlePath;
@@ -270,7 +267,7 @@ void* UI::getPluginInstancePointer() const noexcept
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
- * External UI helpers */
+ * External UI helpers (static calls) */
 
 const char* UI::getNextBundlePath() noexcept
 {

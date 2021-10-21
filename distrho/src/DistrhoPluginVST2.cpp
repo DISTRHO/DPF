@@ -1403,9 +1403,9 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     if (doInternalInit)
     {
         // set valid but dummy values
-        d_lastBufferSize = 512;
-        d_lastSampleRate = 44100.0;
-        d_lastCanRequestParameterValueChanges = true;
+        d_nextBufferSize = 512;
+        d_nextSampleRate = 44100.0;
+        d_nextCanRequestParameterValueChanges = true;
     }
 
     // Create dummy plugin to get data from
@@ -1414,9 +1414,9 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     if (doInternalInit)
     {
         // unset
-        d_lastBufferSize = 0;
-        d_lastSampleRate = 0.0;
-        d_lastCanRequestParameterValueChanges = false;
+        d_nextBufferSize = 0;
+        d_nextSampleRate = 0.0;
+        d_nextCanRequestParameterValueChanges = false;
 
         *(PluginExporter**)ptr = &plugin;
         return 0;
@@ -1437,15 +1437,15 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
             audioMasterCallback audioMaster = (audioMasterCallback)obj->audioMaster;
 
-            d_lastBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
-            d_lastSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
-            d_lastCanRequestParameterValueChanges = true;
+            d_nextBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
+            d_nextSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+            d_nextCanRequestParameterValueChanges = true;
 
             // some hosts are not ready at this point or return 0 buffersize/samplerate
-            if (d_lastBufferSize == 0)
-                d_lastBufferSize = 2048;
-            if (d_lastSampleRate <= 0.0)
-                d_lastSampleRate = 44100.0;
+            if (d_nextBufferSize == 0)
+                d_nextBufferSize = 2048;
+            if (d_nextSampleRate <= 0.0)
+                d_nextSampleRate = 44100.0;
 
             obj->plugin = new PluginVst(audioMaster, effect);
             return 1;

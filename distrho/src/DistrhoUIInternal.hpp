@@ -24,10 +24,10 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // Static data, see DistrhoUI.cpp
 
+extern const char* g_nextBundlePath;
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 extern uintptr_t   g_nextWindowId;
 extern double      g_nextScaleFactor;
-extern const char* g_nextBundlePath;
 #endif
 
 // -----------------------------------------------------------------------
@@ -77,19 +77,19 @@ public:
         uiData->setSizeCallbackFunc     = setSizeCall;
         uiData->fileRequestCallbackFunc = fileRequestCall;
 
+        g_nextBundlePath  = bundlePath;
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         g_nextWindowId    = winId;
         g_nextScaleFactor = scaleFactor;
-        g_nextBundlePath  = bundlePath;
 #endif
         UI::PrivateData::s_nextPrivateData = uiData;
 
         UI* const uiPtr = createUI();
 
+        g_nextBundlePath  = nullptr;
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         g_nextWindowId    = 0;
         g_nextScaleFactor = 0.0;
-        g_nextBundlePath  = nullptr;
 #else
         // enter context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
         uiData->window->leaveContext();

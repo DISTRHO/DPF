@@ -32,3 +32,10 @@
 #else
 # error unsupported format
 #endif
+
+#if defined(DISTRHO_PLUGIN_TARGET_JACK)
+# define DISTRHO_IS_STANDALONE 1
+#else
+# define DISTRHO_IS_STANDALONE 0
+#endif
+#include "src/DistrhoUtils.cpp"

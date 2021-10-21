@@ -31,3 +31,12 @@
 #else
 # error unsupported format
 #endif
+
+#if !DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_DSSI)
+#  define DISTRHO_IS_STANDALONE 1
+# else
+#  define DISTRHO_IS_STANDALONE 0
+# endif
+# include "src/DistrhoUtils.cpp"
+#endif

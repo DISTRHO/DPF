@@ -115,7 +115,7 @@ public:
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this,
               0, // winId
-              d_lastSampleRate,
+              d_nextSampleRate,
               nullptr, // edit param
               setParameterValueCallback,
               setStateCallback,
@@ -804,9 +804,9 @@ int main()
 
     initSignalHandler();
 
-    d_lastBufferSize = jackbridge_get_buffer_size(client);
-    d_lastSampleRate = jackbridge_get_sample_rate(client);
-    d_lastCanRequestParameterValueChanges = true;
+    d_nextBufferSize = jackbridge_get_buffer_size(client);
+    d_nextSampleRate = jackbridge_get_sample_rate(client);
+    d_nextCanRequestParameterValueChanges = true;
 
     const PluginJack p(client);
 

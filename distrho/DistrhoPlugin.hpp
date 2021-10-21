@@ -838,14 +838,9 @@ public:
     double getSampleRate() const noexcept;
 
    /**
-      Get the absolute filename of the plugin binary.
-      Under certain systems or plugin formats the binary will be inside the plugin bundle.
-    */
-    const char* getBinaryFilename() const noexcept;
-
-   /**
       Get the bundle path where the plugin resides.
       Can return null if the plugin is not available in a bundle (if it is a single binary).
+      @see getBinaryFilename
     */
     const char* getBundlePath() const noexcept;
 
