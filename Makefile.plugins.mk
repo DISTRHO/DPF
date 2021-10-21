@@ -73,21 +73,6 @@ LINK_FLAGS += -ldl
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
-
-ifeq ($(LINUX),true)
-VST3_FILENAME = $(TARGET_PROCESSOR)-linux/$(NAME).so
-endif
-ifeq ($(MACOS),true)
-ifneq ($(MACOS_OLD),true)
-VST3_FILENAME = MacOS/$(NAME)
-endif
-endif
-ifeq ($(WINDOWS),true)
-VST3_FILENAME = $(TARGET_PROCESSOR)-win/$(NAME).vst3
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
 # Set files to build
 
 OBJS_DSP = $(FILES_DSP:%=$(BUILD_DIR)/%.o)
@@ -95,6 +80,32 @@ OBJS_UI  = $(FILES_UI:%=$(BUILD_DIR)/%.o)
 
 ifeq ($(MACOS),true)
 OBJS_UI += $(BUILD_DIR)/DistrhoUI_macOS_$(NAME).mm.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set VST2 filename, either single binary or inside a bundle
+
+ifeq ($(MACOS),true)
+VST2_FILENAME = $(NAME).vst/Contents/$(NAME)
+else ifeq ($(USE_VST2_BUNDLE),true)
+VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
+else
+VST2_FILENAME = $(NAME)-vst$(LIB_EXT)
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
+
+ifeq ($(LINUX),true)
+VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
+endif
+ifeq ($(MACOS),true)
+ifneq ($(MACOS_OLD),true)
+VST3_FILENAME = $(NAME).vst3/Contents/MacOS/$(NAME)
+endif
+endif
+ifeq ($(WINDOWS),true)
+VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-win/$(NAME).vst3
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -107,9 +118,9 @@ dssi_ui    = $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_ui$(APP_EXT)
 lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
 lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
 lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
-vst2       = $(TARGET_DIR)/$(NAME)-vst$(LIB_EXT)
+vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
-vst3       = $(TARGET_DIR)/$(NAME).vst3/Contents/$(VST3_FILENAME)
+vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
