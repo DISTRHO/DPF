@@ -51,7 +51,6 @@ JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
 else ifeq ($(WINDOWS),true)
 JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lole32 -lwinmm -lwmcodecdspuuid
 else ifneq ($(HAIKU),true)
-JACK_LIBS   = -ldl
 ifeq ($(HAVE_ALSA),true)
 JACK_FLAGS += $(ALSA_FLAGS)
 JACK_LIBS  += $(ALSA_LIBS)
@@ -67,6 +66,11 @@ endif
 
 # backwards compat
 BASE_FLAGS += -DHAVE_JACK
+
+# always needed
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+LINK_FLAGS += -ldl
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
