@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "DistrhoPluginUtils.hpp"
 #include "../extra/ScopedSafeLocale.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
@@ -1679,6 +1680,32 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     // old version
     if (audioMaster(nullptr, audioMasterVersion, 0, 0, nullptr, 0.0f) == 0)
         return nullptr;
+
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+#ifdef DISTRHO_OS_MAC
+        if (tmpPath.endsWith("/MacOS"))
+        {
+            tmpPath.truncate(tmpPath.rfind('/'));
+            if (tmpPath.endsWith("/Contents"))
+            {
+                tmpPath.truncate(tmpPath.rfind('/'));
+                bundlePath = tmpPath;
+                d_nextBundlePath = bundlePath.buffer();
+            }
+        }
+#else
+        if (tmpPath.endsWith(".vst"))
+        {
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+#endif
+    }
 
     // first internal init
     PluginExporter* plugin = nullptr;
