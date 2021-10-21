@@ -17,9 +17,10 @@ rm -rf vst2
 rm -rf vst3
 
 mkdir lv2 vst2 vst3
-mv *.lv2 lv2/
-mv *.vst vst2/
-mv *.vst3 vst3/
+cp -RL *.lv2 lv2/
+cp -RL *.vst vst2/
+cp -RL *.vst3 vst3/
+rm -rf *.lv2 *.vst *.vst3
 
 pkgbuild \
   --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
