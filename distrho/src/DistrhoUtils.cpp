@@ -38,9 +38,6 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 
 START_NAMESPACE_DISTRHO
 
-#ifdef DISTRHO_PLUGIN_TARGET_JACK
-#endif
-
 // -----------------------------------------------------------------------
 
 const char* getBinaryFilename()
@@ -51,14 +48,13 @@ const char* getBinaryFilename()
         return filename;
 
 #ifdef DISTRHO_OS_WINDOWS
-# if DISTRHO_IS_STANDALONE
-    // TODO
-# else
-    CHAR filenameBuf[MAX_PATH + 256];
+# if !DISTRHO_IS_STANDALONE
+    constexpr const HINSTANCE hInstance = nullptr;
+# endif
+    CHAR filenameBuf[MAX_PATH];
     filenameBuf[0] = '\0';
     GetModuleFileName(hInstance, filenameBuf, sizeof(filenameBuf));
     filename = filenameBuf;
-# endif
 #else
     Dl_info info;
     dladdr((void*)getBinaryFilename, &info);
