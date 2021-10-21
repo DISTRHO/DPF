@@ -15,7 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
-#include "DistrhoPluginUtils.hpp"
+#include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedSafeLocale.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI

@@ -841,6 +841,7 @@ public:
       Get the bundle path where the plugin resides.
       Can return null if the plugin is not available in a bundle (if it is a single binary).
       @see getBinaryFilename
+      @see getResourcePath
     */
     const char* getBundlePath() const noexcept;
 

@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedPointer.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
@@ -3851,6 +3852,20 @@ bool ENTRYFNNAME(void*);
 
 bool ENTRYFNNAME(void*)
 {
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+        DISTRHO_SAFE_ASSERT_RETURN(tmpPath.endsWith("/Contents"), true);
+
+        tmpPath.truncate(tmpPath.rfind('/'));
+        bundlePath = tmpPath;
+        d_nextBundlePath = bundlePath.buffer();
+    }
+
     return true;
 }
 

@@ -18,7 +18,7 @@
 # error Wrong build configuration
 #endif
 
-#include "extra/String.hpp"
+#include "../extra/String.hpp"
 
 #ifndef DISTRHO_OS_WINDOWS
 # include <dlfcn.h>
@@ -83,6 +83,50 @@ const char* getPluginFormatName() noexcept
 #else
     return "Unknown";
 #endif
+}
+
+const char* getResourcePath(const char* const bundlePath) noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(bundlePath != nullptr, nullptr);
+
+#if defined(DISTRHO_PLUGIN_TARGET_LV2)
+    static String bundlePathLV2;
+
+    if (bundlePathLV2.isEmpty())
+    {
+        bundlePathLV2 += bundlePath;
+        bundlePathLV2 += DISTRHO_OS_SEP_STR "resources";
+    }
+
+    return bundlePathLV2.buffer();
+#elif defined(DISTRHO_PLUGIN_TARGET_VST2)
+    static String bundlePathVST2;
+
+    if (bundlePathVST2.isEmpty())
+    {
+        bundlePathVST2 += bundlePath;
+# ifdef DISTRHO_OS_MAC
+        bundlePathVST2 += "/Contents/Resources";
+# else
+        DISTRHO_SAFE_ASSERT_RETURN(bundlePathVST2.endsWith(".vst"), nullptr);
+        bundlePathVST2 += DISTRHO_OS_SEP_STR "resources";
+# endif
+    }
+
+    return bundlePathVST2.buffer();
+#elif defined(DISTRHO_PLUGIN_TARGET_VST3)
+    static String bundlePathVST3;
+
+    if (bundlePathVST3.isEmpty())
+    {
+        bundlePathVST3 += bundlePath;
+        bundlePathVST3 += "/Contents/Resources";
+    }
+
+    return bundlePathVST3.buffer();
+#endif
+
+    return nullptr;
 }
 
 // -----------------------------------------------------------------------

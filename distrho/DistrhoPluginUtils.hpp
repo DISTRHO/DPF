@@ -40,6 +40,24 @@ const char* getBinaryFilename();
 */
 const char* getPluginFormatName() noexcept;
 
+/**
+   Get the path to where resources are stored within the plugin bundle.@n
+   Requires a valid plugin bundle path.
+
+   Returns a path inside the bundle where the plugin is meant to store its resources in.@n
+   This path varies between systems and plugin formats, like so:
+
+    - LV2: <bundle>/resources (can be stored anywhere inside the bundle really, DPF just uses this one)
+    - VST2 macOS: <bundle>/Contents/Resources
+    - VST2 non-macOS: <bundle>/resources (see note)
+
+   The other non-mentioned formats do not support bundles.@n
+
+   @note For VST2 on non-macOS systems, this assumes you have your plugin inside a dedicated directory
+         rather than only shipping with the binary (e.g. <myplugin.vst>/myplugin.dll)
+*/
+const char* getResourcePath(const char* bundlePath) noexcept;
+
 // -----------------------------------------------------------------------------------------------------------
 // Plugin helper classes
 
