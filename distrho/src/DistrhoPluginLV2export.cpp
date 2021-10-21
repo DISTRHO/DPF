@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../DistrhoPluginUtils.hpp"
 
 #include "lv2/atom.h"
 #include "lv2/buf-size.h"
@@ -222,6 +223,10 @@ DISTRHO_PLUGIN_EXPORT
 void lv2_generate_ttl(const char* const basename)
 {
     USE_NAMESPACE_DISTRHO
+
+    String bundlePath(getBinaryFilename());
+    bundlePath.truncate(bundlePath.rfind(DISTRHO_OS_SEP));
+    d_nextBundlePath = bundlePath.buffer();
 
     // Dummy plugin to get data from
     d_nextBufferSize = 512;
