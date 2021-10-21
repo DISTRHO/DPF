@@ -37,10 +37,6 @@
 # include "libmodla.h"
 #endif
 
-#ifdef noexcept
-# undef noexcept
-#endif
-
 #include <map>
 
 #ifndef DISTRHO_PLUGIN_URI
