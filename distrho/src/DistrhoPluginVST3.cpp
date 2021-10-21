@@ -3853,6 +3853,7 @@ bool ENTRYFNNAME(void*);
 bool ENTRYFNNAME(void*)
 {
     // find plugin bundle
+    USE_NAMESPACE_DISTRHO;
     static String bundlePath;
     if (bundlePath.isEmpty())
     {
