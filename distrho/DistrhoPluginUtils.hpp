@@ -61,6 +61,7 @@ const char* getResourcePath(const char* bundlePath) noexcept;
 // -----------------------------------------------------------------------------------------------------------
 // Plugin helper classes
 
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
 /**
    Handy class to help keep audio buffer in sync with incoming MIDI events.
    To use it, create a local variable (on the stack) and call nextEvent() until it returns false.
@@ -189,6 +190,7 @@ private:
     uint32_t remainingMidiEventCount;
     uint32_t totalFramesUsed;
 };
+#endif
 
 // -----------------------------------------------------------------------------------------------------------
 
