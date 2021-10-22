@@ -86,7 +86,8 @@ endif
 # Set VST2 filename, either single binary or inside a bundle
 
 ifeq ($(MACOS),true)
-VST2_FILENAME = $(NAME).vst/Contents/$(NAME)
+VST2_CONTENTS = $(NAME).vst/Contents
+VST2_FILENAME = $(VST2_CONTENTS)/MacOS/$(NAME)
 else ifeq ($(USE_VST2_BUNDLE),true)
 VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
 else
@@ -100,9 +101,8 @@ ifeq ($(LINUX),true)
 VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
 endif
 ifeq ($(MACOS),true)
-ifneq ($(MACOS_OLD),true)
-VST3_FILENAME = $(NAME).vst3/Contents/MacOS/$(NAME)
-endif
+VST3_CONTENTS = $(NAME).vst3/Contents
+VST3_FILENAME = $(VST3_CONTENTS)/MacOS/$(NAME)
 endif
 ifeq ($(WINDOWS),true)
 VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-win/$(NAME).vst3
@@ -121,6 +121,15 @@ lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
 vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
+endif
+
+ifeq ($(MACOS),true)
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/PkgInfo
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -401,7 +410,7 @@ $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 # ---------------------------------------------------------------------------------------------------------------------
 # VST2
 
-vst2 vst: $(vst2)
+vst2 vst: $(vst2) $(vst2files)
 
 ifeq ($(HAVE_DGL),true)
 $(vst2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.o $(DGL_LIB)
@@ -415,7 +424,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # VST3
 
-vst3: $(vst3)
+vst3: $(vst3) $(vst3files)
 
 ifeq ($(HAVE_DGL),true)
 $(vst3): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.o $(DGL_LIB)
@@ -425,6 +434,21 @@ endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST3 plugin for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_VST3) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+# macOS files
+
+$(TARGET_DIR)/%/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
+
+$(TARGET_DIR)/%/Contents/PkgInfo: $(DPF_PATH)/utils/plugin.vst/Contents/PkgInfo
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)cp $< $@
+
+$(TARGET_DIR)/%/Resources/empty.lproj: $(DPF_PATH)/utils/plugin.vst/Contents/Resources/empty.lproj
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)cp $< $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
