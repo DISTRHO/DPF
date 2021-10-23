@@ -90,9 +90,14 @@ struct RtAudioBridge {
 
         uint rtAudioBufferFrames = 512;
 
+#if DISTRHO_PLUGIN_NUM_INPUTS > 0
         RtAudio::StreamParameters inParams;
+        RtAudio::StreamParameters* const inParamsPtr = &inParams;
         inParams.deviceId = rtAudio->getDefaultInputDevice();
         inParams.nChannels = DISTRHO_PLUGIN_NUM_INPUTS;
+#else
+        RtAudio::StreamParameters* const inParamsPtr = nullptr;
+#endif
 
         RtAudio::StreamParameters outParams;
         outParams.deviceId = rtAudio->getDefaultOutputDevice();
@@ -102,7 +107,7 @@ struct RtAudioBridge {
         opts.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_ALSA_USE_DEFAULT;
 
         try {
-            rtAudio->openStream(&outParams, &inParams, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames, RtAudioCallback, this, &opts, nullptr);
+            rtAudio->openStream(&outParams, inParamsPtr, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames, RtAudioCallback, this, &opts, nullptr);
         } DISTRHO_SAFE_EXCEPTION_RETURN("rtAudio->openStream()", false);
 
         handle = rtAudio;
