@@ -108,8 +108,6 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -164,8 +162,6 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:ae1554f348fe3b2f9d4c3c5c4f9ec55bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9fa874aede538b41348f1029524aea11"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a9fa874aede538b41348f1029524aea11">onKeyboard</a> (const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;)</td></tr>
 <tr class="separator:a9fa874aede538b41348f1029524aea11"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;)</td></tr>
-<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad7fb24de24d8809305b04ff3750f0dea"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">onCharacterInput</a> (const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;)</td></tr>
 <tr class="separator:ad7fb24de24d8809305b04ff3750f0dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a097ec1d56a06bdc9e0a4e54880def378"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">onMouse</a> (const <a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a> &amp;)</td></tr>
@@ -176,6 +172,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const SpecialEvent &amp;)</td></tr>
+<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -741,35 +739,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
-<a id="a3b42652fcb2f95c6f86bdd43a1727507"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3b42652fcb2f95c6f86bdd43a1727507">&#9670;&nbsp;</a></span>onSpecial()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">virtual bool Widget::onSpecial </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>A function called when a special key is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
-
-<p>Reimplemented in <a class="el" href="classTopLevelWidget.html#a62dcfe3102ce26a4e928daeda91734a9">TopLevelWidget</a>.</p>
-
-</div>
-</div>
 <a id="ad7fb24de24d8809305b04ff3750f0dea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad7fb24de24d8809305b04ff3750f0dea">&#9670;&nbsp;</a></span>onCharacterInput()</h2>
 
@@ -824,7 +793,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><div class="memdoc">
 <p>A function called when a mouse button is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="classImageBaseSwitch.html#a6912be0532a24c33e6dac851779fc8f0">ImageBaseSwitch&lt; ImageType &gt;</a>, <a class="el" href="classImageBaseSlider.html#af1caea46d10b3decd14ad795e0a58a9d">ImageBaseSlider&lt; ImageType &gt;</a>, <a class="el" href="classTopLevelWidget.html#a8ceccb37de18c8e3b21fbf64ad58981c">TopLevelWidget</a>, <a class="el" href="classImageBaseKnob.html#a6cd97ff56064b28a56d1321508e29f8b">ImageBaseKnob&lt; ImageType &gt;</a>, <a class="el" href="classImageBaseButton.html#a643f3c0429d514c70c7a1333829f6cf8">ImageBaseButton&lt; ImageType &gt;</a>, and <a class="el" href="classImageBaseAboutWindow.html#ad2c3d4c6943a5562574baf60f58de483">ImageBaseAboutWindow&lt; ImageType &gt;</a>.</p>
+<p>Reimplemented in <a class="el" href="classImageBaseSwitch.html#a6912be0532a24c33e6dac851779fc8f0">ImageBaseSwitch&lt; ImageType &gt;</a>, <a class="el" href="classImageBaseSlider.html#af1caea46d10b3decd14ad795e0a58a9d">ImageBaseSlider&lt; ImageType &gt;</a>, <a class="el" href="classImageBaseKnob.html#a6cd97ff56064b28a56d1321508e29f8b">ImageBaseKnob&lt; ImageType &gt;</a>, <a class="el" href="classTopLevelWidget.html#a8ceccb37de18c8e3b21fbf64ad58981c">TopLevelWidget</a>, <a class="el" href="classImageBaseButton.html#a643f3c0429d514c70c7a1333829f6cf8">ImageBaseButton&lt; ImageType &gt;</a>, and <a class="el" href="classImageBaseAboutWindow.html#ad2c3d4c6943a5562574baf60f58de483">ImageBaseAboutWindow&lt; ImageType &gt;</a>.</p>
 
 </div>
 </div>
@@ -853,7 +822,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><div class="memdoc">
 <p>A function called when the pointer moves. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="classImageBaseSlider.html#a2b50b9c33b7f0685c6d3037afe65ebae">ImageBaseSlider&lt; ImageType &gt;</a>, <a class="el" href="classTopLevelWidget.html#ac640eb913196c9edb68e5d52df4a89cb">TopLevelWidget</a>, <a class="el" href="classImageBaseKnob.html#ab7fc0602637a98d5a0a5ecfd74557636">ImageBaseKnob&lt; ImageType &gt;</a>, and <a class="el" href="classImageBaseButton.html#a6333af8b73082f6b4dff77cf690be82d">ImageBaseButton&lt; ImageType &gt;</a>.</p>
+<p>Reimplemented in <a class="el" href="classImageBaseSlider.html#a2b50b9c33b7f0685c6d3037afe65ebae">ImageBaseSlider&lt; ImageType &gt;</a>, <a class="el" href="classImageBaseKnob.html#ab7fc0602637a98d5a0a5ecfd74557636">ImageBaseKnob&lt; ImageType &gt;</a>, <a class="el" href="classTopLevelWidget.html#ac640eb913196c9edb68e5d52df4a89cb">TopLevelWidget</a>, and <a class="el" href="classImageBaseButton.html#a6333af8b73082f6b4dff77cf690be82d">ImageBaseButton&lt; ImageType &gt;</a>.</p>
 
 </div>
 </div>
@@ -882,7 +851,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><div class="memdoc">
 <p>A function called on scrolling (e.g. mouse wheel or track pad). </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
 
-<p>Reimplemented in <a class="el" href="classTopLevelWidget.html#a412a6ce96a4ef7f64396e312ad072f9d">TopLevelWidget</a>, and <a class="el" href="classImageBaseKnob.html#aeb9c35449f4b48741ceb8ba8253648bb">ImageBaseKnob&lt; ImageType &gt;</a>.</p>
+<p>Reimplemented in <a class="el" href="classImageBaseKnob.html#aeb9c35449f4b48741ceb8ba8253648bb">ImageBaseKnob&lt; ImageType &gt;</a>, and <a class="el" href="classTopLevelWidget.html#a412a6ce96a4ef7f64396e312ad072f9d">TopLevelWidget</a>.</p>
 
 </div>
 </div>
@@ -913,13 +882,40 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
+<a id="a3b42652fcb2f95c6f86bdd43a1727507"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b42652fcb2f95c6f86bdd43a1727507">&#9670;&nbsp;</a></span>onSpecial()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual bool Widget::onSpecial </td>
+          <td>(</td>
+          <td class="paramtype">const SpecialEvent &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>A function called when a special key is pressed or released. DEPRECATED use onKeyboard or onCharacterInput </p>
+
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>dgl/<a class="el" href="Widget_8hpp_source.html">Widget.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:34 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

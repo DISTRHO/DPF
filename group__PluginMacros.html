@@ -121,6 +121,10 @@ Macros</h2></td></tr>
 <tr class="separator:gabadb9d9ba7f479df39b3963ee60b7a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga420a88022da249b9f38a6046998dbd7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">DISTRHO_UI_URI</a>&#160;&#160;&#160;<a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a> &quot;#UI&quot;</td></tr>
 <tr class="separator:ga420a88022da249b9f38a6046998dbd7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga97bd6556fb9fcfc181778edb4fceeeef">DISTRHO_PLUGIN_LV2_CATEGORY</a>&#160;&#160;&#160;&quot;lv2:Plugin&quot;</td></tr>
+<tr class="separator:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">DISTRHO_PLUGIN_VST3_CATEGORIES</a>&#160;&#160;&#160;&quot;Fx&quot;</td></tr>
+<tr class="separator:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>C Macros that describe your plugin. (defined in the "DistrhoPluginInfo.h" file) </p>
@@ -450,7 +454,7 @@ When enabled, the macros <a class="el" href="group__PluginMacros.html#gaf978778d
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The include path to the header file used by the custom toolkit implementation. This path must be relative to dpf/distrho/DistrhoUI.hpp </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__PluginMacros.html#ga5bcd1ce31e47a617de4c32fbf85e44ca">DISTRHO_UI_USE_CUSTOM</a> </dd></dl>
+<p>The include path to the header file used by the custom toolkit implementation. This path must be relative to <a class="el" href="DistrhoUI_8hpp_source.html">dpf/distrho/DistrhoUI.hpp</a> </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__PluginMacros.html#ga5bcd1ce31e47a617de4c32fbf85e44ca">DISTRHO_UI_USE_CUSTOM</a> </dd></dl>
 
 </div>
 </div>
@@ -518,10 +522,118 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
 
 </div>
 </div>
+<a id="ga97bd6556fb9fcfc181778edb4fceeeef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga97bd6556fb9fcfc181778edb4fceeeef">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_LV2_CATEGORY</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_LV2_CATEGORY&#160;&#160;&#160;&quot;lv2:Plugin&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Custom LV2 category for the plugin.<br  />
+This can be one of the following values:</p>
+<ul>
+<li>lv2:<a class="el" href="classPlugin.html">Plugin</a></li>
+<li>lv2:AllpassPlugin</li>
+<li>lv2:AmplifierPlugin</li>
+<li>lv2:AnalyserPlugin</li>
+<li>lv2:BandpassPlugin</li>
+<li>lv2:ChorusPlugin</li>
+<li>lv2:CombPlugin</li>
+<li>lv2:CompressorPlugin</li>
+<li>lv2:ConstantPlugin</li>
+<li>lv2:ConverterPlugin</li>
+<li>lv2:DelayPlugin</li>
+<li>lv2:DistortionPlugin</li>
+<li>lv2:DynamicsPlugin</li>
+<li>lv2:EQPlugin</li>
+<li>lv2:EnvelopePlugin</li>
+<li>lv2:ExpanderPlugin</li>
+<li>lv2:FilterPlugin</li>
+<li>lv2:FlangerPlugin</li>
+<li>lv2:FunctionPlugin</li>
+<li>lv2:GatePlugin</li>
+<li>lv2:GeneratorPlugin</li>
+<li>lv2:HighpassPlugin</li>
+<li>lv2:InstrumentPlugin</li>
+<li>lv2:LimiterPlugin</li>
+<li>lv2:LowpassPlugin</li>
+<li>lv2:MIDIPlugin</li>
+<li>lv2:MixerPlugin</li>
+<li>lv2:ModulatorPlugin</li>
+<li>lv2:MultiEQPlugin</li>
+<li>lv2:OscillatorPlugin</li>
+<li>lv2:ParaEQPlugin</li>
+<li>lv2:PhaserPlugin</li>
+<li>lv2:PitchPlugin</li>
+<li>lv2:ReverbPlugin</li>
+<li>lv2:SimulatorPlugin</li>
+<li>lv2:SpatialPlugin</li>
+<li>lv2:SpectralPlugin</li>
+<li>lv2:UtilityPlugin</li>
+<li>lv2:WaveshaperPlugin</li>
+</ul>
+<p>See <a href="http://lv2plug.in/ns/lv2core">http://lv2plug.in/ns/lv2core</a> for more information. </p>
+
+</div>
+</div>
+<a id="gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_VST3_CATEGORIES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_VST3_CATEGORIES&#160;&#160;&#160;&quot;Fx&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Custom VST3 categories for the plugin.<br  />
+This is a list of categories, separated by a <code></code>|.</p>
+<p>Each effect category can be one of the following values:</p>
+<ul>
+<li>Fx</li>
+<li>Fx|Ambisonics</li>
+<li>Fx|Analyzer</li>
+<li>Fx|Delay</li>
+<li>Fx|Distortion</li>
+<li>Fx|Dynamics</li>
+<li>Fx|EQ</li>
+<li>Fx|Filter</li>
+<li>Fx|Instrument</li>
+<li>Fx|Instrument|External</li>
+<li>Fx|Spatial</li>
+<li>Fx|Generator</li>
+<li>Fx|Mastering</li>
+<li>Fx|Modulation</li>
+<li>Fx|Network</li>
+<li>Fx|Pitch Shift</li>
+<li>Fx|Restoration</li>
+<li>Fx|Reverb</li>
+<li>Fx|Surround</li>
+<li>Fx|Tools</li>
+</ul>
+<p>Each instrument category can be one of the following values:</p>
+<ul>
+<li>Instrument</li>
+<li>Instrument|Drum</li>
+<li>Instrument|External</li>
+<li>Instrument|Piano</li>
+<li>Instrument|Sampler</li>
+<li>Instrument|Synth</li>
+<li>Instrument|Synth|Sampler</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>DPF will automatically set Mono and Stereo categories when appropriate. </dd></dl>
+
+</div>
+</div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:08 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:33 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -83,6 +83,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2643e638f62cfd4990247ec66bed60d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e162cfe8f1c52bf09805fd327bcc3c4"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a3e162cfe8f1c52bf09805fd327bcc3c4">getSampleRate</a> () const noexcept</td></tr>
 <tr class="separator:a3e162cfe8f1c52bf09805fd327bcc3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fd60c82f5a50f12312c57729885fc2f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a5fd60c82f5a50f12312c57729885fc2f">getBundlePath</a> () const noexcept</td></tr>
+<tr class="separator:a5fd60c82f5a50f12312c57729885fc2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae85d602c430b1a4361a88d714d3a42c1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structTimePosition.html">TimePosition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">getTimePosition</a> () const noexcept</td></tr>
 <tr class="separator:ae85d602c430b1a4361a88d714d3a42c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a70c4ec55d74d9bc26862975d8df8a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">setLatency</a> (uint32_t frames) noexcept</td></tr>
@@ -284,6 +286,34 @@ This value will remain constant between activate and deactivate. </p><dl class="
 </div><div class="memdoc">
 <p>Get the current sample rate that will be used during processing.<br  />
 This value will remain constant between activate and deactivate. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a2fcbfa1893f44e661d0d8cd53391dadc">sampleRateChanged(double)</a> </dd></dl>
+
+</div>
+</div>
+<a id="a5fd60c82f5a50f12312c57729885fc2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fd60c82f5a50f12312c57729885fc2f">&#9670;&nbsp;</a></span>getBundlePath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* Plugin::getBundlePath </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the bundle path where the plugin resides. Can return null if the plugin is not available in a bundle (if it is a single binary). </p><dl class="section see"><dt>See also</dt><dd>getBinaryFilename </dd>
+<dd>
+getResourcePath </dd></dl>
 
 </div>
 </div>
@@ -1188,7 +1218,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:33 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

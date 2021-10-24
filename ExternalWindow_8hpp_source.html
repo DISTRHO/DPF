@@ -366,304 +366,324 @@ $(function() {
 <div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">    */</span></div>
 <div class="line"><a name="l00296"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a54bb8e6674ef42e0ebc67576df3d103a">  296</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a54bb8e6674ef42e0ebc67576df3d103a">setSize</a>(uint width, uint height)</div>
 <div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    {</div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;        DISTRHO_SAFE_ASSERT_UINT2_RETURN(width &gt; 1 &amp;&amp; height &gt; 1, width, height,);</div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160; </div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        <span class="keywordflow">if</span> (pData.width == width &amp;&amp; pData.height == height)</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160; </div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        pData.width = width;</div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        pData.height = height;</div>
-<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;        <a class="code" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">sizeChanged</a>(width, height);</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    }</div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">      Set the title of the window, typically displayed in the title bar or in window switchers.</span></div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">      Can trigger a titleChanged callback.</span></div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">      Only relevant to hosts when the UI is not embedded.</span></div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00313"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">  313</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">setTitle</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* title)</div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;    {</div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        <span class="keywordflow">if</span> (pData.title == title)</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        pData.title = title;</div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <a class="code" href="classExternalWindow.html#acde653e5d63c0048c0e4f0a6dabe45bc">titleChanged</a>(title);</div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    }</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment">    * TopLevelWidget-like calls - actions called by the host */</span></div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment">      Show window.</span></div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment">      This is the same as calling setVisible(true).</span></div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;<span class="comment">      @see isVisible(), setVisible(bool)</span></div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00329"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">  329</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">show</a>()</div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;    {</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        <a class="code" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible</a>(<span class="keyword">true</span>);</div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    }</div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment">      Set window visible (or not) according to @a visible.</span></div>
-<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">      @see isVisible(), hide(), show()</span></div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00338"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">  338</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible</a>(<span class="keywordtype">bool</span> visible)</div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;    {</div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;        <span class="keywordflow">if</span> (pData.visible == visible)</div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;        pData.visible = visible;</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;        <a class="code" href="classExternalWindow.html#a5ecde04a2939e1e3f5677c9291a735d1">visibilityChanged</a>(visible);</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;    }</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">      Called by the host to set the transient parent window that we should attach ourselves to.</span></div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment">      TODO what id? also NSView* on macOS, or NSWindow?</span></div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00350"></a><span class="lineno"><a class="line" href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">  350</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">setTransientWindowId</a>(uintptr_t winId)</div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;    {</div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;        <span class="keywordflow">if</span> (pData.transientWinId == winId)</div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;            <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;        pData.transientWinId = winId;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;        <a class="code" href="classExternalWindow.html#ae83f4d09be5736021038b19a7e44fc12">transientParentWindowChanged</a>(winId);</div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;    }</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;        DISTRHO_SAFE_ASSERT_UINT_RETURN(width &gt; 1, width,);</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;        DISTRHO_SAFE_ASSERT_UINT_RETURN(height &gt; 1, height,);</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160; </div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;        <span class="keywordflow">if</span> (pData.width == width &amp;&amp; pData.height == height)</div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;            <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160; </div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        pData.width = width;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;        pData.height = height;</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;        <a class="code" href="classExternalWindow.html#aba350e1f737b68e51bfe8018bded6e45">sizeChanged</a>(width, height);</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    }</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">      Set the title of the window, typically displayed in the title bar or in window switchers.</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">      Can trigger a titleChanged callback.</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">      Only relevant to hosts when the UI is not embedded.</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00314"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">  314</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">setTitle</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* title)</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;    {</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;        <span class="keywordflow">if</span> (pData.title == title)</div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;            <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160; </div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;        pData.title = title;</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <a class="code" href="classExternalWindow.html#afd42fab01a270aab541b161237b7d9f3">titleChanged</a>(title);</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    }</div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">      Set geometry constraints for the Window when resized by the user.</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a15b677215c3abb5c1f7f71c4a00fd41c">  326</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a15b677215c3abb5c1f7f71c4a00fd41c">setGeometryConstraints</a>(uint minimumWidth, uint minimumHeight, <span class="keywordtype">bool</span> keepAspectRatio = <span class="keyword">false</span>)</div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;    {</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;        DISTRHO_SAFE_ASSERT_UINT_RETURN(minimumWidth &gt; 0, minimumWidth,);</div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        DISTRHO_SAFE_ASSERT_UINT_RETURN(minimumHeight &gt; 0, minimumHeight,);</div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160; </div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;        pData.minWidth = minimumWidth;</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;        pData.minHeight = minimumHeight;</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;        pData.keepAspectRatio = keepAspectRatio;</div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;    }</div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160; </div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment">    * TopLevelWidget-like calls - actions called by the host */</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">      Show window.</span></div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">      This is the same as calling setVisible(true).</span></div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment">      @see isVisible(), setVisible(bool)</span></div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">  344</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">show</a>()</div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    {</div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;        <a class="code" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible</a>(<span class="keyword">true</span>);</div>
+<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;    }</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment">      Set window visible (or not) according to @a visible.</span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">      @see isVisible(), hide(), show()</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">  353</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">setVisible</a>(<span class="keywordtype">bool</span> visible)</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;    {</div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;        <span class="keywordflow">if</span> (pData.visible == visible)</div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;            <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160; </div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="keyword">protected</span>:</div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment">    * ExternalWindow special calls for running externals tools */</span></div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160; </div>
-<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;    <span class="keywordtype">bool</span> startExternalProcess(<span class="keyword">const</span> <span class="keywordtype">char</span>* args[])</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;    {</div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;        ext.inUse = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160; </div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;        <span class="keywordflow">return</span> ext.start(args);</div>
-<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;        (void)args;</div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>; <span class="comment">// TODO</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;    }</div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160; </div>
-<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;    <span class="keywordtype">void</span> terminateAndWaitForExternalProcess()</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;    {</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;        ext.isQuitting = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;        ext.terminateAndWait();</div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;        <span class="comment">// TODO</span></div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;    }</div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;        pData.visible = visible;</div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;        <a class="code" href="classExternalWindow.html#a60ddf70411d05cef91f4a1eaa09554b8">visibilityChanged</a>(visible);</div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;    }</div>
+<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">      Called by the host to set the transient parent window that we should attach ourselves to.</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">      TODO what id? also NSView* on macOS, or NSWindow?</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00366"></a><span class="lineno"><a class="line" href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">  366</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">setTransientWindowId</a>(uintptr_t winId)</div>
+<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;    {</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;        <span class="keywordflow">if</span> (pData.transientWinId == winId)</div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;            <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160; </div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;        pData.transientWinId = winId;</div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;        <a class="code" href="classExternalWindow.html#a4ea76a2c6240c95ff941bc95841c73c8">transientParentWindowChanged</a>(winId);</div>
+<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;    }</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160; </div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="keyword">protected</span>:</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment">    * ExternalWindow special calls for running externals tools */</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    <span class="keywordtype">bool</span> startExternalProcess(<span class="keyword">const</span> <span class="keywordtype">char</span>* args[])</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    {</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;        ext.inUse = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160; </div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment">    * ExternalWindow specific callbacks */</span></div>
-<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment">      A callback for when the window size changes.</span></div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00391"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">  391</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">sizeChanged</a>(uint width, uint height)</div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;        <span class="keywordflow">return</span> ext.start(args);</div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;        (void)args;</div>
+<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;        <span class="keywordflow">return</span> <span class="keyword">false</span>; <span class="comment">// TODO</span></div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;    }</div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160; </div>
+<div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;    <span class="keywordtype">void</span> terminateAndWaitForExternalProcess()</div>
 <div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;    {</div>
-<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
-<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        <span class="keywordflow">return</span>; (void)width; (void)height;</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;    }</div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="comment">      A callback for when the window title changes.</span></div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00401"></a><span class="lineno"><a class="line" href="classExternalWindow.html#acde653e5d63c0048c0e4f0a6dabe45bc">  401</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#acde653e5d63c0048c0e4f0a6dabe45bc">titleChanged</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* title)</div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;    {</div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
-<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;        <span class="keywordflow">return</span>; (void)title;</div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;    }</div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;<span class="comment">      A callback for when the window visibility changes.</span></div>
-<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
-<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00411"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a5ecde04a2939e1e3f5677c9291a735d1">  411</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a5ecde04a2939e1e3f5677c9291a735d1">visibilityChanged</a>(<span class="keywordtype">bool</span> visible)</div>
-<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;    {</div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
-<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;        <span class="keywordflow">return</span>; (void)visible;</div>
-<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;    }</div>
-<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="comment">      A callback for when the transient parent window changes.</span></div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00420"></a><span class="lineno"><a class="line" href="classExternalWindow.html#ae83f4d09be5736021038b19a7e44fc12">  420</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#ae83f4d09be5736021038b19a7e44fc12">transientParentWindowChanged</a>(uintptr_t winId)</div>
-<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;    {</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;        <span class="keywordflow">return</span>; (void)winId;</div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;    }</div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160; </div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span>PluginWindow;</div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classUI.html">UI</a>;</div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;    <span class="keyword">struct </span>ExternalProcess {</div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;        <span class="keywordtype">bool</span> inUse;</div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>;</div>
-<div class="line"><a name="l00434"></a><span class="lineno">  434</span>&#160;        <span class="keyword">mutable</span> pid_t pid;</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160; </div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;        ExternalProcess()</div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;            : inUse(false),</div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;              <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>(false),</div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;              pid(0) {}</div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160; </div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning</a>() const noexcept</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;        {</div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;            <span class="keywordflow">if</span> (pid &lt;= 0)</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160; </div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;            <span class="keyword">const</span> pid_t p = ::waitpid(pid, <span class="keyword">nullptr</span>, WNOHANG);</div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160; </div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;            <span class="keywordflow">if</span> (p == pid || (p == -1 &amp;&amp; errno == ECHILD))</div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;            {</div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;                d_stdout(<span class="stringliteral">&quot;NOTICE: Child process exited while idle&quot;</span>);</div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;                pid = 0;</div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;            }</div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160; </div>
-<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;        }</div>
-<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160; </div>
-<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160;        <span class="keywordtype">bool</span> start(<span class="keyword">const</span> <span class="keywordtype">char</span>* args[])</div>
-<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;        {</div>
-<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;            terminateAndWait();</div>
-<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160; </div>
-<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;            pid = vfork();</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160; </div>
-<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;            <span class="keywordflow">switch</span> (pid)</div>
-<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;            {</div>
-<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            <span class="keywordflow">case</span> 0:</div>
-<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;                execvp(args[0], (<span class="keywordtype">char</span>**)args);</div>
-<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;                _exit(1);</div>
-<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
+<div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;        ext.isQuitting = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;        ext.terminateAndWait();</div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;        <span class="comment">// TODO</span></div>
+<div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;    }</div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160; </div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;   <span class="comment">/* --------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;<span class="comment">    * ExternalWindow specific callbacks */</span></div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;<span class="comment">      A callback for when the window size changes.</span></div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00408"></a><span class="lineno"><a class="line" href="classExternalWindow.html#aba350e1f737b68e51bfe8018bded6e45">  408</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#aba350e1f737b68e51bfe8018bded6e45">sizeChanged</a>(uint <span class="comment">/* width */</span>, uint <span class="comment">/* height */</span>)</div>
+<div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;    {</div>
+<div class="line"><a name="l00410"></a><span class="lineno">  410</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
+<div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;    }</div>
+<div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;<span class="comment">      A callback for when the window title changes.</span></div>
+<div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
+<div class="line"><a name="l00416"></a><span class="lineno">  416</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00417"></a><span class="lineno"><a class="line" href="classExternalWindow.html#afd42fab01a270aab541b161237b7d9f3">  417</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#afd42fab01a270aab541b161237b7d9f3">titleChanged</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="comment">/* title */</span>)</div>
+<div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;    {</div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;    }</div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment">      A callback for when the window visibility changes.</span></div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment">      @note WIP this might need to get fed back into the host somehow.</span></div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00426"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a60ddf70411d05cef91f4a1eaa09554b8">  426</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a60ddf70411d05cef91f4a1eaa09554b8">visibilityChanged</a>(<span class="keywordtype">bool</span> <span class="comment">/* visible */</span>)</div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;    {</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;    }</div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="comment">      A callback for when the transient parent window changes.</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00434"></a><span class="lineno"><a class="line" href="classExternalWindow.html#a4ea76a2c6240c95ff941bc95841c73c8">  434</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classExternalWindow.html#a4ea76a2c6240c95ff941bc95841c73c8">transientParentWindowChanged</a>(uintptr_t <span class="comment">/* winId */</span>)</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;    {</div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;        <span class="comment">// unused, meant for custom implementations</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;    }</div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160; </div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span>PluginWindow;</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classUI.html">UI</a>;</div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160; </div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="preprocessor">#ifndef DISTRHO_OS_WINDOWS</span></div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;    <span class="keyword">struct </span>ExternalProcess {</div>
+<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;        <span class="keywordtype">bool</span> inUse;</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>;</div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;        <span class="keyword">mutable</span> pid_t pid;</div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160; </div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;        ExternalProcess()</div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;            : inUse(false),</div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;              <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>(false),</div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;              pid(0) {}</div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160; </div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">isRunning</a>() const noexcept</div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;        {</div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;            <span class="keywordflow">if</span> (pid &lt;= 0)</div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00458"></a><span class="lineno">  458</span>&#160; </div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;            <span class="keyword">const</span> pid_t p = ::waitpid(pid, <span class="keyword">nullptr</span>, WNOHANG);</div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160; </div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;            <span class="keywordflow">if</span> (p == pid || (p == -1 &amp;&amp; errno == ECHILD))</div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;            {</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;                d_stdout(<span class="stringliteral">&quot;NOTICE: Child process exited while idle&quot;</span>);</div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;                pid = 0;</div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            }</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160; </div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;        }</div>
 <div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160; </div>
-<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;            <span class="keywordflow">case</span> -1:</div>
-<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;                d_stderr(<span class="stringliteral">&quot;Could not start external ui&quot;</span>);</div>
-<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;        <span class="keywordtype">bool</span> start(<span class="keyword">const</span> <span class="keywordtype">char</span>* args[])</div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;        {</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;            terminateAndWait();</div>
 <div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160; </div>
-<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;            <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;            }</div>
-<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;        }</div>
-<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160; </div>
-<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;        <span class="keywordtype">void</span> terminateAndWait()</div>
-<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;        {</div>
-<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;            <span class="keywordflow">if</span> (pid &lt;= 0)</div>
-<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160;                <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160; </div>
-<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;            d_stdout(<span class="stringliteral">&quot;Waiting for external process to stop,,,&quot;</span>);</div>
-<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160; </div>
-<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160;            <span class="keywordtype">bool</span> sendTerm = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160; </div>
-<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;            <span class="keywordflow">for</span> (pid_t p;;)</div>
-<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;            {</div>
-<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;                p = ::waitpid(pid, <span class="keyword">nullptr</span>, WNOHANG);</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;            pid = vfork();</div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160; </div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;            <span class="keywordflow">switch</span> (pid)</div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;            {</div>
+<div class="line"><a name="l00479"></a><span class="lineno">  479</span>&#160;            <span class="keywordflow">case</span> 0:</div>
+<div class="line"><a name="l00480"></a><span class="lineno">  480</span>&#160;                execvp(args[0], (<span class="keywordtype">char</span>**)args);</div>
+<div class="line"><a name="l00481"></a><span class="lineno">  481</span>&#160;                _exit(1);</div>
+<div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160; </div>
+<div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;            <span class="keywordflow">case</span> -1:</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;                d_stderr(<span class="stringliteral">&quot;Could not start external ui&quot;</span>);</div>
+<div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160; </div>
+<div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;            <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00489"></a><span class="lineno">  489</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00490"></a><span class="lineno">  490</span>&#160;            }</div>
+<div class="line"><a name="l00491"></a><span class="lineno">  491</span>&#160;        }</div>
 <div class="line"><a name="l00492"></a><span class="lineno">  492</span>&#160; </div>
-<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;                <span class="keywordflow">switch</span> (p)</div>
-<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;                {</div>
-<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;                <span class="keywordflow">case</span> 0:</div>
-<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;                    <span class="keywordflow">if</span> (sendTerm)</div>
-<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160;                    {</div>
-<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;                        sendTerm = <span class="keyword">false</span>;</div>
-<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160;                        ::kill(pid, SIGTERM);</div>
-<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;                    }</div>
-<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160; </div>
-<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;                <span class="keywordflow">case</span> -1:</div>
-<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;                    <span class="keywordflow">if</span> (errno == ECHILD)</div>
-<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160;                    {</div>
-<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (no such process)&quot;</span>);</div>
-<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;                        pid = 0;</div>
-<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;                    }</div>
-<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160; </div>
-<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;                <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;                    <span class="keywordflow">if</span> (p == pid)</div>
-<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;                    {</div>
-<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (clean wait)&quot;</span>);</div>
-<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;                        pid = 0;</div>
-<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;                        <span class="keywordflow">return</span>;</div>
-<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;                    }</div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;                    <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;                }</div>
-<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160; </div>
-<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;                <span class="comment">// 5 msec</span></div>
-<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;                usleep(5*1000);</div>
-<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160;            }</div>
-<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;        }</div>
-<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;    } ext;</div>
-<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160; </div>
-<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;    <span class="keyword">struct </span>PrivateData {</div>
-<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;        uintptr_t parentWindowHandle;</div>
-<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;        uintptr_t transientWinId;</div>
-<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;        uint width;</div>
-<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;        uint height;</div>
-<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160;        <span class="keywordtype">double</span> scaleFactor;</div>
-<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;        <a class="code" href="classString.html">String</a> title;</div>
-<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>;</div>
-<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">isStandalone</a>;</div>
-<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;        <span class="keywordtype">bool</span> visible;</div>
-<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160; </div>
-<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;        PrivateData()</div>
-<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;            : parentWindowHandle(0),</div>
-<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;              transientWinId(0),</div>
-<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;              width(1),</div>
-<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;              height(1),</div>
-<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;              scaleFactor(1.0),</div>
-<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;              title(),</div>
-<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;              <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>(false),</div>
-<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;              <a class="code" href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">isStandalone</a>(false),</div>
-<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;              visible(false) {}</div>
-<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;    } pData;</div>
-<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160; </div>
-<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE(<a class="code" href="classExternalWindow.html">ExternalWindow</a>)</div>
-<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;};</div>
-<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160; </div>
-<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160; </div>
-<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;END_NAMESPACE_DISTRHO</div>
-<div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160; </div>
-<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;<span class="preprocessor">#endif // DISTRHO_EXTERNAL_WINDOW_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00493"></a><span class="lineno">  493</span>&#160;        <span class="keywordtype">void</span> terminateAndWait()</div>
+<div class="line"><a name="l00494"></a><span class="lineno">  494</span>&#160;        {</div>
+<div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;            <span class="keywordflow">if</span> (pid &lt;= 0)</div>
+<div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;                <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160; </div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;            d_stdout(<span class="stringliteral">&quot;Waiting for external process to stop,,,&quot;</span>);</div>
+<div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160; </div>
+<div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;            <span class="keywordtype">bool</span> sendTerm = <span class="keyword">true</span>;</div>
+<div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160; </div>
+<div class="line"><a name="l00502"></a><span class="lineno">  502</span>&#160;            <span class="keywordflow">for</span> (pid_t p;;)</div>
+<div class="line"><a name="l00503"></a><span class="lineno">  503</span>&#160;            {</div>
+<div class="line"><a name="l00504"></a><span class="lineno">  504</span>&#160;                p = ::waitpid(pid, <span class="keyword">nullptr</span>, WNOHANG);</div>
+<div class="line"><a name="l00505"></a><span class="lineno">  505</span>&#160; </div>
+<div class="line"><a name="l00506"></a><span class="lineno">  506</span>&#160;                <span class="keywordflow">switch</span> (p)</div>
+<div class="line"><a name="l00507"></a><span class="lineno">  507</span>&#160;                {</div>
+<div class="line"><a name="l00508"></a><span class="lineno">  508</span>&#160;                <span class="keywordflow">case</span> 0:</div>
+<div class="line"><a name="l00509"></a><span class="lineno">  509</span>&#160;                    <span class="keywordflow">if</span> (sendTerm)</div>
+<div class="line"><a name="l00510"></a><span class="lineno">  510</span>&#160;                    {</div>
+<div class="line"><a name="l00511"></a><span class="lineno">  511</span>&#160;                        sendTerm = <span class="keyword">false</span>;</div>
+<div class="line"><a name="l00512"></a><span class="lineno">  512</span>&#160;                        ::kill(pid, SIGTERM);</div>
+<div class="line"><a name="l00513"></a><span class="lineno">  513</span>&#160;                    }</div>
+<div class="line"><a name="l00514"></a><span class="lineno">  514</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00515"></a><span class="lineno">  515</span>&#160; </div>
+<div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;                <span class="keywordflow">case</span> -1:</div>
+<div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;                    <span class="keywordflow">if</span> (errno == ECHILD)</div>
+<div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;                    {</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (no such process)&quot;</span>);</div>
+<div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;                        pid = 0;</div>
+<div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;                    }</div>
+<div class="line"><a name="l00523"></a><span class="lineno">  523</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00524"></a><span class="lineno">  524</span>&#160; </div>
+<div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;                <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;                    <span class="keywordflow">if</span> (p == pid)</div>
+<div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;                    {</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (clean wait)&quot;</span>);</div>
+<div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;                        pid = 0;</div>
+<div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;                        <span class="keywordflow">return</span>;</div>
+<div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;                    }</div>
+<div class="line"><a name="l00532"></a><span class="lineno">  532</span>&#160;                    <span class="keywordflow">break</span>;</div>
+<div class="line"><a name="l00533"></a><span class="lineno">  533</span>&#160;                }</div>
+<div class="line"><a name="l00534"></a><span class="lineno">  534</span>&#160; </div>
+<div class="line"><a name="l00535"></a><span class="lineno">  535</span>&#160;                <span class="comment">// 5 msec</span></div>
+<div class="line"><a name="l00536"></a><span class="lineno">  536</span>&#160;                usleep(5*1000);</div>
+<div class="line"><a name="l00537"></a><span class="lineno">  537</span>&#160;            }</div>
+<div class="line"><a name="l00538"></a><span class="lineno">  538</span>&#160;        }</div>
+<div class="line"><a name="l00539"></a><span class="lineno">  539</span>&#160;    } ext;</div>
+<div class="line"><a name="l00540"></a><span class="lineno">  540</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160; </div>
+<div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;    <span class="keyword">struct </span>PrivateData {</div>
+<div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;        uintptr_t parentWindowHandle;</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;        uintptr_t transientWinId;</div>
+<div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;        uint width;</div>
+<div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160;        uint height;</div>
+<div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;        <span class="keywordtype">double</span> scaleFactor;</div>
+<div class="line"><a name="l00548"></a><span class="lineno">  548</span>&#160;        <a class="code" href="classString.html">String</a> title;</div>
+<div class="line"><a name="l00549"></a><span class="lineno">  549</span>&#160;        uint minWidth;</div>
+<div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;        uint minHeight;</div>
+<div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;        <span class="keywordtype">bool</span> keepAspectRatio;</div>
+<div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>;</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">isStandalone</a>;</div>
+<div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;        <span class="keywordtype">bool</span> visible;</div>
+<div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160; </div>
+<div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;        PrivateData()</div>
+<div class="line"><a name="l00557"></a><span class="lineno">  557</span>&#160;            : parentWindowHandle(0),</div>
+<div class="line"><a name="l00558"></a><span class="lineno">  558</span>&#160;              transientWinId(0),</div>
+<div class="line"><a name="l00559"></a><span class="lineno">  559</span>&#160;              width(1),</div>
+<div class="line"><a name="l00560"></a><span class="lineno">  560</span>&#160;              height(1),</div>
+<div class="line"><a name="l00561"></a><span class="lineno">  561</span>&#160;              scaleFactor(1.0),</div>
+<div class="line"><a name="l00562"></a><span class="lineno">  562</span>&#160;              title(),</div>
+<div class="line"><a name="l00563"></a><span class="lineno">  563</span>&#160;              minWidth(0),</div>
+<div class="line"><a name="l00564"></a><span class="lineno">  564</span>&#160;              minHeight(0),</div>
+<div class="line"><a name="l00565"></a><span class="lineno">  565</span>&#160;              keepAspectRatio(false),</div>
+<div class="line"><a name="l00566"></a><span class="lineno">  566</span>&#160;              <a class="code" href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">isQuitting</a>(false),</div>
+<div class="line"><a name="l00567"></a><span class="lineno">  567</span>&#160;              <a class="code" href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">isStandalone</a>(false),</div>
+<div class="line"><a name="l00568"></a><span class="lineno">  568</span>&#160;              visible(false) {}</div>
+<div class="line"><a name="l00569"></a><span class="lineno">  569</span>&#160;    } pData;</div>
+<div class="line"><a name="l00570"></a><span class="lineno">  570</span>&#160; </div>
+<div class="line"><a name="l00571"></a><span class="lineno">  571</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE(<a class="code" href="classExternalWindow.html">ExternalWindow</a>)</div>
+<div class="line"><a name="l00572"></a><span class="lineno">  572</span>&#160;};</div>
+<div class="line"><a name="l00573"></a><span class="lineno">  573</span>&#160; </div>
+<div class="line"><a name="l00574"></a><span class="lineno">  574</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00575"></a><span class="lineno">  575</span>&#160; </div>
+<div class="line"><a name="l00576"></a><span class="lineno">  576</span>&#160;END_NAMESPACE_DISTRHO</div>
+<div class="line"><a name="l00577"></a><span class="lineno">  577</span>&#160; </div>
+<div class="line"><a name="l00578"></a><span class="lineno">  578</span>&#160;<span class="preprocessor">#endif // DISTRHO_EXTERNAL_WINDOW_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <div class="ttc" id="aclassExternalWindow_html_a7aacd265be6cd6901405ad32cf6758a0"><div class="ttname"><a href="classExternalWindow.html#a7aacd265be6cd6901405ad32cf6758a0">ExternalWindow::isQuitting</a></div><div class="ttdeci">virtual bool isQuitting() const</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:119</div></div>
-<div class="ttc" id="aclassExternalWindow_html_ae83f4d09be5736021038b19a7e44fc12"><div class="ttname"><a href="classExternalWindow.html#ae83f4d09be5736021038b19a7e44fc12">ExternalWindow::transientParentWindowChanged</a></div><div class="ttdeci">virtual void transientParentWindowChanged(uintptr_t winId)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:420</div></div>
 <div class="ttc" id="aclassExternalWindow_html_ae5763405ca1d2405973e691e78d9b2a7"><div class="ttname"><a href="classExternalWindow.html#ae5763405ca1d2405973e691e78d9b2a7">ExternalWindow::isRunning</a></div><div class="ttdeci">virtual bool isRunning() const</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:105</div></div>
 <div class="ttc" id="aclassExternalWindow_html_acd0c7cbaa50aab700bebe633309f6778"><div class="ttname"><a href="classExternalWindow.html#acd0c7cbaa50aab700bebe633309f6778">ExternalWindow::getTitle</a></div><div class="ttdeci">const char * getTitle() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:214</div></div>
+<div class="ttc" id="aclassExternalWindow_html_afd42fab01a270aab541b161237b7d9f3"><div class="ttname"><a href="classExternalWindow.html#afd42fab01a270aab541b161237b7d9f3">ExternalWindow::titleChanged</a></div><div class="ttdeci">virtual void titleChanged(const char *)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:417</div></div>
 <div class="ttc" id="aclassExternalWindow_html_afc5ed08d95e01734cdfbd6c69d8505c6"><div class="ttname"><a href="classExternalWindow.html#afc5ed08d95e01734cdfbd6c69d8505c6">ExternalWindow::ExternalWindow</a></div><div class="ttdeci">ExternalWindow()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:80</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a8ec7abf1b22271458926530b377f2c27"><div class="ttname"><a href="classExternalWindow.html#a8ec7abf1b22271458926530b377f2c27">ExternalWindow::getNativeWindowHandle</a></div><div class="ttdeci">virtual uintptr_t getNativeWindowHandle() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:140</div></div>
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
 <div class="ttc" id="aclassExternalWindow_html_aa9bce2cc83c1a8c6ee87f79bf36e3955"><div class="ttname"><a href="classExternalWindow.html#aa9bce2cc83c1a8c6ee87f79bf36e3955">ExternalWindow::hide</a></div><div class="ttdeci">void hide()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:252</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a56da59b2722bd7b0a6c63f9f7f120839"><div class="ttname"><a href="classExternalWindow.html#a56da59b2722bd7b0a6c63f9f7f120839">ExternalWindow::getParentWindowHandle</a></div><div class="ttdeci">uintptr_t getParentWindowHandle() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:228</div></div>
-<div class="ttc" id="aclassExternalWindow_html_a35f711faffa1195c478689f4654dcc4f"><div class="ttname"><a href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">ExternalWindow::show</a></div><div class="ttdeci">void show()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:329</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a35f711faffa1195c478689f4654dcc4f"><div class="ttname"><a href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">ExternalWindow::show</a></div><div class="ttdeci">void show()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:344</div></div>
 <div class="ttc" id="aclassExternalWindow_html_add192e95a0fa7187cb0a8e739095674f"><div class="ttname"><a href="classExternalWindow.html#add192e95a0fa7187cb0a8e739095674f">ExternalWindow::setHeight</a></div><div class="ttdeci">void setHeight(uint height)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:286</div></div>
-<div class="ttc" id="aclassExternalWindow_html_acde653e5d63c0048c0e4f0a6dabe45bc"><div class="ttname"><a href="classExternalWindow.html#acde653e5d63c0048c0e4f0a6dabe45bc">ExternalWindow::titleChanged</a></div><div class="ttdeci">virtual void titleChanged(const char *title)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:401</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a4ea76a2c6240c95ff941bc95841c73c8"><div class="ttname"><a href="classExternalWindow.html#a4ea76a2c6240c95ff941bc95841c73c8">ExternalWindow::transientParentWindowChanged</a></div><div class="ttdeci">virtual void transientParentWindowChanged(uintptr_t)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:434</div></div>
 <div class="ttc" id="aclassUI_html"><div class="ttname"><a href="classUI.html">UI</a></div><div class="ttdef"><b>Definition:</b> DistrhoUI.hpp:71</div></div>
 <div class="ttc" id="aclassExternalWindow_html"><div class="ttname"><a href="classExternalWindow.html">ExternalWindow</a></div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:72</div></div>
-<div class="ttc" id="aclassExternalWindow_html_a2b599fc96437e666a7a0a4c1b9844b15"><div class="ttname"><a href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">ExternalWindow::setVisible</a></div><div class="ttdeci">void setVisible(bool visible)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:338</div></div>
-<div class="ttc" id="aclassExternalWindow_html_a8a196d0db3f082f6861d1d1bfc1db993"><div class="ttname"><a href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">ExternalWindow::setTitle</a></div><div class="ttdeci">void setTitle(const char *title)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:313</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a2b599fc96437e666a7a0a4c1b9844b15"><div class="ttname"><a href="classExternalWindow.html#a2b599fc96437e666a7a0a4c1b9844b15">ExternalWindow::setVisible</a></div><div class="ttdeci">void setVisible(bool visible)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:353</div></div>
+<div class="ttc" id="aclassExternalWindow_html_aba350e1f737b68e51bfe8018bded6e45"><div class="ttname"><a href="classExternalWindow.html#aba350e1f737b68e51bfe8018bded6e45">ExternalWindow::sizeChanged</a></div><div class="ttdeci">virtual void sizeChanged(uint, uint)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:408</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a8a196d0db3f082f6861d1d1bfc1db993"><div class="ttname"><a href="classExternalWindow.html#a8a196d0db3f082f6861d1d1bfc1db993">ExternalWindow::setTitle</a></div><div class="ttdeci">void setTitle(const char *title)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:314</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a97f21d30b4449fc5cd87396ff051c199"><div class="ttname"><a href="classExternalWindow.html#a97f21d30b4449fc5cd87396ff051c199">ExternalWindow::~ExternalWindow</a></div><div class="ttdeci">virtual ~ExternalWindow()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:92</div></div>
-<div class="ttc" id="aclassExternalWindow_html_a5ecde04a2939e1e3f5677c9291a735d1"><div class="ttname"><a href="classExternalWindow.html#a5ecde04a2939e1e3f5677c9291a735d1">ExternalWindow::visibilityChanged</a></div><div class="ttdeci">virtual void visibilityChanged(bool visible)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:411</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a6206ef403f95462ef84fe8127b65b1b7"><div class="ttname"><a href="classExternalWindow.html#a6206ef403f95462ef84fe8127b65b1b7">ExternalWindow::getHeight</a></div><div class="ttdeci">uint getHeight() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:196</div></div>
-<div class="ttc" id="aclassExternalWindow_html_afe5b255affc787ad34b25a30114f9b89"><div class="ttname"><a href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">ExternalWindow::setTransientWindowId</a></div><div class="ttdeci">void setTransientWindowId(uintptr_t winId)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:350</div></div>
+<div class="ttc" id="aclassExternalWindow_html_afe5b255affc787ad34b25a30114f9b89"><div class="ttname"><a href="classExternalWindow.html#afe5b255affc787ad34b25a30114f9b89">ExternalWindow::setTransientWindowId</a></div><div class="ttdeci">void setTransientWindowId(uintptr_t winId)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:366</div></div>
 <div class="ttc" id="aclassExternalWindow_html_acaa09de3c6dfccecf725a8f7a486ce15"><div class="ttname"><a href="classExternalWindow.html#acaa09de3c6dfccecf725a8f7a486ce15">ExternalWindow::close</a></div><div class="ttdeci">virtual void close()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:261</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a26dd0bc32a816c014731a78658cc3a5b"><div class="ttname"><a href="classExternalWindow.html#a26dd0bc32a816c014731a78658cc3a5b">ExternalWindow::isEmbed</a></div><div class="ttdeci">bool isEmbed() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:159</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a0e15df4f8b3425b67ad56b42526bb5df"><div class="ttname"><a href="classExternalWindow.html#a0e15df4f8b3425b67ad56b42526bb5df">ExternalWindow::getWidth</a></div><div class="ttdeci">uint getWidth() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:187</div></div>
-<div class="ttc" id="aclassExternalWindow_html_a12bf25c6c01c4aec99e175eb2ba31d87"><div class="ttname"><a href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">ExternalWindow::sizeChanged</a></div><div class="ttdeci">virtual void sizeChanged(uint width, uint height)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:391</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a60ddf70411d05cef91f4a1eaa09554b8"><div class="ttname"><a href="classExternalWindow.html#a60ddf70411d05cef91f4a1eaa09554b8">ExternalWindow::visibilityChanged</a></div><div class="ttdeci">virtual void visibilityChanged(bool)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:426</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a54bb8e6674ef42e0ebc67576df3d103a"><div class="ttname"><a href="classExternalWindow.html#a54bb8e6674ef42e0ebc67576df3d103a">ExternalWindow::setSize</a></div><div class="ttdeci">void setSize(uint width, uint height)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:296</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a6957b4f82aa3e3557c4c455bbc6b1e15"><div class="ttname"><a href="classExternalWindow.html#a6957b4f82aa3e3557c4c455bbc6b1e15">ExternalWindow::focus</a></div><div class="ttdeci">virtual void focus()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:150</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a0383b6696469e9709e1a1ee53399d9f4"><div class="ttname"><a href="classExternalWindow.html#a0383b6696469e9709e1a1ee53399d9f4">ExternalWindow::getScaleFactor</a></div><div class="ttdeci">double getScaleFactor() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:205</div></div>
 <div class="ttc" id="aclassExternalWindow_html_ad06f0e6adb6a1460af88707cd452e767"><div class="ttname"><a href="classExternalWindow.html#ad06f0e6adb6a1460af88707cd452e767">ExternalWindow::getTransientWindowId</a></div><div class="ttdeci">uintptr_t getTransientWindowId() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:238</div></div>
+<div class="ttc" id="aclassExternalWindow_html_a15b677215c3abb5c1f7f71c4a00fd41c"><div class="ttname"><a href="classExternalWindow.html#a15b677215c3abb5c1f7f71c4a00fd41c">ExternalWindow::setGeometryConstraints</a></div><div class="ttdeci">void setGeometryConstraints(uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:326</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a5a870bd4d4e4cdbee7eb029384c2f1bf"><div class="ttname"><a href="classExternalWindow.html#a5a870bd4d4e4cdbee7eb029384c2f1bf">ExternalWindow::isStandalone</a></div><div class="ttdeci">bool isStandalone() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:178</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a2e76b734d72a0766d7ddbf62d3e9f2b5"><div class="ttname"><a href="classExternalWindow.html#a2e76b734d72a0766d7ddbf62d3e9f2b5">ExternalWindow::isVisible</a></div><div class="ttdeci">bool isVisible() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:169</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a4bebffffd78f13122dc74e4d85c0b527"><div class="ttname"><a href="classExternalWindow.html#a4bebffffd78f13122dc74e4d85c0b527">ExternalWindow::setWidth</a></div><div class="ttdeci">void setWidth(uint width)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:276</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a4db15a0baa5e85c04b4a8c3545958aad"><div class="ttname"><a href="classExternalWindow.html#a4db15a0baa5e85c04b4a8c3545958aad">ExternalWindow::ExternalWindow</a></div><div class="ttdeci">ExternalWindow(const PrivateData &amp;data)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:86</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:08 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:33 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

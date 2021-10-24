@@ -172,8 +172,6 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraint
 Protected Member Functions</h2></td></tr>
 <tr class="memitem:a7b182e276662bc32aa0fcd7b07dfe4d0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a7b182e276662bc32aa0fcd7b07dfe4d0">onKeyboard</a> (const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;) override</td></tr>
 <tr class="separator:a7b182e276662bc32aa0fcd7b07dfe4d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a62dcfe3102ce26a4e928daeda91734a9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a62dcfe3102ce26a4e928daeda91734a9">onSpecial</a> (const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;) override</td></tr>
-<tr class="separator:a62dcfe3102ce26a4e928daeda91734a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a567153ae0853e56553c9569dc61ed913"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a567153ae0853e56553c9569dc61ed913">onCharacterInput</a> (const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;) override</td></tr>
 <tr class="separator:a567153ae0853e56553c9569dc61ed913"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ceccb37de18c8e3b21fbf64ad58981c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a8ceccb37de18c8e3b21fbf64ad58981c">onMouse</a> (const <a class="el" href="structWidget_1_1MouseEvent.html">MouseEvent</a> &amp;) override</td></tr>
@@ -187,6 +185,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:ae1554f348fe3b2f9d4c3c5c4f9ec55bd inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const SpecialEvent &amp;)</td></tr>
+<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -476,35 +476,6 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 
 </div>
 </div>
-<a id="a62dcfe3102ce26a4e928daeda91734a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a62dcfe3102ce26a4e928daeda91734a9">&#9670;&nbsp;</a></span>onSpecial()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool TopLevelWidget::onSpecial </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">override</span><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>A function called when a special key is pressed or released. </p><dl class="section return"><dt>Returns</dt><dd>True to stop event propagation, false otherwise. </dd></dl>
-
-<p>Reimplemented from <a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">Widget</a>.</p>
-
-</div>
-</div>
 <a id="a567153ae0853e56553c9569dc61ed913"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a567153ae0853e56553c9569dc61ed913">&#9670;&nbsp;</a></span>onCharacterInput()</h2>
 
@@ -627,7 +598,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:34 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

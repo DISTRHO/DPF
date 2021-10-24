@@ -70,6 +70,8 @@ $(function() {
 <div class="title">ImageBaseButton&lt; ImageType &gt; Class Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p><code>#include &lt;<a class="el" href="ImageBaseWidgets_8hpp_source.html">ImageBaseWidgets.hpp</a>&gt;</code></p>
 <div class="dynheader">
 Inheritance diagram for ImageBaseButton&lt; ImageType &gt;:</div>
 <div class="dyncontent">
@@ -243,14 +245,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="inherit_header pro_methods_classWidget"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classWidget')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classWidget.html">Widget</a></td></tr>
 <tr class="memitem:a9fa874aede538b41348f1029524aea11 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a9fa874aede538b41348f1029524aea11">onKeyboard</a> (const <a class="el" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> &amp;)</td></tr>
 <tr class="separator:a9fa874aede538b41348f1029524aea11 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const <a class="el" href="structWidget_1_1SpecialEvent.html">SpecialEvent</a> &amp;)</td></tr>
-<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad7fb24de24d8809305b04ff3750f0dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">onCharacterInput</a> (const <a class="el" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> &amp;)</td></tr>
 <tr class="separator:ad7fb24de24d8809305b04ff3750f0dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0d78d28bd4a98c3a016a38091b2d4185 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">onScroll</a> (const <a class="el" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> &amp;)</td></tr>
 <tr class="separator:a0d78d28bd4a98c3a016a38091b2d4185 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a> (const <a class="el" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> &amp;)</td></tr>
 <tr class="separator:acc0365ec4b9245bdffb8d0285be55dea inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memItemLeft" align="right" valign="top">virtual bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a> (const SpecialEvent &amp;)</td></tr>
+<tr class="separator:a3b42652fcb2f95c6f86bdd43a1727507 inherit pro_methods_classWidget"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="inherit_header pro_methods_classButtonEventHandler"><td colspan="2" onclick="javascript:toggleInherit('pro_methods_classButtonEventHandler')"><img src="closed.png" alt="-"/>&#160;Protected Member Functions inherited from <a class="el" href="classButtonEventHandler.html">ButtonEventHandler</a></td></tr>
 <tr class="memitem:a14f9f97b0852a9830c92693ab8a08e7d inherit pro_methods_classButtonEventHandler"><td class="memItemLeft" align="right" valign="top"><a id="a14f9f97b0852a9830c92693ab8a08e7d"></a>
 State&#160;</td><td class="memItemRight" valign="bottom"><b>getState</b> () const noexcept</td></tr>
@@ -278,7 +280,15 @@ Additional Inherited Members</h2></td></tr>
  }</td></tr>
 <tr class="separator:a93c2ffcfc3a54567fb060b2f7d42be4c inherit pub_types_classButtonEventHandler"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><h3>template&lt;class ImageType&gt;<br />
+class ImageBaseButton&lt; ImageType &gt;</h3>
+
+<p>DGL Image Button class.</p>
+<p>This is a typical button, where the drawing comes from a pregenerated set of images. The button can be under "normal", "hover" and "down" states, with one separate image possible for each.</p>
+<p>The event logic for this button comes from the <a class="el" href="classButtonEventHandler.html">ButtonEventHandler</a> class.</p>
+<dl class="section see"><dt>See also</dt><dd>CairoImageButton, OpenGLImageButton </dd></dl>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a4a3eaf5367a91d43465ffca09464b8ad"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4a3eaf5367a91d43465ffca09464b8ad">&#9670;&nbsp;</a></span>onDisplay()</h2>
 
@@ -377,7 +387,7 @@ template&lt;class ImageType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:33 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

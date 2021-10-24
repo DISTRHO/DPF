@@ -104,7 +104,10 @@ Public Member Functions</h2></td></tr>
 <div class="textblock"><h3>template&lt;class ObjectType&gt;<br />
 class ScopedPointer&lt; ObjectType &gt;</h3>
 
-<p>This class holds a pointer which is automatically deleted when this object goes out of scope.</p>
+<p>Copyright (C) 2013 Raw Material Software Ltd.</p>
+<p>Permission is granted to use this software under the terms of the ISC license <a href="http://www.isc.org/downloads/software-support-policy/isc-license/">http://www.isc.org/downloads/software-support-policy/isc-license/</a></p>
+<p>Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.</p>
+<p>THE SOFTWARE IS PROVIDED "AS IS" AND ISC DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL ISC BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. This class holds a pointer which is automatically deleted when this object goes out of scope.</p>
 <p>Once a pointer has been passed to a <a class="el" href="classScopedPointer.html">ScopedPointer</a>, it will make sure that the pointer gets deleted when the <a class="el" href="classScopedPointer.html">ScopedPointer</a> is deleted. Using the <a class="el" href="classScopedPointer.html">ScopedPointer</a> on the stack or as member variables is a good way to use RAII to avoid accidentally leaking dynamically created objects.</p>
 <p>A <a class="el" href="classScopedPointer.html">ScopedPointer</a> can be used in pretty much the same way that you'd use a normal pointer to an object. If you use the assignment operator to assign a different object to a <a class="el" href="classScopedPointer.html">ScopedPointer</a>, the old one will be automatically deleted.</p>
 <p>A const <a class="el" href="classScopedPointer.html">ScopedPointer</a> is guaranteed not to lose ownership of its object or change the object to which it points during its lifetime. This means that making a copy of a const <a class="el" href="classScopedPointer.html">ScopedPointer</a> is impossible, as that would involve the new copy taking ownership from the old one.</p>
@@ -492,7 +495,7 @@ template&lt;class ObjectType &gt; </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:33 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

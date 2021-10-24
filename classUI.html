@@ -94,6 +94,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a607ea9f2978605808d8ef5dc3531fae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97d880182254652f94e7bed355370c07"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a97d880182254652f94e7bed355370c07">getSampleRate</a> () const noexcept</td></tr>
 <tr class="separator:a97d880182254652f94e7bed355370c07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3359930fbeb2670230e617d430ecd67e"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3359930fbeb2670230e617d430ecd67e">getBundlePath</a> () const noexcept</td></tr>
+<tr class="separator:a3359930fbeb2670230e617d430ecd67e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2efcd4f21af0470e91fb6a342d7667a0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a2efcd4f21af0470e91fb6a342d7667a0">editParameter</a> (uint32_t index, bool started)</td></tr>
 <tr class="separator:a2efcd4f21af0470e91fb6a342d7667a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a973db6e8805f0aa9be3457685564ab8a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a973db6e8805f0aa9be3457685564ab8a">setParameterValue</a> (uint32_t index, float value)</td></tr>
@@ -316,6 +318,33 @@ It assumes aspect ratio is meant to be kept. Manually call setGeometryConstraint
 </table>
 </div><div class="memdoc">
 <p>Get the current sample rate used in plugin processing. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classUI.html#ac3e98726ca71f95a1e6c867706ebd9be">sampleRateChanged(double)</a> </dd></dl>
+
+</div>
+</div>
+<a id="a3359930fbeb2670230e617d430ecd67e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3359930fbeb2670230e617d430ecd67e">&#9670;&nbsp;</a></span>getBundlePath()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* UI::getBundlePath </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get the bundle path where the <a class="el" href="classUI.html">UI</a> resides.<br  />
+Can return null if the <a class="el" href="classUI.html">UI</a> is not available in a bundle (if it is a single binary). </p><dl class="section see"><dt>See also</dt><dd>getBinaryFilename </dd></dl>
 
 </div>
 </div>
@@ -766,7 +795,7 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
   </tr>
 </table>
 </div><div class="memdoc">
-<p>External <a class="el" href="classWindow.html">Window</a> resize function, called when the window is resized. This is overriden here so the host knows when the <a class="el" href="classUI.html">UI</a> is resized by you. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#a12bf25c6c01c4aec99e175eb2ba31d87">ExternalWindow::sizeChanged(uint,uint)</a> </dd></dl>
+<p>External <a class="el" href="classWindow.html">Window</a> resize function, called when the window is resized. This is overriden here so the host knows when the <a class="el" href="classUI.html">UI</a> is resized by you. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classExternalWindow.html#aba350e1f737b68e51bfe8018bded6e45">ExternalWindow::sizeChanged(uint,uint)</a> </dd></dl>
 
 </div>
 </div>
@@ -776,7 +805,7 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Sep 22 2021 13:21:09 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Sun Oct 24 2021 13:18:34 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
