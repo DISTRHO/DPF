@@ -31,23 +31,39 @@ START_NAMESPACE_DISTRHO
    It allows developers to create plugins with custom UIs using a simple C++ API.@n
    The framework facilitates exporting various different plugin formats from the same code-base.
 
-   DPF can build for LADSPA, DSSI, LV2 and VST2 formats.@n
+   DPF can build for LADSPA, DSSI, LV2, VST2 and VST3 formats.@n
    A JACK/Standalone mode is also available, allowing you to quickly test plugins.
 
    @section Macros
    You start by creating a "DistrhoPluginInfo.h" file describing the plugin via macros, see @ref PluginMacros.@n
-   This file is included in the main DPF code to select which features to activate for each plugin format.
+   This file is included during compilation of the main DPF code to select which features to activate for each plugin format.
 
    For example, a plugin (with %UI) that use states will require LV2 hosts to support Atom and Worker extensions for
-   message passing from the %UI to the plugin.@n
+   message passing from the %UI to the (DSP) plugin.@n
    If your plugin does not make use of states, the Worker extension is not set as a required feature.
 
    @section Plugin
    The next step is to create your plugin code by subclassing DPF's Plugin class.@n
    You need to pass the number of parameters in the constructor and also the number of programs and states, if any.
 
-   Here's an example of an audio plugin that simply mutes the host output:
+   Do note all of DPF code is within its own C++ namespace (@b DISTRHO for DSP/plugin stuff, @b DGL for UI stuff).@n
+   You can use @ref START_NAMESPACE_DISTRHO / @ref END_NAMESPACE_DISTRHO combo around your code, or globally set @ref USE_NAMESPACE_DISTRHO.@n
+   These are defined as compiler macros so that you can override the namespace name during build. When in doubt, just follow the examples.
+
+   @section Examples
+   Let's begin with some examples.@n
+   Here is one of a stereo audio plugin that simply mutes the host output:
    @code
+   /* Make DPF related classes available for us to use without any extra namespace references */
+   USE_NAMESPACE_DISTRHO;
+
+   /**
+      Our custom plugin class.
+      Subclassing `Plugin` from DPF is how this all works.
+
+      By default, only information-related functions and `run` are pure virtual (that is, must be reimplemented).
+      When enabling certain features (such as programs or states, more on that below), a few extra functions also need to be reimplemented.
+    */
    class MutePlugin : public Plugin
    {
    public:
@@ -111,7 +127,6 @@ START_NAMESPACE_DISTRHO
 
      /**
         Run/process function for plugins without MIDI input.
-        NOTE: Some parameters might be null if there are no audio inputs or outputs.
       */
       void run(const float**, float** outputs, uint32_t frames) override
       {
@@ -123,11 +138,20 @@ START_NAMESPACE_DISTRHO
           std::memset(outL, 0, sizeof(float)*frames);
           std::memset(outR, 0, sizeof(float)*frames);
       }
-
    };
+
+   /**
+      Create an instance of the Plugin class.
+      This is the entry point for DPF plugins.
+      DPF will call this to either create an instance of your plugin for the host or to fetch some initial information for internal caching.
+    */
+   Plugin* createPlugin()
+   {
+      return new MutePlugin();
+   }
    @endcode
 
-   See the Plugin class for more information and to understand what each function does.
+   See the Plugin class for more information.
 
    @section Parameters
    A plugin is nothing without parameters.@n
@@ -135,12 +159,12 @@ START_NAMESPACE_DISTRHO
    They have hints to describe how they behave plus a name and a symbol identifying them.@n
    Parameters also have 'ranges' – a minimum, maximum and default value.
 
-   Input parameters are "read-only": the plugin can read them but not change them.
-   (the exception being when changing programs, more on that below)@n
+   Input parameters are by default "read-only": the plugin can read them but not change them.
+   (there are exceptions and possibly a request to the host to change values, more on that below)@n
    It's the host responsibility to save, restore and set input parameters.
 
    Output parameters can be changed at anytime by the plugin.@n
-   The host will simply read their values and not change them.
+   The host will simply read their values and never change them.
 
    Here's an example of an audio plugin that has 1 input parameter:
    @code
@@ -250,8 +274,8 @@ START_NAMESPACE_DISTRHO
    See the Parameter struct for more information about parameters.
 
    @section Programs
-   Programs in DPF refer to plugin-side presets (usually called "factory presets"),
-   an initial set of presets provided by plugin authors included in the actual plugin.
+   Programs in DPF refer to plugin-side presets (usually called "factory presets").@n
+   This is meant as an initial set of presets provided by plugin authors included in the actual plugin.
 
    To use programs you must first enable them by setting @ref DISTRHO_PLUGIN_WANT_PROGRAMS to 1 in your DistrhoPluginInfo.h file.@n
    When enabled you'll need to override 2 new function in your plugin code,
@@ -331,12 +355,9 @@ START_NAMESPACE_DISTRHO
         */
       void initProgramName(uint32_t index, String& programName)
       {
-          switch(index)
-          {
-          case 0:
-              programName = "Default";
-              break;
-          }
+          // we only have one program so we can skip checking the index
+
+          programName = "Default";
       }
 
      /* ----------------------------------------------------------------------------------------
@@ -377,13 +398,10 @@ START_NAMESPACE_DISTRHO
       */
       void loadProgram(uint32_t index)
       {
-          switch(index)
-          {
-          case 0:
-              fGainL = 1.0f;
-              fGainR = 1.0f;
-              break;
-          }
+          // same as before, ignore index check
+
+          fGainL = 1.0f;
+          fGainR = 1.0f;
       }
 
      /* ----------------------------------------------------------------------------------------
@@ -771,6 +789,55 @@ START_NAMESPACE_DISTRHO
    When set to 0, DPF will import the VST2 definitions from `"vst/aeffectx.h"` (not shipped with DPF).
  */
 #define VESTIGE_HEADER 1
+
+/** @} */
+
+/* ------------------------------------------------------------------------------------------------------------
+ * Namespace Macros */
+
+/**
+   @defgroup NamespaceMacros Namespace Macros
+
+   C Macros to use and customize DPF namespaces.
+
+   These are macros that serve as helpers around C++ namespaces, and also as a way to set custom namespaces during a build.
+   @{
+ */
+
+/**
+   Compiler macro that sets the C++ namespace for DPF plugins.@n
+   If unset during build, it will use the name @b DISTRHO by default.
+
+   Unless you know exactly what you are doing, you do need to modify this value.@n
+   The only probable useful case for customizing it is if you are building a big collection of very similar DPF-based plugins in your application.@n
+   For example, having 2 different versions of the same plugin that should behave differently but still exist within the same binary.
+
+   On macOS (where due to Objective-C restrictions all code that interacts with Cocoa needs to be in a flat namespace),
+   DPF will automatically use the plugin name as prefix to flat namespace functions in order to avoid conflicts.
+
+   So, basically, it is DPF's job to make sure plugin binaries are 100% usable as-is.@n
+   You typically do not need to care about this at all.
+ */
+#define DISTRHO_NAMESPACE DISTRHO
+
+/**
+   Compiler macro that begins the C++ namespace for @b DISTRHO, as needed for (the DSP side of) plugins.@n
+   All classes in DPF are within this namespace except for UI/graphics stuff.
+   @see END_NAMESPACE_DISTRHO
+ */
+#define START_NAMESPACE_DISTRHO namespace DISTRHO_NAMESPACE {
+
+/**
+   Close the namespace previously started by @ref START_NAMESPACE_DISTRHO.@n
+   This doesn't really need to be a macro, it is just prettier/more consistent that way.
+ */
+#define END_NAMESPACE_DISTRHO }
+
+/**
+   Make the @b DISTRHO namespace available in the current function scope.@n
+   This is not set by default in order to avoid conflicts with commonly used names such as "Parameter" and "Plugin".
+ */
+#define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;
 
 /** @} */
 

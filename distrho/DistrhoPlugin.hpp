@@ -1102,7 +1102,10 @@ private:
  */
 
 /**
-   TODO.
+   Create an instance of the Plugin class.@n
+   This is the entry point for DPF plugins.@n
+   DPF will call this to either create an instance of your plugin for the host
+   or to fetch some initial information for internal caching.
  */
 extern Plugin* createPlugin();
 
