@@ -24,6 +24,8 @@
 # include <windows.h>
 #else
 # include <dlfcn.h>
+# include <limits.h>
+# include <stdlib.h>
 #endif
 
 #if defined(DISTRHO_OS_WINDOWS) && !DISTRHO_IS_STANDALONE
@@ -60,7 +62,8 @@ const char* getBinaryFilename()
 #else
     Dl_info info;
     dladdr((void*)getBinaryFilename, &info);
-    filename = info.dli_fname;
+    char filenameBuf[PATH_MAX];
+    filename = realpath(info.dli_fname, filenameBuf);
 #endif
 
     return filename;
