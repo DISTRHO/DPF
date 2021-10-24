@@ -24,12 +24,8 @@
 # include <windows.h>
 #else
 # include <dlfcn.h>
+# include <limits.h>
 # include <stdlib.h>
-# ifdef DISTRHO_OS_MAC
-#  include <sys/syslimits.h>
-# else
-#  include <linux/limits.h>
-# endif
 #endif
 
 #if defined(DISTRHO_OS_WINDOWS) && !DISTRHO_IS_STANDALONE
