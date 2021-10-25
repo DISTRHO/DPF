@@ -496,7 +496,7 @@ $(function() {
 <div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;            <span class="keywordflow">if</span> (ret &lt; 0)</div>
 <div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;            {</div>
 <div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;                <span class="comment">// should never happen!</span></div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;                d_safe_assert_int(<span class="stringliteral">&quot;ret &gt;= 0&quot;</span>, __FILE__, __LINE__, <span class="keywordtype">int</span>(ret));</div>
+<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;                <a class="code" href="group__StringPrintFunctions.html#gac59f28efd3d30333551df9ca47c1fc0f">d_safe_assert_int</a>(<span class="stringliteral">&quot;ret &gt;= 0&quot;</span>, __FILE__, __LINE__, <span class="keywordtype">int</span>(ret));</div>
 <div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160; </div>
 <div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;                <span class="keywordflow">if</span> (found != <span class="keyword">nullptr</span>)</div>
 <div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;                    *found = <span class="keyword">false</span>;</div>
@@ -753,7 +753,7 @@ $(function() {
 <div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;            <span class="stringliteral">&quot;0123456789+/&quot;</span>;</div>
 <div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160; </div>
 <div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;<span class="preprocessor">#ifndef _MSC_VER</span></div>
-<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;        <span class="keyword">const</span> std::size_t kTmpBufSize = std::min(d_nextPowerOf2(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(dataSize/3)), 65536U);</div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;        <span class="keyword">const</span> std::size_t kTmpBufSize = std::min(<a class="code" href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a>(<span class="keyword">static_cast&lt;</span>uint32_t<span class="keyword">&gt;</span>(dataSize/3)), 65536U);</div>
 <div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;<span class="preprocessor">#else</span></div>
 <div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;        constexpr std::size_t kTmpBufSize = 65536U;</div>
 <div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;<span class="preprocessor">#endif</span></div>
@@ -833,7 +833,7 @@ $(function() {
 <div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
 <div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
 <div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160; </div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;        <a class="code" href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">d_safe_assert</a>(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
 <div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160; </div>
 <div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
 <div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
@@ -845,7 +845,7 @@ $(function() {
 <div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        <span class="keywordflow">if</span> (pos &lt; fBufferLen)</div>
 <div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;            <span class="keywordflow">return</span> fBuffer[pos];</div>
 <div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160; </div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        d_safe_assert(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;        <a class="code" href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">d_safe_assert</a>(<span class="stringliteral">&quot;pos &lt; fBufferLen&quot;</span>, __FILE__, __LINE__);</div>
 <div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160; </div>
 <div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;        <span class="keyword">static</span> <span class="keywordtype">char</span> fallback;</div>
 <div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;        fallback = <span class="charliteral">&#39;\0&#39;</span>;</div>
@@ -1063,10 +1063,13 @@ $(function() {
 <div class="ttc" id="agroup__NamespaceMacros_html_gac4cb97c393d20c28ba19365d844341cd"><div class="ttname"><a href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">START_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define START_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:828</div></div>
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
 <div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:834</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gaded8dbdc7ff99c70e7361b3f1a32b584"><div class="ttname"><a href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a></div><div class="ttdeci">static uint32_t d_nextPowerOf2(uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:298</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_gac59f28efd3d30333551df9ca47c1fc0f"><div class="ttname"><a href="group__StringPrintFunctions.html#gac59f28efd3d30333551df9ca47c1fc0f">d_safe_assert_int</a></div><div class="ttdeci">static void d_safe_assert_int(const char *const assertion, const char *const file, const int line, const int value) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:186</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9473c264004ac48764062fd881a55cff"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">d_safe_assert</a></div><div class="ttdeci">static void d_safe_assert(const char *const assertion, const char *const file, const int line) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:177</div></div>
 <div class="ttc" id="aclassScopedSafeLocale_html"><div class="ttname"><a href="classScopedSafeLocale.html">ScopedSafeLocale</a></div><div class="ttdef"><b>Definition:</b> ScopedSafeLocale.hpp:57</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 24 2021 14:20:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:33:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

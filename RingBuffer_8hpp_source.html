@@ -621,7 +621,7 @@ $(function() {
 <div class="line"><a name="l00550"></a><span class="lineno">  550</span>&#160;            <span class="keywordflow">if</span> (! errorReading)</div>
 <div class="line"><a name="l00551"></a><span class="lineno">  551</span>&#160;            {</div>
 <div class="line"><a name="l00552"></a><span class="lineno">  552</span>&#160;                errorReading = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;                d_stderr2(<span class="stringliteral">&quot;RingBuffer::tryRead(%p, %lu): failed, not enough space&quot;</span>, buf, (ulong)size);</div>
+<div class="line"><a name="l00553"></a><span class="lineno">  553</span>&#160;                <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;RingBuffer::tryRead(%p, %lu): failed, not enough space&quot;</span>, buf, (ulong)size);</div>
 <div class="line"><a name="l00554"></a><span class="lineno">  554</span>&#160;            }</div>
 <div class="line"><a name="l00555"></a><span class="lineno">  555</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00556"></a><span class="lineno">  556</span>&#160;        }</div>
@@ -675,7 +675,7 @@ $(function() {
 <div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;            <span class="keywordflow">if</span> (! errorWriting)</div>
 <div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;            {</div>
 <div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;                errorWriting = <span class="keyword">true</span>;</div>
-<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;                d_stderr2(<span class="stringliteral">&quot;RingBuffer::tryWrite(%p, %lu): failed, not enough space&quot;</span>, buf, (ulong)size);</div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;                <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;RingBuffer::tryWrite(%p, %lu): failed, not enough space&quot;</span>, buf, (ulong)size);</div>
 <div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;            }</div>
 <div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;            buffer-&gt;invalidateCommit = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
@@ -772,7 +772,7 @@ $(function() {
 <div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(heapBuffer.<a class="code" href="structHeapBuffer.html#afbaf206237e4898a306025676dce0987">buf</a> == <span class="keyword">nullptr</span>, <span class="keyword">false</span>);</div>
 <div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;        DISTRHO_SAFE_ASSERT_RETURN(size &gt; 0,  <span class="keyword">false</span>);</div>
 <div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160; </div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;        <span class="keyword">const</span> uint32_t p2size = d_nextPowerOf2(size);</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;        <span class="keyword">const</span> uint32_t p2size = <a class="code" href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a>(size);</div>
 <div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160; </div>
 <div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;        <span class="keywordflow">try</span> {</div>
 <div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;            heapBuffer.<a class="code" href="structHeapBuffer.html#afbaf206237e4898a306025676dce0987">buf</a> = <span class="keyword">new</span> uint8_t[p2size];</div>
@@ -846,6 +846,7 @@ $(function() {
 <div class="ttc" id="astructHeapBuffer_html_abd05cbae44531a412352ed52c8a50aec"><div class="ttname"><a href="structHeapBuffer.html#abd05cbae44531a412352ed52c8a50aec">HeapBuffer::tail</a></div><div class="ttdeci">uint32_t tail</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:67</div></div>
 <div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:834</div></div>
 <div class="ttc" id="aclassRingBufferControl_html_a3e9c1857e11f0d9efcc2944d6000504b"><div class="ttname"><a href="classRingBufferControl.html#a3e9c1857e11f0d9efcc2944d6000504b">RingBufferControl::writeCustomType</a></div><div class="ttdeci">bool writeCustomType(const T &amp;type) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:473</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gaded8dbdc7ff99c70e7361b3f1a32b584"><div class="ttname"><a href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a></div><div class="ttdeci">static uint32_t d_nextPowerOf2(uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:298</div></div>
 <div class="ttc" id="aclassHeapRingBuffer_html_a6a3c03b584b5b20ad2829e26f5e6ed0e"><div class="ttname"><a href="classHeapRingBuffer.html#a6a3c03b584b5b20ad2829e26f5e6ed0e">HeapRingBuffer::HeapRingBuffer</a></div><div class="ttdeci">HeapRingBuffer() noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:680</div></div>
 <div class="ttc" id="aclassRingBufferControl_html"><div class="ttname"><a href="classRingBufferControl.html">RingBufferControl</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:167</div></div>
 <div class="ttc" id="aclassRingBufferControl_html_a72e173dcae573f6e2e8ac4cfeb8aa96b"><div class="ttname"><a href="classRingBufferControl.html#a72e173dcae573f6e2e8ac4cfeb8aa96b">RingBufferControl::writeCustomData</a></div><div class="ttdeci">bool writeCustomData(const void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:460</div></div>
@@ -855,6 +856,7 @@ $(function() {
 <div class="ttc" id="astructHeapBuffer_html_a582e7b5aa4a85814f291d002abb49599"><div class="ttname"><a href="structHeapBuffer.html#a582e7b5aa4a85814f291d002abb49599">HeapBuffer::size</a></div><div class="ttdeci">uint32_t size</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:54</div></div>
 <div class="ttc" id="aclassHeapRingBuffer_html"><div class="ttname"><a href="classHeapRingBuffer.html">HeapRingBuffer</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:676</div></div>
 <div class="ttc" id="astructHeapBuffer_html_a4d330b5567a46f6b6972f5174b262292"><div class="ttname"><a href="structHeapBuffer.html#a4d330b5567a46f6b6972f5174b262292">HeapBuffer::wrtn</a></div><div class="ttdeci">uint32_t wrtn</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:74</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9861b6a26e43554680f50623196dde7b"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a></div><div class="ttdeci">static void d_stderr2(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:161</div></div>
 <div class="ttc" id="aclassHeapRingBuffer_html_ab7d60a3acc757e88e1c7254626ce9709"><div class="ttname"><a href="classHeapRingBuffer.html#ab7d60a3acc757e88e1c7254626ce9709">HeapRingBuffer::createBuffer</a></div><div class="ttdeci">bool createBuffer(const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:699</div></div>
 <div class="ttc" id="astructSmallStackBuffer_html"><div class="ttname"><a href="structSmallStackBuffer.html">SmallStackBuffer</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:93</div></div>
 <div class="ttc" id="aclassHeapRingBuffer_html_a940bc4c023a53a0d511d6f99186d8224"><div class="ttname"><a href="classHeapRingBuffer.html#a940bc4c023a53a0d511d6f99186d8224">HeapRingBuffer::deleteBuffer</a></div><div class="ttdeci">void deleteBuffer() noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:716</div></div>
@@ -864,7 +866,7 @@ $(function() {
 <div class="ttc" id="aclassRingBufferControl_html_aaaf4efe13ec2555c390047f545d2660d"><div class="ttname"><a href="classRingBufferControl.html#aaaf4efe13ec2555c390047f545d2660d">RingBufferControl::readCustomType</a></div><div class="ttdeci">bool readCustomType(T &amp;type) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:364</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 24 2021 14:20:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:33:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -129,251 +129,294 @@ $(function() {
 <div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="preprocessor">#define DISTRHO_MACRO_AS_STRING_VALUE(MACRO) #MACRO</span></div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="preprocessor">#define DISTRHO_MACRO_AS_STRING(MACRO) DISTRHO_MACRO_AS_STRING_VALUE(MACRO)</span></div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">// misc functions</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> * Return a 64-bit number from 4 8-bit numbers.</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> constexpr</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;int64_t d_cconst(<span class="keyword">const</span> uint8_t a, <span class="keyword">const</span> uint8_t b, <span class="keyword">const</span> uint8_t c, <span class="keyword">const</span> uint8_t d) noexcept</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;{</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    <span class="keywordflow">return</span> (a &lt;&lt; 24) | (b &lt;&lt; 16) | (c &lt;&lt; 8) | (d &lt;&lt; 0);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;}</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment"> * Return an hexadecimal representation of a MAJ.MIN.MICRO version number.</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> constexpr</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;uint32_t d_version(<span class="keyword">const</span> uint8_t major, <span class="keyword">const</span> uint8_t minor, <span class="keyword">const</span> uint8_t micro) noexcept</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;{</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    <span class="keywordflow">return</span> uint32_t(major &lt;&lt; 16) | uint32_t(minor &lt;&lt; 8) | (micro &lt;&lt; 0);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;}</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment"> * Dummy function.</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="keywordtype">void</span> d_pass() noexcept {}</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160; </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">// string print functions</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment"> * Print a string to stdout with newline (gray color).</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment"> * Does nothing if DEBUG is not defined.</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="preprocessor">#ifndef DEBUG</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="preprocessor"># define d_debug(...)</span></div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keywordtype">void</span> d_debug(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;{</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;        va_list args;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;        va_start(args, fmt);</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\x1b[30;1m&quot;</span>);</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        std::vfprintf(stdout, fmt, args);</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\x1b[0m\n&quot;</span>);</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        va_end(args);</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;}</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160; </div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"> * Print a string to stdout with newline.</span></div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="keywordtype">void</span> d_stdout(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;{</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    <span class="keywordflow">try</span> {</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        va_list args;</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        va_start(args, fmt);</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        std::vfprintf(stdout, fmt, args);</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\n&quot;</span>);</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;        va_end(args);</div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;}</div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160; </div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment"> * Print a string to stderr with newline.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> * misc functions */</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">   @defgroup MiscellaneousFunctions Miscellaneous functions</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;<span class="comment">   Return a 32-bit number from 4 8-bit numbers.@n</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">   The return type is a int64_t for better compatibility with plugin formats that use such numbers.</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> constexpr</div>
+<div class="line"><a name="l00075"></a><span class="lineno"><a class="line" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">   75</a></span>&#160;int64_t <a class="code" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a>(<span class="keyword">const</span> uint8_t a, <span class="keyword">const</span> uint8_t b, <span class="keyword">const</span> uint8_t c, <span class="keyword">const</span> uint8_t d) noexcept</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;{</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    <span class="keywordflow">return</span> (a &lt;&lt; 24) | (b &lt;&lt; 16) | (c &lt;&lt; 8) | (d &lt;&lt; 0);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;}</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">   Return an hexadecimal representation of a MAJ.MIN.MICRO version number.</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span> constexpr</div>
+<div class="line"><a name="l00084"></a><span class="lineno"><a class="line" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">   84</a></span>&#160;uint32_t <a class="code" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a>(<span class="keyword">const</span> uint8_t major, <span class="keyword">const</span> uint8_t minor, <span class="keyword">const</span> uint8_t micro) noexcept</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;{</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    <span class="keywordflow">return</span> uint32_t(major &lt;&lt; 16) | uint32_t(minor &lt;&lt; 8) | (micro &lt;&lt; 0);</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;}</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">   Dummy, no-op function.</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="group__MiscellaneousFunctions.html#ga208c5bc138b7d4d4e318b6174c9dbf6d">   93</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__MiscellaneousFunctions.html#ga208c5bc138b7d4d4e318b6174c9dbf6d">d_pass</a>() noexcept {}</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160; </div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment"> * string print functions */</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment">   @defgroup StringPrintFunctions String print functions</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">   Print a string to stdout with newline (gray color).</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">   Does nothing if DEBUG is not defined.</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="preprocessor">#ifndef DEBUG</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="preprocessor"># define d_debug(...)</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga9b8ac0ef05538648cb37b3c383ac60d9">  114</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga9b8ac0ef05538648cb37b3c383ac60d9">d_debug</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;{</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        va_list args;</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        va_start(args, fmt);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\x1b[30;1m&quot;</span>);</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        std::vfprintf(stdout, fmt, args);</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\x1b[0m\n&quot;</span>);</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;        va_end(args);</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;}</div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment">   Print a string to stdout with newline.</span></div>
 <div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="keywordtype">void</span> d_stderr(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
+<div class="line"><a name="l00131"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">  131</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
 <div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;{</div>
 <div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    <span class="keywordflow">try</span> {</div>
 <div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;        va_list args;</div>
 <div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;        va_start(args, fmt);</div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        std::vfprintf(stderr, fmt, args);</div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\n&quot;</span>);</div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;        std::vfprintf(stdout, fmt, args);</div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;        std::fprintf(stdout, <span class="stringliteral">&quot;\n&quot;</span>);</div>
 <div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;        va_end(args);</div>
 <div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
 <div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;}</div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160; </div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment"> * Print a string to stderr with newline (red color).</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">   Print a string to stderr with newline.</span></div>
 <div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="keywordtype">void</span> d_stderr2(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
+<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga61feaac6d65661f631be4136041e7bce">  146</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga61feaac6d65661f631be4136041e7bce">d_stderr</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
 <div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;{</div>
 <div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    <span class="keywordflow">try</span> {</div>
 <div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;        va_list args;</div>
 <div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;        va_start(args, fmt);</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\x1b[31m&quot;</span>);</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        std::vfprintf(stderr, fmt, args);</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\x1b[0m\n&quot;</span>);</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;        va_end(args);</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;}</div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"> * Print a safe assertion error message.</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="keywordtype">void</span> d_safe_assert(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file, <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;{</div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i&quot;</span>, assertion, file, line);</div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;}</div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160; </div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment"> * Print a safe assertion error message, with 1 extra signed integer value.</span></div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="keywordtype">void</span> d_safe_assert_int(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;                       <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> <span class="keywordtype">int</span> value) noexcept</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;{</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, value %i&quot;</span>, assertion, file, line, value);</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;}</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160; </div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment"> * Print a safe assertion error message, with 1 extra unsigned integer value.</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="keywordtype">void</span> d_safe_assert_uint(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> uint value) noexcept</div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;{</div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, value %u&quot;</span>, assertion, file, line, value);</div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;}</div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160; </div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment"> * Print a safe assertion error message, with 2 extra signed integer values.</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="keywordtype">void</span> d_safe_assert_int2(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> <span class="keywordtype">int</span> v1, <span class="keyword">const</span> <span class="keywordtype">int</span> v2) noexcept</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;{</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, v1 %i, v2 %i&quot;</span>, assertion, file, line, v1, v2);</div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;}</div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160; </div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment"> * Print a safe assertion error message, with 2 extra unsigned integer values.</span></div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="keywordtype">void</span> d_safe_assert_uint2(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> uint v1, <span class="keyword">const</span> uint v2) noexcept</div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;{</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, v1 %u, v2 %u&quot;</span>, assertion, file, line, v1, v2);</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;}</div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160; </div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment"> * Print a safe assertion error message, with a custom error message.</span></div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="keywordtype">void</span> d_custom_safe_assert(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> message, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
-<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;                          <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;{</div>
-<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;    d_stderr2(<span class="stringliteral">&quot;assertion failure: %s, condition \&quot;%s\&quot; in file %s, line %i&quot;</span>, message, assertion, file, line);</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;}</div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160; </div>
-<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment"> * Print a safe exception error message.</span></div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="keywordtype">void</span> d_safe_exception(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> exception, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file, <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;{</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    d_stderr2(<span class="stringliteral">&quot;exception caught: \&quot;%s\&quot; in file %s, line %i&quot;</span>, exception, file, line);</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;}</div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160; </div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">// math functions</span></div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160; </div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment"> * Safely compare two floating point numbers.</span></div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment"> * Returns true if they match.</span></div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="keywordtype">bool</span> d_isEqual(<span class="keyword">const</span> T&amp; v1, <span class="keyword">const</span> T&amp; v2)</div>
-<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;{</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;    <span class="keywordflow">return</span> std::abs(v1-v2) &lt; std::numeric_limits&lt;T&gt;::epsilon();</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;}</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160; </div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment"> * Safely compare two floating point numbers.</span></div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment"> * Returns true if they don&#39;t match.</span></div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="keywordtype">bool</span> d_isNotEqual(<span class="keyword">const</span> T&amp; v1, <span class="keyword">const</span> T&amp; v2)</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;{</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;    <span class="keywordflow">return</span> std::abs(v1-v2) &gt;= std::numeric_limits&lt;T&gt;::epsilon();</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;}</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160; </div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"> * Safely check if a floating point number is zero.</span></div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="keywordtype">bool</span> d_isZero(<span class="keyword">const</span> T&amp; value)</div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;{</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keywordflow">return</span> std::abs(value) &lt; std::numeric_limits&lt;T&gt;::epsilon();</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;}</div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160; </div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment"> * Safely check if a floating point number is not zero.</span></div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="keywordtype">bool</span> d_isNotZero(<span class="keyword">const</span> T&amp; value)</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;{</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keywordflow">return</span> std::abs(value) &gt;= std::numeric_limits&lt;T&gt;::epsilon();</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;}</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160; </div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment"> * Get next power of 2.</span></div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;uint32_t d_nextPowerOf2(uint32_t size) noexcept</div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;{</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(size &gt; 0, 0);</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;    <span class="comment">// http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2</span></div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;    --size;</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    size |= size &gt;&gt; 1;</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;    size |= size &gt;&gt; 2;</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;    size |= size &gt;&gt; 4;</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    size |= size &gt;&gt; 8;</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;    size |= size &gt;&gt; 16;</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;    <span class="keywordflow">return</span> ++size;</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;}</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160; </div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160; </div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="preprocessor">#ifndef DONT_SET_USING_DISTRHO_NAMESPACE</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;  <span class="comment">// If your code uses a lot of DISTRHO classes, then this will obviously save you</span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;  <span class="comment">// a lot of typing, but can be disabled by setting DONT_SET_USING_DISTRHO_NAMESPACE.</span></div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;  <span class="keyword">namespace </span><a class="code" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">DISTRHO_NAMESPACE</a> {}</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;  <span class="keyword">using namespace </span><a class="code" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">DISTRHO_NAMESPACE</a>;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160; </div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160; </div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="preprocessor">#endif // DISTRHO_UTILS_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;        std::vfprintf(stderr, fmt, args);</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\n&quot;</span>);</div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;        va_end(args);</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;}</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">   Print a string to stderr with newline (red color).</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">  161</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> fmt, ...) noexcept</div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;{</div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    <span class="keywordflow">try</span> {</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;        va_list args;</div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;        va_start(args, fmt);</div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\x1b[31m&quot;</span>);</div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;        std::vfprintf(stderr, fmt, args);</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;        std::fprintf(stderr, <span class="stringliteral">&quot;\x1b[0m\n&quot;</span>);</div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;        va_end(args);</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    } <span class="keywordflow">catch</span> (...) {}</div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;}</div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment">   Print a safe assertion error message.</span></div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">  177</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">d_safe_assert</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file, <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;{</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i&quot;</span>, assertion, file, line);</div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;}</div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">   Print a safe assertion error message, with 1 extra signed integer value.</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#gac59f28efd3d30333551df9ca47c1fc0f">  186</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#gac59f28efd3d30333551df9ca47c1fc0f">d_safe_assert_int</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;                       <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> <span class="keywordtype">int</span> value) noexcept</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;{</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, value %i&quot;</span>, assertion, file, line, value);</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;}</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment">   Print a safe assertion error message, with 1 extra unsigned integer value.</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#gaf7645d9dcbbd44b92b8b6d4625a8e95c">  196</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#gaf7645d9dcbbd44b92b8b6d4625a8e95c">d_safe_assert_uint</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> uint value) noexcept</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;{</div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, value %u&quot;</span>, assertion, file, line, value);</div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;}</div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment">   Print a safe assertion error message, with 2 extra signed integer values.</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga9b31f29f7fde426a4a5bc9b1616aad28">  206</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga9b31f29f7fde426a4a5bc9b1616aad28">d_safe_assert_int2</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;                        <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> <span class="keywordtype">int</span> v1, <span class="keyword">const</span> <span class="keywordtype">int</span> v2) noexcept</div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;{</div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, v1 %i, v2 %i&quot;</span>, assertion, file, line, v1, v2);</div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;}</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">   Print a safe assertion error message, with 2 extra unsigned integer values.</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00216"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#gae62da5934fcf22b46324ddc2c44c3e58">  216</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#gae62da5934fcf22b46324ddc2c44c3e58">d_safe_assert_uint2</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;                         <span class="keyword">const</span> <span class="keywordtype">int</span> line, <span class="keyword">const</span> uint v1, <span class="keyword">const</span> uint v2) noexcept</div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;{</div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: \&quot;%s\&quot; in file %s, line %i, v1 %u, v2 %u&quot;</span>, assertion, file, line, v1, v2);</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;}</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">   Print a safe assertion error message, with a custom error message.</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga643ef1d86ed4c665ae482ea0ccb52b51">  226</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga643ef1d86ed4c665ae482ea0ccb52b51">d_custom_safe_assert</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> message, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> assertion, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file,</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;                          <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;{</div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;assertion failure: %s, condition \&quot;%s\&quot; in file %s, line %i&quot;</span>, message, assertion, file, line);</div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;}</div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment">   Print a safe exception error message.</span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno"><a class="line" href="group__StringPrintFunctions.html#ga98137b745947d74f613859780c81ba69">  236</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="group__StringPrintFunctions.html#ga98137b745947d74f613859780c81ba69">d_safe_exception</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> exception, <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> file, <span class="keyword">const</span> <span class="keywordtype">int</span> line) noexcept</div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;{</div>
+<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;    <a class="code" href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a>(<span class="stringliteral">&quot;exception caught: \&quot;%s\&quot; in file %s, line %i&quot;</span>, exception, file, line);</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;}</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160; </div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="comment"> * math functions */</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="comment">   @defgroup MathFunctions Math related functions</span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment">   Safely compare two floating point numbers.</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="comment">   Returns true if they match.</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno"><a class="line" href="group__MathFunctions.html#gabcb7db6e30f7428a3caa0fdec12af17a">  258</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="group__MathFunctions.html#gabcb7db6e30f7428a3caa0fdec12af17a">d_isEqual</a>(<span class="keyword">const</span> T&amp; v1, <span class="keyword">const</span> T&amp; v2)</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;{</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    <span class="keywordflow">return</span> std::abs(v1-v2) &lt; std::numeric_limits&lt;T&gt;::epsilon();</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;}</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment">   Safely compare two floating point numbers.</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment">   Returns true if they don&#39;t match.</span></div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno"><a class="line" href="group__MathFunctions.html#gaf99f3a8a1c9d97b07c0f225fad8a27b7">  269</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="group__MathFunctions.html#gaf99f3a8a1c9d97b07c0f225fad8a27b7">d_isNotEqual</a>(<span class="keyword">const</span> T&amp; v1, <span class="keyword">const</span> T&amp; v2)</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;{</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <span class="keywordflow">return</span> std::abs(v1-v2) &gt;= std::numeric_limits&lt;T&gt;::epsilon();</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;}</div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160; </div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">/*</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment"> * Safely check if a floating point number is zero.</span></div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="keywordtype">bool</span> d_isZero(<span class="keyword">const</span> T&amp; value)</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;{</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keywordflow">return</span> std::abs(value) &lt; std::numeric_limits&lt;T&gt;::epsilon();</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;}</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">   Safely check if a floating point number is not zero.</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno"><a class="line" href="group__MathFunctions.html#gaa8753f357eea6f93c5fa4e538ce6ac47">  289</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="group__MathFunctions.html#gaa8753f357eea6f93c5fa4e538ce6ac47">d_isNotZero</a>(<span class="keyword">const</span> T&amp; value)</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;{</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;    <span class="keywordflow">return</span> std::abs(value) &gt;= std::numeric_limits&lt;T&gt;::epsilon();</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;}</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">   Get next power of 2.</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
+<div class="line"><a name="l00298"></a><span class="lineno"><a class="line" href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">  298</a></span>&#160;uint32_t <a class="code" href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a>(uint32_t size) noexcept</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;{</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;    DISTRHO_SAFE_ASSERT_RETURN(size &gt; 0, 0);</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160; </div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;    <span class="comment">// http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;    --size;</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;    size |= size &gt;&gt; 1;</div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;    size |= size &gt;&gt; 2;</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;    size |= size &gt;&gt; 4;</div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;    size |= size &gt;&gt; 8;</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;    size |= size &gt;&gt; 16;</div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;    <span class="keywordflow">return</span> ++size;</div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;}</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160; </div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160; </div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="preprocessor">#ifndef DONT_SET_USING_DISTRHO_NAMESPACE</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;  <span class="comment">// If your code uses a lot of DISTRHO classes, then this will obviously save you</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;  <span class="comment">// a lot of typing, but can be disabled by setting DONT_SET_USING_DISTRHO_NAMESPACE.</span></div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;  <span class="keyword">namespace </span><a class="code" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">DISTRHO_NAMESPACE</a> {}</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;  <span class="keyword">using namespace </span><a class="code" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">DISTRHO_NAMESPACE</a>;</div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160; </div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">// -----------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160; </div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="preprocessor">#endif // DISTRHO_UTILS_HPP_INCLUDED</span></div>
 </div><!-- fragment --></div><!-- contents -->
+<div class="ttc" id="agroup__StringPrintFunctions_html_gae62da5934fcf22b46324ddc2c44c3e58"><div class="ttname"><a href="group__StringPrintFunctions.html#gae62da5934fcf22b46324ddc2c44c3e58">d_safe_assert_uint2</a></div><div class="ttdeci">static void d_safe_assert_uint2(const char *const assertion, const char *const file, const int line, const uint v1, const uint v2) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:216</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gaf99f3a8a1c9d97b07c0f225fad8a27b7"><div class="ttname"><a href="group__MathFunctions.html#gaf99f3a8a1c9d97b07c0f225fad8a27b7">d_isNotEqual</a></div><div class="ttdeci">static bool d_isNotEqual(const T &amp;v1, const T &amp;v2)</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:269</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_gaf7645d9dcbbd44b92b8b6d4625a8e95c"><div class="ttname"><a href="group__StringPrintFunctions.html#gaf7645d9dcbbd44b92b8b6d4625a8e95c">d_safe_assert_uint</a></div><div class="ttdeci">static void d_safe_assert_uint(const char *const assertion, const char *const file, const int line, const uint value) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:196</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga208c5bc138b7d4d4e318b6174c9dbf6d"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga208c5bc138b7d4d4e318b6174c9dbf6d">d_pass</a></div><div class="ttdeci">static void d_pass() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:93</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga78b9baaeb515112b1e5ec1182bab299b"><div class="ttname"><a href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a></div><div class="ttdeci">static void d_stdout(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:131</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gaded8dbdc7ff99c70e7361b3f1a32b584"><div class="ttname"><a href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a></div><div class="ttdeci">static uint32_t d_nextPowerOf2(uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:298</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga95d67ff74d46b2c80f15c7790a523154"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a></div><div class="ttdeci">static constexpr uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:84</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga6827e90feb9bdcb6f76175a245fbf12c"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a></div><div class="ttdeci">static constexpr int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:75</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_gac59f28efd3d30333551df9ca47c1fc0f"><div class="ttname"><a href="group__StringPrintFunctions.html#gac59f28efd3d30333551df9ca47c1fc0f">d_safe_assert_int</a></div><div class="ttdeci">static void d_safe_assert_int(const char *const assertion, const char *const file, const int line, const int value) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:186</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9473c264004ac48764062fd881a55cff"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9473c264004ac48764062fd881a55cff">d_safe_assert</a></div><div class="ttdeci">static void d_safe_assert(const char *const assertion, const char *const file, const int line) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:177</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9b8ac0ef05538648cb37b3c383ac60d9"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9b8ac0ef05538648cb37b3c383ac60d9">d_debug</a></div><div class="ttdeci">static void d_debug(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:114</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9861b6a26e43554680f50623196dde7b"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9861b6a26e43554680f50623196dde7b">d_stderr2</a></div><div class="ttdeci">static void d_stderr2(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:161</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gabcb7db6e30f7428a3caa0fdec12af17a"><div class="ttname"><a href="group__MathFunctions.html#gabcb7db6e30f7428a3caa0fdec12af17a">d_isEqual</a></div><div class="ttdeci">static bool d_isEqual(const T &amp;v1, const T &amp;v2)</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:258</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga61feaac6d65661f631be4136041e7bce"><div class="ttname"><a href="group__StringPrintFunctions.html#ga61feaac6d65661f631be4136041e7bce">d_stderr</a></div><div class="ttdeci">static void d_stderr(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:146</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gaa8753f357eea6f93c5fa4e538ce6ac47"><div class="ttname"><a href="group__MathFunctions.html#gaa8753f357eea6f93c5fa4e538ce6ac47">d_isNotZero</a></div><div class="ttdeci">static bool d_isNotZero(const T &amp;value)</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:289</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga98137b745947d74f613859780c81ba69"><div class="ttname"><a href="group__StringPrintFunctions.html#ga98137b745947d74f613859780c81ba69">d_safe_exception</a></div><div class="ttdeci">static void d_safe_exception(const char *const exception, const char *const file, const int line) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:236</div></div>
 <div class="ttc" id="agroup__NamespaceMacros_html_gad4d95edc702f6066ba2f41740f7e5393"><div class="ttname"><a href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">DISTRHO_NAMESPACE</a></div><div class="ttdeci">#define DISTRHO_NAMESPACE</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:821</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga643ef1d86ed4c665ae482ea0ccb52b51"><div class="ttname"><a href="group__StringPrintFunctions.html#ga643ef1d86ed4c665ae482ea0ccb52b51">d_custom_safe_assert</a></div><div class="ttdeci">static void d_custom_safe_assert(const char *const message, const char *const assertion, const char *const file, const int line) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:226</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga9b31f29f7fde426a4a5bc9b1616aad28"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9b31f29f7fde426a4a5bc9b1616aad28">d_safe_assert_int2</a></div><div class="ttdeci">static void d_safe_assert_int2(const char *const assertion, const char *const file, const int line, const int v1, const int v2) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:206</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 24 2021 14:20:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:33:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

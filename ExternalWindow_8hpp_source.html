@@ -531,7 +531,7 @@ $(function() {
 <div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160; </div>
 <div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;            <span class="keywordflow">if</span> (p == pid || (p == -1 &amp;&amp; errno == ECHILD))</div>
 <div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;            {</div>
-<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;                d_stdout(<span class="stringliteral">&quot;NOTICE: Child process exited while idle&quot;</span>);</div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;                <a class="code" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a>(<span class="stringliteral">&quot;NOTICE: Child process exited while idle&quot;</span>);</div>
 <div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160;                pid = 0;</div>
 <div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;            }</div>
@@ -553,7 +553,7 @@ $(function() {
 <div class="line"><a name="l00482"></a><span class="lineno">  482</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00483"></a><span class="lineno">  483</span>&#160; </div>
 <div class="line"><a name="l00484"></a><span class="lineno">  484</span>&#160;            <span class="keywordflow">case</span> -1:</div>
-<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;                d_stderr(<span class="stringliteral">&quot;Could not start external ui&quot;</span>);</div>
+<div class="line"><a name="l00485"></a><span class="lineno">  485</span>&#160;                <a class="code" href="group__StringPrintFunctions.html#ga61feaac6d65661f631be4136041e7bce">d_stderr</a>(<span class="stringliteral">&quot;Could not start external ui&quot;</span>);</div>
 <div class="line"><a name="l00486"></a><span class="lineno">  486</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a name="l00487"></a><span class="lineno">  487</span>&#160; </div>
 <div class="line"><a name="l00488"></a><span class="lineno">  488</span>&#160;            <span class="keywordflow">default</span>:</div>
@@ -566,7 +566,7 @@ $(function() {
 <div class="line"><a name="l00495"></a><span class="lineno">  495</span>&#160;            <span class="keywordflow">if</span> (pid &lt;= 0)</div>
 <div class="line"><a name="l00496"></a><span class="lineno">  496</span>&#160;                <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00497"></a><span class="lineno">  497</span>&#160; </div>
-<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;            d_stdout(<span class="stringliteral">&quot;Waiting for external process to stop,,,&quot;</span>);</div>
+<div class="line"><a name="l00498"></a><span class="lineno">  498</span>&#160;            <a class="code" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a>(<span class="stringliteral">&quot;Waiting for external process to stop,,,&quot;</span>);</div>
 <div class="line"><a name="l00499"></a><span class="lineno">  499</span>&#160; </div>
 <div class="line"><a name="l00500"></a><span class="lineno">  500</span>&#160;            <span class="keywordtype">bool</span> sendTerm = <span class="keyword">true</span>;</div>
 <div class="line"><a name="l00501"></a><span class="lineno">  501</span>&#160; </div>
@@ -587,7 +587,7 @@ $(function() {
 <div class="line"><a name="l00516"></a><span class="lineno">  516</span>&#160;                <span class="keywordflow">case</span> -1:</div>
 <div class="line"><a name="l00517"></a><span class="lineno">  517</span>&#160;                    <span class="keywordflow">if</span> (errno == ECHILD)</div>
 <div class="line"><a name="l00518"></a><span class="lineno">  518</span>&#160;                    {</div>
-<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (no such process)&quot;</span>);</div>
+<div class="line"><a name="l00519"></a><span class="lineno">  519</span>&#160;                        <a class="code" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a>(<span class="stringliteral">&quot;Done! (no such process)&quot;</span>);</div>
 <div class="line"><a name="l00520"></a><span class="lineno">  520</span>&#160;                        pid = 0;</div>
 <div class="line"><a name="l00521"></a><span class="lineno">  521</span>&#160;                        <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00522"></a><span class="lineno">  522</span>&#160;                    }</div>
@@ -596,7 +596,7 @@ $(function() {
 <div class="line"><a name="l00525"></a><span class="lineno">  525</span>&#160;                <span class="keywordflow">default</span>:</div>
 <div class="line"><a name="l00526"></a><span class="lineno">  526</span>&#160;                    <span class="keywordflow">if</span> (p == pid)</div>
 <div class="line"><a name="l00527"></a><span class="lineno">  527</span>&#160;                    {</div>
-<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;                        d_stdout(<span class="stringliteral">&quot;Done! (clean wait)&quot;</span>);</div>
+<div class="line"><a name="l00528"></a><span class="lineno">  528</span>&#160;                        <a class="code" href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a>(<span class="stringliteral">&quot;Done! (clean wait)&quot;</span>);</div>
 <div class="line"><a name="l00529"></a><span class="lineno">  529</span>&#160;                        pid = 0;</div>
 <div class="line"><a name="l00530"></a><span class="lineno">  530</span>&#160;                        <span class="keywordflow">return</span>;</div>
 <div class="line"><a name="l00531"></a><span class="lineno">  531</span>&#160;                    }</div>
@@ -659,6 +659,7 @@ $(function() {
 <div class="ttc" id="aclassExternalWindow_html_aa9bce2cc83c1a8c6ee87f79bf36e3955"><div class="ttname"><a href="classExternalWindow.html#aa9bce2cc83c1a8c6ee87f79bf36e3955">ExternalWindow::hide</a></div><div class="ttdeci">void hide()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:252</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a56da59b2722bd7b0a6c63f9f7f120839"><div class="ttname"><a href="classExternalWindow.html#a56da59b2722bd7b0a6c63f9f7f120839">ExternalWindow::getParentWindowHandle</a></div><div class="ttdeci">uintptr_t getParentWindowHandle() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:228</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a35f711faffa1195c478689f4654dcc4f"><div class="ttname"><a href="classExternalWindow.html#a35f711faffa1195c478689f4654dcc4f">ExternalWindow::show</a></div><div class="ttdeci">void show()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:344</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga78b9baaeb515112b1e5ec1182bab299b"><div class="ttname"><a href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a></div><div class="ttdeci">static void d_stdout(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:131</div></div>
 <div class="ttc" id="aclassExternalWindow_html_add192e95a0fa7187cb0a8e739095674f"><div class="ttname"><a href="classExternalWindow.html#add192e95a0fa7187cb0a8e739095674f">ExternalWindow::setHeight</a></div><div class="ttdeci">void setHeight(uint height)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:286</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a4ea76a2c6240c95ff941bc95841c73c8"><div class="ttname"><a href="classExternalWindow.html#a4ea76a2c6240c95ff941bc95841c73c8">ExternalWindow::transientParentWindowChanged</a></div><div class="ttdeci">virtual void transientParentWindowChanged(uintptr_t)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:434</div></div>
 <div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:834</div></div>
@@ -675,6 +676,7 @@ $(function() {
 <div class="ttc" id="aclassExternalWindow_html_a0e15df4f8b3425b67ad56b42526bb5df"><div class="ttname"><a href="classExternalWindow.html#a0e15df4f8b3425b67ad56b42526bb5df">ExternalWindow::getWidth</a></div><div class="ttdeci">uint getWidth() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:187</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a60ddf70411d05cef91f4a1eaa09554b8"><div class="ttname"><a href="classExternalWindow.html#a60ddf70411d05cef91f4a1eaa09554b8">ExternalWindow::visibilityChanged</a></div><div class="ttdeci">virtual void visibilityChanged(bool)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:426</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a54bb8e6674ef42e0ebc67576df3d103a"><div class="ttname"><a href="classExternalWindow.html#a54bb8e6674ef42e0ebc67576df3d103a">ExternalWindow::setSize</a></div><div class="ttdeci">void setSize(uint width, uint height)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:296</div></div>
+<div class="ttc" id="agroup__StringPrintFunctions_html_ga61feaac6d65661f631be4136041e7bce"><div class="ttname"><a href="group__StringPrintFunctions.html#ga61feaac6d65661f631be4136041e7bce">d_stderr</a></div><div class="ttdeci">static void d_stderr(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:146</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a6957b4f82aa3e3557c4c455bbc6b1e15"><div class="ttname"><a href="classExternalWindow.html#a6957b4f82aa3e3557c4c455bbc6b1e15">ExternalWindow::focus</a></div><div class="ttdeci">virtual void focus()</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:150</div></div>
 <div class="ttc" id="aclassExternalWindow_html_a0383b6696469e9709e1a1ee53399d9f4"><div class="ttname"><a href="classExternalWindow.html#a0383b6696469e9709e1a1ee53399d9f4">ExternalWindow::getScaleFactor</a></div><div class="ttdeci">double getScaleFactor() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:205</div></div>
 <div class="ttc" id="aclassExternalWindow_html_ad06f0e6adb6a1460af88707cd452e767"><div class="ttname"><a href="classExternalWindow.html#ad06f0e6adb6a1460af88707cd452e767">ExternalWindow::getTransientWindowId</a></div><div class="ttdeci">uintptr_t getTransientWindowId() const noexcept</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:238</div></div>
@@ -685,7 +687,7 @@ $(function() {
 <div class="ttc" id="aclassExternalWindow_html_a4db15a0baa5e85c04b4a8c3545958aad"><div class="ttname"><a href="classExternalWindow.html#a4db15a0baa5e85c04b4a8c3545958aad">ExternalWindow::ExternalWindow</a></div><div class="ttdeci">ExternalWindow(const PrivateData &amp;data)</div><div class="ttdef"><b>Definition:</b> ExternalWindow.hpp:86</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 24 2021 14:20:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:33:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

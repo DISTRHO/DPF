@@ -142,7 +142,7 @@ Here is one of a stereo audio plugin that simply mutes the host output: </p><div
 <div class="line"><span class="comment">   */</span></div>
 <div class="line">   uint32_t <a class="code" href="classPlugin.html#abae540dd93caf4834270358a8aad334a">getVersion</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_version(1, 0, 0);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a>(1, 0, 0);</div>
 <div class="line">   }</div>
 <div class="line"><span class="comment"></span> </div>
 <div class="line"><span class="comment">  /**</span></div>
@@ -151,7 +151,7 @@ Here is one of a stereo audio plugin that simply mutes the host output: </p><div
 <div class="line"><span class="comment">   */</span></div>
 <div class="line">   int64_t <a class="code" href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">getUniqueId</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_cconst(<span class="charliteral">&#39;M&#39;</span>, <span class="charliteral">&#39;u&#39;</span>, <span class="charliteral">&#39;t&#39;</span>, <span class="charliteral">&#39;e&#39;</span>);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a>(<span class="charliteral">&#39;M&#39;</span>, <span class="charliteral">&#39;u&#39;</span>, <span class="charliteral">&#39;t&#39;</span>, <span class="charliteral">&#39;e&#39;</span>);</div>
 <div class="line">   }</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* ----------------------------------------------------------------------------------------</span></div>
@@ -226,12 +226,12 @@ The host will simply read their values and never change them.</p>
 <div class="line"> </div>
 <div class="line">   uint32_t <a class="code" href="classPlugin.html#abae540dd93caf4834270358a8aad334a">getVersion</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_version(1, 0, 0);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a>(1, 0, 0);</div>
 <div class="line">   }</div>
 <div class="line"> </div>
 <div class="line">   int64_t <a class="code" href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">getUniqueId</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_cconst(<span class="charliteral">&#39;G&#39;</span>, <span class="charliteral">&#39;a&#39;</span>, <span class="charliteral">&#39;i&#39;</span>, <span class="charliteral">&#39;n&#39;</span>);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a>(<span class="charliteral">&#39;G&#39;</span>, <span class="charliteral">&#39;a&#39;</span>, <span class="charliteral">&#39;i&#39;</span>, <span class="charliteral">&#39;n&#39;</span>);</div>
 <div class="line">   }</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* ----------------------------------------------------------------------------------------</span></div>
@@ -331,12 +331,12 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line"> </div>
 <div class="line">   uint32_t <a class="code" href="classPlugin.html#abae540dd93caf4834270358a8aad334a">getVersion</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_version(1, 0, 0);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a>(1, 0, 0);</div>
 <div class="line">   }</div>
 <div class="line"> </div>
 <div class="line">   int64_t <a class="code" href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">getUniqueId</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
-<div class="line">       <span class="keywordflow">return</span> d_cconst(<span class="charliteral">&#39;P&#39;</span>, <span class="charliteral">&#39;r&#39;</span>, <span class="charliteral">&#39;o&#39;</span>, <span class="charliteral">&#39;g&#39;</span>);</div>
+<div class="line">       <span class="keywordflow">return</span> <a class="code" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a>(<span class="charliteral">&#39;P&#39;</span>, <span class="charliteral">&#39;r&#39;</span>, <span class="charliteral">&#39;o&#39;</span>, <span class="charliteral">&#39;g&#39;</span>);</div>
 <div class="line">   }</div>
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* ----------------------------------------------------------------------------------------</span></div>
@@ -450,8 +450,10 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:30</div></div>
 <div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:493</div></div>
 <div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:447</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga95d67ff74d46b2c80f15c7790a523154"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a></div><div class="ttdeci">static constexpr uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:84</div></div>
 <div class="ttc" id="aclassPlugin_html_a955832840de786a7a22798f0ef451c5d"><div class="ttname"><a href="classPlugin.html#a955832840de786a7a22798f0ef451c5d">Plugin::getMaker</a></div><div class="ttdeci">virtual const char * getMaker() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_a7e9e26ceafc7603ef6163483a9dc39be"><div class="ttname"><a href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">Plugin::setParameterValue</a></div><div class="ttdeci">virtual void setParameterValue(uint32_t index, float value)</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga6827e90feb9bdcb6f76175a245fbf12c"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a></div><div class="ttdeci">static constexpr int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:75</div></div>
 <div class="ttc" id="aclassPlugin_html_a54d66af3111541b7c118f9749ef0231b"><div class="ttname"><a href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">Plugin::initProgramName</a></div><div class="ttdeci">virtual void initProgramName(uint32_t index, String &amp;programName)=0</div></div>
 <div class="ttc" id="aclassPlugin_html_a00f7945c16149db6845fbcc2af729f4f"><div class="ttname"><a href="classPlugin.html#a00f7945c16149db6845fbcc2af729f4f">Plugin::getLabel</a></div><div class="ttdeci">virtual const char * getLabel() const =0</div></div>
 <div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:251</div></div>
@@ -472,7 +474,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:452</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Sun Oct 24 2021 14:20:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:33:23 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
