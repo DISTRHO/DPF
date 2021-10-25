@@ -341,13 +341,13 @@ $(function() {
 <div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;{</div>
 <div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;    <span class="keywordflow">return</span> std::abs(v1-v2) &gt;= std::numeric_limits&lt;T&gt;::epsilon();</div>
 <div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;}</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160; </div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">/*</span></div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment"> * Safely check if a floating point number is zero.</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment">   Safely check if a floating point number is zero.</span></div>
 <div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</div>
 <div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="keyword">static</span> <span class="keyword">inline</span></div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="keywordtype">bool</span> d_isZero(<span class="keyword">const</span> T&amp; value)</div>
+<div class="line"><a name="l00279"></a><span class="lineno"><a class="line" href="group__MathFunctions.html#gae357f9031f7bcd8eccef3443081d3772">  279</a></span>&#160;<span class="keywordtype">bool</span> <a class="code" href="group__MathFunctions.html#gae357f9031f7bcd8eccef3443081d3772">d_isZero</a>(<span class="keyword">const</span> T&amp; value)</div>
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;{</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;    <span class="keywordflow">return</span> std::abs(value) &lt; std::numeric_limits&lt;T&gt;::epsilon();</div>
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;}</div>
@@ -398,6 +398,7 @@ $(function() {
 <div class="ttc" id="agroup__StringPrintFunctions_html_gae62da5934fcf22b46324ddc2c44c3e58"><div class="ttname"><a href="group__StringPrintFunctions.html#gae62da5934fcf22b46324ddc2c44c3e58">d_safe_assert_uint2</a></div><div class="ttdeci">static void d_safe_assert_uint2(const char *const assertion, const char *const file, const int line, const uint v1, const uint v2) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:216</div></div>
 <div class="ttc" id="agroup__MathFunctions_html_gaf99f3a8a1c9d97b07c0f225fad8a27b7"><div class="ttname"><a href="group__MathFunctions.html#gaf99f3a8a1c9d97b07c0f225fad8a27b7">d_isNotEqual</a></div><div class="ttdeci">static bool d_isNotEqual(const T &amp;v1, const T &amp;v2)</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:269</div></div>
 <div class="ttc" id="agroup__StringPrintFunctions_html_gaf7645d9dcbbd44b92b8b6d4625a8e95c"><div class="ttname"><a href="group__StringPrintFunctions.html#gaf7645d9dcbbd44b92b8b6d4625a8e95c">d_safe_assert_uint</a></div><div class="ttdeci">static void d_safe_assert_uint(const char *const assertion, const char *const file, const int line, const uint value) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:196</div></div>
+<div class="ttc" id="agroup__MathFunctions_html_gae357f9031f7bcd8eccef3443081d3772"><div class="ttname"><a href="group__MathFunctions.html#gae357f9031f7bcd8eccef3443081d3772">d_isZero</a></div><div class="ttdeci">static bool d_isZero(const T &amp;value)</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:279</div></div>
 <div class="ttc" id="agroup__MiscellaneousFunctions_html_ga208c5bc138b7d4d4e318b6174c9dbf6d"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga208c5bc138b7d4d4e318b6174c9dbf6d">d_pass</a></div><div class="ttdeci">static void d_pass() noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:93</div></div>
 <div class="ttc" id="agroup__StringPrintFunctions_html_ga78b9baaeb515112b1e5ec1182bab299b"><div class="ttname"><a href="group__StringPrintFunctions.html#ga78b9baaeb515112b1e5ec1182bab299b">d_stdout</a></div><div class="ttdeci">static void d_stdout(const char *const fmt,...) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:131</div></div>
 <div class="ttc" id="agroup__MathFunctions_html_gaded8dbdc7ff99c70e7361b3f1a32b584"><div class="ttname"><a href="group__MathFunctions.html#gaded8dbdc7ff99c70e7361b3f1a32b584">d_nextPowerOf2</a></div><div class="ttdeci">static uint32_t d_nextPowerOf2(uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:298</div></div>
@@ -416,7 +417,7 @@ $(function() {
 <div class="ttc" id="agroup__StringPrintFunctions_html_ga9b31f29f7fde426a4a5bc9b1616aad28"><div class="ttname"><a href="group__StringPrintFunctions.html#ga9b31f29f7fde426a4a5bc9b1616aad28">d_safe_assert_int2</a></div><div class="ttdeci">static void d_safe_assert_int2(const char *const assertion, const char *const file, const int line, const int v1, const int v2) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:206</div></div>
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:33:22 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Mon Oct 25 2021 10:34:43 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>
