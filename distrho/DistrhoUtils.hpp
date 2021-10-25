@@ -271,8 +271,8 @@ bool d_isNotEqual(const T& v1, const T& v2)
     return std::abs(v1-v2) >= std::numeric_limits<T>::epsilon();
 }
 
-/*
- * Safely check if a floating point number is zero.
+/**
+   Safely check if a floating point number is zero.
  */
 template<typename T>
 static inline
