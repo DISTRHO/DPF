@@ -21,8 +21,14 @@
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------------------------------------------
-// plugin related utilities
+/* ------------------------------------------------------------------------------------------------------------
+ * Plugin related utilities */
+
+/**
+   @defgroup PluginRelatedUtilities Plugin related utilities
+
+   @{
+ */
 
 /**
    Get the absolute filename of the plugin DSP/UI binary.@n
@@ -58,8 +64,16 @@ const char* getPluginFormatName() noexcept;
 */
 const char* getResourcePath(const char* bundlePath) noexcept;
 
-// -----------------------------------------------------------------------------------------------------------
-// Plugin helper classes
+/** @} */
+
+/* ------------------------------------------------------------------------------------------------------------
+ * Plugin helper classes */
+
+/**
+   @defgroup PluginHelperClasses Plugin helper classes
+
+   @{
+ */
 
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
 /**
@@ -191,6 +205,8 @@ private:
     uint32_t totalFramesUsed;
 };
 #endif
+
+/** @} */
 
 // -----------------------------------------------------------------------------------------------------------
 

@@ -839,7 +839,14 @@ START_NAMESPACE_DISTRHO
  */
 #define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;
 
-/** @} */
+/* TODO
+ *
+ * DISTRHO_MACRO_AS_STRING_VALUE
+ * DISTRHO_MACRO_AS_STRING
+ * DISTRHO_PROPER_CPP11_SUPPORT
+ * DONT_SET_USING_DISTRHO_NAMESPACE
+ *
+ */
 
 // -----------------------------------------------------------------------------------------------------------
 
