@@ -539,8 +539,8 @@ bool puglMacOSFilePanelOpen(PuglView* const view,
     NSOpenPanel* const panel = [NSOpenPanel openPanel];
 
     [panel setAllowsMultipleSelection:NO];
-    [panel setCanChooseFiles:YES];
     [panel setCanChooseDirectories:NO];
+    [panel setCanChooseFiles:YES];
     [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
 
     // TODO file filter using allowedContentTypes: [UTType]
@@ -556,19 +556,22 @@ bool puglMacOSFilePanelOpen(PuglView* const view,
              encoding:NSUTF8StringEncoding];
     [panel setTitle:titleString];
 
-    [panel beginSheetModalForWindow:(impl->window ? impl->window : [view->impl->wrapperView window])
-                  completionHandler:^(NSInteger result)
+    dispatch_async(dispatch_get_main_queue(), ^
     {
-        if (result == NSModalResponseOK && [[panel URL] isFileURL])
+        [panel beginSheetModalForWindow:(impl->window ? impl->window : [view->impl->wrapperView window])
+                      completionHandler:^(NSModalResponse result)
         {
-            NSString* const path = [[panel URL] path];
-            callback(view, [path UTF8String]);
-        }
-        else
-        {
-            callback(view, nullptr);
-        }
-   }];
+            if (result == NSModalResponseOK && [[panel URL] isFileURL])
+            {
+                NSString* const path = [[panel URL] path];
+                callback(view, [path UTF8String]);
+            }
+            else
+            {
+                callback(view, nullptr);
+            }
+        }];
+    });
 
     return true;
 }
