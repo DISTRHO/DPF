@@ -230,7 +230,14 @@ public:
 
         ui->uiIdle();
     }
-#else
+
+    void showAndFocus()
+    {
+        uiData->window->show();
+        uiData->window->focus();
+    }
+#endif
+
     bool plugin_idle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, false);
@@ -239,7 +246,6 @@ public:
         ui->uiIdle();
         return ! uiData->app.isQuitting();
     }
-#endif
 
     void focus()
     {

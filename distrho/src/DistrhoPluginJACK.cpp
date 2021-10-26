@@ -23,6 +23,8 @@
 # include "../extra/Sleep.hpp"
 #endif
 
+#include "../extra/Thread.hpp"
+
 #include "jackbridge/JackBridge.cpp"
 #include "lv2/lv2.h"
 
@@ -747,13 +749,148 @@ private:
     #undef thisPtr
 };
 
+// -----------------------------------------------------------------------
+
+class PluginProcessTestingThread : public Thread
+{
+    PluginExporter& plugin;
+
+public:
+    PluginProcessTestingThread(PluginExporter& p) : plugin(p) {}
+
+protected:
+    void run() override
+    {
+        plugin.setBufferSize(256);
+        plugin.activate();
+
+        float buffer[256];
+        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS > 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
+        float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS > 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            inputs[i] = buffer;
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            outputs[i] = buffer;
+
+        while (! shouldThreadExit())
+        {
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            plugin.run(inputs, outputs, 128, nullptr, 0);
+#else
+            plugin.run(inputs, outputs, 128);
+#endif
+            d_msleep(100);
+        }
+
+        plugin.deactivate();
+    }
+};
+
+bool runSelfTests()
+{
+    // simple plugin creation first
+    {
+        d_nextBufferSize = 512;
+        d_nextSampleRate = 44100.0;
+        PluginExporter plugin(nullptr, nullptr, nullptr);
+        d_nextBufferSize = 0;
+        d_nextSampleRate = 0.0;
+    }
+
+    // keep values for all tests now
+    d_nextBufferSize = 512;
+    d_nextSampleRate = 44100.0;
+
+    // simple processing
+    {
+        PluginExporter plugin(nullptr, nullptr, nullptr);
+        plugin.activate();
+        plugin.deactivate();
+        plugin.setBufferSize(128);
+        plugin.setSampleRate(48000);
+        plugin.activate();
+
+        float buffer[128];
+        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS > 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
+        float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS > 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            inputs[i] = buffer;
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            outputs[i] = buffer;
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        plugin.run(inputs, outputs, 128, nullptr, 0);
+#else
+        plugin.run(inputs, outputs, 128);
+#endif
+
+        plugin.deactivate();
+    }
+
+    // multi-threaded processing with UI
+    {
+        PluginExporter pluginA(nullptr, nullptr, nullptr);
+        PluginExporter pluginB(nullptr, nullptr, nullptr);
+        PluginExporter pluginC(nullptr, nullptr, nullptr);
+        PluginProcessTestingThread procTestA(pluginA);
+        PluginProcessTestingThread procTestB(pluginB);
+        PluginProcessTestingThread procTestC(pluginC);
+        procTestA.startThread();
+        procTestB.startThread();
+        procTestC.startThread();
+
+        // wait 2s
+        d_sleep(2);
+
+        // stop the 2nd instance now
+        procTestB.stopThread(5000);
+
+#if DISTRHO_PLUGIN_HAS_UI
+        // start UI in the middle of this
+        {
+            UIExporter uiA(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginA.getInstancePointer(), 0.0);
+            UIExporter uiB(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginB.getInstancePointer(), 0.0);
+            UIExporter uiC(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginC.getInstancePointer(), 0.0);
+
+            // show UIs
+            uiB.showAndFocus();
+            uiA.showAndFocus();
+            uiC.showAndFocus();
+
+            // idle for 3s
+            for (int i=0; i<30; i++)
+            {
+                uiC.plugin_idle();
+                uiB.plugin_idle();
+                uiA.plugin_idle();
+                d_msleep(100);
+            }
+        }
+#endif
+
+        procTestA.stopThread(5000);
+        procTestC.stopThread(5000);
+    }
+
+    return true;
+}
+
 END_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 
-int main()
+int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO;
+
+    if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
+        return runSelfTests() ? 0 : 1;
 
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
@@ -799,8 +936,6 @@ int main()
 
         return 1;
     }
-
-    USE_NAMESPACE_DISTRHO;
 
     initSignalHandler();
 
