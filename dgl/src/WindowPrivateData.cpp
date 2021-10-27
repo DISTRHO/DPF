@@ -82,7 +82,7 @@ static double getDesktopScaleFactor(const PuglView* const view)
 
 // -----------------------------------------------------------------------
 
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
 struct FileBrowserThread::PrivateData {
     OPENFILENAMEW ofn;
     std::vector<WCHAR> fileNameW;
@@ -172,7 +172,7 @@ void FileBrowserThread::run()
     d_stdout("WThread finished, final file '%s'", nextFile);
     win32SelectedFile = nextFile;
 }
-#endif // DISTRHO_OS_WINDOWS
+#endif // DISTRHO_OS_WINDOWS && !_MSC_VER
 
 // -----------------------------------------------------------------------
 
@@ -194,7 +194,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
       win32SelectedFile(nullptr),
       win32FileThread(win32SelectedFile),
 #endif
@@ -221,7 +221,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
       win32SelectedFile(nullptr),
       win32FileThread(win32SelectedFile),
 #endif
@@ -252,7 +252,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
       win32SelectedFile(nullptr),
       win32FileThread(win32SelectedFile),
 #endif
@@ -285,7 +285,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
       win32SelectedFile(nullptr),
       win32FileThread(win32SelectedFile),
 #endif
@@ -317,7 +317,7 @@ Window::PrivateData::~PrivateData()
         isVisible = false;
     }
 
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
     if (win32FileThread.isThreadRunning())
         win32FileThread.stopThread(2000);
 
@@ -637,7 +637,7 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
     return puglMacOSFilePanelOpen(view, startDir, title, flags, openPanelCallback);
 # endif
 
-# ifdef DISTRHO_OS_WINDOWS
+# if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
     // TODO signal to close
     if (win32FileThread.isThreadRunning())
         win32FileThread.stopThread(1000);

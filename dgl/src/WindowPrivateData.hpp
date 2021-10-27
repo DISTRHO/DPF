@@ -25,7 +25,7 @@
 
 #include <list>
 
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
 # include "../distrho/extra/Thread.hpp"
 #endif
 
@@ -35,7 +35,7 @@ class TopLevelWidget;
 
 // -----------------------------------------------------------------------
 
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
 class FileBrowserThread : public Thread
 {
     struct PrivateData;
@@ -103,7 +103,7 @@ struct Window::PrivateData : IdleCallback {
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 
-#ifdef DISTRHO_OS_WINDOWS
+#if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */
     const char* win32SelectedFile;
     /** Thread where the openFileBrowser runs. */
