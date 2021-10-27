@@ -751,6 +751,7 @@ private:
 
 // -----------------------------------------------------------------------
 
+#ifdef DPF_RUNTIME_TESTING
 class PluginProcessTestingThread : public Thread
 {
     PluginExporter& plugin;
@@ -880,6 +881,7 @@ bool runSelfTests()
 
     return true;
 }
+#endif // DPF_RUNTIME_TESTING
 
 END_NAMESPACE_DISTRHO
 
@@ -889,8 +891,10 @@ int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO;
 
+#ifdef DPF_RUNTIME_TESTING
     if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
         return runSelfTests() ? 0 : 1;
+#endif
 
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
