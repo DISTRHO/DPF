@@ -25,9 +25,32 @@
 
 #include <list>
 
+#ifdef DISTRHO_OS_WINDOWS
+# include "../distrho/extra/Thread.hpp"
+#endif
+
 START_NAMESPACE_DGL
 
 class TopLevelWidget;
+
+// -----------------------------------------------------------------------
+
+#ifdef DISTRHO_OS_WINDOWS
+class FileBrowserThread : public Thread
+{
+    struct PrivateData;
+    PrivateData* const pData;
+    const char*& win32SelectedFile;
+
+public:
+    FileBrowserThread(const char*& win32SelectedFile);
+    ~FileBrowserThread() override;
+    void start(const char* startDir, const char* title, uintptr_t winId, Window::FileBrowserOptions options);
+
+protected:
+    void run() override;
+};
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -83,6 +106,8 @@ struct Window::PrivateData : IdleCallback {
 #ifdef DISTRHO_OS_WINDOWS
     /** Selected file for openFileBrowser on windows, stored for fake async operation. */
     const char* win32SelectedFile;
+    /** Thread where the openFileBrowser runs. */
+    FileBrowserThread win32FileThread;
 #endif
 
     /** Modal window setup. */

@@ -82,6 +82,100 @@ static double getDesktopScaleFactor(const PuglView* const view)
 
 // -----------------------------------------------------------------------
 
+#ifdef DISTRHO_OS_WINDOWS
+struct FileBrowserThread::PrivateData {
+    OPENFILENAMEW ofn;
+    std::vector<WCHAR> fileNameW;
+    std::vector<WCHAR> startDirW;
+    std::vector<WCHAR> titleW;
+
+    PrivateData()
+        : fileNameW(32768)
+    {
+        std::memset(&ofn, 0, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.lpstrFile = fileNameW.data();
+        ofn.nMaxFile = (DWORD)fileNameW.size();
+    }
+
+    void setup(const char* const startDir,
+               const char* const title,
+               const uintptr_t winId,
+               const Window::FileBrowserOptions options)
+    {
+        ofn.hwndOwner = (HWND)winId;
+
+        ofn.Flags = OFN_PATHMUSTEXIST;
+        if (options.buttons.showHidden == Window::FileBrowserOptions::kButtonVisibleChecked)
+            ofn.Flags |= OFN_FORCESHOWHIDDEN;
+
+        ofn.FlagsEx = 0x0;
+        if (options.buttons.showPlaces == Window::FileBrowserOptions::kButtonInvisible)
+            ofn.FlagsEx |= OFN_EX_NOPLACESBAR;
+
+        startDirW.resize(std::strlen(startDir) + 1);
+        if (MultiByteToWideChar(CP_UTF8, 0, startDir, -1, startDirW.data(), static_cast<int>(startDirW.size())))
+            ofn.lpstrInitialDir = startDirW.data();
+
+        titleW.resize(std::strlen(title) + 1);
+        if (MultiByteToWideChar(CP_UTF8, 0, title, -1, titleW.data(), static_cast<int>(titleW.size())))
+            ofn.lpstrTitle = titleW.data();
+    }
+
+    const char* run()
+    {
+        if (GetOpenFileNameW(&ofn))
+        {
+            // back to UTF-8
+            std::vector<char> fileNameA(4 * 32768);
+            if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1,
+                                    fileNameA.data(), (int)fileNameA.size(),
+                                    nullptr, nullptr))
+            {
+                return strdup(fileNameA.data());
+            }
+        }
+
+        return nullptr;
+    }
+};
+
+FileBrowserThread::FileBrowserThread(const char*& file)
+    : pData(new PrivateData()),
+      win32SelectedFile(file) {}
+
+FileBrowserThread::~FileBrowserThread()
+{
+    stopThread(5000);
+    delete pData;
+}
+
+void FileBrowserThread::start(const char* const startDir,
+                              const char* const title,
+                              const uintptr_t winId,
+                              const Window::FileBrowserOptions options)
+{
+    pData->setup(startDir, title, winId, options);
+    startThread();
+}
+
+void FileBrowserThread::run()
+{
+    const char* nextFile = pData->run();
+
+    if (shouldThreadExit())
+        return;
+
+    if (nextFile == nullptr)
+        nextFile = kWin32SelectedFileCancelled;
+
+    d_stdout("WThread finished, final file '%s'", nextFile);
+    win32SelectedFile = nextFile;
+}
+#endif // DISTRHO_OS_WINDOWS
+
+// -----------------------------------------------------------------------
+
 Window::PrivateData::PrivateData(Application& a, Window* const s)
     : app(a),
       appData(a.pData),
@@ -102,6 +196,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
+      win32FileThread(win32SelectedFile),
 #endif
       modal()
 {
@@ -128,6 +223,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
+      win32FileThread(win32SelectedFile),
 #endif
       modal(ppData)
 {
@@ -158,6 +254,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
+      win32FileThread(win32SelectedFile),
 #endif
       modal()
 {
@@ -190,6 +287,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       filenameToRenderInto(nullptr),
 #ifdef DISTRHO_OS_WINDOWS
       win32SelectedFile(nullptr),
+      win32FileThread(win32SelectedFile),
 #endif
       modal()
 {
@@ -220,6 +318,9 @@ Window::PrivateData::~PrivateData()
     }
 
 #ifdef DISTRHO_OS_WINDOWS
+    if (win32FileThread.isThreadRunning())
+        win32FileThread.stopThread(2000);
+
     if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
         std::free(const_cast<char*>(win32SelectedFile));
 #endif
@@ -537,58 +638,15 @@ bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& opti
 # endif
 
 # ifdef DISTRHO_OS_WINDOWS
-    // the old and compatible dialog API
-    OPENFILENAMEW ofn;
-    memset(&ofn, 0, sizeof(ofn));
+    // TODO signal to close
+    if (win32FileThread.isThreadRunning())
+        win32FileThread.stopThread(1000);
+
     if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
         std::free(const_cast<char*>(win32SelectedFile));
     win32SelectedFile = nullptr;
 
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = (HWND)puglGetNativeWindow(view);
-
-    // set start directory in UTF-16 encoding
-    std::vector<WCHAR> startDirW;
-    startDirW.resize(startDir.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, startDir.buffer(), -1, startDirW.data(), static_cast<int>(startDirW.size())))
-        ofn.lpstrInitialDir = startDirW.data();
-
-    // set title in UTF-16 encoding
-    std::vector<WCHAR> titleW;
-    titleW.resize(title.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, title.buffer(), -1, titleW.data(), static_cast<int>(titleW.size())))
-        ofn.lpstrTitle = titleW.data();
-
-    // prepare a buffer to receive the result
-    std::vector<WCHAR> fileNameW(32768); // the Unicode maximum
-    ofn.lpstrFile = fileNameW.data();
-    ofn.nMaxFile = (DWORD)fileNameW.size();
-
-    // flags
-    ofn.Flags = OFN_PATHMUSTEXIST;
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        ofn.Flags |= OFN_FORCESHOWHIDDEN;
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonInvisible)
-        ofn.FlagsEx |= OFN_EX_NOPLACESBAR;
-
-    // TODO synchronous only, can't do better with WinAPI native dialogs.
-    // threading might work, if someone is motivated to risk it.
-    if (GetOpenFileNameW(&ofn))
-    {
-        // back to UTF-8
-        std::vector<char> fileNameA(4 * 32768);
-        if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1,
-                                fileNameA.data(), (int)fileNameA.size(),
-                                nullptr, nullptr))
-        {
-            // handle it during the next idle cycle (fake async)
-            win32SelectedFile = strdup(fileNameA.data());
-        }
-    }
-
-    if (win32SelectedFile == nullptr)
-        win32SelectedFile = kWin32SelectedFileCancelled;
-
+    win32FileThread.start(startDir, title, puglGetNativeWindow(view), options);
     return true;
 # endif
 
