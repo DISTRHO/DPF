@@ -952,6 +952,11 @@ int main(int argc, char* argv[])
     const PluginJack p(client);
 
     return 0;
+
+#ifndef DPF_RUNTIME_TESTING
+    // unused
+    (void)argc; (void)argv;
+#endif
 }
 
 // -----------------------------------------------------------------------
