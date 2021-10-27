@@ -23,7 +23,9 @@
 # include "../extra/Sleep.hpp"
 #endif
 
-#include "../extra/Thread.hpp"
+#ifdef DPF_RUNTIME_TESTING
+# include "../extra/Thread.hpp"
+#endif
 
 #include "jackbridge/JackBridge.cpp"
 #include "lv2/lv2.h"
