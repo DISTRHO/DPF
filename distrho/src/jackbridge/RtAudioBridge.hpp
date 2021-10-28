@@ -23,8 +23,8 @@
 # define __MACOSX_CORE__
 # define RTAUDIO_API_TYPE MACOSX_CORE
 #elif defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
-# define __WINDOWS_WASAPI__
-# define RTAUDIO_API_TYPE WINDOWS_WASAPI
+# define __WINDOWS_DS__
+# define RTAUDIO_API_TYPE WINDOWS_DS
 #elif defined(HAVE_PULSEAUDIO)
 # define __LINUX_PULSE__
 # define RTAUDIO_API_TYPE LINUX_PULSE

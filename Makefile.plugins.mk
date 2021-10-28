@@ -49,7 +49,11 @@ endif
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
 else ifeq ($(WINDOWS),true)
-JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lole32 -lwinmm -lwmcodecdspuuid
+JACK_LIBS  += -lole32 -lwinmm
+# DirectSound
+JACK_LIBS  += -ldsound
+# WASAPI
+# JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
 else ifneq ($(HAIKU),true)
 ifeq ($(HAVE_ALSA),true)
 JACK_FLAGS += $(ALSA_FLAGS)
