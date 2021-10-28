@@ -512,7 +512,7 @@ void Window::PrivateData::setResizable(const bool resizable)
 void Window::PrivateData::idleCallback()
 {
 #ifndef DGL_FILE_BROWSER_DISABLED
-# ifdef DISTRHO_OS_WINDOWS
+# if defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
     if (const char* path = win32SelectedFile)
     {
         win32SelectedFile = nullptr;
