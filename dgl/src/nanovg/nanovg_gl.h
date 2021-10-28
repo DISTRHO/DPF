@@ -18,8 +18,6 @@
 #ifndef NANOVG_GL_H
 #define NANOVG_GL_H
 
-#include <stdio.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
