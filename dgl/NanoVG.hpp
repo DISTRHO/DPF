@@ -43,6 +43,15 @@ START_NAMESPACE_DGL
 class NanoVG;
 
 // -----------------------------------------------------------------------
+// Helper methods
+
+/**
+   Create a NanoVG context using the DPF-provided NanoVG library.
+   On Windows this will load a few extra OpenGL functions required for NanoVG to work.
+ */
+NVGcontext* nvgCreateGL(int flags);
+
+// -----------------------------------------------------------------------
 // NanoImage
 
 /**

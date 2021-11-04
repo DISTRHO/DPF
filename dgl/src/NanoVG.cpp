@@ -102,28 +102,32 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 #endif
 
 #if defined(NANOVG_GL2)
-# define nvgCreateGL nvgCreateGL2
+# define nvgCreateGLfn nvgCreateGL2
 # define nvgDeleteGL nvgDeleteGL2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL2
 # define nvglImageHandle nvglImageHandleGL2
 #elif defined(NANOVG_GL3)
-# define nvgCreateGL nvgCreateGL3
+# define nvgCreateGLfn nvgCreateGL3
 # define nvgDeleteGL nvgDeleteGL3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL3
 # define nvglImageHandle nvglImageHandleGL3
 #elif defined(NANOVG_GLES2)
-# define nvgCreateGL nvgCreateGLES2
+# define nvgCreateGLfn nvgCreateGLES2
 # define nvgDeleteGL nvgDeleteGLES2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES2
 # define nvglImageHandle nvglImageHandleGLES2
 #elif defined(NANOVG_GLES3)
-# define nvgCreateGL nvgCreateGLES3
+# define nvgCreateGLfn nvgCreateGLES3
 # define nvgDeleteGL nvgDeleteGLES3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES3
 # define nvglImageHandle nvglImageHandleGLES3
 #endif
 
-static NVGcontext* nvgCreateGL_helper(int flags)
+// -----------------------------------------------------------------------
+
+START_NAMESPACE_DGL
+
+NVGcontext* nvgCreateGL(int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
 # if defined(__GNUC__) && (__GNUC__ >= 9)
@@ -189,12 +193,8 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 #  pragma GCC diagnostic pop
 # endif
 #endif
-    return nvgCreateGL(flags);
+    return nvgCreateGLfn(flags);
 }
-
-// -----------------------------------------------------------------------
-
-START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 // DGL Color class conversion
@@ -312,7 +312,7 @@ NanoVG::Paint::operator NVGpaint() const noexcept
 // NanoVG
 
 NanoVG::NanoVG(int flags)
-    : fContext(nvgCreateGL_helper(flags)),
+    : fContext(nvgCreateGL(flags)),
       fInFrame(false),
       fIsSubWidget(false) {}
 
