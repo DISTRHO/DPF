@@ -845,6 +845,14 @@ public:
     */
     const char* getBundlePath() const noexcept;
 
+   /**
+      Check if this plugin instance is a "dummy" one used for plugin meta-data/information export.@n
+      When true no processing will be done, the plugin is created only to extract information.@n
+      In DPF, LADSPA/DSSI, VST2 and VST3 formats create one global instance per plugin binary
+      while LV2 creates one when generating turtle meta-data.
+    */
+    bool isDummyInstance() const noexcept;
+
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
    /**
       Get the current host transport time position.@n

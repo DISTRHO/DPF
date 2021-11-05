@@ -24,6 +24,7 @@ START_NAMESPACE_DISTRHO
 uint32_t    d_nextBufferSize = 0;
 double      d_nextSampleRate = 0.0;
 const char* d_nextBundlePath = nullptr;
+bool        d_nextPluginIsDummy = false;
 bool        d_nextCanRequestParameterValueChanges = false;
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -104,6 +105,11 @@ double Plugin::getSampleRate() const noexcept
 const char* Plugin::getBundlePath() const noexcept
 {
     return pData->bundlePath;
+}
+
+bool Plugin::isDummyInstance() const noexcept
+{
+    return pData->isDummy;
 }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

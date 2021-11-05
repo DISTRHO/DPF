@@ -1406,6 +1406,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         // set valid but dummy values
         d_nextBufferSize = 512;
         d_nextSampleRate = 44100.0;
+        d_nextPluginIsDummy = true;
         d_nextCanRequestParameterValueChanges = true;
     }
 
@@ -1417,6 +1418,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         // unset
         d_nextBufferSize = 0;
         d_nextSampleRate = 0.0;
+        d_nextPluginIsDummy = false;
         d_nextCanRequestParameterValueChanges = false;
 
         *(PluginExporter**)ptr = &plugin;

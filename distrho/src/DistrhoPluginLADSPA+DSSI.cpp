@@ -553,9 +553,11 @@ static const struct DescriptorInitializer
         // Create dummy plugin to get data from
         d_nextBufferSize = 512;
         d_nextSampleRate = 44100.0;
+        d_nextPluginIsDummy = true;
         const PluginExporter plugin(nullptr, nullptr, nullptr);
         d_nextBufferSize = 0;
         d_nextSampleRate = 0.0;
+        d_nextPluginIsDummy = false;
 
         // Get port count, init
         ulong port = 0;

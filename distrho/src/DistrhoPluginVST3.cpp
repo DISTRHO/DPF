@@ -3544,10 +3544,12 @@ static const PluginExporter& _getPluginInfo()
 {
     d_nextBufferSize = 512;
     d_nextSampleRate = 44100.0;
+    d_nextPluginIsDummy = true;
     d_nextCanRequestParameterValueChanges = true;
     static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr);
     d_nextBufferSize = 0;
     d_nextSampleRate = 0.0;
+    d_nextPluginIsDummy = false;
     d_nextCanRequestParameterValueChanges = false;
 
     return gPluginInfo;

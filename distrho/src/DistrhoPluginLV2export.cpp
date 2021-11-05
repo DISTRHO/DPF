@@ -231,9 +231,11 @@ void lv2_generate_ttl(const char* const basename)
     // Dummy plugin to get data from
     d_nextBufferSize = 512;
     d_nextSampleRate = 44100.0;
+    d_nextPluginIsDummy = true;
     PluginExporter plugin(nullptr, nullptr, nullptr);
     d_nextBufferSize = 0;
     d_nextSampleRate = 0.0;
+    d_nextPluginIsDummy = false;
 
     const String pluginDLL(basename);
     const String pluginTTL(pluginDLL + ".ttl");

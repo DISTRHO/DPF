@@ -34,6 +34,7 @@ static const uint32_t kMaxMidiEvents = 512;
 extern uint32_t    d_nextBufferSize;
 extern double      d_nextSampleRate;
 extern const char* d_nextBundlePath;
+extern bool        d_nextPluginIsDummy;
 extern bool        d_nextCanRequestParameterValueChanges;
 
 // -----------------------------------------------------------------------
@@ -84,6 +85,8 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
 // Plugin private data
 
 struct Plugin::PrivateData {
+    const bool canRequestParameterValueChanges;
+    const bool isDummy;
     bool isProcessing;
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
@@ -124,10 +127,11 @@ struct Plugin::PrivateData {
     uint32_t bufferSize;
     double   sampleRate;
     char*    bundlePath;
-    bool     canRequestParameterValueChanges;
 
     PrivateData() noexcept
-        : isProcessing(false),
+        : canRequestParameterValueChanges(d_nextCanRequestParameterValueChanges),
+          isDummy(d_nextPluginIsDummy),
+          isProcessing(false),
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
           audioPorts(nullptr),
 #endif
@@ -153,8 +157,7 @@ struct Plugin::PrivateData {
           requestParameterValueChangeCallbackFunc(nullptr),
           bufferSize(d_nextBufferSize),
           sampleRate(d_nextSampleRate),
-          bundlePath(d_nextBundlePath != nullptr ? strdup(d_nextBundlePath) : nullptr),
-          canRequestParameterValueChanges(d_nextCanRequestParameterValueChanges)
+          bundlePath(d_nextBundlePath != nullptr ? strdup(d_nextBundlePath) : nullptr)
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
