@@ -99,7 +99,8 @@ typedef enum {
 	LV2_STATE_ERR_BAD_TYPE    = 2,  /**< Failed due to unsupported type. */
 	LV2_STATE_ERR_BAD_FLAGS   = 3,  /**< Failed due to unsupported flags. */
 	LV2_STATE_ERR_NO_FEATURE  = 4,  /**< Failed due to missing features. */
-	LV2_STATE_ERR_NO_PROPERTY = 5   /**< Failed due to missing property. */
+	LV2_STATE_ERR_NO_PROPERTY = 5,  /**< Failed due to missing property. */
+	LV2_STATE_ERR_NO_SPACE    = 6   /**< Failed due to insufficient space. */
 } LV2_State_Status;
 
 /**
