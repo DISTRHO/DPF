@@ -361,7 +361,7 @@ public:
 
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
-      Open a file browser dialog with this window as parent.
+      Open a file browser dialog with this window as transient parent.
       A few options can be specified to setup the dialog.
 
       If a path is selected, onFileSelected() will be called with the user chosen path.
