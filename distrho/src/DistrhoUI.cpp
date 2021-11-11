@@ -16,6 +16,10 @@
 
 #include "src/DistrhoPluginChecks.h"
 
+#if !defined(DGL_FILE_BROWSER_DISABLED) && !defined(DISTRHO_OS_MAC)
+# include "../extra/FileBrowserDialog.cpp"
+#endif
+
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # if defined(DISTRHO_OS_WINDOWS)
 #  define WIN32_LEAN_AND_MEAN
@@ -256,10 +260,14 @@ void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 #endif
 
 #ifndef DGL_FILE_BROWSER_DISABLED
-bool UI::openFileBrowser(const FileBrowserOptions&)
+bool UI::openFileBrowser(const FileBrowserOptions& options)
 {
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     // TODO
     return false;
+# else
+    return getWindow().openFileBrowser(options);
+# endif
 }
 #endif
 

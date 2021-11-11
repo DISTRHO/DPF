@@ -22,9 +22,9 @@
 #include "src/DistrhoDefines.h"
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-#import <Cocoa/Cocoa.h>
-#include <algorithm>
-#include <cmath>
+# import <Cocoa/Cocoa.h>
+# include <algorithm>
+# include <cmath>
 
 START_NAMESPACE_DISTRHO
 double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
@@ -41,18 +41,22 @@ double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 }
 END_NAMESPACE_DISTRHO
 #else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-#include "../dgl/Base.hpp"
+# include "../dgl/Base.hpp"
 
-#define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, SEP, PUGL_NS, INTERFACE) DGL_NS ## SEP ## PUGL_NS ## SEP ## INTERFACE
-#define DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NS, PUGL_NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, _, PUGL_NS, INTERFACE)
+# define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, SEP, PUGL_NS, INTERFACE) DGL_NS ## SEP ## PUGL_NS ## SEP ## INTERFACE
+# define DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NS, PUGL_NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, _, PUGL_NS, INTERFACE)
 
-#define PuglCairoView      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, CairoView)
-#define PuglOpenGLView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, OpenGLView)
-#define PuglStubView       DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, StubView)
-#define PuglVulkanView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, VulkanView)
-#define PuglWindow         DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, Window)
-#define PuglWindowDelegate DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WindowDelegate)
-#define PuglWrapperView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WrapperView)
+# define PuglCairoView      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, CairoView)
+# define PuglOpenGLView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, OpenGLView)
+# define PuglStubView       DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, StubView)
+# define PuglVulkanView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, VulkanView)
+# define PuglWindow         DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, Window)
+# define PuglWindowDelegate DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WindowDelegate)
+# define PuglWrapperView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WrapperView)
 
-#import "src/pugl.mm"
+# import "src/pugl.mm"
 #endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+
+#ifndef DGL_FILE_BROWSER_DISABLED
+# include "../extra/FileBrowserDialog.cpp"
+#endif

@@ -111,10 +111,6 @@ puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
 // macOS specific, center view based on parent coordinates (if there is one)
 PUGL_API void
 puglMacOSShowCentered(PuglView* view);
-
-// macOS specific, setup file browser dialog
-typedef void (*openPanelCallback)(PuglView* view, const char* path);
-bool puglMacOSFilePanelOpen(PuglView* view, const char* startDir, const char* title, uint flags, openPanelCallback callback);
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -139,22 +135,6 @@ puglX11GrabFocus(const PuglView* view);
 // X11 specific, set dialog window type and pid hints
 PUGL_API void
 puglX11SetWindowTypeAndPID(const PuglView* view);
-
-// X11 specific, show file dialog via sofd
-PUGL_API bool
-sofdFileDialogShow(PuglView* view, const char* startDir, const char* title, uint flags, double scaleFactor);
-
-// X11 specific, idle sofd file dialog, returns true if dialog was closed (with or without a file selection)
-PUGL_API bool
-sofdFileDialogIdle(PuglView* const view);
-
-// X11 specific, close sofd file dialog
-PUGL_API void
-sofdFileDialogClose();
-
-// X11 specific, get path chosen via sofd file dialog
-PUGL_API const char*
-sofdFileDialogGetPath();
 #endif
 
 PUGL_END_DECLS

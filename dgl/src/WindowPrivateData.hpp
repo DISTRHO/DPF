@@ -31,21 +31,6 @@ class TopLevelWidget;
 
 // -----------------------------------------------------------------------
 
-#ifdef DISTRHO_OS_WINDOWS
-struct FileBrowserThread
-{
-    struct PrivateData;
-    PrivateData* const pData;
-
-    FileBrowserThread(bool isEmbed, const char*& win32SelectedFile);
-    ~FileBrowserThread();
-    void start(const char* startDir, const char* title, uintptr_t winId, Window::FileBrowserOptions options);
-    void stop();
-};
-#endif
-
-// -----------------------------------------------------------------------
-
 struct Window::PrivateData : IdleCallback {
     /** Reference to the DGL Application class this (private data) window associates with. */
     Application& app;
@@ -95,11 +80,9 @@ struct Window::PrivateData : IdleCallback {
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 
-#ifdef DISTRHO_OS_WINDOWS
-    /** Selected file for openFileBrowser on windows, stored for fake async operation. */
-    const char* win32SelectedFile;
-    /** Thread where the openFileBrowser runs. */
-    FileBrowserThread win32FileThread;
+#ifndef DGL_FILE_BROWSER_DISABLED
+    /** Handle for file browser dialog operations. */
+    FileBrowserHandle fileBrowserHandle;
 #endif
 
     /** Modal window setup. */
@@ -177,9 +160,6 @@ struct Window::PrivateData : IdleCallback {
 #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
     bool openFileBrowser(const Window::FileBrowserOptions& options);
-# ifdef DISTRHO_OS_MAC
-    static void openPanelCallback(PuglView* view, const char* path);
-# endif
 #endif
 
     static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);

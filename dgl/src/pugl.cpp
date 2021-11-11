@@ -57,6 +57,7 @@
 # endif
 #else
 # include <dlfcn.h>
+# include <unistd.h>
 # include <sys/select.h>
 # include <sys/time.h>
 # include <X11/X.h>
@@ -90,10 +91,26 @@
 # endif
 #endif
 
-#ifdef HAVE_X11
-# define DBLCLKTME 400
-# include "sofd/libsofd.h"
-# include "sofd/libsofd.c"
+#ifndef DGL_FILE_BROWSER_DISABLED
+# define DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE DGL_NAMESPACE
+# define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
+# define DISTRHO_PUGL_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
+# define x_fib_add_recent          DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_add_recent)
+# define x_fib_cfg_buttons         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_cfg_buttons)
+# define x_fib_cfg_filter_callback DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_cfg_filter_callback)
+# define x_fib_close               DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_close)
+# define x_fib_configure           DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_configure)
+# define x_fib_filename            DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_filename)
+# define x_fib_free_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_free_recent)
+# define x_fib_handle_events       DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_handle_events)
+# define x_fib_load_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_load_recent)
+# define x_fib_recent_at           DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_at)
+# define x_fib_recent_count        DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_count)
+# define x_fib_recent_file         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_file)
+# define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_save_recent)
+# define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_show)
+# define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_status)
+# include "../../distrho/extra/FileBrowserDialog.cpp"
 #endif
 
 #ifndef DISTRHO_OS_MAC
@@ -105,8 +122,6 @@ START_NAMESPACE_DGL
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
 # ifndef DISTRHO_MACOS_NAMESPACE_MACRO
-#  define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, SEP, INTERFACE) NS ## SEP ## INTERFACE
-#  define DISTRHO_MACOS_NAMESPACE_MACRO(NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, _, INTERFACE)
 #  define PuglStubView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglStubView)
 #  define PuglWrapperView DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWrapperView)
 #  define PuglWindow      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWindow)
@@ -528,53 +543,6 @@ void puglMacOSShowCentered(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// macOS specific, setup file browser dialog
-
-bool puglMacOSFilePanelOpen(PuglView* const view,
-                            const char* const startDir, const char* const title, const uint flags,
-                            openPanelCallback callback)
-{
-    PuglInternals* impl = view->impl;
-
-    NSOpenPanel* const panel = [NSOpenPanel openPanel];
-
-    [panel setAllowsMultipleSelection:NO];
-    [panel setCanChooseDirectories:NO];
-    [panel setCanChooseFiles:YES];
-    [panel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
-
-    // TODO file filter using allowedContentTypes: [UTType]
-
-    if (flags & 0x001)
-        [panel setAllowsOtherFileTypes:YES];
-    if (flags & 0x010)
-        [panel setShowsHiddenFiles:YES];
-
-    NSString* titleString = [[NSString alloc]
-        initWithBytes:title
-               length:strlen(title)
-             encoding:NSUTF8StringEncoding];
-    [panel setTitle:titleString];
-
-    dispatch_async(dispatch_get_main_queue(), ^
-    {
-        [panel beginSheetModalForWindow:(impl->window ? impl->window : [view->impl->wrapperView window])
-                      completionHandler:^(NSModalResponse result)
-        {
-            if (result == NSModalResponseOK && [[panel URL] isFileURL])
-            {
-                NSString* const path = [[panel URL] path];
-                callback(view, [path UTF8String]);
-            }
-            else
-            {
-                callback(view, nullptr);
-            }
-        }];
-    });
-
-    return true;
-}
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -680,96 +648,7 @@ void puglX11SetWindowTypeAndPID(const PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// X11 specific stuff for sofd
-
-static Display* sofd_display;
-static char* sofd_filename;
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, show file dialog via sofd
-
-bool sofdFileDialogShow(PuglView* const view,
-                        const char* const startDir, const char* const title,
-                        const uint flags, const double scaleFactor)
-{
-    // only one possible at a time
-    DISTRHO_SAFE_ASSERT_RETURN(sofd_display == nullptr, false);
-
-    sofd_display = XOpenDisplay(nullptr);
-    DISTRHO_SAFE_ASSERT_RETURN(sofd_display != nullptr, false);
-
-    DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(0, startDir) == 0, false);
-    DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(1, title) == 0, false);
-
-    x_fib_cfg_buttons(3, flags & 0x001 ? 1 : flags & 0x002 ? 0 : -1);
-    x_fib_cfg_buttons(1, flags & 0x010 ? 1 : flags & 0x020 ? 0 : -1);
-    x_fib_cfg_buttons(2, flags & 0x100 ? 1 : flags & 0x200 ? 0 : -1);
-
-    return (x_fib_show(sofd_display, view->impl->win, 0, 0, scaleFactor + 0.5) == 0);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, idle sofd file dialog, returns true if dialog was closed (with or without a file selection)
-
-bool sofdFileDialogIdle(PuglView* const view)
-{
-    if (sofd_display == nullptr)
-        return false;
-
-    XEvent event;
-    while (XPending(sofd_display) > 0)
-    {
-        XNextEvent(sofd_display, &event);
-
-        if (x_fib_handle_events(sofd_display, &event) == 0)
-            continue;
-
-        if (sofd_filename != nullptr)
-            std::free(sofd_filename);
-
-        if (x_fib_status() > 0)
-            sofd_filename = x_fib_filename();
-        else
-            sofd_filename = nullptr;
-
-        x_fib_close(sofd_display);
-        XCloseDisplay(sofd_display);
-        sofd_display = nullptr;
-        return true;
-    }
-
-    return false;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, close sofd file dialog
-
-void sofdFileDialogClose()
-{
-    if (sofd_display != nullptr)
-    {
-        x_fib_close(sofd_display);
-        XCloseDisplay(sofd_display);
-        sofd_display = nullptr;
-    }
-
-    if (sofd_filename != nullptr)
-    {
-        std::free(sofd_filename);
-        sofd_filename = nullptr;
-    }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, get path chosen via sofd file dialog
-
-const char* sofdFileDialogGetPath()
-{
-    return sofd_filename;
-}
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
+#endif // HAVE_X11
 
 #ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
