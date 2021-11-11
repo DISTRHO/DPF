@@ -265,6 +265,7 @@ bool UI::openFileBrowser(const FileBrowserOptions& options)
 # if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     // TODO
     return false;
+    (void)options;
 # else
     return getWindow().openFileBrowser(options);
 # endif

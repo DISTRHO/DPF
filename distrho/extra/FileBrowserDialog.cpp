@@ -17,6 +17,13 @@
 #include "FileBrowserDialog.hpp"
 #include "ScopedPointer.hpp"
 
+#ifdef DISTRHO_OS_MAC
+# import <Cocoa/Cocoa.h>
+#endif
+#ifdef DISTRHO_OS_WINDOWS
+# include <process.h>
+# include <vector>
+#endif
 #ifdef HAVE_X11
 # define DBLCLKTME 400
 # include "sofd/libsofd.h"
@@ -238,7 +245,7 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
 
     dispatch_async(dispatch_get_main_queue(), ^
     {
-        [nspanel beginSheetModalForWindow:(NSWindow*)windowId)
+        [nspanel beginSheetModalForWindow:[(NSView*)windowId) window]
                         completionHandler:^(NSModalResponse result)
         {
             DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr,);

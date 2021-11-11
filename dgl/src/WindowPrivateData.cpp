@@ -23,10 +23,8 @@
 
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
-# include <process.h>
 # include <winsock2.h>
 # include <windows.h>
-# include <vector>
 #else
 # include <unistd.h>
 #endif
