@@ -343,6 +343,7 @@ protected:
     */
     virtual void uiScaleFactorChanged(double scaleFactor);
 
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       Windows focus function, called when the window gains or loses the keyboard focus.
       This function is for plugin UIs to be able to override Window::onFocus(bool, CrossingMode).

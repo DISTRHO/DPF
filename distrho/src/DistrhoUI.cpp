@@ -255,6 +255,14 @@ void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 }
 #endif
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+bool UI::openFileBrowser(const FileBrowserOptions&)
+{
+    // TODO
+    return false;
+}
+#endif
+
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
 /* ------------------------------------------------------------------------------------------------------------
  * Direct DSP access */
@@ -311,13 +319,13 @@ void UI::uiReshape(uint, uint)
     // NOTE this must be the same as Window::onReshape
     pData->fallbackOnResize();
 }
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
-# ifndef DGL_FILE_BROWSER_DISABLED
+#ifndef DGL_FILE_BROWSER_DISABLED
 void UI::uiFileBrowserSelected(const char*)
 {
 }
-# endif
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
