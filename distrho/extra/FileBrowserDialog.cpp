@@ -24,6 +24,9 @@
 # include <process.h>
 # include <vector>
 #endif
+#ifdef HAVE_DBUS
+# include <dbus/dbus.h>
+#endif
 #ifdef HAVE_X11
 # define DBLCLKTME 400
 # include "sofd/libsofd.h"
@@ -46,6 +49,9 @@ struct FileBrowserData {
 
 #ifdef DISTRHO_OS_MAC
     NSOpenPanel* nspanel;
+#endif
+#ifdef HAVE_DBUS
+    DBusConnection* dbuscon;
 #endif
 #ifdef HAVE_X11
     Display* x11display;
@@ -188,6 +194,13 @@ struct FileBrowserData {
 #ifdef DISTRHO_OS_MAC
         nspanel = [[NSOpenPanel openPanel]retain];
 #endif
+#ifdef HAVE_DBUS
+        DBusError err;
+        dbus_error_init(&err);
+        if ((dbuscon = dbus_bus_get(DBUS_BUS_SESSION, &err)) != nullptr)
+            dbus_connection_set_exit_on_disconnect(dbuscon, false);
+        dbus_error_free(&err);
+#endif
 #ifdef HAVE_X11
         x11display = XOpenDisplay(nullptr);
 #endif
@@ -267,6 +280,53 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
     handle->setupAndStart(startDir, windowTitle, windowId, options);
 #endif
 
+#ifdef HAVE_DBUS
+    // optional, can be null
+    if (DBusConnection* dbuscon = handle->dbuscon)
+    {
+        if (DBusMessage* const message = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
+                                                                      "/org/freedesktop/portal/desktop",
+                                                                      "org.freedesktop.portal.FileChooser",
+                                                                      options.saving ? "SaveFile" : "OpenFile"))
+        {
+            char windowIdStr[24];
+            memset(windowIdStr, 0, sizeof(windowIdStr));
+            snprintf(windowIdStr, sizeof(windowIdStr)-1, "%lu", (ulong)windowId);
+            const char* windowIdStrPtr = windowIdStr;
+
+            dbus_message_append_args(message,
+                                     DBUS_TYPE_STRING, &windowIdStrPtr,
+                                     DBUS_TYPE_STRING, &windowTitle,
+                                     DBUS_TYPE_INVALID);
+
+            DBusMessageIter iter, array;
+            dbus_message_iter_init_append(message, &iter);
+            dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &array);
+
+            // here merely as example, does nothing yet
+            {
+                DBusMessageIter dict, variant;
+                const char* const property = "property";
+                const char* const value = "value";
+
+                dbus_message_iter_open_container(&array, DBUS_TYPE_DICT_ENTRY, nullptr, &dict);
+                dbus_message_iter_append_basic(&dict, DBUS_TYPE_STRING, &property);
+                dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "s", &variant);
+                dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &value);
+                dbus_message_iter_close_container(&dict, &variant);
+                dbus_message_iter_close_container(&array, &dict);
+            }
+
+            dbus_message_iter_close_container(&iter, &array);
+
+            dbus_connection_send(dbuscon, message, nullptr);
+
+            dbus_message_unref(message);
+            return handle.release();
+        }
+    }
+#endif
+
 #ifdef HAVE_X11
     Display* const x11display = handle->x11display;
     DISTRHO_SAFE_ASSERT_RETURN(x11display != nullptr, nullptr);
@@ -308,6 +368,83 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
 
 bool fileBrowserIdle(const FileBrowserHandle handle)
 {
+#ifdef HAVE_DBUS
+    if (DBusConnection* dbuscon = handle->dbuscon)
+    {
+        while (dbus_connection_dispatch(dbuscon) == DBUS_DISPATCH_DATA_REMAINS) {}
+        dbus_connection_read_write_dispatch(dbuscon, 0);
+
+        if (DBusMessage * message = dbus_connection_pop_message(dbuscon))
+        {
+            const char* const interface = dbus_message_get_interface(message);
+            const char* const member = dbus_message_get_member(message);
+
+            if (interface != nullptr && std::strcmp(interface, "org.freedesktop.portal.Request") == 0
+                && member != nullptr && std::strcmp(member, "Response") == 0)
+            {
+                do {
+                    DBusMessageIter iter;
+                    dbus_message_iter_init(message, &iter);
+
+                    // starts with uint32 for return/exit code
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_UINT32);
+
+                    uint32_t ret = 1;
+                    dbus_message_iter_get_basic(&iter, &ret);
+
+                    if (ret != 0)
+                        break;
+
+                    // next must be array
+                    dbus_message_iter_next(&iter);
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_ARRAY);
+
+                    // open dict array
+                    DBusMessageIter dictArray;
+                    dbus_message_iter_recurse(&iter, &dictArray);
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dictArray) == DBUS_TYPE_DICT_ENTRY);
+
+                    // open containing dict
+                    DBusMessageIter dict;
+                    dbus_message_iter_recurse(&dictArray, &dict);
+
+                    // start with the string "uris"
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dict) == DBUS_TYPE_STRING);
+
+                    const char* key = nullptr;
+                    dbus_message_iter_get_basic(&dict, &key);
+                    DISTRHO_SAFE_ASSERT_BREAK(key != nullptr && std::strcmp(key, "uris") == 0);
+
+                    // then comes variant
+                    dbus_message_iter_next(&dict);
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dict) == DBUS_TYPE_VARIANT);
+
+                    DBusMessageIter variant;
+                    dbus_message_iter_recurse(&dict, &variant);
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&variant) == DBUS_TYPE_ARRAY);
+
+                    // open variant array (variant type is string)
+                    DBusMessageIter variantArray;
+                    dbus_message_iter_recurse(&variant, &variantArray);
+                    DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&variantArray) == DBUS_TYPE_STRING);
+
+                    const char* value = nullptr;
+                    dbus_message_iter_get_basic(&variantArray, &value);
+
+                    // and finally we have our dear value, just make sure it is local
+                    DISTRHO_SAFE_ASSERT_BREAK(value != nullptr);
+
+                    if (const char* const localvalue = std::strstr(value, "file:///"))
+                        handle->selectedFile = strdup(localvalue + 7);
+
+                } while(false);
+
+                if (handle->selectedFile == nullptr)
+                    handle->selectedFile = kSelectedFileCancelled;
+            }
+        }
+    }
+#endif
 #ifdef HAVE_X11
     Display* const x11display = handle->x11display;
 

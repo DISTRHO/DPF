@@ -125,6 +125,7 @@ protected:
                 repaint();
 
                 FileBrowserOptions opts;
+                // opts.saving = true;
                 opts.title = "Look at me";
                 if (! openFileBrowser(opts))
                 {
