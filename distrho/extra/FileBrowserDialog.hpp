@@ -21,10 +21,6 @@
 
 START_NAMESPACE_DISTRHO
 
-#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
-namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 // File Browser Dialog stuff
 
@@ -91,6 +87,12 @@ struct FileBrowserOptions {
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
+namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
 FileBrowserHandle fileBrowserOpen(bool isEmbed, uintptr_t windowId, double scaleFactor,
                                   const char* startDir, const char* windowTitle, const FileBrowserOptions& options);
 
@@ -114,6 +116,8 @@ const char* fileBrowserGetPath(const FileBrowserHandle handle);
 #ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
 }
 #endif
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 

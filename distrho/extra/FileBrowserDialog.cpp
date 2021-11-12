@@ -35,10 +35,6 @@
 
 START_NAMESPACE_DISTRHO
 
-#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
-namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 
 // static pointer used for signal null/none action taken
@@ -93,11 +89,11 @@ struct FileBrowserData {
         ofn.hwndOwner = (HWND)winId;
 
         ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-        if (options.buttons.showHidden == Window::FileBrowserOptions::kButtonVisibleChecked)
+        if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
             ofn.Flags |= OFN_FORCESHOWHIDDEN;
 
         ofn.FlagsEx = 0x0;
-        if (options.buttons.showPlaces == Window::FileBrowserOptions::kButtonInvisible)
+        if (options.buttons.showPlaces == FileBrowserOptions::kButtonInvisible)
             ofn.FlagsEx |= OFN_EX_NOPLACESBAR;
 
         startDirW.resize(std::strlen(startDir) + 1);
@@ -224,6 +220,12 @@ struct FileBrowserData {
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
+namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
 FileBrowserHandle fileBrowserOpen(const bool isEmbed,
                                   const uintptr_t windowId,
                                   const double scaleFactor,
@@ -258,7 +260,7 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
 
     dispatch_async(dispatch_get_main_queue(), ^
     {
-        [nspanel beginSheetModalForWindow:[(NSView*)windowId) window]
+        [nspanel beginSheetModalForWindow:[(NSView*)windowId window]
                         completionHandler:^(NSModalResponse result)
         {
             DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr,);
