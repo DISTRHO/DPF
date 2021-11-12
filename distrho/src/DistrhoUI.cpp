@@ -15,6 +15,7 @@
  */
 
 #include "src/DistrhoPluginChecks.h"
+#include "src/DistrhoDefines.h"
 
 #if !defined(DGL_FILE_BROWSER_DISABLED) && !defined(DISTRHO_OS_MAC)
 # define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
