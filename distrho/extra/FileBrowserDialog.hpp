@@ -41,6 +41,17 @@ typedef FileBrowserData* FileBrowserHandle;
         but redefined so that non-embed/DGL based UIs can still use file browser related functions.
 */
 struct FileBrowserOptions {
+    /** Whether we are saving, opening files otherwise (default) */
+    bool saving;
+
+    /** Start directory, uses current working directory if null */
+    const char* startDir;
+
+    /** File browser dialog window title, uses "FileBrowser" if null */
+    const char* title;
+
+    // TODO file filter
+
    /**
       File browser button state.
       This allows to customize the behaviour of the file browse dialog buttons.
@@ -51,12 +62,6 @@ struct FileBrowserOptions {
       kButtonVisibleUnchecked,
       kButtonVisibleChecked,
     };
-
-    /** Start directory, uses current working directory if null */
-    const char* startDir;
-    /** File browser dialog window title, uses "FileBrowser" if null */
-    const char* title;
-    // TODO file filter
 
    /**
       File browser buttons.
@@ -78,7 +83,8 @@ struct FileBrowserOptions {
 
     /** Constructor for default values */
     FileBrowserOptions()
-      : startDir(nullptr),
+      : saving(false),
+        startDir(nullptr),
         title(nullptr),
         buttons() {}
 };

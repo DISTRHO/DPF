@@ -271,6 +271,10 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
     Display* const x11display = handle->x11display;
     DISTRHO_SAFE_ASSERT_RETURN(x11display != nullptr, nullptr);
 
+    // unsupported at the moment
+    if (options.saving)
+        return nullptr;
+
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(0, startDir) == 0, nullptr);
     DISTRHO_SAFE_ASSERT_RETURN(x_fib_configure(1, windowTitle) == 0, nullptr);
 

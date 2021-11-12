@@ -92,24 +92,6 @@
 #endif
 
 #ifndef DGL_FILE_BROWSER_DISABLED
-# define DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE DGL_NAMESPACE
-# define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
-# define DISTRHO_PUGL_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
-# define x_fib_add_recent          DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_add_recent)
-# define x_fib_cfg_buttons         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_cfg_buttons)
-# define x_fib_cfg_filter_callback DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_cfg_filter_callback)
-# define x_fib_close               DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_close)
-# define x_fib_configure           DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_configure)
-# define x_fib_filename            DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_filename)
-# define x_fib_free_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_free_recent)
-# define x_fib_handle_events       DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_handle_events)
-# define x_fib_load_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_load_recent)
-# define x_fib_recent_at           DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_at)
-# define x_fib_recent_count        DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_count)
-# define x_fib_recent_file         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_recent_file)
-# define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_save_recent)
-# define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_show)
-# define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(DGL_NAMESPACE, x_fib_status)
 # include "../../distrho/extra/FileBrowserDialog.cpp"
 #endif
 
