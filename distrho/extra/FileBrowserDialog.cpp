@@ -22,8 +22,8 @@
 # import <Cocoa/Cocoa.h>
 #endif
 #ifdef DISTRHO_OS_WINDOWS
+# define WIN32_LEAN_AND_MEAN
 # include <process.h>
-# include <winsock2.h>
 # include <windows.h>
 # include <vector>
 #endif
