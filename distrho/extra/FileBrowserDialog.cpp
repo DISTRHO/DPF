@@ -473,12 +473,29 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
                     DBusMessageIter dict;
                     dbus_message_iter_recurse(&dictArray, &dict);
 
-                    // start with the string "uris"
+                    // look for dict with string "uris"
                     DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dict) == DBUS_TYPE_STRING);
 
                     const char* key = nullptr;
                     dbus_message_iter_get_basic(&dict, &key);
-                    DISTRHO_SAFE_ASSERT_BREAK(key != nullptr && std::strcmp(key, "uris") == 0);
+                    DISTRHO_SAFE_ASSERT_BREAK(key != nullptr);
+
+                    // keep going until we find it
+                    while (std::strcmp(key, "uris") != 0)
+                    {
+                        key = nullptr;
+                        dbus_message_iter_next(&dictArray);
+                        DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dictArray) == DBUS_TYPE_DICT_ENTRY);
+
+                        dbus_message_iter_recurse(&dictArray, &dict);
+                        DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&dict) == DBUS_TYPE_STRING);
+
+                        dbus_message_iter_get_basic(&dict, &key);
+                        DISTRHO_SAFE_ASSERT_BREAK(key != nullptr);
+                    }
+
+                    if (key == nullptr)
+                        break;
 
                     // then comes variant
                     dbus_message_iter_next(&dict);
