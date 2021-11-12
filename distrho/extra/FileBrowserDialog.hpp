@@ -100,7 +100,7 @@ namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
 FileBrowserHandle fileBrowserCreate(bool isEmbed,
                                     uintptr_t windowId,
                                     double scaleFactor,
-                                    const FileBrowserOptions& options = {});
+                                    const FileBrowserOptions& options = FileBrowserOptions());
 
 /**
   Idle the file browser dialog handle.@n

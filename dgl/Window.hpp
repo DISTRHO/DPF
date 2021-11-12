@@ -57,8 +57,8 @@ class Window
 
 public:
 #ifndef DGL_FILE_BROWSER_DISABLED
-    using FileBrowserHandle = DISTRHO_NAMESPACE::FileBrowserHandle;
-    using FileBrowserOptions = DISTRHO_NAMESPACE::FileBrowserOptions;
+    typedef DISTRHO_NAMESPACE::FileBrowserHandle FileBrowserHandle;
+    typedef DISTRHO_NAMESPACE::FileBrowserOptions FileBrowserOptions;
 #endif
 
    /**
