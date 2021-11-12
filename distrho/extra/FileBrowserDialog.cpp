@@ -292,7 +292,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
 
     if (! options.saving)
     {
-        NSSavePanel* const nsOpenPanel = handle->nsOpenPanel;
+        NSOpenPanel* const nsOpenPanel = handle->nsOpenPanel;
         DISTRHO_SAFE_ASSERT_RETURN(nsOpenPanel != nullptr, nullptr);
 
         [nsOpenPanel setAllowsMultipleSelection:NO];
@@ -315,6 +315,8 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
              encoding:NSUTF8StringEncoding];
     [nsBasePanel setTitle:titleString];
 
+    FileBrowserData* const handleptr = handle.get();
+
     dispatch_async(dispatch_get_main_queue(), ^
     {
         [nsBasePanel beginSheetModalForWindow:[(NSView*)windowId window]
@@ -323,11 +325,11 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
             if (result == NSModalResponseOK && [[nsBasePanel URL] isFileURL])
             {
                 NSString* const path = [[nsBasePanel URL] path];
-                handle->selectedFile = strdup([path UTF8String]);
+                handleptr->selectedFile = strdup([path UTF8String]);
             }
             else
             {
-                handle->selectedFile = kSelectedFileCancelled;
+                handleptr->selectedFile = kSelectedFileCancelled;
             }
         }];
     });
