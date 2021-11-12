@@ -266,8 +266,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     if (windowTitle.isEmpty())
         windowTitle = "FileBrowser";
 
-    ScopedPointer<FileBrowserData> handle;
-    handle = new FileBrowserData(isEmbed);
+    ScopedPointer<FileBrowserData> handle(new FileBrowserData(isEmbed));
 
 #ifdef DISTRHO_OS_MAC
     NSOpenPanel* const nspanel = handle->nspanel;

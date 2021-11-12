@@ -42,6 +42,7 @@
 # endif
 #elif defined(DISTRHO_OS_WINDOWS)
 # include <wctype.h>
+# include <winsock2.h>
 # include <windows.h>
 # include <windowsx.h>
 # ifdef DGL_CAIRO
