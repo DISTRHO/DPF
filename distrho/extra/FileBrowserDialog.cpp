@@ -369,20 +369,21 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
             dbus_message_iter_init_append(message, &iter);
             dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &array);
 
-            /* here merely as example, in case we need to configure it
             {
-                DBusMessageIter dict, variant;
-                const char* const property = "property";
-                const char* const value = "value";
+                DBusMessageIter dict, variant, variantArray;
+                const char* const current_folder_key = "current_folder";
+                const char* const current_folder_val = startDir.buffer();
 
                 dbus_message_iter_open_container(&array, DBUS_TYPE_DICT_ENTRY, nullptr, &dict);
-                dbus_message_iter_append_basic(&dict, DBUS_TYPE_STRING, &property);
-                dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "s", &variant);
-                dbus_message_iter_append_basic(&variant, DBUS_TYPE_STRING, &value);
+                dbus_message_iter_append_basic(&dict, DBUS_TYPE_STRING, &current_folder_key);
+                dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "ay", &variant);
+                dbus_message_iter_open_container(&variant, DBUS_TYPE_ARRAY, "y", &variantArray);
+                dbus_message_iter_append_fixed_array(&variantArray, DBUS_TYPE_BYTE,
+                                                     &current_folder_val, startDir.length()+1);
+                dbus_message_iter_close_container(&variant, &variantArray);
                 dbus_message_iter_close_container(&dict, &variant);
                 dbus_message_iter_close_container(&array, &dict);
             }
-            */
 
             dbus_message_iter_close_container(&iter, &array);
 
