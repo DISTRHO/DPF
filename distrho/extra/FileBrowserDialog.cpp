@@ -23,9 +23,12 @@
 #endif
 #ifdef DISTRHO_OS_WINDOWS
 # define WIN32_LEAN_AND_MEAN
+# include <direct.h>
 # include <process.h>
 # include <windows.h>
 # include <vector>
+#else
+# include <unistd.h>
 #endif
 #ifdef HAVE_DBUS
 # include <dbus/dbus.h>

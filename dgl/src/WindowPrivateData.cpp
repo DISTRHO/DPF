@@ -19,14 +19,6 @@
 
 #include "pugl.hpp"
 
-#ifdef DISTRHO_OS_WINDOWS
-# include <direct.h>
-# include <winsock2.h>
-# include <windows.h>
-#else
-# include <unistd.h>
-#endif
-
 // #define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
