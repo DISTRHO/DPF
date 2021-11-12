@@ -50,7 +50,7 @@ struct FileBrowserData {
     const char* selectedFile;
 
 #ifdef DISTRHO_OS_MAC
-    NSOpenPanel* nspanel;
+    NSSavePanel* nspanel;
 #endif
 #ifdef HAVE_DBUS
     DBusConnection* dbuscon;
@@ -66,15 +66,16 @@ struct FileBrowserData {
     std::vector<WCHAR> fileNameW;
     std::vector<WCHAR> startDirW;
     std::vector<WCHAR> titleW;
-    bool isEmbed, saving;
+    const bool saving;
+    bool isEmbed;
 
-    FileBrowserData()
+    FileBrowserData(const bool save)
         : selectedFile(nullptr),
           threadCancelled(false),
           threadHandle(0),
           fileNameW(32768),
-          isEmbed(false),
-          saving(false)
+          saving(save),
+          isEmbed(false)
     {
         std::memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
@@ -95,7 +96,6 @@ struct FileBrowserData {
                        const FileBrowserOptions options)
     {
         isEmbed = embed;
-        saving = options.saving;
 
         ofn.hwndOwner = (HWND)winId;
 
@@ -195,11 +195,11 @@ struct FileBrowserData {
         return 0;
     }
 #else // DISTRHO_OS_WINDOWS
-    FileBrowserData()
+    FileBrowserData(const bool saving)
         : selectedFile(nullptr)
     {
 #ifdef DISTRHO_OS_MAC
-        nspanel = [[NSOpenPanel openPanel]retain];
+        nspanel = saving ? [[NSSavePanel savePanel]retain] : [[NSOpenPanel openPanel]retain];
 #endif
 #ifdef HAVE_DBUS
         DBusError err;
@@ -211,6 +211,9 @@ struct FileBrowserData {
 #ifdef HAVE_X11
         x11display = XOpenDisplay(nullptr);
 #endif
+
+        // maybe unused
+        return; (void)saving;
     }
 
     ~FileBrowserData()
@@ -271,10 +274,10 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     if (windowTitle.isEmpty())
         windowTitle = "FileBrowser";
 
-    ScopedPointer<FileBrowserData> handle(new FileBrowserData);
+    ScopedPointer<FileBrowserData> handle(new FileBrowserData(options.saving));
 
 #ifdef DISTRHO_OS_MAC
-    NSOpenPanel* const nspanel = handle->nspanel;
+    NSSavePanel* const nspanel = handle->nspanel;
     DISTRHO_SAFE_ASSERT_RETURN(nspanel != nullptr, nullptr);
 
     [nspanel setAllowsMultipleSelection:NO];
@@ -300,16 +303,17 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
         [nspanel beginSheetModalForWindow:[(NSView*)windowId window]
                         completionHandler:^(NSModalResponse result)
         {
-            DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr,);
+            FileBrowserData* const handleptr = handle.get();
+            DISTRHO_SAFE_ASSERT_RETURN(handleptr != nullptr,);
 
             if (result == NSModalResponseOK && [[nspanel URL] isFileURL])
             {
                 NSString* const path = [[nspanel URL] path];
-                handle->selectedFile = strdup([path UTF8String]);
+                handleptr->selectedFile = strdup([path UTF8String]);
             }
             else
             {
-                handle->selectedFile = kSelectedFileCancelled;
+                handleptr->selectedFile = kSelectedFileCancelled;
             }
         }];
     });
