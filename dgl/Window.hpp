@@ -26,6 +26,7 @@
 START_NAMESPACE_DGL
 
 class Application;
+class PluginWindow;
 class TopLevelWidget;
 
 // -----------------------------------------------------------------------
