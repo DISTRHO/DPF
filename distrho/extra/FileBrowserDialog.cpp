@@ -22,11 +22,11 @@
 # import <Cocoa/Cocoa.h>
 #endif
 #ifdef DISTRHO_OS_WINDOWS
-# include <commdlg.h>
 # include <direct.h>
 # include <process.h>
 # include <winsock2.h>
 # include <windows.h>
+# include <commdlg.h>
 # include <vector>
 #else
 # include <unistd.h>
