@@ -41,7 +41,7 @@
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # if defined(DISTRHO_OS_WINDOWS)
-#  define WIN32_LEAN_AND_MEAN
+#  include <winsock2.h>
 #  include <windows.h>
 # elif defined(HAVE_X11)
 #  include <X11/Xresource.h>
