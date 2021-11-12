@@ -93,7 +93,11 @@
 #endif
 
 #ifndef DGL_FILE_BROWSER_DISABLED
-# include "../../distrho/extra/FileBrowserDialog.cpp"
+# ifdef DISTRHO_OS_MAC
+#  import "../../distrho/extra/FileBrowserDialog.cpp"
+# else
+#  include "../../distrho/extra/FileBrowserDialog.cpp"
+# endif
 #endif
 
 #ifndef DISTRHO_OS_MAC
