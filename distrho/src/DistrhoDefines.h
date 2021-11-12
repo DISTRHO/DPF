@@ -207,6 +207,7 @@ typedef unsigned char uchar;
 typedef unsigned short int ushort;
 typedef unsigned int uint;
 typedef unsigned long int ulong;
+typedef unsigned long long int ulonglong;
 
 /* Deprecated macros */
 #define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) DISTRHO_DECLARE_NON_COPYABLE(ClassName)

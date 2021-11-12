@@ -19,9 +19,14 @@
 
 #include "Geometry.hpp"
 
+#ifndef DGL_FILE_BROWSER_DISABLED
+# include "../distrho/extra/FileBrowserDialog.hpp"
+#endif
+
 START_NAMESPACE_DGL
 
 class Application;
+class PluginWindow;
 class TopLevelWidget;
 
 // -----------------------------------------------------------------------
@@ -53,53 +58,9 @@ class Window
 
 public:
 #ifndef DGL_FILE_BROWSER_DISABLED
-   /**
-      File browser options.
-      @see Window::openFileBrowser
-    */
-    struct FileBrowserOptions {
-       /**
-          File browser button state.
-          This allows to customize the behaviour of the file browse dialog buttons.
-          Note these are merely hints, not all systems support them.
-        */
-        enum ButtonState {
-            kButtonInvisible,
-            kButtonVisibleUnchecked,
-            kButtonVisibleChecked,
-        };
-
-        /** Start directory, uses current working directory if null */
-        const char* startDir;
-        /** File browser dialog window title, uses "FileBrowser" if null */
-        const char* title;
-        // TODO file filter
-
-       /**
-          File browser buttons.
-        */
-        struct Buttons {
-            /** Whether to list all files vs only those with matching file extension */
-            ButtonState listAllFiles;
-            /** Whether to show hidden files */
-            ButtonState showHidden;
-            /** Whether to show list of places (bookmarks) */
-            ButtonState showPlaces;
-
-            /** Constructor for default values */
-            Buttons()
-                : listAllFiles(kButtonVisibleChecked),
-                  showHidden(kButtonVisibleUnchecked),
-                  showPlaces(kButtonVisibleChecked) {}
-        } buttons;
-
-        /** Constructor for default values */
-        FileBrowserOptions()
-            : startDir(nullptr),
-              title(nullptr),
-              buttons() {}
-    };
-#endif // DGL_FILE_BROWSER_DISABLED
+    typedef DISTRHO_NAMESPACE::FileBrowserHandle FileBrowserHandle;
+    typedef DISTRHO_NAMESPACE::FileBrowserOptions FileBrowserOptions;
+#endif
 
    /**
       Window graphics context as a scoped struct.
@@ -361,7 +322,7 @@ public:
 
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
-      Open a file browser dialog with this window as parent.
+      Open a file browser dialog with this window as transient parent.
       A few options can be specified to setup the dialog.
 
       If a path is selected, onFileSelected() will be called with the user chosen path.

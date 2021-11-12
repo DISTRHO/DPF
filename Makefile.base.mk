@@ -238,6 +238,7 @@ HAVE_OPENGL = true
 else
 HAVE_OPENGL = $(shell $(PKG_CONFIG) --exists gl && echo true)
 ifneq ($(HAIKU),true)
+HAVE_DBUS    = $(shell $(PKG_CONFIG) --exists dbus-1 && echo true)
 HAVE_X11     = $(shell $(PKG_CONFIG) --exists x11 && echo true)
 HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
 HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
@@ -284,6 +285,10 @@ DGL_SYSTEM_LIBS += -lgdi32 -lcomdlg32
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifeq ($(HAVE_DBUS),true)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
+DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
+endif
 ifeq ($(HAVE_X11),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags x11) -DHAVE_X11
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs x11)
@@ -476,6 +481,7 @@ features:
 	$(call print_available,UNIX)
 	@echo === Detected features
 	$(call print_available,HAVE_ALSA)
+	$(call print_available,HAVE_DBUS)
 	$(call print_available,HAVE_CAIRO)
 	$(call print_available,HAVE_DGL)
 	$(call print_available,HAVE_LIBLO)

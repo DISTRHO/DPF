@@ -19,18 +19,6 @@
 
 #include "pugl.hpp"
 
-#include "../../distrho/extra/String.hpp"
-
-#ifdef DISTRHO_OS_WINDOWS
-# include <direct.h>
-# include <process.h>
-# include <winsock2.h>
-# include <windows.h>
-# include <vector>
-#else
-# include <unistd.h>
-#endif
-
 // #define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
@@ -64,11 +52,6 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-#ifdef DISTRHO_OS_WINDOWS
-// static pointer used for direct comparisons
-static const char* const kWin32SelectedFileCancelled = "__dpf_cancelled__";
-#endif
-
 static double getDesktopScaleFactor(const PuglView* const view)
 {
     // allow custom scale for testing
@@ -80,154 +63,6 @@ static double getDesktopScaleFactor(const PuglView* const view)
 
     return 1.0;
 }
-
-// -----------------------------------------------------------------------
-
-#ifdef DISTRHO_OS_WINDOWS
-struct FileBrowserThread::PrivateData {
-    OPENFILENAMEW ofn;
-    volatile bool threadCancelled;
-    uintptr_t threadHandle;
-    std::vector<WCHAR> fileNameW;
-    std::vector<WCHAR> startDirW;
-    std::vector<WCHAR> titleW;
-    const bool isEmbed;
-    const char*& win32SelectedFile;
-
-    PrivateData(const bool embed, const char*& file)
-        : threadCancelled(false),
-          threadHandle(0),
-          fileNameW(32768),
-          isEmbed(embed),
-          win32SelectedFile(file)
-    {
-        std::memset(&ofn, 0, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.lpstrFile = fileNameW.data();
-        ofn.nMaxFile = (DWORD)fileNameW.size();
-    }
-
-    void setup(const char* const startDir,
-               const char* const title,
-               const uintptr_t winId,
-               const Window::FileBrowserOptions options)
-    {
-        ofn.hwndOwner = (HWND)winId;
-
-        ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-        if (options.buttons.showHidden == Window::FileBrowserOptions::kButtonVisibleChecked)
-            ofn.Flags |= OFN_FORCESHOWHIDDEN;
-
-        ofn.FlagsEx = 0x0;
-        if (options.buttons.showPlaces == Window::FileBrowserOptions::kButtonInvisible)
-            ofn.FlagsEx |= OFN_EX_NOPLACESBAR;
-
-        startDirW.resize(std::strlen(startDir) + 1);
-        if (MultiByteToWideChar(CP_UTF8, 0, startDir, -1, startDirW.data(), static_cast<int>(startDirW.size())))
-            ofn.lpstrInitialDir = startDirW.data();
-
-        titleW.resize(std::strlen(title) + 1);
-        if (MultiByteToWideChar(CP_UTF8, 0, title, -1, titleW.data(), static_cast<int>(titleW.size())))
-            ofn.lpstrTitle = titleW.data();
-    }
-
-    void run()
-    {
-        const char* nextFile = nullptr;
-
-        if (GetOpenFileNameW(&ofn))
-        {
-            if (threadCancelled)
-            {
-                threadHandle = 0;
-                return;
-            }
-
-            // back to UTF-8
-            std::vector<char> fileNameA(4 * 32768);
-            if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1,
-                                    fileNameA.data(), (int)fileNameA.size(),
-                                    nullptr, nullptr))
-            {
-                nextFile = strdup(fileNameA.data());
-            }
-        }
-
-        if (threadCancelled)
-        {
-            threadHandle = 0;
-            return;
-        }
-
-        if (nextFile == nullptr)
-            nextFile = kWin32SelectedFileCancelled;
-
-        win32SelectedFile = nextFile;
-        threadHandle = 0;
-    }
-};
-
-FileBrowserThread::FileBrowserThread(const bool isEmbed, const char*& file)
-    : pData(new PrivateData(isEmbed, file)) {}
-
-FileBrowserThread::~FileBrowserThread()
-{
-    stop();
-    delete pData;
-}
-
-unsigned __stdcall FileBrowserThread__run(void* const arg)
-{
-    // CoInitializeEx(nullptr, COINIT_MULTITHREADED);
-    static_cast<FileBrowserThread*>(arg)->pData->run();
-    // CoUninitialize();
-    _endthreadex(0);
-    return 0;
-}
-
-void FileBrowserThread::start(const char* const startDir,
-                              const char* const title,
-                              const uintptr_t winId,
-                              const Window::FileBrowserOptions options)
-{
-    pData->setup(startDir, title, winId, options);
-
-    uint threadId;
-    pData->threadCancelled = false;
-    pData->threadHandle = _beginthreadex(nullptr, 0, FileBrowserThread__run, this, 0, &threadId);
-}
-
-void FileBrowserThread::stop()
-{
-    pData->threadCancelled = true;
-
-    if (pData->threadHandle == 0)
-        return;
-
-    // if previous dialog running, carefully close its window
-    const HWND owner = pData->isEmbed ? GetParent(pData->ofn.hwndOwner) : pData->ofn.hwndOwner;
-
-    if (owner != nullptr && owner != INVALID_HANDLE_VALUE)
-    {
-        const HWND window = GetWindow(owner, GW_HWNDFIRST);
-
-        if (window != nullptr && window != INVALID_HANDLE_VALUE)
-        {
-            SendMessage(window, WM_SYSCOMMAND, SC_CLOSE, 0);
-            SendMessage(window, WM_CLOSE, 0, 0);
-            WaitForSingleObject((HANDLE)pData->threadHandle, 5000);
-        }
-    }
-
-    // not good if thread still running, but let's close the handle anyway
-    if (pData->threadHandle != 0)
-    {
-        CloseHandle((HANDLE)pData->threadHandle);
-        pData->threadHandle = 0;
-    }
-}
-
-#endif // DISTRHO_OS_WINDOWS && !_MSC_VER
 
 // -----------------------------------------------------------------------
 
@@ -249,9 +84,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
-      win32FileThread(false, win32SelectedFile),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
@@ -276,9 +110,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
-      win32FileThread(false, win32SelectedFile),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal(ppData)
 {
@@ -307,9 +140,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
-      win32FileThread(isEmbed, win32SelectedFile),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
@@ -340,9 +172,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
       filenameToRenderInto(nullptr),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
-      win32FileThread(isEmbed, win32SelectedFile),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
@@ -363,21 +194,15 @@ Window::PrivateData::~PrivateData()
 
     if (isEmbed)
     {
-#ifdef HAVE_X11
-        sofdFileDialogClose();
+#ifndef DGL_FILE_BROWSER_DISABLED
+        if (fileBrowserHandle != nullptr)
+            fileBrowserClose(fileBrowserHandle);
 #endif
         puglHide(view);
         appData->oneWindowClosed();
         isClosed = true;
         isVisible = false;
     }
-
-#ifdef DISTRHO_OS_WINDOWS
-    win32FileThread.stop();
-
-    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
-        std::free(const_cast<char*>(win32SelectedFile));
-#endif
 
     puglFreeView(view);
 }
@@ -522,9 +347,14 @@ void Window::PrivateData::hide()
     if (modal.enabled)
         stopModal();
 
-#ifdef HAVE_X11
-    sofdFileDialogClose();
+#ifndef DGL_FILE_BROWSER_DISABLED
+    if (fileBrowserHandle != nullptr)
+    {
+        fileBrowserClose(fileBrowserHandle);
+        fileBrowserHandle = nullptr;
+    }
 #endif
+
     puglHide(view);
 
     isVisible = false;
@@ -566,20 +396,12 @@ void Window::PrivateData::setResizable(const bool resizable)
 void Window::PrivateData::idleCallback()
 {
 #ifndef DGL_FILE_BROWSER_DISABLED
-# ifdef DISTRHO_OS_WINDOWS
-    if (const char* path = win32SelectedFile)
+    if (fileBrowserHandle != nullptr && fileBrowserIdle(fileBrowserHandle))
     {
-        win32SelectedFile = nullptr;
-        if (path == kWin32SelectedFileCancelled)
-            path = nullptr;
-        self->onFileSelected(path);
-        std::free(const_cast<char*>(path));
+        self->onFileSelected(fileBrowserGetPath(fileBrowserHandle));
+        fileBrowserClose(fileBrowserHandle);
+        fileBrowserHandle = nullptr;
     }
-# endif
-# ifdef HAVE_X11
-    if (sofdFileDialogIdle(view))
-        self->onFileSelected(sofdFileDialogGetPath());
-# endif
 #endif
 }
 
@@ -619,120 +441,23 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 // -----------------------------------------------------------------------
 // file handling
 
-bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& options)
+bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 {
-    using DISTRHO_NAMESPACE::String;
+    if (fileBrowserHandle != nullptr)
+        fileBrowserClose(fileBrowserHandle);
 
-    // --------------------------------------------------------------------------
-    // configure start dir
+    FileBrowserOptions options2 = options;
 
-    // TODO: get abspath if needed
-    // TODO: cross-platform
+    if (options2.title == nullptr)
+        options2.title = puglGetWindowTitle(view);
 
-    String startDir(options.startDir);
+    fileBrowserHandle = fileBrowserCreate(isEmbed,
+                                          puglGetNativeWindow(view),
+                                          autoScaling ? autoScaleFactor : scaleFactor,
+                                          options2);
 
-    if (startDir.isEmpty())
-    {
-        // TESTING verify this whole thing...
-# ifdef DISTRHO_OS_WINDOWS
-        if (char* const cwd = _getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# else
-        if (char* const cwd = getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# endif
-    }
-
-    DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
-
-    if (! startDir.endsWith(DISTRHO_OS_SEP))
-        startDir += DISTRHO_OS_SEP_STR;
-
-    // --------------------------------------------------------------------------
-    // configure title
-
-    String title(options.title);
-
-    if (title.isEmpty())
-    {
-        title = puglGetWindowTitle(view);
-
-        if (title.isEmpty())
-            title = "FileBrowser";
-    }
-
-    // --------------------------------------------------------------------------
-    // show
-
-# ifdef DISTRHO_OS_MAC
-    uint flags = 0x0;
-
-    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x001;
-    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x002;
-
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x010;
-    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x020;
-
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x100;
-    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x200;
-
-    return puglMacOSFilePanelOpen(view, startDir, title, flags, openPanelCallback);
-# endif
-
-# ifdef DISTRHO_OS_WINDOWS
-    // only one possible at a time
-    DISTRHO_SAFE_ASSERT_RETURN(win32FileThread.pData->threadHandle == 0, false);
-
-    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
-        std::free(const_cast<char*>(win32SelectedFile));
-    win32SelectedFile = nullptr;
-
-    win32FileThread.start(startDir, title, puglGetNativeWindow(view), options);
-    return true;
-# endif
-
-# ifdef HAVE_X11
-    uint flags = 0x0;
-
-    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x001;
-    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x002;
-
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x010;
-    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x020;
-
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x100;
-    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x200;
-
-    return sofdFileDialogShow(view, startDir, title, flags, autoScaling ? autoScaleFactor : scaleFactor);
-# endif
-
-    return false;
+    return fileBrowserHandle != nullptr;
 }
-
-# ifdef DISTRHO_OS_MAC
-void Window::PrivateData::openPanelCallback(PuglView* const view, const char* const path)
-{
-    ((Window::PrivateData*)puglGetHandle(view))->self->onFileSelected(path);
-}
-# endif
 #endif // ! DGL_FILE_BROWSER_DISABLED
 
 // -----------------------------------------------------------------------
