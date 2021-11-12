@@ -231,9 +231,11 @@ struct FileBrowserData {
 #ifdef DISTRHO_OS_MAC
         [nsBasePanel release];
 #endif
-#ifdef HAVE_X11
+#ifdef HAVE_DBUS
         if (dbuscon != nullptr)
             dbus_connection_unref(dbuscon);
+#endif
+#ifdef HAVE_X11
         if (x11display != nullptr)
             XCloseDisplay(x11display);
 #endif
@@ -345,6 +347,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     // optional, can be null
     if (DBusConnection* dbuscon = handle->dbuscon)
     {
+        // https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser
         if (DBusMessage* const message = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
                                                                       "/org/freedesktop/portal/desktop",
                                                                       "org.freedesktop.portal.FileChooser",
