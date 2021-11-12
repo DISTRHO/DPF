@@ -27,7 +27,7 @@
 # include <algorithm>
 # include <cmath>
 # ifndef DGL_FILE_BROWSER_DISABLED
-#  include "../extra/FileBrowserDialog.cpp"
+#  include "extra/FileBrowserDialog.cpp"
 # endif
 
 // Declared in DistrhoUI.cpp but defined here because it uses Obj-C

@@ -232,6 +232,8 @@ struct FileBrowserData {
         [nsBasePanel release];
 #endif
 #ifdef HAVE_X11
+        if (dbuscon != nullptr)
+            dbus_connection_unref(dbuscon);
         if (x11display != nullptr)
             XCloseDisplay(x11display);
 #endif
