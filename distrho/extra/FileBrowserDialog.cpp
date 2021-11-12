@@ -66,14 +66,15 @@ struct FileBrowserData {
     std::vector<WCHAR> fileNameW;
     std::vector<WCHAR> startDirW;
     std::vector<WCHAR> titleW;
-    const bool isEmbed;
+    bool isEmbed, saving;
 
-    FileBrowserData(const bool embed)
+    FileBrowserData()
         : selectedFile(nullptr),
           threadCancelled(false),
           threadHandle(0),
           fileNameW(32768),
-          isEmbed(embed)
+          isEmbed(false),
+          saving(false)
     {
         std::memset(&ofn, 0, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
@@ -87,11 +88,15 @@ struct FileBrowserData {
             std::free(const_cast<char*>(selectedFile));
     }
 
-    void setupAndStart(const char* const startDir,
+    void setupAndStart(const bool embed,
+                       const char* const startDir,
                        const char* const windowTitle,
                        const uintptr_t winId,
                        const FileBrowserOptions options)
     {
+        isEmbed = embed;
+        saving = options.saving;
+
         ofn.hwndOwner = (HWND)winId;
 
         ofn.Flags = OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
@@ -150,7 +155,7 @@ struct FileBrowserData {
     {
         const char* nextFile = nullptr;
 
-        if (GetOpenFileNameW(&ofn))
+        if (saving ? GetSaveFileNameW(&ofn) : GetOpenFileNameW(&ofn))
         {
             if (threadCancelled)
             {
@@ -190,7 +195,7 @@ struct FileBrowserData {
         return 0;
     }
 #else // DISTRHO_OS_WINDOWS
-    FileBrowserData(bool)
+    FileBrowserData()
         : selectedFile(nullptr)
     {
 #ifdef DISTRHO_OS_MAC
@@ -266,7 +271,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     if (windowTitle.isEmpty())
         windowTitle = "FileBrowser";
 
-    ScopedPointer<FileBrowserData> handle(new FileBrowserData(isEmbed));
+    ScopedPointer<FileBrowserData> handle(new FileBrowserData);
 
 #ifdef DISTRHO_OS_MAC
     NSOpenPanel* const nspanel = handle->nspanel;
@@ -311,7 +316,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
-    handle->setupAndStart(startDir, windowTitle, windowId, options);
+    handle->setupAndStart(isEmbed, startDir, windowTitle, windowId, options);
 #endif
 
 #ifdef HAVE_DBUS
@@ -390,6 +395,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     return handle.release();
 
     // might be unused
+    (void)isEmbed;
     (void)windowId;
     (void)scaleFactor;
 }
