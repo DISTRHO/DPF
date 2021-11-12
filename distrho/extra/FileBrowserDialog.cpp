@@ -23,6 +23,7 @@
 #endif
 #ifdef DISTRHO_OS_WINDOWS
 # define WIN32_LEAN_AND_MEAN
+# include <commdlg.h>
 # include <direct.h>
 # include <process.h>
 # include <windows.h>

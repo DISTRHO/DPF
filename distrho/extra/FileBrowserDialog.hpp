@@ -104,7 +104,9 @@ FileBrowserHandle fileBrowserCreate(bool isEmbed,
 
 /**
   Idle the file browser dialog handle.@n
-  Returns true if dialog was closed (with or without a file selection), handle must not be used afterwards.
+  Returns true if dialog was closed (with or without a file selection),
+  in which case the handle must not be used afterwards.
+  You can then call fileBrowserGetPath to know the selected file (or null if cancelled).
 */
 bool fileBrowserIdle(const FileBrowserHandle handle);
 
