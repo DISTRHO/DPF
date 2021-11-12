@@ -433,7 +433,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     snprintf(title, sizeof(title)-1u, DISTRHO_PLUGIN_NAME ": %s", key);
     title[sizeof(title)-1u] = '\0';
 
-    DGL_NAMESPACE::Window::FileBrowserOptions opts;
+    FileBrowserOptions opts;
     opts.title = title;
     return window->openFileBrowser(opts);
 #endif

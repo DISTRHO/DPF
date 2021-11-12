@@ -30,11 +30,8 @@ typedef FileBrowserData* FileBrowserHandle;
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
-  File browser options.
-  @see Window::openFileBrowser
-
-  @note This is exactly the same API as provided by the Window class,
-        but redefined so that non-embed/DGL based UIs can still use file browser related functions.
+  File browser options, for customizing the file browser dialog.@n
+  By default the file browser dialog will be work as "open file" in the current working directory.
 */
 struct FileBrowserOptions {
     /** Whether we are saving, opening files otherwise (default) */
@@ -91,24 +88,35 @@ struct FileBrowserOptions {
 namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
 #endif
 
-// --------------------------------------------------------------------------------------------------------------------
+/**
+  Create a new file browser dialog.
 
-FileBrowserHandle fileBrowserOpen(bool isEmbed, uintptr_t windowId, double scaleFactor,
-                                  const char* startDir, const char* windowTitle, const FileBrowserOptions& options);
+  @p isEmbed:     Whether the window this dialog belongs to is an embed/child window (needed to close dialog on Windows)
+  @p windowId:    The native window id to attach this dialog to as transient parent (X11 Window, HWND or NSView*)
+  @p scaleFactor: Scale factor to use (only used on X11)
+  @p options:     Extra options, optional
+  By default the file browser dialog will be work as "open file" in the current working directory.
+*/
+FileBrowserHandle fileBrowserCreate(bool isEmbed,
+                                    uintptr_t windowId,
+                                    double scaleFactor,
+                                    const FileBrowserOptions& options = {});
 
-// --------------------------------------------------------------------------------------------------------------------
-// returns true if dialog was closed (with or without a file selection)
-
+/**
+  Idle the file browser dialog handle.@n
+  Returns true if dialog was closed (with or without a file selection), handle must not be used afterwards.
+*/
 bool fileBrowserIdle(const FileBrowserHandle handle);
 
-// --------------------------------------------------------------------------------------------------------------------
-// close sofd file dialog
-
+/**
+  Close the file browser dialog, handle must not be used afterwards.
+*/
 void fileBrowserClose(const FileBrowserHandle handle);
 
-// --------------------------------------------------------------------------------------------------------------------
-// get path chosen via sofd file dialog
-
+/**
+  Get the path chosen by the user or null.@n
+  Should only be called after fileBrowserIdle returns true.
+*/
 const char* fileBrowserGetPath(const FileBrowserHandle handle);
 
 // --------------------------------------------------------------------------------------------------------------------

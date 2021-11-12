@@ -19,8 +19,6 @@
 
 #include "pugl.hpp"
 
-#include "../../distrho/extra/String.hpp"
-
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
 # include <winsock2.h>
@@ -451,62 +449,20 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 // -----------------------------------------------------------------------
 // file handling
 
-bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& options)
+bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 {
-    using DISTRHO_NAMESPACE::String;
-
-    // --------------------------------------------------------------------------
-    // configure start dir
-
-    String startDir(options.startDir);
-
-    if (startDir.isEmpty())
-    {
-        // TESTING verify this whole thing...
-# ifdef DISTRHO_OS_WINDOWS
-        if (char* const cwd = _getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# else
-        if (char* const cwd = getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# endif
-    }
-
-    DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
-
-    if (! startDir.endsWith(DISTRHO_OS_SEP))
-        startDir += DISTRHO_OS_SEP_STR;
-
-    // --------------------------------------------------------------------------
-    // configure window title
-
-    String windowTitle(options.title);
-
-    if (windowTitle.isEmpty())
-    {
-        windowTitle = puglGetWindowTitle(view);
-
-        if (windowTitle.isEmpty())
-            windowTitle = "FileBrowser";
-    }
-
-    // --------------------------------------------------------------------------
-    // show
-
     if (fileBrowserHandle != nullptr)
         fileBrowserClose(fileBrowserHandle);
 
-    fileBrowserHandle = fileBrowserOpen(isEmbed,
-                                        puglGetNativeWindow(view), autoScaling ? autoScaleFactor : scaleFactor,
-                                        startDir,
-                                        windowTitle.buffer(),
-                                        options);
+    FileBrowserOptions options2 = options;
+
+    if (options2.title == nullptr)
+        options2.title = puglGetWindowTitle(view);
+
+    fileBrowserHandle = fileBrowserCreate(isEmbed,
+                                          puglGetNativeWindow(view),
+                                          autoScaling ? autoScaleFactor : scaleFactor,
+                                          options2);
 
     return fileBrowserHandle != nullptr;
 }

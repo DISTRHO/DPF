@@ -16,12 +16,15 @@
 
 #include "FileBrowserDialog.hpp"
 #include "ScopedPointer.hpp"
+#include "String.hpp"
 
 #ifdef DISTRHO_OS_MAC
 # import <Cocoa/Cocoa.h>
 #endif
 #ifdef DISTRHO_OS_WINDOWS
 # include <process.h>
+# include <winsock2.h>
+# include <windows.h>
 # include <vector>
 #endif
 #ifdef HAVE_DBUS
@@ -226,13 +229,40 @@ namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-FileBrowserHandle fileBrowserOpen(const bool isEmbed,
-                                  const uintptr_t windowId,
-                                  const double scaleFactor,
-                                  const char* const startDir,
-                                  const char* const windowTitle,
-                                  const FileBrowserOptions& options)
+FileBrowserHandle fileBrowserCreate(const bool isEmbed,
+                                    const uintptr_t windowId,
+                                    const double scaleFactor,
+                                    const FileBrowserOptions& options)
 {
+    String startDir(options.startDir);
+
+    if (startDir.isEmpty())
+    {
+#ifdef DISTRHO_OS_WINDOWS
+        if (char* const cwd = _getcwd(nullptr, 0))
+        {
+            startDir = cwd;
+            std::free(cwd);
+        }
+#else
+        if (char* const cwd = getcwd(nullptr, 0))
+        {
+            startDir = cwd;
+            std::free(cwd);
+        }
+#endif
+    }
+
+    DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), nullptr);
+
+    if (! startDir.endsWith(DISTRHO_OS_SEP))
+        startDir += DISTRHO_OS_SEP_STR;
+
+    String windowTitle(options.title);
+
+    if (windowTitle.isEmpty())
+        windowTitle = "FileBrowser";
+
     ScopedPointer<FileBrowserData> handle;
     handle = new FileBrowserData(isEmbed);
 
@@ -360,9 +390,6 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
     // might be unused
     (void)windowId;
     (void)scaleFactor;
-    (void)startDir;
-    (void)windowTitle;
-    (void)options;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -447,6 +474,7 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
         }
     }
 #endif
+
 #ifdef HAVE_X11
     Display* const x11display = handle->x11display;
 

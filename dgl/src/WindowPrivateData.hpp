@@ -159,7 +159,7 @@ struct Window::PrivateData : IdleCallback {
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
-    bool openFileBrowser(const Window::FileBrowserOptions& options);
+    bool openFileBrowser(const FileBrowserOptions& options);
 #endif
 
     static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);
