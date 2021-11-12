@@ -30,6 +30,7 @@ jobs:
           liblo-dev \
           libgl-dev \
           libcairo2-dev \
+          libdbus-1-dev \
           libx11-dev
     - name: Create Build Environment
       shell: bash
