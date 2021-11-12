@@ -188,6 +188,14 @@ public:
 #endif
 
 #ifndef DGL_FILE_BROWSER_DISABLED
+# ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
+    using FileBrowserHandle = DISTRHO_NAMESPACE::DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE::FileBrowserHandle;
+    using FileBrowserOptions = DISTRHO_NAMESPACE::DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE::FileBrowserOptions;
+# else
+    using FileBrowserHandle = DISTRHO_NAMESPACE::FileBrowserHandle;
+    using FileBrowserOptions = DISTRHO_NAMESPACE::FileBrowserOptions;
+# endif
+
    /**
       Open a file browser dialog with this window as transient parent.@n
       A few options can be specified to setup the dialog.
