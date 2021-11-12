@@ -50,7 +50,8 @@ struct FileBrowserData {
     const char* selectedFile;
 
 #ifdef DISTRHO_OS_MAC
-    NSSavePanel* nspanel;
+    NSSavePanel* nsBasePanel;
+    NSOpenPanel* nsOpenPanel;
 #endif
 #ifdef HAVE_DBUS
     DBusConnection* dbuscon;
@@ -199,7 +200,16 @@ struct FileBrowserData {
         : selectedFile(nullptr)
     {
 #ifdef DISTRHO_OS_MAC
-        nspanel = saving ? [[NSSavePanel savePanel]retain] : [[NSOpenPanel openPanel]retain];
+        if (saving)
+        {
+            nsOpenPanel = nullptr;
+            nsBasePanel = [[NSSavePanel savePanel]retain];
+        }
+        else
+        {
+            nsOpenPanel = [[NSOpenPanel openPanel]retain];
+            nsBasePanel = nsOpenPanel;
+        }
 #endif
 #ifdef HAVE_DBUS
         DBusError err;
@@ -219,7 +229,7 @@ struct FileBrowserData {
     ~FileBrowserData()
     {
 #ifdef DISTRHO_OS_MAC
-        [nspanel release];
+        [nsBasePanel release];
 #endif
 #ifdef HAVE_X11
         if (x11display != nullptr)
@@ -277,43 +287,47 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     ScopedPointer<FileBrowserData> handle(new FileBrowserData(options.saving));
 
 #ifdef DISTRHO_OS_MAC
-    NSSavePanel* const nspanel = handle->nspanel;
-    DISTRHO_SAFE_ASSERT_RETURN(nspanel != nullptr, nullptr);
+    NSSavePanel* const nsBasePanel = handle->nsBasePanel;
+    DISTRHO_SAFE_ASSERT_RETURN(nsBasePanel != nullptr, nullptr);
 
-    [nspanel setAllowsMultipleSelection:NO];
-    [nspanel setCanChooseDirectories:NO];
-    [nspanel setCanChooseFiles:YES];
-    [nspanel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
+    if (! options.saving)
+    {
+        NSSavePanel* const nsOpenPanel = handle->nsOpenPanel;
+        DISTRHO_SAFE_ASSERT_RETURN(nsOpenPanel != nullptr, nullptr);
+
+        [nsOpenPanel setAllowsMultipleSelection:NO];
+        [nsOpenPanel setCanChooseDirectories:NO];
+        [nsOpenPanel setCanChooseFiles:YES];
+    }
+
+    [nsBasePanel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
 
     // TODO file filter using allowedContentTypes: [UTType]
 
     if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
-        [nspanel setAllowsOtherFileTypes:YES];
+        [nsBasePanel setAllowsOtherFileTypes:YES];
     if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        [nspanel setShowsHiddenFiles:YES];
+        [nsBasePanel setShowsHiddenFiles:YES];
 
     NSString* const titleString = [[NSString alloc]
         initWithBytes:windowTitle
                length:strlen(windowTitle)
              encoding:NSUTF8StringEncoding];
-    [nspanel setTitle:titleString];
+    [nsBasePanel setTitle:titleString];
 
     dispatch_async(dispatch_get_main_queue(), ^
     {
-        [nspanel beginSheetModalForWindow:[(NSView*)windowId window]
-                        completionHandler:^(NSModalResponse result)
+        [nsBasePanel beginSheetModalForWindow:[(NSView*)windowId window]
+                            completionHandler:^(NSModalResponse result)
         {
-            FileBrowserData* const handleptr = handle.get();
-            DISTRHO_SAFE_ASSERT_RETURN(handleptr != nullptr,);
-
-            if (result == NSModalResponseOK && [[nspanel URL] isFileURL])
+            if (result == NSModalResponseOK && [[nsBasePanel URL] isFileURL])
             {
-                NSString* const path = [[nspanel URL] path];
-                handleptr->selectedFile = strdup([path UTF8String]);
+                NSString* const path = [[nsBasePanel URL] path];
+                handle->selectedFile = strdup([path UTF8String]);
             }
             else
             {
-                handleptr->selectedFile = kSelectedFileCancelled;
+                handle->selectedFile = kSelectedFileCancelled;
             }
         }];
     });
