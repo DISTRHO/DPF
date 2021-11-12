@@ -289,9 +289,9 @@ FileBrowserHandle fileBrowserOpen(const bool isEmbed,
                                                                       "org.freedesktop.portal.FileChooser",
                                                                       options.saving ? "SaveFile" : "OpenFile"))
         {
-            char windowIdStr[24];
+            char windowIdStr[32];
             memset(windowIdStr, 0, sizeof(windowIdStr));
-            snprintf(windowIdStr, sizeof(windowIdStr)-1, "%lu", (ulong)windowId);
+            snprintf(windowIdStr, sizeof(windowIdStr)-1, "x11:%llx", (ulonglong)windowId);
             const char* windowIdStrPtr = windowIdStr;
 
             dbus_message_append_args(message,
