@@ -159,7 +159,7 @@ protected:
 
         parameter.name       = "Hold Time";
         parameter.symbol     = "hold_time";
-        parameter.hints      = kParameterIsAutomable|kParameterIsLogarithmic;
+        parameter.hints      = kParameterIsAutomatable|kParameterIsLogarithmic;
         parameter.ranges.min = 0.0f;
         parameter.ranges.max = kMaxHoldTime;
         parameter.ranges.def = 0.1f;

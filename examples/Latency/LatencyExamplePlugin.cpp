@@ -117,7 +117,7 @@ protected:
         if (index != 0)
             return;
 
-        parameter.hints  = kParameterIsAutomable;
+        parameter.hints  = kParameterIsAutomatable;
         parameter.name   = "Latency";
         parameter.symbol = "latency";
         parameter.unit   = "s";
@@ -144,7 +144,7 @@ protected:
    /**
       Change a parameter value.
       The host may call this function from any context, including realtime processing.
-      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
+      When a parameter is marked as automatable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
     void setParameterValue(uint32_t index, float value) override

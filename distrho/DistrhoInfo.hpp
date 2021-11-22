@@ -221,7 +221,7 @@ START_NAMESPACE_DISTRHO
       {
           // we only have one parameter so we can skip checking the index
 
-          parameter.hints      = kParameterIsAutomable;
+          parameter.hints      = kParameterIsAutomatable;
           parameter.name       = "Gain";
           parameter.symbol     = "gain";
           parameter.ranges.min = 0.0f;
@@ -331,7 +331,7 @@ START_NAMESPACE_DISTRHO
       */
       void initParameter(uint32_t index, Parameter& parameter) override
       {
-          parameter.hints      = kParameterIsAutomable;
+          parameter.hints      = kParameterIsAutomatable;
           parameter.ranges.min = 0.0f;
           parameter.ranges.max = 2.0f;
           parameter.ranges.def = 1.0f;

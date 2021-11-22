@@ -86,10 +86,14 @@ static const uint32_t kCVPortHasScaledRange = 0x80;
  */
 
 /**
-   Parameter is automable (real-time safe).
+   Parameter is automatable (real-time safe).
    @see Plugin::setParameterValue(uint32_t, float)
  */
-static const uint32_t kParameterIsAutomable = 0x01;
+static const uint32_t kParameterIsAutomatable = 0x01;
+
+/** It was a typo, sorry.. */
+DISTRHO_DEPRECATED_BY("kParameterIsAutomatable")
+static const uint32_t kParameterIsAutomable = kParameterIsAutomatable;
 
 /**
    Parameter value is boolean.@n
@@ -563,7 +567,7 @@ struct Parameter {
         case kParameterDesignationNull:
             break;
         case kParameterDesignationBypass:
-            hints      = kParameterIsAutomable|kParameterIsBoolean|kParameterIsInteger;
+            hints      = kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger;
             name       = "Bypass";
             shortName  = "Bypass";
             symbol     = "dpf_bypass";
@@ -1010,7 +1014,7 @@ protected:
    /**
       Change a parameter value.@n
       The host may call this function from any context, including realtime processing.@n
-      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
+      When a parameter is marked as automatable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
     virtual void setParameterValue(uint32_t index, float value);

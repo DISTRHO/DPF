@@ -49,7 +49,7 @@ void PluginSimpleGain::initParameter(uint32_t index, Parameter& parameter)
     parameter.ranges.min = -90.0f;
     parameter.ranges.max = 30.0f;
     parameter.ranges.def = -0.0f;
-    parameter.hints = kParameterIsAutomable;
+    parameter.hints = kParameterIsAutomatable;
     parameter.name = "Gain";
     parameter.shortName = "Gain";
     parameter.symbol = "gain";

@@ -122,10 +122,10 @@ The plugin will be treated as an effect, but it will not change the host audio."
         */
 
        /**
-          Changing parameters does not cause any realtime-unsafe operations, so we can mark them as automable.
+          Changing parameters does not cause any realtime-unsafe operations, so we can mark them as automatable.
           Also set as boolean because they work as on/off switches.
         */
-        parameter.hints = kParameterIsAutomable|kParameterIsBoolean;
+        parameter.hints = kParameterIsAutomatable|kParameterIsBoolean;
 
        /**
           Minimum 0 (off), maximum 1 (on).

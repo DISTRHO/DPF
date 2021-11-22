@@ -992,8 +992,8 @@ public:
             {
                 const uint32_t hints(fPlugin.getParameterHints(index));
 
-                // must be automable, and not output
-                if ((hints & kParameterIsAutomable) != 0 && (hints & kParameterIsOutput) == 0)
+                // must be automatable, and not output
+                if ((hints & kParameterIsAutomatable) != 0 && (hints & kParameterIsOutput) == 0)
                     return 1;
             }
             break;

@@ -1458,7 +1458,7 @@ public:
             break;
         }
 
-        if (hints & kParameterIsAutomable)
+        if (hints & kParameterIsAutomatable)
             flags |= V3_PARAM_CAN_AUTOMATE;
         if (hints & kParameterIsOutput)
             flags |= V3_PARAM_READ_ONLY;
