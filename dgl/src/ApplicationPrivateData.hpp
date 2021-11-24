@@ -91,6 +91,9 @@ struct Application::PrivateData {
         For standalone mode only. */
     void quit();
 
+    /** Get time via pugl */
+    double getTime() const;
+
     /** Set pugl world class name. */
     void setClassName(const char* name);
 

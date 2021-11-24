@@ -56,6 +56,11 @@ bool Application::isStandalone() const noexcept
     return pData->isStandalone;
 }
 
+double Application::getTime() const
+{
+    return pData->getTime();
+}
+
 void Application::addIdleCallback(IdleCallback* const callback)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr,)

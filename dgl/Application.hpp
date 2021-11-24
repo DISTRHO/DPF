@@ -81,6 +81,15 @@ public:
     bool isStandalone() const noexcept;
 
    /**
+      Return the time in seconds.
+
+      This is a monotonically increasing clock with high resolution.@n
+      The returned time is only useful to compare against other times returned by this function,
+      its absolute value has no meaning.
+   */
+    double getTime() const;
+
+   /**
       Add a callback function to be triggered on every idle cycle.
       You can add more than one, and remove them at anytime with removeIdleCallback().
       Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).
