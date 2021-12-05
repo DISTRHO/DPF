@@ -169,8 +169,10 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifeq ($(WINDOWS),true)
+# Assume we want posix
+BASE_FLAGS += -posix
 # Needed for windows, see https://github.com/falkTX/Carla/issues/855
-BASE_OPTS  += -mstackrealign
+BASE_FLAGS += -mstackrealign
 else
 # Not needed for Windows
 BASE_FLAGS += -fPIC -DPIC
