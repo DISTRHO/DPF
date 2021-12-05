@@ -576,7 +576,11 @@ void fileBrowserClose(const FileBrowserHandle handle)
 
 const char* fileBrowserGetPath(const FileBrowserHandle handle)
 {
-    return handle->selectedFile != kSelectedFileCancelled ? handle->selectedFile : nullptr;
+    if (const char* const selectedFile = handle->selectedFile)
+        if (selectedFile != kSelectedFileCancelled && std::strcmp(selectedFile, kSelectedFileCancelled) != 0)
+            return selectedFile;
+
+    return nullptr;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
