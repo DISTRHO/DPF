@@ -30,11 +30,17 @@ typedef HANDLE d_ThreadHandle;
 typedef pthread_t d_ThreadHandle;
 #endif
 
+#ifdef DISTRHO_OS_MAC
 typedef struct PuglWorldImpl PuglWorld;
+#endif
 
 START_NAMESPACE_DGL
 
 class Window;
+
+#ifndef DISTRHO_OS_MAC
+typedef struct PuglWorldImpl PuglWorld;
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
