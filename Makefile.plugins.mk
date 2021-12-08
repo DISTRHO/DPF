@@ -126,6 +126,7 @@ vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
+shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
 
 ifeq ($(MACOS),true)
 vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
@@ -147,6 +148,7 @@ SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
 SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
 SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
 SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
+SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
 else ifeq ($(WINDOWS),true)
 SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
 SYMBOLS_DSSI   = $(DPF_PATH)/utils/symbols/dssi.def
@@ -155,6 +157,7 @@ SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
 SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
 SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
 SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
+SYMBOLS_SHARED = $(DPF_PATH)/utils/symbols/shared.def
 else ifneq ($(DEBUG),true)
 SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
 SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
@@ -163,6 +166,7 @@ SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
 SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
 SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
 SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
+SYMBOLS_SHARED = -Wl,--version-script=$(DPF_PATH)/utils/symbols/shared.version
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -440,6 +444,20 @@ endif
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_VST3) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Shared
+
+shared: $(shared)
+
+ifeq ($(HAVE_DGL),true)
+$(shared): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.o $(DGL_LIB)
+else
+$(shared): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o
+endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating shared library for $(NAME)"
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_SHARED) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 # macOS files
 
 $(TARGET_DIR)/%/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
@@ -467,11 +485,13 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
 
 -include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.d
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -28,6 +28,8 @@
 // nothing
 #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
 # include "src/DistrhoUIVST3.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_SHARED)
+// nothing
 #else
 # error unsupported format
 #endif
