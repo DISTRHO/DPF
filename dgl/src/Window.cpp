@@ -257,6 +257,16 @@ void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
     puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
 }
 
+bool Window::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
+{
+    return puglSetClipboard(pData->view, mimeType, data, dataSize) == PUGL_SUCCESS;
+}
+
+const void* Window::getClipboard(const char*& mimeType, size_t& dataSize)
+{
+    return puglGetClipboard(pData->view, &mimeType, &dataSize);
+}
+
 bool Window::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr, false)

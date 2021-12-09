@@ -264,6 +264,27 @@ public:
     void setIgnoringKeyRepeat(bool ignore) noexcept;
 
    /**
+      Set the clipboard contents.
+
+      This sets the system clipboard contents,
+      which can be retrieved with getClipboard() or pasted into other applications.
+
+      If using a string, the use of a null terminator is required (and must be part of dataSize).@n
+      The MIME type of the data "text/plain" is assumed if null is used.
+    */
+    bool setClipboard(const char* mimeType, const void* data, size_t dataSize);
+
+   /**
+      Get the clipboard contents.
+
+      This gets the system clipboard contents,
+      which may have been set with setClipboard() or copied from another application.
+
+      returns the clipboard contents, or null.
+    */
+    const void* getClipboard(const char*& mimeType, size_t& dataSize);
+
+   /**
       Add a callback function to be triggered on every idle cycle or on a specific timer frequency.
       You can add more than one, and remove them at anytime with removeIdleCallback().
       This can be used to perform some action at a regular interval with relatively low frequency.

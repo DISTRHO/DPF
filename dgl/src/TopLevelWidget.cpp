@@ -60,6 +60,16 @@ void TopLevelWidget::setSize(const Size<uint>& size)
     pData->window.setSize(size);
 }
 
+bool TopLevelWidget::setClipboard(const char* mimeType, const void* data, size_t dataSize)
+{
+    return pData->window.setClipboard(mimeType, data, dataSize);
+}
+
+const void* TopLevelWidget::getClipboard(const char*& mimeType, size_t& dataSize)
+{
+    return pData->window.getClipboard(mimeType, dataSize);
+}
+
 bool TopLevelWidget::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
     return pData->window.addIdleCallback(callback, timerFrequencyInMs);
