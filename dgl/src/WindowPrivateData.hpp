@@ -77,6 +77,9 @@ struct Window::PrivateData : IdleCallback {
     /** Whether to ignore idle callback requests, useful for temporary windows. */
     bool ignoreIdleCallbacks;
 
+    /** Whether to ignore pugl events (except create and destroy), used for puglGetClipboard. */
+    bool ignoreEvents;
+
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 

@@ -264,7 +264,11 @@ bool Window::setClipboard(const char* const mimeType, const void* const data, co
 
 const void* Window::getClipboard(const char*& mimeType, size_t& dataSize)
 {
-    return puglGetClipboard(pData->view, &mimeType, &dataSize);
+    DISTRHO_SAFE_ASSERT_RETURN(!pData->ignoreEvents, nullptr);
+    pData->ignoreEvents = true;
+    const void* const clipboard = puglGetClipboard(pData->view, &mimeType, &dataSize);
+    pData->ignoreEvents = false;
+    return clipboard;
 }
 
 bool Window::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)

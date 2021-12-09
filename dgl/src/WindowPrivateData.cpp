@@ -83,6 +83,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      ignoreEvents(false),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -109,6 +110,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      ignoreEvents(false),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -139,6 +141,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      ignoreEvents(false),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -171,6 +174,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      ignoreEvents(false),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -785,6 +789,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View must be drawn, a #PuglEventExpose
     case PUGL_EXPOSE:
+        if (pData->ignoreEvents)
+            break;
         // unused x, y, width, height (double)
         pData->onPuglExpose();
         break;
@@ -798,6 +804,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_FOCUS_IN:
     ///< Keyboard focus left view, a #PuglEventFocus
     case PUGL_FOCUS_OUT:
+        if (pData->ignoreEvents)
+            break;
         pData->onPuglFocus(event->type == PUGL_FOCUS_IN,
                            static_cast<CrossingMode>(event->focus.mode));
         break;
@@ -807,6 +815,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Key released, a #PuglEventKey
     case PUGL_KEY_RELEASE:
     {
+        if (pData->ignoreEvents)
+            break;
         // unused x, y, xRoot, yRoot (double)
         Widget::KeyboardEvent ev;
         ev.mod     = event->key.state;
@@ -830,6 +840,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Character entered, a #PuglEventText
     case PUGL_TEXT:
     {
+        if (pData->ignoreEvents)
+            break;
         // unused x, y, xRoot, yRoot (double)
         Widget::CharacterInputEvent ev;
         ev.mod       = event->text.state;
@@ -854,6 +866,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Mouse button released, a #PuglEventButton
     case PUGL_BUTTON_RELEASE:
     {
+        if (pData->ignoreEvents)
+            break;
         Widget::MouseEvent ev;
         ev.mod    = event->button.state;
         ev.flags  = event->button.flags;
@@ -869,6 +883,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Pointer moved, a #PuglEventMotion
     case PUGL_MOTION:
     {
+        if (pData->ignoreEvents)
+            break;
         Widget::MotionEvent ev;
         ev.mod   = event->motion.state;
         ev.flags = event->motion.flags;
@@ -882,6 +898,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     ///< Scrolled, a #PuglEventScroll
     case PUGL_SCROLL:
     {
+        if (pData->ignoreEvents)
+            break;
         Widget::ScrollEvent ev;
         ev.mod       = event->scroll.state;
         ev.flags     = event->scroll.flags;
@@ -900,6 +918,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Timer triggered, a #PuglEventTimer
     case PUGL_TIMER:
+        if (pData->ignoreEvents)
+            break;
         if (IdleCallback* const idleCallback = reinterpret_cast<IdleCallback*>(event->timer.id))
             idleCallback->idleCallback();
         break;
