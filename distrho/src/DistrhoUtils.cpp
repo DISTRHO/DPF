@@ -99,7 +99,7 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 
     if (bundlePathLV2.isEmpty())
     {
-        bundlePathLV2 += bundlePath;
+        bundlePathLV2 = bundlePath;
         bundlePathLV2 += DISTRHO_OS_SEP_STR "resources";
     }
 
@@ -109,11 +109,10 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 
     if (bundlePathVST2.isEmpty())
     {
-        bundlePathVST2 += bundlePath;
+        bundlePathVST2 = bundlePath;
 # ifdef DISTRHO_OS_MAC
         bundlePathVST2 += "/Contents/Resources";
 # else
-        DISTRHO_SAFE_ASSERT_RETURN(bundlePathVST2.endsWith(".vst"), nullptr);
         bundlePathVST2 += DISTRHO_OS_SEP_STR "resources";
 # endif
     }
@@ -124,7 +123,7 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 
     if (bundlePathVST3.isEmpty())
     {
-        bundlePathVST3 += bundlePath;
+        bundlePathVST3 = bundlePath;
         bundlePathVST3 += "/Contents/Resources";
     }
 
