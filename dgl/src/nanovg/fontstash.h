@@ -907,6 +907,8 @@ static int fons__allocFont(FONScontext* stash)
 		stash->fonts = (FONSfont**)realloc(stash->fonts, sizeof(FONSfont*) * stash->cfonts);
 		if (stash->fonts == NULL)
 			return -1;
+		for (int i=stash->nfonts; i<stash->cfonts; ++i)
+			stash->fonts[i] = NULL;
 	}
 	font = (FONSfont*)malloc(sizeof(FONSfont));
 	if (font == NULL) goto error;
@@ -1015,6 +1017,8 @@ static FONSglyph* fons__allocGlyph(FONSfont* font)
 		font->cglyphs = font->cglyphs == 0 ? 8 : font->cglyphs * 2;
 		font->glyphs = (FONSglyph*)realloc(font->glyphs, sizeof(FONSglyph) * font->cglyphs);
 		if (font->glyphs == NULL) return NULL;
+		for (int i=font->nglyphs; i<font->cglyphs; ++i)
+			memset(&font->glyphs[i], 0, sizeof(*font->glyphs));
 	}
 	font->nglyphs++;
 	return &font->glyphs[font->nglyphs-1];
