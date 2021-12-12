@@ -163,6 +163,10 @@ LINK_OPTS += -Wl,--strip-all
 endif
 endif
 
+ifeq ($(SKIP_STRIPPING),true)
+BASE_FLAGS += -g
+endif
+
 ifeq ($(NOOPT),true)
 # Non-CPU-specific optimization flags
 BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
