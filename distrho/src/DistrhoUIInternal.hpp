@@ -326,6 +326,9 @@ public:
 
         const bool ret = ui->onKeyboard(ev);
 
+        if (! press)
+            return ret;
+
         DGL_NAMESPACE::Widget::CharacterInputEvent cev;
         cev.mod       = mods;
         cev.character = key;
@@ -347,6 +350,9 @@ public:
         ev.keycode = keycode;
 
         const bool ret = ui->onKeyboard(ev);
+
+        if (! press)
+            return ret;
 
         DGL_NAMESPACE::Widget::CharacterInputEvent cev;
         cev.mod       = mods;
