@@ -304,8 +304,7 @@ ifeq ($(HAVE_X11),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags x11) -DHAVE_X11
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs x11)
 ifeq ($(HAVE_XCURSOR),true)
-# TODO -DHAVE_XCURSOR
-DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xcursor)
+DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xcursor) -DHAVE_XCURSOR
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xcursor)
 endif
 ifeq ($(HAVE_XEXT),true)

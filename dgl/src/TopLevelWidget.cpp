@@ -70,6 +70,11 @@ const void* TopLevelWidget::getClipboard(const char*& mimeType, size_t& dataSize
     return pData->window.getClipboard(mimeType, dataSize);
 }
 
+bool TopLevelWidget::setCursor(const MouseCursor cursor)
+{
+    return pData->window.setCursor(cursor);
+}
+
 bool TopLevelWidget::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
     return pData->window.addIdleCallback(callback, timerFrequencyInMs);

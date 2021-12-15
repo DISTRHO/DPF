@@ -271,6 +271,11 @@ const void* Window::getClipboard(const char*& mimeType, size_t& dataSize)
     return clipboard;
 }
 
+bool Window::setCursor(const MouseCursor cursor)
+{
+    return puglSetCursor(pData->view, static_cast<PuglCursor>(cursor)) == PUGL_SUCCESS;
+}
+
 bool Window::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
     DISTRHO_SAFE_ASSERT_RETURN(callback != nullptr, false)

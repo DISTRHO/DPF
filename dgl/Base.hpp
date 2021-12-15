@@ -131,6 +131,23 @@ enum CrossingMode {
 };
 
 /**
+   A mouse cursor type.
+
+   This is a portable subset of mouse cursors that exist on X11, MacOS, and Windows.
+*/
+enum MouseCursor {
+  kMouseCursorArrow,       ///< Default pointing arrow
+  kMouseCursorCaret,       ///< Caret (I-Beam) for text entry
+  kMouseCursorCrosshair,   ///< Cross-hair
+  kMouseCursorHand,        ///< Hand with a pointing finger
+  kMouseCursorNotAllowed,  ///< Operation not allowed
+  kMouseCursorLeftRight,   ///< Left/right arrow for horizontal resize
+  kMouseCursorUpDown,      ///< Up/down arrow for vertical resize
+  kMouseCursorDiagonal,    ///< Top-left to bottom-right arrow for diagonal resize
+  kMouseCursorAntiDiagonal ///< Bottom-left to top-right arrow for diagonal resize
+};
+
+/**
    Scroll direction.
 
    Describes the direction of a scroll event along with whether the scroll is a "smooth" scroll.

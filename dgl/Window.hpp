@@ -285,6 +285,15 @@ public:
     const void* getClipboard(const char*& mimeType, size_t& dataSize);
 
    /**
+      Set the mouse cursor.
+
+      This changes the system cursor that is displayed when the pointer is inside the window.
+      May fail if setting the cursor is not supported on this system,
+      for example if compiled on X11 without Xcursor support.
+    */
+    bool setCursor(MouseCursor cursor);
+
+   /**
       Add a callback function to be triggered on every idle cycle or on a specific timer frequency.
       You can add more than one, and remove them at anytime with removeIdleCallback().
       This can be used to perform some action at a regular interval with relatively low frequency.
