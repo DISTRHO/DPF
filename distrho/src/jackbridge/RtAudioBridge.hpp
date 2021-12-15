@@ -108,6 +108,9 @@ struct RtAudioBridge {
 
         try {
             rtAudio->openStream(&outParams, inParamsPtr, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames, RtAudioCallback, this, &opts, nullptr);
+        } catch (const RtAudioError& err) {
+            d_safe_exception(err.getMessage().c_str(), __FILE__, __LINE__);
+            return false;
         } DISTRHO_SAFE_EXCEPTION_RETURN("rtAudio->openStream()", false);
 
         handle = rtAudio;
