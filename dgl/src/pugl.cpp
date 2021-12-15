@@ -325,20 +325,12 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         view->maxAspectY = (int)height;
     }
 
-#if defined(DISTRHO_OS_HAIKU)
-    // nothing?
-#elif defined(DISTRHO_OS_MAC)
-    /*
-    if (view->impl->window)
-    {
-        [view->impl->window setContentMinSize:sizePoints(view, view->minWidth, view->minHeight)];
-
-        if (aspect)
-            [view->impl->window setContentAspectRatio:sizePoints(view, view->minAspectX, view->minAspectY)];
-    }
-    */
+#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
     puglSetMinSize(view, width, height);
-    puglSetAspectRatio(view, width, height, width, height);
+
+    if (aspect) {
+        puglSetAspectRatio(view, width, height, width, height);
+    }
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
 #else
