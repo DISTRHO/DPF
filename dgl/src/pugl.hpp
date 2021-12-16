@@ -134,7 +134,7 @@ puglX11GrabFocus(const PuglView* view);
 
 // X11 specific, set dialog window type and pid hints
 PUGL_API void
-puglX11SetWindowTypeAndPID(const PuglView* view);
+puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
 #endif
 
 PUGL_END_DECLS

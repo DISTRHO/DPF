@@ -761,7 +761,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_CREATE:
 #ifdef HAVE_X11
         if (! pData->isEmbed)
-            puglX11SetWindowTypeAndPID(view);
+            puglX11SetWindowTypeAndPID(view, pData->appData->isStandalone);
 #endif
         break;
 
