@@ -21,6 +21,8 @@
 #include "travesty/host.h"
 #include "travesty/view.h"
 
+#error 1
+
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <atomic>
 #else
