@@ -475,7 +475,8 @@ public:
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
           fParameterValues(nullptr),
-          fChangedParameterValues(nullptr)
+          fParameterValuesChangedDuringRT(nullptr),
+          fParameterValueChangesForUI(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fConnectedToUI(false)
         , fNextSampleRate(0.0)
@@ -562,12 +563,15 @@ public:
 
             for (uint32_t i=0; i < parameterCount; ++i)
                 fParameterValues[i] = fPlugin.getParameterDefault(i);
+
+            fParameterValuesChangedDuringRT = new bool[parameterCount];
+            std::memset(fParameterValuesChangedDuringRT, 0, sizeof(bool)*parameterCount);
         }
 
         if (fRealParameterCount != 0)
         {
-            fChangedParameterValues = new bool[fRealParameterCount];
-            std::memset(fChangedParameterValues, 0, sizeof(bool)*fRealParameterCount);
+            fParameterValueChangesForUI = new bool[fRealParameterCount];
+            std::memset(fParameterValueChangesForUI, 0, sizeof(bool)*fRealParameterCount);
         }
 
 #if DISTRHO_PLUGIN_WANT_STATE
@@ -592,10 +596,16 @@ public:
             fParameterValues = nullptr;
         }
 
-        if (fChangedParameterValues != nullptr)
+        if (fParameterValuesChangedDuringRT != nullptr)
         {
-            delete[] fChangedParameterValues;
-            fChangedParameterValues = nullptr;
+            delete[] fParameterValuesChangedDuringRT;
+            fParameterValuesChangedDuringRT = nullptr;
+        }
+
+        if (fParameterValueChangesForUI != nullptr)
+        {
+            delete[] fParameterValueChangesForUI;
+            fParameterValueChangesForUI = nullptr;
         }
     }
 
@@ -623,7 +633,7 @@ public:
         fParameterValues[index] = realValue;
         fPlugin.setParameterValue(index, realValue);
 #if DISTRHO_PLUGIN_HAS_UI
-        fChangedParameterValues[fParameterOffset + index] = true;
+        fParameterValueChangesForUI[fParameterOffset + index] = true;
 #endif
     }
 
@@ -986,7 +996,7 @@ public:
 # if DISTRHO_PLUGIN_HAS_UI
                         if (connectedToUI)
                         {
-                            fChangedParameterValues[0] = false;
+                            fParameterValueChangesForUI[0] = false;
                             sendParameterChangeToUI(0, fCurrentProgram);
                         }
 # endif
@@ -1027,7 +1037,7 @@ public:
                             if (connectedToUI)
                             {
                                 // UI parameter updates are handled outside the read loop (after host param restart)
-                                fChangedParameterValues[fParameterOffset + j] = true;
+                                fParameterValueChangesForUI[fParameterOffset + j] = true;
                             }
 #endif
                             break;
@@ -1053,7 +1063,7 @@ public:
                 {
                     if (fPlugin.isParameterOutputOrTrigger(i))
                         continue;
-                    fChangedParameterValues[fParameterOffset + i] = false;
+                    fParameterValueChangesForUI[fParameterOffset + i] = false;
                     sendParameterChangeToUI(fParameterOffset + i, fParameterValues[i]);
                 }
             }
@@ -1243,12 +1253,11 @@ public:
     v3_result process(v3_process_data* const data)
     {
         DISTRHO_SAFE_ASSERT_RETURN(data->symbolic_sample_size == V3_SAMPLE_32, V3_INVALID_ARG);
+        d_stdout("process %i", data->symbolic_sample_size);
 
+        // activate plugin if not done yet
         if (! fPlugin.isActive())
-        {
-            // host has not activated the plugin yet, nasty!
             fPlugin.activate();
-        }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
         if (v3_process_context* const ctx = data->ctx)
@@ -1256,7 +1265,7 @@ public:
             fTimePosition.playing   = ctx->state & V3_PROCESS_CTX_PLAYING;
             fTimePosition.bbt.valid = ctx->state & (V3_PROCESS_CTX_TEMPO_VALID|V3_PROCESS_CTX_TIME_SIG_VALID);
 
-            // ticksPerBeat is not possible with VST2
+            // ticksPerBeat is not possible with VST3
             fTimePosition.bbt.ticksPerBeat = 1920.0;
 
             if (ctx->state & V3_PROCESS_CTX_CONT_TIME_VALID)
@@ -1308,7 +1317,7 @@ public:
 
         if (data->nframes <= 0)
         {
-            updateParameterOutputsAndTriggers();
+            updateParameterOutputsAndTriggers(data->output_params, 0);
             return V3_OK;
         }
 
@@ -1428,11 +1437,79 @@ public:
                     break;
             }
         }
+
+        // TODO append parameter MIDI events in a sorted way
+        /*
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (rindex == 0)
+            continue;
+        --rindex;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+          MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
+          midiEvent.frame = offset;
+          midiEvent.size = 3;
+          midiEvent.data[0] = (rindex / 130) & 0xf;
+
+          switch (rindex)
+          {
+          case 128: // channel pressure
+              midiEvent.data[0] |= 0xD0;
+              midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
+              midiEvent.data[2] = 0;
+              midiEvent.data[3] = 0;
+              break;
+          case 129: // pitchbend
+              midiEvent.data[0] |= 0xE0;
+              midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
+              midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
+              midiEvent.data[3] = 0;
+              break;
+          default:
+              midiEvent.data[0] |= 0xB0;
+              midiEvent.data[1] = rindex % 130;
+              midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
+              midiEvent.data[3] = 0;
+              break;
+          }
+
+          if (midiEventCount == kMaxMidiEvents)
+              break;
+      }
+#endif
+      */
 #endif
 
-        // TODO append MIDI events in a sorted way
+        // if there are any parameter changes at frame 0, set them here
         if (v3_param_changes** const inparamsptr = data->input_params)
-            processParameterChanges(inparamsptr, data->nframes);
+        {
+            int32_t offset;
+            double value;
+
+            for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
+            {
+                v3_param_value_queue** const queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
+                DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+
+                const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
+                DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
+
+                if (rindex < fParameterOffset)
+                    continue;
+
+                if (v3_cpp_obj(queue)->get_point_count(queue) <= 0)
+                    continue;
+
+                if (v3_cpp_obj(queue)->get_point(queue, 0, &offset, &value) != V3_OK)
+                    break;
+
+                if (offset != 0)
+                    continue;
+
+                const uint32_t index = rindex - fParameterOffset;
+                setNormalizedPluginParameterValue(index, value);
+            }
+        }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
@@ -1444,94 +1521,41 @@ public:
         fHostEventOutputHandle = nullptr;
 #endif
 
-        updateParameterOutputsAndTriggers();
-        return V3_OK;
-    }
-
-    void processParameterChanges(v3_param_changes** const inparamsptr, const int32_t nframes)
-    {
-        int32_t offset;
-        double value;
-
-        for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
+        // if there are any parameter changes after frame 0, set them here
+        if (v3_param_changes** const inparamsptr = data->input_params)
         {
-            v3_param_value_queue** const queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
-            DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+            int32_t offset;
+            double value;
 
-            const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
-            DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
-
-            // not supported yet
-            if (rindex >= fRealParameterCount)
-                continue;
-
-            for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
+            for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
             {
-                if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
-                    break;
+                v3_param_value_queue** const queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
+                DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
 
-                DISTRHO_SAFE_ASSERT_BREAK(offset >= 0);
-                DISTRHO_SAFE_ASSERT_BREAK(offset < nframes);
+                const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
+                DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
 
                 if (rindex < fParameterOffset)
-                {
-                    // MIDI stuff
                     continue;
-                }
+
+                const int32_t pcount = v3_cpp_obj(queue)->get_point_count(queue);
+
+                if (pcount <= 0)
+                    continue;
+
+                if (v3_cpp_obj(queue)->get_point(queue, pcount - 1, &offset, &value) != V3_OK)
+                    break;
+
+                if (offset == 0)
+                    continue;
 
                 const uint32_t index = rindex - fParameterOffset;
                 setNormalizedPluginParameterValue(index, value);
             }
-
-// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-// #endif
-// #if DISTRHO_PLUGIN_WANT_PROGRAMS
-//                 if (rindex == 0)
-//                     continue;
-//                 --rindex;
-// #endif
-
-            /*
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                        MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
-                        midiEvent.frame = offset;
-                        midiEvent.size = 3;
-                        midiEvent.data[0] = (rindex / 130) & 0xf;
-
-                        switch (rindex)
-                        {
-                        case 128: // channel pressure
-                            midiEvent.data[0] |= 0xD0;
-                            midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
-                            midiEvent.data[2] = 0;
-                            midiEvent.data[3] = 0;
-                            break;
-                        case 129: // pitchbend
-                            midiEvent.data[0] |= 0xE0;
-                            midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
-                            midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
-                            midiEvent.data[3] = 0;
-                            break;
-                        default:
-                            midiEvent.data[0] |= 0xB0;
-                            midiEvent.data[1] = rindex % 130;
-                            midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
-                            midiEvent.data[3] = 0;
-                            break;
-                        }
-
-                        if (midiEventCount == kMaxMidiEvents)
-                            break;
-                    }
-#endif
-                }
-
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                if (midiEventCount == kMaxMidiEvents)
-                    break;
-#endif
-            */
         }
+
+        updateParameterOutputsAndTriggers(data->output_params, data->nframes - 1);
+        return V3_OK;
     }
 
     uint32_t getTailSamples() const noexcept
@@ -1624,8 +1648,8 @@ public:
 
         if (hints & kParameterIsAutomatable)
             flags |= V3_PARAM_CAN_AUTOMATE;
-        if (hints & kParameterIsOutput)
-            flags |= V3_PARAM_READ_ONLY;
+//         if (hints & kParameterIsOutput)
+//             flags |= V3_PARAM_READ_ONLY;
 
         // set up step_count
         int32_t step_count = 0;
@@ -1827,7 +1851,7 @@ public:
 //                 v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
 //
 // # if DISTRHO_PLUGIN_HAS_UI
-//             fChangedParameterValues[rindex] = true;
+//             fParameterValueChangesForUI[rindex] = true;
 // # endif
 //             return V3_OK;
 //         }
@@ -1837,7 +1861,7 @@ public:
 //         if (rindex < 130*16)
 //         {
 //             // TODO
-//             fChangedParameterValues[rindex] = true;
+//             fParameterValueChangesForUI[rindex] = true;
 //             return V3_NOT_IMPLEMENTED;
 //         }
 //         rindex -= 130*16;
@@ -1908,7 +1932,7 @@ public:
             }
 
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
-            fChangedParameterValues[0] = false;
+            fParameterValueChangesForUI[0] = false;
             sendParameterChangeToUI(0, fCurrentProgram);
 # endif
 
@@ -1934,7 +1958,7 @@ public:
 
             for (uint32_t i=fParameterOffset; i<fRealParameterCount; ++i)
             {
-                fChangedParameterValues[i] = false;
+                fParameterValueChangesForUI[i] = false;
                 sendParameterChangeToUI(i, fPlugin.getParameterValue(i - fParameterOffset));
             }
 
@@ -1949,10 +1973,10 @@ public:
 
             for (uint32_t i=0, rindex; i<fRealParameterCount; ++i)
             {
-                if (! fChangedParameterValues[i])
+                if (! fParameterValueChangesForUI[i])
                     continue;
 
-                fChangedParameterValues[i] = false;
+                fParameterValueChangesForUI[i] = false;
 
                 rindex = i;
 // # if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -2108,7 +2132,8 @@ private:
     const uint32_t fParameterOffset;
     const uint32_t fRealParameterCount; // regular parameters + current program
     float* fParameterValues;
-    bool* fChangedParameterValues;
+    bool* fParameterValuesChangedDuringRT; // only real
+    bool* fParameterValueChangesForUI; // offset + real
 #if DISTRHO_PLUGIN_HAS_UI
     bool fConnectedToUI;
     double fNextSampleRate; // if not zero, report to UI
@@ -2139,23 +2164,33 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during process, cannot block
 
-    void updateParameterOutputsAndTriggers()
+    void updateParameterOutputsAndTriggers(v3_param_changes** const outparamsptr, const int32_t offset)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(outparamsptr != nullptr,);
+        d_stdout("updateParameterOutputsAndTriggers %i", offset);
+
+        v3_param_id paramId;
+        int32_t index;
         float curValue;
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (fPlugin.isParameterOutput(i))
+            if (fParameterValuesChangedDuringRT[i])
+            {
+                fParameterValuesChangedDuringRT[i] = false;
+                curValue = fPlugin.getParameterValue(i);
+            }
+            else if (fPlugin.isParameterOutput(i))
             {
                 // NOTE: no output parameter support in VST3, simulate it here
                 curValue = fPlugin.getParameterValue(i);
 
-                if (d_isEqual(curValue, fParameterValues[i]))
-                    continue;
+//                 if (d_isEqual(curValue, fParameterValues[i]))
+//                     continue;
 
                 fParameterValues[i] = curValue;
 #if DISTRHO_PLUGIN_HAS_UI
-                fChangedParameterValues[fParameterOffset + i] = true;
+                fParameterValueChangesForUI[fParameterOffset + i] = true;
 #endif
             }
             else if (fPlugin.isParameterTrigger(i))
@@ -2168,7 +2203,7 @@ private:
 
                 fPlugin.setParameterValue(i, curValue);
 #if DISTRHO_PLUGIN_HAS_UI
-                fChangedParameterValues[fParameterOffset + i] = true;
+                fParameterValueChangesForUI[fParameterOffset + i] = true;
 #endif
             }
             else
@@ -2176,7 +2211,20 @@ private:
                 continue;
             }
 
-            requestParameterValueChange(i, curValue);
+            index = 0;
+            paramId = fParameterOffset + i;
+            v3_param_value_queue** const queue = v3_cpp_obj(outparamsptr)->add_param_data(outparamsptr,
+                                                                                          &paramId, &index);
+            DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+
+            curValue = fPlugin.getParameterRanges(i).getNormalizedValue(curValue);
+
+            v3_cpp_obj(queue)->add_point(queue, 0, curValue, &index);
+
+            if (offset != 0)
+                v3_cpp_obj(queue)->add_point(queue, offset, curValue, &index);
+
+            d_stdout("sending change of %d %f", index, curValue);
         }
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
