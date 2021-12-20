@@ -143,6 +143,7 @@ const char* tuid2str(const v3_tuid iid)
         { V3_ID(0x7F4EFE59,0xF3204967,0xAC27A3AE,0xAFB63038), "{v3_edit_controller2|NOT}" },
         { V3_ID(0x067D02C1,0x5B4E274D,0xA92D90FD,0x6EAF7240), "{v3_component_handler_bus_activation|NOT}" },
         { V3_ID(0xC1271208,0x70594098,0xB9DD34B3,0x6BB0195E), "{v3_edit_controller_host_editing|NOT}" },
+        { V3_ID(0xB7F8F859,0x41234872,0x91169581,0x4F3721A3), "{v3_edit_controller_note_expression_controller|NOT}" },
         // units
         { V3_ID(0x8683B01F,0x7B354F70,0xA2651DEC,0x353AF4FF), "{v3_program_list_data|NOT}" },
         { V3_ID(0x6C389611,0xD391455D,0xB870B833,0x94A0EFDD), "{v3_unit_data|NOT}" },
@@ -737,6 +738,7 @@ public:
                     }
                 }
                #else
+                d_stdout("invalid bus %d", busId);
                 return V3_INVALID_ARG;
                #endif // DISTRHO_PLUGIN_NUM_INPUTS
             }
@@ -789,6 +791,7 @@ public:
                     }
                 }
                #else
+                d_stdout("invalid bus %d", busId);
                 return V3_INVALID_ARG;
                #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
             }
@@ -802,6 +805,7 @@ public:
             info->flags = flags;
             return V3_OK;
            #else
+            d_stdout("invalid bus, line %d", __LINE__);
             return V3_INVALID_ARG;
            #endif // DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS
         }
@@ -812,6 +816,7 @@ public:
                #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 DISTRHO_SAFE_ASSERT_RETURN(busId == 0, V3_INVALID_ARG);
                #else
+                d_stdout("invalid bus, line %d", __LINE__);
                 return V3_INVALID_ARG;
                #endif
             }
@@ -820,6 +825,7 @@ public:
                #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
                 DISTRHO_SAFE_ASSERT_RETURN(busId == 0, V3_INVALID_ARG);
                #else
+                d_stdout("invalid bus, line %d", __LINE__);
                 return V3_INVALID_ARG;
                #endif
             }
@@ -1228,7 +1234,7 @@ public:
         }
         else
         {
-            fPlugin.deactivate();
+            fPlugin.deactivateIfNeeded();
         }
 
         return V3_OK;
@@ -1632,7 +1638,7 @@ public:
         if (enumValues.count >= 2 && enumValues.restrictedMode)
         {
             flags |= V3_PARAM_IS_LIST;
-            step_count = enumValues.count;
+            step_count = enumValues.count - 1;
         }
 
         info->param_id = index + fParameterOffset;
@@ -1650,7 +1656,6 @@ public:
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
-
 
 // #if DISTRHO_PLUGIN_WANT_PROGRAMS
 //         if (rindex == 0)
@@ -2462,17 +2467,15 @@ struct dpf_dsp_connection_point : v3_connection_point_cpp {
 
     static v3_result V3_API query_interface_connection_point(void* self, const v3_tuid iid, void** iface)
     {
-        if (v3_tuid_match(iid, v3_funknown_iid))
+        if (v3_tuid_match(iid, v3_funknown_iid) ||
+            v3_tuid_match(iid, v3_connection_point_iid))
         {
+            ++factory->refcounter;
             *iface = self;
             return V3_OK;
         }
 
-        if (v3_tuid_match(iid, v3_connection_point_iid))
-        {
-            *iface = self;
-            return V3_OK;
-        }
+        d_stdout("query_interface_connection_point => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -2628,6 +2631,8 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
             return V3_OK;
         }
 
+        d_stdout("query_interface_midi_mapping => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+
         *iface = nullptr;
         return V3_NO_INTERFACE;
     }
@@ -2745,24 +2750,26 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     static v3_result V3_API query_interface_edit_controller(void* const self, const v3_tuid iid, void** const iface)
     {
         d_stdout("query_interface_edit_controller => %p %s %p", self, tuid2str(iid), iface);
+        dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_plugin_base_iid) ||
             v3_tuid_match(iid, v3_edit_controller_iid))
         {
+            ++controller->refcounter;
             *iface = self;
             return V3_OK;
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (v3_tuid_match(iid, v3_midi_mapping_iid))
-        {
-            static dpf_midi_mapping midi_mapping;
-            static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
-            *iface = &midi_mapping_ptr;
-            return V3_OK;
-        }
-#endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (v3_tuid_match(iid, v3_midi_mapping_iid))
+//         {
+//             static dpf_midi_mapping midi_mapping;
+//             static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
+//             *iface = &midi_mapping_ptr;
+//             return V3_OK;
+//         }
+// #endif
 
         /*
 #if DISTRHO_PLUGIN_HAS_UI
@@ -2780,6 +2787,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         }
 #endif
         */
+
+        d_stdout("query_interface_edit_controller => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -3156,6 +3165,8 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
             return V3_OK;
         }
 
+        d_stdout("query_interface_process_context_requirements => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+
         *iface = nullptr;
         return V3_NO_INTERFACE;
     }
@@ -3213,10 +3224,12 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     static v3_result V3_API query_interface_audio_processor(void* const self, const v3_tuid iid, void** const iface)
     {
         d_stdout("query_interface_audio_processor => %p %s %p", self, tuid2str(iid), iface);
+        dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_audio_processor_iid))
         {
+            ++processor->refcounter;
             *iface = self;
             return V3_OK;
         }
@@ -3228,6 +3241,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
             *iface = &context_req_ptr;
             return V3_OK;
         }
+
+        d_stdout("query_interface_audio_processor => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -3266,7 +3281,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 
     static v3_result V3_API can_process_sample_size(void*, const int32_t symbolic_sample_size)
     {
-        d_stdout("dpf_audio_processor::can_process_sample_size => %i", symbolic_sample_size);
+        // NOTE runs during RT
+        // d_stdout("dpf_audio_processor::can_process_sample_size => %i", symbolic_sample_size);
         return symbolic_sample_size == V3_SAMPLE_32 ? V3_OK : V3_NOT_IMPLEMENTED;
     }
 
@@ -3412,11 +3428,13 @@ struct dpf_component : v3_component_cpp {
     static v3_result V3_API query_interface_component(void* const self, const v3_tuid iid, void** const iface)
     {
         d_stdout("query_interface_component => %p %s %p", self, tuid2str(iid), iface);
+        dpf_component* const component = *static_cast<dpf_component**>(self);
 
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_plugin_base_iid) ||
             v3_tuid_match(iid, v3_component_iid))
         {
+            ++component->refcounter;
             *iface = self;
             return V3_OK;
         }
@@ -3430,8 +3448,6 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
 #endif
-
-        dpf_component* const component = *static_cast<dpf_component**>(self);
 
         if (v3_tuid_match(iid, v3_audio_processor_iid))
         {
@@ -3469,6 +3485,8 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
         */
+
+        d_stdout("query_interface_component => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -3627,12 +3645,8 @@ struct dpf_component : v3_component_cpp {
     {
         d_stdout("dpf_component::get_controller_class_id => %p", class_id);
 
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-        return V3_NOT_IMPLEMENTED;
-#else
         std::memcpy(class_id, dpf_tuid_controller, sizeof(v3_tuid));
         return V3_OK;
-#endif
     }
 
     static v3_result V3_API set_io_mode(void* const self, const int32_t io_mode)
@@ -3651,14 +3665,16 @@ struct dpf_component : v3_component_cpp {
     static int32_t V3_API get_bus_count(void* const self, const int32_t media_type, const int32_t bus_direction)
     {
         // NOTE runs during RT
-        // d_stdout("dpf_component::get_bus_count => %p %s %s",
-        //          self, v3_media_type_str(media_type), v3_bus_direction_str(bus_direction));
+        d_stdout("dpf_component::get_bus_count => %p %s %s",
+                 self, v3_media_type_str(media_type), v3_bus_direction_str(bus_direction));
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         PluginVst3* const vst3 = component->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
-        return vst3->getBusCount(media_type, bus_direction);
+        const int32_t ret = vst3->getBusCount(media_type, bus_direction);
+        d_stdout("dpf_component::get_bus_count returns %i", ret);
+        return ret;
     }
 
     static v3_result V3_API get_bus_info(void* const self, const int32_t media_type, const int32_t bus_direction,
@@ -3808,19 +3824,19 @@ static const char* getPluginVersion()
 // dpf_factory
 
 struct dpf_factory : v3_plugin_factory_cpp {
+    std::atomic_int refcounter;
+
     // cached values
     v3_funknown** hostContext;
 
     dpf_factory()
-        : hostContext(nullptr)
+        : refcounter(1),
+          hostContext(nullptr)
     {
-        dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
-            = dpf_tuid_processor[2] = dpf_tuid_view[2] = getPluginInfo().getUniqueId();
-
         // v3_funknown, static
         query_interface = query_interface_factory;
-        ref = dpf_static_ref;
-        unref = dpf_static_unref;
+        ref = ref_factory;
+        unref = unref_factory;
 
         // v3_plugin_factory
         v1.get_factory_info = get_factory_info;
@@ -3865,18 +3881,48 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static v3_result V3_API query_interface_factory(void* const self, const v3_tuid iid, void** const iface)
     {
         d_stdout("query_interface_factory => %p %s %p", self, tuid2str(iid), iface);
+        dpf_factory* const factory = *static_cast<dpf_factory**>(self);
 
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_plugin_factory_iid) ||
             v3_tuid_match(iid, v3_plugin_factory_2_iid) ||
             v3_tuid_match(iid, v3_plugin_factory_3_iid))
         {
+            ++factory->refcounter;
             *iface = self;
             return V3_OK;
         }
 
+        d_stdout("query_interface_factory => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+
         *iface = nullptr;
         return V3_NO_INTERFACE;
+    }
+
+    static uint32_t V3_API ref_factory(void* const self)
+    {
+        dpf_factory* const factory = *static_cast<dpf_factory**>(self);
+        const int refcount = ++factory->refcounter;
+        d_stdout("ref_factory::ref => %p | refcount %i", self, refcount);
+        return refcount;
+    }
+
+    static uint32_t V3_API unref_factory(void* const self)
+    {
+        dpf_factory** const factoryptr = static_cast<dpf_factory**>(self);
+        dpf_factory* const factory = *factoryptr;
+
+        if (const int refcount = --factory->refcounter)
+        {
+            d_stdout("unref_factory::unref => %p | refcount %i", self, refcount);
+            return refcount;
+        }
+
+        d_stdout("unref_factory::unref => %p | refcount is zero, deleting factory", self);
+
+        delete factory;
+        delete factoryptr;
+        return 0;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -4012,8 +4058,6 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
         return V3_OK;
     }
-
-    DISTRHO_PREVENT_HEAP_ALLOCATION
 };
 
 END_NAMESPACE_DISTRHO
@@ -4027,9 +4071,9 @@ const void* GetPluginFactory(void);
 const void* GetPluginFactory(void)
 {
     USE_NAMESPACE_DISTRHO;
-    static const dpf_factory factory;
-    static const v3_funknown* const factoryptr = &factory;
-    return &factoryptr;
+    dpf_factory** const factoryptr = new dpf_factory*;
+    *factoryptr = new dpf_factory;
+    return static_cast<void*>(factoryptr);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -4051,8 +4095,9 @@ bool ENTRYFNNAME(void*);
 
 bool ENTRYFNNAME(void*)
 {
-    // find plugin bundle
     USE_NAMESPACE_DISTRHO;
+
+    // find plugin bundle
     static String bundlePath;
     if (bundlePath.isEmpty())
     {
@@ -4065,6 +4110,10 @@ bool ENTRYFNNAME(void*)
         bundlePath = tmpPath;
         d_nextBundlePath = bundlePath.buffer();
     }
+
+    // init dummy plugin and set uniqueId
+    dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
+        = dpf_tuid_processor[2] = dpf_tuid_view[2] = getPluginInfo().getUniqueId();
 
     return true;
 }
