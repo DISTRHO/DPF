@@ -69,6 +69,8 @@ namespace std {
  * - hide parameter outputs?
  * - hide program parameter?
  * - deal with parameter triggers
+ * - parameter groups via unit ids
+ * - float to int safe casting
  * == MIDI
  * - MIDI CC changes (need to store value to give to the host?)
  * - MIDI program changes
@@ -232,6 +234,38 @@ const char* tuid2str(const v3_tuid iid)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+static bool strcmp_utf16(const int16_t* const str16, const char* const str8)
+{
+    size_t i = 0;
+    for (; str8[i] != '\0'; ++i)
+    {
+        const uint8_t char8 = static_cast<uint8_t>(str8[i]);
+
+        // skip non-ascii chars, unsupported
+        if (char8 >= 0x80)
+            return false;
+
+        if (str16[i] != char8)
+            return false;
+    }
+
+    return str16[i] == str8[i];
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+static size_t strlen_utf16(const int16_t* const str)
+{
+    size_t i = 0;
+
+    while (str[i] != 0)
+        ++i;
+
+    return i;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static void strncpy(char* const dst, const char* const src, const size_t length)
 {
     DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
@@ -247,6 +281,28 @@ static void strncpy(char* const dst, const char* const src, const size_t length)
     }
 }
 
+void strncpy_utf8(char* const dst, const int16_t* const src, const size_t length)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
+
+    if (const size_t len = std::min(strlen_utf16(src), length-1U))
+    {
+        for (size_t i=0; i<len; ++i)
+        {
+            // skip non-ascii chars, unsupported
+            if (src[i] >= 0x80)
+                continue;
+
+            dst[i] = src[i];
+        }
+        dst[len] = 0;
+    }
+    else
+    {
+        dst[0] = 0;
+    }
+}
+
 void strncpy_utf16(int16_t* const dst, const char* const src, const size_t length)
 {
     DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
@@ -255,7 +311,7 @@ void strncpy_utf16(int16_t* const dst, const char* const src, const size_t lengt
     {
         for (size_t i=0; i<len; ++i)
         {
-            // skip non-ascii chars
+            // skip non-ascii chars, unsupported
             if ((uint8_t)src[i] >= 0x80)
                 continue;
 
@@ -306,8 +362,14 @@ void snprintf_f32_utf16(int16_t* const dst, const float value, const size_t size
     return snprintf_utf16_t<float>(dst, value, "%f", size);
 }
 
+static inline
+void snprintf_i32_utf16(int16_t* const dst, const int value, const size_t size)
+{
+    return snprintf_utf16_t<int>(dst, value, "%d", size);
+}
+
 // --------------------------------------------------------------------------------------------------------------------
-// handy way to create a utf16 string on the current function scope, used for message strings
+// handy way to create a utf16 string from a utf8 one on the current function scope, used for message strings
 
 struct ScopedUTF16String {
     int16_t* str;
@@ -321,8 +383,8 @@ struct ScopedUTF16String {
 ScopedUTF16String::ScopedUTF16String(const char* const s) noexcept
     : str(nullptr)
 {
-    const size_t len = strlen(s);
-    str = (int16_t*)malloc(sizeof(int16_t) * (len + 1));
+    const size_t len = std::strlen(s);
+    str = static_cast<int16_t*>(std::malloc(sizeof(int16_t) * (len + 1)));
     DISTRHO_SAFE_ASSERT_RETURN(str != nullptr,);
     strncpy_utf16(str, s, len + 1);
 }
@@ -336,6 +398,31 @@ ScopedUTF16String::operator int16_t*() const noexcept
 {
     return str;
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+// handy way to create a utf8 string from a utf16 one on the current function scope, used for message strings
+
+struct ScopedUTF8String {
+    char* str;
+    ScopedUTF8String(const int16_t* const s) noexcept
+        : str(nullptr)
+    {
+        const size_t len = strlen_utf16(s);
+        str = static_cast<char*>(std::malloc(sizeof(char) * (len + 1)));
+        DISTRHO_SAFE_ASSERT_RETURN(str != nullptr,);
+        strncpy_utf8(str, s, len + 1);
+    }
+
+    ~ScopedUTF8String() noexcept
+    {
+        std::free(str);
+    }
+
+    operator char*() const noexcept
+    {
+        return str;
+    }
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (implemented on UI side)
@@ -377,12 +464,12 @@ class PluginVst3
     } inputBuses, outputBuses;
 
 public:
-    PluginVst3(v3_host_application** const context)
+    PluginVst3(v3_host_application** const host)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
           fConnection(nullptr),
-          fHostContext(context),
+          fHostApplication(host),
 #endif
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
@@ -492,7 +579,7 @@ public:
 
 #if !DISTRHO_PLUGIN_HAS_UI
         // unused
-        return; (void)context;
+        return; (void)host;
 #endif
     }
 
@@ -509,6 +596,34 @@ public:
             delete[] fChangedParameterValues;
             fChangedParameterValues = nullptr;
         }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // utilities and common code
+
+    void setNormalizedPluginParameterValue(const uint32_t index, const float normalized)
+    {
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        const uint32_t hints = fPlugin.getParameterHints(index);
+
+        float realValue = ranges.getUnnormalizedValue(normalized);
+
+        if (hints & kParameterIsBoolean)
+        {
+            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+            realValue = realValue > midRange ? ranges.max : ranges.min;
+        }
+
+        if (hints & kParameterIsInteger)
+        {
+            realValue = std::round(realValue);
+        }
+
+        fParameterValues[index] = realValue;
+        fPlugin.setParameterValue(index, realValue);
+#if DISTRHO_PLUGIN_HAS_UI
+        fChangedParameterValues[fParameterOffset + index] = true;
+#endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -906,7 +1021,7 @@ public:
                             if (connectedToUI)
                             {
                                 // UI parameter updates are handled outside the read loop (after host param restart)
-                                fChangedParameterValues[j + fParameterOffset] = true;
+                                fChangedParameterValues[fParameterOffset + j] = true;
                             }
 #endif
                             break;
@@ -920,8 +1035,6 @@ public:
             }
         }
 
-        d_stdout("state restored pt1");
-
         if (paramCount != 0)
         {
             if (fComponentHandler != nullptr)
@@ -934,14 +1047,12 @@ public:
                 {
                     if (fPlugin.isParameterOutputOrTrigger(i))
                         continue;
-                    fChangedParameterValues[i + fParameterOffset] = false;
-                    sendParameterChangeToUI(i + fParameterOffset, fParameterValues[i]);
+                    fChangedParameterValues[fParameterOffset + i] = false;
+                    sendParameterChangeToUI(fParameterOffset + i, fParameterValues[i]);
                 }
             }
 #endif
         }
-
-        d_stdout("state restored pt2");
 
         return V3_OK;
     }
@@ -1054,16 +1165,24 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_audio_processor interface calls
 
-    v3_result setBusArrangements(v3_speaker_arrangement*, int32_t, v3_speaker_arrangement*, int32_t)
+    v3_result setBusArrangements(v3_speaker_arrangement* /*inputs*/, const int32_t /*numInputs*/,
+                                 v3_speaker_arrangement* /*outputs*/, const int32_t /*numOutputs*/)
     {
         // TODO
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result getBusArrangement(int32_t, int32_t, v3_speaker_arrangement*)
+    v3_result getBusArrangement(const int32_t direction, const int32_t /*idx*/, v3_speaker_arrangement*)
     {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
+        switch (direction)
+        {
+        case V3_INPUT:
+        case V3_OUTPUT:
+            // TODO
+            return V3_NOT_IMPLEMENTED;
+        }
+
+        return V3_INVALID_ARG;
     }
 
     uint32_t getLatencySamples() const noexcept
@@ -1303,76 +1422,13 @@ public:
                     break;
             }
         }
+#endif
 
         // TODO append MIDI events in a sorted way
         if (v3_param_changes** const inparamsptr = data->input_params)
-        {
-            v3_param_value_queue** queue;
-            int32_t offset;
-            double value;
+            processParameterChanges(inparamsptr, data->nframes);
 
-            for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
-            {
-                queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
-                DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
-
-                v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
-                DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
-
-                // not supported yet
-                if (rindex >= fParameterOffset)
-                    continue;
-
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-                if (rindex == 0)
-                    continue;
-                --rindex;
-# endif
-
-                for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
-                {
-                    if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
-                        break;
-
-                    DISTRHO_SAFE_ASSERT_BREAK(offset < data->nframes);
-
-                    MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
-                    midiEvent.frame = offset;
-                    midiEvent.size = 3;
-                    midiEvent.data[0] = (rindex / 130) & 0xf;
-
-                    switch (rindex)
-                    {
-                    case 128: // channel pressure
-                        midiEvent.data[0] |= 0xD0;
-                        midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
-                        midiEvent.data[2] = 0;
-                        midiEvent.data[3] = 0;
-                        break;
-                    case 129: // pitchbend
-                        midiEvent.data[0] |= 0xE0;
-                        midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
-                        midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
-                        midiEvent.data[3] = 0;
-                        break;
-                    default:
-                        midiEvent.data[0] |= 0xB0;
-                        midiEvent.data[1] = rindex % 130;
-                        midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
-                        midiEvent.data[3] = 0;
-                        break;
-                    }
-
-                    if (midiEventCount == kMaxMidiEvents)
-                        break;
-                }
-
-                if (midiEventCount == kMaxMidiEvents)
-                    break;
-            }
-        }
-
-
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
 #else
         fPlugin.run(inputs, outputs, data->nframes);
@@ -1384,6 +1440,92 @@ public:
 
         updateParameterOutputsAndTriggers();
         return V3_OK;
+    }
+
+    void processParameterChanges(v3_param_changes** const inparamsptr, const int32_t nframes)
+    {
+        int32_t offset;
+        double value;
+
+        for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
+        {
+            v3_param_value_queue** const queue = v3_cpp_obj(inparamsptr)->get_param_data(inparamsptr, i);
+            DISTRHO_SAFE_ASSERT_BREAK(queue != nullptr);
+
+            const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
+            DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fRealParameterCount, rindex);
+
+            // not supported yet
+            if (rindex >= fRealParameterCount)
+                continue;
+
+            for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
+            {
+                if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
+                    break;
+
+                DISTRHO_SAFE_ASSERT_BREAK(offset >= 0);
+                DISTRHO_SAFE_ASSERT_BREAK(offset < nframes);
+
+                if (rindex < fParameterOffset)
+                {
+                    // MIDI stuff
+                    continue;
+                }
+
+                const uint32_t index = rindex - fParameterOffset;
+                setNormalizedPluginParameterValue(index, value);
+            }
+
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+// #endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//                 if (rindex == 0)
+//                     continue;
+//                 --rindex;
+// #endif
+
+            /*
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                        MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
+                        midiEvent.frame = offset;
+                        midiEvent.size = 3;
+                        midiEvent.data[0] = (rindex / 130) & 0xf;
+
+                        switch (rindex)
+                        {
+                        case 128: // channel pressure
+                            midiEvent.data[0] |= 0xD0;
+                            midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
+                            midiEvent.data[2] = 0;
+                            midiEvent.data[3] = 0;
+                            break;
+                        case 129: // pitchbend
+                            midiEvent.data[0] |= 0xE0;
+                            midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
+                            midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
+                            midiEvent.data[3] = 0;
+                            break;
+                        default:
+                            midiEvent.data[0] |= 0xB0;
+                            midiEvent.data[1] = rindex % 130;
+                            midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
+                            midiEvent.data[3] = 0;
+                            break;
+                        }
+
+                        if (midiEventCount == kMaxMidiEvents)
+                            break;
+                    }
+#endif
+                }
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                if (midiEventCount == kMaxMidiEvents)
+                    break;
+#endif
+            */
+        }
     }
 
     uint32_t getTailSamples() const noexcept
@@ -1421,39 +1563,39 @@ public:
 
     v3_result getParameterInfo(int32_t rindex, v3_param_info* const info) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INVALID_ARG);
         std::memset(info, 0, sizeof(v3_param_info));
+        DISTRHO_SAFE_ASSERT_RETURN(rindex >= 0, V3_INVALID_ARG);
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-        {
-            info->param_id = rindex;
-            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
-            info->step_count = fProgramCountMinusOne;
-            strncpy_utf16(info->title, "Current Program", 128);
-            strncpy_utf16(info->short_title, "Program", 128);
-            return V3_OK;
-        }
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-        {
-            info->param_id = rindex;
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-            ++info->param_id;
-# endif
-            info->flags = V3_PARAM_CAN_AUTOMATE /*| V3_PARAM_IS_HIDDEN*/;
-            info->step_count = 127;
-            char ccstr[24];
-            snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", rindex / 130 + 1, rindex % 130);
-            strncpy_utf16(info->title, ccstr, 128);
-            snprintf(ccstr, sizeof(ccstr)-1, "Ch.%d CC%d", rindex / 130 + 1, rindex % 130);
-            strncpy_utf16(info->short_title, ccstr+5, 128);
-            return V3_OK;
-        }
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//         {
+//             info->param_id = rindex;
+//             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
+//             info->step_count = fProgramCountMinusOne;
+//             strncpy_utf16(info->title, "Current Program", 128);
+//             strncpy_utf16(info->short_title, "Program", 128);
+//             return V3_OK;
+//         }
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//         {
+//             info->param_id = rindex;
+// # if DISTRHO_PLUGIN_WANT_PROGRAMS
+//             ++info->param_id;
+// # endif
+//             info->flags = V3_PARAM_CAN_AUTOMATE /*| V3_PARAM_IS_HIDDEN*/;
+//             info->step_count = 127;
+//             char ccstr[24];
+//             snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", rindex / 130 + 1, rindex % 130);
+//             strncpy_utf16(info->title, ccstr, 128);
+//             snprintf(ccstr, sizeof(ccstr)-1, "Ch.%d CC%d", rindex / 130 + 1, rindex % 130);
+//             strncpy_utf16(info->short_title, ccstr+5, 128);
+//             return V3_OK;
+//         }
+//         rindex -= 130*16;
+// #endif
 
         const uint32_t index = static_cast<uint32_t>(rindex);
         DISTRHO_SAFE_ASSERT_UINT_RETURN(index < fPlugin.getParameterCount(), index, V3_INVALID_ARG);
@@ -1461,6 +1603,7 @@ public:
         // set up flags
         int32_t flags = 0;
 
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
         const uint32_t hints = fPlugin.getParameterHints(index);
 
@@ -1477,7 +1620,6 @@ public:
             flags |= V3_PARAM_CAN_AUTOMATE;
         if (hints & kParameterIsOutput)
             flags |= V3_PARAM_READ_ONLY;
-        // TODO V3_PARAM_IS_LIST
 
         // set up step_count
         int32_t step_count = 0;
@@ -1486,6 +1628,12 @@ public:
             step_count = 1;
         if ((hints & kParameterIsInteger) && ranges.max - ranges.min > 1)
             step_count = ranges.max - ranges.min - 1;
+
+        if (enumValues.count >= 2 && enumValues.restrictedMode)
+        {
+            flags |= V3_PARAM_IS_LIST;
+            step_count = enumValues.count;
+        }
 
         info->param_id = index + fParameterOffset;
         info->flags = flags;
@@ -1504,68 +1652,105 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(normalised >= 0.0 && normalised <= 1.0, V3_INVALID_ARG);
 
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-        {
-            const uint32_t program = std::round(normalised * fProgramCountMinusOne);
-            strncpy_utf16(output, fPlugin.getProgramName(program), 128);
-            return V3_OK;
-        }
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-        {
-            snprintf_f32_utf16(output, std::round(normalised * 127), 128);
-            return V3_OK;
-        }
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//         {
+//             const uint32_t program = std::round(normalised * fProgramCountMinusOne);
+//             strncpy_utf16(output, fPlugin.getProgramName(program), 128);
+//             return V3_OK;
+//         }
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//         {
+//             snprintf_f32_utf16(output, std::round(normalised * 127), 128);
+//             return V3_OK;
+//         }
+//         rindex -= 130*16;
+// #endif
 
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(rindex));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
-        snprintf_f32_utf16(output, ranges.getUnnormalizedValue(normalised), 128);
+        const float value = ranges.getUnnormalizedValue(normalised);
+
+        for (uint32_t i=0; i < enumValues.count; ++i)
+        {
+            if (d_isEqual(enumValues.values[i].value, value))
+            {
+                strncpy_utf16(output, enumValues.values[i].label, 128);
+                return V3_OK;
+            }
+        }
+
+        if (fPlugin.getParameterHints(rindex) & kParameterIsInteger)
+            snprintf_i32_utf16(output, value, 128);
+        else
+            snprintf_f32_utf16(output, value, 128);
+
         return V3_OK;
     }
 
-    v3_result getParameterValueForString(v3_param_id rindex, int16_t*, double*)
+    v3_result getParameterValueForString(v3_param_id rindex, int16_t* const input, double* const output)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-        {
-            // TODO find program index based on name
-            return V3_NOT_IMPLEMENTED;
-        }
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-        {
-            // TODO find CC/channel based on name
-            return V3_NOT_IMPLEMENTED;
-        }
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//         {
+//             // TODO find program index based on name
+//             return V3_NOT_IMPLEMENTED;
+//         }
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//         {
+//             // TODO find CC/channel based on name
+//             return V3_NOT_IMPLEMENTED;
+//         }
+//         rindex -= 130*16;
+// #endif
 
-        // TODO
-        return V3_NOT_IMPLEMENTED;
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(rindex));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
+
+        for (uint32_t i=0; i < enumValues.count; ++i)
+        {
+            if (strcmp_utf16(input, enumValues.values[i].label))
+            {
+                *output = ranges.getNormalizedValue(enumValues.values[i].value);
+                return V3_OK;
+            }
+        }
+
+        // note this allocates memory
+        const ScopedUTF8String input8(input);
+
+        float value;
+        if (fPlugin.getParameterHints(rindex) & kParameterIsInteger)
+            value = std::atoi(input8);
+        else
+            value = std::atof(input8);
+
+        *output = ranges.getNormalizedValue(value);
+        return V3_OK;
     }
 
     double normalisedParameterToPlain(v3_param_id rindex, const double normalised)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-            return std::round(normalised * fProgramCountMinusOne);
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-            return std::round(normalised * 127);
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//             return std::round(normalised * fProgramCountMinusOne);
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//             return std::round(normalised * 127);
+//         rindex -= 130*16;
+// #endif
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         return ranges.getUnnormalizedValue(normalised);
@@ -1575,16 +1760,16 @@ public:
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-            return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-            return std::max(0.0, std::min(1.0, plain / 127));
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//             return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//             return std::max(0.0, std::min(1.0, plain / 127));
+//         rindex -= 130*16;
+// #endif
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
         return ranges.getNormalizedValue(plain);
@@ -1594,87 +1779,66 @@ public:
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, 0.0);
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-            return std::max(0.0, std::min(1.0, (double)fCurrentProgram / fProgramCountMinusOne));
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-        {
-            // TODO
-            return 0.0;
-        }
-        rindex -= 130*16;
-#endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//             return std::max(0.0, std::min(1.0, (double)fCurrentProgram / fProgramCountMinusOne));
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//         {
+//             // TODO
+//             return 0.0;
+//         }
+//         rindex -= 130*16;
+// #endif
 
-        const float value = fPlugin.getParameterValue(rindex);
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
-        return ranges.getNormalizedValue(value);
+        return ranges.getNormalizedValue(fPlugin.getParameterValue(rindex));
     }
 
-    v3_result setParameterNormalized(v3_param_id rindex, const double value)
+    v3_result setParameterNormalized(v3_param_id rindex, const double normalized)
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(rindex < fRealParameterCount, rindex, V3_INVALID_ARG);
-        DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0 && value <= 1.0, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(normalized >= 0.0 && normalized <= 1.0, V3_INVALID_ARG);
 
-#if DISTRHO_PLUGIN_HAS_UI
-        const uint32_t orindex = rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-        {
-            fCurrentProgram = std::round(value * fProgramCountMinusOne);
-            fPlugin.loadProgram(fCurrentProgram);
+// #if DISTRHO_PLUGIN_HAS_UI
+//         const uint32_t orindex = rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_PROGRAMS
+//         if (rindex == 0)
+//         {
+//             fCurrentProgram = std::round(normalized * fProgramCountMinusOne);
+//             fPlugin.loadProgram(fCurrentProgram);
+//
+//             for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+//             {
+//                 if (fPlugin.isParameterOutputOrTrigger(i))
+//                     continue;
+//                 fParameterValues[i] = fPlugin.getParameterValue(i);
+//             }
+//
+//             if (fComponentHandler != nullptr)
+//                 v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
+//
+// # if DISTRHO_PLUGIN_HAS_UI
+//             fChangedParameterValues[rindex] = true;
+// # endif
+//             return V3_OK;
+//         }
+//         --rindex;
+// #endif
+// #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//         if (rindex < 130*16)
+//         {
+//             // TODO
+//             fChangedParameterValues[rindex] = true;
+//             return V3_NOT_IMPLEMENTED;
+//         }
+//         rindex -= 130*16;
+// #endif
 
-            for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
-            {
-                if (fPlugin.isParameterOutputOrTrigger(i))
-                    continue;
-                fParameterValues[i] = fPlugin.getParameterValue(i);
-            }
-
-            if (fComponentHandler != nullptr)
-                v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
-
-# if DISTRHO_PLUGIN_HAS_UI
-            fChangedParameterValues[rindex] = true;
-# endif
-            return V3_OK;
-        }
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if (rindex < 130*16)
-        {
-            // TODO
-            fChangedParameterValues[rindex] = true;
-            return V3_NOT_IMPLEMENTED;
-        }
-        rindex -= 130*16;
-#endif
-
-        const uint32_t hints = fPlugin.getParameterHints(rindex);
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
-
-        float realValue = ranges.getUnnormalizedValue(value);
-
-        if (hints & kParameterIsBoolean)
-        {
-            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-            realValue = realValue > midRange ? ranges.max : ranges.min;
-        }
-
-        if (hints & kParameterIsInteger)
-        {
-            realValue = std::round(realValue);
-        }
-
-        fParameterValues[rindex] = realValue;
-        fPlugin.setParameterValue(rindex, realValue);
-#if DISTRHO_PLUGIN_HAS_UI
-        fChangedParameterValues[orindex] = true;
-#endif
+        setNormalizedPluginParameterValue(rindex, normalized);
         return V3_OK;
     }
 
@@ -1786,21 +1950,21 @@ public:
                 fChangedParameterValues[i] = false;
 
                 rindex = i;
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-                if (rindex == 0)
-                {
-                    sendParameterChangeToUI(rindex, fCurrentProgram);
-                    continue;
-                }
-                --rindex;
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                if (rindex < 130*16)
-                    continue;
-                rindex -= 130*16;
-# endif
+// # if DISTRHO_PLUGIN_WANT_PROGRAMS
+//                 if (rindex == 0)
+//                 {
+//                     sendParameterChangeToUI(rindex, fCurrentProgram);
+//                     continue;
+//                 }
+//                 --rindex;
+// # endif
+// # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+//                 if (rindex < 130*16)
+//                     continue;
+//                 rindex -= 130*16;
+// # endif
 
-                sendParameterChangeToUI(rindex + fParameterOffset, fParameterValues[rindex]);
+                sendParameterChangeToUI(fParameterOffset + rindex, fParameterValues[rindex]);
             }
 
             sendReadyToUI();
@@ -1932,7 +2096,7 @@ private:
     v3_component_handler** fComponentHandler;
 #if DISTRHO_PLUGIN_HAS_UI
     v3_connection_point** fConnection;
-    v3_host_application** const fHostContext;
+    v3_host_application** const fHostApplication;
 #endif
 
     // Temporary data
@@ -1986,7 +2150,7 @@ private:
 
                 fParameterValues[i] = curValue;
 #if DISTRHO_PLUGIN_HAS_UI
-                fChangedParameterValues[i] = true;
+                fChangedParameterValues[fParameterOffset + i] = true;
 #endif
             }
             else if (fPlugin.isParameterTrigger(i))
@@ -1999,7 +2163,7 @@ private:
 
                 fPlugin.setParameterValue(i, curValue);
 #if DISTRHO_PLUGIN_HAS_UI
-                fChangedParameterValues[i] = true;
+                fChangedParameterValues[fParameterOffset + i] = true;
 #endif
             }
             else
@@ -2029,12 +2193,12 @@ private:
 
     v3_message** createMessage(const char* const id) const
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fHostContext != nullptr, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(fHostApplication != nullptr, nullptr);
 
         v3_tuid iid;
         memcpy(iid, v3_message_iid, sizeof(v3_tuid));
         v3_message** msg = nullptr;
-        const v3_result res = v3_cpp_obj(fHostContext)->create_instance(fHostContext, iid, iid, (void**)&msg);
+        const v3_result res = v3_cpp_obj(fHostApplication)->create_instance(fHostApplication, iid, iid, (void**)&msg);
         DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_TRUE, res, nullptr);
         DISTRHO_SAFE_ASSERT_RETURN(msg != nullptr, nullptr);
 
@@ -2455,6 +2619,8 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 
     static v3_result V3_API query_interface_midi_mapping(void* const self, const v3_tuid iid, void** const iface)
     {
+        d_stdout("query_interface_midi_mapping => %p %s %p", self, tuid2str(iid), iface);
+
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_midi_mapping_iid))
         {
@@ -2494,10 +2660,12 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic_int refcounter;
+    /*
 #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connectionComp;   // kConnectionPointController
     ScopedPointer<dpf_dsp_connection_point> connectionBridge; // kConnectionPointBridge
 #endif
+    */
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
     ScopedPointer<PluginVst3> vst3;
 #else
@@ -2506,8 +2674,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #endif
     // cached values
     v3_component_handler** handler;
-    v3_host_application** hostContextFromFactory;
-    v3_host_application** hostContextFromInitialize;
+    v3_host_application** const hostApplicationFromFactory;
+    v3_host_application** hostApplicationFromInitialize;
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
     dpf_edit_controller(v3_host_application** const host)
@@ -2520,14 +2688,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
           initialized(false),
 #endif
           handler(nullptr),
-          hostContextFromFactory(host),
-          hostContextFromInitialize(nullptr)
+          hostApplicationFromFactory(host),
+          hostApplicationFromInitialize(nullptr)
     {
-        d_stdout("dpf_edit_controller() has context %p", hostContextFromFactory);
+        d_stdout("dpf_edit_controller() with hostApplication %p", hostApplicationFromFactory);
 
         // make sure context is valid through out this controller lifetime
-        if (hostContextFromFactory != nullptr)
-            v3_cpp_obj_ref(hostContextFromFactory);
+        if (hostApplicationFromFactory != nullptr)
+            v3_cpp_obj_ref(hostApplicationFromFactory);
 
         // v3_funknown, everything custom
         query_interface = query_interface_edit_controller;
@@ -2554,13 +2722,21 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         ctrl.create_view = create_view;
     }
 
-    void cleanup()
+    ~dpf_edit_controller()
     {
-        if (hostContextFromFactory != nullptr)
-        {
-            v3_cpp_obj_unref(hostContextFromFactory);
-            hostContextFromFactory = nullptr;
-        }
+        d_stdout("~dpf_edit_controller()");
+        /*
+#if DISTRHO_PLUGIN_HAS_UI
+        connectionComp = nullptr;
+        connectionBridge = nullptr;
+#endif
+        */
+#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        vst3 = nullptr;
+#endif
+
+        if (hostApplicationFromFactory != nullptr)
+            v3_cpp_obj_unref(hostApplicationFromFactory);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2588,6 +2764,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         }
 #endif
 
+        /*
 #if DISTRHO_PLUGIN_HAS_UI
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
@@ -2602,6 +2779,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return V3_OK;
         }
 #endif
+        */
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -2626,15 +2804,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return refcount;
         }
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        // TODO need to check refcount of bridges??
+
         d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deleting everything now!", self);
-        controller->cleanup();
+
         delete controller;
         delete controllerptr;
-#else
-        d_stdout("dpf_edit_controller::unref => %p is zero, doing cleanup", self);
-        controller->cleanup();
-#endif
         return 0;
     }
 
@@ -2645,29 +2820,40 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
+        // check if already initialized
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 == nullptr, V3_INVALID_ARG);
 #else
         DISTRHO_SAFE_ASSERT_RETURN(! controller->initialized, V3_INVALID_ARG);
 #endif
 
-        // query for host context
-        v3_host_application** host = nullptr;
+        // query for host application
+        v3_host_application** hostApplication = nullptr;
         if (context != nullptr)
-            v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
+            v3_cpp_obj_query_interface(context, v3_host_application_iid, &hostApplication);
 
-        d_stdout("dpf_edit_controller::initialize => %p %p | host %p", self, context, host);
+        d_stdout("dpf_edit_controller::initialize => %p %p | host %p", self, context, hostApplication);
 
         // save it for later so we can unref it
-        controller->hostContextFromInitialize = host;
+        controller->hostApplicationFromInitialize = hostApplication;
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
-        // provide the factory context to the plugin if this new one is missing
-        if (host == nullptr)
-            host = controller->hostContextFromFactory;
+        // provide the factory application to the plugin if this new one is missing
+        if (hostApplication == nullptr)
+            hostApplication = controller->hostApplicationFromFactory;
 
-        controller->vst3 = new PluginVst3(host);
+        // default early values
+        if (d_nextBufferSize == 0)
+            d_nextBufferSize = 1024;
+        if (d_nextSampleRate <= 0.0)
+            d_nextSampleRate = 44100.0;
+
+        d_nextCanRequestParameterValueChanges = true;
+
+        // create the actual plugin
+        controller->vst3 = new PluginVst3(hostApplication);
 #else
+        // mark as initialized
         controller->initialized = true;
 #endif
 
@@ -2680,16 +2866,20 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        // check if already terminated
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_INVALID_ARG);
 
+        // delete actual plugin
         controller->vst3 = nullptr;
 #else
-        const bool initialized = controller->initialized;
-        DISTRHO_SAFE_ASSERT_RETURN(initialized, V3_INVALID_ARG);
+        // check if already terminated
+        DISTRHO_SAFE_ASSERT_RETURN(controller->initialized, V3_INVALID_ARG);
 
+        // mark as uninitialzed
         controller->initialized = false;
 #endif
 
+        /*
 #if DISTRHO_PLUGIN_HAS_UI
         // take the chance to do some cleanup if possible (we created the bridge, we need to destroy it)
         if (controller->connectionBridge != nullptr)
@@ -2700,12 +2890,13 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             if (controller->connectionComp->refcounter == 1)
                 controller->connectionComp = nullptr;
 #endif
+        */
 
-        // unref context received during initialize
-        if (controller->hostContextFromInitialize != nullptr)
+        // unref host application received during initialize
+        if (controller->hostApplicationFromInitialize != nullptr)
         {
-            v3_cpp_obj_unref(controller->hostContextFromInitialize);
-            controller->hostContextFromInitialize = nullptr;
+            v3_cpp_obj_unref(controller->hostApplicationFromInitialize);
+            controller->hostApplicationFromInitialize = nullptr;
         }
 
         return V3_OK;
@@ -2863,7 +3054,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         d_stdout("create_view has contexts %p %p",
-                 controller->hostContextFromFactory, controller->hostContextFromInitialize);
+                 controller->hostApplicationFromFactory, controller->hostApplicationFromInitialize);
 
 #if DISTRHO_PLUGIN_HAS_UI
         // plugin must be initialized
@@ -2872,13 +3063,13 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         d_stdout("dpf_edit_controller::create_view => %p %s | edit-ctrl %p, factory %p",
                  self, name,
-                 controller->hostContextFromInitialize,
-                 controller->hostContextFromFactory);
+                 controller->hostApplicationFromInitialize,
+                 controller->hostApplicationFromFactory);
 
         // we require a host context for message creation
-        v3_host_application** host = controller->hostContextFromInitialize != nullptr
-                                   ? controller->hostContextFromInitialize
-                                   : controller->hostContextFromFactory;
+        v3_host_application** host = controller->hostApplicationFromInitialize != nullptr
+                                   ? controller->hostApplicationFromInitialize
+                                   : controller->hostApplicationFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
         // if there is a component connection, we require it to be active
@@ -3050,7 +3241,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
                                                  v3_speaker_arrangement* const outputs, const int32_t num_outputs)
     {
         // NOTE this is called a bunch of times
-        // d_stdout("dpf_audio_processor::set_bus_arrangements => %p %p %i %p %i", self, inputs, num_inputs, outputs, num_outputs);
+        // d_stdout("dpf_audio_processor::set_bus_arrangements => %p %p %i %p %i",
+        //          self, inputs, num_inputs, outputs, num_outputs);
         dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
         PluginVst3* const vst3 = processor->vst3;
@@ -3062,7 +3254,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     static v3_result V3_API get_bus_arrangement(void* const self, const int32_t bus_direction,
                                                 const int32_t idx, v3_speaker_arrangement* const arr)
     {
-        d_stdout("dpf_audio_processor::get_bus_arrangement => %p %i %i %p", self, bus_direction, idx, arr);
+        d_stdout("dpf_audio_processor::get_bus_arrangement => %p %s %p",
+                 self, v3_bus_direction_str(bus_direction), idx, arr);
         dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
         PluginVst3* const vst3 = processor->vst3;
@@ -3090,7 +3283,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 
     static v3_result V3_API setup_processing(void* const self, v3_process_setup* const setup)
     {
-        d_stdout("dpf_audio_processor::setup_processing => %p", self);
+        d_stdout("dpf_audio_processor::setup_processing => %p %p", self, setup);
         dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
         PluginVst3* const vst3 = processor->vst3;
@@ -3155,22 +3348,26 @@ static v3_result handleUncleanComponent(dpf_component** const componentptr)
 struct dpf_component : v3_component_cpp {
     std::atomic_int refcounter;
     ScopedPointer<dpf_audio_processor> processor;
+    /*
 #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_dsp_connection_point> connection; // kConnectionPointComponent
 #endif
     ScopedPointer<dpf_edit_controller> controller;
+    */
     ScopedPointer<PluginVst3> vst3;
-    v3_host_application** const hostContextFromFactory;
-    v3_host_application** hostContextFromInitialize;
+    v3_host_application** const hostApplicationFromFactory;
+    v3_host_application** hostApplicationFromInitialize;
 
-    dpf_component(v3_host_application** const h)
+    dpf_component(v3_host_application** const host)
         : refcounter(1),
-          hostContextFromFactory(h),
-          hostContextFromInitialize(nullptr)
+          hostApplicationFromFactory(host),
+          hostApplicationFromInitialize(nullptr)
     {
+        d_stdout("dpf_component() with hostApplication %p", hostApplicationFromFactory);
+
         // make sure context is valid through out this component lifetime
-        if (hostContextFromFactory != nullptr)
-            v3_cpp_obj_ref(hostContextFromFactory);
+        if (hostApplicationFromFactory != nullptr)
+            v3_cpp_obj_ref(hostApplicationFromFactory);
 
         // v3_funknown, everything custom
         query_interface = query_interface_component;
@@ -3193,22 +3390,20 @@ struct dpf_component : v3_component_cpp {
         comp.get_state = get_state;
     }
 
-    void cleanup()
+    ~dpf_component()
     {
-        d_stdout("dpf_component::cleanup");
-        vst3 = nullptr;
+        d_stdout("~dpf_component()");
         processor = nullptr;
+        /*
 #if DISTRHO_PLUGIN_HAS_UI
         connection = nullptr;
 #endif
-        if (controller != nullptr)
-        {
-            controller->cleanup();
-            controller = nullptr;
-        }
+        controller = nullptr;
+        */
+        vst3 = nullptr;
 
-        if (hostContextFromFactory != nullptr)
-            v3_cpp_obj_unref(hostContextFromFactory);
+        if (hostApplicationFromFactory != nullptr)
+            v3_cpp_obj_unref(hostApplicationFromFactory);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -3236,7 +3431,6 @@ struct dpf_component : v3_component_cpp {
         }
 #endif
 
-        /*
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         if (v3_tuid_match(iid, v3_audio_processor_iid))
@@ -3249,6 +3443,7 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
 
+        /*
 #if DISTRHO_PLUGIN_HAS_UI
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
@@ -3264,10 +3459,10 @@ struct dpf_component : v3_component_cpp {
 
         if (v3_tuid_match(iid, v3_edit_controller_iid))
         {
-            d_stdout("query_interface_component called with context %p", component->hostContextFromFactory);
+            d_stdout("query_interface_component called with context %p", component->hostApplicationFromFactory);
 
             if (component->controller == nullptr)
-                component->controller = new dpf_edit_controller(component->vst3, component->hostContextFromFactory);
+                component->controller = new dpf_edit_controller(component->vst3, component->hostApplicationFromFactory);
             else
                 ++component->controller->refcounter;
             *iface = &component->controller;
@@ -3314,6 +3509,7 @@ struct dpf_component : v3_component_cpp {
             }
         }
 
+        /*
 #if DISTRHO_PLUGIN_HAS_UI
         if (dpf_dsp_connection_point* const conn = component->connection)
         {
@@ -3353,14 +3549,12 @@ struct dpf_component : v3_component_cpp {
             }
 #endif
         }
+        */
 
         if (unclean)
             return handleUncleanComponent(componentptr);
 
         d_stdout("dpf_component::unref => %p | refcount is zero, deleting everything now!", self);
-
-        if (component->hostContextFromFactory != nullptr)
-            v3_cpp_obj_unref(component->hostContextFromFactory);
 
         delete component;
         delete componentptr;
@@ -3377,30 +3571,30 @@ struct dpf_component : v3_component_cpp {
         // check if already initialized
         DISTRHO_SAFE_ASSERT_RETURN(component->vst3 == nullptr, V3_INVALID_ARG);
 
-        // query for host context
-        v3_host_application** host = nullptr;
+        // query for host application
+        v3_host_application** hostApplication = nullptr;
         if (context != nullptr)
-            v3_cpp_obj_query_interface(context, v3_host_application_iid, &host);
+            v3_cpp_obj_query_interface(context, v3_host_application_iid, &hostApplication);
 
-        d_stdout("dpf_component::initialize => %p %p | host %p", self, context, host);
+        d_stdout("dpf_component::initialize => %p %p | hostApplication %p", self, context, hostApplication);
 
         // save it for later so we can unref it
-        component->hostContextFromInitialize = host;
+        component->hostApplicationFromInitialize = hostApplication;
 
-        // provide the factory context to the plugin if this new one is missing
-        if (host == nullptr)
-            host = component->hostContextFromFactory;
+        // provide the factory application to the plugin if this new one is missing
+        if (hostApplication == nullptr)
+            hostApplication = component->hostApplicationFromFactory;
 
         // default early values
         if (d_nextBufferSize == 0)
-            d_nextBufferSize = 2048;
+            d_nextBufferSize = 1024;
         if (d_nextSampleRate <= 0.0)
             d_nextSampleRate = 44100.0;
 
         d_nextCanRequestParameterValueChanges = true;
 
         // create the actual plugin
-        component->vst3 = new PluginVst3(host);
+        component->vst3 = new PluginVst3(hostApplication);
 
         return V3_OK;
     }
@@ -3416,11 +3610,11 @@ struct dpf_component : v3_component_cpp {
         // delete actual plugin
         component->vst3 = nullptr;
 
-        // unref context received during initialize
-        if (component->hostContextFromInitialize != nullptr)
+        // unref host application received during initialize
+        if (component->hostApplicationFromInitialize != nullptr)
         {
-            v3_cpp_obj_unref(component->hostContextFromInitialize);
-            component->hostContextFromInitialize = nullptr;
+            v3_cpp_obj_unref(component->hostApplicationFromInitialize);
+            component->hostApplicationFromInitialize = nullptr;
         }
 
         return V3_OK;
@@ -3457,7 +3651,8 @@ struct dpf_component : v3_component_cpp {
     static int32_t V3_API get_bus_count(void* const self, const int32_t media_type, const int32_t bus_direction)
     {
         // NOTE runs during RT
-        // d_stdout("dpf_component::get_bus_count => %p %i %i", self, media_type, bus_direction);
+        // d_stdout("dpf_component::get_bus_count => %p %s %s",
+        //          self, v3_media_type_str(media_type), v3_bus_direction_str(bus_direction));
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         PluginVst3* const vst3 = component->vst3;
@@ -3469,7 +3664,8 @@ struct dpf_component : v3_component_cpp {
     static v3_result V3_API get_bus_info(void* const self, const int32_t media_type, const int32_t bus_direction,
                                          const int32_t bus_idx, v3_bus_info* const info)
     {
-        d_stdout("dpf_component::get_bus_info => %p %i %i %i %p", self, media_type, bus_direction, bus_idx, info);
+        d_stdout("dpf_component::get_bus_info => %p %s %s %i %p",
+                 self, v3_media_type_str(media_type), v3_bus_direction_str(bus_direction), bus_idx, info);
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         PluginVst3* const vst3 = component->vst3;
@@ -3493,7 +3689,8 @@ struct dpf_component : v3_component_cpp {
                                          const int32_t bus_idx, const v3_bool state)
     {
         // NOTE this is called a bunch of times
-        // d_stdout("dpf_component::activate_bus => %p %i %i %i %u", self, media_type, bus_direction, bus_idx, state);
+        // d_stdout("dpf_component::activate_bus => %p %s %s %i %u",
+        //          self, v3_media_type_str(media_type), v3_bus_direction_str(bus_direction), bus_idx, state);
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         PluginVst3* const vst3 = component->vst3;
@@ -3541,7 +3738,7 @@ struct dpf_component : v3_component_cpp {
 
 static const PluginExporter& _getPluginInfo()
 {
-    d_nextBufferSize = 512;
+    d_nextBufferSize = 1024;
     d_nextSampleRate = 44100.0;
     d_nextPluginIsDummy = true;
     d_nextCanRequestParameterValueChanges = true;
@@ -3655,7 +3852,6 @@ struct dpf_factory : v3_plugin_factory_cpp {
         {
             dpf_component** const componentptr = *it;
             dpf_component* const component = *componentptr;
-            component->cleanup();
             delete component;
             delete componentptr;
         }
@@ -3722,16 +3918,16 @@ struct dpf_factory : v3_plugin_factory_cpp {
         d_stdout("dpf_factory::create_instance => %p %s %s %p", self, tuid2str(class_id), tuid2str(iid), instance);
         dpf_factory* const factory = *static_cast<dpf_factory**>(self);
 
-        // query for host context
-        v3_host_application** host = nullptr;
+        // query for host application
+        v3_host_application** hostApplication = nullptr;
         if (factory->hostContext != nullptr)
-            v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &host);
+            v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &hostApplication);
 
         // create component
         if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) && v3_tuid_match(iid, v3_component_iid))
         {
             dpf_component** const componentptr = new dpf_component*;
-            *componentptr = new dpf_component(host);
+            *componentptr = new dpf_component(hostApplication);
             *instance = static_cast<void*>(componentptr);
             return V3_OK;
         }
@@ -3740,14 +3936,14 @@ struct dpf_factory : v3_plugin_factory_cpp {
         if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_controller) && v3_tuid_match(iid, v3_edit_controller_iid))
         {
             dpf_edit_controller** const controllerptr = new dpf_edit_controller*;
-            *controllerptr = new dpf_edit_controller(host);
+            *controllerptr = new dpf_edit_controller(hostApplication);
             *instance = static_cast<void*>(controllerptr);
             return V3_OK;
         }
 
         // unsupported, roll back host application
-        if (host != nullptr)
-            v3_cpp_obj_unref(host);
+        if (hostApplication != nullptr)
+            v3_cpp_obj_unref(hostApplication);
 
         return V3_NO_INTERFACE;
     }
