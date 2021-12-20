@@ -79,9 +79,9 @@ struct v3_param_info {
 struct v3_edit_controller {
 	struct v3_plugin_base;
 
-	v3_result (V3_API* set_component_state)(void* self, struct v3_bstream*);
-	v3_result (V3_API* set_state)(void* self, struct v3_bstream*);
-	v3_result (V3_API* get_state)(void* self, struct v3_bstream*);
+	v3_result (V3_API* set_component_state)(void* self, struct v3_bstream**);
+	v3_result (V3_API* set_state)(void* self, struct v3_bstream**);
+	v3_result (V3_API* get_state)(void* self, struct v3_bstream**);
 	int32_t (V3_API* get_parameter_count)(void* self);
 	v3_result (V3_API* get_parameter_info)(void* self, int32_t param_idx, struct v3_param_info*);
 	v3_result (V3_API* get_parameter_string_for_value)(void* self, v3_param_id, double normalised, v3_str_128 output);
