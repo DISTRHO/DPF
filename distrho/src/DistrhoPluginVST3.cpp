@@ -1868,6 +1868,21 @@ public:
 // #endif
 
         setNormalizedPluginParameterValue(rindex, normalized);
+
+//         if (latencyHasChanged || parametersHaveChanged)
+//         {
+            DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, V3_OK);
+
+            int32_t flags = 0x0;
+
+//             if (latencyHasChanged)
+//                 flags |= V3_RESTART_LATENCY_CHANGED;
+//             if (parametersHaveChanged)
+                flags |= V3_RESTART_PARAM_VALUES_CHANGED;
+
+            v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, flags);
+//         }
+
         return V3_OK;
     }
 
@@ -2173,20 +2188,23 @@ private:
         int32_t index;
         float curValue;
 
+        bool latencyHasChanged = false;
+        bool parametersHaveChanged = false;
+
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
             if (fParameterValuesChangedDuringRT[i])
             {
                 fParameterValuesChangedDuringRT[i] = false;
-                curValue = fPlugin.getParameterValue(i);
+                fParameterValues[i] = curValue = fPlugin.getParameterValue(i);
             }
             else if (fPlugin.isParameterOutput(i))
             {
                 // NOTE: no output parameter support in VST3, simulate it here
                 curValue = fPlugin.getParameterValue(i);
 
-//                 if (d_isEqual(curValue, fParameterValues[i]))
-//                     continue;
+                if (d_isEqual(curValue, fParameterValues[i]))
+                    continue;
 
                 fParameterValues[i] = curValue;
 #if DISTRHO_PLUGIN_HAS_UI
@@ -2219,12 +2237,12 @@ private:
 
             curValue = fPlugin.getParameterRanges(i).getNormalizedValue(curValue);
 
-            v3_cpp_obj(queue)->add_point(queue, 0, curValue, &index);
+            DISTRHO_SAFE_ASSERT(v3_cpp_obj(queue)->add_point(queue, 0, curValue, &index) == V3_OK);
 
             if (offset != 0)
                 v3_cpp_obj(queue)->add_point(queue, offset, curValue, &index);
 
-            d_stdout("sending change of %d %f", index, curValue);
+            parametersHaveChanged = true;
         }
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
@@ -2233,11 +2251,23 @@ private:
         if (fLastKnownLatency != latency)
         {
             fLastKnownLatency = latency;
-
-            if (fComponentHandler != nullptr)
-                v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_LATENCY_CHANGED);
+            latencyHasChanged = true;
         }
 #endif
+
+//         if (latencyHasChanged || parametersHaveChanged)
+//         {
+//             DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr,);
+//
+//             int32_t flags = 0x0;
+//
+//             if (latencyHasChanged)
+//                 flags |= V3_RESTART_LATENCY_CHANGED;
+//             if (parametersHaveChanged)
+//                 flags |= V3_RESTART_PARAM_VALUES_CHANGED;
+//
+//             v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, flags);
+//         }
     }
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -3082,8 +3112,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterNormalized(index);
     }
 
-    static v3_result V3_API set_parameter_normalised(void* self, v3_param_id index, double normalised)
+    static v3_result V3_API set_parameter_normalised(void* const self, const v3_param_id index, const double normalised)
     {
+        // d_stdout("dpf_edit_controller::set_parameter_normalised => %p %u %f", self, index, normalised);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
