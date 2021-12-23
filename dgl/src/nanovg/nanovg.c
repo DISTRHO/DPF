@@ -36,6 +36,10 @@
 #define NVG_SKIPPED_CHAR NVG_CHAR
 #endif
 
+#ifndef NVG_FONT_TEXTURE_FLAGS
+#define NVG_FONT_TEXTURE_FLAGS 0
+#endif
+
 #ifdef _MSC_VER
 #pragma warning(disable: 4100)  // unreferenced formal parameter
 #pragma warning(disable: 4127)  // conditional expression is constant
@@ -348,7 +352,12 @@ NVGcontext* nvgCreateInternal(NVGparams* params, NVGcontext* other)  // Share th
 		if (ctx->fontContext->fs == NULL) goto error;
 
 		// Create font texture
-		ctx->fontContext->fontImages[0] = ctx->params.renderCreateTexture(ctx->params.userPtr, NVG_TEXTURE_ALPHA, fontParams.width, fontParams.height, 0, NULL);
+		ctx->fontContext->fontImages[0] = ctx->params.renderCreateTexture(ctx->params.userPtr,
+		                                                                  NVG_TEXTURE_ALPHA,
+		                                                                  fontParams.width,
+		                                                                  fontParams.height,
+		                                                                  NVG_FONT_TEXTURE_FLAGS,
+		                                                                  NULL);
 		if (ctx->fontContext->fontImages[0] == 0) goto error;
 		ctx->fontContext->fontImageIdx = 0;
 	}
@@ -2490,7 +2499,9 @@ static int nvg__allocTextAtlas(NVGcontext* ctx)
 			iw *= 2;
 		if (iw > NVG_MAX_FONTIMAGE_SIZE || ih > NVG_MAX_FONTIMAGE_SIZE)
 			iw = ih = NVG_MAX_FONTIMAGE_SIZE;
-		ctx->fontContext->fontImages[ctx->fontContext->fontImageIdx+1] = ctx->params.renderCreateTexture(ctx->params.userPtr, NVG_TEXTURE_ALPHA, iw, ih, 0, NULL);
+		ctx->fontContext->fontImages[ctx->fontContext->fontImageIdx+1]
+			= ctx->params.renderCreateTexture(ctx->params.userPtr,
+			                                  NVG_TEXTURE_ALPHA, iw, ih, NVG_FONT_TEXTURE_FLAGS, NULL);
 	}
 	++ctx->fontContext->fontImageIdx;
 	fonsResetAtlas(ctx->fontContext->fs, iw, ih);
