@@ -474,8 +474,8 @@ public:
 #endif
           fParameterOffset(fPlugin.getParameterOffset()),
           fRealParameterCount(fParameterOffset + fPlugin.getParameterCount()),
-          fParameterValues(nullptr),
-          fParameterValuesChangedDuringRT(nullptr),
+          fCachedParameterValues(nullptr),
+          fParameterValuesChangedDuringProcessing(nullptr),
           fParameterValueChangesForUI(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fConnectedToUI(false)
@@ -559,13 +559,13 @@ public:
 
         if (const uint32_t parameterCount = fPlugin.getParameterCount())
         {
-            fParameterValues = new float[parameterCount];
+            fCachedParameterValues = new float[parameterCount];
 
             for (uint32_t i=0; i < parameterCount; ++i)
-                fParameterValues[i] = fPlugin.getParameterDefault(i);
+                fCachedParameterValues[i] = fPlugin.getParameterDefault(i);
 
-            fParameterValuesChangedDuringRT = new bool[parameterCount];
-            std::memset(fParameterValuesChangedDuringRT, 0, sizeof(bool)*parameterCount);
+            fParameterValuesChangedDuringProcessing = new bool[parameterCount];
+            std::memset(fParameterValuesChangedDuringProcessing, 0, sizeof(bool)*parameterCount);
         }
 
         if (fRealParameterCount != 0)
@@ -590,16 +590,16 @@ public:
 
     ~PluginVst3()
     {
-        if (fParameterValues != nullptr)
+        if (fCachedParameterValues != nullptr)
         {
-            delete[] fParameterValues;
-            fParameterValues = nullptr;
+            delete[] fCachedParameterValues;
+            fCachedParameterValues = nullptr;
         }
 
-        if (fParameterValuesChangedDuringRT != nullptr)
+        if (fParameterValuesChangedDuringProcessing != nullptr)
         {
-            delete[] fParameterValuesChangedDuringRT;
-            fParameterValuesChangedDuringRT = nullptr;
+            delete[] fParameterValuesChangedDuringProcessing;
+            fParameterValuesChangedDuringProcessing = nullptr;
         }
 
         if (fParameterValueChangesForUI != nullptr)
@@ -630,7 +630,7 @@ public:
             realValue = std::round(realValue);
         }
 
-        fParameterValues[index] = realValue;
+        fCachedParameterValues[index] = realValue;
         fPlugin.setParameterValue(index, realValue);
 #if DISTRHO_PLUGIN_HAS_UI
         fParameterValueChangesForUI[fParameterOffset + index] = true;
@@ -718,7 +718,7 @@ public:
                     {
                         numChannels = inputBuses.numSidechain;
                         busType = V3_AUX;
-                        flags = v3_bus_flags(0);
+                        flags = static_cast<v3_bus_flags>(0);
                         break;
                     }
                 // fall-through
@@ -771,7 +771,7 @@ public:
                     {
                         numChannels = outputBuses.numSidechain;
                         busType = V3_AUX;
-                        flags = v3_bus_flags(0);
+                        flags = static_cast<v3_bus_flags>(0);
                         break;
                     }
                 // fall-through
@@ -1022,6 +1022,7 @@ public:
                     else if (queryingType == 'p')
                     {
                         d_stdout("found parameter '%s' '%s'", key.buffer(), value.buffer());
+                        float fvalue;
 
                         // find parameter with this symbol, and set its value
                         for (uint32_t j=0; j < paramCount; ++j)
@@ -1031,7 +1032,8 @@ public:
                             if (fPlugin.getParameterSymbol(j) != key)
                                 continue;
 
-                            const float fvalue = fParameterValues[j] = std::atof(value.buffer());
+                            // TODO atoi if integer
+                            fCachedParameterValues[j] = fvalue = std::atof(value.buffer());
                             fPlugin.setParameterValue(j, fvalue);
 #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
@@ -1064,7 +1066,7 @@ public:
                     if (fPlugin.isParameterOutputOrTrigger(i))
                         continue;
                     fParameterValueChangesForUI[fParameterOffset + i] = false;
-                    sendParameterChangeToUI(fParameterOffset + i, fParameterValues[i]);
+                    sendParameterChangeToUI(fParameterOffset + i, fCachedParameterValues[i]);
                 }
             }
 #endif
@@ -1147,6 +1149,7 @@ public:
                 String tmpStr;
                 tmpStr  = fPlugin.getParameterSymbol(i);
                 tmpStr += "\xff";
+                // TODO cast to integer if needed
                 tmpStr += String(fPlugin.getParameterValue(i));
                 tmpStr += "\xff";
 
@@ -1253,7 +1256,7 @@ public:
     v3_result process(v3_process_data* const data)
     {
         DISTRHO_SAFE_ASSERT_RETURN(data->symbolic_sample_size == V3_SAMPLE_32, V3_INVALID_ARG);
-        d_stdout("process %i", data->symbolic_sample_size);
+        // d_stdout("process %i", data->symbolic_sample_size);
 
         // activate plugin if not done yet
         if (! fPlugin.isActive())
@@ -1317,7 +1320,7 @@ public:
 
         if (data->nframes <= 0)
         {
-            updateParameterOutputsAndTriggers(data->output_params, 0);
+            updateParametersFromProcessing(data->output_params, 0);
             return V3_OK;
         }
 
@@ -1554,7 +1557,7 @@ public:
             }
         }
 
-        updateParameterOutputsAndTriggers(data->output_params, data->nframes - 1);
+        updateParametersFromProcessing(data->output_params, data->nframes - 1);
         return V3_OK;
     }
 
@@ -1565,26 +1568,6 @@ public:
 
     // ----------------------------------------------------------------------------------------------------------------
     // v3_edit_controller interface calls
-
-#if 0
-    v3_result setComponentState(v3_bstream*, void*)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    v3_result setState(v3_bstream*, void*)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-
-    v3_result getState(v3_bstream*, void*)
-    {
-        // TODO
-        return V3_NOT_IMPLEMENTED;
-    }
-#endif
 
     int32_t getParameterCount() const noexcept
     {
@@ -1823,7 +1806,11 @@ public:
 // #endif
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(rindex));
-        return ranges.getNormalizedValue(fPlugin.getParameterValue(rindex));
+        const float realValue = fCachedParameterValues[rindex]; // fPlugin.getParameterValue(rindex);
+        const float norm = ranges.getNormalizedValue(realValue);
+
+        d_stdout("---------------------------------------------------- getParameterNormalized %u -> %f %f", rindex, norm, realValue);
+        return norm;
     }
 
     v3_result setParameterNormalized(v3_param_id rindex, const double normalized)
@@ -1869,9 +1856,19 @@ public:
 
         setNormalizedPluginParameterValue(rindex, normalized);
 
+        DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, V3_OK);
+        if (fComponentHandler != nullptr)
+        {
+            int res = v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
+
+
+        d_stdout("---------------------------------------------------- setParameterNormalized %u -> %f | res %i", rindex, normalized, res);
+        }
+
+        return V3_OK;
+
 //         if (latencyHasChanged || parametersHaveChanged)
 //         {
-            DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, V3_OK);
 
             int32_t flags = 0x0;
 
@@ -2008,7 +2005,7 @@ public:
 //                 rindex -= 130*16;
 // # endif
 
-                sendParameterChangeToUI(fParameterOffset + rindex, fParameterValues[rindex]);
+                sendParameterChangeToUI(fParameterOffset + rindex, fPlugin.getParameterValue(rindex));
             }
 
             sendReadyToUI();
@@ -2145,9 +2142,9 @@ private:
 
     // Temporary data
     const uint32_t fParameterOffset;
-    const uint32_t fRealParameterCount; // regular parameters + current program
-    float* fParameterValues;
-    bool* fParameterValuesChangedDuringRT; // only real
+    const uint32_t fRealParameterCount; // offset + real
+    float* fCachedParameterValues; // only real, outputs
+    bool* fParameterValuesChangedDuringProcessing; // only real
     bool* fParameterValueChangesForUI; // offset + real
 #if DISTRHO_PLUGIN_HAS_UI
     bool fConnectedToUI;
@@ -2179,10 +2176,9 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during process, cannot block
 
-    void updateParameterOutputsAndTriggers(v3_param_changes** const outparamsptr, const int32_t offset)
+    void updateParametersFromProcessing(v3_param_changes** const outparamsptr, const int32_t offset)
     {
         DISTRHO_SAFE_ASSERT_RETURN(outparamsptr != nullptr,);
-        d_stdout("updateParameterOutputsAndTriggers %i", offset);
 
         v3_param_id paramId;
         int32_t index;
@@ -2193,23 +2189,18 @@ private:
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
-            if (fParameterValuesChangedDuringRT[i])
-            {
-                fParameterValuesChangedDuringRT[i] = false;
-                fParameterValues[i] = curValue = fPlugin.getParameterValue(i);
-            }
-            else if (fPlugin.isParameterOutput(i))
+            if (fPlugin.isParameterOutput(i))
             {
                 // NOTE: no output parameter support in VST3, simulate it here
                 curValue = fPlugin.getParameterValue(i);
 
-                if (d_isEqual(curValue, fParameterValues[i]))
+                if (d_isEqual(curValue, fCachedParameterValues[i]))
                     continue;
 
-                fParameterValues[i] = curValue;
-#if DISTRHO_PLUGIN_HAS_UI
-                fParameterValueChangesForUI[fParameterOffset + i] = true;
-#endif
+                /*
+                d_stdout("updateParametersFromProcessing %i | changed param %u from %f to %f",
+                         offset, i, fCachedParameterValues[i], curValue);
+                */
             }
             else if (fPlugin.isParameterTrigger(i))
             {
@@ -2220,14 +2211,21 @@ private:
                     continue;
 
                 fPlugin.setParameterValue(i, curValue);
-#if DISTRHO_PLUGIN_HAS_UI
-                fParameterValueChangesForUI[fParameterOffset + i] = true;
-#endif
+            }
+            else if (fParameterValuesChangedDuringProcessing[i])
+            {
+                fParameterValuesChangedDuringProcessing[i] = false;
+                curValue = fPlugin.getParameterValue(i);
             }
             else
             {
                 continue;
             }
+
+            fCachedParameterValues[i] = curValue;
+#if DISTRHO_PLUGIN_HAS_UI
+            fParameterValueChangesForUI[fParameterOffset + i] = true;
+#endif
 
             index = 0;
             paramId = fParameterOffset + i;
@@ -2253,6 +2251,9 @@ private:
             fLastKnownLatency = latency;
             latencyHasChanged = true;
         }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
 #endif
 
 //         if (latencyHasChanged || parametersHaveChanged)
@@ -2356,8 +2357,11 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-    bool requestParameterValueChange(const uint32_t index, const float value)
+    bool requestParameterValueChange(const uint32_t index, float)
     {
+        fParameterValuesChangedDuringProcessing[index] = true;
+        return true;
+        /*
         DISTRHO_SAFE_ASSERT_RETURN(fComponentHandler != nullptr, false);
 
         const uint32_t rindex = index + fParameterOffset;
@@ -2375,6 +2379,7 @@ private:
             v3_cpp_obj(fComponentHandler)->end_edit(fComponentHandler, rindex);
 
         return res_perf == V3_TRUE;
+        */
     }
 
 #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST

@@ -81,6 +81,25 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
     }
 }
 
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
+enum Vst3InternalParameters {
+    kInternalParameterActive = 0,
+    kInternalParameterBufferSize,
+    kInternalParameterSampleRate,
+# if DISTRHO_PLUGIN_WANT_LATENCY
+    kInternalParameterLatency,
+# endif
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+    kInternalParameterProgram,
+# endif
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    kInternalParameterMidiCC,
+    kInternalParameterMidiCC_end = kInternalParameterMidiCC + 130*16,
+# endif
+    kInternalParameterCount
+};
+#endif
+
 // -----------------------------------------------------------------------
 // Plugin private data
 
@@ -178,14 +197,14 @@ struct Plugin::PrivateData {
 # endif
 #endif
 
-// #ifdef DISTRHO_PLUGIN_TARGET_VST3
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
 // # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 //         parameterOffset += 130 * 16; // all MIDI CCs plus aftertouch and pitchbend
 // # endif
 // # if DISTRHO_PLUGIN_WANT_PROGRAMS
 //         parameterOffset += 1;
 // # endif
-// #endif
+#endif
     }
 
     ~PrivateData() noexcept
