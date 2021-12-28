@@ -3127,8 +3127,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         delete controller;
         delete controllerptr;
-#endif
+#else
         d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deletion will be done by component later", self);
+#endif
         return 0;
     }
 
