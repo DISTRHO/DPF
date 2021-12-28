@@ -29,6 +29,7 @@
 /**
  * cast object into its proper C++ type.
  * this is needed because `struct v3_funknown;` on a C++ class does not inherit `v3_funknown`'s fields.
+ *
  * we can use this as a little helper for keeping both C and C++ compatiblity.
  * specialized templated calls are defined where required
  * (that is, object inherits from something other than `v3_funknown`)
