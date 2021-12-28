@@ -77,16 +77,15 @@ struct ScopedUTF16String {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static bool applyGeometryConstraints(const uint minimumWidth,
+static void applyGeometryConstraints(const uint minimumWidth,
                                      const uint minimumHeight,
                                      const bool keepAspectRatio,
                                      v3_view_rect* const rect)
 {
-    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d}",
+    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | BEFORE",
              minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
     const int32_t minWidth = static_cast<int32_t>(minimumWidth);
     const int32_t minHeight = static_cast<int32_t>(minimumHeight);
-    bool changed = false;
 
     if (keepAspectRatio)
     {
@@ -95,8 +94,6 @@ static bool applyGeometryConstraints(const uint minimumWidth,
 
         if (d_isNotEqual(ratio, reqRatio))
         {
-            changed = true;
-
             // fix width
             if (reqRatio > ratio)
                 rect->right = static_cast<int32_t>(rect->bottom * ratio + 0.5);
@@ -106,16 +103,13 @@ static bool applyGeometryConstraints(const uint minimumWidth,
         }
     }
 
-    if (minWidth > rect->right || minHeight > rect->bottom)
-    {
-        changed = true;
+    if (minWidth > rect->right)
         rect->right = minWidth;
+    if (minHeight > rect->bottom)
         rect->bottom = minHeight;
-    }
 
-    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | changed %d",
-             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom, changed);
-    return changed;
+    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | AFTER",
+             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
