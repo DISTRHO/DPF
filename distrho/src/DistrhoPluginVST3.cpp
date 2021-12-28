@@ -905,6 +905,9 @@ public:
         buffer[sizeof(buffer)-1] = '\xff';
         v3_result res;
 
+        // int64_t ignore = 0;
+        // v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
+
         for (int32_t pos = 0, term = 0, read; term == 0; pos += read)
         {
             res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
@@ -1095,6 +1098,9 @@ public:
 #else
         const uint32_t stateCount = 0;
 #endif
+
+        // int64_t ignore = 0;
+        // v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
 
         if (stateCount == 0 && paramCount == 0)
         {
@@ -2952,20 +2958,26 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // cached values
     v3_component_handler** handler;
     v3_host_application** const hostApplicationFromFactory;
+#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+    v3_host_application** const hostApplicationFromComponent;
+#endif
     v3_host_application** hostApplicationFromInitialize;
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
-    dpf_edit_controller(v3_host_application** const host)
+    dpf_edit_controller(v3_host_application** const hostApp)
         : refcounter(1),
           vst3(nullptr),
 #else
-    dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const host)
+    dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const hostApp, v3_host_application** const hostComp)
         : refcounter(1),
           vst3(v),
           initialized(false),
 #endif
           handler(nullptr),
-          hostApplicationFromFactory(host),
+          hostApplicationFromFactory(hostApp),
+#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+          hostApplicationFromComponent(hostComp),
+#endif
           hostApplicationFromInitialize(nullptr)
     {
         d_stdout("dpf_edit_controller() with hostApplication %p", hostApplicationFromFactory);
@@ -2973,6 +2985,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // make sure host application is valid through out this controller lifetime
         if (hostApplicationFromFactory != nullptr)
             v3_cpp_obj_ref(hostApplicationFromFactory);
+#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+        if (hostApplicationFromComponent != nullptr)
+            v3_cpp_obj_ref(hostApplicationFromComponent);
+#endif
 
         // v3_funknown, everything custom
         query_interface = query_interface_edit_controller;
@@ -3010,6 +3026,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         vst3 = nullptr;
 #endif
 
+#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+        if (hostApplicationFromComponent != nullptr)
+            v3_cpp_obj_unref(hostApplicationFromComponent);
+#endif
         if (hostApplicationFromFactory != nullptr)
             v3_cpp_obj_unref(hostApplicationFromFactory);
     }
@@ -3108,7 +3128,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         delete controller;
         delete controllerptr;
 #endif
-        d_stdout("dpf_plugin_view::unref => %p | refcount is zero, deletion will be done by component later", self);
+        d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deletion will be done by component later", self);
         return 0;
     }
 
@@ -3221,34 +3241,32 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     static v3_result V3_API set_state(void* const self, v3_bstream** const stream)
     {
         d_stdout("dpf_edit_controller::set_state => %p %p", self, stream);
-        dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
-#else
-        DISTRHO_SAFE_ASSERT_RETURN(controller->initialized, V3_INVALID_ARG);
 #endif
 
         return V3_NOT_IMPLEMENTED;
 
-        // unused
+        // maybe unused
+        (void)self;
         (void)stream;
     }
 
     static v3_result V3_API get_state(void* const self, v3_bstream** const stream)
     {
         d_stdout("dpf_edit_controller::get_state => %p %p", self, stream);
-        dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
-#else
-        DISTRHO_SAFE_ASSERT_RETURN(controller->initialized, V3_INVALID_ARG);
 #endif
 
         return V3_NOT_IMPLEMENTED;
 
-        // unused
+        // maybe unused
+        (void)self;
         (void)stream;
     }
 
@@ -3374,6 +3392,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // we require a host application for message creation
         v3_host_application** const host = controller->hostApplicationFromInitialize != nullptr
                                          ? controller->hostApplicationFromInitialize
+#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+                                         : controller->hostApplicationFromComponent != nullptr
+                                         ? controller->hostApplicationFromComponent
+#endif
                                          : controller->hostApplicationFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
@@ -3738,7 +3760,8 @@ struct dpf_component : v3_component_cpp {
 
             if (component->controller == nullptr)
                 component->controller = new dpf_edit_controller(component->vst3,
-                                                                component->hostApplicationFromFactory);
+                                                                component->hostApplicationFromFactory,
+                                                                component->hostApplicationFromInitialize);
             else
                 ++component->controller->refcounter;
             *iface = &component->controller;
