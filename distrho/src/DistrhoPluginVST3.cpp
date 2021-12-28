@@ -2171,6 +2171,8 @@ public:
         if (std::strcmp(msgid, "close") == 0)
         {
             fConnectedToUI = false;
+            v3_cpp_obj_unref(fConnectionFromCtrlToView);
+            fConnectionFromCtrlToView = nullptr;
             return V3_OK;
         }
 
@@ -3089,7 +3091,24 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return refcount;
         }
 
-        // TODO need to check refcount of bridges??
+#if DISTRHO_PLUGIN_HAS_UI
+        if (dpf_ctrl2view_connection_point* const point = controller->connectionCtrl2View)
+        {
+            if (const int refcount = point->refcounter)
+            {
+                d_stderr("DPF warning: asked to delete controller while view connection point still active (refcount %d)", refcount);
+            }
+        }
+#endif
+#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        if (dpf_comp2ctrl_connection_point* const point = controller->connectionComp2Ctrl)
+        {
+            if (const int refcount = point->refcounter)
+            {
+                d_stderr("DPF warning: asked to delete controller while component connection point still active (refcount %d)", refcount);
+            }
+        }
+#endif
 
         d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deleting everything now!", self);
 
@@ -3139,10 +3158,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         controller->vst3 = new PluginVst3(hostApplication);
 
         // set connection point if needed
-        if (dpf_comp2ctrl_connection_point* const conn = controller->connectionComp2Ctrl)
+        if (dpf_comp2ctrl_connection_point* const point = controller->connectionComp2Ctrl)
         {
-            if (conn->other != nullptr)
-                controller->vst3->comp2ctrl_connect(conn->other);
+            if (point->other != nullptr)
+                controller->vst3->comp2ctrl_connect(point->other);
         }
 #else
         // mark as initialized
@@ -3170,19 +3189,6 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // mark as uninitialzed
         controller->initialized = false;
 #endif
-
-        /*
-#if DISTRHO_PLUGIN_HAS_UI
-        // take the chance to do some cleanup if possible (we created the bridge, we need to destroy it)
-        if (controller->connectionBridge != nullptr)
-            if (controller->connectionBridge->refcounter == 1)
-                controller->connectionBridge = nullptr;
-
-        if (controller->connectionComp != nullptr && controller->connectionComp->shortcircuit)
-            if (controller->connectionComp->refcounter == 1)
-                controller->connectionComp = nullptr;
-#endif
-        */
 
         // unref host application received during initialize
         if (controller->hostApplicationFromInitialize != nullptr)
@@ -3381,17 +3387,20 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                                                              vst3->getSampleRate());
         DISTRHO_SAFE_ASSERT_RETURN(view != nullptr, nullptr);
 
-        controller->connectionCtrl2View = new dpf_ctrl2view_connection_point(controller->vst3);
-
         v3_connection_point** uiconn = nullptr;
         if (v3_cpp_obj_query_interface(view, v3_connection_point_iid, &uiconn) == V3_OK)
         {
             d_stdout("view connection query ok %p", uiconn);
+            controller->connectionCtrl2View = new dpf_ctrl2view_connection_point(controller->vst3);
 
             v3_connection_point** const ctrlconn = (v3_connection_point**)&controller->connectionCtrl2View;
 
             v3_cpp_obj(uiconn)->connect(uiconn, ctrlconn);
             v3_cpp_obj(ctrlconn)->connect(ctrlconn, uiconn);
+        }
+        else
+        {
+            controller->connectionCtrl2View = nullptr;
         }
 
         return view;
@@ -3797,44 +3806,34 @@ struct dpf_component : v3_component_cpp {
         }
 
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
-        if (dpf_comp2ctrl_connection_point* const conn = component->connectionComp2Ctrl)
+        if (dpf_comp2ctrl_connection_point* const point = component->connectionComp2Ctrl)
         {
-            if (const int refcount = conn->refcounter)
+            if (const int refcount = point->refcounter)
             {
                 unclean = true;
                 d_stderr("DPF warning: asked to delete component while connection point still active (refcount %d)", refcount);
             }
         }
 #else
-        /*
-        if (dpf_edit_controller* const ctrl = component->controller)
+        if (dpf_edit_controller* const controller = component->controller)
         {
-            if (const int refcount = ctrl->refcounter)
+            if (const int refcount = controller->refcounter)
             {
                 unclean = true;
                 d_stderr("DPF warning: asked to delete component while edit controller still active (refcount %d)", refcount);
             }
 
-#if DISTRHO_PLUGIN_HAS_UI
-            if (dpf_dsp_connection_point* const comp = ctrl->connectionComp)
+# if DISTRHO_PLUGIN_HAS_UI
+            if (dpf_dsp_connection_point* const controller = ctrl->connectionCtrl2View)
             {
-                if (const int refcount = comp->refcounter)
+                if (const int refcount = controller->refcounter)
                 {
                     unclean = true;
-                    d_stderr("DPF warning: asked to delete component while edit controller connection point still active (refcount %d)", refcount);
+                    d_stderr("DPF warning: asked to delete component while view connection point still active (refcount %d)", refcount);
                 }
             }
-
-            if (dpf_dsp_connection_point* const bridge = ctrl->connectionBridge)
-            {
-                if (const int refcount = bridge->refcounter)
-                {
-                    unclean = true;
-                    d_stderr("DPF warning: asked to delete component while view bridge connection still active (refcount %d)", refcount);
-                }
-            }
+# endif
         }
-        */
 #endif
 
         if (unclean)
@@ -3884,10 +3883,10 @@ struct dpf_component : v3_component_cpp {
 
        #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
         // set connection point if needed
-        if (dpf_comp2ctrl_connection_point* const conn = component->connectionComp2Ctrl)
+        if (dpf_comp2ctrl_connection_point* const point = component->connectionComp2Ctrl)
         {
-            if (conn->other != nullptr)
-                component->vst3->comp2ctrl_connect(conn->other);
+            if (point->other != nullptr)
+                component->vst3->comp2ctrl_connect(point->other);
         }
        #endif
 
