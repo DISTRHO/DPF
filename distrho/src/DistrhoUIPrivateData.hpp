@@ -287,6 +287,28 @@ typedef void (*sendNoteFunc)    (void* ptr, uint8_t channel, uint8_t note, uint8
 typedef void (*setSizeFunc)     (void* ptr, uint width, uint height);
 typedef bool (*fileRequestFunc) (void* ptr, const char* key);
 
+#if defined(DISTRHO_PLUGIN_TARGET_VST3) && !defined(DISTRHO_PLUGIN_INTERNAL_HPP_INCLUDED)
+enum Vst3InternalParameters {
+    kVst3InternalParameterActive = 0,
+    kVst3InternalParameterBufferSize,
+    kVst3InternalParameterSampleRate,
+# if DISTRHO_PLUGIN_WANT_LATENCY
+    kVst3InternalParameterLatency,
+# endif
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+    kVst3InternalParameterProgram,
+# endif
+    kVst3InternalParameterBaseCount,
+# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    kVst3InternalParameterMidiCC_start = kVst3InternalParameterBaseCount,
+    kVst3InternalParameterMidiCC_end = kVst3InternalParameterMidiCC_start + 130*16,
+    kVst3InternalParameterCount
+# else
+    kVst3InternalParameterCount = kVst3InternalParameterBaseCount
+# endif
+};
+#endif
+
 // -----------------------------------------------------------------------
 // UI private data
 
@@ -358,12 +380,7 @@ struct UI::PrivateData {
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        parameterOffset += 130 * 16; // all MIDI CCs plus aftertouch and pitchbend
-# endif
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-        parameterOffset += 1;
-# endif
+        parameterOffset += kVst3InternalParameterCount;
 #endif
     }
 

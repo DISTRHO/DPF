@@ -81,24 +81,27 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
     }
 }
 
-#ifdef DISTRHO_PLUGIN_TARGET_VST3
+// #ifdef DISTRHO_PLUGIN_TARGET_VST3
 enum Vst3InternalParameters {
-    kInternalParameterActive = 0,
-    kInternalParameterBufferSize,
-    kInternalParameterSampleRate,
+    kVst3InternalParameterActive = 0,
+    kVst3InternalParameterBufferSize,
+    kVst3InternalParameterSampleRate,
 # if DISTRHO_PLUGIN_WANT_LATENCY
-    kInternalParameterLatency,
+    kVst3InternalParameterLatency,
 # endif
 # if DISTRHO_PLUGIN_WANT_PROGRAMS
-    kInternalParameterProgram,
+    kVst3InternalParameterProgram,
 # endif
+    kVst3InternalParameterBaseCount,
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    kInternalParameterMidiCC,
-    kInternalParameterMidiCC_end = kInternalParameterMidiCC + 130*16,
+    kVst3InternalParameterMidiCC_start = kVst3InternalParameterBaseCount,
+    kVst3InternalParameterMidiCC_end = kVst3InternalParameterMidiCC_start + 130*16,
+    kVst3InternalParameterCount
+# else
+    kVst3InternalParameterCount = kVst3InternalParameterBaseCount
 # endif
-    kInternalParameterCount
 };
-#endif
+// #endif
 
 // -----------------------------------------------------------------------
 // Plugin private data
@@ -189,7 +192,7 @@ struct Plugin::PrivateData {
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_LV2
-# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
+# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_STATE || DISTRHO_PLUGIN_WANT_TIMEPOS)
         parameterOffset += 1;
 # endif
 # if (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
@@ -198,12 +201,7 @@ struct Plugin::PrivateData {
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
-// # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-//         parameterOffset += 130 * 16; // all MIDI CCs plus aftertouch and pitchbend
-// # endif
-// # if DISTRHO_PLUGIN_WANT_PROGRAMS
-//         parameterOffset += 1;
-// # endif
+        parameterOffset += kVst3InternalParameterCount;
 #endif
     }
 

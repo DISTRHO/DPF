@@ -15,7 +15,7 @@ NAME = d_info
 FILES_DSP = \
 	InfoExamplePlugin.cpp
 
-FILES_UIxx  = \
+FILES_UI = \
 	InfoExampleUI.cpp
 
 # --------------------------------------------------------------
