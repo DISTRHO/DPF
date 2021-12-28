@@ -1077,16 +1077,23 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return refcount;
         }
 
-        d_stdout("dpf_plugin_view::unref => %p | refcount is zero, deleting everything now!", self);
-
         if (view->connection != nullptr && view->connection->other)
             v3_cpp_obj(view->connection->other)->disconnect(view->connection->other,
                                                             (v3_connection_point**)&view->connection);
+
+        /**
+         * Some hosts will have unclean instances of a few of the view child classes at this point.
+         * We check for those here, going through the whole possible chain to see if it is safe to delete.
+         * TODO cleanup.
+         */
+
+        bool unclean = false;
 
         if (dpf_ui_connection_point* const conn = view->connection)
         {
             if (const int refcount = conn->refcounter)
             {
+                unclean = true;
                 d_stderr("DPF warning: asked to delete view while connection point still active (refcount %d)", refcount);
             }
         }
@@ -1095,9 +1102,15 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         {
             if (const int refcount = scale->refcounter)
             {
+                unclean = true;
                 d_stderr("DPF warning: asked to delete view while content scale still active (refcount %d)", refcount);
             }
         }
+
+        if (unclean)
+            return 0;
+
+        d_stdout("dpf_plugin_view::unref => %p | refcount is zero, deleting everything now!", self);
 
         delete view;
         delete viewptr;
@@ -1361,7 +1374,7 @@ v3_plugin_view** dpf_plugin_view_create(v3_host_application** const host,
 {
     dpf_plugin_view** const viewptr = new dpf_plugin_view*;
     *viewptr = new dpf_plugin_view(host, instancePointer, sampleRate);
-    return (v3_plugin_view**)static_cast<void*>(viewptr);
+    return static_cast<v3_plugin_view**>(static_cast<void*>(viewptr));
 }
 
 // --------------------------------------------------------------------------------------------------------------------

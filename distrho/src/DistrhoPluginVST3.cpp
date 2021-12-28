@@ -2078,12 +2078,7 @@ public:
     void ctrl2view_disconnect()
     {
         fConnectedToUI = false;
-
-        if (fConnectionFromCtrlToView != nullptr)
-        {
-            v3_cpp_obj_unref(fConnectionFromCtrlToView);
-            fConnectionFromCtrlToView = nullptr;
-        }
+        fConnectionFromCtrlToView = nullptr;
     }
 
     v3_result ctrl2view_notify(v3_message** const message)
@@ -2175,7 +2170,7 @@ public:
 
         if (std::strcmp(msgid, "close") == 0)
         {
-            ctrl2view_disconnect();
+            fConnectedToUI = false;
             return V3_OK;
         }
 
@@ -2668,7 +2663,33 @@ static uint32_t V3_API dpf_single_instance_unref(void* const self)
     return --(*static_cast<T**>(self))->refcounter;
 }
 
+// --------------------------------------------------------------------------------------------------------------------
+// Store components that we can't delete properly, to be cleaned up on module unload
+
+struct dpf_component;
+
+static std::vector<dpf_component**> gComponentGarbage;
+
+static uint32_t handleUncleanComponent(dpf_component** const componentptr)
+{
+    gComponentGarbage.push_back(componentptr);
+    return 0;
+}
+
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+// --------------------------------------------------------------------------------------------------------------------
+// Store controllers that we can't delete properly, to be cleaned up on module unload
+
+struct dpf_edit_controller;
+
+static std::vector<dpf_edit_controller**> gControllerGarbage;
+
+static uint32_t handleUncleanController(dpf_edit_controller** const controllerptr)
+{
+    gControllerGarbage.push_back(controllerptr);
+    return 0;
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_comp2ctrl_connection_point
 
@@ -2777,46 +2798,22 @@ struct dpf_comp2ctrl_connection_point : v3_connection_point_cpp {
 // dpf_comp2ctrl_connection_point
 
 struct dpf_ctrl2view_connection_point : v3_connection_point_cpp {
-    std::atomic_int refcounter;
     ScopedPointer<PluginVst3>& vst3;
     v3_connection_point** other;
 
     dpf_ctrl2view_connection_point(ScopedPointer<PluginVst3>& v)
-        : refcounter(1),
-          vst3(v),
+        : vst3(v),
           other(nullptr)
     {
-        // v3_funknown, single instance
-        query_interface = query_interface_connection_point;
-        ref = dpf_single_instance_ref<dpf_ctrl2view_connection_point>;
-        unref = dpf_single_instance_unref<dpf_ctrl2view_connection_point>;
+        // v3_funknown, single instance, used internally
+        query_interface = nullptr;
+        ref = nullptr;
+        unref = nullptr;
 
         // v3_connection_point
         point.connect = connect;
         point.disconnect = disconnect;
         point.notify = notify;
-    }
-
-    // ----------------------------------------------------------------------------------------------------------------
-    // v3_funknown
-
-    static v3_result V3_API query_interface_connection_point(void* const self, const v3_tuid iid, void** const iface)
-    {
-        dpf_ctrl2view_connection_point* const point = *static_cast<dpf_ctrl2view_connection_point**>(self);
-
-        if (v3_tuid_match(iid, v3_funknown_iid) ||
-            v3_tuid_match(iid, v3_connection_point_iid))
-        {
-            d_stdout("dpf_ctrl2view_connection_point => %p %s %p | OK", self, tuid2str(iid), iface);
-            ++point->refcounter;
-            *iface = self;
-            return V3_OK;
-        }
-
-        d_stdout("dpf_ctrl2view_connection_point => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
-
-        *iface = nullptr;
-        return V3_NO_INTERFACE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -2847,6 +2844,7 @@ struct dpf_ctrl2view_connection_point : v3_connection_point_cpp {
         if (PluginVst3* const vst3 = point->vst3)
             vst3->ctrl2view_disconnect();
 
+        v3_cpp_obj_unref(point->other);
         point->other = nullptr;
 
         return V3_OK;
@@ -3084,29 +3082,33 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return refcount;
         }
 
-#if DISTRHO_PLUGIN_HAS_UI
-        if (dpf_ctrl2view_connection_point* const point = controller->connectionCtrl2View)
-        {
-            if (const int refcount = point->refcounter)
-            {
-                d_stderr("DPF warning: asked to delete controller while view connection point still active (refcount %d)", refcount);
-            }
-        }
-#endif
 #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        /**
+         * Some hosts will have unclean instances of a few of the controller child classes at this point.
+         * We check for those here, going through the whole possible chain to see if it is safe to delete.
+         * If not, we add this controller to the `gControllerGarbage` global which will take care of it during unload.
+         */
+
+        bool unclean = false;
+
         if (dpf_comp2ctrl_connection_point* const point = controller->connectionComp2Ctrl)
         {
             if (const int refcount = point->refcounter)
             {
+                unclean = true;
                 d_stderr("DPF warning: asked to delete controller while component connection point still active (refcount %d)", refcount);
             }
         }
-#endif
+
+        if (unclean)
+            return handleUncleanController(controllerptr);
 
         d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deleting everything now!", self);
 
         delete controller;
         delete controllerptr;
+#endif
+        d_stdout("dpf_plugin_view::unref => %p | refcount is zero, deletion will be done by component later", self);
         return 0;
     }
 
@@ -3613,19 +3615,6 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
-// Store components that we can't delete properly, to be cleaned up on module unload
-
-struct dpf_component;
-
-std::vector<dpf_component**> gComponentGarbage;
-
-static v3_result handleUncleanComponent(dpf_component** const componentptr)
-{
-    gComponentGarbage.push_back(componentptr);
-    return V3_INVALID_ARG;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 // dpf_component
 
 struct dpf_component : v3_component_cpp {
@@ -3789,6 +3778,7 @@ struct dpf_component : v3_component_cpp {
          */
 
         bool unclean = false;
+
         if (dpf_audio_processor* const proc = component->processor)
         {
             if (const int refcount = proc->refcounter)
@@ -3815,17 +3805,6 @@ struct dpf_component : v3_component_cpp {
                 unclean = true;
                 d_stderr("DPF warning: asked to delete component while edit controller still active (refcount %d)", refcount);
             }
-
-# if DISTRHO_PLUGIN_HAS_UI
-            if (dpf_dsp_connection_point* const controller = ctrl->connectionCtrl2View)
-            {
-                if (const int refcount = controller->refcounter)
-                {
-                    unclean = true;
-                    d_stderr("DPF warning: asked to delete component while view connection point still active (refcount %d)", refcount);
-                }
-            }
-# endif
         }
 #endif
 
@@ -4127,21 +4106,39 @@ struct dpf_factory : v3_plugin_factory_cpp {
         if (hostContext != nullptr)
             v3_cpp_obj_unref(hostContext);
 
-        if (gComponentGarbage.size() == 0)
-            return;
-
-        d_stdout("DPF notice: cleaning up previously undeleted components now");
-
-        for (std::vector<dpf_component**>::iterator it = gComponentGarbage.begin();
-            it != gComponentGarbage.end(); ++it)
+       #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+        if (gControllerGarbage.size() != 0)
         {
-            dpf_component** const componentptr = *it;
-            dpf_component* const component = *componentptr;
-            delete component;
-            delete componentptr;
-        }
+            d_stdout("DPF notice: cleaning up previously undeleted controllers now");
 
-        gComponentGarbage.clear();
+            for (std::vector<dpf_edit_controller**>::iterator it = gControllerGarbage.begin();
+                it != gControllerGarbage.end(); ++it)
+            {
+                dpf_edit_controller** const controllerptr = *it;
+                dpf_edit_controller* const controller = *controllerptr;
+                delete controller;
+                delete controllerptr;
+            }
+
+            gControllerGarbage.clear();
+        }
+       #endif
+
+        if (gComponentGarbage.size() != 0)
+        {
+            d_stdout("DPF notice: cleaning up previously undeleted components now");
+
+            for (std::vector<dpf_component**>::iterator it = gComponentGarbage.begin();
+                it != gComponentGarbage.end(); ++it)
+            {
+                dpf_component** const componentptr = *it;
+                dpf_component* const component = *componentptr;
+                delete component;
+                delete componentptr;
+            }
+
+            gComponentGarbage.clear();
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------
