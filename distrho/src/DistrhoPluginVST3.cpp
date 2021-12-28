@@ -28,10 +28,6 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
-// #undef DISTRHO_PLUGIN_HAS_UI
-// #define DISTRHO_PLUGIN_HAS_UI 1
-// #define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0
-
 #if DISTRHO_PLUGIN_HAS_UI == 1 && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS == 0
 # define DPF_VST3_USES_SEPARATE_CONTROLLER
 #endif
@@ -71,14 +67,17 @@ namespace std {
 
 /* TODO items:
  * == parameters
- * - parameter enumeration as lists
- * - implement getParameterValueForString (use names from enumeration if available, fallback to std::atof)
- * - implement getParameterNormalized for MIDI CC params
- * - hide parameter outputs?
- * - hide program parameter?
- * - deal with parameter triggers
+ * - test parameter triggers
+ * - have parameter outputs host-provided UI working in at least 1 host
  * - parameter groups via unit ids
+ * - test parameter changes from DSP (aka requestParameterValueChange)
+ * - how to hide parameter outputs?
+ * - how to hide program parameter?
+ * - test receiving midi CC
+ * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
+ * - fully implemented parameter stuff and verify
  * - float to int safe casting
+ * - verify that latency changes works (with and without DPF_VST3_USES_SEPARATE_CONTROLLER)
  * == MIDI
  * - MIDI CC changes (need to store value to give to the host?)
  * - MIDI program changes
@@ -89,11 +88,12 @@ namespace std {
  * - optional audio buses, create dummy buffer of max_block_size length for them
  * - routing info, do we care?
  * - set sidechain bus name from port group
+ * == CV
+ * - cv scaling to -1/+1
+ * - test in at least 1 host
  * == INFO
  * - set factory email (needs new DPF API, useful for LV2 as well)
- * - do something with get_controller_class_id and set_io_mode?
- * == UI
- * - proper way to create ui, from factory
+ * - do something with set_io_mode?
  */
 
 START_NAMESPACE_DISTRHO
@@ -1631,7 +1631,7 @@ public:
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case kVst3InternalParameterProgram:
-            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE;
+            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_LIST | V3_PARAM_PROGRAM_CHANGE | V3_PARAM_IS_HIDDEN;
             info->step_count = fProgramCountMinusOne;
             strncpy_utf16(info->title, "Current Program", 128);
             strncpy_utf16(info->short_title, "Program", 128);
@@ -1643,7 +1643,7 @@ public:
         if (rindex < kVst3InternalParameterCount)
         {
             const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterMidiCC_start);
-            info->flags = V3_PARAM_CAN_AUTOMATE /*| V3_PARAM_IS_HIDDEN*/;
+            info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_HIDDEN;
             info->step_count = 127;
             char ccstr[24];
             snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", index / 130 + 1, index % 130);
@@ -2077,8 +2077,13 @@ public:
 
     void ctrl2view_disconnect()
     {
-        fConnectionFromCtrlToView = nullptr;
         fConnectedToUI = false;
+
+        if (fConnectionFromCtrlToView != nullptr)
+        {
+            v3_cpp_obj_unref(fConnectionFromCtrlToView);
+            fConnectionFromCtrlToView = nullptr;
+        }
     }
 
     v3_result ctrl2view_notify(v3_message** const message)
@@ -2170,9 +2175,7 @@ public:
 
         if (std::strcmp(msgid, "close") == 0)
         {
-            fConnectedToUI = false;
-            v3_cpp_obj_unref(fConnectionFromCtrlToView);
-            fConnectionFromCtrlToView = nullptr;
+            ctrl2view_disconnect();
             return V3_OK;
         }
 
@@ -2844,10 +2847,6 @@ struct dpf_ctrl2view_connection_point : v3_connection_point_cpp {
         if (PluginVst3* const vst3 = point->vst3)
             vst3->ctrl2view_disconnect();
 
-        /* TODO
-        v3_cpp_obj_unref(point->other);
-        */
-
         point->other = nullptr;
 
         return V3_OK;
@@ -2929,13 +2928,7 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
         DISTRHO_SAFE_ASSERT_INT_RETURN(channel >= 0 && channel < 16, channel, V3_FALSE);
         DISTRHO_SAFE_ASSERT_INT_RETURN(cc >= 0 && cc < 130, cc, V3_FALSE);
 
-# if DISTRHO_PLUGIN_WANT_PROGRAMS
-        static constexpr const v3_param_id offset = 1;
-# else
-        static constexpr const v3_param_id offset = 0;
-# endif
-
-        *id = offset + channel * 130 + cc;
+        *id = kVst3InternalParameterMidiCC_start + channel * 130 + cc;
         return V3_TRUE;
     }
 

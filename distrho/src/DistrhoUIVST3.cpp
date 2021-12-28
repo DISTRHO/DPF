@@ -39,6 +39,8 @@ namespace std {
 /* TODO items:
  * - mousewheel event
  * - key down/up events
+ * - host-side resizing
+ * - file request?
  */
 
 #if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
@@ -889,7 +891,7 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
         unref = dpf_single_instance_unref<dpf_timer_handler>;
 
         // v3_timer_handler
-        handler.on_timer = on_timer;
+        timer.on_timer = on_timer;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -954,6 +956,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     void* const instancePointer;
     double sampleRate;
     v3_plugin_frame** frame;
+    v3_run_loop** runloop;
     int32_t nextWidth, nextHeight;
 
     dpf_plugin_view(v3_host_application** const host, void* const instance, const double sr)
@@ -962,6 +965,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
           instancePointer(instance),
           sampleRate(sr),
           frame(nullptr),
+          runloop(nullptr),
           nextWidth(0),
           nextHeight(0)
     {
@@ -995,6 +999,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     {
         d_stdout("~dpf_plugin_view()");
 
+        connection = nullptr;
+        scale = nullptr;
+       #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+        timer = nullptr;
+       #endif
         uivst3 = nullptr;
 
         if (hostApplication != nullptr)
@@ -1074,23 +1083,19 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             v3_cpp_obj(view->connection->other)->disconnect(view->connection->other,
                                                             (v3_connection_point**)&view->connection);
 
-        /*
         if (dpf_ui_connection_point* const conn = view->connection)
         {
             if (const int refcount = conn->refcounter)
             {
                 d_stderr("DPF warning: asked to delete view while connection point still active (refcount %d)", refcount);
-                return V3_INVALID_ARG;
             }
         }
-        */
 
         if (dpf_plugin_view_content_scale* const scale = view->scale)
         {
             if (const int refcount = scale->refcounter)
             {
                 d_stderr("DPF warning: asked to delete view while content scale still active (refcount %d)", refcount);
-                return 0;
             }
         }
 
@@ -1132,6 +1137,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 v3_run_loop** runloop = nullptr;
                 v3_cpp_obj_query_interface(view->frame, v3_run_loop_iid, &runloop);
                 DISTRHO_SAFE_ASSERT_RETURN(runloop != nullptr, V3_INVALID_ARG);
+
+                view->runloop = runloop;
                #endif
 
                 const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
@@ -1172,20 +1179,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
        #ifdef DPF_VST3_USING_HOST_RUN_LOOP
         // unregister our timer as needed
-        if (view->timer != nullptr)
+        if (v3_run_loop** const runloop = view->runloop)
         {
-            v3_run_loop** runloop = nullptr;
-
-            if (view->frame != nullptr)
-                v3_cpp_obj_query_interface(view->frame, v3_run_loop_iid, &runloop);
-
-            if (runloop != nullptr)
+            if (view->timer != nullptr && view->timer->valid)
             {
                 v3_cpp_obj(runloop)->unregister_timer(runloop, (v3_timer_handler**)&view->timer);
-
-                // we query it 2 times in total, so lets unref 2 times as well
-                v3_cpp_obj_unref(runloop);
-                v3_cpp_obj_unref(runloop);
 
                 if (const int refcount = --view->timer->refcounter)
                 {
@@ -1197,11 +1195,9 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                     view->timer = nullptr;
                 }
             }
-            else
-            {
-                view->timer->valid = false;
-                d_stderr("VST3 warning: Host run loop not available during dpf_plugin_view::removed");
-            }
+
+            v3_cpp_obj_unref(runloop);
+            view->runloop = nullptr;
         }
        #endif
 

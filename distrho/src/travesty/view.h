@@ -176,7 +176,7 @@ struct v3_event_handler_cpp : v3_funknown {
 };
 
 struct v3_timer_handler_cpp : v3_funknown {
-	v3_timer_handler handler;
+	v3_timer_handler timer;
 };
 
 struct v3_run_loop_cpp : v3_funknown {
