@@ -167,10 +167,15 @@ public:
             disconnect();
     }
 
-    void postInit(const uint32_t nextWidth, const uint32_t nextHeight)
+    void postInit(uint32_t nextWidth, uint32_t nextHeight)
     {
         if (fIsResizingFromHost && nextWidth > 0 && nextHeight > 0)
         {
+#ifdef DISTRHO_OS_MAC
+            const double scaleFactor = fUI.getScaleFactor();
+            nextWidth *= scaleFactor;
+            nextHeight *= scaleFactor;
+#endif
             if (fUI.getWidth() != nextWidth || fUI.getHeight() != nextHeight)
             {
                 d_stdout("postInit sets new size as %u %u", nextWidth, nextHeight);
@@ -278,18 +283,27 @@ public:
         return V3_OK;
     }
 
-    v3_result onSize(v3_view_rect* const rect)
+    v3_result onSize(v3_view_rect* const orect)
     {
+        v3_view_rect rect = *orect;
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        rect.top *= scaleFactor;
+        rect.left *= scaleFactor;
+        rect.right *= scaleFactor;
+        rect.bottom *= scaleFactor;
+#endif
+
         if (fIsResizingFromPlugin)
         {
             d_stdout("host->plugin onSize request %i %i (IGNORED, plugin resize active)",
-                     rect->right - rect->left, rect->bottom - rect->top);
+                     rect.right - rect.left, rect.bottom - rect.top);
             return V3_OK;
         }
 
-        d_stdout("host->plugin onSize request %i %i (OK)", rect->right - rect->left, rect->bottom - rect->top);
+        d_stdout("host->plugin onSize request %i %i (OK)", rect.right - rect.left, rect.bottom - rect.top);
         fIsResizingFromHost = true;
-        fUI.setWindowSizeForVST3(rect->right - rect->left, rect->bottom - rect->top);
+        fUI.setWindowSizeForVST3(rect.right - rect.left, rect.bottom - rect.top);
         return V3_OK;
     }
 
@@ -623,6 +637,12 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
 
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        width /= scaleFactor;
+        height /= scaleFactor;
+#endif
+
         if (fIsResizingFromHost)
         {
             d_stdout("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
@@ -630,12 +650,6 @@ private:
         }
 
         d_stdout("plugin->host setSize %u %u (OK)", width, height);
-
-#ifdef DISTRHO_OS_MAC
-        const double scaleFactor = fUI.getScaleFactor();
-        width /= scaleFactor;
-        height /= scaleFactor;
-#endif
 
         fIsResizingFromPlugin = true;
 
@@ -1049,6 +1063,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return V3_OK;
         }
 
+#ifndef DISTRHO_OS_MAC
         if (v3_tuid_match(v3_plugin_view_content_scale_iid, iid))
         {
             d_stdout("query_interface_view => %p %s %p | OK convert %p",
@@ -1061,6 +1076,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             *iface = &view->scale;
             return V3_OK;
         }
+#endif
 
         d_stdout("query_interface_view => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
@@ -1108,6 +1124,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             }
         }
 
+#ifndef DISTRHO_OS_MAC
         if (dpf_plugin_view_content_scale* const scale = view->scale)
         {
             if (const int refcount = scale->refcounter)
@@ -1116,6 +1133,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 d_stderr("DPF warning: asked to delete view while content scale still active (refcount %d)", refcount);
             }
         }
+#endif
 
         if (unclean)
             return 0;
@@ -1164,13 +1182,13 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 view->runloop = runloop;
                #endif
 
-                const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
+                const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
                 view->uivst3 = new UIVst3((v3_plugin_view**)self,
                                           view->hostApplication,
                                           view->connection != nullptr ? view->connection->other : nullptr,
                                           view->frame,
                                           (uintptr_t)parent,
-                                          scaleFactor,
+                                          lastScaleFactor,
                                           view->sampleRate,
                                           view->instancePointer,
                                           view->nextWidth > 0 && view->nextHeight > 0);
@@ -1287,13 +1305,21 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
 
-        const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
+        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                         view->instancePointer, scaleFactor);
+                         view->instancePointer, lastScaleFactor);
         rect->left = rect->top = 0;
-        rect->right = view->nextWidth = tmpUI.getWidth();
-        rect->bottom = view->nextHeight = tmpUI.getHeight();
+        view->nextWidth = tmpUI.getWidth();
+        view->nextHeight = tmpUI.getHeight();
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = tmpUI.getScaleFactor();
+        view->nextWidth /= scaleFactor;
+        view->nextHeight /= scaleFactor;
+#endif
+        rect->right = view->nextWidth;
+        rect->bottom = view->nextHeight;
+        tmpUI.quit();
         return V3_OK;
     }
 
@@ -1365,13 +1391,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->checkSizeConstraint(rect);
 
-        const float scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
+        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                         view->instancePointer, scaleFactor);
+                         view->instancePointer, lastScaleFactor);
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+        tmpUI.quit();
         applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
         return V3_TRUE;
     }

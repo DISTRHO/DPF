@@ -748,7 +748,9 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 {
     Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-    printEvent(event, "pugl event: ", true);
+    if (event->type != PUGL_TIMER) {
+        printEvent(event, "pugl event: ", true);
+    }
 #endif
 
     switch (event->type)
