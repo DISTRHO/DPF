@@ -77,9 +77,13 @@ struct ScopedUTF16String {
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static bool applyGeometryConstraints(const uint minimumWidth, const uint minimumHeight, const bool keepAspectRatio,
+static bool applyGeometryConstraints(const uint minimumWidth,
+                                     const uint minimumHeight,
+                                     const bool keepAspectRatio,
                                      v3_view_rect* const rect)
 {
+    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d}",
+             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
     const int32_t minWidth = static_cast<int32_t>(minimumWidth);
     const int32_t minHeight = static_cast<int32_t>(minimumHeight);
     bool changed = false;
@@ -109,6 +113,8 @@ static bool applyGeometryConstraints(const uint minimumWidth, const uint minimum
         rect->bottom = minHeight;
     }
 
+    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | changed %d",
+             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom, changed);
     return changed;
 }
 
@@ -167,10 +173,16 @@ public:
             disconnect();
     }
 
-    void postInit(const int32_t nextWidth, const int32_t nextHeight)
+    void postInit(const uint32_t nextWidth, const uint32_t nextHeight)
     {
         if (fIsResizingFromHost && nextWidth > 0 && nextHeight > 0)
-            fUI.setWindowSizeForVST3(nextWidth, nextHeight);
+        {
+            if (fUI.getWidth() != nextWidth || fUI.getHeight() != nextHeight)
+            {
+                d_stdout("postInit sets new size as %u %u", nextWidth, nextHeight);
+                fUI.setWindowSizeForVST3(nextWidth, nextHeight);
+            }
+        }
 
         if (fConnection != nullptr)
             connect(fConnection);
@@ -303,7 +315,8 @@ public:
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         fUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-        return applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
+        return V3_TRUE;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -423,10 +436,13 @@ public:
             DISTRHO_SAFE_ASSERT_RETURN(value16 != nullptr, V3_NOMEM);
 
             res = v3_cpp_obj(attrs)->get_string(attrs, "key", key16, sizeof(int16_t)*keyLength);
-            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, keyLength, res);
 
-            res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*valueLength);
-            DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            if (valueLength != 0)
+            {
+                res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*valueLength);
+                DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, valueLength, res);
+            }
 
             // do cheap inline conversion
             char* const key = (char*)key16;
@@ -957,7 +973,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     double sampleRate;
     v3_plugin_frame** frame;
     v3_run_loop** runloop;
-    int32_t nextWidth, nextHeight;
+    uint32_t nextWidth, nextHeight;
 
     dpf_plugin_view(v3_host_application** const host, void* const instance, const double sr)
         : refcounter(1),
@@ -1282,20 +1298,23 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
                          view->instancePointer, scaleFactor);
         rect->left = rect->top = 0;
-        rect->right = tmpUI.getWidth();
-        rect->bottom = tmpUI.getHeight();
+        rect->right = view->nextWidth = tmpUI.getWidth();
+        rect->bottom = view->nextHeight = tmpUI.getHeight();
         return V3_OK;
     }
 
     static v3_result V3_API on_size(void* const self, v3_view_rect* const rect)
     {
+        DISTRHO_SAFE_ASSERT_INT2_RETURN(rect->right > rect->left, rect->right, rect->left, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_INT2_RETURN(rect->bottom > rect->top, rect->bottom, rect->top, V3_INVALID_ARG);
+
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->onSize(rect);
 
-        view->nextWidth = rect->right - rect->left;
-        view->nextHeight = rect->bottom - rect->top;
+        view->nextWidth = static_cast<uint32_t>(rect->right - rect->left);
+        view->nextHeight = static_cast<uint32_t>(rect->bottom - rect->top);
         return V3_OK;
     }
 
@@ -1359,7 +1378,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-        return applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect) ? V3_FALSE : V3_TRUE;
+        applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
+        return V3_TRUE;
     }
 };
 

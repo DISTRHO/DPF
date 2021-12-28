@@ -2278,10 +2278,13 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(value16 != nullptr, V3_NOMEM);
 
         res = v3_cpp_obj(attrs)->get_string(attrs, "key", key16, sizeof(int16_t)*keyLength);
-        DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+        DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, keyLength, res);
 
-        res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*valueLength);
-        DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+        if (valueLength != 0)
+        {
+            res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*valueLength);
+            DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, valueLength, res);
+        }
 
         // do cheap inline conversion
         char* const key = (char*)key16;
