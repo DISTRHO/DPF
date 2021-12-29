@@ -189,21 +189,21 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
 
-UI::UI(const uint width, const uint height, const bool automaticallyScale)
+UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetAsMinimumSize)
     : UIWidget(UI::PrivateData::createNextWindow(this, width, height)),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    if (width > 0 && height > 0)
+    if (width != 0 && height != 0)
     {
         Widget::setSize(width, height);
 
-        if (automaticallyScale)
+        if (automaticallyScaleAndSetAsMinimumSize)
             setGeometryConstraints(width, height, true, true);
     }
 #else
     // unused
-    return; (void)automaticallyScale;
+    (void)automaticallyScaleAndSetAsMinimumSize;
 #endif
 }
 
@@ -370,8 +370,19 @@ void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
 
+#ifndef DISTRHO_PLUGIN_TARGET_VST3
+    if (uiData->initializing)
+        return;
+
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
+    uiData->setSizeCallback(width, height);
+#endif
+}
+
+// NOTE: only used for VST3
+void UI::requestSizeChange(const uint width, const uint height)
+{
     uiData->setSizeCallback(width, height);
 }
 #endif

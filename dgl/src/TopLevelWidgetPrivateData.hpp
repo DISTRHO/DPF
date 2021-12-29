@@ -30,7 +30,7 @@ struct TopLevelWidget::PrivateData {
     Widget* const selfw;
     Window& window;
 
-    explicit PrivateData(TopLevelWidget* const s, Window& w);
+    explicit PrivateData(TopLevelWidget* self, Window& window);
     ~PrivateData();
     void display();
     bool keyboardEvent(const KeyboardEvent& ev);

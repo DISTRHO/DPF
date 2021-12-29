@@ -15,6 +15,7 @@
  */
 
 #include "WindowPrivateData.hpp"
+#include "../TopLevelWidget.hpp"
 
 #include "pugl.hpp"
 
@@ -87,7 +88,7 @@ Window::Window(Application& app,
                const uint height,
                const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable))
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable, false))
 {
     pData->initPost();
 }
@@ -98,8 +99,9 @@ Window::Window(Application& app,
                const uint height,
                const double scaleFactor,
                const bool resizable,
+               const bool isVST3,
                const bool doPostInit)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable))
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable, isVST3))
 {
     if (doPostInit)
         pData->initPost();
@@ -228,7 +230,19 @@ void Window::setSize(uint width, uint height)
         }
     }
 
-    puglSetWindowSize(pData->view, width, height);
+    if (pData->usesSizeRequest)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(pData->topLevelWidgets.size() != 0,);
+
+        TopLevelWidget* const topLevelWidget = pData->topLevelWidgets.front();
+        DISTRHO_SAFE_ASSERT_RETURN(topLevelWidget != nullptr,);
+
+        topLevelWidget->requestSizeChange(width, height);
+    }
+    else
+    {
+        puglSetWindowSize(pData->view, width, height);
+    }
 }
 
 void Window::setSize(const Size<uint>& size)
@@ -371,10 +385,11 @@ Size<uint> Window::getGeometryConstraints(bool& keepAspectRatio)
     return Size<uint>(pData->minWidth, pData->minHeight);
 }
 
-void Window::setGeometryConstraints(const uint minimumWidth,
-                                    const uint minimumHeight,
+void Window::setGeometryConstraints(uint minimumWidth,
+                                    uint minimumHeight,
                                     const bool keepAspectRatio,
-                                    const bool automaticallyScale)
+                                    const bool automaticallyScale,
+                                    const bool resizeNowIfAutoScaling)
 {
     DISTRHO_SAFE_ASSERT_RETURN(minimumWidth > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(minimumHeight > 0,);
@@ -389,12 +404,15 @@ void Window::setGeometryConstraints(const uint minimumWidth,
 
     const double scaleFactor = pData->scaleFactor;
 
-    puglSetGeometryConstraints(pData->view,
-                               static_cast<uint>(minimumWidth * scaleFactor + 0.5),
-                               static_cast<uint>(minimumHeight * scaleFactor + 0.5),
-                               keepAspectRatio);
+    if (automaticallyScale && scaleFactor != 1.0)
+    {
+        minimumWidth *= scaleFactor;
+        minimumHeight *= scaleFactor;
+    }
 
-    if (scaleFactor != 1.0)
+    puglSetGeometryConstraints(pData->view, minimumWidth, minimumHeight, keepAspectRatio);
+
+    if (scaleFactor != 1.0 && automaticallyScale && resizeNowIfAutoScaling)
     {
         const Size<uint> size(getSize());
 

@@ -60,7 +60,7 @@ void TopLevelWidget::setSize(const Size<uint>& size)
     pData->window.setSize(size);
 }
 
-bool TopLevelWidget::setClipboard(const char* mimeType, const void* data, size_t dataSize)
+bool TopLevelWidget::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
 {
     return pData->window.setClipboard(mimeType, data, dataSize);
 }
@@ -103,9 +103,14 @@ void TopLevelWidget::repaint(const Rectangle<uint>& rect) noexcept
 void TopLevelWidget::setGeometryConstraints(const uint minimumWidth,
                                             const uint minimumHeight,
                                             const bool keepAspectRatio,
-                                            const bool automaticallyScale)
+                                            const bool automaticallyScale,
+                                            const bool resizeNowIfAutoScaling)
 {
-    pData->window.setGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, automaticallyScale);
+    pData->window.setGeometryConstraints(minimumWidth,
+                                         minimumHeight,
+                                         keepAspectRatio,
+                                         automaticallyScale,
+                                         resizeNowIfAutoScaling);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -133,6 +138,12 @@ bool TopLevelWidget::onMotion(const MotionEvent& ev)
 bool TopLevelWidget::onScroll(const ScrollEvent& ev)
 {
     return pData->scrollEvent(ev);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+void TopLevelWidget::requestSizeChange(uint, uint)
+{
 }
 
 // --------------------------------------------------------------------------------------------------------------------

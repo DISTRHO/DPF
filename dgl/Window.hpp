@@ -399,7 +399,8 @@ public:
     void setGeometryConstraints(uint minimumWidth,
                                 uint minimumHeight,
                                 bool keepAspectRatio = false,
-                                bool automaticallyScale = false);
+                                bool automaticallyScale = false,
+                                bool resizeNowIfAutoScaling = true);
 
    /** DEPRECATED Use isIgnoringKeyRepeat(). */
     DISTRHO_DEPRECATED_BY("isIgnoringKeyRepeat()")
@@ -473,6 +474,7 @@ private:
                     uint height,
                     double scaleFactor,
                     bool resizable,
+                    bool isVST3,
                     bool doPostInit);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);

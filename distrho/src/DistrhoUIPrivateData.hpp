@@ -33,7 +33,13 @@
 # define DISTRHO_UI_IS_STANDALONE 0
 #endif
 
-#if defined(DISTRHO_PLUGIN_TARGET_VST2)
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
+# define DISTRHO_UI_IS_VST3 1
+#else
+# define DISTRHO_UI_IS_VST3 0
+#endif
+
+#ifdef DISTRHO_PLUGIN_TARGET_VST2
 # undef DISTRHO_UI_USER_RESIZABLE
 # define DISTRHO_UI_USER_RESIZABLE 0
 #endif
@@ -175,7 +181,8 @@ public:
                           const uint width,
                           const uint height,
                           const double scaleFactor)
-        : Window(app, parentWindowHandle, width, height, scaleFactor, DISTRHO_UI_USER_RESIZABLE, false),
+        : Window(app, parentWindowHandle, width, height, scaleFactor,
+                 DISTRHO_UI_USER_RESIZABLE, DISTRHO_UI_IS_VST3, false),
           ui(uiPtr),
           initializing(true),
           receivedReshapeDuringInit(false)
@@ -332,6 +339,9 @@ struct UI::PrivateData {
 #endif
     char* bundlePath;
 
+    // Ignore initial resize events while initializing
+    bool initializing;
+
     // Callbacks
     void*           callbacksPtr;
     editParamFunc   editParamCallbackFunc;
@@ -355,6 +365,7 @@ struct UI::PrivateData {
           uiStateFileKeyRequest(nullptr),
 #endif
           bundlePath(nullptr),
+          initializing(true),
           callbacksPtr(nullptr),
           editParamCallbackFunc(nullptr),
           setParamCallbackFunc(nullptr),

@@ -84,7 +84,7 @@ public:
       It assumes aspect ratio is meant to be kept.
       Manually call setGeometryConstraints instead if keeping UI aspect ratio is not required.
     */
-    UI(uint width = 0, uint height = 0, bool automaticallyScale = false);
+    UI(uint width = 0, uint height = 0, bool automaticallyScaleAndSetAsMinimumSize = false);
 
    /**
       Destructor.
@@ -358,6 +358,10 @@ private:
     PrivateData* const uiData;
     friend class DGL_NAMESPACE::PluginWindow;
     friend class UIExporter;
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   /** @internal */
+    void requestSizeChange(uint width, uint height) override;
+#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

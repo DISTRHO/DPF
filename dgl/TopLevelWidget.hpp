@@ -110,7 +110,8 @@ public:
     void setGeometryConstraints(uint minimumWidth,
                                 uint minimumHeight,
                                 bool keepAspectRatio = false,
-                                bool automaticallyScale = false);
+                                bool automaticallyScale = false,
+                                bool resizeNowIfAutoScaling = true);
 
     DISTRHO_DEPRECATED_BY("getApp()")
     Application& getParentApp() const noexcept { return getApp(); }
@@ -132,6 +133,8 @@ private:
 #ifdef DISTRHO_DEFINES_H_INCLUDED
     friend class DISTRHO_NAMESPACE::UI;
 #endif
+   /** @internal */
+    virtual void requestSizeChange(uint width, uint height);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopLevelWidget)
 };
