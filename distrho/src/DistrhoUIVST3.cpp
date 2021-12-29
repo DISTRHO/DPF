@@ -242,6 +242,8 @@ public:
 
     v3_result onFocus(const bool state)
     {
+        if (state)
+            fUI.focus();
         fUI.notifyFocusChanged(state);
         return V3_OK;
     }
