@@ -94,40 +94,40 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(bundlePath != nullptr, nullptr);
 
-#if defined(DISTRHO_PLUGIN_TARGET_LV2)
-    static String bundlePathLV2;
+#if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_VST2)
+    static String resourcePath;
 
-    if (bundlePathLV2.isEmpty())
+    if (resourcePath.isEmpty())
     {
-        bundlePathLV2 = bundlePath;
-        bundlePathLV2 += DISTRHO_OS_SEP_STR "resources";
-    }
-
-    return bundlePathLV2.buffer();
-#elif defined(DISTRHO_PLUGIN_TARGET_VST2)
-    static String bundlePathVST2;
-
-    if (bundlePathVST2.isEmpty())
-    {
-        bundlePathVST2 = bundlePath;
+        resourcePath = bundlePath;
 # ifdef DISTRHO_OS_MAC
-        bundlePathVST2 += "/Contents/Resources";
+        resourcePath += "/Contents/Resources";
 # else
-        bundlePathVST2 += DISTRHO_OS_SEP_STR "resources";
+        resourcePath += DISTRHO_OS_SEP_STR "resources";
 # endif
     }
 
-    return bundlePathVST2.buffer();
-#elif defined(DISTRHO_PLUGIN_TARGET_VST3)
-    static String bundlePathVST3;
+    return resourcePath.buffer();
+#elif defined(DISTRHO_PLUGIN_TARGET_LV2)
+    static String resourcePath;
 
-    if (bundlePathVST3.isEmpty())
+    if (resourcePath.isEmpty())
     {
-        bundlePathVST3 = bundlePath;
-        bundlePathVST3 += "/Contents/Resources";
+        resourcePath = bundlePath;
+        resourcePath += DISTRHO_OS_SEP_STR "resources";
     }
 
-    return bundlePathVST3.buffer();
+    return resourcePath.buffer();
+#elif defined(DISTRHO_PLUGIN_TARGET_VST3)
+    static String resourcePath;
+
+    if (resourcePath.isEmpty())
+    {
+        resourcePath = bundlePath;
+        resourcePath += "/Contents/Resources";
+    }
+
+    return resourcePath.buffer();
 #endif
 
     return nullptr;

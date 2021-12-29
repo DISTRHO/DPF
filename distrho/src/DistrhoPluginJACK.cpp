@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../DistrhoPluginUtils.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
@@ -32,6 +33,7 @@
 
 #ifndef DISTRHO_OS_WINDOWS
 # include <signal.h>
+# include <unistd.h>
 #endif
 
 #ifndef JACK_METADATA_ORDER
@@ -948,6 +950,34 @@ int main(int argc, char* argv[])
     d_nextBufferSize = jackbridge_get_buffer_size(client);
     d_nextSampleRate = jackbridge_get_sample_rate(client);
     d_nextCanRequestParameterValueChanges = true;
+
+   #ifndef DISTRHO_OS_WINDOWS
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+       #ifdef DISTRHO_OS_MAC
+        if (tmpPath.endsWith("/MacOS"))
+        {
+            tmpPath.truncate(tmpPath.rfind('/'));
+            if (tmpPath.endsWith("/Contents"))
+            {
+                tmpPath.truncate(tmpPath.rfind('/'));
+                bundlePath = tmpPath;
+                d_nextBundlePath = bundlePath.buffer();
+            }
+        }
+       #else
+        if (access(tmpPath + DISTRHO_OS_SEP_STR "resources", F_OK) == 0)
+        {
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+       #endif
+    }
+   #endif
 
     const PluginJack p(client);
 
