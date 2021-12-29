@@ -684,6 +684,7 @@ public:
         const bool connectedToUI = fConnectionFromCtrlToView != nullptr && fConnectedToUI;
        #endif
         String key, value;
+        bool hasValue = false;
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
 
@@ -721,9 +722,14 @@ public:
 
                 // append to temporary vars
                 if (fillingKey)
+                {
                     key += buffer + i;
+                }
                 else
+                {
                     value += buffer + i;
+                    hasValue = true;
+                }
 
                 // increase buffer offset by length of string
                 i += std::strlen(buffer + i);
@@ -742,6 +748,7 @@ public:
                         queryingType = 's';
                         key.clear();
                         value.clear();
+                        hasValue = false;
                         continue;
                     }
                     if (key == "__dpf_state_end__")
@@ -750,6 +757,7 @@ public:
                         queryingType = 'n';
                         key.clear();
                         value.clear();
+                        hasValue = false;
                         continue;
                     }
                     if (key == "__dpf_parameters_begin__")
@@ -759,6 +767,7 @@ public:
                         queryingType = 'p';
                         key.clear();
                         value.clear();
+                        hasValue = false;
                         continue;
                     }
                     if (key == "__dpf_parameters_end__")
@@ -767,14 +776,15 @@ public:
                         queryingType = 'x';
                         key.clear();
                         value.clear();
+                        hasValue = false;
                         continue;
                     }
 
                     // no special key, swap between reading real key and value
                     fillingKey = !fillingKey;
 
-                    // if there is no value yet keep reading until we have one (TODO check empty values on purpose)
-                    if (value.isEmpty())
+                    // if there is no value yet keep reading until we have one
+                    if (! hasValue)
                         continue;
 
                     if (key == "__dpf_program__")
@@ -847,11 +857,11 @@ public:
                             fPlugin.setParameterValue(j, fvalue);
                             break;
                         }
-
                     }
 
                     key.clear();
                     value.clear();
+                    hasValue = false;
                 }
             }
         }
