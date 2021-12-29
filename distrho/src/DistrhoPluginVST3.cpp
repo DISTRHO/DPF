@@ -845,7 +845,6 @@ public:
                             else
                                 fvalue = std::atof(value.buffer());
 
-                            // TODO atoi if integer
                             fCachedParameterValues[kVst3InternalParameterBaseCount + j] = fvalue;
 #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
@@ -895,8 +894,8 @@ public:
         const uint32_t stateCount = 0;
 #endif
 
-        // int64_t ignore = 0;
-        // v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
+        int64_t ignore = 0;
+        v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
 
         if (stateCount == 0 && paramCount == 0)
         {
@@ -963,8 +962,10 @@ public:
                 String tmpStr;
                 tmpStr  = fPlugin.getParameterSymbol(i);
                 tmpStr += "\xff";
-                // TODO cast to integer if needed
-                tmpStr += String(fPlugin.getParameterValue(i));
+                if (fPlugin.getParameterHints(i) & kParameterIsInteger)
+                    tmpStr += String(static_cast<int>(std::round(fPlugin.getParameterValue(i))));
+                else
+                    tmpStr += String(fPlugin.getParameterValue(i));
                 tmpStr += "\xff";
 
                 state += tmpStr;
