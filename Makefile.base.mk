@@ -262,6 +262,9 @@ endif
 
 HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 
+ifeq ($(SKIP_RTAUDIO_FALLBACK),true)
+CXXFLAGS += DPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK
+else
 ifeq ($(MACOS),true)
 HAVE_RTAUDIO    = true
 else ifeq ($(WINDOWS),true)
@@ -273,6 +276,7 @@ ifeq ($(HAVE_ALSA),true)
 HAVE_RTAUDIO    = true
 else ifeq ($(HAVE_PULSEAUDIO),true)
 HAVE_RTAUDIO    = true
+endif
 endif
 endif
 
