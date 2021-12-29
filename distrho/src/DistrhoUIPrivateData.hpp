@@ -231,6 +231,13 @@ public:
             puglBackendEnter(pData->view);
     }
 
+   #ifdef DISTRHO_PLUGIN_TARGET_VST3
+    void setSizeForVST3(const uint width, const uint height)
+    {
+        puglSetWindowSize(pData->view, width, height);
+    }
+   #endif
+
 protected:
     void onFocus(const bool focus, const DGL_NAMESPACE::CrossingMode mode) override
     {

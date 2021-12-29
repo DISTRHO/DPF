@@ -286,10 +286,10 @@ public:
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
     void setWindowSizeForVST3(const uint width, const uint height)
     {
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         ui->setSize(width, height);
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        // NOTE in external uis, the ui and window refer to the same object
-        uiData->window->setSize(width, height);
+# else
+        uiData->window->setSizeForVST3(width, height);
 # endif
     }
 #endif
