@@ -199,7 +199,7 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
         Widget::setSize(width, height);
 
         if (automaticallyScaleAndSetAsMinimumSize)
-            setGeometryConstraints(width, height, true, true);
+            setGeometryConstraints(width, height, true, true, true);
     }
 #else
     // unused
@@ -383,7 +383,16 @@ void UI::onResize(const ResizeEvent& ev)
 // NOTE: only used for VST3
 void UI::requestSizeChange(const uint width, const uint height)
 {
-    uiData->setSizeCallback(width, height);
+# ifdef DISTRHO_PLUGIN_TARGET_VST3
+    if (uiData->initializing)
+        uiData->window->setSizeForVST3(width, height);
+    else
+        uiData->setSizeCallback(width, height);
+# else
+    // unused
+    (void)width;
+    (void)height;
+# endif
 }
 #endif
 

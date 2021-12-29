@@ -257,6 +257,7 @@ public:
         rect->right /= scaleFactor;
         rect->bottom /= scaleFactor;
 #endif
+        d_stdout("getSize request returning %i %i", rect->right, rect->bottom);
         return V3_OK;
     }
 
@@ -300,6 +301,11 @@ public:
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         fUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI.getScaleFactor();
+        minimumWidth /= scaleFactor;
+        minimumHeight /= scaleFactor;
+#endif
         applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
         return V3_TRUE;
     }
@@ -1298,7 +1304,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 #endif
         rect->right = view->nextWidth;
         rect->bottom = view->nextHeight;
-        tmpUI.quit();
+        d_stdout("dpf_plugin_view::get_size => %p | next size %u %u with scale factor %f", self, view->nextWidth, view->nextHeight, lastScaleFactor);
         return V3_OK;
     }
 
@@ -1377,7 +1383,11 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-        tmpUI.quit();
+#ifdef DISTRHO_OS_MAC
+        const double scaleFactor = tmpUI.getScaleFactor();
+        minimumWidth /= scaleFactor;
+        minimumHeight /= scaleFactor;
+#endif
         applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
         return V3_TRUE;
     }
