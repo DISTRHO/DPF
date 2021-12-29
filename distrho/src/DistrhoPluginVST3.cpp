@@ -692,9 +692,6 @@ public:
         buffer[sizeof(buffer)-1] = '\xff';
         v3_result res;
 
-        // int64_t ignore = 0;
-        // v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
-
         for (int32_t pos = 0, term = 0, read; term == 0; pos += read)
         {
             res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
@@ -893,9 +890,6 @@ public:
 #else
         const uint32_t stateCount = 0;
 #endif
-
-        int64_t ignore = 0;
-        v3_cpp_obj(stream)->seek(stream, 0, V3_SEEK_SET, &ignore);
 
         if (stateCount == 0 && paramCount == 0)
         {
