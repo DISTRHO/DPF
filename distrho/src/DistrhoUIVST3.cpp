@@ -379,10 +379,12 @@ public:
             {
                 switch (rindex)
                 {
+               #if DPF_VST3_USES_SEPARATE_CONTROLLER
                 case kVst3InternalParameterSampleRate:
                     DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0, V3_INVALID_ARG);
                     fUI.setSampleRate(value, true);
                     break;
+               #endif
                #if DISTRHO_PLUGIN_WANT_PROGRAMS
                 case kVst3InternalParameterProgram:
                     DISTRHO_SAFE_ASSERT_RETURN(value >= 0.0, V3_INVALID_ARG);

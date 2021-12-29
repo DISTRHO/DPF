@@ -1029,16 +1029,16 @@ public:
         fPlugin.setSampleRate(setup->sample_rate, true);
         fPlugin.setBufferSize(setup->max_block_size, true);
 
-       #if DPF_VST3_USES_SEPARATE_CONTROLLER
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER
         fCachedParameterValues[kVst3InternalParameterBufferSize] = setup->max_block_size;
         fParameterValuesChangedDuringProcessing[kVst3InternalParameterBufferSize] = true;
 
         fCachedParameterValues[kVst3InternalParameterSampleRate] = setup->sample_rate;
         fParameterValuesChangedDuringProcessing[kVst3InternalParameterSampleRate] = true;
-       #endif
        #if DISTRHO_PLUGIN_HAS_UI
         fParameterValueChangesForUI[kVst3InternalParameterSampleRate] = true;
        #endif
+      #endif
 
         if (active)
             fPlugin.activate();
@@ -1874,9 +1874,11 @@ public:
         {
             fConnectedToUI = true;
 
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             fParameterValueChangesForUI[kVst3InternalParameterSampleRate] = false;
             sendParameterSetToUI(kVst3InternalParameterSampleRate,
                                  fCachedParameterValues[kVst3InternalParameterSampleRate]);
+           #endif
 
            #if DISTRHO_PLUGIN_WANT_PROGRAMS
             fParameterValueChangesForUI[kVst3InternalParameterProgram] = false;
@@ -1921,12 +1923,14 @@ public:
 
         if (std::strcmp(msgid, "idle") == 0)
         {
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             if (fParameterValueChangesForUI[kVst3InternalParameterSampleRate])
             {
                 fParameterValueChangesForUI[kVst3InternalParameterSampleRate] = false;
                 sendParameterSetToUI(kVst3InternalParameterSampleRate,
                                      fCachedParameterValues[kVst3InternalParameterSampleRate]);
             }
+           #endif
 
            #if DISTRHO_PLUGIN_WANT_PROGRAMS
             if (fParameterValueChangesForUI[kVst3InternalParameterProgram])
