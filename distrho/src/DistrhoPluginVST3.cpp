@@ -1427,20 +1427,20 @@ public:
        #endif
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
         {
             const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterMidiCC_start);
             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_HIDDEN;
             info->step_count = 127;
             char ccstr[24];
-            snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", index / 130 + 1, index % 130);
+            snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", static_cast<uint8_t>(index / 130) + 1, index % 130);
             strncpy_utf16(info->title, ccstr, 128);
             snprintf(ccstr, sizeof(ccstr)-1, "Ch.%d CC%d", index / 130 + 1, index % 130);
             strncpy_utf16(info->short_title, ccstr+5, 128);
             return V3_OK;
         }
-#endif
+       #endif
 
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT_RETURN(index < fParameterCount, index, V3_INVALID_ARG);
