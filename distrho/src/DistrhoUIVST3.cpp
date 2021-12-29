@@ -21,21 +21,6 @@
 #include "travesty/host.h"
 #include "travesty/view.h"
 
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# include <atomic>
-#else
-// quick and dirty std::atomic replacement for the things we need
-namespace std {
-    struct atomic_int {
-        volatile int value;
-        explicit atomic_int(volatile int v) noexcept : value(v) {}
-        int operator++() volatile noexcept { return __atomic_add_fetch(&value, 1, __ATOMIC_RELAXED); }
-        int operator--() volatile noexcept { return __atomic_sub_fetch(&value, 1, __ATOMIC_RELAXED); }
-        operator int() volatile noexcept { return __atomic_load_n(&value, __ATOMIC_RELAXED); }
-    };
-};
-#endif
-
 /* TODO items:
  * - mousewheel event
  * - key down/up events
@@ -66,14 +51,6 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 // Utility functions (defined on plugin side)
 
 const char* tuid2str(const v3_tuid iid);
-void strncpy_utf16(int16_t* dst, const char* src, size_t length);
-
-struct ScopedUTF16String {
-    int16_t* str;
-    ScopedUTF16String(const char* const s) noexcept;
-    ~ScopedUTF16String() noexcept;
-    operator const int16_t*() const noexcept;
-};
 
 // --------------------------------------------------------------------------------------------------------------------
 

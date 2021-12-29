@@ -18,20 +18,6 @@
 #include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedPointer.hpp"
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI == 1 && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS == 0
-# define DPF_VST3_USES_SEPARATE_CONTROLLER
-#endif
-
 #define DPF_VST3_MAX_BUFFER_SIZE 32768
 #define DPF_VST3_MAX_SAMPLE_RATE 384000
 #define DPF_VST3_MAX_LATENCY     DPF_VST3_MAX_SAMPLE_RATE * 10
@@ -46,21 +32,6 @@
 #include "travesty/factory.h"
 #include "travesty/host.h"
 
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# include <atomic>
-#else
-// quick and dirty std::atomic replacement for the things we need
-namespace std {
-    struct atomic_int {
-        volatile int value;
-        explicit atomic_int(volatile int v) noexcept : value(v) {}
-        int operator++() volatile noexcept { return __atomic_add_fetch(&value, 1, __ATOMIC_RELAXED); }
-        int operator--() volatile noexcept { return __atomic_sub_fetch(&value, 1, __ATOMIC_RELAXED); }
-        operator int() volatile noexcept { return __atomic_load_n(&value, __ATOMIC_RELAXED); }
-    };
-}
-#endif
-
 #include <map>
 #include <string>
 #include <vector>
@@ -71,8 +42,6 @@ namespace std {
  * - have parameter outputs host-provided UI working in at least 1 host
  * - parameter groups via unit ids
  * - test parameter changes from DSP (aka requestParameterValueChange)
- * - how to hide parameter outputs?
- * - how to hide program parameter?
  * - test receiving midi CC
  * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
  * - fully implemented parameter stuff and verify
@@ -242,190 +211,6 @@ const char* tuid2str(const v3_tuid iid)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-
-static bool strcmp_utf16(const int16_t* const str16, const char* const str8)
-{
-    size_t i = 0;
-    for (; str8[i] != '\0'; ++i)
-    {
-        const uint8_t char8 = static_cast<uint8_t>(str8[i]);
-
-        // skip non-ascii chars, unsupported
-        if (char8 >= 0x80)
-            return false;
-
-        if (str16[i] != char8)
-            return false;
-    }
-
-    return str16[i] == str8[i];
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
-static size_t strlen_utf16(const int16_t* const str)
-{
-    size_t i = 0;
-
-    while (str[i] != 0)
-        ++i;
-
-    return i;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
-static void strncpy(char* const dst, const char* const src, const size_t length)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
-
-    if (const size_t len = std::min(std::strlen(src), length-1U))
-    {
-        std::memcpy(dst, src, len);
-        dst[len] = '\0';
-    }
-    else
-    {
-        dst[0] = '\0';
-    }
-}
-
-void strncpy_utf8(char* const dst, const int16_t* const src, const size_t length)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
-
-    if (const size_t len = std::min(strlen_utf16(src), length-1U))
-    {
-        for (size_t i=0; i<len; ++i)
-        {
-            // skip non-ascii chars, unsupported
-            if (src[i] >= 0x80)
-                continue;
-
-            dst[i] = src[i];
-        }
-        dst[len] = 0;
-    }
-    else
-    {
-        dst[0] = 0;
-    }
-}
-
-void strncpy_utf16(int16_t* const dst, const char* const src, const size_t length)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
-
-    if (const size_t len = std::min(std::strlen(src), length-1U))
-    {
-        for (size_t i=0; i<len; ++i)
-        {
-            // skip non-ascii chars, unsupported
-            if ((uint8_t)src[i] >= 0x80)
-                continue;
-
-            dst[i] = src[i];
-        }
-        dst[len] = 0;
-    }
-    else
-    {
-        dst[0] = 0;
-    }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-
-template<typename T>
-static void snprintf_t(char* const dst, const T value, const char* const format, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, format, value);
-    dst[size-1] = '\0';
-}
-
-template<typename T>
-static void snprintf_utf16_t(int16_t* const dst, const T value, const char* const format, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-
-    char* const tmpbuf = (char*)std::malloc(size);
-    DISTRHO_SAFE_ASSERT_RETURN(tmpbuf != nullptr,);
-
-    std::snprintf(tmpbuf, size-1, format, value);
-    tmpbuf[size-1] = '\0';
-
-    strncpy_utf16(dst, tmpbuf, size);
-    std::free(tmpbuf);
-}
-
-static inline
-void snprintf_u32(char* const dst, const uint32_t value, const size_t size)
-{
-    return snprintf_t<uint32_t>(dst, value, "%u", size);
-}
-
-static inline
-void snprintf_f32_utf16(int16_t* const dst, const float value, const size_t size)
-{
-    return snprintf_utf16_t<float>(dst, value, "%f", size);
-}
-
-static inline
-void snprintf_i32_utf16(int16_t* const dst, const int value, const size_t size)
-{
-    return snprintf_utf16_t<int>(dst, value, "%d", size);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// handy way to create a utf16 string from a utf8 one on the current function scope, used for message strings
-
-struct ScopedUTF16String {
-    int16_t* str;
-    ScopedUTF16String(const char* const s) noexcept;
-    ~ScopedUTF16String() noexcept;
-    operator const int16_t*() const noexcept;
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-
-ScopedUTF16String::ScopedUTF16String(const char* const s) noexcept
-    : str(nullptr)
-{
-    const size_t len = std::strlen(s);
-    str = static_cast<int16_t*>(std::malloc(sizeof(int16_t) * (len + 1)));
-    DISTRHO_SAFE_ASSERT_RETURN(str != nullptr,);
-    strncpy_utf16(str, s, len + 1);
-}
-
-ScopedUTF16String::~ScopedUTF16String() noexcept
-{
-    std::free(str);
-}
-
-ScopedUTF16String::operator const int16_t*() const noexcept
-{
-    return str;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// handy way to create a utf8 string from a utf16 one on the current function scope
-
-struct ScopedUTF8String {
-    char str[128];
-
-    ScopedUTF8String(const int16_t* const s) noexcept
-    {
-        strncpy_utf8(str, s, 128);
-    }
-
-    operator const char*() const noexcept
-    {
-        return str;
-    }
-};
-
-// --------------------------------------------------------------------------------------------------------------------
 // dpf_plugin_view_create (implemented on UI side)
 
 v3_plugin_view** dpf_plugin_view_create(v3_host_application** host, void* instancePointer, double sampleRate);
@@ -469,7 +254,7 @@ public:
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
           fComponentHandler(nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
-# ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+# if DPF_VST3_USES_SEPARATE_CONTROLLER
           fConnectionFromCompToCtrl(nullptr),
 # endif
           fConnectionFromCtrlToView(nullptr),
@@ -563,9 +348,10 @@ public:
         {
             fCachedParameterValues = new float[extraParameterCount];
 
-            fCachedParameterValues[kVst3InternalParameterActive]     = 0.0f;
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             fCachedParameterValues[kVst3InternalParameterBufferSize] = fPlugin.getBufferSize();
             fCachedParameterValues[kVst3InternalParameterSampleRate] = fPlugin.getSampleRate();
+           #endif
            #if DISTRHO_PLUGIN_WANT_LATENCY
             fCachedParameterValues[kVst3InternalParameterLatency]    = fLastKnownLatency;
            #endif
@@ -1243,11 +1029,13 @@ public:
         fPlugin.setSampleRate(setup->sample_rate, true);
         fPlugin.setBufferSize(setup->max_block_size, true);
 
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         fCachedParameterValues[kVst3InternalParameterBufferSize] = setup->max_block_size;
         fParameterValuesChangedDuringProcessing[kVst3InternalParameterBufferSize] = true;
 
         fCachedParameterValues[kVst3InternalParameterSampleRate] = setup->sample_rate;
         fParameterValuesChangedDuringProcessing[kVst3InternalParameterSampleRate] = true;
+       #endif
        #if DISTRHO_PLUGIN_HAS_UI
         fParameterValueChangesForUI[kVst3InternalParameterSampleRate] = true;
        #endif
@@ -1272,8 +1060,6 @@ public:
             fPlugin.deactivateIfNeeded();
         }
 
-        fCachedParameterValues[kVst3InternalParameterActive] = processing ? 1.0f : 0.0f;
-        fParameterValuesChangedDuringProcessing[kVst3InternalParameterActive] = true;
         return V3_OK;
     }
 
@@ -1608,12 +1394,7 @@ public:
 
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
-            info->flags = V3_PARAM_READ_ONLY | V3_PARAM_IS_HIDDEN;
-            info->step_count = 1;
-            strncpy_utf16(info->title, "Active", 128);
-            strncpy_utf16(info->short_title, "Active", 128);
-            return V3_OK;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
             info->flags = V3_PARAM_READ_ONLY | V3_PARAM_IS_HIDDEN;
             info->step_count = DPF_VST3_MAX_BUFFER_SIZE - 1;
@@ -1627,6 +1408,7 @@ public:
             strncpy_utf16(info->short_title, "Sample Rate", 128);
             strncpy_utf16(info->units, "frames", 128);
             return V3_OK;
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
             info->flags = V3_PARAM_READ_ONLY | V3_PARAM_IS_HIDDEN;
@@ -1714,15 +1496,14 @@ public:
 
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
-            strncpy_utf16(output, normalized > 0.5 ? "On" : "Off", 128);
-            return V3_OK;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
             snprintf_i32_utf16(output, static_cast<int>(normalized * DPF_VST3_MAX_BUFFER_SIZE + 0.5), 128);
             return V3_OK;
         case kVst3InternalParameterSampleRate:
             snprintf_f32_utf16(output, std::round(normalized * DPF_VST3_MAX_SAMPLE_RATE), 128);
             return V3_OK;
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
             snprintf_f32_utf16(output, std::round(normalized * DPF_VST3_MAX_LATENCY), 128);
@@ -1783,15 +1564,14 @@ public:
     {
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
-            *output = strcmp_utf16(input, "On") ? 1.0 : 0.0;
-            return V3_OK;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
             *output = static_cast<double>(std::atoi(ScopedUTF8String(input))) / DPF_VST3_MAX_BUFFER_SIZE;
             return V3_OK;
         case kVst3InternalParameterSampleRate:
             *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_SAMPLE_RATE;
             return V3_OK;
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
             *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_LATENCY;
@@ -1852,12 +1632,12 @@ public:
 
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
-            return normalized > 0.5 ? 1.0 : 0.0;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
             return std::round(normalized * DPF_VST3_MAX_BUFFER_SIZE);
         case kVst3InternalParameterSampleRate:
             return normalized * DPF_VST3_MAX_SAMPLE_RATE;
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
             return normalized * DPF_VST3_MAX_LATENCY;
@@ -1897,12 +1677,12 @@ public:
     {
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
-            return plain;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
             return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_BUFFER_SIZE));
         case kVst3InternalParameterSampleRate:
             return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_SAMPLE_RATE));
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
             return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_LATENCY));
@@ -1933,11 +1713,13 @@ public:
             return 0.0;
        #endif
 
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
-        case kVst3InternalParameterActive:
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
         case kVst3InternalParameterSampleRate:
+       #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
        #endif
@@ -1946,6 +1728,7 @@ public:
        #endif
             return plainParameterToNormalized(rindex, fCachedParameterValues[rindex]);
         }
+       #endif
 
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
@@ -1971,23 +1754,14 @@ public:
 
             switch (rindex)
             {
-            case kVst3InternalParameterActive:
-                if (fCachedParameterValues[rindex] > 0.5f)
-                {
-                    if (! fPlugin.isActive())
-                        fPlugin.activate();
-                }
-                else
-                {
-                    fPlugin.deactivateIfNeeded();
-                }
-                break;
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             case kVst3InternalParameterBufferSize:
                 fPlugin.setBufferSize(fCachedParameterValues[rindex], true);
                 break;
             case kVst3InternalParameterSampleRate:
                 fPlugin.setSampleRate(fCachedParameterValues[rindex], true);
                 break;
+           #endif
            #if DISTRHO_PLUGIN_WANT_LATENCY
             case kVst3InternalParameterLatency:
                 flags = V3_RESTART_LATENCY_CHANGED;
@@ -2019,10 +1793,12 @@ public:
             return V3_OK;
         }
 
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, V3_INVALID_ARG);
 
         setNormalizedPluginParameterValue(index, normalized);
+       #endif
         return V3_OK;
     }
 
@@ -2036,7 +1812,7 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_connection_point interface calls
 
-   #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     void comp2ctrl_connect(v3_connection_point** const other)
     {
         fConnectionFromCompToCtrl = other;
@@ -2230,7 +2006,7 @@ public:
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (std::strcmp(msgid, "midi") == 0)
         {
-           #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             DISTRHO_SAFE_ASSERT_RETURN(fConnectionFromCompToCtrl != nullptr, V3_INTERNAL_ERR);
             return v3_cpp_obj(fConnectionFromCompToCtrl)->notify(fConnectionFromCompToCtrl, message);
            #else
@@ -2242,7 +2018,7 @@ public:
        #if DISTRHO_PLUGIN_WANT_STATE
         if (std::strcmp(msgid, "state-set") == 0)
         {
-           #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             DISTRHO_SAFE_ASSERT_RETURN(fConnectionFromCompToCtrl != nullptr, V3_INTERNAL_ERR);
             return v3_cpp_obj(fConnectionFromCompToCtrl)->notify(fConnectionFromCompToCtrl, message);
            #else
@@ -2352,7 +2128,7 @@ private:
     // VST3 stuff
     v3_component_handler** fComponentHandler;
 #if DISTRHO_PLUGIN_HAS_UI
-   #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     v3_connection_point** fConnectionFromCompToCtrl;
    #endif
     v3_connection_point** fConnectionFromCtrlToView;
@@ -2401,7 +2177,8 @@ private:
         v3_param_id paramId;
         float curValue;
 
-        for (v3_param_id i=kVst3InternalParameterActive; i<=kVst3InternalParameterSampleRate; ++i)
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
+        for (v3_param_id i=kVst3InternalParameterBufferSize; i<=kVst3InternalParameterSampleRate; ++i)
         {
             if (! fParameterValuesChangedDuringProcessing[i])
                 continue;
@@ -2410,6 +2187,7 @@ private:
             fParameterValuesChangedDuringProcessing[i] = false;
             addParameterDataToHostOutputEvents(outparamsptr, i, curValue);
         }
+       #endif
 
         for (uint32_t i=0; i<fParameterCount; ++i)
         {
@@ -2685,7 +2463,7 @@ static uint32_t handleUncleanComponent(dpf_component** const componentptr)
     return 0;
 }
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
 // --------------------------------------------------------------------------------------------------------------------
 // Store controllers that we can't delete properly, to be cleaned up on module unload
 
@@ -2951,7 +2729,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_ctrl2view_connection_point> connectionCtrl2View;
 #endif
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
     ScopedPointer<dpf_comp2ctrl_connection_point> connectionComp2Ctrl;
     ScopedPointer<PluginVst3> vst3;
 #else
@@ -2961,12 +2739,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // cached values
     v3_component_handler** handler;
     v3_host_application** const hostApplicationFromFactory;
-#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
     v3_host_application** const hostApplicationFromComponent;
 #endif
     v3_host_application** hostApplicationFromInitialize;
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
     dpf_edit_controller(v3_host_application** const hostApp)
         : refcounter(1),
           vst3(nullptr),
@@ -2978,7 +2756,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #endif
           handler(nullptr),
           hostApplicationFromFactory(hostApp),
-#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
           hostApplicationFromComponent(hostComp),
 #endif
           hostApplicationFromInitialize(nullptr)
@@ -2988,7 +2766,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // make sure host application is valid through out this controller lifetime
         if (hostApplicationFromFactory != nullptr)
             v3_cpp_obj_ref(hostApplicationFromFactory);
-#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
         if (hostApplicationFromComponent != nullptr)
             v3_cpp_obj_ref(hostApplicationFromComponent);
 #endif
@@ -3024,12 +2802,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #if DISTRHO_PLUGIN_HAS_UI
         connectionCtrl2View = nullptr;
 #endif
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         connectionComp2Ctrl = nullptr;
         vst3 = nullptr;
 #endif
 
-#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
         if (hostApplicationFromComponent != nullptr)
             v3_cpp_obj_unref(hostApplicationFromComponent);
 #endif
@@ -3065,7 +2843,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         }
 #endif
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             d_stdout("query_interface_edit_controller => %p %s %p | OK convert %p",
@@ -3105,7 +2883,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return refcount;
         }
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         /**
          * Some hosts will have unclean instances of a few of the controller child classes at this point.
          * We check for those here, going through the whole possible chain to see if it is safe to delete.
@@ -3144,7 +2922,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         // check if already initialized
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 == nullptr, V3_INVALID_ARG);
 #else
         DISTRHO_SAFE_ASSERT_RETURN(! controller->initialized, V3_INVALID_ARG);
@@ -3160,7 +2938,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // save it for later so we can unref it
         controller->hostApplicationFromInitialize = hostApplication;
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         // provide the factory application to the plugin if this new one is missing
         if (hostApplication == nullptr)
             hostApplication = controller->hostApplicationFromFactory;
@@ -3195,7 +2973,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         d_stdout("dpf_edit_controller::terminate => %p", self);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         // check if already terminated
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_INVALID_ARG);
 
@@ -3226,7 +3004,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         d_stdout("dpf_edit_controller::set_component_state => %p %p", self, stream);
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
@@ -3246,7 +3024,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         d_stdout("dpf_edit_controller::set_state => %p %p", self, stream);
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
 #endif
@@ -3262,7 +3040,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         d_stdout("dpf_edit_controller::get_state => %p %p", self, stream);
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
 #endif
@@ -3396,7 +3174,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // we require a host application for message creation
         v3_host_application** const host = controller->hostApplicationFromInitialize != nullptr
                                          ? controller->hostApplicationFromInitialize
-#ifndef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
                                          : controller->hostApplicationFromComponent != nullptr
                                          ? controller->hostApplicationFromComponent
 #endif
@@ -3646,7 +3424,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 struct dpf_component : v3_component_cpp {
     std::atomic_int refcounter;
     ScopedPointer<dpf_audio_processor> processor;
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
     ScopedPointer<dpf_comp2ctrl_connection_point> connectionComp2Ctrl;
 #else
     ScopedPointer<dpf_edit_controller> controller;
@@ -3691,7 +3469,7 @@ struct dpf_component : v3_component_cpp {
     {
         d_stdout("~dpf_component()");
         processor = nullptr;
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         connectionComp2Ctrl = nullptr;
 #else
         controller = nullptr;
@@ -3743,7 +3521,7 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
             d_stdout("query_interface_component => %p %s %p | OK convert %p",
@@ -3815,7 +3593,7 @@ struct dpf_component : v3_component_cpp {
             }
         }
 
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (dpf_comp2ctrl_connection_point* const point = component->connectionComp2Ctrl)
         {
             if (const int refcount = point->refcounter)
@@ -3880,7 +3658,7 @@ struct dpf_component : v3_component_cpp {
         // create the actual plugin
         component->vst3 = new PluginVst3(hostApplication);
 
-       #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // set connection point if needed
         if (dpf_comp2ctrl_connection_point* const point = component->connectionComp2Ctrl)
         {
@@ -4133,7 +3911,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         if (hostContext != nullptr)
             v3_cpp_obj_unref(hostContext);
 
-       #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (gControllerGarbage.size() != 0)
         {
             d_stdout("DPF notice: cleaning up previously undeleted controllers now");
@@ -4271,7 +4049,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
             return V3_OK;
         }
 
-       #ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // create edit controller
         if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_controller) && v3_tuid_match(iid, v3_edit_controller_iid))
         {
@@ -4299,8 +4077,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-        // TODO FIXME
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
 #endif
         std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
@@ -4323,8 +4100,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-        // TODO FIXME
-#ifdef DPF_VST3_USES_SEPARATE_CONTROLLER
+#if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
 #endif
         std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
