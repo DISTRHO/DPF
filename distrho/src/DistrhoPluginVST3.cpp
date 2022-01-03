@@ -1312,7 +1312,7 @@ public:
                 const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
                 DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fVst3ParameterCount, rindex);
 
-               #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
+               #if DPF_VST3_HAS_INTERNAL_PARAMETERS
                 if (rindex < kVst3InternalParameterCount)
                     continue;
                #endif
@@ -1331,15 +1331,15 @@ public:
             }
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
-#else
+       #else
         fPlugin.run(inputs, outputs, data->nframes);
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fHostEventOutputHandle = nullptr;
-#endif
+       #endif
 
         // if there are any parameter changes after frame 0, set them here
         if (v3_param_changes** const inparamsptr = data->input_params)
@@ -1355,7 +1355,7 @@ public:
                 const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
                 DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fVst3ParameterCount, rindex);
 
-               #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
+               #if DPF_VST3_HAS_INTERNAL_PARAMETERS
                 if (rindex < kVst3InternalParameterCount)
                     continue;
                #endif
@@ -1718,7 +1718,11 @@ public:
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         // TODO something to do here?
-        if (rindex >= kVst3InternalParameterMidiCC_start && rindex <= kVst3InternalParameterMidiCC_end)
+        if (
+           #if !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
+            rindex >= kVst3InternalParameterMidiCC_start &&
+           #endif
+            rindex <= kVst3InternalParameterMidiCC_end)
             return 0.0;
        #endif
 
@@ -1752,11 +1756,15 @@ public:
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         // TODO something to do here?
-        if (rindex >= kVst3InternalParameterMidiCC_start && rindex <= kVst3InternalParameterMidiCC_end)
+        if (
+           #if !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
+            rindex >= kVst3InternalParameterMidiCC_start &&
+           #endif
+            rindex <= kVst3InternalParameterMidiCC_end)
             return V3_INVALID_ARG;
        #endif
 
-       #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
+       #if DPF_VST3_HAS_INTERNAL_PARAMETERS && !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
         if (rindex < kVst3InternalParameterBaseCount)
         {
             fCachedParameterValues[rindex] = normalizedParameterToPlain(rindex, normalized);
@@ -1812,7 +1820,7 @@ public:
        #endif
         return V3_OK;
 
-       #ifndef DPF_VST3_HAS_INTERNAL_PARAMETERS
+       #if !DPF_VST3_HAS_INTERNAL_PARAMETERS
         // unused
         (void)rindex;
        #endif
