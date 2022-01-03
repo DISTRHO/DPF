@@ -1312,8 +1312,10 @@ public:
                 const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
                 DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fVst3ParameterCount, rindex);
 
+               #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
                 if (rindex < kVst3InternalParameterCount)
                     continue;
+               #endif
 
                 if (v3_cpp_obj(queue)->get_point_count(queue) <= 0)
                     continue;
@@ -1353,8 +1355,10 @@ public:
                 const v3_param_id rindex = v3_cpp_obj(queue)->get_param_id(queue);
                 DISTRHO_SAFE_ASSERT_UINT_BREAK(rindex < fVst3ParameterCount, rindex);
 
+               #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
                 if (rindex < kVst3InternalParameterCount)
                     continue;
+               #endif
 
                 const int32_t pcount = v3_cpp_obj(queue)->get_point_count(queue);
 
@@ -1752,6 +1756,7 @@ public:
             return V3_INVALID_ARG;
        #endif
 
+       #ifdef DPF_VST3_HAS_INTERNAL_PARAMETERS
         if (rindex < kVst3InternalParameterBaseCount)
         {
             fCachedParameterValues[rindex] = normalizedParameterToPlain(rindex, normalized);
@@ -1797,6 +1802,7 @@ public:
 
             return V3_OK;
         }
+       #endif
 
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
@@ -1805,6 +1811,11 @@ public:
         setNormalizedPluginParameterValue(index, normalized);
        #endif
         return V3_OK;
+
+       #ifndef DPF_VST3_HAS_INTERNAL_PARAMETERS
+        // unused
+        (void)rindex;
+       #endif
     }
 
     v3_result setComponentHandler(v3_component_handler** const handler) noexcept

@@ -83,6 +83,10 @@ enum Vst3InternalParameters {
 #endif
 };
 
+#if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS || DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# define DPF_VST3_HAS_INTERNAL_PARAMETERS
+#endif
+
 // --------------------------------------------------------------------------------------------------------------------
 
 static inline
