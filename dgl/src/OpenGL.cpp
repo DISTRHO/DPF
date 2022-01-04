@@ -38,10 +38,12 @@ START_NAMESPACE_DGL
 
 void Color::setFor(const GraphicsContext&, const bool includeAlpha)
 {
+#ifndef DGL_USE_OPENGL3
     if (includeAlpha)
         glColor4f(red, green, blue, alpha);
     else
         glColor3f(red, green, blue);
+#endif
 }
 
 // -----------------------------------------------------------------------
@@ -52,6 +54,7 @@ static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
 {
     DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
 
+#ifndef DGL_USE_OPENGL3
     glBegin(GL_LINES);
 
     {
@@ -60,6 +63,7 @@ static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
     }
 
     glEnd();
+#endif
 }
 
 template<typename T>
@@ -102,6 +106,7 @@ static void drawCircle(const Point<T>& pos,
     const T origy = pos.getY();
     double t, x = size, y = 0.0;
 
+#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
 
     for (uint i=0; i<numSegments; ++i)
@@ -114,6 +119,7 @@ static void drawCircle(const Point<T>& pos,
     }
 
     glEnd();
+#endif
 }
 
 template<typename T>
@@ -162,6 +168,7 @@ static void drawTriangle(const Point<T>& pos1,
 {
     DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
 
+#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_TRIANGLES);
 
     {
@@ -171,6 +178,7 @@ static void drawTriangle(const Point<T>& pos1,
     }
 
     glEnd();
+#endif
 }
 
 template<typename T>
@@ -216,6 +224,7 @@ static void drawRectangle(const Rectangle<T>& rect, const bool outline)
 {
     DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
 
+#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_QUADS);
 
     {
@@ -238,6 +247,7 @@ static void drawRectangle(const Rectangle<T>& rect, const bool outline)
     }
 
     glEnd();
+#endif
 }
 
 template<typename T>
@@ -316,11 +326,14 @@ static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, con
         setupCalled = true;
     }
 
+#ifndef DGL_USE_OPENGL3
     glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+#endif
 
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureId);
 
+#ifndef DGL_USE_OPENGL3
     glBegin(GL_QUADS);
 
     {
@@ -343,6 +356,7 @@ static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, con
     }
 
     glEnd();
+#endif
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
@@ -528,6 +542,7 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
         pData->isReady = true;
     }
 
+#ifndef DGL_USE_OPENGL3
     const int w = static_cast<int>(getWidth());
     const int h = static_cast<int>(getHeight());
 
@@ -549,6 +564,7 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
     {
         Rectangle<int>(0, 0, w, h).draw(context);
     }
+#endif
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);

@@ -129,7 +129,11 @@ ImageFormat asDISTRHOImageFormat(const GLenum format)
 {
     switch (format)
     {
+#ifdef DGL_USE_OPENGL3
+    case GL_RED:
+#else
     case GL_LUMINANCE:
+#endif
         return kImageFormatGrayscale;
     case GL_BGR:
         return kImageFormatBGR;
@@ -152,7 +156,11 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
+#ifdef DGL_USE_OPENGL3
+        return GL_RED;
+#else
         return GL_LUMINANCE;
+#endif
     case kImageFormatBGR:
         return GL_BGR;
     case kImageFormatBGRA:

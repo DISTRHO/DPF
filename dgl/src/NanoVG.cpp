@@ -88,7 +88,7 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 # define NANOVG_GL2_IMPLEMENTATION
 #endif
 
-#if defined(DISTRHO_OS_MAC) && defined(NANOVG_GL3_IMPLEMENTATION)
+#if defined(DISTRHO_OS_MAC) && defined(NANOVG_GL2_IMPLEMENTATION)
 # define glBindVertexArray glBindVertexArrayAPPLE
 # define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 # define glGenVertexArrays glGenVertexArraysAPPLE
