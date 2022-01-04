@@ -62,6 +62,7 @@ public:
           uiData(new UI::PrivateData())
     {
         uiData->sampleRate = sampleRate;
+        uiData->bundlePath = bundlePath != nullptr ? strdup(bundlePath) : nullptr;
         uiData->dspPtr = dspPtr;
 
         uiData->bgColor = bgColor;

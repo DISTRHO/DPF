@@ -189,7 +189,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               nullptr, // TODO file request
-              nullptr,
+              d_nextBundlePath,
               plugin->getInstancePointer(),
               scaleFactor)
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -705,7 +705,7 @@ public:
             else
             {
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
-                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
