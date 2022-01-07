@@ -25,6 +25,9 @@ endif
 ifeq ($(USE_NANOVG_FBO),true)
 BUILD_CXX_FLAGS += -DDGL_USE_NANOVG_FBO
 endif
+ifeq ($(USE_NANOVG_FREETYPE),true)
+BUILD_CXX_FLAGS += -DFONS_USE_FREETYPE $(shell $(PKG_CONFIG) --cflags freetype2)
+endif
 ifeq ($(USE_RGBA),true)
 BUILD_CXX_FLAGS += -DDGL_USE_RGBA
 endif
