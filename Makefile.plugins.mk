@@ -213,6 +213,18 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),opengl3)
+ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL -DDGL_USE_OPENGL3 -DHAVE_DGL
+DGL_FLAGS += $(OPENGL_FLAGS)
+DGL_LIBS  += $(OPENGL_LIBS)
+DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl3.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 ifeq ($(UI_TYPE),vulkan)
 ifeq ($(HAVE_VULKAN),true)
 DGL_FLAGS += -DDGL_VULKAN -DHAVE_DGL
@@ -312,6 +324,9 @@ $(DPF_PATH)/build/libdgl-cairo.a:
 
 $(DPF_PATH)/build/libdgl-opengl.a:
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
+
+$(DPF_PATH)/build/libdgl-opengl3.a:
+	$(MAKE) -C $(DPF_PATH)/dgl opengl3
 
 $(DPF_PATH)/build/libdgl-stub.a:
 	$(MAKE) -C $(DPF_PATH)/dgl stub

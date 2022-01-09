@@ -34,6 +34,15 @@
 START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
+
+#ifdef DGL_USE_OPENGL3
+static void notImplemented(const char* const name)
+{
+    d_stderr2("OpenGL3 function not implemented: %s", name);
+}
+#endif
+
+// -----------------------------------------------------------------------
 // Color
 
 void Color::setFor(const GraphicsContext&, const bool includeAlpha)
@@ -43,18 +52,22 @@ void Color::setFor(const GraphicsContext&, const bool includeAlpha)
         glColor4f(red, green, blue, alpha);
     else
         glColor3f(red, green, blue);
+#else
+    notImplemented("Color::setFor");
+    // unused
+    (void)includeAlpha;
 #endif
 }
 
 // -----------------------------------------------------------------------
 // Line
 
+#ifndef DGL_USE_OPENGL3
 template<typename T>
 static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
 {
     DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
 
-#ifndef DGL_USE_OPENGL3
     glBegin(GL_LINES);
 
     {
@@ -63,23 +76,31 @@ static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
     }
 
     glEnd();
-#endif
 }
+#endif
 
 template<typename T>
 void Line<T>::draw(const GraphicsContext&, const T width)
 {
+#ifndef DGL_USE_OPENGL3
     DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
     glLineWidth(static_cast<GLfloat>(width));
     drawLine<T>(posStart, posEnd);
+#else
+    notImplemented("Line::draw");
+#endif
 }
 
 // deprecated calls
 template<typename T>
 void Line<T>::draw()
 {
+#ifndef DGL_USE_OPENGL3
     drawLine<T>(posStart, posEnd);
+#else
+    notImplemented("Line::draw");
+#endif
 }
 
 template class Line<double>;
@@ -92,6 +113,7 @@ template class Line<ushort>;
 // -----------------------------------------------------------------------
 // Circle
 
+#ifndef DGL_USE_OPENGL3
 template<typename T>
 static void drawCircle(const Point<T>& pos,
                        const uint numSegments,
@@ -106,7 +128,6 @@ static void drawCircle(const Point<T>& pos,
     const T origy = pos.getY();
     double t, x = size, y = 0.0;
 
-#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_POLYGON);
 
     for (uint i=0; i<numSegments; ++i)
@@ -119,13 +140,17 @@ static void drawCircle(const Point<T>& pos,
     }
 
     glEnd();
-#endif
 }
+#endif
 
 template<typename T>
 void Circle<T>::draw(const GraphicsContext&)
 {
+#ifndef DGL_USE_OPENGL3
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+#else
+    notImplemented("Circle::draw");
+#endif
 }
 
 template<typename T>
@@ -134,20 +159,32 @@ void Circle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
     glLineWidth(static_cast<GLfloat>(lineWidth));
+#ifndef DGL_USE_OPENGL3
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
+#else
+    notImplemented("Circle::drawOutline");
+#endif
 }
 
 // deprecated calls
 template<typename T>
 void Circle<T>::draw()
 {
+#ifndef DGL_USE_OPENGL3
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, false);
+#else
+    notImplemented("Circle::draw");
+#endif
 }
 
 template<typename T>
 void Circle<T>::drawOutline()
 {
+#ifndef DGL_USE_OPENGL3
     drawCircle<T>(fPos, fNumSegments, fSize, fSin, fCos, true);
+#else
+    notImplemented("Circle::drawOutline");
+#endif
 }
 
 template class Circle<double>;
@@ -160,6 +197,7 @@ template class Circle<ushort>;
 // -----------------------------------------------------------------------
 // Triangle
 
+#ifndef DGL_USE_OPENGL3
 template<typename T>
 static void drawTriangle(const Point<T>& pos1,
                          const Point<T>& pos2,
@@ -168,7 +206,6 @@ static void drawTriangle(const Point<T>& pos1,
 {
     DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
 
-#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_TRIANGLES);
 
     {
@@ -178,13 +215,17 @@ static void drawTriangle(const Point<T>& pos1,
     }
 
     glEnd();
-#endif
 }
+#endif
 
 template<typename T>
 void Triangle<T>::draw(const GraphicsContext&)
 {
+#ifndef DGL_USE_OPENGL3
     drawTriangle<T>(pos1, pos2, pos3, false);
+#else
+    notImplemented("Triangle::draw");
+#endif
 }
 
 template<typename T>
@@ -193,20 +234,32 @@ void Triangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
     glLineWidth(static_cast<GLfloat>(lineWidth));
+#ifndef DGL_USE_OPENGL3
     drawTriangle<T>(pos1, pos2, pos3, true);
+#else
+    notImplemented("Triangle::drawOutline");
+#endif
 }
 
 // deprecated calls
 template<typename T>
 void Triangle<T>::draw()
 {
+#ifndef DGL_USE_OPENGL3
     drawTriangle<T>(pos1, pos2, pos3, false);
+#else
+    notImplemented("Triangle::draw");
+#endif
 }
 
 template<typename T>
 void Triangle<T>::drawOutline()
 {
+#ifndef DGL_USE_OPENGL3
     drawTriangle<T>(pos1, pos2, pos3, true);
+#else
+    notImplemented("Triangle::drawOutline");
+#endif
 }
 
 template class Triangle<double>;
@@ -219,12 +272,12 @@ template class Triangle<ushort>;
 // -----------------------------------------------------------------------
 // Rectangle
 
+#ifndef DGL_USE_OPENGL3
 template<typename T>
 static void drawRectangle(const Rectangle<T>& rect, const bool outline)
 {
     DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
 
-#ifndef DGL_USE_OPENGL3
     glBegin(outline ? GL_LINE_LOOP : GL_QUADS);
 
     {
@@ -247,13 +300,17 @@ static void drawRectangle(const Rectangle<T>& rect, const bool outline)
     }
 
     glEnd();
-#endif
 }
+#endif
 
 template<typename T>
 void Rectangle<T>::draw(const GraphicsContext&)
 {
+#ifndef DGL_USE_OPENGL3
     drawRectangle<T>(*this, false);
+#else
+    notImplemented("Rectangle::draw");
+#endif
 }
 
 template<typename T>
@@ -262,20 +319,32 @@ void Rectangle<T>::drawOutline(const GraphicsContext&, const T lineWidth)
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
     glLineWidth(static_cast<GLfloat>(lineWidth));
+#ifndef DGL_USE_OPENGL3
     drawRectangle<T>(*this, true);
+#else
+    notImplemented("Rectangle::drawOutline");
+#endif
 }
 
 // deprecated calls
 template<typename T>
 void Rectangle<T>::draw()
 {
+#ifndef DGL_USE_OPENGL3
     drawRectangle<T>(*this, false);
+#else
+    notImplemented("Rectangle::draw");
+#endif
 }
 
 template<typename T>
 void Rectangle<T>::drawOutline()
 {
+#ifndef DGL_USE_OPENGL3
     drawRectangle<T>(*this, true);
+#else
+    notImplemented("Rectangle::drawOutline");
+#endif
 }
 
 template class Rectangle<double>;
@@ -542,29 +611,33 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
         pData->isReady = true;
     }
 
-#ifndef DGL_USE_OPENGL3
     const int w = static_cast<int>(getWidth());
     const int h = static_cast<int>(getHeight());
 
     if (pData->rotationAngle != 0)
     {
+#ifndef DGL_USE_OPENGL3
         glPushMatrix();
+#endif
 
         const int w2 = w/2;
         const int h2 = h/2;
 
+#ifndef DGL_USE_OPENGL3
         glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
         glRotatef(normValue*static_cast<float>(pData->rotationAngle), 0.0f, 0.0f, 1.0f);
+#endif
 
         Rectangle<int>(-w2, -h2, w, h).draw(context);
 
+#ifndef DGL_USE_OPENGL3
         glPopMatrix();
+#endif
     }
     else
     {
         Rectangle<int>(0, 0, w, h).draw(context);
     }
-#endif
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glDisable(GL_TEXTURE_2D);
