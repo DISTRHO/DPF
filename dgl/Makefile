@@ -212,12 +212,12 @@ vulkan:  ../build/libdgl-vulkan.a
 
 ../build/dgl/%.cpp.opengl3.o: src/%.cpp
 	-@mkdir -p ../build/dgl
-	@echo "Compiling $< (OpenGL variant)"
+	@echo "Compiling $< (OpenGL3 variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -o $@
 
 ../build/dgl/%.mm.opengl3.o: src/%.mm
 	-@mkdir -p ../build/dgl
-	@echo "Compiling $< (OpenGL variant)"
+	@echo "Compiling $< (OpenGL3 variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
