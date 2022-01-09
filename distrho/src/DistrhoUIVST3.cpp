@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -46,6 +46,11 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #if ! DISTRHO_PLUGIN_WANT_STATE
 static constexpr const setStateFunc setStateCallback = nullptr;
 #endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Static data, see DistrhoPlugin.cpp
+
+extern const char* d_nextBundlePath;
 
 // --------------------------------------------------------------------------------------------------------------------
 // Utility functions (defined on plugin side)
@@ -129,7 +134,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               nullptr, // TODO file request
-              nullptr, // bundlePath
+              d_nextBundlePath,
               instancePointer,
               scaleFactor)
     {
