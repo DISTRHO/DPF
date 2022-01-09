@@ -13,25 +13,6 @@ BUILD_CXX_FLAGS += $(DGL_FLAGS) -I. -Isrc -DDONT_SET_USING_DGL_NAMESPACE -Wno-un
 BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
-ifeq ($(NVG_DISABLE_SKIPPING_WHITESPACE),true)
-BUILD_CXX_FLAGS += -DNVG_DISABLE_SKIPPING_WHITESPACE
-endif
-ifneq ($(NVG_FONT_TEXTURE_FLAGS),)
-BUILD_CXX_FLAGS += -DNVG_FONT_TEXTURE_FLAGS=$(NVG_FONT_TEXTURE_FLAGS)
-endif
-ifeq ($(USE_OPENGL3),true)
-BUILD_CXX_FLAGS += -DDGL_USE_OPENGL3
-endif
-ifeq ($(USE_NANOVG_FBO),true)
-BUILD_CXX_FLAGS += -DDGL_USE_NANOVG_FBO
-endif
-ifeq ($(USE_NANOVG_FREETYPE),true)
-BUILD_CXX_FLAGS += -DFONS_USE_FREETYPE $(shell $(PKG_CONFIG) --cflags freetype2)
-endif
-ifeq ($(USE_RGBA),true)
-BUILD_CXX_FLAGS += -DDGL_USE_RGBA
-endif
-
 # TODO fix these after pugl-upstream is done
 BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers
 ifneq ($(MACOS),true)

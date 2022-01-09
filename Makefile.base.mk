@@ -427,6 +427,38 @@ endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Optional flags
+
+ifeq ($(NVG_DISABLE_SKIPPING_WHITESPACE),true)
+BUILD_CXX_FLAGS += -DNVG_DISABLE_SKIPPING_WHITESPACE
+endif
+
+ifneq ($(NVG_FONT_TEXTURE_FLAGS),)
+BUILD_CXX_FLAGS += -DNVG_FONT_TEXTURE_FLAGS=$(NVG_FONT_TEXTURE_FLAGS)
+endif
+
+ifeq ($(FILE_BROWSER_DISABLED),true)
+BUILD_CXX_FLAGS += -DDGL_FILE_BROWSER_DISABLED
+endif
+
+ifeq ($(USE_OPENGL3),true)
+BUILD_CXX_FLAGS += -DDGL_USE_OPENGL3
+endif
+
+ifeq ($(USE_NANOVG_FBO),true)
+BUILD_CXX_FLAGS += -DDGL_USE_NANOVG_FBO
+endif
+
+ifeq ($(USE_NANOVG_FREETYPE),true)
+BUILD_CXX_FLAGS += -DFONS_USE_FREETYPE $(shell $(PKG_CONFIG) --cflags freetype2)
+endif
+
+ifeq ($(USE_RGBA),true)
+BUILD_CXX_FLAGS += -DDGL_USE_RGBA
+endif
+
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set app extension
 
 ifeq ($(WINDOWS),true)
