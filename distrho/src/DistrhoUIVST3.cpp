@@ -142,8 +142,12 @@ public:
 
     ~UIVst3()
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        nativeIdleTimerDestroy();
+# else
         fUI.removeIdleCallbackForVST3(this);
+# endif
 #endif
         if (fConnection != nullptr)
             disconnect();
@@ -168,8 +172,12 @@ public:
         if (fConnection != nullptr)
             connect(fConnection);
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        nativeIdleTimerCreate(DPF_VST3_TIMER_INTERVAL);
+# else
         fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+# endif
 #endif
     }
 
@@ -541,6 +549,11 @@ private:
     // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
     UIExporter fUI;
 
+    // Native timer support
+#if defined(DISTRHO_OS_MAC)
+    CFRunLoopTimerRef fTimer;
+#endif
+
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing
 
@@ -711,6 +724,41 @@ private:
     {
         ((UIVst3*)ptr)->setState(key, value);
     }
+#endif
+
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if defined(DISTRHO_OS_MAC)
+    void nativeIdleTimerCreate(const uint timerFrequencyInMs)
+    {
+        const CFTimeInterval t = static_cast<double>(timerFrequencyInMs) / 1000.0;
+        CFRunLoopTimerContext ctx = {};
+        ctx.info = this;
+        fTimer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + t, t, 0, 0,
+            UIVst3::nativeIdleTimerCallback, &ctx);
+        CFRunLoopAddTimer(CFRunLoopGetMain(), fTimer, kCFRunLoopCommonModes);
+    }
+
+    void nativeIdleTimerDestroy()
+    {
+        CFRunLoopRemoveTimer(CFRunLoopGetMain(), fTimer, kCFRunLoopCommonModes);
+        CFRelease(fTimer);
+    }
+
+    static void nativeIdleTimerCallback(CFRunLoopTimerRef timer, void *info)
+    {
+        reinterpret_cast<UIVst3*>(info)->onTimer();
+    }
+# elif defined(DISTRHO_OS_WINDOWS)
+    void nativeIdleTimerCreate(const uint timerFrequencyInMs)
+    {
+        // TODO
+    }
+
+    void nativeIdleTimerDestroy()
+    {
+        // TODO  
+    }
+# endif
 #endif
 };
 

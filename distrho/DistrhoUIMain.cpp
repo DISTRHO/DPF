@@ -14,6 +14,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "src/DistrhoDefines.h"
+#if defined(DISTRHO_OS_MAC)
+// Allow referencing CoreFoundation from DistrhoUIVST3.cpp. Include must appear
+// before DGL headers otherwise compiler fails on ambiguous 'Point' definition.
+# include <CoreFoundation/CoreFoundation.h>
+#endif
+
 #include "src/DistrhoUI.cpp"
 
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
