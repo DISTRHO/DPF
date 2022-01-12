@@ -73,7 +73,9 @@ BASE_FLAGS += -DHAVE_JACK
 
 # always needed
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifneq ($(STATIC_BUILD),true)
 LINK_FLAGS += -ldl
+endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

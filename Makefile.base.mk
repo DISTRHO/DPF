@@ -190,9 +190,14 @@ BASE_FLAGS += -DNDEBUG $(BASE_OPTS) -fvisibility=hidden
 CXXFLAGS   += -fvisibility-inlines-hidden
 endif
 
+ifeq ($(STATIC_BUILD),true)
+BASE_FLAGS += -DSTATIC_BUILD
+# LINK_OPTS  += -static
+endif
+
 ifeq ($(WITH_LTO),true)
 BASE_FLAGS += -fno-strict-aliasing -flto
-LINK_FLAGS += -fno-strict-aliasing -flto -Werror=odr -Werror=lto-type-mismatch
+LINK_OPTS  += -fno-strict-aliasing -flto -Werror=odr -Werror=lto-type-mismatch
 endif
 
 BUILD_C_FLAGS   = $(BASE_FLAGS) -std=gnu99 $(CFLAGS)

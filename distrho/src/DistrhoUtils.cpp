@@ -23,7 +23,9 @@
 #ifdef DISTRHO_OS_WINDOWS
 # include <windows.h>
 #else
-# include <dlfcn.h>
+# ifndef STATIC_BUILD
+#  include <dlfcn.h>
+# endif
 # include <limits.h>
 # include <stdlib.h>
 #endif
@@ -59,7 +61,7 @@ const char* getBinaryFilename()
     filenameBuf[0] = '\0';
     GetModuleFileName(hInstance, filenameBuf, sizeof(filenameBuf));
     filename = filenameBuf;
-#else
+#elif !defined(STATIC_BUILD)
     Dl_info info;
     dladdr((void*)getBinaryFilename, &info);
     char filenameBuf[PATH_MAX];
