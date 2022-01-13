@@ -21,6 +21,10 @@
 #include "travesty/host.h"
 #include "travesty/view.h"
 
+#if defined(DISTRHO_OS_WINDOWS)
+#include <winuser.h>
+#endif
+
 /* TODO items:
  * - mousewheel event
  * - key down/up events
@@ -127,6 +131,12 @@ public:
           fScaleFactor(scaleFactor),
           fIsResizingFromPlugin(false),
           fIsResizingFromHost(willResizeFromHost),
+#if defined(DISTRHO_OS_MAC)
+          fTimerPtr(nullptr),
+#endif
+#if defined(DISTRHO_OS_WINDOWS)
+          fTimerHwnd(reinterpret_cast<HWND>(winId)),
+#endif
           fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
@@ -546,13 +556,16 @@ private:
     bool fIsResizingFromPlugin;
     bool fIsResizingFromHost;
 
-    // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
-    UIExporter fUI;
-
     // Native timer support
 #if defined(DISTRHO_OS_MAC)
-    CFRunLoopTimerRef fTimer;
+    CFRunLoopTimerRef fTimerPtr;
 #endif
+#if defined(DISTRHO_OS_WINDOWS)
+    HWND fTimerHwnd;
+#endif
+
+    // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
+    UIExporter fUI;
 
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing
@@ -733,15 +746,15 @@ private:
         const CFTimeInterval t = static_cast<double>(timerFrequencyInMs) / 1000.0;
         CFRunLoopTimerContext ctx = {};
         ctx.info = this;
-        fTimer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + t, t, 0, 0,
+        fTimerPtr = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + t, t, 0, 0,
             UIVst3::nativeIdleTimerCallback, &ctx);
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimer, kCFRunLoopCommonModes);
+        CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerPtr, kCFRunLoopCommonModes);
     }
 
     void nativeIdleTimerDestroy()
     {
-        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimer, kCFRunLoopCommonModes);
-        CFRelease(fTimer);
+        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimerPtr, kCFRunLoopCommonModes);
+        CFRelease(fTimerPtr);
     }
 
     static void nativeIdleTimerCallback(CFRunLoopTimerRef timer, void *info)
@@ -751,12 +764,20 @@ private:
 # elif defined(DISTRHO_OS_WINDOWS)
     void nativeIdleTimerCreate(const uint timerFrequencyInMs)
     {
-        // TODO
+        // User data could be attached to the window but we do not own it.
+        // Let's abuse the nIDEvent parameter.
+        SetTimer(fTimerHwnd, reinterpret_cast<UINT_PTR>(this), timerFrequencyInMs,
+            UIVst3::nativeIdleTimerCallback);
     }
 
     void nativeIdleTimerDestroy()
     {
-        // TODO  
+        KillTimer(fTimerHwnd, reinterpret_cast<UINT_PTR>(this));
+    }
+
+    static void nativeIdleTimerCallback(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR timerId, DWORD /*dwTime*/)
+    {
+        reinterpret_cast<UIVst3*>(timerId)->onTimer();
     }
 # endif
 #endif
