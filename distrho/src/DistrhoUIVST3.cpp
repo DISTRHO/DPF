@@ -735,12 +735,12 @@ private:
         ctx.info = this;
         fTimer = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + t, t, 0, 0,
             UIVst3::nativeIdleTimerCallback, &ctx);
-        CFRunLoopAddTimer(CFRunLoopGetMain(), fTimer, kCFRunLoopCommonModes);
+        CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimer, kCFRunLoopCommonModes);
     }
 
     void nativeIdleTimerDestroy()
     {
-        CFRunLoopRemoveTimer(CFRunLoopGetMain(), fTimer, kCFRunLoopCommonModes);
+        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimer, kCFRunLoopCommonModes);
         CFRelease(fTimer);
     }
 
