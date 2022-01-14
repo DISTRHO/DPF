@@ -36,6 +36,10 @@
 # define DPF_VST3_USING_HOST_RUN_LOOP
 #endif
 
+#if defined(DISTRHO_OS_WINDOWS)
+# define DPF_VST3_WIN32_TIMER_ID 1
+#endif
+
 #ifndef DPF_VST3_TIMER_INTERVAL
 # define DPF_VST3_TIMER_INTERVAL 16 /* ~60 fps */
 #endif
@@ -135,7 +139,8 @@ public:
           fTimerPtr(nullptr),
 #endif
 #if defined(DISTRHO_OS_WINDOWS)
-          fTimerHwnd(reinterpret_cast<HWND>(winId)),
+          fTimerHwnd(nullptr),
+          fTimerWindowClassName(nullptr),
 #endif
           fUI(this, winId, sampleRate,
               editParameterCallback,
@@ -515,6 +520,7 @@ public:
 
     void onTimer()
     {
+        d_stdout("**** ON TIMER ****\n");
         fUI.plugin_idle();
         doIdleStuff();
     }
@@ -562,6 +568,7 @@ private:
 #endif
 #if defined(DISTRHO_OS_WINDOWS)
     HWND fTimerHwnd;
+    LPSTR fTimerWindowClassName;
 #endif
 
     // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
@@ -764,20 +771,41 @@ private:
 # elif defined(DISTRHO_OS_WINDOWS)
     void nativeIdleTimerCreate(const uint timerFrequencyInMs)
     {
-        // User data could be attached to the window but we do not own it.
-        // Let's abuse the nIDEvent parameter.
-        SetTimer(fTimerHwnd, reinterpret_cast<UINT_PTR>(this), timerFrequencyInMs,
-            UIVst3::nativeIdleTimerCallback);
+        // We cannot assume anything about the native parent window passed as a
+        // parameter (winId) to the UIVst3 constructor because we do not own it.
+        // These parent windows have class names like 'reaperPluginHostWrapProc'
+        // and 'JUCE_nnnnnn'. Create invisible window to handle a timer intstead.
+        // There is no need for implementing a window proc because DefWindowProc
+        // already calls the callback function when processing WM_TIMER messages.
+        constexpr size_t clsNameSz = 256;
+        fTimerWindowClassName = (LPSTR)std::malloc(clsNameSz);
+        snprintf(fTimerWindowClassName, clsNameSz, "DPF_timer_%x", std::rand());
+        WNDCLASSEX cls;
+        ZeroMemory(&cls, sizeof(cls));
+        cls.cbSize = sizeof(WNDCLASSEX);
+        cls.cbWndExtra = sizeof(LONG_PTR);
+        cls.lpszClassName = fTimerWindowClassName;
+        RegisterClassEx(&cls);
+        fTimerHwnd = CreateWindowEx(0, cls.lpszClassName, "DPF Timer Helper",
+            0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
+        SetWindowLongPtr(fTimerHwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+        SetTimer(fTimerHwnd, DPF_VST3_WIN32_TIMER_ID, timerFrequencyInMs,
+            static_cast<TIMERPROC>(UIVst3::nativeIdleTimerCallback));
     }
 
     void nativeIdleTimerDestroy()
     {
-        KillTimer(fTimerHwnd, reinterpret_cast<UINT_PTR>(this));
+        KillTimer(fTimerHwnd, DPF_VST3_WIN32_TIMER_ID);
+        DestroyWindow(fTimerHwnd);
+        UnregisterClass(fTimerWindowClassName, nullptr);
+        std::free(fTimerWindowClassName);
     }
 
-    static void nativeIdleTimerCallback(HWND /*hwnd*/, UINT /*uMsg*/, UINT_PTR timerId, DWORD /*dwTime*/)
+    static void nativeIdleTimerCallback(HWND hwnd, UINT /*uMsg*/, UINT_PTR /*timerId*/,
+                                        DWORD /*dwTime*/)
     {
-        reinterpret_cast<UIVst3*>(timerId)->onTimer();
+        UIVst3* ui = reinterpret_cast<UIVst3*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        ui->onTimer();
     }
 # endif
 #endif
