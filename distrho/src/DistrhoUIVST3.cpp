@@ -520,7 +520,6 @@ public:
 
     void onTimer()
     {
-        d_stdout("**** ON TIMER ****\n");
         fUI.plugin_idle();
         doIdleStuff();
     }
@@ -785,6 +784,7 @@ private:
         cls.cbSize = sizeof(WNDCLASSEX);
         cls.cbWndExtra = sizeof(LONG_PTR);
         cls.lpszClassName = fTimerWindowClassName;
+        cls.lpfnWndProc = DefWindowProc;
         RegisterClassEx(&cls);
         fTimerHwnd = CreateWindowEx(0, cls.lpszClassName, "DPF Timer Helper",
             0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
@@ -801,7 +801,7 @@ private:
         std::free(fTimerWindowClassName);
     }
 
-    static void nativeIdleTimerCallback(HWND hwnd, UINT /*uMsg*/, UINT_PTR /*timerId*/,
+    WINAPI static void nativeIdleTimerCallback(HWND hwnd, UINT /*uMsg*/, UINT_PTR /*timerId*/,
                                         DWORD /*dwTime*/)
     {
         UIVst3* ui = reinterpret_cast<UIVst3*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
