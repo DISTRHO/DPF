@@ -54,7 +54,7 @@
  * - append MIDI input events in a sorted way
  * == BUSES
  * - bus arrangements
- * - optional audio buses, create dummy buffer of max_block_size length for them
+ * - optional audio buses
  * - routing info, do we care?
  * - set sidechain bus name from port group
  * == CV
@@ -263,6 +263,7 @@ public:
           fParameterCount(fPlugin.getParameterCount()),
           fVst3ParameterCount(fParameterCount + kVst3InternalParameterCount),
           fCachedParameterValues(nullptr),
+          fDummyAudioBuffer(nullptr),
           fParameterValuesChangedDuringProcessing(nullptr)
 #if DISTRHO_PLUGIN_HAS_UI
         , fParameterValueChangesForUI(nullptr)
@@ -371,18 +372,18 @@ public:
            #endif
         }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
         {
             const String& dkey(fPlugin.getStateKey(i));
             fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
-#endif
+       #endif
 
-#if !DISTRHO_PLUGIN_HAS_UI
+       #if !DISTRHO_PLUGIN_HAS_UI
         // unused
         return; (void)host;
-#endif
+       #endif
     }
 
     ~PluginVst3()
@@ -791,38 +792,38 @@ public:
 
                         d_stdout("found program '%s'", value.buffer());
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+                      #if DISTRHO_PLUGIN_WANT_PROGRAMS
                         const int program = std::atoi(value.buffer());
                         DISTRHO_SAFE_ASSERT_CONTINUE(program >= 0);
 
                         fCurrentProgram = static_cast<uint32_t>(program);
                         fPlugin.loadProgram(fCurrentProgram);
 
-# if DISTRHO_PLUGIN_HAS_UI
+                       #if DISTRHO_PLUGIN_HAS_UI
                         if (connectedToUI)
                         {
                             fParameterValueChangesForUI[kVst3InternalParameterProgram] = false;
                             sendParameterSetToUI(kVst3InternalParameterProgram, program);
                         }
-# endif
-#endif
+                       #endif
+                      #endif
                     }
                     else if (queryingType == 's')
                     {
                         d_stdout("found state '%s' '%s'", key.buffer(), value.buffer());
 
-#if DISTRHO_PLUGIN_WANT_STATE
+                       #if DISTRHO_PLUGIN_WANT_STATE
                         if (fPlugin.wantStateKey(key))
                         {
                             fStateMap[key] = value;
                             fPlugin.setState(key, value);
 
-# if DISTRHO_PLUGIN_HAS_UI
+                           #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
                                 sendStateSetToUI(key, value);
-# endif
+                           #endif
                         }
-#endif
+                       #endif
                     }
                     else if (queryingType == 'p')
                     {
@@ -843,13 +844,13 @@ public:
                                 fvalue = std::atof(value.buffer());
 
                             fCachedParameterValues[kVst3InternalParameterBaseCount + j] = fvalue;
-#if DISTRHO_PLUGIN_HAS_UI
+                           #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
                             {
                                 // UI parameter updates are handled outside the read loop (after host param restart)
                                 fParameterValueChangesForUI[kVst3InternalParameterBaseCount + j] = true;
                             }
-#endif
+                           #endif
                             fPlugin.setParameterValue(j, fvalue);
                             break;
                         }
@@ -865,7 +866,7 @@ public:
         if (fComponentHandler != nullptr)
             v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
 
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         if (connectedToUI)
         {
             for (uint32_t i=0; i<fParameterCount; ++i)
@@ -877,7 +878,7 @@ public:
                                      fCachedParameterValues[kVst3InternalParameterBaseCount + i]);
             }
         }
-#endif
+       #endif
 
         return V3_OK;
     }
@@ -885,11 +886,11 @@ public:
     v3_result getState(v3_bstream** const stream)
     {
         const uint32_t paramCount = fPlugin.getParameterCount();
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         const uint32_t stateCount = fPlugin.getStateCount();
-#else
+       #else
         const uint32_t stateCount = 0;
-#endif
+       #endif
 
         if (stateCount == 0 && paramCount == 0)
         {
@@ -898,18 +899,18 @@ public:
             return v3_cpp_obj(stream)->write(stream, &buffer, 1, &ignored);
         }
 
-#if DISTRHO_PLUGIN_WANT_FULL_STATE
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
         // Update current state
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
             fStateMap[key] = fPlugin.getState(key);
         }
-#endif
+       #endif
 
         String state;
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
         {
             String tmpStr("__dpf_program__\xff");
             tmpStr += String(fCurrentProgram);
@@ -917,9 +918,9 @@ public:
 
             state += tmpStr;
         }
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         if (stateCount != 0)
         {
             state += "__dpf_state_begin__\xff";
@@ -941,7 +942,7 @@ public:
 
             state += "__dpf_state_end__\xff";
         }
-#endif
+       #endif
 
         if (paramCount != 0)
         {
@@ -1015,11 +1016,11 @@ public:
 
     uint32_t getLatencySamples() const noexcept
     {
-#if DISTRHO_PLUGIN_WANT_LATENCY
+       #if DISTRHO_PLUGIN_WANT_LATENCY
         return fPlugin.getLatency();
-#else
+       #else
         return 0;
-#endif
+       #endif
     }
 
     v3_result setupProcessing(v3_process_setup* const setup)
@@ -1048,7 +1049,7 @@ public:
         if (active)
             fPlugin.activate();
 
-        // TODO create dummy buffer of max_block_size length, to use for disabled buses
+        fDummyAudioBuffer = new float[setup->max_block_size];
 
         return V3_OK;
     }
@@ -1063,6 +1064,9 @@ public:
         else
         {
             fPlugin.deactivateIfNeeded();
+
+            delete[] fDummyAudioBuffer;
+            fDummyAudioBuffer = nullptr;
         }
 
         return V3_OK;
@@ -1142,6 +1146,8 @@ public:
         const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS != 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
         /* */ float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS != 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
 
+        std::memset(fDummyAudioBuffer, 0, sizeof(float)*data->nframes);
+
         {
             int32_t i = 0;
             if (data->inputs != nullptr)
@@ -1153,7 +1159,7 @@ public:
                 }
             }
             for (; i < std::max(1, DISTRHO_PLUGIN_NUM_INPUTS); ++i)
-                inputs[i] = nullptr; // TODO use dummy buffer
+                inputs[i] = fDummyAudioBuffer;
         }
 
         {
@@ -1167,17 +1173,17 @@ public:
                 }
             }
             for (; i < std::max(1, DISTRHO_PLUGIN_NUM_OUTPUTS); ++i)
-                outputs[i] = nullptr; // TODO use dummy buffer
+                outputs[i] = fDummyAudioBuffer;
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fHostEventOutputHandle = data->output_events;
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+      #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         uint32_t midiEventCount = 0;
 
-# if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         while (fNotesRingBuffer.isDataAvailableForReading())
         {
             uint8_t midiData[3];
@@ -1192,7 +1198,7 @@ public:
             if (midiEventCount == kMaxMidiEvents)
                 break;
         }
-# endif
+       #endif
 
         if (v3_event_list** const eventptr = data->input_events)
         {
@@ -1296,7 +1302,7 @@ public:
       }
 #endif
       */
-#endif
+      #endif
 
         // if there are any parameter changes at frame 0, set them here
         if (v3_param_changes** const inparamsptr = data->input_params)
@@ -2167,6 +2173,7 @@ private:
     const uint32_t fParameterCount;
     const uint32_t fVst3ParameterCount; // full offset + real
     float* fCachedParameterValues; // basic offset + real
+    float* fDummyAudioBuffer;
     bool* fParameterValuesChangedDuringProcessing; // basic offset + real
 #if DISTRHO_PLUGIN_HAS_UI
     bool* fParameterValueChangesForUI; // basic offset + real
@@ -2248,9 +2255,9 @@ private:
             }
 
             fCachedParameterValues[kVst3InternalParameterBaseCount + i] = curValue;
-#if DISTRHO_PLUGIN_HAS_UI
+           #if DISTRHO_PLUGIN_HAS_UI
             fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = true;
-#endif
+           #endif
 
             paramId = kVst3InternalParameterCount + i;
             curValue = fPlugin.getParameterRanges(i).getNormalizedValue(curValue);
@@ -2259,7 +2266,7 @@ private:
                 break;
         }
 
-#if DISTRHO_PLUGIN_WANT_LATENCY
+       #if DISTRHO_PLUGIN_WANT_LATENCY
         const uint32_t latency = fPlugin.getLatency();
 
         if (fLastKnownLatency != latency)
@@ -2270,7 +2277,7 @@ private:
                                                   fCachedParameterValues[kVst3InternalParameterLatency]);
             addParameterDataToHostOutputEvents(outparamsptr, kVst3InternalParameterLatency, curValue);
         }
-#endif
+       #endif
     }
 
     bool addParameterDataToHostOutputEvents(v3_param_changes** const outparamsptr,
