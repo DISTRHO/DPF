@@ -394,6 +394,12 @@ public:
             fCachedParameterValues = nullptr;
         }
 
+        if (fDummyAudioBuffer != nullptr)
+        {
+            delete[] fDummyAudioBuffer;
+            fDummyAudioBuffer = nullptr;
+        }
+
         if (fParameterValuesChangedDuringProcessing != nullptr)
         {
             delete[] fParameterValuesChangedDuringProcessing;
