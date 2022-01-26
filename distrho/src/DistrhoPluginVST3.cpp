@@ -1055,6 +1055,7 @@ public:
         if (active)
             fPlugin.activate();
 
+        delete[] fDummyAudioBuffer;
         fDummyAudioBuffer = new float[setup->max_block_size];
 
         return V3_OK;
@@ -3383,7 +3384,7 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
     static v3_result V3_API get_bus_arrangement(void* const self, const int32_t bus_direction,
                                                 const int32_t idx, v3_speaker_arrangement* const arr)
     {
-        d_stdout("dpf_audio_processor::get_bus_arrangement => %p %s %p",
+        d_stdout("dpf_audio_processor::get_bus_arrangement => %p %s %i %p",
                  self, v3_bus_direction_str(bus_direction), idx, arr);
         dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
