@@ -1071,9 +1071,6 @@ public:
         else
         {
             fPlugin.deactivateIfNeeded();
-
-            delete[] fDummyAudioBuffer;
-            fDummyAudioBuffer = nullptr;
         }
 
         return V3_OK;
