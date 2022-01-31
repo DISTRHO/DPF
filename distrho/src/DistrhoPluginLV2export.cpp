@@ -42,6 +42,10 @@
 # include "mod-license.h"
 #endif
 
+#ifndef DISTRHO_OS_WINDOWS
+# include <unistd.h>
+#endif
+
 #include <fstream>
 #include <iostream>
 
@@ -225,7 +229,17 @@ void lv2_generate_ttl(const char* const basename)
     USE_NAMESPACE_DISTRHO
 
     String bundlePath(getBinaryFilename());
-    bundlePath.truncate(bundlePath.rfind(DISTRHO_OS_SEP));
+    if (bundlePath.isNotEmpty())
+    {
+        bundlePath.truncate(bundlePath.rfind(DISTRHO_OS_SEP));
+    }
+#ifndef DISTRHO_OS_WINDOWS
+    else if (char* const cwd = ::getcwd(nullptr, 0))
+    {
+        bundlePath = cwd;
+        std::free(cwd);
+    }
+#endif
     d_nextBundlePath = bundlePath.buffer();
 
     // Dummy plugin to get data from
