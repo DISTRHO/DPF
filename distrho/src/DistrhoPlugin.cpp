@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -200,6 +200,16 @@ String Plugin::getState(const char*) const { return String(); }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
+uint32_t Plugin::getStateHints(const uint32_t index)
+{
+   #if DISTRHO_PLUGIN_WANT_STATEFILES
+    if isStateFile(index)
+        return kStateIsFilenamePath;
+   #endif
+
+    return 0x0;
+}
+
 void Plugin::setState(const char*, const char*) {}
 #endif
 

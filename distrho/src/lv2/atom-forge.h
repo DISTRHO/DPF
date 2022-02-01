@@ -125,7 +125,7 @@ lv2_atom_forge_set_buffer(LV2_Atom_Forge* forge, uint8_t* buf, size_t size);
    not held.
 */
 static inline void
-lv2_atom_forge_init(LV2_Atom_Forge* forge, LV2_URID_Map* map)
+lv2_atom_forge_init(LV2_Atom_Forge* forge, const LV2_URID_Map* map)
 {
 #if defined(__clang__)
 #    pragma clang diagnostic push

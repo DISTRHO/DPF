@@ -727,6 +727,13 @@ public:
         return fData->stateCount;
     }
 
+    uint32_t getStateHints(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, 0x0);
+
+        return fPlugin->getStateHints(index);
+    }
+
     const String& getStateKey(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
@@ -740,15 +747,6 @@ public:
 
         return fData->stateDefValues[index];
     }
-
-# if DISTRHO_PLUGIN_WANT_STATEFILES
-    bool isStateFile(const uint32_t index) const
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, false);
-
-        return fPlugin->isStateFile(index);
-    }
-# endif
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getState(const char* key) const

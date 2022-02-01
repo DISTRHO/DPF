@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -79,8 +79,8 @@
 # define DISTRHO_LV2_UI_TYPE "UI"
 #endif
 
-#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI) || DISTRHO_PLUGIN_WANT_STATEFILES)
-#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || (DISTRHO_PLUGIN_WANT_STATE && DISTRHO_PLUGIN_HAS_UI))
+#define DISTRHO_LV2_USE_EVENTS_IN  (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
+#define DISTRHO_LV2_USE_EVENTS_OUT (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
 
 #define DISTRHO_BYPASS_PARAMETER_NAME "lv2_enabled"
 
@@ -152,9 +152,7 @@ static const char* const lv2ManifestUiOptionalFeatures[] =
     "ui:parent",
     "ui:touch",
 #endif
-#if DISTRHO_PLUGIN_WANT_STATEFILES
     "ui:requestValue",
-#endif
     nullptr
 };
 
@@ -370,23 +368,28 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix unit:  <" LV2_UNITS_PREFIX "> .\n";
         pluginString += "\n";
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
         // define writable states as lv2 parameters
-        bool hasStateFiles = false;
+        bool hasHostVisibleState = false;
 
         for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
         {
-            if (! plugin.isStateFile(i))
+            const uint32_t hints = plugin.getStateHints(i);
+
+            if ((hints & kStateIsHostVisible) == 0x0)
                 continue;
 
             const String& key(plugin.getStateKey(i));
             pluginString += "<" DISTRHO_PLUGIN_URI "#" + key + ">\n";
             pluginString += "    a lv2:Parameter ;\n";
             pluginString += "    rdfs:label \"" + key + "\" ;\n";
-            pluginString += "    rdfs:range atom:Path .\n\n";
-            hasStateFiles = true;
+
+            if ((hints & kStateIsFilenamePath) == kStateIsFilenamePath)
+                pluginString += "    rdfs:range atom:Path .\n\n";
+            else
+                pluginString += "    rdfs:range atom:String .\n\n";
+
+            hasHostVisibleState = true;
         }
-#endif
 
         // plugin
         pluginString += "<" DISTRHO_PLUGIN_URI ">\n";
@@ -404,12 +407,11 @@ void lv2_generate_ttl(const char* const basename)
         addAttribute(pluginString, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures, 4);
         addAttribute(pluginString, "opts:supportedOption", lv2ManifestPluginSupportedOptions, 4);
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
-        if (hasStateFiles)
+        if (hasHostVisibleState)
         {
             for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
             {
-                if (! plugin.isStateFile(i))
+                if ((plugin.getStateHints(i) & kStateIsHostVisible) == 0x0)
                     continue;
 
                 const String& key(plugin.getStateKey(i));
@@ -417,7 +419,6 @@ void lv2_generate_ttl(const char* const basename)
             }
             pluginString += "\n";
         }
-#endif
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI

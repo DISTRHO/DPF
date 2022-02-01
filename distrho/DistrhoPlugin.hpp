@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -132,6 +132,29 @@ static const uint32_t kParameterIsOutput = 0x10;
    @note Only officially supported under LV2. For other formats DPF simulates the behaviour.
 */
 static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
+
+/** @} */
+
+/* ------------------------------------------------------------------------------------------------------------
+ * State Hints */
+
+/**
+   @defgroup StateHints State Hints
+
+   Various state hints.
+   @see Plugin::getStateHints
+   @{
+ */
+
+/**
+   State is available for the host to see and change.
+ */
+static const uint32_t kStateIsHostVisible = 0x01;
+
+/**
+   State is a filename path.
+ */
+static const uint32_t kStateIsFilenamePath = 0x02 | kStateIsHostVisible;
 
 /** @} */
 
@@ -993,13 +1016,17 @@ protected:
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
     virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue);
+
+   /**
+      TODO API under construction, should likely be put in a new State struct with key, name defValue and hints
+      Returns StateHints mask.
+    */
+    virtual uint32_t getStateHints(uint32_t index);
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES
-   /**
-      TODO API under construction
-    */
-    virtual bool isStateFile(uint32_t index) = 0;
+    DISTRHO_DEPRECATED_BY("getStateHints")
+    virtual bool isStateFile(uint32_t index) { return false; }
 #endif
 
    /* --------------------------------------------------------------------------------------------------------
