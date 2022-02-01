@@ -368,6 +368,7 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "@prefix unit:  <" LV2_UNITS_PREFIX "> .\n";
         pluginString += "\n";
 
+#if DISTRHO_PLUGIN_WANT_STATE
         // define writable states as lv2 parameters
         bool hasHostVisibleState = false;
 
@@ -390,6 +391,7 @@ void lv2_generate_ttl(const char* const basename)
 
             hasHostVisibleState = true;
         }
+#endif
 
         // plugin
         pluginString += "<" DISTRHO_PLUGIN_URI ">\n";
@@ -407,6 +409,7 @@ void lv2_generate_ttl(const char* const basename)
         addAttribute(pluginString, "lv2:requiredFeature", lv2ManifestPluginRequiredFeatures, 4);
         addAttribute(pluginString, "opts:supportedOption", lv2ManifestPluginSupportedOptions, 4);
 
+#if DISTRHO_PLUGIN_WANT_STATE
         if (hasHostVisibleState)
         {
             for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
@@ -419,6 +422,7 @@ void lv2_generate_ttl(const char* const basename)
             }
             pluginString += "\n";
         }
+#endif
 
         // UI
 #if DISTRHO_PLUGIN_HAS_UI
