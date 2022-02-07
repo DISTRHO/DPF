@@ -338,7 +338,6 @@ const char *x_fib_recent_file(const char *appname) {
 }
 
 #ifdef HAVE_X11
-#include <mntent.h>
 #include <dirent.h>
 
 #include <X11/Xlib.h>
@@ -346,6 +345,11 @@ const char *x_fib_recent_file(const char *appname) {
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xos.h>
+
+#if defined(__linux__) || defined(__linux)
+#define HAVE_MNTENT
+#include <mntent.h>
+#endif
 
 #ifndef MIN
 #define MIN(A,B) ( (A) < (B) ? (A) : (B) )
@@ -1766,6 +1770,7 @@ static int parse_gtk_bookmarks (Display *dpy, const char *fn) {
 	return found;
 }
 
+#ifdef HAVE_MNTENT
 static const char *ignore_mountpoints[] = {
 	"/bin",  "/boot", "/dev",  "/etc",
 	"/lib",  "/live", "/mnt",  "/opt",
@@ -1840,6 +1845,7 @@ static int read_mtab (Display *dpy, const char *mtab) {
 	fclose (mt);
 	return found;
 }
+#endif
 
 static void populate_places (Display *dpy) {
 	char tmp[1024];
@@ -1868,9 +1874,11 @@ static void populate_places (Display *dpy) {
 		parse_gtk_bookmarks (dpy, _fib_cfg_custom_places);
 	}
 
+#ifdef HAVE_MNTENT
 	if (read_mtab (dpy, "/proc/mounts") < 1) {
 		read_mtab (dpy, "/etc/mtab");
 	}
+#endif
 
 	int parsed_bookmarks = 0;
 	if (!parsed_bookmarks && getenv ("HOME")) {
