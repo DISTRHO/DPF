@@ -184,6 +184,12 @@ public:
             fNeededUiSends = nullptr;
         }
 
+        if (fUrids != nullptr)
+        {
+            delete[] fUrids;
+            fUrids = nullptr;
+        }
+
         fStateMap.clear();
 #endif
     }
