@@ -87,8 +87,8 @@ struct FileBrowserData {
 
     ~FileBrowserData()
     {
-        if (cancelAndStop() && selectedFile != nullptr && selectedFile != kSelectedFileCancelled)
-            std::free(const_cast<char*>(selectedFile));
+        if (cancelAndStop())
+            free();
     }
 
     void setupAndStart(const bool embed,
@@ -238,10 +238,24 @@ struct FileBrowserData {
             XCloseDisplay(x11display);
 #endif
 
-        if (selectedFile != nullptr && selectedFile != kSelectedFileCancelled)
-            std::free(const_cast<char*>(selectedFile));
+        free();
     }
 #endif
+
+    void free()
+    {
+        if (selectedFile == nullptr)
+            return;
+
+        if (selectedFile == kSelectedFileCancelled || std::strcmp(selectedFile, kSelectedFileCancelled) == 0)
+        {
+            selectedFile = nullptr;
+            return;
+        }
+
+        std::free(const_cast<char*>(selectedFile));
+        selectedFile = nullptr;
+    }
 };
 
 // --------------------------------------------------------------------------------------------------------------------
