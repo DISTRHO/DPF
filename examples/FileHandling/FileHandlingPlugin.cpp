@@ -149,17 +149,17 @@ protected:
    /**
       TODO API under construction
     */
-    bool isStateFile(uint32_t index) override
+    uint32_t getStateHints(uint32_t index) override
     {
         switch (index)
         {
         case kStateFile1:
         case kStateFile2:
         case kStateFile3:
-            return true;
+            return kStateIsFilenamePath;
         }
 
-        return false;
+        return 0x0;
     }
 
    /* --------------------------------------------------------------------------------------------------------

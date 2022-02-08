@@ -1026,7 +1026,7 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES
     DISTRHO_DEPRECATED_BY("getStateHints")
-    virtual bool isStateFile(uint32_t index) { return false; }
+    virtual bool isStateFile(uint32_t) { return false; }
 #endif
 
    /* --------------------------------------------------------------------------------------------------------

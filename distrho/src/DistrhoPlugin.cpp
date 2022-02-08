@@ -181,10 +181,6 @@ void Plugin::initProgramName(uint32_t, String&) {}
 void Plugin::initState(uint32_t, String&, String&) {}
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
-bool Plugin::isStateFile(uint32_t) { return false; }
-#endif
-
 /* ------------------------------------------------------------------------------------------------------------
  * Init */
 
@@ -202,12 +198,29 @@ String Plugin::getState(const char*) const { return String(); }
 #if DISTRHO_PLUGIN_WANT_STATE
 uint32_t Plugin::getStateHints(const uint32_t index)
 {
-   #if DISTRHO_PLUGIN_WANT_STATEFILES
-    if isStateFile(index)
-        return kStateIsFilenamePath;
+  #if DISTRHO_PLUGIN_WANT_STATEFILES
+   #if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
    #endif
+    if (isStateFile(index))
+   #if defined(__clang__)
+    #pragma clang diagnostic pop
+   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+    #pragma GCC diagnostic pop
+   #endif
+        return kStateIsFilenamePath;
+  #endif
 
     return 0x0;
+
+   #if !DISTRHO_PLUGIN_WANT_STATEFILES
+    // unused
+    (void)index;
+   #endif
 }
 
 void Plugin::setState(const char*, const char*) {}
