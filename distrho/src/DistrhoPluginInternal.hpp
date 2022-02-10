@@ -46,6 +46,7 @@ extern bool        d_nextCanRequestParameterValueChanges;
 
 typedef bool (*writeMidiFunc) (void* ptr, const MidiEvent& midiEvent);
 typedef bool (*requestParameterValueChangeFunc) (void* ptr, uint32_t index, float value);
+typedef bool (*updateStateValueFunc) (void* ptr, const char* key, const char* value);
 
 // -----------------------------------------------------------------------
 // Helpers
@@ -127,6 +128,7 @@ struct Plugin::PrivateData {
     void*         callbacksPtr;
     writeMidiFunc writeMidiCallbackFunc;
     requestParameterValueChangeFunc requestParameterValueChangeCallbackFunc;
+    updateStateValueFunc updateStateValueCallbackFunc;
 
     uint32_t bufferSize;
     double   sampleRate;
@@ -159,6 +161,7 @@ struct Plugin::PrivateData {
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
           requestParameterValueChangeCallbackFunc(nullptr),
+          updateStateValueCallbackFunc(nullptr),
           bufferSize(d_nextBufferSize),
           sampleRate(d_nextSampleRate),
           bundlePath(d_nextBundlePath != nullptr ? strdup(d_nextBundlePath) : nullptr)
@@ -257,6 +260,17 @@ struct Plugin::PrivateData {
         return false;
     }
 #endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    bool updateStateValueCallback(const char* const key, const char* const value)
+    {
+        d_stdout("updateStateValueCallback %p", updateStateValueCallbackFunc);
+        if (updateStateValueCallbackFunc != nullptr)
+            return updateStateValueCallbackFunc(callbacksPtr, key, value);
+
+        return false;
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -267,7 +281,8 @@ class PluginExporter
 public:
     PluginExporter(void* const callbacksPtr,
                    const writeMidiFunc writeMidiCall,
-                   const requestParameterValueChangeFunc requestParameterValueChangeCall)
+                   const requestParameterValueChangeFunc requestParameterValueChangeCall,
+                   const updateStateValueFunc updateStateValueCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
@@ -409,6 +424,7 @@ public:
         fData->callbacksPtr = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
         fData->requestParameterValueChangeCallbackFunc = requestParameterValueChangeCall;
+        fData->updateStateValueCallbackFunc = updateStateValueCall;
     }
 
     ~PluginExporter()

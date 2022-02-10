@@ -926,6 +926,15 @@ public:
     bool requestParameterValueChange(uint32_t index, float value) noexcept;
 #endif
 
+#if DISTRHO_PLUGIN_WANT_STATE
+   /**
+      Notify the host about a state value change.
+      This function will automatically trigger a state update on the UI side.
+      It must not be called during run.
+    */
+    bool updateStateValue(const char* key, const char* value) noexcept;
+#endif
+
 protected:
    /* --------------------------------------------------------------------------------------------------------
     * Information */
