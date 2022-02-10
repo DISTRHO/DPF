@@ -251,7 +251,7 @@ class PluginVst3
 
 public:
     PluginVst3(v3_host_application** const host)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
           fComponentHandler(nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
 # if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -3850,7 +3850,7 @@ static const PluginExporter& _getPluginInfo()
     d_nextSampleRate = 44100.0;
     d_nextPluginIsDummy = true;
     d_nextCanRequestParameterValueChanges = true;
-    static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr);
+    static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr, nullptr);
     d_nextBufferSize = 0;
     d_nextSampleRate = 0.0;
     d_nextPluginIsDummy = false;

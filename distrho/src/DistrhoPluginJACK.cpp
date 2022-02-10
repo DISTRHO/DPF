@@ -117,7 +117,7 @@ class PluginJack
 {
 public:
     PluginJack(jack_client_t* const client)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this,
               0, // winId

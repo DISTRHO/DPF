@@ -498,7 +498,7 @@ class PluginVst : public ParameterAndNotesHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
@@ -1411,7 +1411,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     }
 
     // Create dummy plugin to get data from
-    static PluginExporter plugin(nullptr, nullptr, nullptr);
+    static PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
 
     if (doInternalInit)
     {
