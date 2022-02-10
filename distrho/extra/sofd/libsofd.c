@@ -499,7 +499,9 @@ static int query_font_geometry (Display *dpy, GC gc, const char *txt, int *w, in
 	if (h) *h = text_structure.ascent + text_structure.descent;
 	if (a) *a = text_structure.ascent;
 	if (d) *d = text_structure.descent;
+#ifndef DISTRHO_OS_HAIKU // FIXME
 	XFreeFontInfo (NULL, fontinfo, 1);
+#endif
 	return 0;
 }
 

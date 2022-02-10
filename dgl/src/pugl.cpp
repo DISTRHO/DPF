@@ -23,8 +23,7 @@
 #include <cstring>
 #include <ctime>
 
-#if defined(DISTRHO_OS_HAIKU)
-#elif defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_MAC)
 # import <Cocoa/Cocoa.h>
 # include <dlfcn.h>
 # include <mach/mach_time.h>
@@ -106,8 +105,7 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if defined(DISTRHO_OS_HAIKU)
-#elif defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_MAC)
 # ifndef DISTRHO_MACOS_NAMESPACE_MACRO
 #  define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, SEP, INTERFACE) NS ## SEP ## INTERFACE
 #  define DISTRHO_MACOS_NAMESPACE_MACRO(NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, _, INTERFACE)
@@ -278,9 +276,7 @@ double puglGetDesktopScaleFactor(const PuglView* const view)
 
 void puglRaiseWindow(PuglView* const view)
 {
-#if defined(DISTRHO_OS_HAIKU)
-    // nothing here yet
-#elif defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_MAC)
     if (NSWindow* const window = view->impl->window ? view->impl->window
                                                     : [view->impl->wrapperView window])
         [window orderFrontRegardless];
@@ -325,7 +321,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         view->maxAspectY = (int)height;
     }
 
-#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_MAC)
     puglSetMinSize(view, width, height);
 
     if (aspect) {
@@ -353,8 +349,7 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
     view->frame.width   = width;
     view->frame.height  = height;
 
-#if defined(DISTRHO_OS_HAIKU)
-#elif defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_MAC)
     // replace setFrame with setFrameSize
     PuglInternals* const impl = view->impl;
 

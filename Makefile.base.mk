@@ -252,14 +252,12 @@ HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
 ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_OPENGL = true
 else
-HAVE_OPENGL = $(shell $(PKG_CONFIG) --exists gl && echo true)
-ifneq ($(HAIKU),true)
+HAVE_OPENGL  = $(shell $(PKG_CONFIG) --exists gl && echo true)
 HAVE_DBUS    = $(shell $(PKG_CONFIG) --exists dbus-1 && echo true)
 HAVE_X11     = $(shell $(PKG_CONFIG) --exists x11 && echo true)
 HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
 HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
 HAVE_XRANDR  = $(shell $(PKG_CONFIG) --exists xrandr && echo true)
-endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -304,7 +302,7 @@ DGL_SYSTEM_LIBS += -lgdi32 -lcomdlg32
 # -lole32
 endif
 
-ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
 ifeq ($(HAVE_DBUS),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
@@ -362,7 +360,7 @@ ifeq ($(WINDOWS),true)
 OPENGL_LIBS  = -lopengl32
 endif
 
-ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifneq ($(MACOS_OR_WINDOWS),true)
 OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl x11)
 OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl x11)
 endif
@@ -374,7 +372,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Stub specific stuff
 
-ifeq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_STUB = true
 else
 HAVE_STUB = $(HAVE_X11)
@@ -424,11 +422,7 @@ endif
 ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_DGL = true
 else ifeq ($(HAVE_OPENGL),true)
-ifeq ($(HAIKU),true)
-HAVE_DGL = true
-else
 HAVE_DGL = $(HAVE_X11)
-endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
