@@ -967,7 +967,10 @@ int fonsAddFontMem(FONScontext* stash, const char* name, unsigned char* data, in
 
 	int idx = fons__allocFont(stash);
 	if (idx == FONS_INVALID)
+	{
+		if (freeData && data) free(data);
 		return FONS_INVALID;
+	}
 
 	font = stash->fonts[idx];
 
