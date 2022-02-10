@@ -861,7 +861,7 @@ public:
         std::memcpy(newBuf, fBuffer, fBufferLen);
         std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);
 
-        return String(newBuf);
+        return String(newBuf, false);
     }
 
     String operator+(const String& str) noexcept
