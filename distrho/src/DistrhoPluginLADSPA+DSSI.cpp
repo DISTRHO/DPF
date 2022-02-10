@@ -50,7 +50,7 @@ class PluginLadspaDssi
 {
 public:
     PluginLadspaDssi()
-        : fPlugin(nullptr, nullptr, nullptr),
+        : fPlugin(nullptr, nullptr, nullptr, nullptr),
           fPortControls(nullptr),
           fLastControlValues(nullptr)
     {
@@ -554,7 +554,7 @@ static const struct DescriptorInitializer
         d_nextBufferSize = 512;
         d_nextSampleRate = 44100.0;
         d_nextPluginIsDummy = true;
-        const PluginExporter plugin(nullptr, nullptr, nullptr);
+        const PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
         d_nextBufferSize = 0;
         d_nextSampleRate = 0.0;
         d_nextPluginIsDummy = false;
