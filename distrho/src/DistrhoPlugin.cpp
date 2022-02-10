@@ -145,6 +145,13 @@ bool Plugin::requestParameterValueChange(const uint32_t index, const float value
 }
 #endif
 
+#if DISTRHO_PLUGIN_WANT_STATE
+bool Plugin::updateStateValue(const char* const key, const char* const value) noexcept
+{
+    return pData->updateStateValueCallback(key, value);
+}
+#endif
+
 /* ------------------------------------------------------------------------------------------------------------
  * Init */
 

@@ -62,6 +62,9 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static const updateStateValueFunc updateStateValueCallback = nullptr;
+#endif
 
 // -----------------------------------------------------------------------
 
@@ -73,7 +76,7 @@ public:
               const LV2_Worker_Schedule* const worker,
               const LV2_ControlInputPort_Change_Request* const ctrlInPortChangeReq,
               const bool usingNominal)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback),
           fUsingNominal(usingNominal),
 #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
           fRunCount(0),
@@ -727,7 +730,11 @@ public:
                 if (hints & kStateIsHostVisible)
                 {
                     // object, prop key, prop urid, value key, value
-                    msgSize = sizeof(LV2_Atom_Object) + sizeof(LV2_URID) * 3 + value.length() + 1;
+                    msgSize = sizeof(LV2_Atom_Object)
+                            + sizeof(LV2_Atom_Property_Body) * 4
+                            + sizeof(LV2_Atom_URID) * 3
+                            + sizeof(LV2_Atom_String)
+                            + value.length() + 1;
                 }
                 else
                 {
@@ -737,7 +744,8 @@ public:
 
                 if (sizeof(LV2_Atom_Event) + msgSize > capacity - fEventsOutData.offset)
                 {
-                    d_stdout("Sending key '%s' to UI failed, out of space", key.buffer());
+                    d_stdout("Sending key '%s' to UI failed, out of space (needs %u bytes)",
+                             key.buffer(), msgSize);
                     break;
                 }
 
@@ -745,10 +753,9 @@ public:
                 aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + fEventsOutData.offset);
                 aev->time.frames = 0;
 
-                uint8_t* const msgBuf = LV2_ATOM_BODY(&aev->body);
-
                 if (hints & kStateIsHostVisible)
                 {
+                    uint8_t* const msgBuf = (uint8_t*)&aev->body;
                     LV2_Atom_Forge atomForge = fAtomForge;
                     lv2_atom_forge_set_buffer(&atomForge, msgBuf, msgSize);
 
@@ -759,7 +766,10 @@ public:
                     lv2_atom_forge_urid(&atomForge, fUrids[i]);
 
                     lv2_atom_forge_key(&atomForge, fURIDs.patchValue);
-                    lv2_atom_forge_path(&atomForge, value.buffer(), static_cast<uint32_t>(value.length()+1));
+                    if ((hints & kStateIsFilenamePath) == kStateIsFilenamePath)
+                        lv2_atom_forge_path(&atomForge, value.buffer(), static_cast<uint32_t>(value.length()+1));
+                    else
+                        lv2_atom_forge_string(&atomForge, value.buffer(), static_cast<uint32_t>(value.length()+1));
 
                     lv2_atom_forge_pop(&atomForge, &forgeFrame);
                 }
@@ -768,6 +778,7 @@ public:
                     aev->body.type = fURIDs.dpfKeyValue;
                     aev->body.size = msgSize;
 
+                    uint8_t* const msgBuf = LV2_ATOM_BODY(&aev->body);
                     std::memset(msgBuf, 0, msgSize);
 
                     // write key and value in atom buffer
@@ -1248,11 +1259,14 @@ private:
     {
         fPlugin.setState(key, newValue);
 
-        // check if we want to save this key
-        if (! fPlugin.wantStateKey(key))
-            return;
+        // save this key if necessary
+        if (fPlugin.wantStateKey(key))
+            updateState(key, newValue, false);
+    }
 
-        // check if key already exists
+    bool updateState(const char* const key, const char* const newValue, const bool sendToUI)
+    {
+        // key must already exist
         for (StringToStringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
         {
             const String& dkey(it->first);
@@ -1260,11 +1274,25 @@ private:
             if (dkey == key)
             {
                 it->second = newValue;
-                return;
+
+                if (sendToUI)
+                {
+                    for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
+                    {
+                        if (fPlugin.getStateKey(i) == key)
+                        {
+                            fNeededUiSends[i] = true;
+                            break;
+                        }
+                    }
+                }
+
+                return true;
             }
         }
 
         d_stderr("Failed to find plugin state with key \"%s\"", key);
+        return false;
     }
 #endif
 
@@ -1303,6 +1331,13 @@ private:
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
         return (((PluginLv2*)ptr)->requestParameterValueChange(index, value) == 0);
+    }
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
+    {
+        return ((PluginLv2*)ptr)->updateState(key, value, true);
     }
 #endif
 
