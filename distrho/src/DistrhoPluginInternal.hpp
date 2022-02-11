@@ -112,8 +112,7 @@ struct Plugin::PrivateData {
 
 #if DISTRHO_PLUGIN_WANT_STATE
     uint32_t stateCount;
-    String*  stateKeys;
-    String*  stateDefValues;
+    State*   states;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
@@ -152,8 +151,7 @@ struct Plugin::PrivateData {
 #endif
 #if DISTRHO_PLUGIN_WANT_STATE
           stateCount(0),
-          stateKeys(nullptr),
-          stateDefValues(nullptr),
+          states(nullptr),
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
           latency(0),
@@ -221,16 +219,10 @@ struct Plugin::PrivateData {
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-        if (stateKeys != nullptr)
+        if (states != nullptr)
         {
-            delete[] stateKeys;
-            stateKeys = nullptr;
-        }
-
-        if (stateDefValues != nullptr)
-        {
-            delete[] stateDefValues;
-            stateDefValues = nullptr;
+            delete[] states;
+            states = nullptr;
         }
 #endif
 
@@ -418,7 +410,7 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fData->stateCount; i < count; ++i)
-            fPlugin->initState(i, fData->stateKeys[i], fData->stateDefValues[i]);
+            fPlugin->initState(i, fData->states[i]);
 #endif
 
         fData->callbacksPtr = callbacksPtr;
@@ -747,25 +739,39 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, 0x0);
 
-        return fPlugin->getStateHints(index);
+        return fData->states[index].hints;
     }
 
     const String& getStateKey(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
-        return fData->stateKeys[index];
+        return fData->states[index].key;
     }
 
     const String& getStateDefaultValue(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
-        return fData->stateDefValues[index];
+        return fData->states[index].defaultValue;
+    }
+
+    const String& getStateLabel(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
+
+        return fData->states[index].label;
+    }
+
+    const String& getStateDescription(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
+
+        return fData->states[index].description;
     }
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
-    String getState(const char* key) const
+    String getStateValue(const char* const key) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackString);
         DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0', sFallbackString);
@@ -790,7 +796,7 @@ public:
 
         for (uint32_t i=0; i < fData->stateCount; ++i)
         {
-            if (fData->stateKeys[i] == key)
+            if (fData->states[i].key == key)
                 return true;
         }
 

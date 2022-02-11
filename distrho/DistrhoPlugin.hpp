@@ -142,19 +142,42 @@ static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
    @defgroup StateHints State Hints
 
    Various state hints.
-   @see Plugin::getStateHints
+   @see State::hints
    @{
  */
 
 /**
-   State is available for the host to see and change.
+   State is visible and readable by hosts that support string-type plugin parameters.
  */
-static const uint32_t kStateIsHostVisible = 0x01;
+static const uint32_t kStateIsHostReadable = 0x01;
 
 /**
-   State is a filename path.
+   State is writable by the host, allowing users to arbitrarily change the state.@n
+   For obvious reasons a writable state is also readable by the host.
  */
-static const uint32_t kStateIsFilenamePath = 0x02 | kStateIsHostVisible;
+static const uint32_t kStateIsHostWritable = 0x02 | kStateIsHostReadable;
+
+/**
+   State is a filename path instead of a regular string.@n
+   The readable and writable hints are required for filenames to work, and thus are automatically set.
+ */
+static const uint32_t kStateIsFilenamePath = 0x04 | kStateIsHostWritable;
+
+/**
+   State is a base64 encoded string.
+ */
+static const uint32_t kStateIsBase64Blob = 0x08;
+
+/**
+   State is for Plugin/DSP side only, meaning there is never a need to notify the UI when it changes.
+ */
+static const uint32_t kStateIsOnlyForDSP = 0x10;
+
+/**
+   State is for UI side only.@n
+   If the DSP and UI are separate and the UI is not available, this property won't be saved.
+ */
+static const uint32_t kStateIsOnlyForUI = 0x20;
 
 /** @} */
 
@@ -640,6 +663,48 @@ struct PortGroup {
 };
 
 /**
+   State.
+
+   In DPF states refer to key:value string pairs, used to store arbitrary non-parameter data.@n
+   By default states are completely internal to the plugin and not visible by the host.@n
+   Flags can be set to allow hosts to see and/or change them.
+
+   TODO API under construction
+ */
+struct State {
+   /**
+      Hints describing this state.
+      @note Changing these hints can break compatibility with previously saved data.
+      @see StateHints
+    */
+    uint32_t hints;
+
+   /**
+      The key or "symbol" of this state.@n
+      A state key is a short restricted name used as a machine and human readable identifier.
+      @note State keys MUST be unique within a plugin instance.
+      TODO define rules for allowed characters, must be usable as URI non-encoded parameters
+    */
+    String key;
+
+   /**
+      The default value of this state.
+    */
+    String defaultValue;
+
+   /**
+      String representation of this state.
+    */
+    String label;
+
+   /**
+      An extensive description/comment about this state.
+      @note This value is optional and only used for LV2.
+    */
+    String description;
+};
+
+/**
    MIDI event.
  */
 struct MidiEvent {
@@ -928,9 +993,13 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
-      Notify the host about a state value change.
-      This function will automatically trigger a state update on the UI side.
-      It must not be called during run.
+      Notify the host about a state value change.@n
+      This function will automatically trigger a state update on the UI side.@n
+      It must not be called during run.@n
+      The state must be host readable.
+      @note this function does nothing on DSSI plugin format, as DSSI only supports UI->DSP messages.
+
+      TODO API under construction
     */
     bool updateStateValue(const char* key, const char* value) noexcept;
 #endif
@@ -1020,17 +1089,14 @@ protected:
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
-      Set the state key and default value of @a index.@n
+      Initialize the state @a index.@n
       This function will be called once, shortly after the plugin is created.@n
       Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    virtual void initState(uint32_t index, String& stateKey, String& defaultStateValue);
+    virtual void initState(uint32_t index, State& state);
 
-   /**
-      TODO API under construction, should likely be put in a new State struct with key, name defValue and hints
-      Returns StateHints mask.
-    */
-    virtual uint32_t getStateHints(uint32_t index);
+    DISTRHO_DEPRECATED_BY("getStateHints(uint32_t,State&)")
+    virtual void initState(uint32_t, String&, String&) {}
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATEFILES

@@ -376,13 +376,22 @@ void lv2_generate_ttl(const char* const basename)
         {
             const uint32_t hints = plugin.getStateHints(i);
 
-            if ((hints & kStateIsHostVisible) == 0x0)
+            if ((hints & kStateIsHostReadable) == 0x0)
                 continue;
 
-            const String& key(plugin.getStateKey(i));
-            pluginString += "<" DISTRHO_PLUGIN_URI "#" + key + ">\n";
+            pluginString += "<" DISTRHO_PLUGIN_URI "#" + plugin.getStateKey(i) + ">\n";
             pluginString += "    a lv2:Parameter ;\n";
-            pluginString += "    rdfs:label \"" + key + "\" ;\n";
+            pluginString += "    rdfs:label \"" + plugin.getStateLabel(i) + "\" ;\n";
+
+            const String& comment(plugin.getStateDescription(i));
+
+            if (comment.isNotEmpty())
+            {
+                if (comment.contains('"') || comment.contains('\n'))
+                    pluginString += "    rdfs:comment \"\"\"" + comment + "\"\"\" ;\n";
+                else
+                    pluginString += "    rdfs:comment \"" + comment + "\" ;\n";
+            }
 
             if ((hints & kStateIsFilenamePath) == kStateIsFilenamePath)
                 pluginString += "    rdfs:range atom:Path .\n\n";
@@ -414,11 +423,16 @@ void lv2_generate_ttl(const char* const basename)
         {
             for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
             {
-                if ((plugin.getStateHints(i) & kStateIsHostVisible) == 0x0)
+                const uint32_t hints = plugin.getStateHints(i);
+
+                if ((hints & kStateIsHostReadable) == 0x0)
                     continue;
 
                 const String& key(plugin.getStateKey(i));
-                pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
+                pluginString += "    patch:readable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
+
+                if ((hints & kStateIsHostWritable) == kStateIsHostWritable)
+                    pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
             }
             pluginString += "\n";
         }
@@ -1274,7 +1288,7 @@ void lv2_generate_ttl(const char* const basename)
             for (uint32_t j=0; j<numStates; ++j)
             {
                 const String key   = plugin.getStateKey(j);
-                const String value = plugin.getState(key);
+                const String value = plugin.getStateValue(key);
 
                 presetString += "        <" DISTRHO_PLUGIN_LV2_STATE_PREFIX + key + ">";
 

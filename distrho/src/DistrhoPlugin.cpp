@@ -72,9 +72,8 @@ Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCou
     if (stateCount > 0)
     {
 #if DISTRHO_PLUGIN_WANT_STATE
-        pData->stateCount     = stateCount;
-        pData->stateKeys      = new String[stateCount];
-        pData->stateDefValues = new String[stateCount];
+        pData->stateCount = stateCount;
+        pData->states     = new State[stateCount];
 #else
         d_stderr2("DPF warning: Plugins with state must define `DISTRHO_PLUGIN_WANT_STATE` to 1");
         DPF_ABORT
@@ -185,7 +184,34 @@ void Plugin::initProgramName(uint32_t, String&) {}
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-void Plugin::initState(uint32_t, String&, String&) {}
+void Plugin::initState(const uint32_t index, State& state)
+{
+    uint hints = 0x0;
+    String stateKey, defaultStateValue;
+
+   #if defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+   #endif
+    initState(index, stateKey, defaultStateValue);
+   #if DISTRHO_PLUGIN_WANT_STATEFILES
+    if (isStateFile(index))
+        hints = kStateIsFilenamePath;
+   #endif
+   #if defined(__clang__)
+    #pragma clang diagnostic pop
+   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+    #pragma GCC diagnostic pop
+   #endif
+
+    state.hints = hints;
+    state.key = stateKey;
+    state.label = stateKey;
+    state.defaultValue = defaultStateValue;
+}
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -203,33 +229,6 @@ String Plugin::getState(const char*) const { return String(); }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-uint32_t Plugin::getStateHints(const uint32_t index)
-{
-  #if DISTRHO_PLUGIN_WANT_STATEFILES
-   #if defined(__clang__)
-    #pragma clang diagnostic push
-    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
-   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-    #pragma GCC diagnostic push
-    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-   #endif
-    if (isStateFile(index))
-   #if defined(__clang__)
-    #pragma clang diagnostic pop
-   #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
-    #pragma GCC diagnostic pop
-   #endif
-        return kStateIsFilenamePath;
-  #endif
-
-    return 0x0;
-
-   #if !DISTRHO_PLUGIN_WANT_STATEFILES
-    // unused
-    (void)index;
-   #endif
-}
-
 void Plugin::setState(const char*, const char*) {}
 #endif
 
