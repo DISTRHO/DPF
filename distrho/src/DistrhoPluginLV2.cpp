@@ -1267,10 +1267,16 @@ private:
 
         // save this key if necessary
         if (fPlugin.wantStateKey(key))
-            updateState(key, newValue, false);
+            updateInternalState(key, newValue, false);
     }
 
-    bool updateState(const char* const key, const char* const newValue, const bool sendToUI)
+    bool updateState(const char* const key, const char* const newValue)
+    {
+        fPlugin.setState(key, newValue);
+        return updateInternalState(key, newValue, true);
+    }
+
+    bool updateInternalState(const char* const key, const char* const newValue, const bool sendToUI)
     {
         // key must already exist
         for (StringToStringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
@@ -1343,7 +1349,7 @@ private:
 #if DISTRHO_PLUGIN_WANT_STATE
     static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
     {
-        return ((PluginLv2*)ptr)->updateState(key, value, true);
+        return ((PluginLv2*)ptr)->updateState(key, value);
     }
 #endif
 
