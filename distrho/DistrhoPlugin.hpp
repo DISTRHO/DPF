@@ -994,8 +994,8 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
    /**
-      Notify the host about a state value change.@n
-      This function will automatically trigger a state update on the UI side.@n
+      Set state value and notify the host about the change.@n
+      This function will call `setState()` and also trigger an update on the UI side as necessary.@n
       It must not be called during run.@n
       The state must be host readable.
       @note this function does nothing on DSSI plugin format, as DSSI only supports UI->DSP messages.
