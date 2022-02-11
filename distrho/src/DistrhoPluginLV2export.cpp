@@ -429,10 +429,10 @@ void lv2_generate_ttl(const char* const basename)
                     continue;
 
                 const String& key(plugin.getStateKey(i));
-                pluginString += "    patch:readable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
+                pluginString += "    patch:readable <" DISTRHO_PLUGIN_URI "#" + key + "> ;\n";
 
                 if ((hints & kStateIsHostWritable) == kStateIsHostWritable)
-                    pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + ">;\n";
+                    pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + "> ;\n";
             }
             pluginString += "\n";
         }
@@ -1293,7 +1293,14 @@ void lv2_generate_ttl(const char* const basename)
                 const String key   = plugin.getStateKey(j);
                 const String value = plugin.getStateValue(key);
 
-                presetString += "        <" DISTRHO_PLUGIN_LV2_STATE_PREFIX + key + ">";
+                presetString += "        <";
+
+                if (plugin.getStateHints(i) & kStateIsHostReadable)
+                    presetString += DISTRHO_PLUGIN_URI "#";
+                else
+                    presetString += DISTRHO_PLUGIN_LV2_STATE_PREFIX;
+
+                presetString += key + ">";
 
                 if (value.length() < 10)
                     presetString += " \"" + value + "\" ;\n";
