@@ -164,9 +164,7 @@ public:
       @TODO Document this.
     */
     void setState(const char* key, const char* value);
-#endif
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
    /**
       Request a new file from the host, matching the properties of a state key.@n
       This will use the native host file browser if available, otherwise a DPF built-in file browser is used.@n
@@ -327,7 +325,7 @@ protected:
       This action happens after the user confirms the action, so the file browser dialog will be closed at this point.
       The default implementation does nothing.
 
-      If you need to use files as plugin state, please setup and use DISTRHO_PLUGIN_WANT_STATEFILES instead.
+      If you need to use files as plugin state, please setup and use states with kStateIsFilenamePath instead.
     */
     virtual void uiFileBrowserSelected(const char* filename);
 #endif

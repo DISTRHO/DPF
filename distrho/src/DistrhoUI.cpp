@@ -264,7 +264,7 @@ void UI::setState(const char* key, const char* value)
 }
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
+#if DISTRHO_PLUGIN_WANT_STATE
 bool UI::requestStateFile(const char* key)
 {
     return uiData->fileRequestCallback(key);
