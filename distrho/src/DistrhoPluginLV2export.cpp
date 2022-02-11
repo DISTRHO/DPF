@@ -369,7 +369,6 @@ void lv2_generate_ttl(const char* const basename)
         pluginString += "\n";
 
 #if DISTRHO_PLUGIN_WANT_STATE
-        // define writable states as lv2 parameters
         bool hasHostVisibleState = false;
 
         for (uint32_t i=0, count=plugin.getStateCount(); i < count; ++i)
@@ -429,10 +428,11 @@ void lv2_generate_ttl(const char* const basename)
                     continue;
 
                 const String& key(plugin.getStateKey(i));
-                pluginString += "    patch:readable <" DISTRHO_PLUGIN_URI "#" + key + "> ;\n";
 
                 if ((hints & kStateIsHostWritable) == kStateIsHostWritable)
                     pluginString += "    patch:writable <" DISTRHO_PLUGIN_URI "#" + key + "> ;\n";
+                else
+                    pluginString += "    patch:readable <" DISTRHO_PLUGIN_URI "#" + key + "> ;\n";
             }
             pluginString += "\n";
         }
@@ -641,12 +641,15 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             pluginString += "        atom:supports midi:MidiEvent ;\n";
 # endif
-# if DISTRHO_PLUGIN_WANT_STATE
-            if (hasHostVisibleState)
-                pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
-# endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
             pluginString += "        atom:supports <" LV2_TIME__Position "> ;\n";
+# endif
+# if DISTRHO_PLUGIN_WANT_STATE
+            if (hasHostVisibleState)
+            {
+                pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
+                pluginString += "        lv2:designation lv2:control ;\n";
+            }
 # endif
             pluginString += "    ] ;\n\n";
             ++portIndex;
@@ -668,7 +671,10 @@ void lv2_generate_ttl(const char* const basename)
 # endif
 # if DISTRHO_PLUGIN_WANT_STATE
             if (hasHostVisibleState)
+            {
                 pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
+                pluginString += "        lv2:designation lv2:control ;\n";
+            }
 # endif
             pluginString += "    ] ;\n\n";
             ++portIndex;

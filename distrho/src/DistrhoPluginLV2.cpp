@@ -588,8 +588,8 @@ public:
                 const LV2_Atom* value    = nullptr;
                 lv2_atom_object_get(object, fURIDs.patchProperty, &property, fURIDs.patchValue, &value, nullptr);
 
-                if (property != nullptr && property->type == fURIDs.atomURID && value != nullptr &&
-                    (value->type == fURIDs.atomPath || value->type == fURIDs.atomString))
+                if (property != nullptr && property->type == fURIDs.atomURID &&
+                    value != nullptr && (value->type == fURIDs.atomPath || value->type == fURIDs.atomString))
                 {
                     fWorker->schedule_work(fWorker->handle, sizeof(LV2_Atom)+event->body.size, &event->body);
                 }
