@@ -772,6 +772,8 @@ public:
                         lv2_atom_forge_string(&atomForge, value.buffer(), static_cast<uint32_t>(value.length()+1));
 
                     lv2_atom_forge_pop(&atomForge, &forgeFrame);
+
+                    msgSize = ((LV2_Atom*)msgBuf)->size;
                 }
                 else
                 {
