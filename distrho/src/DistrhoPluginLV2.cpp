@@ -1007,7 +1007,7 @@ public:
 
             setState(key, value);
 
-#if DISTRHO_LV2_USE_EVENTS_OUT
+#if DISTRHO_PLUGIN_WANT_STATE
             // signal msg needed for UI
             fNeededUiSends[i] = true;
 #endif
