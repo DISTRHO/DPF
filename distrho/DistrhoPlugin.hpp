@@ -688,7 +688,8 @@ struct State {
     String key;
 
    /**
-      The default value of this state.
+      The default value of this state.@n
+      Can be left empty if considered a valid initial state.
     */
     String defaultValue;
 
