@@ -706,7 +706,7 @@ public:
             const uint32_t hints = fPlugin.getStateHints(i);
 
            #if ! DISTRHO_PLUGIN_HAS_UI
-            if ((hints & kStateIsHostVisible) == 0x0)
+            if ((hints & kStateIsHostReadable) == 0x0)
             {
                 fNeededUiSends[i] = false;
                 continue;
@@ -727,7 +727,7 @@ public:
                 // set msg size
                 uint32_t msgSize;
 
-                if (hints & kStateIsHostVisible)
+                if (hints & kStateIsHostReadable)
                 {
                     // object, prop key, prop urid, value key, value
                     msgSize = sizeof(LV2_Atom_Object)
@@ -753,7 +753,7 @@ public:
                 aev = (LV2_Atom_Event*)(LV2_ATOM_CONTENTS(LV2_Atom_Sequence, fEventsOutData.port) + fEventsOutData.offset);
                 aev->time.frames = 0;
 
-                if (hints & kStateIsHostVisible)
+                if (hints & kStateIsHostReadable)
                 {
                     uint8_t* const msgBuf = (uint8_t*)&aev->body;
                     LV2_Atom_Forge atomForge = fAtomForge;
@@ -894,7 +894,7 @@ public:
         for (StringToStringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
-            fStateMap[key] = fPlugin.getState(key);
+            fStateMap[key] = fPlugin.getStateValue(key);
         }
 # endif
     }
@@ -910,7 +910,7 @@ public:
         for (StringToStringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
-            fStateMap[key] = fPlugin.getState(key);
+            fStateMap[key] = fPlugin.getStateValue(key);
         }
 # endif
 
@@ -930,7 +930,9 @@ public:
 
                 const String& value(cit->second);
 
-                if (const uint32_t hints = fPlugin.getStateHints(i))
+                const uint32_t hints = fPlugin.getStateHints(i);
+
+                if (hints & kStateIsHostReadable)
                 {
                     lv2key = DISTRHO_PLUGIN_URI "#";
                     urid = (hints & kStateIsFilenamePath) == kStateIsFilenamePath
@@ -970,7 +972,9 @@ public:
         {
             const String& key(fPlugin.getStateKey(i));
 
-            if (const uint32_t hints = fPlugin.getStateHints(i))
+            const uint32_t hints = fPlugin.getStateHints(i);
+
+            if (hints & kStateIsHostReadable)
             {
                 lv2key = DISTRHO_PLUGIN_URI "#";
                 urid = (hints & kStateIsFilenamePath) == kStateIsFilenamePath

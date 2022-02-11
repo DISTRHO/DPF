@@ -910,7 +910,7 @@ public:
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
-            fStateMap[key] = fPlugin.getState(key);
+            fStateMap[key] = fPlugin.getStateValue(key);
         }
        #endif
 
@@ -1924,7 +1924,7 @@ public:
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
                 const String& key = cit->first;
-                fStateMap[key] = fPlugin.getState(key);
+                fStateMap[key] = fPlugin.getStateValue(key);
             }
            #endif
 
