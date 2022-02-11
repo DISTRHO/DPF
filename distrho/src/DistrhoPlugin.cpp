@@ -197,10 +197,8 @@ void Plugin::initState(const uint32_t index, State& state)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
    #endif
     initState(index, stateKey, defaultStateValue);
-   #if DISTRHO_PLUGIN_WANT_STATEFILES
     if (isStateFile(index))
         hints = kStateIsFilenamePath;
-   #endif
    #if defined(__clang__)
     #pragma clang diagnostic pop
    #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))

@@ -641,8 +641,9 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             pluginString += "        atom:supports midi:MidiEvent ;\n";
 # endif
-# if DISTRHO_PLUGIN_WANT_STATEFILES
-            pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
+# if DISTRHO_PLUGIN_WANT_STATE
+            if (hasHostVisibleState)
+                pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
 # endif
 # if DISTRHO_PLUGIN_WANT_TIMEPOS
             pluginString += "        atom:supports <" LV2_TIME__Position "> ;\n";
@@ -665,8 +666,9 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             pluginString += "        atom:supports midi:MidiEvent ;\n";
 # endif
-# if DISTRHO_PLUGIN_WANT_STATEFILES
-            pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
+# if DISTRHO_PLUGIN_WANT_STATE
+            if (hasHostVisibleState)
+                pluginString += "        atom:supports <" LV2_PATCH__Message "> ;\n";
 # endif
             pluginString += "    ] ;\n\n";
             ++portIndex;
@@ -1262,10 +1264,11 @@ void lv2_generate_ttl(const char* const basename)
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
         for (uint32_t i=0; i<numStates; ++i)
         {
-#  if DISTRHO_PLUGIN_WANT_STATEFILES
-            if (plugin.isStateFile(i))
+            if (plugin.getStateHints(i) & kStateIsHostReadable)
                 continue;
-#  endif
+
+            // readable states are defined as lv2 parameters.
+            // non-readable states have no definition, but one is needed for presets and ttl validation.
             presetString  = "<" DISTRHO_PLUGIN_LV2_STATE_PREFIX + plugin.getStateKey(i) + ">\n";
             presetString += "    a owl:DatatypeProperty ;\n";
             presetString += "    rdfs:label \"Plugin state key-value string pair\" ;\n";

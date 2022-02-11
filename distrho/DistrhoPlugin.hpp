@@ -1096,12 +1096,10 @@ protected:
     */
     virtual void initState(uint32_t index, State& state);
 
-    DISTRHO_DEPRECATED_BY("getStateHints(uint32_t,State&)")
+    DISTRHO_DEPRECATED_BY("initState(uint32_t,State&)")
     virtual void initState(uint32_t, String&, String&) {}
-#endif
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
-    DISTRHO_DEPRECATED_BY("getStateHints")
+    DISTRHO_DEPRECATED_BY("initState(uint32_t,State&)")
     virtual bool isStateFile(uint32_t) { return false; }
 #endif
 

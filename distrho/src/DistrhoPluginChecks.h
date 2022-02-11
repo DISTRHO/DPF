@@ -81,10 +81,6 @@
 # define DISTRHO_PLUGIN_WANT_STATE 0
 #endif
 
-#ifndef DISTRHO_PLUGIN_WANT_STATEFILES
-# define DISTRHO_PLUGIN_WANT_STATEFILES 0
-#endif
-
 #ifndef DISTRHO_PLUGIN_WANT_FULL_STATE
 # define DISTRHO_PLUGIN_WANT_FULL_STATE 0
 # define DISTRHO_PLUGIN_WANT_FULL_STATE_WAS_NOT_SET
@@ -137,11 +133,15 @@
 #endif
 
 // -----------------------------------------------------------------------
-// Enable state if plugin wants state files
+// Enable state if plugin wants state files (deprecated)
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES && ! DISTRHO_PLUGIN_WANT_STATE
-# undef DISTRHO_PLUGIN_WANT_STATE
-# define DISTRHO_PLUGIN_WANT_STATE 1
+#ifdef DISTRHO_PLUGIN_WANT_STATEFILES
+# warning DISTRHO_PLUGIN_WANT_STATEFILES is deprecated
+# undef DISTRHO_PLUGIN_WANT_STATEFILES
+# if ! DISTRHO_PLUGIN_WANT_STATE
+#  undef DISTRHO_PLUGIN_WANT_STATE
+#  define DISTRHO_PLUGIN_WANT_STATE 1
+# endif
 #endif
 
 // -----------------------------------------------------------------------
