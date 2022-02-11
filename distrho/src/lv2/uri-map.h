@@ -1,5 +1,5 @@
 /*
-  Copyright 2008-2011 David Robillard <http://drobilla.net>
+  Copyright 2008-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -15,8 +15,9 @@
 */
 
 /**
-   @file
-   C header for the LV2 URI Map extension <http://lv2plug.in/ns/ext/uri-map>.
+   @defgroup uri-map URI Map
+
+   C API for the LV2 URI Map extension <http://lv2plug.in/ns/ext/uri-map>.
 
    This extension defines a simple mechanism for plugins to map URIs to
    integers, usually for performance reasons (e.g. processing events typed by
@@ -25,12 +26,15 @@
    values for use in the audio thread without doing any string comparison.
    This allows the extensibility of RDF with the performance of integers (or
    centrally defined enumerations).
+
+   @{
 */
 
 #ifndef LV2_URI_MAP_H
 #define LV2_URI_MAP_H
 
-#define LV2_URI_MAP_URI "http://lv2plug.in/ns/ext/uri-map"
+#define LV2_URI_MAP_URI    "http://lv2plug.in/ns/ext/uri-map"  ///< http://lv2plug.in/ns/ext/uri-map
+#define LV2_URI_MAP_PREFIX LV2_URI_MAP_URI "#"                 ///< http://lv2plug.in/ns/ext/uri-map#
 
 #include <stdint.h>
 
@@ -96,3 +100,7 @@ typedef struct {
 #endif
 
 #endif /* LV2_URI_MAP_H */
+
+/**
+   @}
+*/

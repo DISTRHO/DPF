@@ -16,10 +16,12 @@
 */
 
 /**
-   @file dynmanifest.h
-   C header for the LV2 Dynamic Manifest extension
-   <http://lv2plug.in/ns/ext/dynmanifest>.
-   Revision: 1.2
+   @defgroup dynmanifest Dynamic Manifest
+
+   Support for dynamic data generation, see
+   <http://lv2plug.in/ns/ext/dynmanifest> for details.
+
+   @{
 */
 
 #ifndef LV2_DYN_MANIFEST_H_INCLUDED
@@ -29,7 +31,8 @@
 
 #include "lv2.h"
 
-#define LV2_DYN_MANIFEST_URI "http://lv2plug.in/ns/ext/dynmanifest"
+#define LV2_DYN_MANIFEST_URI    "http://lv2plug.in/ns/ext/dynmanifest"  ///< http://lv2plug.in/ns/ext/dynmanifest
+#define LV2_DYN_MANIFEST_PREFIX LV2_DYN_MANIFEST_URI "#"                ///< http://lv2plug.in/ns/ext/dynmanifest#
 
 #ifdef __cplusplus
 extern "C" {
@@ -142,3 +145,7 @@ void lv2_dyn_manifest_close(LV2_Dyn_Manifest_Handle handle);
 #endif
 
 #endif /* LV2_DYN_MANIFEST_H_INCLUDED */
+
+/**
+   @}
+*/
