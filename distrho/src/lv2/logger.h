@@ -1,5 +1,5 @@
 /*
-  Copyright 2012-2013 David Robillard <http://drobilla.net>
+  Copyright 2012-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -15,13 +15,14 @@
 */
 
 /**
-   @file logger.h Convenience API for easy logging in plugin code.
+   @defgroup logger Logger
+   @ingroup log
 
-   This file provides simple wrappers for the most common log operations for
-   use in plugin implementations.  If host support for logging is not
-   available, then these functions will print to stderr instead.
+   Convenience API for easy logging in plugin code.  This API provides simple
+   wrappers for logging from a plugin, which automatically fall back to
+   printing to stderr if host support is unavailabe.
 
-   This header is non-normative, it is provided for convenience.
+   @{
 */
 
 #ifndef LV2_ATOM_LOGGER_H
@@ -49,10 +50,29 @@ typedef struct {
 } LV2_Log_Logger;
 
 /**
-   Initialise @p logger.
+   Set `map` as the URI map for `logger`.
 
-   URIs will be mapped using @p map and stored, a reference to @p map itself is
-   not held.  Both @p map and @p log may be NULL when unsupported by the host,
+   This affects the message type URIDs (Error, Warning, etc) which are passed
+   to the log's print functions.
+*/
+static inline void
+lv2_log_logger_set_map(LV2_Log_Logger* logger, LV2_URID_Map* map)
+{
+	if (map) {
+		logger->Error   = map->map(map->handle, LV2_LOG__Error);
+		logger->Note    = map->map(map->handle, LV2_LOG__Note);
+		logger->Trace   = map->map(map->handle, LV2_LOG__Trace);
+		logger->Warning = map->map(map->handle, LV2_LOG__Warning);
+	} else {
+		logger->Error = logger->Note = logger->Trace = logger->Warning = 0;
+	}
+}
+
+/**
+   Initialise `logger`.
+
+   URIs will be mapped using `map` and stored, a reference to `map` itself is
+   not held.  Both `map` and `log` may be NULL when unsupported by the host,
    in which case the implementation will fall back to printing to stderr.
 */
 static inline void
@@ -60,14 +80,8 @@ lv2_log_logger_init(LV2_Log_Logger* logger,
                     LV2_URID_Map*   map,
                     LV2_Log_Log*    log)
 {
-	memset(logger, 0, sizeof(LV2_Log_Logger));
 	logger->log = log;
-	if (map) {
-		logger->Error   = map->map(map->handle, LV2_LOG__Error);
-		logger->Note    = map->map(map->handle, LV2_LOG__Note);
-		logger->Trace   = map->map(map->handle, LV2_LOG__Trace);
-		logger->Warning = map->map(map->handle, LV2_LOG__Warning);
-	}
+	lv2_log_logger_set_map(logger, map);
 }
 
 /**
@@ -80,7 +94,7 @@ lv2_log_vprintf(LV2_Log_Logger* logger,
                 const char*     fmt,
                 va_list         args)
 {
-	if (logger->log) {
+	if (logger && logger->log) {
 		return logger->log->vprintf(logger->log->handle, type, fmt, args);
 	} else {
 		return vfprintf(stderr, fmt, args);
@@ -135,12 +149,12 @@ lv2_log_warning(LV2_Log_Logger* logger, const char* fmt, ...)
 	return ret;
 }
 
-/**
-   @}
-*/
-
 #ifdef __cplusplus
 }  /* extern "C" */
 #endif
 
 #endif  /* LV2_LOG_LOGGER_H */
+
+/**
+   @}
+*/
