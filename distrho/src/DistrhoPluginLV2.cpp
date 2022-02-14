@@ -570,7 +570,11 @@ public:
                 if (std::strcmp((const char*)data, "__dpf_ui_data__") == 0)
                 {
                     for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
+                    {
+                        if (fPlugin.getStateHints(i) & kStateIsOnlyForDSP)
+                            continue;
                         fNeededUiSends[i] = true;
+                    }
                 }
                 // no, send to DSP as usual
                 else if (fWorker != nullptr)
@@ -930,9 +934,13 @@ public:
                 if (curKey != key)
                     continue;
 
-                const String& value(cit->second);
-
                 const uint32_t hints = fPlugin.getStateHints(i);
+
+               #if ! DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+                // do not save UI-only messages if there is no UI available
+                if ((hints & kStateIsOnlyForUI) == 0x0)
+                    continue;
+               #endif
 
                 if (hints & kStateIsHostReadable)
                 {
@@ -948,6 +956,8 @@ public:
                 }
 
                 lv2key += key;
+
+                const String& value(cit->second);
 
                 // some hosts need +1 for the null terminator, even though the type is string
                 store(handle,
@@ -1011,7 +1021,8 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
             // signal msg needed for UI
-            fNeededUiSends[i] = true;
+            if ((hints & kStateIsOnlyForDSP) == 0x0)
+                fNeededUiSends[i] = true;
 #endif
         }
 
@@ -1061,7 +1072,8 @@ public:
             {
                 if (fPlugin.getStateKey(i) == key)
                 {
-                    fNeededUiSends[i] = true;
+                    if ((fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
+                        fNeededUiSends[i] = true;
                     break;
                 }
             }
@@ -1293,7 +1305,8 @@ private:
                     {
                         if (fPlugin.getStateKey(i) == key)
                         {
-                            fNeededUiSends[i] = true;
+                            if ((fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
+                                fNeededUiSends[i] = true;
                             break;
                         }
                     }
