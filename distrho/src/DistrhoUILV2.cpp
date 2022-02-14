@@ -181,6 +181,33 @@ public:
 
                 fUI.stateChanged(key, value);
             }
+            else if (atom->type == fURIDs.atomObject)
+            {
+                /* TODO
+                const LV2_Atom_Object* const obj = (const LV2_Atom_Object*)LV2_ATOM_BODY_CONST(atom);
+
+                const LV2_Atom* property = nullptr;
+                const LV2_Atom* avalue = nullptr;
+                lv2_atom_object_get(obj, fURIDs.patchProperty, &property, fURIDs.patchValue, &avalue, 0);
+
+                DISTRHO_SAFE_ASSERT_RETURN(property != nullptr,);
+                DISTRHO_SAFE_ASSERT_RETURN(avalue != nullptr,);
+
+                DISTRHO_SAFE_ASSERT_RETURN(property->type == fURIDs.atomURID,);
+                DISTRHO_SAFE_ASSERT_RETURN(avalue->type == fURIDs.atomPath || avalue->type == fURIDs.atomString,);
+
+                if (property != nullptr && property->type == fURIDs.atomURID &&
+                    avalue != nullptr && (avalue->type == fURIDs.atomPath || avalue->type == fURIDs.atomString))
+                {
+                    const char* const key   = (const char*)LV2_ATOM_BODY_CONST(property);
+                    const char* const value = (const char*)LV2_ATOM_BODY_CONST(avalue);
+
+                    d_stdout("received atom object '%s' '%s'", key, value);
+
+                    fUI.stateChanged(key, value);
+                }
+                */
+            }
             else
             {
                 d_stdout("received atom not dpfKeyValue");
@@ -368,15 +395,19 @@ private:
     // LV2 URIDs
     const struct URIDs {
         const LV2_URID_Map* _uridMap;
-        LV2_URID dpfKeyValue;
-        LV2_URID atomEventTransfer;
-        LV2_URID atomFloat;
-        LV2_URID atomLong;
-        LV2_URID atomPath;
-        LV2_URID atomString;
-        LV2_URID midiEvent;
-        LV2_URID paramSampleRate;
-        LV2_URID patchSet;
+        const LV2_URID dpfKeyValue;
+        const LV2_URID atomEventTransfer;
+        const LV2_URID atomFloat;
+        const LV2_URID atomLong;
+        const LV2_URID atomObject;
+        const LV2_URID atomPath;
+        const LV2_URID atomString;
+        const LV2_URID atomURID;
+        const LV2_URID midiEvent;
+        const LV2_URID paramSampleRate;
+        const LV2_URID patchProperty;
+        const LV2_URID patchSet;
+        const LV2_URID patchValue;
 
         URIDs(const LV2_URID_Map* const uridMap)
             : _uridMap(uridMap),
@@ -384,11 +415,15 @@ private:
               atomEventTransfer(map(LV2_ATOM__eventTransfer)),
               atomFloat(map(LV2_ATOM__Float)),
               atomLong(map(LV2_ATOM__Long)),
+              atomObject(map(LV2_ATOM__Object)),
               atomPath(map(LV2_ATOM__Path)),
               atomString(map(LV2_ATOM__String)),
+              atomURID(map(LV2_ATOM__URID)),
               midiEvent(map(LV2_MIDI__MidiEvent)),
               paramSampleRate(map(LV2_PARAMETERS__sampleRate)),
-              patchSet(map(LV2_PATCH__Set)) {}
+              patchProperty(map(LV2_PATCH__property)),
+              patchSet(map(LV2_PATCH__Set)),
+              patchValue(map(LV2_PATCH__value)) {}
 
         inline LV2_URID map(const char* const uri) const
         {
