@@ -4216,9 +4216,9 @@ bool ENTRYFNNAME(void*)
         String tmpPath(getBinaryFilename());
         tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
         tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
-        DISTRHO_SAFE_ASSERT_RETURN(tmpPath.endsWith("/Contents"), true);
+        DISTRHO_SAFE_ASSERT_RETURN(tmpPath.endsWith(DISTRHO_OS_SEP_STR "Contents"), true);
 
-        tmpPath.truncate(tmpPath.rfind('/'));
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
         bundlePath = tmpPath;
         d_nextBundlePath = bundlePath.buffer();
     }
