@@ -59,7 +59,7 @@ const char* getBinaryFilename()
 # endif
     CHAR filenameBuf[MAX_PATH];
     filenameBuf[0] = '\0';
-    GetModuleFileName(hInstance, filenameBuf, sizeof(filenameBuf));
+    GetModuleFileNameA(hInstance, filenameBuf, sizeof(filenameBuf));
     filename = filenameBuf;
 #elif !defined(STATIC_BUILD)
     Dl_info info;
