@@ -32,6 +32,10 @@
 #elif defined(DISTRHO_PLUGIN_TARGET_SHARED)
 DISTRHO_PLUGIN_EXPORT DISTRHO_NAMESPACE::Plugin* createSharedPlugin();
 DISTRHO_PLUGIN_EXPORT DISTRHO_NAMESPACE::Plugin* createSharedPlugin() { return DISTRHO_NAMESPACE::createPlugin(); }
+#elif defined(DISTRHO_PLUGIN_TARGET_STATIC)
+START_NAMESPACE_DISTRHO
+Plugin* createStaticPlugin() { return createPlugin(); }
+END_NAMESPACE_DISTRHO
 #else
 # error unsupported format
 #endif

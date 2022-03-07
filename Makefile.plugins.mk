@@ -129,6 +129,7 @@ ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
 shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
+static     = $(TARGET_DIR)/$(NAME).a
 
 ifeq ($(MACOS),true)
 vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
@@ -475,6 +476,21 @@ endif
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_SHARED) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Static
+
+static: $(static)
+
+ifeq ($(HAVE_DGL),true)
+$(static): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.o $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.o
+else
+$(static): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.o
+endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating static library for $(NAME)"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
+# ---------------------------------------------------------------------------------------------------------------------
 # macOS files
 
 $(TARGET_DIR)/%/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
@@ -503,6 +519,7 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 
 -include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
@@ -510,5 +527,6 @@ endif
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.d
 
 # ---------------------------------------------------------------------------------------------------------------------
