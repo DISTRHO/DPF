@@ -489,8 +489,12 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Handle the verbosity switch
 
-ifeq ($(VERBOSE),true)
 SILENT =
+
+ifeq ($(VERBOSE),1)
+else ifeq ($(VERBOSE),y)
+else ifeq ($(VERBOSE),yes)
+else ifeq ($(VERBOSE),true)
 else
 SILENT = @
 endif
