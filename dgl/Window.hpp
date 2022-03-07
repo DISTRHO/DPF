@@ -52,7 +52,7 @@ class TopLevelWidget;
 
    ...
  */
-class Window
+class DISTRHO_API Window
 {
    struct PrivateData;
 

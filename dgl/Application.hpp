@@ -33,7 +33,7 @@ START_NAMESPACE_DGL
 
    Unless stated otherwise, functions within this class are not thread-safe.
  */
-class Application
+class DISTRHO_API Application
 {
 public:
    /**

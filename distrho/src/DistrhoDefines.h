@@ -27,10 +27,12 @@
 
 /* Check OS */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+# define DISTRHO_API
 # define DISTRHO_PLUGIN_EXPORT extern "C" __declspec (dllexport)
 # define DISTRHO_OS_WINDOWS 1
 # define DISTRHO_DLL_EXTENSION "dll"
 #else
+# define DISTRHO_API
 # define DISTRHO_PLUGIN_EXPORT extern "C" __attribute__ ((visibility("default")))
 # if defined(__APPLE__)
 #  define DISTRHO_OS_MAC 1
