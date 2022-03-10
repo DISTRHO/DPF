@@ -172,6 +172,10 @@ ifeq ($(NOOPT),true)
 BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
+ifneq ($(MACOS_OR_WINDOWS),true)
+BASE_FLAGS += -fno-gnu-unique
+endif
+
 ifeq ($(WINDOWS),true)
 # Assume we want posix
 BASE_FLAGS += -posix -D__STDC_FORMAT_MACROS
