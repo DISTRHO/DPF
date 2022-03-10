@@ -938,8 +938,8 @@ public:
 
                #if ! DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
                 // do not save UI-only messages if there is no UI available
-                if ((hints & kStateIsOnlyForUI) == 0x0)
-                    continue;
+                if (hints & kStateIsOnlyForUI)
+                    break;
                #endif
 
                 if (hints & kStateIsHostReadable)
@@ -966,6 +966,8 @@ public:
                       value.length()+1,
                       urid,
                       LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
+
+                break;
             }
         }
 
