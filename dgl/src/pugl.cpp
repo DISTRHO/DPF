@@ -340,6 +340,18 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+// set window offset without changing size
+
+PuglStatus puglSetWindowOffset(PuglView* const view, const int x, const int y)
+{
+    // TODO custom setFrame version
+    PuglRect rect = puglGetFrame(view);
+    rect.x = x;
+    rect.y = y;
+    return puglSetFrame(view, rect);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 // set window size with default size and without changing frame x/y position
 
 PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint height)

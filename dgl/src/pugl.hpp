@@ -81,11 +81,15 @@ puglSetMatchingBackendForCurrentBuild(PuglView* view);
 
 // Combine puglSetMinSize and puglSetAspectRatio
 PUGL_API PuglStatus
-puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect);
+puglSetGeometryConstraints(PuglView* view, uint width, uint height, bool aspect);
+
+// set window offset without changing size
+PUGL_API PuglStatus
+puglSetWindowOffset(PuglView* view, int x, int y);
 
 // set window size with default size and without changing frame x/y position
 PUGL_API PuglStatus
-puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
+puglSetWindowSize(PuglView* view, uint width, uint height);
 
 // DGL specific, build-specific drawing prepare
 PUGL_API void

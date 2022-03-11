@@ -207,6 +207,41 @@ public:
     void setResizable(bool resizable);
 
    /**
+      Get X offset, typically 0.
+    */
+    int getOffsetX() const noexcept;
+
+   /**
+      Get Y offset, typically 0.
+    */
+    int getOffsetY() const noexcept;
+
+   /**
+      Get offset.
+    */
+    Point<int> getOffset() const noexcept;
+
+   /**
+      Set X offset.
+    */
+    void setOffsetX(int x);
+
+   /**
+      Set Y offset.
+    */
+    void setOffsetY(int y);
+
+   /**
+      Set offset using @a x and @a y values.
+    */
+    void setOffset(int x, int y);
+
+   /**
+      Set offset.
+    */
+    void setOffset(const Point<int>& offset);
+
+   /**
       Get width.
     */
     uint getWidth() const noexcept;

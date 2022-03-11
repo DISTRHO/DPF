@@ -284,6 +284,15 @@ public:
 
     // -------------------------------------------------------------------
 
+    void setWindowOffset(const int x, const int y)
+    {
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        // TODO
+#else
+        uiData->window->setOffset(x, y);
+#endif
+    }
+
 #ifdef DISTRHO_PLUGIN_TARGET_VST3
     void setWindowSizeForVST3(const uint width, const uint height)
     {

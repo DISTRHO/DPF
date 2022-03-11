@@ -155,6 +155,48 @@ void Window::setResizable(const bool resizable)
     pData->setResizable(resizable);
 }
 
+int Window::getOffsetX() const noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
+
+    return puglGetFrame(pData->view).x;
+}
+
+int Window::getOffsetY() const noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
+
+    return puglGetFrame(pData->view).y;
+}
+
+Point<int> Window::getOffset() const noexcept
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, Point<int>());
+
+    const PuglRect rect = puglGetFrame(pData->view);
+    return Point<int>(rect.x, rect.y);
+}
+
+void Window::setOffsetX(const int x)
+{
+    setOffset(x, getOffsetY());
+}
+
+void Window::setOffsetY(const int y)
+{
+    setOffset(getOffsetX(), y);
+}
+
+void Window::setOffset(const int x, const int y)
+{
+    puglSetWindowOffset(pData->view, x, y);
+}
+
+void Window::setOffset(const Point<int>& offset)
+{
+    setOffset(offset.getX(), offset.getY());
+}
+
 uint Window::getWidth() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
