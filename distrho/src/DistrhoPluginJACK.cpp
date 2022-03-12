@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,7 +15,10 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
-#include "../DistrhoPluginUtils.hpp"
+
+#if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
+# include "../DistrhoPluginUtils.hpp"
+#endif
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
@@ -26,6 +29,10 @@
 
 #ifdef DPF_RUNTIME_TESTING
 # include "../extra/Thread.hpp"
+#endif
+
+#ifdef STATIC_BUILD
+# define JACKBRIDGE_DIRECT
 #endif
 
 #include "jackbridge/JackBridge.cpp"

@@ -46,6 +46,10 @@ ifeq ($(HAVE_PULSEAUDIO),true)
 BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
+ifeq ($(STATIC_BUILD),true)
+JACK_LIBS  += $(shell $(PKG_CONFIG) --libs jack)
+endif
+
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
 else ifeq ($(WINDOWS),true)
