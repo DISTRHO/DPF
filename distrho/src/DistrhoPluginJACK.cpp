@@ -951,7 +951,7 @@ int main(int argc, char* argv[])
     d_nextSampleRate = jackbridge_get_sample_rate(client);
     d_nextCanRequestParameterValueChanges = true;
 
-   #ifndef DISTRHO_OS_WINDOWS
+   #if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
     // find plugin bundle
     static String bundlePath;
     if (bundlePath.isEmpty())
