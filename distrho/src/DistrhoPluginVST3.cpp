@@ -1554,7 +1554,7 @@ public:
 
         if (hints & kParameterIsBoolean)
         {
-            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
+            const float midRange = ranges.min + (ranges.max - ranges.min) * 0.5f;
             value = value > midRange ? ranges.max : ranges.min;
         }
         else if (hints & kParameterIsInteger)

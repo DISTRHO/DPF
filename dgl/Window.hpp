@@ -512,7 +512,7 @@ private:
                     bool isVST3,
                     bool doPostInit);
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
 };
 
 // -----------------------------------------------------------------------

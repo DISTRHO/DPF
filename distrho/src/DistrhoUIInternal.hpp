@@ -288,6 +288,7 @@ public:
     {
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         // TODO
+        (void)x; (void)y;
 #else
         uiData->window->setOffset(x, y);
 #endif
