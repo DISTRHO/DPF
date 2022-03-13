@@ -135,11 +135,13 @@ public:
           fScaleFactor(scaleFactor),
           fIsResizingFromPlugin(false),
           fIsResizingFromHost(willResizeFromHost),
-#if defined(DISTRHO_OS_MAC)
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if defined(DISTRHO_OS_MAC)
           fTimerPtr(nullptr),
-#elif defined(DISTRHO_OS_WINDOWS)
+# elif defined(DISTRHO_OS_WINDOWS)
           fTimerHwnd(nullptr),
           fTimerWindowClassName(nullptr),
+# endif
 #endif
           fUI(this, winId, sampleRate,
               editParameterCallback,
@@ -561,11 +563,13 @@ private:
     bool fIsResizingFromHost;
 
     // Idle timer support
-#if defined(DISTRHO_OS_MAC)
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if defined(DISTRHO_OS_MAC)
     CFRunLoopTimerRef fTimerPtr;
-#elif defined(DISTRHO_OS_WINDOWS)
+# elif defined(DISTRHO_OS_WINDOWS)
     HWND fTimerHwnd;
     LPSTR fTimerWindowClassName;
+# endif
 #endif
 
     // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
