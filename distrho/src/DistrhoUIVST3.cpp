@@ -763,7 +763,7 @@ private:
         CFRelease(fTimerPtr);
     }
 
-    static void nativeIdleTimerCallback(CFRunLoopTimerRef timer, void *info)
+    static void nativeIdleTimerCallback(CFRunLoopTimerRef /*timer*/, void *info)
     {
         reinterpret_cast<UIVst3*>(info)->onTimer();
     }
