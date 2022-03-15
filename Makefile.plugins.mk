@@ -109,13 +109,15 @@ endif
 
 ifeq ($(LINUX),true)
 VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
-endif
-ifeq ($(MACOS),true)
+else ifeq ($(MACOS),true)
 VST3_CONTENTS = $(NAME).vst3/Contents
 VST3_FILENAME = $(VST3_CONTENTS)/MacOS/$(NAME)
+else ifeq ($(WINDOWS),true)
+ifeq ($(CPU_I386),true)
+VST3_FILENAME = $(NAME).vst3/Contents/x86-win/$(NAME).vst3
+else ifeq ($(CPU_X86_64),true)
+VST3_FILENAME = $(NAME).vst3/Contents/x86_64-win/$(NAME).vst3
 endif
-ifeq ($(WINDOWS),true)
-VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-win/$(NAME).vst3
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
