@@ -567,7 +567,30 @@ void puglWin32ShowCentered(PuglView* const view)
     }
     else
     {
-        ShowWindow(impl->hwnd, SW_SHOWNORMAL);
+#ifdef DGL_WINDOWS_ICON_ID
+        WNDCLASSEX wClass;
+        std::memset(&wClass, 0, sizeof(wClass));
+
+        const HINSTANCE hInstance = GetModuleHandle(nullptr);
+
+        if (GetClassInfoEx(hInstance, view->world->className, &wClass))
+            wClass.hIcon = LoadIcon(nullptr, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID));
+
+        SetClassLongPtr(impl->hwnd, GCLP_HICON, (LONG_PTR) LoadIcon(hInstance, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID)));
+#endif
+
+        MONITORINFO mInfo;
+        std::memset(&mInfo, 0, sizeof(mInfo));
+        mInfo.cbSize = sizeof(mInfo);
+
+        if (GetMonitorInfo(MonitorFromWindow(impl->hwnd, MONITOR_DEFAULTTOPRIMARY), &mInfo))
+            SetWindowPos(impl->hwnd,
+                         HWND_TOP,
+                         mInfo.rcWork.left + (mInfo.rcWork.right - view->frame.width) / 2,
+                         mInfo.rcWork.top + (mInfo.rcWork.bottom - view->frame.height) / 2,
+                         0, 0, SWP_SHOWWINDOW|SWP_NOSIZE);
+        else
+            ShowWindow(impl->hwnd, SW_NORMAL);
     }
 
     SetFocus(impl->hwnd);

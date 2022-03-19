@@ -944,11 +944,15 @@ int main(int argc, char* argv[])
         if (errorString.isNotEmpty())
         {
             errorString[errorString.length()-2] = '.';
-            d_stderr("Failed to create jack client, reason was:\n%s", errorString.buffer());
+            d_stderr("Failed to create the JACK client, reason was:\n%s", errorString.buffer());
         }
         else
-            d_stderr("Failed to create jack client, cannot continue!");
+            d_stderr("Failed to create the JACK client, cannot continue!");
 
+       #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+        const String win32error = "Failed to create JACK client, reason was:\n" + errorString;
+        MessageBoxA(nullptr, win32error.buffer(), "", MB_ICONERROR);
+       #endif
         return 1;
     }
 
