@@ -359,23 +359,10 @@ public:
         if (index > 0)
         {
             // keyboard events must always be lowercase
-            bool needsShiftRevert = false;
             if (index >= 'A' && index <= 'Z')
-            {
                 index += 'a' - 'A'; // A-Z -> a-z
 
-                if ((fKeyboardModifiers & kModifierShift) == 0x0)
-                {
-                    needsShiftRevert = true;
-                    fKeyboardModifiers |= kModifierShift;
-                }
-            }
-
             fUI.handlePluginKeyboardVST2(down, static_cast<uint>(index), fKeyboardModifiers);
-
-            if (needsShiftRevert)
-                fKeyboardModifiers &= ~kModifierShift;
-
             return 1;
         }
 
