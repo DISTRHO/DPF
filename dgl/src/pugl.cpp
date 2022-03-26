@@ -163,7 +163,7 @@ START_NAMESPACE_DGL
 
 bool puglBackendEnter(PuglView* const view)
 {
-    return view->backend->enter(view, NULL) == PUGL_SUCCESS;
+    return view->backend->enter(view, nullptr) == PUGL_SUCCESS;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ bool puglBackendEnter(PuglView* const view)
 
 void puglBackendLeave(PuglView* const view)
 {
-    view->backend->leave(view, NULL);
+    view->backend->leave(view, nullptr);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -397,14 +397,20 @@ PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint 
 
         AdjustWindowRectEx(&rect, puglWinGetWindowFlags(view), FALSE, puglWinGetWindowExFlags(view));
 
-        if (! SetWindowPos(view->impl->hwnd,
-                           HWND_TOP,
-                           rect.left,
-                           rect.top,
-                           rect.right - rect.left,
-                           rect.bottom - rect.top,
-                           SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER))
-            return PUGL_UNKNOWN_ERROR;
+        if (SetWindowPos(view->impl->hwnd,
+                         HWND_TOP,
+                         rect.left,
+                         rect.top,
+                         rect.right - rect.left,
+                         rect.bottom - rect.top,
+                         SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER))
+        {
+            // make sure to return context back to ourselves
+            view->backend->enter(view, nullptr);
+            return PUGL_SUCCESS;
+        }
+
+        return PUGL_UNKNOWN_ERROR;
     }
 #else
     // matches upstream pugl, except we use XResizeWindow instead of XMoveResizeWindow
