@@ -363,11 +363,11 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     if (dbuscon != nullptr)
     {
         // if this is the first time we are calling into DBus, check if things are working
-        static bool firstTry = true;
+        static bool checkAvailable = !dbus_bus_name_has_owner(dbuscon, "org.freedesktop.portal.Desktop", nullptr);
 
-        if (firstTry)
+        if (checkAvailable)
         {
-            firstTry = false;
+            checkAvailable = false;
 
             if (DBusMessage* const msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
                                                                       "/org/freedesktop/portal/desktop",
