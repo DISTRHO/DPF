@@ -105,11 +105,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
     * Init */
 
    /**
-      This plugin has no parameters.
-    */
-    void initParameter(uint32_t, Parameter&) override {}
-
-   /**
       Set the name of the program @a index.
       This function will be called once, shortly after the plugin is created.
     */
@@ -179,12 +174,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
 
    /* --------------------------------------------------------------------------------------------------------
     * Internal data */
-
-   /**
-      This plugin has no parameters..
-    */
-    void setParameterValue(uint32_t, float) override {}
-    float getParameterValue(uint32_t) const override { return 0.0f; }
 
    /**
       Load a program.
