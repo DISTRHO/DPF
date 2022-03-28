@@ -21,6 +21,11 @@
 #include "travesty/host.h"
 #include "travesty/view.h"
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI && defined(DISTRHO_OS_WINDOWS)
+# include <winuser.h>
+# define DPF_VST3_WIN32_TIMER_ID 1
+#endif
+
 /* TODO items:
  * - mousewheel event
  * - key down/up events
@@ -29,7 +34,9 @@
  */
 
 #if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-# define DPF_VST3_USING_HOST_RUN_LOOP
+# define DPF_VST3_USING_HOST_RUN_LOOP 1
+#else
+# define DPF_VST3_USING_HOST_RUN_LOOP 0
 #endif
 
 #ifndef DPF_VST3_TIMER_INTERVAL
@@ -97,6 +104,130 @@ static void applyGeometryConstraints(const uint minimumWidth,
 // --------------------------------------------------------------------------------------------------------------------
 
 /**
+ * Helper class for getting a native idle timer, either through pugl or via native APIs.
+ */
+#if !DPF_VST3_USING_HOST_RUN_LOOP
+class NativeIdleCallback : public IdleCallback
+{
+public:
+    NativeIdleCallback(UIExporter& ui)
+        : fUI(ui),
+          fCallbackRegistered(false)
+  #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if defined(DISTRHO_OS_MAC)
+        , fTimerRef(nullptr)
+   #elif defined(DISTRHO_OS_WINDOWS)
+        , fTimerWindow(nullptr)
+        , fTimerWindowClassName()
+   #endif
+  #endif
+    {
+    }
+
+    void registerNativeIdleCallback()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(!fCallbackRegistered,);
+        fCallbackRegistered = true;
+
+       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+       #elif defined(DISTRHO_OS_MAC)
+        constexpr const CFTimeInterval interval = DPF_VST3_TIMER_INTERVAL * 0.0001;
+
+        CFRunLoopTimerContext context = {};
+        context.info = this;
+        fTimerRef = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + interval, interval, 0, 0,
+                                         platformIdleTimerCallback, &context);
+        DISTRHO_SAFE_ASSERT_RETURN(fTimerRef != nullptr,);
+
+        CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
+       #elif defined(DISTRHO_OS_WINDOWS)
+        /* We cannot assume anything about the native parent window passed as a parameter (winId) to the
+         * UIVst3 constructor because we do not own it.
+         * These parent windows have class names like 'reaperPluginHostWrapProc' and 'JUCE_nnnnnn'.
+         *
+         * Create invisible window to handle a timer instead.
+         * There is no need for implementing a window proc because DefWindowProc already calls the
+         * callback function when processing WM_TIMER messages.
+         */
+        fTimerWindowClassName = (
+           #ifdef DISTRHO_PLUGIN_BRAND
+            DISTRHO_PLUGIN_BRAND
+           #else
+            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
+           #endif
+            "-" DISTRHO_PLUGIN_NAME "-"
+        );
+
+        char suffix[9];
+        std::snprintf(suffix, 8, "%08x", std::rand());
+        suffix[8] = '\0';
+        fTimerWindowClassName += suffix;
+
+        WNDCLASSEX cls;
+        ZeroMemory(&cls, sizeof(cls));
+        cls.cbSize = sizeof(WNDCLASSEX);
+        cls.cbWndExtra = sizeof(LONG_PTR);
+        cls.lpszClassName = fTimerWindowClassName.buffer();
+        cls.lpfnWndProc = DefWindowProc;
+        RegisterClassEx(&cls);
+
+        fTimerWindow = CreateWindowEx(0, cls.lpszClassName, "DPF Timer Helper",
+                                      0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
+        DISTRHO_SAFE_ASSERT_RETURN(fTimerWindow != nullptr,);
+
+        SetWindowLongPtr(fTimerWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(static_cast<void*>(this)));
+        SetTimer(fTimerWindow, DPF_VST3_WIN32_TIMER_ID, DPF_VST3_TIMER_INTERVAL,
+                 static_cast<TIMERPROC>(platformIdleTimerCallback));
+       #endif
+    }
+
+    ~NativeIdleCallback()
+    {
+        if (!fCallbackRegistered)
+            return;
+
+       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        fUI.removeIdleCallbackForVST3(this);
+       #elif defined(DISTRHO_OS_MAC)
+        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
+        CFRelease(fTimerRef);
+       #elif defined(DISTRHO_OS_WINDOWS)
+        DISTRHO_SAFE_ASSERT_RETURN(fTimerWindow != nullptr,);
+        KillTimer(fTimerWindow, DPF_VST3_WIN32_TIMER_ID);
+        DestroyWindow(fTimerWindow);
+        UnregisterClass(fTimerWindowClassName, nullptr);
+       #endif
+    }
+
+private:
+    UIExporter& fUI;
+    bool fCallbackRegistered;
+
+  #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if defined(DISTRHO_OS_MAC)
+    CFRunLoopTimerRef fTimerRef;
+
+    static void platformIdleTimerCallback(CFRunLoopTimerRef, void* const info)
+    {
+        static_cast<NativeIdleCallback*>(info)->idleCallback();
+    }
+   #elif defined(DISTRHO_OS_WINDOWS)
+    HWND fTimerWindow;
+    String fTimerWindowClassName;
+
+    WINAPI static void platformIdleTimerCallback(const HWND hwnd, UINT, UINT_PTR, DWORD)
+    {
+        reinterpret_cast<NativeIdleCallback*>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->idleCallback();
+    }
+   #endif
+  #endif
+};
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
+/**
  * VST3 UI class.
  *
  * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
@@ -105,8 +236,8 @@ static void applyGeometryConstraints(const uint minimumWidth,
  * The low-level VST3 stuff comes after.
  */
 class UIVst3
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-  : public IdleCallback
+#if !DPF_VST3_USING_HOST_RUN_LOOP
+  : public NativeIdleCallback
 #endif
 {
 public:
@@ -119,7 +250,11 @@ public:
            const double sampleRate,
            void* const instancePointer,
            const bool willResizeFromHost)
-        : fView(view),
+        :
+#if !DPF_VST3_USING_HOST_RUN_LOOP
+          NativeIdleCallback(fUI),
+#endif
+          fView(view),
           fHostApplication(host),
           fConnection(connection),
           fFrame(frame),
@@ -142,9 +277,6 @@ public:
 
     ~UIVst3()
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-        fUI.removeIdleCallbackForVST3(this);
-#endif
         if (fConnection != nullptr)
             disconnect();
     }
@@ -153,11 +285,12 @@ public:
     {
         if (fIsResizingFromHost && nextWidth > 0 && nextHeight > 0)
         {
-#ifdef DISTRHO_OS_MAC
+           #ifdef DISTRHO_OS_MAC
             const double scaleFactor = fUI.getScaleFactor();
             nextWidth *= scaleFactor;
             nextHeight *= scaleFactor;
-#endif
+           #endif
+
             if (fUI.getWidth() != nextWidth || fUI.getHeight() != nextHeight)
             {
                 d_stdout("postInit sets new size as %u %u", nextWidth, nextHeight);
@@ -168,9 +301,9 @@ public:
         if (fConnection != nullptr)
             connect(fConnection);
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
-#endif
+       #if !DPF_VST3_USING_HOST_RUN_LOOP
+        registerNativeIdleCallback();
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -199,17 +332,17 @@ public:
             dglmods |= kModifierShift;
         if (modifiers & (1 << 1))
             dglmods |= kModifierAlt;
-# ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         if (modifiers & (1 << 2))
             dglmods |= kModifierSuper;
         if (modifiers & (1 << 3))
             dglmods |= kModifierControl;
-# else
+       #else
         if (modifiers & (1 << 2))
             dglmods |= kModifierControl;
         if (modifiers & (1 << 3))
             dglmods |= kModifierSuper;
-# endif
+       #endif
 
         return fUI.handlePluginKeyboardVST3(true, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
@@ -230,17 +363,17 @@ public:
             dglmods |= kModifierShift;
         if (modifiers & (1 << 1))
             dglmods |= kModifierAlt;
-# ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         if (modifiers & (1 << 2))
             dglmods |= kModifierSuper;
         if (modifiers & (1 << 3))
             dglmods |= kModifierControl;
-# else
+       #else
         if (modifiers & (1 << 2))
             dglmods |= kModifierControl;
         if (modifiers & (1 << 3))
             dglmods |= kModifierSuper;
-# endif
+       #endif
 
         return fUI.handlePluginKeyboardVST3(false, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
     }
@@ -259,11 +392,12 @@ public:
         rect->left = rect->top = 0;
         rect->right = fUI.getWidth();
         rect->bottom = fUI.getHeight();
-#ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         rect->right /= scaleFactor;
         rect->bottom /= scaleFactor;
-#endif
+       #endif
+
         d_stdout("getSize request returning %i %i", rect->right, rect->bottom);
         return V3_OK;
     }
@@ -271,13 +405,14 @@ public:
     v3_result onSize(v3_view_rect* const orect)
     {
         v3_view_rect rect = *orect;
-#ifdef DISTRHO_OS_MAC
+
+       #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         rect.top *= scaleFactor;
         rect.left *= scaleFactor;
         rect.right *= scaleFactor;
         rect.bottom *= scaleFactor;
-#endif
+       #endif
 
         if (fIsResizingFromPlugin)
         {
@@ -308,11 +443,13 @@ public:
         uint minimumWidth, minimumHeight;
         bool keepAspectRatio;
         fUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-#ifdef DISTRHO_OS_MAC
+
+       #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         minimumWidth /= scaleFactor;
         minimumHeight /= scaleFactor;
-#endif
+       #endif
+
         applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
         return V3_TRUE;
     }
@@ -414,7 +551,7 @@ public:
             return V3_OK;
         }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         if (std::strcmp(msgid, "state-set") == 0)
         {
             int64_t keyLength = -1;
@@ -462,7 +599,7 @@ public:
             std::free(value16);
             return V3_OK;
         }
-#endif
+       #endif
 
         d_stdout("UIVst3 received unknown msg '%s'", msgid);
 
@@ -482,16 +619,7 @@ public:
         return V3_OK;
     }
 
-    // ----------------------------------------------------------------------------------------------------------------
-    // special idle callback on macOS and Windows
-
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI && (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-    void idleCallback() override
-    {
-        fUI.idleForVST3();
-        doIdleStuff();
-    }
-#else
+   #if DPF_VST3_USING_HOST_RUN_LOOP
     // ----------------------------------------------------------------------------------------------------------------
     // v3_timer_handler interface calls
 
@@ -500,7 +628,16 @@ public:
         fUI.plugin_idle();
         doIdleStuff();
     }
-#endif
+   #else
+    // ----------------------------------------------------------------------------------------------------------------
+    // special idle callback without v3_timer_handler
+
+    void idleCallback() override
+    {
+        fUI.idleForVST3();
+        doIdleStuff();
+    }
+   #endif
 
     void doIdleStuff()
     {
@@ -629,11 +766,11 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
 
-#ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         width /= scaleFactor;
         height /= scaleFactor;
-#endif
+       #endif
 
         if (fIsResizingFromHost)
         {
@@ -657,7 +794,7 @@ private:
         ((UIVst3*)ptr)->setSize(width, height);
     }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
@@ -684,9 +821,9 @@ private:
     {
         ((UIVst3*)ptr)->sendNote(channel, note, velocity);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
@@ -711,7 +848,7 @@ private:
     {
         ((UIVst3*)ptr)->setState(key, value);
     }
-#endif
+   #endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -887,7 +1024,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     }
 };
 
-#ifdef DPF_VST3_USING_HOST_RUN_LOOP
+#if DPF_VST3_USING_HOST_RUN_LOOP
 // --------------------------------------------------------------------------------------------------------------------
 // dpf_timer_handler
 
@@ -963,9 +1100,9 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     std::atomic_int refcounter;
     ScopedPointer<dpf_ui_connection_point> connection;
     ScopedPointer<dpf_plugin_view_content_scale> scale;
-#ifdef DPF_VST3_USING_HOST_RUN_LOOP
+   #if DPF_VST3_USING_HOST_RUN_LOOP
     ScopedPointer<dpf_timer_handler> timer;
-#endif
+   #endif
     ScopedPointer<UIVst3> uivst3;
     // cached values
     v3_host_application** const hostApplication;
@@ -1017,7 +1154,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         connection = nullptr;
         scale = nullptr;
-       #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+       #if DPF_VST3_USING_HOST_RUN_LOOP
         timer = nullptr;
        #endif
         uivst3 = nullptr;
@@ -1055,7 +1192,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return V3_OK;
         }
 
-#ifndef DISTRHO_OS_MAC
+       #ifndef DISTRHO_OS_MAC
         if (v3_tuid_match(v3_plugin_view_content_scale_iid, iid))
         {
             d_stdout("query_interface_view => %p %s %p | OK convert %p",
@@ -1068,7 +1205,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             *iface = &view->scale;
             return V3_OK;
         }
-#endif
+       #endif
 
         d_stdout("query_interface_view => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
@@ -1116,7 +1253,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             }
         }
 
-#ifndef DISTRHO_OS_MAC
+       #ifndef DISTRHO_OS_MAC
         if (dpf_plugin_view_content_scale* const scale = view->scale)
         {
             if (const int refcount = scale->refcounter)
@@ -1125,7 +1262,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 d_stderr("DPF warning: asked to delete view while content scale still active (refcount %d)", refcount);
             }
         }
-#endif
+       #endif
 
         if (unclean)
             return 0;
@@ -1163,7 +1300,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         {
             if (std::strcmp(kSupportedPlatforms[i], platform_type) == 0)
             {
-               #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+               #if DPF_VST3_USING_HOST_RUN_LOOP
                 // find host run loop to plug ourselves into (required on some systems)
                 DISTRHO_SAFE_ASSERT_RETURN(view->frame != nullptr, V3_INVALID_ARG);
 
@@ -1189,7 +1326,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
                 view->nextWidth = 0;
                 view->nextHeight = 0;
 
-               #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+               #if DPF_VST3_USING_HOST_RUN_LOOP
                 // register a timer host run loop stuff
                 view->timer = new dpf_timer_handler(view->uivst3);
                 v3_cpp_obj(runloop)->register_timer(runloop,
@@ -1210,7 +1347,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
 
-       #ifdef DPF_VST3_USING_HOST_RUN_LOOP
+       #if DPF_VST3_USING_HOST_RUN_LOOP
         // unregister our timer as needed
         if (v3_run_loop** const runloop = view->runloop)
         {
@@ -1297,6 +1434,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
 
+        // FIXME check if all this is really needed
         const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
@@ -1383,6 +1521,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->checkSizeConstraint(rect);
 
+        // FIXME check if all this is really needed
         const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
