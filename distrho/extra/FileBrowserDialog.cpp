@@ -359,52 +359,77 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     // optional, can be null
     DBusConnection* const dbuscon = handle->dbuscon;
 
-    if (dbuscon != nullptr && dbus_bus_name_has_owner(dbuscon, "org.freedesktop.portal.Desktop", nullptr))
+    // https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser
+    if (dbuscon != nullptr)
     {
-        // https://flatpak.github.io/xdg-desktop-portal/portal-docs.html#gdbus-org.freedesktop.portal.FileChooser
-        if (DBusMessage* const message = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
+        // if this is the first time we are calling into DBus, check if things are working
+        static bool firstTry = true;
+
+        if (firstTry)
+        {
+            firstTry = false;
+
+            if (DBusMessage* const msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
+                                                                      "/org/freedesktop/portal/desktop",
+                                                                      "org.freedesktop.portal.FileChooser",
+                                                                      "version"))
+            {
+                if (DBusMessage* const reply = dbus_connection_send_with_reply_and_block(dbuscon, msg, 250, nullptr))
+                    dbus_message_unref(reply);
+
+                dbus_message_unref(msg);
+            }
+        }
+
+        // Any subsquent calls should have this DBus service active
+        if (dbus_bus_name_has_owner(dbuscon, "org.freedesktop.portal.Desktop", nullptr))
+        {
+            if (DBusMessage* const msg = dbus_message_new_method_call("org.freedesktop.portal.Desktop",
                                                                       "/org/freedesktop/portal/desktop",
                                                                       "org.freedesktop.portal.FileChooser",
                                                                       options.saving ? "SaveFile" : "OpenFile"))
-        {
-            char windowIdStr[32];
-            memset(windowIdStr, 0, sizeof(windowIdStr));
-# ifdef HAVE_X11
-            snprintf(windowIdStr, sizeof(windowIdStr)-1, "x11:%llx", (ulonglong)windowId);
-# endif
-            const char* windowIdStrPtr = windowIdStr;
-
-            dbus_message_append_args(message,
-                                    DBUS_TYPE_STRING, &windowIdStrPtr,
-                                    DBUS_TYPE_STRING, &windowTitle,
-                                    DBUS_TYPE_INVALID);
-
-            DBusMessageIter iter, array;
-            dbus_message_iter_init_append(message, &iter);
-            dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &array);
-
             {
-                DBusMessageIter dict, variant, variantArray;
-                const char* const current_folder_key = "current_folder";
-                const char* const current_folder_val = startDir.buffer();
+               #ifdef HAVE_X11
+                char windowIdStr[32];
+                memset(windowIdStr, 0, sizeof(windowIdStr));
+                snprintf(windowIdStr, sizeof(windowIdStr)-1, "x11:%llx", (ulonglong)windowId);
+                const char* windowIdStrPtr = windowIdStr;
+               #endif
 
-                dbus_message_iter_open_container(&array, DBUS_TYPE_DICT_ENTRY, nullptr, &dict);
-                dbus_message_iter_append_basic(&dict, DBUS_TYPE_STRING, &current_folder_key);
-                dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "ay", &variant);
-                dbus_message_iter_open_container(&variant, DBUS_TYPE_ARRAY, "y", &variantArray);
-                dbus_message_iter_append_fixed_array(&variantArray, DBUS_TYPE_BYTE,
-                                                     &current_folder_val, startDir.length()+1);
-                dbus_message_iter_close_container(&variant, &variantArray);
-                dbus_message_iter_close_container(&dict, &variant);
-                dbus_message_iter_close_container(&array, &dict);
+                dbus_message_append_args(msg,
+                                        #ifdef HAVE_X11
+                                         DBUS_TYPE_STRING, &windowIdStrPtr,
+                                        #endif
+                                         DBUS_TYPE_STRING, &windowTitle,
+                                         DBUS_TYPE_INVALID);
+
+                DBusMessageIter iter, array;
+                dbus_message_iter_init_append(msg, &iter);
+                dbus_message_iter_open_container(&iter, DBUS_TYPE_ARRAY, "{sv}", &array);
+
+                {
+                    DBusMessageIter dict, variant, variantArray;
+                    const char* const current_folder_key = "current_folder";
+                    const char* const current_folder_val = startDir.buffer();
+
+                    dbus_message_iter_open_container(&array, DBUS_TYPE_DICT_ENTRY, nullptr, &dict);
+                    dbus_message_iter_append_basic(&dict, DBUS_TYPE_STRING, &current_folder_key);
+                    dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "ay", &variant);
+                    dbus_message_iter_open_container(&variant, DBUS_TYPE_ARRAY, "y", &variantArray);
+                    dbus_message_iter_append_fixed_array(&variantArray, DBUS_TYPE_BYTE,
+                                                         &current_folder_val, startDir.length()+1);
+                    dbus_message_iter_close_container(&variant, &variantArray);
+                    dbus_message_iter_close_container(&dict, &variant);
+                    dbus_message_iter_close_container(&array, &dict);
+                }
+
+                dbus_message_iter_close_container(&iter, &array);
+
+                dbus_connection_send(dbuscon, msg, nullptr);
+
+                dbus_message_unref(msg);
+                return handle.release();
             }
-
-            dbus_message_iter_close_container(&iter, &array);
-
-            dbus_connection_send(dbuscon, message, nullptr);
-
-            dbus_message_unref(message);
-            return handle.release();
         }
     }
 #endif
