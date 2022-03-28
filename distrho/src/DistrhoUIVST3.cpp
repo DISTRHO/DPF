@@ -160,8 +160,8 @@ public:
         );
 
         char suffix[9];
-        std::snprintf(suffix, 8, "%08x", std::rand());
-        suffix[8] = '\0';
+        std::snprintf(suffix, sizeof(suffix), "%08x", std::rand());
+        suffix[sizeof(suffix)-1] = '\0';
         fTimerWindowClassName += suffix;
 
         WNDCLASSEX cls;

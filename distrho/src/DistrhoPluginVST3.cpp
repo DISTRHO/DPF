@@ -2056,11 +2056,17 @@ public:
        #if DISTRHO_PLUGIN_WANT_STATE
         if (std::strcmp(msgid, "state-set") == 0)
         {
+            const v3_result res = notify_state(attrs);
+
            #if DPF_VST3_USES_SEPARATE_CONTROLLER
+            if (res != V3_OK)
+                return res;
+
+            // notify component of the change
             DISTRHO_SAFE_ASSERT_RETURN(fConnectionFromCompToCtrl != nullptr, V3_INTERNAL_ERR);
             return v3_cpp_obj(fConnectionFromCompToCtrl)->notify(fConnectionFromCompToCtrl, message);
            #else
-            return notify_state(attrs);
+            return res;
            #endif
         }
        #endif
