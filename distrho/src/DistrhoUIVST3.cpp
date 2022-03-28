@@ -182,11 +182,8 @@ public:
        #endif
     }
 
-    ~NativeIdleCallback()
+    void unregisterNativeIdleCallback()
     {
-        if (!fCallbackRegistered)
-            return;
-
        #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         fUI.removeIdleCallbackForVST3(this);
        #elif defined(DISTRHO_OS_MAC)
@@ -277,6 +274,10 @@ public:
 
     ~UIVst3()
     {
+       #if !DPF_VST3_USING_HOST_RUN_LOOP
+        unregisterNativeIdleCallback();
+       #endif
+
         if (fConnection != nullptr)
             disconnect();
     }
