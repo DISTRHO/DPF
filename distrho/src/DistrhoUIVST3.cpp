@@ -21,9 +21,13 @@
 #include "travesty/host.h"
 #include "travesty/view.h"
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI && defined(DISTRHO_OS_WINDOWS)
-# include <winuser.h>
-# define DPF_VST3_WIN32_TIMER_ID 1
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# if defined(DISTRHO_OS_MAC)
+#  include <CoreFoundation/CoreFoundation.h>
+# elif defined(DISTRHO_OS_WINDOWS)
+#  include <winuser.h>
+#  define DPF_VST3_WIN32_TIMER_ID 1
+# endif
 #endif
 
 /* TODO items:
