@@ -2097,12 +2097,12 @@ public:
         int16_t* const value16 = (int16_t*)std::malloc(sizeof(int16_t)*(valueLength + 1));
         DISTRHO_SAFE_ASSERT_RETURN(value16 != nullptr, V3_NOMEM);
 
-        res = v3_cpp_obj(attrs)->get_string(attrs, "key", key16, sizeof(int16_t)*keyLength);
+        res = v3_cpp_obj(attrs)->get_string(attrs, "key", key16, sizeof(int16_t)*(keyLength+1));
         DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, keyLength, res);
 
         if (valueLength != 0)
         {
-            res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*valueLength);
+            res = v3_cpp_obj(attrs)->get_string(attrs, "value", value16, sizeof(int16_t)*(valueLength+1));
             DISTRHO_SAFE_ASSERT_INT2_RETURN(res == V3_OK, res, valueLength, res);
         }
 
