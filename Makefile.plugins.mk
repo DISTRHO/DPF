@@ -323,7 +323,11 @@ $(BUILD_DIR)/%.mm.o: %.mm
 
 clean:
 	rm -rf $(BUILD_DIR)
-	rm -rf $(TARGET_DIR)/$(NAME) $(TARGET_DIR)/$(NAME)-* $(TARGET_DIR)/$(NAME).lv2
+	rm -rf $(TARGET_DIR)/$(NAME)
+	rm -rf $(TARGET_DIR)/$(NAME)-*
+	rm -rf $(TARGET_DIR)/$(NAME).lv2
+	rm -rf $(TARGET_DIR)/$(NAME).vst
+	rm -rf $(TARGET_DIR)/$(NAME).vst3
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DGL
