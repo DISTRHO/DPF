@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['heapbuffer_550',['HeapBuffer',['../structHeapBuffer.html',1,'']]],
-  ['heapringbuffer_551',['HeapRingBuffer',['../classHeapRingBuffer.html',1,'']]],
-  ['hugestackbuffer_552',['HugeStackBuffer',['../structHugeStackBuffer.html',1,'']]]
+  ['heapbuffer_578',['HeapBuffer',['../structHeapBuffer.html',1,'']]],
+  ['heapringbuffer_579',['HeapRingBuffer',['../classHeapRingBuffer.html',1,'']]],
+  ['hugestackbuffer_580',['HugeStackBuffer',['../structHugeStackBuffer.html',1,'']]]
 ];

@@ -106,6 +106,15 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5b71bc1266aea488b1f85b83744adbfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classTopLevelWidget.html#a4a9b2d040ba36825fd95f966bb4d9e36">repaint</a> (const <a class="el" href="classRectangle.html">Rectangle</a>&lt; uint &gt; &amp;rect) noexcept</td></tr>
 <tr class="separator:a4a9b2d040ba36825fd95f966bb4d9e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74ed1b7de337a9d4447903644087ef32"><td class="memItemLeft" align="right" valign="top"><a id="a74ed1b7de337a9d4447903644087ef32"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>setClipboard</b> (const char *mimeType, const void *data, size_t dataSize)</td></tr>
+<tr class="separator:a74ed1b7de337a9d4447903644087ef32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9afc8d1c10e429aa4ef96876b97c5d75"><td class="memItemLeft" align="right" valign="top"><a id="a9afc8d1c10e429aa4ef96876b97c5d75"></a>
+const void *&#160;</td><td class="memItemRight" valign="bottom"><b>getClipboard</b> (const char *&amp;mimeType, size_t &amp;dataSize)</td></tr>
+<tr class="separator:a9afc8d1c10e429aa4ef96876b97c5d75"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21314d0829749739ee1c438e691a5f49"><td class="memItemLeft" align="right" valign="top"><a id="a21314d0829749739ee1c438e691a5f49"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>setCursor</b> (MouseCursor cursor)</td></tr>
+<tr class="separator:a21314d0829749739ee1c438e691a5f49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5569262e4859b2b59832af4fb8409ddc"><td class="memItemLeft" align="right" valign="top"><a id="a5569262e4859b2b59832af4fb8409ddc"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>addIdleCallback</b> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback, uint timerFrequencyInMs=0)</td></tr>
 <tr class="separator:a5569262e4859b2b59832af4fb8409ddc"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -115,9 +124,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>removeIdleCallback</b
 <tr class="memitem:a8f8c6b72513abeb782cdbed5b24c6fb8"><td class="memItemLeft" align="right" valign="top"><a id="a8f8c6b72513abeb782cdbed5b24c6fb8"></a>
 double&#160;</td><td class="memItemRight" valign="bottom"><b>getScaleFactor</b> () const noexcept</td></tr>
 <tr class="separator:a8f8c6b72513abeb782cdbed5b24c6fb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a017b8d4994d1df395497cbbba22152ef"><td class="memItemLeft" align="right" valign="top"><a id="a017b8d4994d1df395497cbbba22152ef"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraints</b> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false)</td></tr>
-<tr class="separator:a017b8d4994d1df395497cbbba22152ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad096c93f5eb7b328707ee1f98c173c12"><td class="memItemLeft" align="right" valign="top"><a id="ad096c93f5eb7b328707ee1f98c173c12"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setGeometryConstraints</b> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false, bool resizeNowIfAutoScaling=true)</td></tr>
+<tr class="separator:ad096c93f5eb7b328707ee1f98c173c12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a608102a97b9b66636d947d029cbc87ac"><td class="memItemLeft" align="right" valign="top"><a id="a608102a97b9b66636d947d029cbc87ac"></a>
 <a class="el" href="classApplication.html">Application</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>getParentApp</b> () const noexcept</td></tr>
 <tr class="separator:a608102a97b9b66636d947d029cbc87ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -598,7 +607,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:34:44 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 31 2022 17:09:27 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

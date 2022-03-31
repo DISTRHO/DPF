@@ -88,6 +88,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa2dd05d544834e8fca24a58f5e57f795"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa0728e9c72545d81ba403b44c92ecd50"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#aa0728e9c72545d81ba403b44c92ecd50">isStandalone</a> () const noexcept</td></tr>
 <tr class="separator:aa0728e9c72545d81ba403b44c92ecd50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f6f8250f31dbb600bdef12692d62b73"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a2f6f8250f31dbb600bdef12692d62b73">getTime</a> () const</td></tr>
+<tr class="separator:a2f6f8250f31dbb600bdef12692d62b73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6aab76a79b7b3c2883785040b46017a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#ad6aab76a79b7b3c2883785040b46017a">addIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
 <tr class="separator:ad6aab76a79b7b3c2883785040b46017a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a082f532e2922924c6c72517f9272f67d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classApplication.html#a082f532e2922924c6c72517f9272f67d">removeIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
@@ -263,6 +265,26 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 
 </div>
 </div>
+<a id="a2f6f8250f31dbb600bdef12692d62b73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f6f8250f31dbb600bdef12692d62b73">&#9670;&nbsp;</a></span>getTime()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">double Application::getTime </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return the time in seconds.</p>
+<p>This is a monotonically increasing clock with high resolution.<br  />
+The returned time is only useful to compare against other times returned by this function, its absolute value has no meaning. </p>
+
+</div>
+</div>
 <a id="ad6aab76a79b7b3c2883785040b46017a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad6aab76a79b7b3c2883785040b46017a">&#9670;&nbsp;</a></span>addIdleCallback()</h2>
 
@@ -328,7 +350,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>Window</b></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:34:43 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 31 2022 17:09:26 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

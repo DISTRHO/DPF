@@ -17,6 +17,6 @@ var searchData=
   ['buf_22',['buf',['../structHeapBuffer.html#afbaf206237e4898a306025676dce0987',1,'HeapBuffer']]],
   ['buffersizechanged_23',['bufferSizeChanged',['../classPlugin.html#a9f6c8ad6b054056649d0250e527e1297',1,'Plugin']]],
   ['buttoneventhandler_24',['ButtonEventHandler',['../classButtonEventHandler.html',1,'']]],
-  ['buttons_25',['Buttons',['../structWindow_1_1FileBrowserOptions_1_1Buttons.html',1,'Window::FileBrowserOptions::Buttons'],['../structWindow_1_1FileBrowserOptions_1_1Buttons.html#a0483d4ab39bdec4f6e69699fb3c272dd',1,'Window::FileBrowserOptions::Buttons::Buttons()']]],
-  ['buttonstate_26',['ButtonState',['../structWindow_1_1FileBrowserOptions.html#a1e10c3a7c2c7b38d9476d24d73001504',1,'Window::FileBrowserOptions']]]
+  ['buttons_25',['Buttons',['../structFileBrowserOptions_1_1Buttons.html',1,'FileBrowserOptions::Buttons'],['../structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870',1,'FileBrowserOptions::Buttons::Buttons()']]],
+  ['buttonstate_26',['ButtonState',['../structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9',1,'FileBrowserOptions']]]
 ];

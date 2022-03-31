@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['glyphposition_548',['GlyphPosition',['../structNanoVG_1_1GlyphPosition.html',1,'NanoVG']]],
-  ['graphicscontext_549',['GraphicsContext',['../structGraphicsContext.html',1,'']]]
+  ['glyphposition_576',['GlyphPosition',['../structNanoVG_1_1GlyphPosition.html',1,'NanoVG']]],
+  ['graphicscontext_577',['GraphicsContext',['../structGraphicsContext.html',1,'']]]
 ];

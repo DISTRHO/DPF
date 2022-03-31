@@ -85,6 +85,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a3e162cfe8f1c52bf09805fd327bcc3c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fd60c82f5a50f12312c57729885fc2f"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a5fd60c82f5a50f12312c57729885fc2f">getBundlePath</a> () const noexcept</td></tr>
 <tr class="separator:a5fd60c82f5a50f12312c57729885fc2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2c6b7bc2e0cdcd589cf9d03be831042"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ab2c6b7bc2e0cdcd589cf9d03be831042">isDummyInstance</a> () const noexcept</td></tr>
+<tr class="separator:ab2c6b7bc2e0cdcd589cf9d03be831042"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae85d602c430b1a4361a88d714d3a42c1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structTimePosition.html">TimePosition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">getTimePosition</a> () const noexcept</td></tr>
 <tr class="separator:ae85d602c430b1a4361a88d714d3a42c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a70c4ec55d74d9bc26862975d8df8a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">setLatency</a> (uint32_t frames) noexcept</td></tr>
@@ -95,6 +97,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a581614e1d301ee613a988855c61b2517"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae65d8603022c09d1ce2ee5cf568de70f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae65d8603022c09d1ce2ee5cf568de70f">requestParameterValueChange</a> (uint32_t index, float value) noexcept</td></tr>
 <tr class="separator:ae65d8603022c09d1ce2ee5cf568de70f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa85c50c732d9083f57b72d6b4cd7c5ae"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#aa85c50c732d9083f57b72d6b4cd7c5ae">updateStateValue</a> (const char *key, const char *value) noexcept</td></tr>
+<tr class="separator:aa85c50c732d9083f57b72d6b4cd7c5ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pro-methods"></a>
 Protected Member Functions</h2></td></tr>
@@ -122,8 +126,14 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:a71b876c8157b087b3552960f2877a44d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54d66af3111541b7c118f9749ef0231b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName</a> (uint32_t index, <a class="el" href="classString.html">String</a> &amp;programName)=0</td></tr>
 <tr class="separator:a54d66af3111541b7c118f9749ef0231b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a807b306c5ecb644c70421ae395421d84"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a807b306c5ecb644c70421ae395421d84">initState</a> (uint32_t index, <a class="el" href="classString.html">String</a> &amp;stateKey, <a class="el" href="classString.html">String</a> &amp;defaultStateValue)</td></tr>
-<tr class="separator:a807b306c5ecb644c70421ae395421d84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4ab623187f905c250a42284704eb840"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ad4ab623187f905c250a42284704eb840">initState</a> (uint32_t index, <a class="el" href="structState.html">State</a> &amp;state)</td></tr>
+<tr class="separator:ad4ab623187f905c250a42284704eb840"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a234313269360dea74d63c94c72b4e1f7"><td class="memItemLeft" align="right" valign="top"><a id="a234313269360dea74d63c94c72b4e1f7"></a>
+virtual void&#160;</td><td class="memItemRight" valign="bottom"><b>initState</b> (uint32_t, <a class="el" href="classString.html">String</a> &amp;, <a class="el" href="classString.html">String</a> &amp;)</td></tr>
+<tr class="separator:a234313269360dea74d63c94c72b4e1f7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aab71534f4a99952f145b533469a255fa"><td class="memItemLeft" align="right" valign="top"><a id="aab71534f4a99952f145b533469a255fa"></a>
+virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isStateFile</b> (uint32_t)</td></tr>
+<tr class="separator:aab71534f4a99952f145b533469a255fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af9e9f5438e2e0c2352052eb5f95832aa"><td class="memItemLeft" align="right" valign="top">virtual float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#af9e9f5438e2e0c2352052eb5f95832aa">getParameterValue</a> (uint32_t index) const</td></tr>
 <tr class="separator:af9e9f5438e2e0c2352052eb5f95832aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e9e26ceafc7603ef6163483a9dc39be"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a7e9e26ceafc7603ef6163483a9dc39be">setParameterValue</a> (uint32_t index, float value)</td></tr>
@@ -317,6 +327,34 @@ This value will remain constant between activate and deactivate. </p><dl class="
 
 </div>
 </div>
+<a id="ab2c6b7bc2e0cdcd589cf9d03be831042"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2c6b7bc2e0cdcd589cf9d03be831042">&#9670;&nbsp;</a></span>isDummyInstance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Plugin::isDummyInstance </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if this plugin instance is a "dummy" one used for plugin meta-data/information export.<br  />
+When true no processing will be done, the plugin is created only to extract information.<br  />
+In DPF, LADSPA/DSSI, VST2 and VST3 formats create one global instance per plugin binary while LV2 creates one when generating turtle meta-data. </p>
+
+</div>
+</div>
 <a id="ae85d602c430b1a4361a88d714d3a42c1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae85d602c430b1a4361a88d714d3a42c1">&#9670;&nbsp;</a></span>getTimePosition()</h2>
 
@@ -463,6 +501,47 @@ Returns false when the host buffer is full, in which case do not call this again
 </table>
 </div><div class="memdoc">
 <p>Request a parameter value change from the host. If successful, this function will automatically trigger a parameter update on the <a class="el" href="classUI.html">UI</a> side as well. This function can fail, for example if the host is busy with the parameter for read-only automation. Some hosts simply do not have this functionality, which can be verified with <a class="el" href="classPlugin.html#a581614e1d301ee613a988855c61b2517">canRequestParameterValueChanges()</a>. </p><dl class="section note"><dt>Note</dt><dd>This function is only available if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST is enabled. </dd></dl>
+
+</div>
+</div>
+<a id="aa85c50c732d9083f57b72d6b4cd7c5ae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa85c50c732d9083f57b72d6b4cd7c5ae">&#9670;&nbsp;</a></span>updateStateValue()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Plugin::updateStateValue </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>key</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Set state value and notify the host about the change.<br  />
+This function will call <code><a class="el" href="classPlugin.html#afcbb504b824bacea622de9bac09b2331">setState()</a></code> and also trigger an update on the <a class="el" href="classUI.html">UI</a> side as necessary.<br  />
+It must not be called during run.<br  />
+The state must be host readable. </p><dl class="section note"><dt>Note</dt><dd>this function does nothing on DSSI plugin format, as DSSI only supports UI-&gt;DSP messages.</dd></dl>
+<p>TODO API under construction </p>
 
 </div>
 </div>
@@ -839,8 +918,8 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
 
 </div>
 </div>
-<a id="a807b306c5ecb644c70421ae395421d84"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a807b306c5ecb644c70421ae395421d84">&#9670;&nbsp;</a></span>initState()</h2>
+<a id="ad4ab623187f905c250a42284704eb840"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad4ab623187f905c250a42284704eb840">&#9670;&nbsp;</a></span>initState()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -857,14 +936,8 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="classString.html">String</a> &amp;&#160;</td>
-          <td class="paramname"><em>stateKey</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="classString.html">String</a> &amp;&#160;</td>
-          <td class="paramname"><em>defaultStateValue</em>&#160;</td>
+          <td class="paramtype"><a class="el" href="structState.html">State</a> &amp;&#160;</td>
+          <td class="paramname"><em>state</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -878,7 +951,7 @@ Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_PROGRAMS is
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Set the state key and default value of <em>index</em>.<br  />
+<p>Initialize the state <em>index</em>.<br  />
 This function will be called once, shortly after the plugin is created.<br  />
 Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled. </p>
 
@@ -947,7 +1020,7 @@ The host may call this function from any context, including realtime processing.
 </div><div class="memdoc">
 <p>Change a parameter value.<br  />
 The host may call this function from any context, including realtime processing.<br  />
-When a parameter is marked as automable, you must ensure no non-realtime operations are performed. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
+When a parameter is marked as automatable, you must ensure no non-realtime operations are performed. </p><dl class="section note"><dt>Note</dt><dd>This function will only be called for parameter inputs. </dd></dl>
 
 </div>
 </div>
@@ -1218,7 +1291,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:34:44 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 31 2022 17:09:27 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

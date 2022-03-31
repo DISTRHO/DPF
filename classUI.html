@@ -82,8 +82,8 @@ Inheritance diagram for UI:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a3015119edd4c96e7082f171a81cc5aa8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3015119edd4c96e7082f171a81cc5aa8">UI</a> (uint width=0, uint height=0, bool automaticallyScale=false)</td></tr>
-<tr class="separator:a3015119edd4c96e7082f171a81cc5aa8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a844584caf362e72c0def15ff3477187f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a844584caf362e72c0def15ff3477187f">UI</a> (uint width=0, uint height=0, bool automaticallyScaleAndSetAsMinimumSize=false)</td></tr>
+<tr class="separator:a844584caf362e72c0def15ff3477187f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a47e7b6111faba049dfee4738d067cc42"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a47e7b6111faba049dfee4738d067cc42">~UI</a> ()</td></tr>
 <tr class="separator:a47e7b6111faba049dfee4738d067cc42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8fe940d56a0c283095e28bbc5806af31"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a8fe940d56a0c283095e28bbc5806af31">isResizable</a> () const noexcept</td></tr>
@@ -102,8 +102,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a973db6e8805f0aa9be3457685564ab8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc94a38afa658849f3fdfd66cd8f5f51"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#abc94a38afa658849f3fdfd66cd8f5f51">setState</a> (const char *key, const char *value)</td></tr>
 <tr class="separator:abc94a38afa658849f3fdfd66cd8f5f51"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a53aebb0a0a4ee5d321503d2ba8d7a631"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a53aebb0a0a4ee5d321503d2ba8d7a631">requestStateFile</a> (const char *key)</td></tr>
+<tr class="separator:a53aebb0a0a4ee5d321503d2ba8d7a631"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9d630b2b1696e01015d869a5b434eb6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a9d630b2b1696e01015d869a5b434eb6e">sendNote</a> (uint8_t channel, uint8_t note, uint8_t velocity)</td></tr>
 <tr class="separator:a9d630b2b1696e01015d869a5b434eb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a929b9dbdb8f2094d6f7299aa0a7b0ddb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a929b9dbdb8f2094d6f7299aa0a7b0ddb">openFileBrowser</a> (const <a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a> &amp;options=<a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a>())</td></tr>
+<tr class="separator:a929b9dbdb8f2094d6f7299aa0a7b0ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0863a8f7ca7fc7e172e703c58518329f"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a0863a8f7ca7fc7e172e703c58518329f">getPluginInstancePointer</a> () const noexcept</td></tr>
 <tr class="separator:a0863a8f7ca7fc7e172e703c58518329f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -130,6 +134,8 @@ Protected Member Functions</h2></td></tr>
 <tr class="separator:af8de639088f3b2d42c266a2d2d6719da"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad89b09ef4e8129d72ff3b3cb8716a96b"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#ad89b09ef4e8129d72ff3b3cb8716a96b">uiScaleFactorChanged</a> (double scaleFactor)</td></tr>
 <tr class="separator:ad89b09ef4e8129d72ff3b3cb8716a96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d4697296129d3a6bc34fc810d6297ac"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a6d4697296129d3a6bc34fc810d6297ac">uiFileBrowserSelected</a> (const char *filename)</td></tr>
+<tr class="separator:a6d4697296129d3a6bc34fc810d6297ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3d499674a620c1ce3b6e1dbded9f09c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classUI.html#a3d499674a620c1ce3b6e1dbded9f09c4">sizeChanged</a> (uint width, uint height) override</td></tr>
 <tr class="separator:a3d499674a620c1ce3b6e1dbded9f09c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -146,8 +152,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
 <div class="textblock"><p>DPF <a class="el" href="classUI.html">UI</a> class from where <a class="el" href="classUI.html">UI</a> instances are created.</p>
 <dl class="section note"><dt>Note</dt><dd>You must call setSize during construction, @TODO Detailed information about this class. </dd></dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="a3015119edd4c96e7082f171a81cc5aa8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3015119edd4c96e7082f171a81cc5aa8">&#9670;&nbsp;</a></span>UI()</h2>
+<a id="a844584caf362e72c0def15ff3477187f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a844584caf362e72c0def15ff3477187f">&#9670;&nbsp;</a></span>UI()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -168,7 +174,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>UIExporter</b></td><
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>automaticallyScale</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>automaticallyScaleAndSetAsMinimumSize</em> = <code>false</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -437,6 +443,30 @@ Can return null if the <a class="el" href="classUI.html">UI</a> is not available
 
 </div>
 </div>
+<a id="a53aebb0a0a4ee5d321503d2ba8d7a631"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a53aebb0a0a4ee5d321503d2ba8d7a631">&#9670;&nbsp;</a></span>requestStateFile()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool UI::requestStateFile </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>key</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Request a new file from the host, matching the properties of a state key.<br  />
+This will use the native host file browser if available, otherwise a DPF built-in file browser is used.<br  />
+Response will be sent asynchronously to stateChanged, with the matching key and the new file as the value.<br  />
+It is not possible to know if the action was cancelled by the user.</p>
+<dl class="section return"><dt>Returns</dt><dd>Success if a file-browser was opened, otherwise false. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>You cannot request more than one file at a time. </dd></dl>
+
+</div>
+</div>
 <a id="a9d630b2b1696e01015d869a5b434eb6e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9d630b2b1696e01015d869a5b434eb6e">&#9670;&nbsp;</a></span>sendNote()</h2>
 
@@ -470,6 +500,29 @@ Can return null if the <a class="el" href="classUI.html">UI</a> is not available
 </div><div class="memdoc">
 <p>Send a single MIDI note from the <a class="el" href="classUI.html">UI</a> to the plugin DSP side.<br  />
 A note with zero velocity will be sent as note-off (MIDI 0x80), otherwise note-on (MIDI 0x90). </p>
+
+</div>
+</div>
+<a id="a929b9dbdb8f2094d6f7299aa0a7b0ddb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a929b9dbdb8f2094d6f7299aa0a7b0ddb">&#9670;&nbsp;</a></span>openFileBrowser()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool UI::openFileBrowser </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>options</em> = <code><a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a>()</code></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Open a file browser dialog with this window as transient parent.<br  />
+A few options can be specified to setup the dialog.</p>
+<p>If a path is selected, onFileSelected() will be called with the user chosen path. If the user cancels or does not pick a file, onFileSelected() will be called with nullptr as filename.</p>
+<p>This function does not block the event loop.</p>
+<dl class="section note"><dt>Note</dt><dd>This is exactly the same API as provided by the <a class="el" href="classWindow.html">Window</a> class, but redeclared here so that non-embed/DGL based UIs can still use file browser related functions. </dd></dl>
 
 </div>
 </div>
@@ -762,6 +815,35 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
 
 </div>
 </div>
+<a id="a6d4697296129d3a6bc34fc810d6297ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d4697296129d3a6bc34fc810d6297ac">&#9670;&nbsp;</a></span>uiFileBrowserSelected()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void UI::uiFileBrowserSelected </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filename</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p><a class="el" href="classWindow.html">Window</a> file selected function, called when a path is selected by the user, as triggered by <a class="el" href="classUI.html#a929b9dbdb8f2094d6f7299aa0a7b0ddb">openFileBrowser()</a>. This function is for plugin UIs to be able to override <a class="el" href="classWindow.html#a887287be0807b58aa701139c802939a3">Window::onFileSelected(const char*)</a>.</p>
+<p>This action happens after the user confirms the action, so the file browser dialog will be closed at this point. The default implementation does nothing.</p>
+<p>If you need to use files as plugin state, please setup and use states with kStateIsFilenamePath instead. </p>
+
+</div>
+</div>
 <a id="a3d499674a620c1ce3b6e1dbded9f09c4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3d499674a620c1ce3b6e1dbded9f09c4">&#9670;&nbsp;</a></span>sizeChanged()</h2>
 
@@ -805,7 +887,7 @@ This is called by the host to inform the <a class="el" href="classUI.html">UI</a
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:34:44 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 31 2022 17:09:27 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

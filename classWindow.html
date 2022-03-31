@@ -63,6 +63,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pro-methods">Protected Member Functions</a> &#124;
 <a href="#friends">Friends</a> &#124;
@@ -86,10 +87,17 @@ Inheritance diagram for Window:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structWindow_1_1ScopedGraphicsContext.html">ScopedGraphicsContext</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:a3ef841505ec27623b0dfcaf8da57df92"><td class="memItemLeft" align="right" valign="top"><a id="a3ef841505ec27623b0dfcaf8da57df92"></a>
+typedef DISTRHO_NAMESPACE::FileBrowserHandle&#160;</td><td class="memItemRight" valign="bottom"><b>FileBrowserHandle</b></td></tr>
+<tr class="separator:a3ef841505ec27623b0dfcaf8da57df92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abaf74a42f154e16a6319779998a87b95"><td class="memItemLeft" align="right" valign="top"><a id="abaf74a42f154e16a6319779998a87b95"></a>
+typedef DISTRHO_NAMESPACE::FileBrowserOptions&#160;</td><td class="memItemRight" valign="bottom"><b>FileBrowserOptions</b></td></tr>
+<tr class="separator:abaf74a42f154e16a6319779998a87b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -119,6 +127,20 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1b888a7e6a5562968a253b915ccb7825"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a10f6ff4b0f3e714298a4ac612edcdd7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a10f6ff4b0f3e714298a4ac612edcdd7e">setResizable</a> (bool resizable)</td></tr>
 <tr class="separator:a10f6ff4b0f3e714298a4ac612edcdd7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a200f3e517effa7973e1c42c72ca55f9f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a200f3e517effa7973e1c42c72ca55f9f">getOffsetX</a> () const noexcept</td></tr>
+<tr class="separator:a200f3e517effa7973e1c42c72ca55f9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a948304155a8403b92db8feeae1a76f46"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a948304155a8403b92db8feeae1a76f46">getOffsetY</a> () const noexcept</td></tr>
+<tr class="separator:a948304155a8403b92db8feeae1a76f46"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58f66fcfd4c902954594e99d4bfa0b6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classPoint.html">Point</a>&lt; int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a58f66fcfd4c902954594e99d4bfa0b6a">getOffset</a> () const noexcept</td></tr>
+<tr class="separator:a58f66fcfd4c902954594e99d4bfa0b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a486cf7a5f89c39e1cac3a01633f170db"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a486cf7a5f89c39e1cac3a01633f170db">setOffsetX</a> (int x)</td></tr>
+<tr class="separator:a486cf7a5f89c39e1cac3a01633f170db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac570a2c8f35ea4962c8f23c8435cdbfc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#ac570a2c8f35ea4962c8f23c8435cdbfc">setOffsetY</a> (int y)</td></tr>
+<tr class="separator:ac570a2c8f35ea4962c8f23c8435cdbfc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d79613d3223395806d7d09ad65d5c4d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a5d79613d3223395806d7d09ad65d5c4d">setOffset</a> (int x, int y)</td></tr>
+<tr class="separator:a5d79613d3223395806d7d09ad65d5c4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae02f210d981b2ac5efd6207864789758"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#ae02f210d981b2ac5efd6207864789758">setOffset</a> (const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;offset)</td></tr>
+<tr class="separator:ae02f210d981b2ac5efd6207864789758"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab19430997dd1b3d7bf9bd3640d73b007"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#ab19430997dd1b3d7bf9bd3640d73b007">getWidth</a> () const noexcept</td></tr>
 <tr class="separator:ab19430997dd1b3d7bf9bd3640d73b007"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5d53bcba43455f8f77cfcbac61ec6c8e"><td class="memItemLeft" align="right" valign="top">uint&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a5d53bcba43455f8f77cfcbac61ec6c8e">getHeight</a> () const noexcept</td></tr>
@@ -141,6 +163,12 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:ab5cbe1298a28a1860319198a4c843183"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36a04e5f5ecc6ee5228f9da6df43e865"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a36a04e5f5ecc6ee5228f9da6df43e865">setIgnoringKeyRepeat</a> (bool ignore) noexcept</td></tr>
 <tr class="separator:a36a04e5f5ecc6ee5228f9da6df43e865"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a88bf8d28d58fbe390359bd220137311e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a88bf8d28d58fbe390359bd220137311e">setClipboard</a> (const char *mimeType, const void *data, size_t dataSize)</td></tr>
+<tr class="separator:a88bf8d28d58fbe390359bd220137311e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a74e09b4aef222345feeecbd024b330cd"><td class="memItemLeft" align="right" valign="top">const void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a74e09b4aef222345feeecbd024b330cd">getClipboard</a> (const char *&amp;mimeType, size_t &amp;dataSize)</td></tr>
+<tr class="separator:a74e09b4aef222345feeecbd024b330cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aabcbd667b0c4dd4665d13beb940fa700"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#aabcbd667b0c4dd4665d13beb940fa700">setCursor</a> (MouseCursor cursor)</td></tr>
+<tr class="separator:aabcbd667b0c4dd4665d13beb940fa700"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad17a7f53a62673982f4861cdc27fd54e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#ad17a7f53a62673982f4861cdc27fd54e">addIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback, uint timerFrequencyInMs=0)</td></tr>
 <tr class="separator:ad17a7f53a62673982f4861cdc27fd54e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c5c4f53c53cb081b39a40d5ce9afd65"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a5c5c4f53c53cb081b39a40d5ce9afd65">removeIdleCallback</a> (<a class="el" href="structIdleCallback.html">IdleCallback</a> *callback)</td></tr>
@@ -155,7 +183,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a77774c8ce4b01113fcd525079f9b8787"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a03985e4ca2c9b4fcf572b5029e8c0115"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a03985e4ca2c9b4fcf572b5029e8c0115">focus</a> ()</td></tr>
 <tr class="separator:a03985e4ca2c9b4fcf572b5029e8c0115"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7d2a006347a7fb95e63140ad2cec531c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a7d2a006347a7fb95e63140ad2cec531c">openFileBrowser</a> (const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;options=<a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a>())</td></tr>
+<tr class="memitem:a7d2a006347a7fb95e63140ad2cec531c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a7d2a006347a7fb95e63140ad2cec531c">openFileBrowser</a> (const <a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a> &amp;options=<a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a>())</td></tr>
 <tr class="separator:a7d2a006347a7fb95e63140ad2cec531c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a729ab39a1ac99d81b289e08a42582ade"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a729ab39a1ac99d81b289e08a42582ade">repaint</a> () noexcept</td></tr>
 <tr class="separator:a729ab39a1ac99d81b289e08a42582ade"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -167,8 +195,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a00108f3d1c5831d02b0c67cd4f226e4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a540fbc63288c019f420123644acc6a11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classSize.html">Size</a>&lt; uint &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a540fbc63288c019f420123644acc6a11">getGeometryConstraints</a> (bool &amp;keepAspectRatio)</td></tr>
 <tr class="separator:a540fbc63288c019f420123644acc6a11"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aece9e08d0c4d3b6ec02cbb804583c175"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">setGeometryConstraints</a> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false)</td></tr>
-<tr class="separator:aece9e08d0c4d3b6ec02cbb804583c175"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3824e300206b15241df8c8c78785d73"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#aa3824e300206b15241df8c8c78785d73">setGeometryConstraints</a> (uint minimumWidth, uint minimumHeight, bool keepAspectRatio=false, bool automaticallyScale=false, bool resizeNowIfAutoScaling=true)</td></tr>
+<tr class="separator:aa3824e300206b15241df8c8c78785d73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e1895a4e93ee0d7c34a9b10953c968e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a0e1895a4e93ee0d7c34a9b10953c968e">getIgnoringKeyRepeat</a> () const noexcept</td></tr>
 <tr class="separator:a0e1895a4e93ee0d7c34a9b10953c968e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b94fea3236d1d49e3fbd53a8d9cc70b"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classWindow.html#a9b94fea3236d1d49e3fbd53a8d9cc70b">getScaling</a> () const noexcept</td></tr>
@@ -585,6 +613,170 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
+<a id="a200f3e517effa7973e1c42c72ca55f9f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a200f3e517effa7973e1c42c72ca55f9f">&#9670;&nbsp;</a></span>getOffsetX()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Window::getOffsetX </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get X offset, typically 0. </p>
+
+</div>
+</div>
+<a id="a948304155a8403b92db8feeae1a76f46"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a948304155a8403b92db8feeae1a76f46">&#9670;&nbsp;</a></span>getOffsetY()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int Window::getOffsetY </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get Y offset, typically 0. </p>
+
+</div>
+</div>
+<a id="a58f66fcfd4c902954594e99d4bfa0b6a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58f66fcfd4c902954594e99d4bfa0b6a">&#9670;&nbsp;</a></span>getOffset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classPoint.html">Point</a>&lt;int&gt; Window::getOffset </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get offset. </p>
+
+</div>
+</div>
+<a id="a486cf7a5f89c39e1cac3a01633f170db"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a486cf7a5f89c39e1cac3a01633f170db">&#9670;&nbsp;</a></span>setOffsetX()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Window::setOffsetX </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set X offset. </p>
+
+</div>
+</div>
+<a id="ac570a2c8f35ea4962c8f23c8435cdbfc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac570a2c8f35ea4962c8f23c8435cdbfc">&#9670;&nbsp;</a></span>setOffsetY()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Window::setOffsetY </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>y</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set Y offset. </p>
+
+</div>
+</div>
+<a id="a5d79613d3223395806d7d09ad65d5c4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5d79613d3223395806d7d09ad65d5c4d">&#9670;&nbsp;</a></span>setOffset() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Window::setOffset </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>x</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>y</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set offset using <em>x</em> and <em>y</em> values. </p>
+
+</div>
+</div>
+<a id="ae02f210d981b2ac5efd6207864789758"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae02f210d981b2ac5efd6207864789758">&#9670;&nbsp;</a></span>setOffset() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Window::setOffset </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classPoint.html">Point</a>&lt; int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>offset</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set offset. </p>
+
+</div>
+</div>
 <a id="ab19430997dd1b3d7bf9bd3640d73b007"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab19430997dd1b3d7bf9bd3640d73b007">&#9670;&nbsp;</a></span>getWidth()</h2>
 
@@ -848,6 +1040,95 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 
 </div>
 </div>
+<a id="a88bf8d28d58fbe390359bd220137311e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a88bf8d28d58fbe390359bd220137311e">&#9670;&nbsp;</a></span>setClipboard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Window::setClipboard </td>
+          <td>(</td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>mimeType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>data</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>dataSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the clipboard contents.</p>
+<p>This sets the system clipboard contents, which can be retrieved with <a class="el" href="classWindow.html#a74e09b4aef222345feeecbd024b330cd">getClipboard()</a> or pasted into other applications.</p>
+<p>If using a string, the use of a null terminator is required (and must be part of dataSize).<br  />
+The MIME type of the data "text/plain" is assumed if null is used. </p>
+
+</div>
+</div>
+<a id="a74e09b4aef222345feeecbd024b330cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a74e09b4aef222345feeecbd024b330cd">&#9670;&nbsp;</a></span>getClipboard()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const void* Window::getClipboard </td>
+          <td>(</td>
+          <td class="paramtype">const char *&amp;&#160;</td>
+          <td class="paramname"><em>mimeType</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t &amp;&#160;</td>
+          <td class="paramname"><em>dataSize</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get the clipboard contents.</p>
+<p>This gets the system clipboard contents, which may have been set with <a class="el" href="classWindow.html#a88bf8d28d58fbe390359bd220137311e">setClipboard()</a> or copied from another application.</p>
+<p>returns the clipboard contents, or null. </p>
+
+</div>
+</div>
+<a id="aabcbd667b0c4dd4665d13beb940fa700"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aabcbd667b0c4dd4665d13beb940fa700">&#9670;&nbsp;</a></span>setCursor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Window::setCursor </td>
+          <td>(</td>
+          <td class="paramtype">MouseCursor&#160;</td>
+          <td class="paramname"><em>cursor</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Set the mouse cursor.</p>
+<p>This changes the system cursor that is displayed when the pointer is inside the window. May fail if setting the cursor is not supported on this system, for example if compiled on X11 without Xcursor support. </p>
+
+</div>
+</div>
 <a id="ad17a7f53a62673982f4861cdc27fd54e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad17a7f53a62673982f4861cdc27fd54e">&#9670;&nbsp;</a></span>addIdleCallback()</h2>
 
@@ -1006,7 +1287,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </table>
 </div><div class="memdoc">
 <p>Get the scale factor requested for this window. This is purely informational, and up to developers to choose what to do with it.</p>
-<p>If you do not want to deal with this yourself, consider using <a class="el" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">setGeometryConstraints()</a> where you can specify to automatically scale the window contents. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">setGeometryConstraints</a> </dd></dl>
+<p>If you do not want to deal with this yourself, consider using <a class="el" href="classWindow.html#aa3824e300206b15241df8c8c78785d73">setGeometryConstraints()</a> where you can specify to automatically scale the window contents. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#aa3824e300206b15241df8c8c78785d73">setGeometryConstraints</a> </dd></dl>
 
 </div>
 </div>
@@ -1037,13 +1318,13 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
         <tr>
           <td class="memname">bool Window::openFileBrowser </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a> &amp;&#160;</td>
-          <td class="paramname"><em>options</em> = <code><a class="el" href="structWindow_1_1FileBrowserOptions.html">FileBrowserOptions</a>()</code></td><td>)</td>
+          <td class="paramtype">const <a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a> &amp;&#160;</td>
+          <td class="paramname"><em>options</em> = <code><a class="el" href="structFileBrowserOptions.html">FileBrowserOptions</a>()</code></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Open a file browser dialog with this window as parent. A few options can be specified to setup the dialog.</p>
+<p>Open a file browser dialog with this window as transient parent. A few options can be specified to setup the dialog.</p>
 <p>If a path is selected, <a class="el" href="classWindow.html#a887287be0807b58aa701139c802939a3">onFileSelected()</a> will be called with the user chosen path. If the user cancels or does not pick a file, <a class="el" href="classWindow.html#a887287be0807b58aa701139c802939a3">onFileSelected()</a> will be called with nullptr as filename.</p>
 <p>This function does not block the event loop. </p>
 
@@ -1155,12 +1436,12 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the geometry constraints set for the <a class="el" href="classWindow.html">Window</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#aece9e08d0c4d3b6ec02cbb804583c175">setGeometryConstraints</a> </dd></dl>
+<p>Get the geometry constraints set for the <a class="el" href="classWindow.html">Window</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classWindow.html#aa3824e300206b15241df8c8c78785d73">setGeometryConstraints</a> </dd></dl>
 
 </div>
 </div>
-<a id="aece9e08d0c4d3b6ec02cbb804583c175"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aece9e08d0c4d3b6ec02cbb804583c175">&#9670;&nbsp;</a></span>setGeometryConstraints()</h2>
+<a id="aa3824e300206b15241df8c8c78785d73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3824e300206b15241df8c8c78785d73">&#9670;&nbsp;</a></span>setGeometryConstraints()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1187,7 +1468,13 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>automaticallyScale</em> = <code>false</code>&#160;</td>
+          <td class="paramname"><em>automaticallyScale</em> = <code>false</code>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>resizeNowIfAutoScaling</em> = <code>true</code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1468,7 +1755,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TopLevelWidget</b></
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 25 2021 10:34:44 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Thu Mar 31 2022 17:09:27 for DISTRHO Plugin Framework by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.17
 </small></address>

@@ -1,8 +1,10 @@
 var searchData=
 [
-  ['ui_491',['UI',['../classUI.html',1,'UI'],['../classUI.html#a3015119edd4c96e7082f171a81cc5aa8',1,'UI::UI()']]],
-  ['uiidle_492',['uiIdle',['../classUI.html#af8de639088f3b2d42c266a2d2d6719da',1,'UI']]],
-  ['uiscalefactorchanged_493',['uiScaleFactorChanged',['../classUI.html#ad89b09ef4e8129d72ff3b3cb8716a96b',1,'UI']]],
-  ['unit_494',['unit',['../structParameter.html#a2f79574998d34504e3a694163b4599a1',1,'Parameter']]],
-  ['use_5fnamespace_5fdistrho_495',['USE_NAMESPACE_DISTRHO',['../group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c',1,'DistrhoInfo.hpp']]]
+  ['ui_516',['UI',['../classUI.html',1,'UI'],['../classUI.html#a844584caf362e72c0def15ff3477187f',1,'UI::UI()']]],
+  ['uifilebrowserselected_517',['uiFileBrowserSelected',['../classUI.html#a6d4697296129d3a6bc34fc810d6297ac',1,'UI']]],
+  ['uiidle_518',['uiIdle',['../classUI.html#af8de639088f3b2d42c266a2d2d6719da',1,'UI']]],
+  ['uiscalefactorchanged_519',['uiScaleFactorChanged',['../classUI.html#ad89b09ef4e8129d72ff3b3cb8716a96b',1,'UI']]],
+  ['unit_520',['unit',['../structParameter.html#a2f79574998d34504e3a694163b4599a1',1,'Parameter']]],
+  ['updatestatevalue_521',['updateStateValue',['../classPlugin.html#aa85c50c732d9083f57b72d6b4cd7c5ae',1,'Plugin']]],
+  ['use_5fnamespace_5fdistrho_522',['USE_NAMESPACE_DISTRHO',['../group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c',1,'DistrhoInfo.hpp']]]
 ];
