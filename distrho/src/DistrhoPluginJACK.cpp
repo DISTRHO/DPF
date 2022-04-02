@@ -123,11 +123,11 @@ class PluginJack
 #endif
 {
 public:
-    PluginJack(jack_client_t* const client)
+    PluginJack(jack_client_t* const client, const uintptr_t winId)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this,
-              0, // winId
+              winId,
               d_nextSampleRate,
               nullptr, // edit param
               setParameterValueCallback,
@@ -1030,7 +1030,13 @@ int main(int argc, char* argv[])
     }
    #endif
 
-    const PluginJack p(client);
+    uintptr_t winId = 0;
+#if DISTRHO_PLUGIN_HAS_UI
+    if (argc == 3 && std::strcmp(argv[1], "embed") == 0)
+        winId = static_cast<uintptr_t>(std::atoll(argv[2]));
+#endif
+
+    const PluginJack p(client, winId);
 
 #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
     /* the code below is based on
