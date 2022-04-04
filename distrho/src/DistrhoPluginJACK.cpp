@@ -231,6 +231,9 @@ public:
 #else
         while (! gCloseSignalReceived)
             d_sleep(1);
+
+        // unused
+        (void)winId;
 #endif
     }
 
