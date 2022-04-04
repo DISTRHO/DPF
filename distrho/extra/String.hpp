@@ -869,6 +869,12 @@ public:
         return operator+(str.fBuffer);
     }
 
+    // needed for std::map compatibility
+    bool operator<(const String& str) const noexcept
+    {
+        return std::strcmp(fBuffer, str.fBuffer) < 0;
+    }
+
     // -------------------------------------------------------------------
 
 private:
