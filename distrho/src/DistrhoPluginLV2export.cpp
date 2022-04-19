@@ -1028,6 +1028,7 @@ void lv2_generate_ttl(const char* const basename)
                 else if (uplicense == "GPL-2.0-OR-LATER" ||
                          uplicense == "GPL2+" ||
                          uplicense == "GPLV2+" ||
+                         uplicense == "GPLV2.0+" ||
                          uplicense == "GPL V2+")
                 {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-2.0-or-later.html> ;\n\n";
@@ -1041,6 +1042,7 @@ void lv2_generate_ttl(const char* const basename)
                 else if (uplicense == "GPL-3.0-OR-LATER" ||
                          uplicense == "GPL3+" ||
                          uplicense == "GPLV3+" ||
+                         uplicense == "GPLV3.0+" ||
                          uplicense == "GPL V3+")
                 {
                     pluginString += "    doap:license <http://spdx.org/licenses/GPL-3.0-or-later.html> ;\n\n";
@@ -1093,11 +1095,11 @@ void lv2_generate_ttl(const char* const basename)
                 // generic fallbacks
                 else if (uplicense.startsWith("GPL"))
                 {
-                    pluginString += "    doap:license <https://opensource.org/licenses/gpl-license> ;\n\n";
+                    pluginString += "    doap:license <http://opensource.org/licenses/gpl-license> ;\n\n";
                 }
                 else if (uplicense.startsWith("LGPL"))
                 {
-                    pluginString += "    doap:license <https://opensource.org/licenses/lgpl-license> ;\n\n";
+                    pluginString += "    doap:license <http://opensource.org/licenses/lgpl-license> ;\n\n";
                 }
 
                 // unknown or not handled yet, log a warning
