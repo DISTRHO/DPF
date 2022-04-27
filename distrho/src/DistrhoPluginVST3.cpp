@@ -4199,19 +4199,22 @@ const void* GetPluginFactory(void)
 
 #if defined(DISTRHO_OS_MAC)
 # define ENTRYFNNAME bundleEntry
+# define ENTRYFNNAMEARGS void*
 # define EXITFNNAME bundleExit
 #elif defined(DISTRHO_OS_WINDOWS)
 # define ENTRYFNNAME InitDll
+# define ENTRYFNNAMEARGS void
 # define EXITFNNAME ExitDll
 #else
 # define ENTRYFNNAME ModuleEntry
+# define ENTRYFNNAMEARGS void*
 # define EXITFNNAME ModuleExit
 #endif
 
 DISTRHO_PLUGIN_EXPORT
-bool ENTRYFNNAME(void*);
+bool ENTRYFNNAME(ENTRYFNNAMEARGS);
 
-bool ENTRYFNNAME(void*)
+bool ENTRYFNNAME(ENTRYFNNAMEARGS)
 {
     USE_NAMESPACE_DISTRHO;
 
