@@ -1,6 +1,6 @@
 /*
  * travesty, pure C VST3-compatible interface
- * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -40,8 +40,9 @@ enum {
 };
 
 struct v3_component_handler {
+#ifndef __cplusplus
 	struct v3_funknown;
-
+#endif
 	v3_result (V3_API* begin_edit)(void* self, v3_param_id);
 	v3_result (V3_API* perform_edit)(void* self, v3_param_id, double value_normalised);
 	v3_result (V3_API* end_edit)(void* self, v3_param_id);
@@ -77,8 +78,9 @@ struct v3_param_info {
 };
 
 struct v3_edit_controller {
+#ifndef __cplusplus
 	struct v3_plugin_base;
-
+#endif
 	v3_result (V3_API* set_component_state)(void* self, struct v3_bstream**);
 	v3_result (V3_API* set_state)(void* self, struct v3_bstream**);
 	v3_result (V3_API* get_state)(void* self, struct v3_bstream**);
@@ -102,8 +104,9 @@ static constexpr const v3_tuid v3_edit_controller_iid =
  */
 
 struct v3_midi_mapping {
+#ifndef __cplusplus
 	struct v3_funknown;
-
+#endif
 	v3_result (V3_API* get_midi_controller_assignment)(void* self, int32_t bus, int16_t channel, int16_t cc, v3_param_id* id);
 };
 

@@ -2962,7 +2962,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_base
 
-    static v3_result V3_API initialize(void* const self, v3_plugin_base::v3_funknown** const context)
+    static v3_result V3_API initialize(void* const self, v3_funknown** const context)
     {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
@@ -3671,7 +3671,7 @@ struct dpf_component : v3_component_cpp {
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_base
 
-    static v3_result V3_API initialize(void* const self, v3_plugin_base::v3_funknown** const context)
+    static v3_result V3_API initialize(void* const self, v3_funknown** const context)
     {
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
