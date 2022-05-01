@@ -59,7 +59,6 @@
 #define effGetProgramNameIndexed 29
 #define effGetPlugCategory 35
 #define effVendorSpecific 50
-#define effKeysRequired 57
 #define effEditKeyDown 59
 #define effEditKeyUp 60
 #define kVstVersion 2400
@@ -762,9 +761,6 @@ public:
             break;
 
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        case effKeysRequired:
-            return 1;
-
         case effEditKeyDown:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(true, index, value);
