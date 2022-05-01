@@ -52,6 +52,19 @@ struct v3_component_handler {
 static constexpr const v3_tuid v3_component_handler_iid =
 	V3_ID(0x93A0BEA3, 0x0BD045DB, 0x8E890B0C, 0xC1E46AC6);
 
+struct v3_component_handler2 {
+#ifndef __cplusplus
+	struct v3_funknown;
+#endif
+	v3_result (V3_API* set_dirty)(void* self, v3_bool state);
+	v3_result (V3_API* request_open_editor)(void* self, const char* name);
+	v3_result (V3_API* start_group_edit)(void* self);
+	v3_result (V3_API* finish_group_edit)(void* self);
+};
+
+static constexpr const v3_tuid v3_component_handler2_iid =
+	V3_ID(0xF040B4B3, 0xA36045EC, 0xABCDC045, 0xB4D5A2CC);
+
 /**
  * edit controller
  */
