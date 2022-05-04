@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -459,7 +459,8 @@ void puglFallbackOnResize(PuglView* const view)
 #endif
 }
 
-#ifdef DISTRHO_OS_MAC
+#if defined(DISTRHO_OS_MAC)
+
 // --------------------------------------------------------------------------------------------------------------------
 // macOS specific, allow standalone window to gain focus
 
@@ -537,9 +538,9 @@ void puglMacOSShowCentered(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-#endif
 
-#ifdef DISTRHO_OS_WINDOWS
+#elif defined(DISTRHO_OS_WINDOWS)
+
 // --------------------------------------------------------------------------------------------------------------------
 // win32 specific, call ShowWindow with SW_RESTORE
 
@@ -616,9 +617,9 @@ void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-#endif
 
-#ifdef HAVE_X11
+#elif defined(HAVE_X11)
+
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, safer way to grab focus
 
@@ -666,6 +667,7 @@ void puglX11SetWindowTypeAndPID(const PuglView* const view, const bool isStandal
 }
 
 // --------------------------------------------------------------------------------------------------------------------
+
 #endif // HAVE_X11
 
 #ifndef DISTRHO_OS_MAC

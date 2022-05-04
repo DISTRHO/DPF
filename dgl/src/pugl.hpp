@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -99,7 +99,8 @@ puglOnDisplayPrepare(PuglView* view);
 PUGL_API void
 puglFallbackOnResize(PuglView* view);
 
-#ifdef DISTRHO_OS_MAC
+#if defined(DISTRHO_OS_MAC)
+
 // macOS specific, allow standalone window to gain focus
 PUGL_API void
 puglMacOSActivateApp();
@@ -115,9 +116,9 @@ puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
 // macOS specific, center view based on parent coordinates (if there is one)
 PUGL_API void
 puglMacOSShowCentered(PuglView* view);
-#endif
 
-#ifdef DISTRHO_OS_WINDOWS
+#elif defined(DISTRHO_OS_WINDOWS)
+
 // win32 specific, call ShowWindow with SW_RESTORE
 PUGL_API void
 puglWin32RestoreWindow(PuglView* view);
@@ -129,9 +130,9 @@ puglWin32ShowCentered(PuglView* view);
 // win32 specific, set or unset WS_SIZEBOX style flag
 PUGL_API void
 puglWin32SetWindowResizable(PuglView* view, bool resizable);
-#endif
 
-#ifdef HAVE_X11
+#elif defined(HAVE_X11)
+
 // X11 specific, safer way to grab focus
 PUGL_API PuglStatus
 puglX11GrabFocus(const PuglView* view);
@@ -139,6 +140,7 @@ puglX11GrabFocus(const PuglView* view);
 // X11 specific, set dialog window type and pid hints
 PUGL_API void
 puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
+
 #endif
 
 PUGL_END_DECLS

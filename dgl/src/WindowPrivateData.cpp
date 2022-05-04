@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -378,7 +378,7 @@ void Window::PrivateData::focus()
     if (! isEmbed)
         puglRaiseWindow(view);
 
-#ifdef HAVE_X11
+#if defined(HAVE_X11) && !defined(DISTRHO_OS_MAC) && !defined(DISTRHO_OS_WINDOWS)
     puglX11GrabFocus(view);
 #else
     puglGrabFocus(view);
@@ -765,7 +765,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View created, a #PuglEventCreate
     case PUGL_CREATE:
-#ifdef HAVE_X11
+#if defined(HAVE_X11) && !defined(DISTRHO_OS_MAC) && !defined(DISTRHO_OS_WINDOWS)
         if (! pData->isEmbed)
             puglX11SetWindowTypeAndPID(view, pData->appData->isStandalone);
 #endif
