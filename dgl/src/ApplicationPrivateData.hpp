@@ -22,6 +22,9 @@
 #include <list>
 
 #ifdef DISTRHO_OS_WINDOWS
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
 # include <winsock2.h>
 # include <windows.h>
 typedef HANDLE d_ThreadHandle;
