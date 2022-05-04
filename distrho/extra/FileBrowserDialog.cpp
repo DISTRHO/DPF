@@ -303,6 +303,10 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     ScopedPointer<FileBrowserData> handle(new FileBrowserData(options.saving));
 
 #ifdef DISTRHO_OS_MAC
+# if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_8
+    // unsupported
+    return nullptr;
+# else
     NSSavePanel* const nsBasePanel = handle->nsBasePanel;
     DISTRHO_SAFE_ASSERT_RETURN(nsBasePanel != nullptr, nullptr);
 
@@ -349,6 +353,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
             }
         }];
     });
+# endif
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS

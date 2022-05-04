@@ -90,9 +90,9 @@
 #endif
 
 /* Define DISTRHO_DEPRECATED_BY */
-#if defined(__clang__) && defined(DISTRHO_PROPER_CPP11_SUPPORT)
+#if defined(__clang__) && (__clang_major__ * 100 + __clang_minor__) >= 502
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("", other)))
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
+#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 408
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("Use " other)))
 #else
 # define DISTRHO_DEPRECATED_BY(other) DISTRHO_DEPRECATED
