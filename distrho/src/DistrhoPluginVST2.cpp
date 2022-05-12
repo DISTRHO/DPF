@@ -1019,6 +1019,8 @@ public:
 #else
                     return -1;
 #endif
+                if (std::strcmp(canDo, "offline") == 0)
+                    return -1;
             }
             break;
 
