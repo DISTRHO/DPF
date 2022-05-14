@@ -151,7 +151,7 @@ public:
    /**
       Destructor.
     */
-    virtual ~CairoBaseWidget() {}
+    ~CairoBaseWidget() override {}
 
 protected:
    /**

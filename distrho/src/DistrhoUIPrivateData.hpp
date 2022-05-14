@@ -199,7 +199,7 @@ public:
             puglBackendEnter(pData->view);
     }
 
-    ~PluginWindow()
+    ~PluginWindow() override
     {
         if (pData->view != nullptr)
             puglBackendLeave(pData->view);

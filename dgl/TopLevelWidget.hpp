@@ -54,7 +54,7 @@ public:
    /**
       Destructor.
     */
-    virtual ~TopLevelWidget();
+    ~TopLevelWidget() override;
 
    /**
       Get the application associated with this top-level widget's window.
