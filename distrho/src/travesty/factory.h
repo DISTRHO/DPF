@@ -122,4 +122,26 @@ struct v3_plugin_factory_cpp : v3_funknown {
 	v3_plugin_factory_3 v3;
 };
 
+template<> inline
+constexpr v3_plugin_factory_2* v3_cpp_obj(v3_plugin_factory_2** obj)
+{
+	/**
+	 * this ugly piece of code is required due to C++ assuming `reinterpret_cast` by default,
+	 * but we need everything to be `static_cast` for it to be `constexpr` compatible.
+	 */
+	return static_cast<v3_plugin_factory_2*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*7));
+}
+
+template<> inline
+constexpr v3_plugin_factory_3* v3_cpp_obj(v3_plugin_factory_3** obj)
+{
+	/**
+	 * this ugly piece of code is required due to C++ assuming `reinterpret_cast` by default,
+	 * but we need everything to be `static_cast` for it to be `constexpr` compatible.
+	 */
+	return static_cast<v3_plugin_factory_3*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*8));
+}
+
 #endif

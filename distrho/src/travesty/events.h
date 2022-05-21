@@ -143,4 +143,16 @@ struct v3_event_list {
 static constexpr const v3_tuid v3_event_list_iid =
 	V3_ID(0x3A2C4214, 0x346349FE, 0xB2C4F397, 0xB9695A44);
 
+#ifdef __cplusplus
+
+/**
+ * C++ variants
+ */
+
+struct v3_event_list_cpp : v3_funknown {
+	v3_event_list list;
+};
+
+#endif
+
 #include "align_pop.h"

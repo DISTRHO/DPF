@@ -207,4 +207,18 @@ uint32_t v3_cpp_obj_unref(T** obj)
 	return static_cast<v3_funknown*>(static_cast<void*>(*obj))->unref(obj);
 }
 
+template<class T> static inline
+v3_result v3_cpp_obj_initialize(T** obj, v3_funknown** context)
+{
+	return static_cast<v3_plugin_base*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*3))->initialize(obj, context);
+}
+
+template<class T> static inline
+v3_result v3_cpp_obj_terminate(T** obj)
+{
+	return static_cast<v3_plugin_base*>(
+		static_cast<void*>(static_cast<uint8_t*>(static_cast<void*>(*obj)) + sizeof(void*)*3))->terminate(obj);
+}
+
 #endif
