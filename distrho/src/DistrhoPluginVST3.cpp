@@ -1011,6 +1011,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_INT_RETURN(busDirection == V3_INPUT || busDirection == V3_OUTPUT, busDirection, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_INT_RETURN(busId >= 0, busId, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(speaker != nullptr, V3_INVALID_ARG);
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         const uint32_t ubusId = static_cast<uint32_t>(busId);
@@ -1071,7 +1072,7 @@ public:
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
-            d_stdout("invalid bus %d", busId);
+            d_stdout("invalid bus arrangement %d", busId);
             return V3_INVALID_ARG;
         }
     }
@@ -2683,7 +2684,7 @@ struct dpf_comp2ctrl_connection_point : v3_connection_point_cpp {
 
 #if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
-// dpf_comp2ctrl_connection_point
+// dpf_ctrl2view_connection_point
 
 struct dpf_ctrl2view_connection_point : v3_connection_point_cpp {
     ScopedPointer<PluginVst3>& vst3;
