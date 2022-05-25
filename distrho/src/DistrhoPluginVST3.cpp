@@ -1027,19 +1027,37 @@ public:
                 if (port.busId != ubusId)
                     continue;
 
+                v3_speaker_arrangement arr;
+
                 switch (port.groupId)
                 {
                 case kPortGroupMono:
-                    *speaker = V3_SPEAKER_M;
+                    arr = V3_SPEAKER_M;
                     break;
                 case kPortGroupStereo:
-                    *speaker = V3_SPEAKER_L | V3_SPEAKER_R;
+                    arr = V3_SPEAKER_L | V3_SPEAKER_R;
                     break;
                 default:
-                    *speaker = 0;
+                    if (inputBuses.audio != 0 && ubusId == 0)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<inputBuses.numMainAudio; ++j)
+                            arr |= 1ull << (j + 33ull);
+                    }
+                    else if (inputBuses.sidechain != 0 && ubusId == inputBuses.audio)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<inputBuses.numSidechain; ++j)
+                            arr |= 1ull << (inputBuses.numMainAudio + j + 33ull);
+                    }
+                    else
+                    {
+                        arr = 1ull << (inputBuses.numMainAudio + inputBuses.numSidechain + ubusId + 33ull);
+                    }
                     break;
                 }
 
+                *speaker = arr;
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_INPUTS
@@ -1056,19 +1074,37 @@ public:
                 if (port.busId != ubusId)
                     continue;
 
+                v3_speaker_arrangement arr;
+
                 switch (port.groupId)
                 {
                 case kPortGroupMono:
-                    *speaker = V3_SPEAKER_M;
+                    arr = V3_SPEAKER_M;
                     break;
                 case kPortGroupStereo:
-                    *speaker = V3_SPEAKER_L | V3_SPEAKER_R;
+                    arr = V3_SPEAKER_L | V3_SPEAKER_R;
                     break;
                 default:
-                    *speaker = 0;
+                    if (outputBuses.audio != 0 && ubusId == 0)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<outputBuses.numMainAudio; ++j)
+                            arr |= 1ull << (j + 33ull);
+                    }
+                    else if (outputBuses.sidechain != 0 && ubusId == outputBuses.audio)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<outputBuses.numSidechain; ++j)
+                            arr |= 1ull << (outputBuses.numMainAudio + j + 33ull);
+                    }
+                    else
+                    {
+                        arr = 1ull << (outputBuses.numMainAudio + outputBuses.numSidechain + ubusId + 33ull);
+                    }
                     break;
                 }
 
+                *speaker = arr;
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
