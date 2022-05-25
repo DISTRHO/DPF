@@ -472,20 +472,23 @@ void lv2_generate_ttl(const char* const basename)
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
-                switch (port.groupId)
+                if (port.groupId != kPortGroupNone)
                 {
-                case kPortGroupNone:
-                    break;
-                case kPortGroupMono:
-                    pluginString += "        pg:group pg:MonoGroup ;\n";
-                    break;
-                case kPortGroupStereo:
-                    pluginString += "        pg:group pg:StereoGroup ;\n";
-                    break;
-                default:
                     pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
                                     + plugin.getPortGroupSymbolForId(port.groupId) + "> ;\n";
-                    break;
+
+                    switch (port.groupId)
+                    {
+                    case kPortGroupMono:
+                        pluginString += "        lv2:designation pg:center ;\n";
+                        break;
+                    case kPortGroupStereo:
+                        if (i == 1)
+                            pluginString += "        lv2:designation pg:right ;\n";
+                        else
+                            pluginString += "        lv2:designation pg:left ;\n";
+                        break;
+                    }
                 }
 
                 // set ranges
@@ -562,20 +565,23 @@ void lv2_generate_ttl(const char* const basename)
                 if (port.hints & kAudioPortIsSidechain)
                     pluginString += "        lv2:portProperty lv2:isSideChain;\n";
 
-                switch (port.groupId)
+                if (port.groupId != kPortGroupNone)
                 {
-                case kPortGroupNone:
-                    break;
-                case kPortGroupMono:
-                    pluginString += "        pg:group pg:MonoGroup ;\n";
-                    break;
-                case kPortGroupStereo:
-                    pluginString += "        pg:group pg:StereoGroup ;\n";
-                    break;
-                default:
                     pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
                                     + plugin.getPortGroupSymbolForId(port.groupId) + "> ;\n";
-                    break;
+
+                    switch (port.groupId)
+                    {
+                    case kPortGroupMono:
+                        pluginString += "        lv2:designation pg:center ;\n";
+                        break;
+                    case kPortGroupStereo:
+                        if (i == 1)
+                            pluginString += "        lv2:designation pg:right ;\n";
+                        else
+                            pluginString += "        lv2:designation pg:left ;\n";
+                        break;
+                    }
                 }
 
                 // set ranges
@@ -901,21 +907,9 @@ void lv2_generate_ttl(const char* const basename)
                     // group
                     const uint32_t groupId = plugin.getParameterGroupId(i);
 
-                    switch (groupId)
-                    {
-                    case kPortGroupNone:
-                        break;
-                    case kPortGroupMono:
-                        pluginString += "        pg:group pg:MonoGroup ;\n";
-                        break;
-                    case kPortGroupStereo:
-                        pluginString += "        pg:group pg:StereoGroup ;\n";
-                        break;
-                    default:
+                    if (groupId != kPortGroupNone)
                         pluginString += "        pg:group <" DISTRHO_PLUGIN_URI "#portGroup_"
                                         + plugin.getPortGroupSymbolForId(groupId) + "> ;\n";
-                        break;
-                    }
 
                 } // ! designated
 
@@ -1155,13 +1149,6 @@ void lv2_generate_ttl(const char* const basename)
                 DISTRHO_SAFE_ASSERT_CONTINUE(portGroup.groupId != kPortGroupNone);
                 DISTRHO_SAFE_ASSERT_CONTINUE(portGroup.symbol.isNotEmpty());
 
-                switch (portGroup.groupId)
-                {
-                case kPortGroupMono:
-                case kPortGroupStereo:
-                    continue;
-                }
-
                 pluginString += "\n<" DISTRHO_PLUGIN_URI "#portGroup_" + portGroup.symbol + ">\n";
                 isInput = isOutput = false;
 
@@ -1185,19 +1172,28 @@ void lv2_generate_ttl(const char* const basename)
                 }
 
                 pluginString += "    a ";
+
                 if (isInput && !isOutput)
                     pluginString += "pg:InputGroup";
                 else if (isOutput && !isInput)
                     pluginString += "pg:OutputGroup";
                 else
                     pluginString += "pg:Group";
+
+                switch (portGroup.groupId)
+                {
+                case kPortGroupMono:
+                    pluginString += " , pg:MonoGroup";
+                    break;
+                case kPortGroupStereo:
+                    pluginString += " , pg:StereoGroup";
+                    break;
+                }
+
                 pluginString += " ;\n";
 
-#if 0
-                pluginString += "    rdfs:label \"" + portGroup.name + "\" ;\n";
-#else
+                // pluginString += "    rdfs:label \"" + portGroup.name + "\" ;\n";
                 pluginString += "    lv2:name \"" + portGroup.name + "\" ;\n";
-#endif
                 pluginString += "    lv2:symbol \"" + portGroup.symbol + "\" .\n";
             }
         }
