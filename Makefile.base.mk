@@ -173,7 +173,9 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifneq ($(MACOS_OR_WINDOWS),true)
+ifneq ($(BSD),true)
 BASE_FLAGS += -fno-gnu-unique
+endif
 endif
 
 ifeq ($(WINDOWS),true)
