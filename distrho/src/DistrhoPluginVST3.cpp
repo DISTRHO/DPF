@@ -1038,6 +1038,8 @@ public:
                     arr = V3_SPEAKER_L | V3_SPEAKER_R;
                     break;
                 default:
+                    return V3_INVALID_ARG;
+                    /*
                     if (inputBuses.audio != 0 && ubusId == 0)
                     {
                         arr = 0x0;
@@ -1054,6 +1056,7 @@ public:
                     {
                         arr = 1ull << (inputBuses.numMainAudio + inputBuses.numSidechain + ubusId + 33ull);
                     }
+                    */
                     break;
                 }
 
@@ -1085,6 +1088,8 @@ public:
                     arr = V3_SPEAKER_L | V3_SPEAKER_R;
                     break;
                 default:
+                    return V3_INVALID_ARG;
+                    /*
                     if (outputBuses.audio != 0 && ubusId == 0)
                     {
                         arr = 0x0;
@@ -1101,6 +1106,7 @@ public:
                     {
                         arr = 1ull << (outputBuses.numMainAudio + outputBuses.numSidechain + ubusId + 33ull);
                     }
+                    */
                     break;
                 }
 
