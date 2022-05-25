@@ -499,7 +499,7 @@ public:
         {
            #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             int32_t numChannels;
-            v3_bus_flags flags;
+            uint32_t flags;
             v3_bus_types busType;
             v3_str_128 busName = {};
 
@@ -522,7 +522,7 @@ public:
                     {
                         numChannels = inputBuses.numSidechain;
                         busType = V3_AUX;
-                        flags = static_cast<v3_bus_flags>(0);
+                        flags = 0;
                         break;
                     }
                 // fall-through
@@ -575,7 +575,7 @@ public:
                     {
                         numChannels = outputBuses.numSidechain;
                         busType = V3_AUX;
-                        flags = static_cast<v3_bus_flags>(0);
+                        flags = 0;
                         break;
                     }
                 // fall-through
@@ -1007,17 +1007,73 @@ public:
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result getBusArrangement(const int32_t direction, const int32_t /*idx*/, v3_speaker_arrangement*)
+    v3_result getBusArrangement(const int32_t busDirection, const int32_t busId, v3_speaker_arrangement* const speaker) const noexcept
     {
-        switch (direction)
-        {
-        case V3_INPUT:
-        case V3_OUTPUT:
-            // TODO
-            return V3_NOT_IMPLEMENTED;
-        }
+        DISTRHO_SAFE_ASSERT_INT_RETURN(busDirection == V3_INPUT || busDirection == V3_OUTPUT, busDirection, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(busId >= 0, busId, V3_INVALID_ARG);
 
-        return V3_INVALID_ARG;
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        const uint32_t ubusId = static_cast<uint32_t>(busId);
+       #endif
+
+        if (busDirection == V3_INPUT)
+        {
+           #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            {
+                AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
+
+                if (port.busId != ubusId)
+                    continue;
+
+                switch (port.groupId)
+                {
+                case kPortGroupMono:
+                    *speaker = V3_SPEAKER_M;
+                    break;
+                case kPortGroupStereo:
+                    *speaker = V3_SPEAKER_L | V3_SPEAKER_R;
+                    break;
+                default:
+                    *speaker = 0;
+                    break;
+                }
+
+                return V3_OK;
+            }
+           #endif // DISTRHO_PLUGIN_NUM_INPUTS
+            d_stdout("invalid bus arrangement %d", busId);
+            return V3_INVALID_ARG;
+        }
+        else
+        {
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            {
+                AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
+
+                if (port.busId != ubusId)
+                    continue;
+
+                switch (port.groupId)
+                {
+                case kPortGroupMono:
+                    *speaker = V3_SPEAKER_M;
+                    break;
+                case kPortGroupStereo:
+                    *speaker = V3_SPEAKER_L | V3_SPEAKER_R;
+                    break;
+                default:
+                    *speaker = 0;
+                    break;
+                }
+
+                return V3_OK;
+            }
+           #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
+            d_stdout("invalid bus %d", busId);
+            return V3_INVALID_ARG;
+        }
     }
 
     uint32_t getLatencySamples() const noexcept
@@ -2877,20 +2933,24 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return V3_OK;
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (v3_tuid_match(iid, v3_midi_mapping_iid))
         {
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             d_stdout("query_interface_edit_controller => %p %s %p | OK convert static", self, tuid2str(iid), iface);
             static dpf_midi_mapping midi_mapping;
             static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
             *iface = &midi_mapping_ptr;
             return V3_OK;
-        }
+#else
+            d_stdout("query_interface_edit_controller => %p %s %p | reject unused", self, tuid2str(iid), iface);
+            *iface = nullptr;
+            return V3_NO_INTERFACE;
 #endif
+        }
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_edit_controller => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, controller->connectionComp2Ctrl.get());
 
@@ -2900,11 +2960,14 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 ++controller->connectionComp2Ctrl->refcounter;
             *iface = &controller->connectionComp2Ctrl;
             return V3_OK;
-        }
+#else
+            d_stdout("query_interface_edit_controller => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
+            *iface = nullptr;
+            return V3_NO_INTERFACE;
 #endif
+        }
 
         d_stdout("query_interface_edit_controller => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
-
         *iface = nullptr;
         return V3_NO_INTERFACE;
     }
@@ -3423,6 +3486,8 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
         PluginVst3* const vst3 = processor->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
+        d_stdout("dpf_audio_processor::setup_processing => %p %p | %d %f", self, setup, setup->max_block_size, setup->sample_rate);
+
         d_nextBufferSize = setup->max_block_size;
         d_nextSampleRate = setup->sample_rate;
         return processor->vst3->setupProcessing(setup);
@@ -3542,16 +3607,20 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (v3_tuid_match(iid, v3_midi_mapping_iid))
         {
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             d_stdout("query_interface_component => %p %s %p | OK convert static", self, tuid2str(iid), iface);
             static dpf_midi_mapping midi_mapping;
             static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
             *iface = &midi_mapping_ptr;
             return V3_OK;
-        }
+#else
+            d_stdout("query_interface_component => %p %s %p | reject unused", self, tuid2str(iid), iface);
+            *iface = nullptr;
+            return V3_NO_INTERFACE;
 #endif
+        }
 
         if (v3_tuid_match(iid, v3_audio_processor_iid))
         {
@@ -3566,9 +3635,9 @@ struct dpf_component : v3_component_cpp {
             return V3_OK;
         }
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
+#if DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_component => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, component->connectionComp2Ctrl.get());
 
@@ -3578,10 +3647,16 @@ struct dpf_component : v3_component_cpp {
                 ++component->connectionComp2Ctrl->refcounter;
             *iface = &component->connectionComp2Ctrl;
             return V3_OK;
-        }
 #else
+            d_stdout("query_interface_component => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
+            *iface = nullptr;
+            return V3_NO_INTERFACE;
+#endif
+        }
+
         if (v3_tuid_match(iid, v3_edit_controller_iid))
         {
+#if !DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_component => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, component->controller.get());
 
@@ -3593,11 +3668,14 @@ struct dpf_component : v3_component_cpp {
                 ++component->controller->refcounter;
             *iface = &component->controller;
             return V3_OK;
-        }
+#else
+            d_stdout("query_interface_component => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
+            *iface = nullptr;
+            return V3_NO_INTERFACE;
 #endif
+        }
 
         d_stdout("query_interface_component => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
-
         *iface = nullptr;
         return V3_NO_INTERFACE;
     }
