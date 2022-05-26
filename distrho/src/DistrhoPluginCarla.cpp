@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,11 +31,13 @@
 START_NAMESPACE_DISTRHO
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-static const writeMidiFunc writeMidiCallback = nullptr;
+static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+static constexpr const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
+// TODO
+static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
 
 #if DISTRHO_PLUGIN_HAS_UI
 // -----------------------------------------------------------------------
@@ -53,7 +55,12 @@ class UICarla
 public:
     UICarla(const NativeHostDescriptor* const host, PluginExporter* const plugin)
         : fHost(host),
-          fUI(this, 0, editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, plugin->getInstancePointer())
+          fUI(this, 0, plugin->getSampleRate(),
+              editParameterCallback, setParameterCallback, setStateCallback, sendNoteCallback,
+              nullptr, // window size
+              nullptr, // TODO file request
+              nullptr, // bundle path
+              plugin->getInstancePointer())
     {
         fUI.setWindowTitle(host->uiName);
 
@@ -75,7 +82,7 @@ public:
 
     bool carla_idle()
     {
-        return fUI.idle();
+        return fUI.plugin_idle();
     }
 
     void carla_setParameterValue(const uint32_t index, const float value)
@@ -129,11 +136,6 @@ protected:
     }
 #endif
 
-    void handleSetSize(const uint width, const uint height)
-    {
-        fUI.setWindowSize(width, height);
-    }
-
     // ---------------------------------------------
 
 private:
@@ -172,11 +174,6 @@ private:
     }
 #endif
 
-    static void setSizeCallback(void* ptr, uint width, uint height)
-    {
-        handlePtr->handleSetSize(width, height);
-    }
-
     #undef handlePtr
 
     CARLA_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UICarla)
@@ -191,7 +188,7 @@ class PluginCarla : public NativePluginClass
 public:
     PluginCarla(const NativeHostDescriptor* const host)
         : NativePluginClass(host),
-          fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+          fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback),
           fScalePointsCache(nullptr)
     {
 #if DISTRHO_PLUGIN_HAS_UI
@@ -367,7 +364,8 @@ protected:
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void process(float** const inBuffer, float** const outBuffer, const uint32_t frames, const NativeMidiEvent* const midiEvents, const uint32_t midiEventCount) override
+    void process(const float* const* const inBuffer, float** const outBuffer, const uint32_t frames,
+                 const NativeMidiEvent* const midiEvents, const uint32_t midiEventCount) override
     {
         MidiEvent realMidiEvents[midiEventCount];
 
@@ -391,7 +389,8 @@ protected:
         fPlugin.run(const_cast<const float**>(inBuffer), outBuffer, frames, realMidiEvents, midiEventCount);
     }
 #else
-    void process(float** const inBuffer, float** const outBuffer, const uint32_t frames, const NativeMidiEvent* const, const uint32_t) override
+    void process(const float* const* const inBuffer, float** const outBuffer, const uint32_t frames,
+                 const NativeMidiEvent* const, const uint32_t) override
     {
         fPlugin.run(const_cast<const float**>(inBuffer), outBuffer, frames);
     }
@@ -498,10 +497,7 @@ private:
     void createUiIfNeeded()
     {
         if (fUiPtr == nullptr)
-        {
-            d_lastUiSampleRate = getSampleRate();
             fUiPtr = new UICarla(getHostHandle(), &fPlugin);
-        }
     }
 #endif
 
@@ -539,8 +535,8 @@ private:
 public:
     static NativePluginHandle _instantiate(const NativeHostDescriptor* host)
     {
-        d_lastBufferSize = host->get_buffer_size(host->handle);
-        d_lastSampleRate = host->get_sample_rate(host->handle);
+        d_nextBufferSize = host->get_buffer_size(host->handle);
+        d_nextSampleRate = host->get_sample_rate(host->handle);
         return new PluginCarla(host);
     }
 
