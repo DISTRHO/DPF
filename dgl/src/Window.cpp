@@ -321,18 +321,12 @@ void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
 
 const void* Window::getClipboard(size_t& dataSize)
 {
-    if (pData->clipboardTypeIndex == 0)
-    {
-        dataSize = 0;
-        return nullptr;
-    }
-
-    return puglGetClipboard(pData->view, pData->clipboardTypeIndex, &dataSize);
+    return pData->getClipboard(dataSize);
 }
 
 bool Window::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
 {
-    return puglSetClipboard(pData->view, mimeType, data, dataSize) == PUGL_SUCCESS;
+    return puglSetClipboard(pData->view, mimeType != nullptr ? mimeType : "text/plain", data, dataSize) == PUGL_SUCCESS;
 }
 
 bool Window::setCursor(const MouseCursor cursor)

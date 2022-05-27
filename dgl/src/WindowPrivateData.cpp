@@ -109,7 +109,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      clipboardTypeIndex(0),
+      waitingForClipboard(false),
+      clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -136,7 +137,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      clipboardTypeIndex(0),
+      waitingForClipboard(false),
+      clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -165,7 +167,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      clipboardTypeIndex(0),
+      waitingForClipboard(false),
+      clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -195,7 +198,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      clipboardTypeIndex(0),
+      waitingForClipboard(false),
+      clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -757,11 +761,59 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
 #endif
 }
 
+const void* Window::PrivateData::getClipboard(size_t& dataSize)
+{
+    clipboardTypeId = 0;
+    waitingForClipboard = true;
+
+    if (puglPaste(view) != PUGL_SUCCESS)
+    {
+        dataSize = 0;
+        waitingForClipboard = false;
+        return nullptr;
+    }
+
+    // wait for type request
+    while (waitingForClipboard && clipboardTypeId == 0)
+        puglUpdate(appData->world, 0.03);
+
+    if (clipboardTypeId == 0)
+    {
+        dataSize = 0;
+        waitingForClipboard = false;
+        return nullptr;
+    }
+
+    // wait for actual data
+    while (waitingForClipboard)
+        puglUpdate(appData->world, 0.03);
+
+    if (clipboardTypeId == 0)
+    {
+        dataSize = 0;
+        return nullptr;
+    }
+
+    return puglGetClipboard(view, clipboardTypeId - 1, &dataSize);
+}
+
 uint32_t Window::PrivateData::onClipboardDataOffer()
 {
     DGL_DBG("onClipboardDataOffer\n");
 
-    return clipboardTypeIndex = self->onClipboardDataOffer();
+    if ((clipboardTypeId = self->onClipboardDataOffer()) != 0)
+        return clipboardTypeId;
+
+    waitingForClipboard = false;
+    return 0;
+}
+
+void Window::PrivateData::onClipboardData(const uint32_t typeId)
+{
+    if (clipboardTypeId != typeId)
+        clipboardTypeId = 0;
+
+    waitingForClipboard = false;
 }
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
@@ -776,6 +828,29 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         printEvent(event, "pugl event: ", true);
     }
 #endif
+
+    if (pData->waitingForClipboard)
+    {
+        switch (event->type)
+        {
+        case PUGL_UPDATE:
+        case PUGL_EXPOSE:
+        case PUGL_FOCUS_IN:
+        case PUGL_FOCUS_OUT:
+        case PUGL_KEY_PRESS:
+        case PUGL_KEY_RELEASE:
+        case PUGL_TEXT:
+        case PUGL_POINTER_IN:
+        case PUGL_POINTER_OUT:
+        case PUGL_BUTTON_PRESS:
+        case PUGL_BUTTON_RELEASE:
+        case PUGL_MOTION:
+        case PUGL_SCROLL:
+            return PUGL_SUCCESS;
+        default:
+            break;
+        }
+    }
 
     switch (event->type)
     {
@@ -944,12 +1019,13 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Data offered from clipboard, a #PuglDataOfferEvent
     case PUGL_DATA_OFFER:
-        if (const uint32_t offerId = pData->onClipboardDataOffer())
-            puglAcceptOffer(view, &event->offer, offerId - 1);
+        if (const uint32_t offerTypeId = pData->onClipboardDataOffer())
+            puglAcceptOffer(view, &event->offer, offerTypeId - 1);
         break;
 
     ///< Data available from clipboard, a #PuglDataEvent
     case PUGL_DATA:
+        pData->onClipboardData(event->data.typeIndex + 1);
         break;
     }
 
