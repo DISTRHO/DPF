@@ -131,6 +131,29 @@ enum CrossingMode {
 };
 
 /**
+   A mouse button.
+
+   Mouse button numbers start from 1, and are ordered: primary, secondary, middle.
+   So, on a typical right-handed mouse, the button numbers are:
+
+   Left: 1
+   Right: 2
+   Middle (often a wheel): 3
+
+   Higher button numbers are reported in the same order they are represented on the system.
+   There is no universal standard here, but buttons 4 and 5 are typically a pair of buttons or a rocker,
+   which are usually bound to "back" and "forward" operations.
+
+   Note that these numbers may differ from those used on the underlying
+   platform, since they are manipulated to provide a consistent portable API.
+*/
+enum MouseButton {
+    kMouseButtonLeft = 1,
+    kMouseButtonRight,
+    kMouseButtonMiddle,
+};
+
+/**
    A mouse cursor type.
 
    This is a portable subset of mouse cursors that exist on X11, MacOS, and Windows.
