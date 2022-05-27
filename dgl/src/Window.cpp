@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -189,7 +189,7 @@ void Window::setOffsetY(const int y)
 
 void Window::setOffset(const int x, const int y)
 {
-    puglSetWindowOffset(pData->view, x, y);
+    puglSetPosition(pData->view, x, y);
 }
 
 void Window::setOffset(const Point<int>& offset)
@@ -289,7 +289,7 @@ void Window::setSize(uint width, uint height)
     }
     else
     {
-        puglSetWindowSize(pData->view, width, height);
+        puglSetSizeAndDefault(pData->view, width, height);
     }
 }
 
@@ -326,10 +326,7 @@ bool Window::setClipboard(const char* const mimeType, const void* const data, co
 
 const void* Window::getClipboard(const char*& mimeType, size_t& dataSize)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(!pData->ignoreEvents, nullptr);
-    pData->ignoreEvents = true;
-    const void* const clipboard = puglGetClipboard(pData->view, &mimeType, &dataSize);
-    pData->ignoreEvents = false;
+    const void* const clipboard = nullptr; // puglGetClipboard(pData->view, &mimeType, &dataSize);
     return clipboard;
 }
 
@@ -400,10 +397,10 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
         return;
 
     PuglRect prect = {
-        static_cast<double>(rect.getX()),
-        static_cast<double>(rect.getY()),
-        static_cast<double>(rect.getWidth()),
-        static_cast<double>(rect.getHeight()),
+        static_cast<PuglCoord>(rect.getX()),
+        static_cast<PuglCoord>(rect.getY()),
+        static_cast<PuglSpan>(rect.getWidth()),
+        static_cast<PuglSpan>(rect.getHeight()),
     };
     if (pData->autoScaling)
     {

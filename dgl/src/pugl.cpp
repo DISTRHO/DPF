@@ -16,10 +16,24 @@
 
 #include "pugl.hpp"
 
+// --------------------------------------------------------------------------------------------------------------------
+// include base headers
+
+#ifdef DGL_CAIRO
+# include <cairo/cairo.h>
+#endif
+#ifdef DGL_OPENGL
+# include "../OpenGL-include.hpp"
+#endif
+#ifdef DGL_VULKAN
+# include <vulkan/vulkan_core.h>
+#endif
+
 /* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
 #include <cassert>
 #include <cmath>
 #include <cstdlib>
+#include <cstdio>
 #include <cstring>
 #include <ctime>
 
@@ -57,9 +71,10 @@
 # endif
 #else
 # include <dlfcn.h>
+# include <limits.h>
 # include <unistd.h>
 # include <sys/select.h>
-# include <sys/time.h>
+// # include <sys/time.h>
 # include <X11/X.h>
 # include <X11/Xatom.h>
 # include <X11/Xlib.h>
@@ -68,7 +83,7 @@
 # include <X11/keysym.h>
 # ifdef HAVE_XCURSOR
 #  include <X11/Xcursor/Xcursor.h>
-#  include <X11/cursorfont.h>
+// #  include <X11/cursorfont.h>
 # endif
 # ifdef HAVE_XRANDR
 #  include <X11/extensions/Xrandr.h>
@@ -78,15 +93,12 @@
 #  include <X11/extensions/syncconst.h>
 # endif
 # ifdef DGL_CAIRO
-#  include <cairo.h>
 #  include <cairo-xlib.h>
 # endif
 # ifdef DGL_OPENGL
-#  include <GL/gl.h>
 #  include <GL/glx.h>
 # endif
 # ifdef DGL_VULKAN
-#  include <vulkan/vulkan_core.h>
 #  include <vulkan/vulkan_xlib.h>
 # endif
 #endif
@@ -101,6 +113,8 @@
 
 #ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
+#else
+USE_NAMESPACE_DGL
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -112,9 +126,6 @@ START_NAMESPACE_DGL
 #  define PuglStubView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglStubView)
 #  define PuglWrapperView DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWrapperView)
 #  define PuglWindow      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PuglWindow)
-# endif
-# ifndef __MAC_10_9
-#  define NSModalResponseOK NSOKButton
 # endif
 # pragma clang diagnostic push
 # pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -159,7 +170,7 @@ START_NAMESPACE_DGL
 #include "pugl-upstream/src/implementation.c"
 
 // --------------------------------------------------------------------------------------------------------------------
-// expose backend enter
+// DGL specific, expose backend enter
 
 bool puglBackendEnter(PuglView* const view)
 {
@@ -167,129 +178,15 @@ bool puglBackendEnter(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// expose backend leave
+// DGL specific, expose backend leave
 
-void puglBackendLeave(PuglView* const view)
+bool puglBackendLeave(PuglView* const view)
 {
-    view->backend->leave(view, nullptr);
+    return view->backend->leave(view, nullptr) == PUGL_SUCCESS;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// clear minimum size to 0
-
-void puglClearMinSize(PuglView* const view)
-{
-    view->minWidth  = 0;
-    view->minHeight = 0;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// missing in pugl, directly returns transient parent
-
-PuglNativeView puglGetTransientParent(const PuglView* const view)
-{
-    return view->transientParent;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// missing in pugl, directly returns title char* pointer
-
-const char* puglGetWindowTitle(const PuglView* const view)
-{
-    return view->title;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// get global scale factor
-
-double puglGetDesktopScaleFactor(const PuglView* const view)
-{
-#if defined(DISTRHO_OS_MAC)
-    if (NSWindow* const window = view->impl->window ? view->impl->window
-                                                    : [view->impl->wrapperView window])
-        return [window screen].backingScaleFactor;
-    return [NSScreen mainScreen].backingScaleFactor;
-#elif defined(DISTRHO_OS_WINDOWS)
-    if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
-    {
-        typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);
-        typedef HRESULT(WINAPI* PFN_GetScaleFactorForMonitor)(HMONITOR, DWORD*);
-
-# if defined(__GNUC__) && (__GNUC__ >= 9)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wcast-function-type"
-# endif
-        const PFN_GetProcessDpiAwareness GetProcessDpiAwareness
-            = (PFN_GetProcessDpiAwareness)GetProcAddress(Shcore, "GetProcessDpiAwareness");
-        const PFN_GetScaleFactorForMonitor GetScaleFactorForMonitor
-            = (PFN_GetScaleFactorForMonitor)GetProcAddress(Shcore, "GetScaleFactorForMonitor");
-# if defined(__GNUC__) && (__GNUC__ >= 9)
-#  pragma GCC diagnostic pop
-# endif
-
-        DWORD dpiAware = 0;
-        if (GetProcessDpiAwareness && GetScaleFactorForMonitor
-            && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
-        {
-            const HMONITOR hMon = MonitorFromWindow(view->impl->hwnd, MONITOR_DEFAULTTOPRIMARY);
-
-            DWORD scaleFactor = 0;
-            if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
-            {
-                FreeLibrary(Shcore);
-                return static_cast<double>(scaleFactor) / 100.0;
-            }
-        }
-
-        FreeLibrary(Shcore);
-    }
-#elif defined(HAVE_X11)
-    XrmInitialize();
-
-    if (char* const rms = XResourceManagerString(view->world->impl->display))
-    {
-        if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
-        {
-            char* type = nullptr;
-            XrmValue ret;
-
-            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
-                && ret.addr != nullptr
-                && type != nullptr
-                && std::strncmp("String", type, 6) == 0)
-            {
-                if (const double dpi = std::atof(ret.addr))
-                    return dpi / 96;
-            }
-        }
-    }
-#else
-    // unused
-    (void)view;
-#endif
-
-    return 1.0;
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// bring view window into the foreground, aka "raise" window
-
-void puglRaiseWindow(PuglView* const view)
-{
-#if defined(DISTRHO_OS_MAC)
-    if (NSWindow* const window = view->impl->window ? view->impl->window
-                                                    : [view->impl->wrapperView window])
-        [window orderFrontRegardless];
-#elif defined(DISTRHO_OS_WINDOWS)
-    SetForegroundWindow(view->impl->hwnd);
-    SetActiveWindow(view->impl->hwnd);
-#else
-    XRaiseWindow(view->impl->display, view->impl->win);
-#endif
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// set backend that matches current build
+// DGL specific, assigns backend that matches current DGL build
 
 void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 {
@@ -307,25 +204,76 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// Combine puglSetMinSize and puglSetAspectRatio
+// clear minimum size to 0
+
+// void puglClearMinSize(PuglView* const view)
+// {
+//     view->sizeHints[PUGL_MIN_SIZE].width  = 0;
+//     view->sizeHints[PUGL_MIN_SIZE].height = 0;
+// }
+
+// --------------------------------------------------------------------------------------------------------------------
+// bring view window into the foreground, aka "raise" window
+
+void puglRaiseWindow(PuglView* const view)
+{
+#if defined(DISTRHO_OS_MAC)
+    if (NSWindow* const window = view->impl->window ? view->impl->window
+                                                    : [view->impl->wrapperView window])
+        [window orderFrontRegardless];
+#elif defined(DISTRHO_OS_WINDOWS)
+    SetForegroundWindow(view->impl->hwnd);
+    SetActiveWindow(view->impl->hwnd);
+#else
+    XRaiseWindow(view->world->impl->display, view->impl->win);
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// get scale factor from parent window if possible, fallback to puglGetScaleFactor
+
+double puglGetScaleFactorFromParent(const PuglView* const view)
+{
+    const PuglNativeView parent = view->parent ? view->parent : view->transientParent ? view->transientParent : 0;
+#if defined(DISTRHO_OS_MAC)
+    NSWindow* const window = parent != 0 ? [(NSView*)parent window]
+                                         : view->impl->window ? view->impl->window : [view->impl->wrapperView window]);
+    NSScreen* const screen = window != nullptr ? [window screen] : [NSScreen mainScreen];
+    return [screen backingScaleFactor];
+#elif defined(DISTRHO_OS_WINDOWS)
+    const HWND hwnd = parent != 0 ? (HWND)parent : view->impl->hwnd;
+    return puglWinGetViewScaleFactor(hwnd);
+#else
+    return puglGetScaleFactor(view);
+    // unused
+    (void)parent;
+#endif
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// Combined puglSetSizeHint using PUGL_MIN_SIZE and PUGL_FIXED_ASPECT
 
 PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, const uint height, const bool aspect)
 {
-    view->minWidth  = (int)width;
-    view->minHeight = (int)height;
+    view->sizeHints[PUGL_MIN_SIZE].width = width;
+    view->sizeHints[PUGL_MIN_SIZE].height = height;
 
-    if (aspect) {
-        view->minAspectX = (int)width;
-        view->minAspectY = (int)height;
-        view->maxAspectX = (int)width;
-        view->maxAspectY = (int)height;
+    if (aspect)
+    {
+        view->sizeHints[PUGL_FIXED_ASPECT].width = width;
+        view->sizeHints[PUGL_FIXED_ASPECT].height = height;
     }
 
 #if defined(DISTRHO_OS_MAC)
-    puglSetMinSize(view, width, height);
+    if (view->impl->window)
+    {
+        PuglStatus status;
 
-    if (aspect) {
-        puglSetAspectRatio(view, width, height, width, height);
+        if ((status = updateSizeHint(view, PUGL_MIN_SIZE)) != PUGL_SUCCESS)
+            return status;
+
+        if (aspect && (status = updateSizeHint(view, PUGL_FIXED_ASPECT)) != PUGL_SUCCESS)
+            return status;
     }
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
@@ -333,92 +281,90 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
     if (const PuglStatus status = updateSizeHints(view))
         return status;
 
-    XFlush(view->impl->display);
+    XFlush(view->world->impl->display);
 #endif
 
     return PUGL_SUCCESS;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// set window offset without changing size
+// set view as resizable (or not) during runtime
 
-PuglStatus puglSetWindowOffset(PuglView* const view, const int x, const int y)
+void puglSetResizable(PuglView* const view, const bool resizable)
 {
-    // TODO custom setFrame version
-    PuglRect rect = puglGetFrame(view);
-    rect.x = x;
-    rect.y = y;
-    return puglSetFrame(view, rect);
+    puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
+
+#if defined(DISTRHO_OS_MAC)
+    if (PuglWindow* const window = view->impl->window)
+    {
+        const uint style = (NSClosableWindowMask | NSTitledWindowMask | NSMiniaturizableWindowMask)
+                         | (resizable ? NSResizableWindowMask : 0x0);
+        [window setStyleMask:style];
+    }
+    // FIXME use [view setAutoresizingMask:NSViewNotSizable] ?
+#elif defined(DISTRHO_OS_WINDOWS)
+    if (const HWND hwnd = view->impl->hwnd)
+    {
+        const uint winFlags = resizable ? GetWindowLong(hwnd, GWL_STYLE) |  (WS_SIZEBOX | WS_MAXIMIZEBOX)
+                                        : GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);
+        SetWindowLong(hwnd, GWL_STYLE, winFlags);
+    }
+#else
+    updateSizeHints(view);
+#endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// set window size with default size and without changing frame x/y position
+// set window size while also changing default
 
-PuglStatus puglSetWindowSize(PuglView* const view, const uint width, const uint height)
+PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
 {
-    view->defaultWidth  = width;
-    view->defaultHeight = height;
-    view->frame.width   = width;
-    view->frame.height  = height;
+    if (width > INT16_MAX || height > INT16_MAX)
+        return PUGL_BAD_PARAMETER;
+
+    view->sizeHints[PUGL_DEFAULT_SIZE].width = view->frame.width = static_cast<PuglSpan>(width);
+    view->sizeHints[PUGL_DEFAULT_SIZE].height = view->frame.height = static_cast<PuglSpan>(height);
 
 #if defined(DISTRHO_OS_MAC)
-    // replace setFrame with setFrameSize
+    // mostly matches upstream pugl, simplified
     PuglInternals* const impl = view->impl;
 
     const PuglRect frame = view->frame;
     const NSRect framePx = rectToNsRect(frame);
     const NSRect framePt = nsRectToPoints(view, framePx);
 
-    if (impl->window)
+    if (PuglWindow* const window = view->impl->window)
     {
-        // Resize window to fit new content rect
         const NSRect screenPt = rectToScreen(viewScreen(view), framePt);
-        const NSRect winFrame = [impl->window frameRectForContentRect:screenPt];
-
-        [impl->window setFrame:winFrame display:NO];
+        const NSRect winFrame = [window frameRectForContentRect:screenPt];
+        [window setFrame:winFrame display:NO];
     }
 
-    // Resize views
     const NSSize sizePx = NSMakeSize(frame.width, frame.height);
     const NSSize sizePt = [impl->drawView convertSizeFromBacking:sizePx];
-
-    [impl->wrapperView setFrameSize:(impl->window ? sizePt : framePt.size)];
+    [impl->wrapperView setFrameSize:sizePt];
     [impl->drawView setFrameSize:sizePt];
 #elif defined(DISTRHO_OS_WINDOWS)
-    // matches upstream pugl, except we add SWP_NOMOVE flag
-    if (view->impl->hwnd)
+    // matches upstream pugl, except we re-enter context after resize
+    if (const HWND hwnd = view->impl->hwnd)
     {
-        const PuglRect frame = view->frame;
+        const RECT rect = adjustedWindowRect(view, view->frame.x, view->frame.y,
+                                             static_cast<long>(width), static_cast<long>(height));
 
-        RECT rect = { (long)frame.x,
-                      (long)frame.y,
-                      (long)frame.x + (long)frame.width,
-                      (long)frame.y + (long)frame.height };
+        if (!SetWindowPos(hwnd, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
+                          SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE))
+            return PUGL_UNKNOWN_ERROR;
 
-        AdjustWindowRectEx(&rect, puglWinGetWindowFlags(view), FALSE, puglWinGetWindowExFlags(view));
-
-        if (SetWindowPos(view->impl->hwnd,
-                         HWND_TOP,
-                         rect.left,
-                         rect.top,
-                         rect.right - rect.left,
-                         rect.bottom - rect.top,
-                         SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER))
-        {
-            // make sure to return context back to ourselves
-            view->backend->enter(view, nullptr);
-            return PUGL_SUCCESS;
-        }
-
-        return PUGL_UNKNOWN_ERROR;
+        // make sure to return context back to ourselves
+        puglBackendEnter(view);
     }
 #else
-    // matches upstream pugl, except we use XResizeWindow instead of XMoveResizeWindow
-    if (view->impl->win)
+    // matches upstream pugl, all in one
+    if (const Window window = view->impl->win)
     {
-        Display* const display = view->impl->display;
+        Display* const display = view->world->impl->display;
 
-        if (! XResizeWindow(display, view->impl->win, width, height))
+        if (! XResizeWindow(display, window, width, height))
             return PUGL_UNKNOWN_ERROR;
 
         if (const PuglStatus status = updateSizeHints(view))
@@ -456,6 +402,10 @@ void puglFallbackOnResize(PuglView* const view)
     glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+#else
+    return;
+    // unused
+    (void)view;
 #endif
 }
 
@@ -604,66 +554,32 @@ void puglWin32ShowCentered(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// win32 specific, set or unset WS_SIZEBOX style flag
-
-void puglWin32SetWindowResizable(PuglView* const view, const bool resizable)
-{
-    PuglInternals* impl = view->impl;
-    DISTRHO_SAFE_ASSERT_RETURN(impl->hwnd != nullptr,);
-
-    const int winFlags = resizable ? GetWindowLong(impl->hwnd, GWL_STYLE) |  WS_SIZEBOX
-                                   : GetWindowLong(impl->hwnd, GWL_STYLE) & ~WS_SIZEBOX;
-    SetWindowLong(impl->hwnd, GWL_STYLE, winFlags);
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 
 #elif defined(HAVE_X11)
-
-// --------------------------------------------------------------------------------------------------------------------
-// X11 specific, safer way to grab focus
-
-PuglStatus puglX11GrabFocus(const PuglView* const view)
-{
-    const PuglInternals* const impl = view->impl;
-
-    XWindowAttributes wa;
-    std::memset(&wa, 0, sizeof(wa));
-
-    DISTRHO_SAFE_ASSERT_RETURN(XGetWindowAttributes(impl->display, impl->win, &wa), PUGL_UNKNOWN_ERROR);
-
-    if (wa.map_state == IsViewable)
-    {
-        XRaiseWindow(impl->display, impl->win);
-        XSetInputFocus(impl->display, impl->win, RevertToPointerRoot, CurrentTime);
-        XSync(impl->display, False);
-    }
-
-    return PUGL_SUCCESS;
-}
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, set dialog window type and pid hints
 
 void puglX11SetWindowTypeAndPID(const PuglView* const view, const bool isStandalone)
 {
-    const PuglInternals* const impl = view->impl;
+    const PuglInternals* const impl    = view->impl;
+    Display*             const display = view->world->impl->display;
 
     const pid_t pid = getpid();
-    const Atom _nwp = XInternAtom(impl->display, "_NET_WM_PID", False);
-    XChangeProperty(impl->display, impl->win, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
+    const Atom _nwp = XInternAtom(display, "_NET_WM_PID", False);
+    XChangeProperty(display, impl->win, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
 
-    const Atom _wt = XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE", False);
+    const Atom _wt = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
 
     Atom _wts[2];
     int numAtoms = 0;
 
     if (! isStandalone)
-        _wts[numAtoms++] = XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
+        _wts[numAtoms++] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 
-    _wts[numAtoms++] = XInternAtom(impl->display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+    _wts[numAtoms++] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
 
-    XChangeProperty(impl->display, impl->win, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, numAtoms);
+    XChangeProperty(display, impl->win, _wt, XA_ATOM, 32, PropModeReplace, (const uchar*)&_wts, numAtoms);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

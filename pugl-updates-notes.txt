@@ -1,0 +1,9 @@
+ 
+puglClearMinSize needed?
+clipboard todo
+
+puglSetWindowSize was used on first show, still needed?
+
+pugl namespace details finalized
+
+window starts centered for screen or parent finalized

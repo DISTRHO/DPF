@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -45,7 +45,7 @@ struct Window::PrivateData : IdleCallback {
     PuglView* view;
 
     /** Pugl view instance of the transient parent window. */
-    PuglView* const transientParentView;
+//     PuglView* const transientParentView;
 
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(void*)];
@@ -79,9 +79,6 @@ struct Window::PrivateData : IdleCallback {
 
     /** Whether to ignore idle callback requests, useful for temporary windows. */
     bool ignoreIdleCallbacks;
-
-    /** Whether to ignore pugl events (except create and destroy), used for puglGetClipboard. */
-    bool ignoreEvents;
 
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;

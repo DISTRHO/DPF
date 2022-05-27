@@ -19,7 +19,7 @@
 
 #include "../Base.hpp"
 
-/* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
+/* we will include all header files used in pugl.h in their C++ friendly form, then pugl stuff in custom namespace */
 #include <cstddef>
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <cstdbool>
@@ -29,75 +29,58 @@
 # include <stdint.h>
 #endif
 
+// hidden api
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
+#define PUGL_NO_INCLUDE_GL_H
 #define PUGL_NO_INCLUDE_GLU_H
+
+// do not set extern "C"
+// #define __cplusplus_backup __cplusplus
+// #undef __cplusplus
+
+// give warning if defined as something else
+// #define PUGL_BEGIN_DECLS
+// #define PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
-#else
-USE_NAMESPACE_DGL
-#endif
 
 #include "pugl-upstream/include/pugl/pugl.h"
 
-// --------------------------------------------------------------------------------------------------------------------
+// DGL specific, expose backend enter
+bool puglBackendEnter(PuglView* view);
 
-PUGL_BEGIN_DECLS
-
-// expose backend enter
-PUGL_API bool
-puglBackendEnter(PuglView* view);
-
-// expose backend leave
-PUGL_API void
-puglBackendLeave(PuglView* view);
-
-// clear minimum size to 0
-PUGL_API void
-puglClearMinSize(PuglView* view);
-
-// missing in pugl, directly returns transient parent
-PUGL_API PuglNativeView
-puglGetTransientParent(const PuglView* view);
-
-// missing in pugl, directly returns title char* pointer
-PUGL_API const char*
-puglGetWindowTitle(const PuglView* view);
-
-// get global scale factor
-PUGL_API double
-puglGetDesktopScaleFactor(const PuglView* view);
-
-// bring view window into the foreground, aka "raise" window
-PUGL_API void
-puglRaiseWindow(PuglView* view);
+// DGL specific, expose backend leave
+bool puglBackendLeave(PuglView* view);
 
 // DGL specific, assigns backend that matches current DGL build
-PUGL_API void
-puglSetMatchingBackendForCurrentBuild(PuglView* view);
+void puglSetMatchingBackendForCurrentBuild(PuglView* view);
 
-// Combine puglSetMinSize and puglSetAspectRatio
-PUGL_API PuglStatus
-puglSetGeometryConstraints(PuglView* view, uint width, uint height, bool aspect);
+// clear minimum size to 0
+void puglClearMinSize(PuglView* view);
 
-// set window offset without changing size
-PUGL_API PuglStatus
-puglSetWindowOffset(PuglView* view, int x, int y);
+// bring view window into the foreground, aka "raise" window
+void puglRaiseWindow(PuglView* view);
 
-// set window size with default size and without changing frame x/y position
-PUGL_API PuglStatus
-puglSetWindowSize(PuglView* view, uint width, uint height);
+// get scale factor from parent window if possible, fallback to puglGetScaleFactor
+double puglGetScaleFactorFromParent(const PuglView* view);
+
+// combined puglSetSizeHint using PUGL_MIN_SIZE, PUGL_MIN_ASPECT and PUGL_MAX_ASPECT
+PuglStatus puglSetGeometryConstraints(PuglView* view, uint width, uint height, bool aspect);
+
+// set view as resizable (or not) during runtime
+void puglSetResizable(PuglView* view, bool resizable);
+
+// set window size while also changing default
+PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height);
 
 // DGL specific, build-specific drawing prepare
-PUGL_API void
-puglOnDisplayPrepare(PuglView* view);
+void puglOnDisplayPrepare(PuglView* view);
 
 // DGL specific, build-specific fallback resize
-PUGL_API void
-puglFallbackOnResize(PuglView* view);
+void puglFallbackOnResize(PuglView* view);
 
 #if defined(DISTRHO_OS_MAC)
 
@@ -127,28 +110,18 @@ puglWin32RestoreWindow(PuglView* view);
 PUGL_API void
 puglWin32ShowCentered(PuglView* view);
 
-// win32 specific, set or unset WS_SIZEBOX style flag
-PUGL_API void
-puglWin32SetWindowResizable(PuglView* view, bool resizable);
-
 #elif defined(HAVE_X11)
 
-// X11 specific, safer way to grab focus
-PUGL_API PuglStatus
-puglX11GrabFocus(const PuglView* view);
-
 // X11 specific, set dialog window type and pid hints
-PUGL_API void
-puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
+void puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
 
 #endif
-
-PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
-#endif
+
+// #define __cplusplus __cplusplus_backup
+// #undef __cplusplus_backup
 
 #endif // DGL_PUGL_HPP_INCLUDED
