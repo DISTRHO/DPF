@@ -238,7 +238,22 @@ public:
     }
    #endif
 
+    std::vector<ClipboardDataOffer> getClipboardDataOfferTypes()
+    {
+        return Window::getClipboardDataOfferTypes();
+    }
+
 protected:
+    uint32_t onClipboardDataOffer() override
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, 0);
+
+        if (initializing)
+            return 0;
+
+        return ui->uiClipboardDataOffer();
+    }
+
     void onFocus(const bool focus, const DGL_NAMESPACE::CrossingMode mode) override
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);

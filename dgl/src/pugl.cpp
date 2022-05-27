@@ -476,8 +476,8 @@ void puglMacOSShowCentered(PuglView* const view)
         const NSRect ourFrame       = [view->impl->window frame];
         const NSRect transientFrame = [transientWindow frame];
 
-        const int x = transientFrame.origin.x + transientFrame.size.width / 2 - ourFrame.size.width / 2;
-        const int y = transientFrame.origin.y + transientFrame.size.height / 2  + ourFrame.size.height / 2;
+        const int x = transientFrame.origin.x + (transientFrame.size.width - ourFrame.size.width) / 2;
+        const int y = transientFrame.origin.y + (transientFrame.size.height - ourFrame.size.height) / 2;
 
         [view->impl->window setFrameTopLeftPoint:NSMakePoint(x, y)];
     }
@@ -543,8 +543,8 @@ void puglWin32ShowCentered(PuglView* const view)
         if (GetMonitorInfo(MonitorFromWindow(impl->hwnd, MONITOR_DEFAULTTOPRIMARY), &mInfo))
             SetWindowPos(impl->hwnd,
                          HWND_TOP,
-                         mInfo.rcWork.left + (mInfo.rcWork.right - view->frame.width) / 2,
-                         mInfo.rcWork.top + (mInfo.rcWork.bottom - view->frame.height) / 2,
+                         mInfo.rcWork.left + (mInfo.rcWork.right - mInfo.rcWork.left - view->frame.width) / 2,
+                         mInfo.rcWork.top + (mInfo.rcWork.bottom - mInfo.rcWork.top - view->frame.height) / 2,
                          0, 0, SWP_SHOWWINDOW|SWP_NOSIZE);
         else
             ShowWindow(impl->hwnd, SW_NORMAL);

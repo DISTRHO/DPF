@@ -80,6 +80,9 @@ struct Window::PrivateData : IdleCallback {
     /** Whether to ignore idle callback requests, useful for temporary windows. */
     bool ignoreIdleCallbacks;
 
+    /** The type index returned by the last onClipboardDataOffer call. */
+    uint32_t clipboardTypeIndex;
+
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 
@@ -182,6 +185,7 @@ struct Window::PrivateData : IdleCallback {
     void onPuglMouse(const Widget::MouseEvent& ev);
     void onPuglMotion(const Widget::MotionEvent& ev);
     void onPuglScroll(const Widget::ScrollEvent& ev);
+    uint32_t onClipboardDataOffer();
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);

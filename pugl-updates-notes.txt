@@ -1,9 +1,10 @@
  
 puglClearMinSize needed?
+puglSetWindowSize was used on first show, still needed?
+transientParentView needed? remove from WindowPrivateData
+
+update distrhoui.cpp get scale factor to match new parent request setup and pugl
+
 clipboard todo
 
-puglSetWindowSize was used on first show, still needed?
-
 pugl namespace details finalized
-
-window starts centered for screen or parent finalized

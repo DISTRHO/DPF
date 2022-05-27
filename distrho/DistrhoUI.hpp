@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -296,6 +296,23 @@ protected:
     virtual void uiScaleFactorChanged(double scaleFactor);
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   /**
+      Get the types available for the data in a clipboard.
+      Must only be called within the context of uiClipboardDataOffer.
+    */
+    std::vector<DGL_NAMESPACE::ClipboardDataOffer> getClipboardDataOfferTypes();
+
+   /**
+      Window clipboard data offer function, called when clipboard has data present, possibly with several datatypes.
+      While handling this event, the data types can be investigated with getClipboardDataOfferTypes() to decide whether to accept the offer.
+
+      Reimplement and return a non-zero id to accept the clipboard data offer for a particular type.
+      UIs must ignore any type they do not recognize.
+
+      The default implementation does nothing.
+    */
+    virtual uint32_t uiClipboardDataOffer();
+
    /**
       Windows focus function, called when the window gains or loses the keyboard focus.
       This function is for plugin UIs to be able to override Window::onFocus(bool, CrossingMode).

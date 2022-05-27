@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -22,6 +22,8 @@
 #ifndef DGL_FILE_BROWSER_DISABLED
 # include "../distrho/extra/FileBrowserDialog.hpp"
 #endif
+
+#include <vector>
 
 START_NAMESPACE_DGL
 
@@ -299,6 +301,16 @@ public:
     void setIgnoringKeyRepeat(bool ignore) noexcept;
 
    /**
+      Get the clipboard contents.
+
+      This gets the system clipboard contents,
+      which may have been set with setClipboard() or copied from another application.
+
+      returns the clipboard contents, or null.
+    */
+    const void* getClipboard(size_t& dataSize);
+
+   /**
       Set the clipboard contents.
 
       This sets the system clipboard contents,
@@ -308,16 +320,6 @@ public:
       The MIME type of the data "text/plain" is assumed if null is used.
     */
     bool setClipboard(const char* mimeType, const void* data, size_t dataSize);
-
-   /**
-      Get the clipboard contents.
-
-      This gets the system clipboard contents,
-      which may have been set with setClipboard() or copied from another application.
-
-      returns the clipboard contents, or null.
-    */
-    const void* getClipboard(const char*& mimeType, size_t& dataSize);
 
    /**
       Set the mouse cursor.
@@ -450,6 +452,23 @@ public:
     inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
 protected:
+   /**
+      Get the types available for the data in a clipboard.
+      Must only be called within the context of onClipboardDataOffer.
+    */
+    std::vector<ClipboardDataOffer> getClipboardDataOfferTypes();
+
+   /**
+      A function called when clipboard has data present, possibly with several datatypes.
+      While handling this event, the data types can be investigated with getClipboardDataOfferTypes() to decide whether to accept the offer.
+
+      Reimplement and return a non-zero id to accept the clipboard data offer for a particular type.
+      Applications must ignore any type they do not recognize.
+
+      The default implementation does nothing.
+    */
+    virtual uint32_t onClipboardDataOffer();
+
    /**
       A function called when the window is attempted to be closed.
       Returning true closes the window, which is the default behaviour.

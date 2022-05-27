@@ -319,15 +319,20 @@ void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
     puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
 }
 
+const void* Window::getClipboard(size_t& dataSize)
+{
+    if (pData->clipboardTypeIndex == 0)
+    {
+        dataSize = 0;
+        return nullptr;
+    }
+
+    return puglGetClipboard(pData->view, pData->clipboardTypeIndex, &dataSize);
+}
+
 bool Window::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
 {
     return puglSetClipboard(pData->view, mimeType, data, dataSize) == PUGL_SUCCESS;
-}
-
-const void* Window::getClipboard(const char*& mimeType, size_t& dataSize)
-{
-    const void* const clipboard = nullptr; // puglGetClipboard(pData->view, &mimeType, &dataSize);
-    return clipboard;
 }
 
 bool Window::setCursor(const MouseCursor cursor)
@@ -464,6 +469,29 @@ void Window::setGeometryConstraints(uint minimumWidth,
         setSize(static_cast<uint>(size.getWidth() * scaleFactor + 0.5),
                 static_cast<uint>(size.getHeight() * scaleFactor + 0.5));
     }
+}
+
+std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
+{
+    std::vector<ClipboardDataOffer> offerTypes;
+
+    if (const uint32_t numTypes = puglGetNumClipboardTypes(pData->view))
+    {
+        offerTypes.reserve(numTypes);
+
+        for (uint32_t i=0; i<numTypes; ++i)
+        {
+            const ClipboardDataOffer offer = { i + 1, puglGetClipboardType(pData->view, i) };
+            offerTypes.push_back(offer);
+        }
+    }
+
+    return offerTypes;
+}
+
+uint32_t Window::onClipboardDataOffer()
+{
+    return 0;
 }
 
 bool Window::onClose()

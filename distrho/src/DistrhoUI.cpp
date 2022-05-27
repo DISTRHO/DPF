@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -338,6 +338,16 @@ void UI::uiScaleFactorChanged(double)
 }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+std::vector<DGL_NAMESPACE::ClipboardDataOffer> UI::getClipboardDataOfferTypes()
+{
+    return uiData->window->getClipboardDataOfferTypes();
+}
+
+uint32_t UI::uiClipboardDataOffer()
+{
+    return 0;
+}
+
 void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }

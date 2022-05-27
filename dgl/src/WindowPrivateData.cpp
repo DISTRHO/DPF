@@ -109,6 +109,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      clipboardTypeIndex(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -135,6 +136,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      clipboardTypeIndex(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -163,6 +165,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      clipboardTypeIndex(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -192,6 +195,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
+      clipboardTypeIndex(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
@@ -753,6 +757,13 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
 #endif
 }
 
+uint32_t Window::PrivateData::onClipboardDataOffer()
+{
+    DGL_DBG("onClipboardDataOffer\n");
+
+    return clipboardTypeIndex = self->onClipboardDataOffer();
+}
+
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
 static int printEvent(const PuglEvent* event, const char* prefix, const bool verbose);
 #endif
@@ -933,6 +944,8 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Data offered from clipboard, a #PuglDataOfferEvent
     case PUGL_DATA_OFFER:
+        if (const uint32_t offerId = pData->onClipboardDataOffer())
+            puglAcceptOffer(view, &event->offer, offerId - 1);
         break;
 
     ///< Data available from clipboard, a #PuglDataEvent

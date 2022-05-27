@@ -35,19 +35,11 @@
 #define PUGL_NO_INCLUDE_GL_H
 #define PUGL_NO_INCLUDE_GLU_H
 
-// do not set extern "C"
-// #define __cplusplus_backup __cplusplus
-// #undef __cplusplus
-
-// give warning if defined as something else
-// #define PUGL_BEGIN_DECLS
-// #define PUGL_END_DECLS
-
-// --------------------------------------------------------------------------------------------------------------------
-
 START_NAMESPACE_DGL
 
 #include "pugl-upstream/include/pugl/pugl.h"
+
+// --------------------------------------------------------------------------------------------------------------------
 
 // DGL specific, expose backend enter
 bool puglBackendEnter(PuglView* view);
@@ -85,30 +77,24 @@ void puglFallbackOnResize(PuglView* view);
 #if defined(DISTRHO_OS_MAC)
 
 // macOS specific, allow standalone window to gain focus
-PUGL_API void
-puglMacOSActivateApp();
+void puglMacOSActivateApp();
 
 // macOS specific, add another view's window as child
-PUGL_API PuglStatus
-puglMacOSAddChildWindow(PuglView* view, PuglView* child);
+PuglStatus puglMacOSAddChildWindow(PuglView* view, PuglView* child);
 
 // macOS specific, remove another view's window as child
-PUGL_API PuglStatus
-puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
+PuglStatus puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
 
 // macOS specific, center view based on parent coordinates (if there is one)
-PUGL_API void
-puglMacOSShowCentered(PuglView* view);
+void puglMacOSShowCentered(PuglView* view);
 
 #elif defined(DISTRHO_OS_WINDOWS)
 
 // win32 specific, call ShowWindow with SW_RESTORE
-PUGL_API void
-puglWin32RestoreWindow(PuglView* view);
+void puglWin32RestoreWindow(PuglView* view);
 
 // win32 specific, center view based on parent coordinates (if there is one)
-PUGL_API void
-puglWin32ShowCentered(PuglView* view);
+void puglWin32ShowCentered(PuglView* view);
 
 #elif defined(HAVE_X11)
 
@@ -120,8 +106,5 @@ void puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-// #define __cplusplus __cplusplus_backup
-// #undef __cplusplus_backup
 
 #endif // DGL_PUGL_HPP_INCLUDED
