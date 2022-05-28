@@ -485,6 +485,15 @@ std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
 
 uint32_t Window::onClipboardDataOffer()
 {
+    std::vector<ClipboardDataOffer> offers(getClipboardDataOfferTypes());
+
+    for (std::vector<ClipboardDataOffer>::iterator it=offers.begin(), end=offers.end(); it != end;++it)
+    {
+        const ClipboardDataOffer offer = *it;
+        if (std::strcmp(offer.type, "text/plain") == 0)
+            return offer.id;
+    }
+
     return 0;
 }
 

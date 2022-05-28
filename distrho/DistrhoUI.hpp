@@ -309,7 +309,7 @@ protected:
       Reimplement and return a non-zero id to accept the clipboard data offer for a particular type.
       UIs must ignore any type they do not recognize.
 
-      The default implementation does nothing.
+      The default implementation accepts the "text/plain" mimetype.
     */
     virtual uint32_t uiClipboardDataOffer();
 

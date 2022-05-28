@@ -306,7 +306,10 @@ public:
       This gets the system clipboard contents,
       which may have been set with setClipboard() or copied from another application.
 
-      returns the clipboard contents, or null.
+      Returns the clipboard contents, or null.
+
+      @note By default only "text/plain" mimetype is supported and returned.
+            Override onClipboardDataOffer for supporting other types.
     */
     const void* getClipboard(size_t& dataSize);
 
@@ -465,7 +468,7 @@ protected:
       Reimplement and return a non-zero id to accept the clipboard data offer for a particular type.
       Applications must ignore any type they do not recognize.
 
-      The default implementation does nothing.
+      The default implementation accepts the "text/plain" mimetype.
     */
     virtual uint32_t onClipboardDataOffer();
 
