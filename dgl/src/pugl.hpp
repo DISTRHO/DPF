@@ -35,7 +35,9 @@
 #define PUGL_NO_INCLUDE_GL_H
 #define PUGL_NO_INCLUDE_GLU_H
 
+#ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
+#endif
 
 #include "pugl-upstream/include/pugl/pugl.h"
 
@@ -105,6 +107,8 @@ void puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifndef DISTRHO_OS_MAC
 END_NAMESPACE_DGL
+#endif
 
 #endif // DGL_PUGL_HPP_INCLUDED

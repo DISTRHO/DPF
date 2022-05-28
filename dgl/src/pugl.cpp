@@ -20,7 +20,7 @@
 // include base headers
 
 #ifdef DGL_CAIRO
-# include <cairo/cairo.h>
+# include <cairo.h>
 #endif
 #ifdef DGL_OPENGL
 # include "../OpenGL-include.hpp"
@@ -42,7 +42,6 @@
 # include <dlfcn.h>
 # include <mach/mach_time.h>
 # ifdef DGL_CAIRO
-#  include <cairo.h>
 #  include <cairo-quartz.h>
 # endif
 # ifdef DGL_OPENGL
@@ -50,7 +49,6 @@
 # endif
 # ifdef DGL_VULKAN
 #  import <QuartzCore/CAMetalLayer.h>
-#  include <vulkan/vulkan_core.h>
 #  include <vulkan/vulkan_macos.h>
 # endif
 #elif defined(DISTRHO_OS_WINDOWS)
@@ -59,7 +57,6 @@
 # include <windows.h>
 # include <windowsx.h>
 # ifdef DGL_CAIRO
-#  include <cairo.h>
 #  include <cairo-win32.h>
 # endif
 # ifdef DGL_OPENGL
@@ -113,8 +110,6 @@
 
 #ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
-#else
-USE_NAMESPACE_DGL
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -237,7 +232,7 @@ double puglGetScaleFactorFromParent(const PuglView* const view)
     const PuglNativeView parent = view->parent ? view->parent : view->transientParent ? view->transientParent : 0;
 #if defined(DISTRHO_OS_MAC)
     NSWindow* const window = parent != 0 ? [(NSView*)parent window]
-                                         : view->impl->window ? view->impl->window : [view->impl->wrapperView window]);
+                                         : view->impl->window ? view->impl->window : [view->impl->wrapperView window];
     NSScreen* const screen = window != nullptr ? [window screen] : [NSScreen mainScreen];
     return [screen backingScaleFactor];
 #elif defined(DISTRHO_OS_WINDOWS)
