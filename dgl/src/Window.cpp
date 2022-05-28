@@ -465,6 +465,11 @@ void Window::setGeometryConstraints(uint minimumWidth,
     }
 }
 
+void Window::setTransientParent(const uintptr_t transientParentWindowHandle)
+{
+    puglSetTransientParent(pData->view, transientParentWindowHandle);
+}
+
 std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
 {
     std::vector<ClipboardDataOffer> offerTypes;
@@ -518,13 +523,6 @@ void Window::onScaleFactorChanged(double)
 #ifndef DGL_FILE_BROWSER_DISABLED
 void Window::onFileSelected(const char*)
 {
-}
-#endif
-
-#if 0
-void Window::setTransientWinId(const uintptr_t winId)
-{
-    puglSetTransientFor(pData->view, winId);
 }
 #endif
 

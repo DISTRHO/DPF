@@ -442,6 +442,14 @@ public:
                                 bool automaticallyScale = false,
                                 bool resizeNowIfAutoScaling = true);
 
+   /**
+      Set the transient parent of the window.
+
+      Set this for transient children like dialogs, to have them properly associated with their parent window.
+      This should be not be called for embed windows, or after making the window visible.
+    */
+    void setTransientParent(uintptr_t transientParentWindowHandle);
+
    /** DEPRECATED Use isIgnoringKeyRepeat(). */
     DISTRHO_DEPRECATED_BY("isIgnoringKeyRepeat()")
     inline bool getIgnoringKeyRepeat() const noexcept { return isIgnoringKeyRepeat(); }
