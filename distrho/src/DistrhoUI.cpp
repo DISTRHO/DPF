@@ -345,11 +345,11 @@ std::vector<DGL_NAMESPACE::ClipboardDataOffer> UI::getClipboardDataOfferTypes()
 
 uint32_t UI::uiClipboardDataOffer()
 {
-    std::vector<ClipboardDataOffer> offers(uiData->window->getClipboardDataOfferTypes());
+    std::vector<DGL_NAMESPACE::ClipboardDataOffer> offers(uiData->window->getClipboardDataOfferTypes());
 
-    for (std::vector<ClipboardDataOffer>::iterator it=offers.begin(), end=offers.end(); it != end;++it)
+    for (std::vector<DGL_NAMESPACE::ClipboardDataOffer>::iterator it=offers.begin(), end=offers.end(); it != end;++it)
     {
-        const ClipboardDataOffer offer = *it;
+        const DGL_NAMESPACE::ClipboardDataOffer offer = *it;
         if (std::strcmp(offer.type, "text/plain") == 0)
             return offer.id;
     }
