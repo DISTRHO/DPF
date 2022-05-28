@@ -17,26 +17,27 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
-#if !defined(DGL_FILE_BROWSER_DISABLED) && !defined(DISTRHO_UI_FILE_BROWSER) && !defined(DISTRHO_OS_MAC)
+#if DISTRHO_UI_FILE_BROWSER && !defined(DISTRHO_OS_MAC)
 # define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
 # define DISTRHO_PUGL_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
-# define DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE Plugin
-# define x_fib_add_recent          DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_add_recent)
-# define x_fib_cfg_buttons         DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_cfg_buttons)
-# define x_fib_cfg_filter_callback DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_cfg_filter_callback)
-# define x_fib_close               DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_close)
-# define x_fib_configure           DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_configure)
-# define x_fib_filename            DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_filename)
-# define x_fib_free_recent         DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_free_recent)
-# define x_fib_handle_events       DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_handle_events)
-# define x_fib_load_recent         DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_load_recent)
-# define x_fib_recent_at           DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_recent_at)
-# define x_fib_recent_count        DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_recent_count)
-# define x_fib_recent_file         DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_recent_file)
-# define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_save_recent)
-# define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_show)
-# define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(Plugin, x_fib_status)
-# include "../extra/FileBrowserDialog.cpp"
+# define x_fib_add_recent          DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_add_recent)
+# define x_fib_cfg_buttons         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_cfg_buttons)
+# define x_fib_cfg_filter_callback DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_cfg_filter_callback)
+# define x_fib_close               DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_close)
+# define x_fib_configure           DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_configure)
+# define x_fib_filename            DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_filename)
+# define x_fib_free_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_free_recent)
+# define x_fib_handle_events       DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_handle_events)
+# define x_fib_load_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_load_recent)
+# define x_fib_recent_at           DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_at)
+# define x_fib_recent_count        DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_count)
+# define x_fib_recent_file         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_file)
+# define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_save_recent)
+# define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_show)
+# define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_status)
+# define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
+# include "../extra/FileBrowserDialog.hpp"
+# include "../extra/FileBrowserDialogImpl.cpp"
 #endif
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -278,16 +279,10 @@ void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 }
 #endif
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
 bool UI::openFileBrowser(const FileBrowserOptions& options)
 {
-# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    // TODO
-    return false;
-    (void)options;
-# else
-    return getWindow().openFileBrowser(options);
-# endif
+    return getWindow().openFileBrowser((DGL_NAMESPACE::FileBrowserOptions&)options);
 }
 #endif
 
@@ -368,7 +363,7 @@ void UI::uiReshape(uint, uint)
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
 void UI::uiFileBrowserSelected(const char*)
 {
 }

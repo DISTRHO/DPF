@@ -20,15 +20,20 @@
 #include "Geometry.hpp"
 
 #ifndef DGL_FILE_BROWSER_DISABLED
-# include "../distrho/extra/FileBrowserDialog.hpp"
+# include "FileBrowserDialog.hpp"
 #endif
 
 #include <vector>
 
+#ifdef DISTRHO_NAMESPACE
+START_NAMESPACE_DISTRHO
+class PluginWindow;
+END_NAMESPACE_DISTRHO
+#endif
+
 START_NAMESPACE_DGL
 
 class Application;
-class PluginWindow;
 class TopLevelWidget;
 
 // -----------------------------------------------------------------------
@@ -59,11 +64,6 @@ class DISTRHO_API Window
    struct PrivateData;
 
 public:
-#ifndef DGL_FILE_BROWSER_DISABLED
-    typedef DISTRHO_NAMESPACE::FileBrowserHandle FileBrowserHandle;
-    typedef DISTRHO_NAMESPACE::FileBrowserOptions FileBrowserOptions;
-#endif
-
    /**
       Window graphics context as a scoped struct.
       This class gives graphics context drawing time to a window's widgets.
@@ -400,7 +400,7 @@ public:
 
       This function does not block the event loop.
     */
-    bool openFileBrowser(const FileBrowserOptions& options = FileBrowserOptions());
+    bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options = FileBrowserOptions());
 #endif
 
    /**
@@ -521,8 +521,10 @@ protected:
 private:
     PrivateData* const pData;
     friend class Application;
-    friend class PluginWindow;
     friend class TopLevelWidget;
+   #ifdef DISTRHO_NAMESPACE
+    friend class DISTRHO_NAMESPACE::PluginWindow;
+   #endif
 
    /** @internal */
     explicit Window(Application& app,

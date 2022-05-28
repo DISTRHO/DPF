@@ -101,10 +101,12 @@
 #endif
 
 #ifndef DGL_FILE_BROWSER_DISABLED
+# define FILE_BROWSER_DIALOG_DGL_NAMESPACE
+# include "../FileBrowserDialog.hpp"
 # ifdef DISTRHO_OS_MAC
-#  import "../../distrho/extra/FileBrowserDialog.cpp"
+#  import "../../distrho/extra/FileBrowserDialogImpl.cpp"
 # else
-#  include "../../distrho/extra/FileBrowserDialog.cpp"
+#  include "../../distrho/extra/FileBrowserDialogImpl.cpp"
 # endif
 #endif
 

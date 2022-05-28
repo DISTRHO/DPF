@@ -26,7 +26,7 @@
 # import <Cocoa/Cocoa.h>
 # include <algorithm>
 # include <cmath>
-# ifndef DGL_FILE_BROWSER_DISABLED
+# if DISTRHO_UI_FILE_BROWSER
 #  import "extra/FileBrowserDialog.cpp"
 # endif
 

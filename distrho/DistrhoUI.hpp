@@ -48,15 +48,13 @@ typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
 typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #endif
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
 # include "extra/FileBrowserDialog.hpp"
 #endif
 
-START_NAMESPACE_DGL
-class PluginWindow;
-END_NAMESPACE_DGL
-
 START_NAMESPACE_DISTRHO
+
+class PluginWindow;
 
 /* ------------------------------------------------------------------------------------------------------------
  * DPF UI */
@@ -185,7 +183,7 @@ public:
     void sendNote(uint8_t channel, uint8_t note, uint8_t velocity);
 #endif
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
    /**
       Open a file browser dialog with this window as transient parent.@n
       A few options can be specified to setup the dialog.
@@ -198,7 +196,7 @@ public:
       @note This is exactly the same API as provided by the Window class,
             but redeclared here so that non-embed/DGL based UIs can still use file browser related functions.
     */
-    bool openFileBrowser(const FileBrowserOptions& options = FileBrowserOptions());
+    bool openFileBrowser(const DISTRHO_NAMESPACE::FileBrowserOptions& options = FileBrowserOptions());
 #endif
 
 #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
@@ -334,7 +332,7 @@ protected:
     virtual void uiReshape(uint width, uint height);
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
    /**
       Window file selected function, called when a path is selected by the user, as triggered by openFileBrowser().
       This function is for plugin UIs to be able to override Window::onFileSelected(const char*).
@@ -371,7 +369,7 @@ protected:
 private:
     struct PrivateData;
     PrivateData* const uiData;
-    friend class DGL_NAMESPACE::PluginWindow;
+    friend class PluginWindow;
     friend class UIExporter;
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /** @internal */

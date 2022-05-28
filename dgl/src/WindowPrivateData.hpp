@@ -44,9 +44,6 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl view instance. */
     PuglView* view;
 
-    /** Pugl view instance of the transient parent window. */
-//     PuglView* const transientParentView;
-
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(void*)];
 
@@ -91,7 +88,7 @@ struct Window::PrivateData : IdleCallback {
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     /** Handle for file browser dialog operations. */
-    FileBrowserHandle fileBrowserHandle;
+    DGL_NAMESPACE::FileBrowserHandle fileBrowserHandle;
 #endif
 
     /** Modal window setup. */
@@ -168,7 +165,7 @@ struct Window::PrivateData : IdleCallback {
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
-    bool openFileBrowser(const FileBrowserOptions& options);
+    bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options);
 #endif
 
     static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);

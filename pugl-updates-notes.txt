@@ -1,6 +1,5 @@
  
 puglClearMinSize needed?
 puglSetWindowSize was used on first show, still needed?
-transientParentView needed? remove from WindowPrivateData
 
 update distrhoui.cpp get scale factor to match new parent request setup and pugl

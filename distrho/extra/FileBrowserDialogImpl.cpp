@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,7 +14,13 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "FileBrowserDialog.hpp"
+#if !defined(DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED) && !defined(DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED)
+# error bad include
+#endif
+#if !defined(FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE) && !defined(FILE_BROWSER_DIALOG_DGL_NAMESPACE)
+# error bad usage
+#endif
+
 #include "ScopedPointer.hpp"
 #include "String.hpp"
 
@@ -40,7 +46,11 @@
 # include "sofd/libsofd.c"
 #endif
 
+#ifdef FILE_BROWSER_DIALOG_DGL_NAMESPACE
+START_NAMESPACE_DGL
+#else
 START_NAMESPACE_DISTRHO
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -257,12 +267,6 @@ struct FileBrowserData {
         selectedFile = nullptr;
     }
 };
-
-// --------------------------------------------------------------------------------------------------------------------
-
-#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
-namespace DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE {
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -629,8 +633,11 @@ const char* fileBrowserGetPath(const FileBrowserHandle handle)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#ifdef DISTRHO_FILE_BROWSER_DIALOG_EXTRA_NAMESPACE
-}
+#ifdef FILE_BROWSER_DIALOG_DGL_NAMESPACE
+END_NAMESPACE_DGL
+#else
+END_NAMESPACE_DISTRHO
 #endif
 
-END_NAMESPACE_DISTRHO
+#undef FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
+#undef FILE_BROWSER_DIALOG_DGL_NAMESPACE
