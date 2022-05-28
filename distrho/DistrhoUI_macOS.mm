@@ -27,7 +27,9 @@
 # include <algorithm>
 # include <cmath>
 # if DISTRHO_UI_FILE_BROWSER
-#  import "extra/FileBrowserDialog.cpp"
+#  define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
+#  include "extra/FileBrowserDialog.hpp"
+#  import "extra/FileBrowserDialogImpl.cpp"
 # endif
 
 // Declared in DistrhoUI.cpp but defined here because it uses Obj-C
