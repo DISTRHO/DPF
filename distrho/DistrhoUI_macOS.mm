@@ -27,10 +27,12 @@
 
 // A few utils declared in DistrhoUI.cpp but defined here because they uses Obj-C
 #if DISTRHO_UI_FILE_BROWSER
+# define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED
 # define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
-# include "extra/FileBrowserDialog.hpp"
+START_NAMESPACE_DISTRHO
+# include "extra/FileBrowserDialogImpl.hpp"
+END_NAMESPACE_DISTRHO
 # import "extra/FileBrowserDialogImpl.cpp"
-# undef FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
 #endif
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI

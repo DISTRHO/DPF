@@ -17,6 +17,12 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# include <cstdint>
+#else
+# include <stdint.h>
+#endif
+
 #if DISTRHO_UI_FILE_BROWSER && !defined(DISTRHO_OS_MAC)
 # define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
 # define DISTRHO_PUGL_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
@@ -35,8 +41,12 @@
 # define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_save_recent)
 # define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_show)
 # define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_status)
+# define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED
 # define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
-# include "../extra/FileBrowserDialog.hpp"
+START_NAMESPACE_DISTRHO
+# include "../extra/FileBrowserDialogImpl.hpp"
+END_NAMESPACE_DISTRHO
+# include "../extra/FileBrowserDialogImpl.hpp"
 # include "../extra/FileBrowserDialogImpl.cpp"
 #endif
 
