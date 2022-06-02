@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,18 +21,20 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-
+#if DISTRHO_UI_FILE_BROWSER || DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # import <Cocoa/Cocoa.h>
+#endif
+
+// A few utils declared in DistrhoUI.cpp but defined here because they uses Obj-C
+#if DISTRHO_UI_FILE_BROWSER
+# define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
+# include "extra/FileBrowserDialog.hpp"
+# import "extra/FileBrowserDialogImpl.cpp"
+#endif
+
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # include <algorithm>
 # include <cmath>
-# if DISTRHO_UI_FILE_BROWSER
-#  define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
-#  include "extra/FileBrowserDialog.hpp"
-#  import "extra/FileBrowserDialogImpl.cpp"
-# endif
-
-// Declared in DistrhoUI.cpp but defined here because it uses Obj-C
 START_NAMESPACE_DISTRHO
 double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 {
@@ -47,9 +49,7 @@ double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
     return [NSScreen mainScreen].backingScaleFactor;
 }
 END_NAMESPACE_DISTRHO
-
 #else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-
 # include "../dgl/Base.hpp"
 # define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, SEP, PUGL_NS, INTERFACE) DGL_NS ## SEP ## PUGL_NS ## SEP ## INTERFACE
 # define DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NS, PUGL_NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, _, PUGL_NS, INTERFACE)
@@ -61,5 +61,4 @@ END_NAMESPACE_DISTRHO
 # define PuglWindowDelegate DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WindowDelegate)
 # define PuglWrapperView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WrapperView)
 # import "src/pugl.mm"
-
 #endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
