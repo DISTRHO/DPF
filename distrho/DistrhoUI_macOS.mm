@@ -30,6 +30,7 @@
 # define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
 # include "extra/FileBrowserDialog.hpp"
 # import "extra/FileBrowserDialogImpl.cpp"
+# undef FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
 #endif
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
