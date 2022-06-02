@@ -60,7 +60,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK/Standalone setup
 
-ifeq ($(SKIP_RTAUDIO_FALLBACK),true)
+ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
 
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
@@ -70,12 +70,12 @@ JACK_LIBS  += -lole32 -lwinmm
 JACK_LIBS  += -ldsound
 # WASAPI
 # JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
-else ifeq ($(HAVE_ALSA),true)
-JACK_FLAGS += $(ALSA_FLAGS)
-JACK_LIBS  += $(ALSA_LIBS)
 else ifeq ($(HAVE_PULSEAUDIO),true)
 JACK_FLAGS += $(PULSEAUDIO_FLAGS)
 JACK_LIBS  += $(PULSEAUDIO_LIBS)
+else ifeq ($(HAVE_ALSA),true)
+JACK_FLAGS += $(ALSA_FLAGS)
+JACK_LIBS  += $(ALSA_LIBS)
 endif
 
 ifeq ($(HAVE_RTAUDIO),true)
