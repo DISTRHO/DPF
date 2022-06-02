@@ -38,6 +38,10 @@ ifeq ($(HAVE_ALSA),true)
 BASE_FLAGS += -DHAVE_ALSA
 endif
 
+ifeq ($(HAVE_JACK),true)
+BASE_FLAGS += -DHAVE_JACK
+endif
+
 ifeq ($(HAVE_LIBLO),true)
 BASE_FLAGS += -DHAVE_LIBLO
 endif
@@ -46,9 +50,17 @@ ifeq ($(HAVE_PULSEAUDIO),true)
 BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
-ifeq ($(STATIC_BUILD),true)
-JACK_LIBS  += $(shell $(PKG_CONFIG) --libs jack)
+# always needed
+ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifneq ($(STATIC_BUILD),true)
+LINK_FLAGS += -ldl
 endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# JACK/Standalone setup
+
+ifeq ($(SKIP_RTAUDIO_FALLBACK),true)
 
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
@@ -58,28 +70,20 @@ JACK_LIBS  += -lole32 -lwinmm
 JACK_LIBS  += -ldsound
 # WASAPI
 # JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
-else ifneq ($(HAIKU),true)
-ifeq ($(HAVE_ALSA),true)
+else ifeq ($(HAVE_ALSA),true)
 JACK_FLAGS += $(ALSA_FLAGS)
 JACK_LIBS  += $(ALSA_LIBS)
-endif
-ifeq ($(HAVE_PULSEAUDIO),true)
+else ifeq ($(HAVE_PULSEAUDIO),true)
 JACK_FLAGS += $(PULSEAUDIO_FLAGS)
 JACK_LIBS  += $(PULSEAUDIO_LIBS)
 endif
+
 ifeq ($(HAVE_RTAUDIO),true)
+ifneq ($(HAIKU),true)
 JACK_LIBS  += -lpthread
-endif # !HAIKU
+endif
 endif
 
-# backwards compat
-BASE_FLAGS += -DHAVE_JACK
-
-# always needed
-ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
-ifneq ($(STATIC_BUILD),true)
-LINK_FLAGS += -ldl
-endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

@@ -252,9 +252,6 @@ endif
 
 HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
 
-# Vulkan is not supported yet
-# HAVE_VULKAN = $(shell $(PKG_CONFIG) --exists vulkan && echo true)
-
 ifeq ($(MACOS_OR_WINDOWS),true)
 HAVE_OPENGL = true
 else
@@ -265,6 +262,9 @@ HAVE_XCURSOR = $(shell $(PKG_CONFIG) --exists xcursor && echo true)
 HAVE_XEXT    = $(shell $(PKG_CONFIG) --exists xext && echo true)
 HAVE_XRANDR  = $(shell $(PKG_CONFIG) --exists xrandr && echo true)
 endif
+
+# Vulkan is not supported yet
+# HAVE_VULKAN = $(shell $(PKG_CONFIG) --exists vulkan && echo true)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for optional libraries
@@ -278,7 +278,7 @@ ifeq ($(MACOS),true)
 HAVE_RTAUDIO    = true
 else ifeq ($(WINDOWS),true)
 HAVE_RTAUDIO    = true
-else ifneq ($(HAIKU),true)
+else
 HAVE_ALSA       = $(shell $(PKG_CONFIG) --exists alsa && echo true)
 HAVE_PULSEAUDIO = $(shell $(PKG_CONFIG) --exists libpulse-simple && echo true)
 ifeq ($(HAVE_ALSA),true)
@@ -289,7 +289,7 @@ endif
 endif
 endif
 
-# backwards compat
+# backwards compat, always available/enabled
 HAVE_JACK = true
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -416,6 +416,13 @@ endif
 ifeq ($(HAVE_PULSEAUDIO),true)
 PULSEAUDIO_FLAGS = $(shell $(PKG_CONFIG) --cflags libpulse-simple)
 PULSEAUDIO_LIBS  = $(shell $(PKG_CONFIG) --libs libpulse-simple)
+endif
+
+ifeq ($(HAVE_JACK),true)
+ifeq ($(STATIC_BUILD),true)
+JACK_FLAGS = $(shell $(PKG_CONFIG) --cflags jack)
+JACK_LIBS  = $(shell $(PKG_CONFIG) --libs jack)
+endif
 endif
 
 ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
