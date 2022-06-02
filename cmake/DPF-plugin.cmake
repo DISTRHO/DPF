@@ -468,9 +468,9 @@ function(dpf__add_dgl_cairo)
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
-    #target_sources(dgl-opengl PRIVATE
-    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl PRIVATE
+     "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl")
@@ -530,9 +530,9 @@ function(dpf__add_dgl_opengl)
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
-    #target_sources(dgl-opengl PRIVATE
-    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl")
