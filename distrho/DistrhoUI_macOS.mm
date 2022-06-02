@@ -14,9 +14,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef PUGL_NAMESPACE
-# error PUGL_NAMESPACE must be set when compiling this file
-#endif
+// A few utils declared in DistrhoUI.cpp but defined here because they use Obj-C
 
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
@@ -25,14 +23,13 @@
 # import <Cocoa/Cocoa.h>
 #endif
 
-// A few utils declared in DistrhoUI.cpp but defined here because they uses Obj-C
 #if DISTRHO_UI_FILE_BROWSER
 # define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED
 # define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
 START_NAMESPACE_DISTRHO
 # include "extra/FileBrowserDialogImpl.hpp"
 END_NAMESPACE_DISTRHO
-# import "extra/FileBrowserDialogImpl.cpp"
+# include "extra/FileBrowserDialogImpl.cpp"
 #endif
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -52,16 +49,4 @@ double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
     return [NSScreen mainScreen].backingScaleFactor;
 }
 END_NAMESPACE_DISTRHO
-#else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "../dgl/Base.hpp"
-# define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, SEP, PUGL_NS, INTERFACE) DGL_NS ## SEP ## PUGL_NS ## SEP ## INTERFACE
-# define DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NS, PUGL_NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(DGL_NS, _, PUGL_NS, INTERFACE)
-# define PuglCairoView      DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, CairoView)
-# define PuglOpenGLView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, OpenGLView)
-# define PuglStubView       DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, StubView)
-# define PuglVulkanView     DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, VulkanView)
-# define PuglWindow         DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, Window)
-# define PuglWindowDelegate DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WindowDelegate)
-# define PuglWrapperView    DISTRHO_MACOS_NAMESPACE_MACRO(DGL_NAMESPACE, PUGL_NAMESPACE, WrapperView)
-# import "src/pugl.mm"
-#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif

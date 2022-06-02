@@ -142,7 +142,7 @@ function(dpf_add_plugin NAME)
     if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
       target_link_libraries("${NAME}-ui" PRIVATE "dl")
     endif()
-    # add the files containing Objective-C classes, recompiled under namespace
+    # add the files containing Objective-C classes
     dpf__add_plugin_specific_ui_sources("${NAME}-ui")
   else()
     add_library("${NAME}-ui" INTERFACE)
@@ -468,9 +468,9 @@ function(dpf__add_dgl_cairo)
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
-    #target_sources(dgl-opengl PRIVATE
-    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl")
@@ -530,9 +530,9 @@ function(dpf__add_dgl_opengl)
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else() # Note: macOS pugl will be built as part of DistrhoUI_macOS.mm
-    #target_sources(dgl-opengl PRIVATE
-    #  "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl")
@@ -556,19 +556,12 @@ endfunction()
 # dpf__add_plugin_specific_ui_sources
 # ------------------------------------------------------------------------------
 #
-# Compile plugin-specific UI sources into the target designated by the given
-# name. There are some special considerations here:
-# - On most platforms, sources can be compiled only once, as part of DGL;
-# - On macOS, for any sources which define Objective-C interfaces, these must
-#   be recompiled for each plugin under a unique namespace. In this case, the
-#   name must be a plugin-specific identifier, and it will be used for computing
-#   the unique ID along with the project version.
+# Compile system specific files, for now it is just Objective-C code
+#
 function(dpf__add_plugin_specific_ui_sources NAME)
   if(APPLE)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_macOS.mm")
-    string(SHA256 _hash "${NAME}:${PROJECT_VERSION}")
-    target_compile_definitions("${NAME}" PUBLIC "PUGL_NAMESPACE=${_hash}")
   endif()
 endfunction()
 

@@ -48,7 +48,6 @@
 START_NAMESPACE_DISTRHO
 # include "../extra/FileBrowserDialogImpl.hpp"
 END_NAMESPACE_DISTRHO
-# include "../extra/FileBrowserDialogImpl.hpp"
 # include "../extra/FileBrowserDialogImpl.cpp"
 #endif
 
