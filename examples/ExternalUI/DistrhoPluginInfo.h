@@ -27,6 +27,7 @@
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
 #define DISTRHO_PLUGIN_NUM_INPUTS      1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS     1
+#define DISTRHO_UI_FILE_BROWSER        0
 
 enum Parameters {
     kParameterLevel = 0,
