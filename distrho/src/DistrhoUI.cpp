@@ -17,6 +17,8 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
+#include <cstddef>
+
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <cstdint>
 #else
