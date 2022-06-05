@@ -180,7 +180,7 @@ endif
 
 ifeq ($(WINDOWS),true)
 # Assume we want posix
-BASE_FLAGS += -posix -D__STDC_FORMAT_MACROS
+BASE_FLAGS += -posix -D__STDC_FORMAT_MACROS=1 -D__USE_MINGW_ANSI_STDIO=1
 # Needed for windows, see https://github.com/falkTX/Carla/issues/855
 BASE_FLAGS += -mstackrealign
 else
