@@ -70,7 +70,7 @@ static PuglView* puglNewViewWithTransientParent(PuglWorld* const world, PuglView
 
     if (PuglView* const view = puglNewView(world))
     {
-        puglSetTransientParent(view, puglGetNativeWindow(transientParentView));
+        puglSetTransientParent(view, puglGetNativeView(transientParentView));
         return view;
     }
 
@@ -477,7 +477,7 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
         options2.title = puglGetWindowTitle(view);
 
     fileBrowserHandle = fileBrowserCreate(isEmbed,
-                                          puglGetNativeWindow(view),
+                                          puglGetNativeView(view),
                                           autoScaling ? autoScaleFactor : scaleFactor,
                                           options2);
 

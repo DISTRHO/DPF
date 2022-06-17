@@ -362,7 +362,7 @@ const GraphicsContext& Window::getGraphicsContext() const noexcept
 
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
-    return puglGetNativeWindow(pData->view);
+    return puglGetNativeView(pData->view);
 }
 
 double Window::getScaleFactor() const noexcept

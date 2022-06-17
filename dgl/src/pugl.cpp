@@ -167,7 +167,8 @@ START_NAMESPACE_DGL
 # endif
 #endif
 
-#include "pugl-upstream/src/implementation.c"
+#include "pugl-upstream/src/common.c"
+#include "pugl-upstream/src/internal.c"
 
 // --------------------------------------------------------------------------------------------------------------------
 // DGL specific, expose backend enter
