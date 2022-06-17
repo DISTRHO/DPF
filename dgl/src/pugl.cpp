@@ -412,15 +412,6 @@ void puglFallbackOnResize(PuglView* const view)
 #if defined(DISTRHO_OS_MAC)
 
 // --------------------------------------------------------------------------------------------------------------------
-// macOS specific, allow standalone window to gain focus
-
-void puglMacOSActivateApp()
-{
-    [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-    [NSApp activateIgnoringOtherApps:YES];
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 // macOS specific, add another view's window as child
 
 PuglStatus
