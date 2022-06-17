@@ -1,6 +1,6 @@
 /*
  * Resize handle for DPF
- * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,6 +19,10 @@
 #include "TopLevelWidget.hpp"
 #include "Color.hpp"
 
+#if defined(DGL_OPENGL) && !defined(DGL_USE_OPENGL3)
+#include "OpenGL-include.hpp"
+#endif
+
 START_NAMESPACE_DGL
 
 /** Resize handle for DPF windows, will sit on bottom-right. */
@@ -29,7 +33,8 @@ public:
     explicit ResizeHandle(Window& window)
         : TopLevelWidget(window),
           handleSize(16),
-          resizing(false)
+          hasCursor(false),
+          isResizing(false)
     {
         resetArea();
     }
@@ -38,12 +43,14 @@ public:
     explicit ResizeHandle(TopLevelWidget* const tlw)
         : TopLevelWidget(tlw->getWindow()),
           handleSize(16),
-          resizing(false)
+          hasCursor(false),
+          isResizing(false)
     {
         resetArea();
     }
 
-    /** Set the handle size, minimum 16. */
+    /** Set the handle size, minimum 16.
+      * Scale factor is automatically applied on top of this size as needed */
     void setHandleSize(const uint size)
     {
         handleSize = std::max(16u, size);
@@ -53,8 +60,14 @@ public:
 protected:
     void onDisplay() override
     {
+        // TODO implement gl3 stuff in DPF
+#ifndef DGL_USE_OPENGL3
         const GraphicsContext& context(getGraphicsContext());
         const double lineWidth = 1.0 * getScaleFactor();
+
+       #if defined(DGL_OPENGL) && !defined(DGL_USE_OPENGL3)
+        glMatrixMode(GL_MODELVIEW);
+       #endif
 
         // draw white lines, 1px wide
         Color(1.0f, 1.0f, 1.0f).setFor(context);
@@ -71,6 +84,7 @@ protected:
         l1b.draw(context, lineWidth);
         l2b.draw(context, lineWidth);
         l3b.draw(context, lineWidth);
+#endif
     }
 
     bool onMouse(const MouseEvent& ev) override
@@ -80,15 +94,16 @@ protected:
 
         if (ev.press && area.contains(ev.pos))
         {
-            resizing = true;
+            isResizing = true;
             resizingSize = Size<double>(getWidth(), getHeight());
             lastResizePoint = ev.pos;
             return true;
         }
 
-        if (resizing && ! ev.press)
+        if (isResizing && ! ev.press)
         {
-            resizing = false;
+            isResizing = false;
+            recheckCursor(ev.pos);
             return true;
         }
 
@@ -97,8 +112,11 @@ protected:
 
     bool onMotion(const MotionEvent& ev) override
     {
-        if (! resizing)
+        if (! isResizing)
+        {
+            recheckCursor(ev.pos);
             return false;
+        }
 
         const Size<double> offset(ev.pos.getX() - lastResizePoint.getX(),
                                   ev.pos.getY() - lastResizePoint.getY());
@@ -106,9 +124,11 @@ protected:
         resizingSize += offset;
         lastResizePoint = ev.pos;
 
-        // TODO min width, min height
-        const uint minWidth = 16;
-        const uint minHeight = 16;
+        // TODO keepAspectRatio
+        bool keepAspectRatio;
+        const Size<uint> minSize(getWindow().getGeometryConstraints(keepAspectRatio));
+        const uint minWidth = minSize.getWidth();
+        const uint minHeight = minSize.getHeight();
 
         if (resizingSize.getWidth() < minWidth)
             resizingSize.setWidth(minWidth);
@@ -135,9 +155,20 @@ private:
     uint handleSize;
 
     // event handling state
-    bool resizing;
+    bool hasCursor, isResizing;
     Point<double> lastResizePoint;
     Size<double> resizingSize;
+
+    void recheckCursor(const Point<double>& pos)
+    {
+        const bool shouldHaveCursor = area.contains(pos);
+
+        if (shouldHaveCursor == hasCursor)
+            return;
+
+        hasCursor = shouldHaveCursor;
+        setCursor(shouldHaveCursor ? kMouseCursorDiagonal : kMouseCursorArrow);
+    }
 
     void resetArea()
     {
