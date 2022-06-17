@@ -108,22 +108,18 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 # endif
 
         DWORD dpiAware = 0;
+        DWORD scaleFactor = 100;
         if (GetProcessDpiAwareness && GetScaleFactorForMonitor
-            && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
+            && GetProcessDpiAwareness(nullptr, &dpiAware) == 0 && dpiAware != 0)
         {
             const HMONITOR hMon = parentWindowHandle != 0
                                 ? MonitorFromWindow((HWND)parentWindowHandle, MONITOR_DEFAULTTOPRIMARY)
                                 : MonitorFromPoint(POINT{0,0}, MONITOR_DEFAULTTOPRIMARY);
-
-            DWORD scaleFactor = 0;
-            if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
-            {
-                FreeLibrary(Shcore);
-                return static_cast<double>(scaleFactor) / 100.0;
-            }
+            GetScaleFactorForMonitor(hMon, &scaleFactor);
         }
 
         FreeLibrary(Shcore);
+        return static_cast<double>(scaleFactor) / 100.0;
     }
 #elif defined(HAVE_X11)
     ::Display* const display = XOpenDisplay(nullptr);
@@ -131,28 +127,31 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
     XrmInitialize();
 
+    double dpi = 96.0;
     if (char* const rms = XResourceManagerString(display))
     {
-        if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
+        if (const XrmDatabase db = XrmGetStringDatabase(rms))
         {
             char* type = nullptr;
-            XrmValue ret;
+            XrmValue value = {};
 
-            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
-                && ret.addr != nullptr
+            if (XrmGetResource(db, "Xft.dpi", "Xft.Dpi", &type, &value)
                 && type != nullptr
-                && std::strncmp("String", type, 6) == 0)
+                && std::strcmp(type, "String") == 0
+                && value.addr != nullptr)
             {
-                if (const double dpi = std::atof(ret.addr))
-                {
-                    XCloseDisplay(display);
-                    return dpi / 96;
-                }
+                char*        end    = nullptr;
+                const double xftDpi = std::strtod(value.addr, &end);
+                if (xftDpi > 0.0 && xftDpi < HUGE_VAL)
+                    dpi = xftDpi;
             }
+
+            XrmDestroyDatabase(db);
         }
     }
 
     XCloseDisplay(display);
+    return dpi / 96;
 #endif
 
     return 1.0;
