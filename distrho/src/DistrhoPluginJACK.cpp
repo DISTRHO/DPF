@@ -987,7 +987,15 @@ int main(int argc, char* argv[])
         if (const HMODULE user32 = LoadLibrary("user32.dll"))
         {
             typedef BOOL(WINAPI* SPDA)(void);
-            if (const SPDA SetProcessDPIAware = (SPDA)GetProcAddress(user32, "SetProcessDPIAware"))
+           #if defined(__GNUC__) && (__GNUC__ >= 9)
+           # pragma GCC diagnostic push
+           # pragma GCC diagnostic ignored "-Wcast-function-type"
+           #endif
+            const SPDA SetProcessDPIAware = (SPDA)GetProcAddress(user32, "SetProcessDPIAware");
+           #if defined(__GNUC__) && (__GNUC__ >= 9)
+           # pragma GCC diagnostic pop
+           #endif
+            if (SetProcessDPIAware)
                 SetProcessDPIAware();
             FreeLibrary(user32);
         }
