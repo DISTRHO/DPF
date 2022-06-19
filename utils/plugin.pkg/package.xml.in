@@ -2,7 +2,7 @@
 <installer-gui-script minSpecVersion="1">
     <title>@name@</title>
     <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true" />
-    <options customize="always" hostArchitectures="x86_64" require-scripts="false" rootVolumeOnly="true" />
+    <options customize="always" hostArchitectures="arm64,x86_64" require-scripts="false" rootVolumeOnly="true" />
     <pkg-ref id="studio.kx.distrho.@sname@" />
     <welcome file="@builddir@/welcome.txt" mime-type="text/plain" />
     <choice id="studio.kx.distrho.@sname@-lv2" title="LV2" description="Install LV2 plugins" visible="true">
