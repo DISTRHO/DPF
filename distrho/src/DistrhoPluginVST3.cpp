@@ -411,6 +411,8 @@ class PluginVst3
         {
             InputEventStorage& eventStorage(eventListStorage[numUsed]);
 
+            paramId -= kVst3InternalParameterMidiCC_start;
+
             const uint8_t cc = paramId % 130;
 
             switch (cc)
