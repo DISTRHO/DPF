@@ -33,7 +33,6 @@
 /* TODO items:
  * - mousewheel event
  * - key down/up events
- * - host-side resizing
  * - file request?
  */
 
@@ -263,6 +262,7 @@ public:
           fScaleFactor(scaleFactor),
           fIsResizingFromPlugin(false),
           fIsResizingFromHost(willResizeFromHost),
+          fNextPluginRect(),
           fUI(this, winId, sampleRate,
               editParameterCallback,
               setParameterCallback,
@@ -394,14 +394,21 @@ public:
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
     {
-        rect->left = rect->top = 0;
-        rect->right = fUI.getWidth();
-        rect->bottom = fUI.getHeight();
-       #ifdef DISTRHO_OS_MAC
-        const double scaleFactor = fUI.getScaleFactor();
-        rect->right /= scaleFactor;
-        rect->bottom /= scaleFactor;
-       #endif
+        if (fIsResizingFromPlugin)
+        {
+            *rect = fNextPluginRect;
+        }
+        else
+        {
+            rect->left = rect->top = 0;
+            rect->right = fUI.getWidth();
+            rect->bottom = fUI.getHeight();
+           #ifdef DISTRHO_OS_MAC
+            const double scaleFactor = fUI.getScaleFactor();
+            rect->right /= scaleFactor;
+            rect->bottom /= scaleFactor;
+           #endif
+        }
 
         d_stdout("getSize request returning %i %i", rect->right, rect->bottom);
         return V3_OK;
@@ -421,12 +428,15 @@ public:
 
         if (fIsResizingFromPlugin)
         {
-            d_stdout("host->plugin onSize request %i %i (IGNORED, plugin resize active)",
+            d_stdout("host->plugin onSize request %i %i (plugin resize was active, unsetting now)",
                      rect.right - rect.left, rect.bottom - rect.top);
-            return V3_OK;
+            fIsResizingFromPlugin = false;
+        }
+        else
+        {
+            d_stdout("host->plugin onSize request %i %i (OK)", rect.right - rect.left, rect.bottom - rect.top);
         }
 
-        d_stdout("host->plugin onSize request %i %i (OK)", rect.right - rect.left, rect.bottom - rect.top);
         fIsResizingFromHost = true;
         fUI.setWindowSizeForVST3(rect.right - rect.left, rect.bottom - rect.top);
         return V3_OK;
@@ -679,6 +689,7 @@ private:
     float fScaleFactor;
     bool fIsResizingFromPlugin;
     bool fIsResizingFromHost;
+    v3_view_rect fNextPluginRect; // for when plugin requests a new size
 
     // Plugin UI (after VST3 stuff so the UI can call into us during its constructor)
     UIExporter fUI;
@@ -791,6 +802,7 @@ private:
         rect.left = rect.top = 0;
         rect.right = width;
         rect.bottom = height;
+        fNextPluginRect = rect;
         v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
     }
 
@@ -1439,23 +1451,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
 
-        // FIXME check if all this is really needed
-        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-        UIExporter tmpUI(nullptr, 0, view->sampleRate,
-                         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                         view->instancePointer, lastScaleFactor);
-        rect->left = rect->top = 0;
-        view->nextWidth = tmpUI.getWidth();
-        view->nextHeight = tmpUI.getHeight();
-#ifdef DISTRHO_OS_MAC
-        const double scaleFactor = tmpUI.getScaleFactor();
-        view->nextWidth /= scaleFactor;
-        view->nextHeight /= scaleFactor;
-#endif
-        rect->right = view->nextWidth;
-        rect->bottom = view->nextHeight;
-        d_stdout("dpf_plugin_view::get_size => %p | next size %u %u with scale factor %f", self, view->nextWidth, view->nextHeight, lastScaleFactor);
-        return V3_OK;
+        return V3_NOT_INITIALIZED;
     }
 
     static v3_result V3_API on_size(void* const self, v3_view_rect* const rect)

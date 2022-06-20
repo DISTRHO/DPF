@@ -264,7 +264,7 @@ public:
 
         switch (value)
         {
-        // convert some VST special values to normal keys
+        // convert some VST2 special values to normal keys
         case  1: index = kKeyBackspace; break;
         case  2: index = '\t';          break;
         // 3 clear
