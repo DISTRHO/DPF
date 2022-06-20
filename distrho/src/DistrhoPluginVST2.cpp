@@ -1100,9 +1100,8 @@ public:
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)hostCallback(audioMasterGetTime, 0, kWantVstTimeFlags))
         {
-            fTimePosition.frame     =   vstTimeInfo->samplePos;
-            fTimePosition.playing   =  (vstTimeInfo->flags & kVstTransportPlaying);
-            fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
+            fTimePosition.frame   = vstTimeInfo->samplePos;
+            fTimePosition.playing = vstTimeInfo->flags & kVstTransportPlaying;
 
             // ticksPerBeat is not possible with VST2
             fTimePosition.bbt.ticksPerBeat = 1920.0;
@@ -1119,6 +1118,7 @@ public:
                 const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigNumerator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
+                fTimePosition.bbt.valid       = true;
                 fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
                 fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
                 fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
@@ -1134,6 +1134,7 @@ public:
             }
             else
             {
+                fTimePosition.bbt.valid       = false;
                 fTimePosition.bbt.bar         = 1;
                 fTimePosition.bbt.beat        = 1;
                 fTimePosition.bbt.tick        = 0.0;
