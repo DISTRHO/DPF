@@ -42,7 +42,6 @@
  * - have parameter outputs host-provided UI working in at least 1 host
  * - parameter groups via unit ids
  * - test parameter changes from DSP (aka requestParameterValueChange)
- * - test receiving midi CC
  * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
  * - fully implemented parameter stuff and verify
  * - float to int safe casting
@@ -51,7 +50,6 @@
  * - MIDI CC changes (need to store value to give to the host?)
  * - MIDI program changes
  * - MIDI sysex
- * - append MIDI input events in a sorted way
  * == BUSES
  * - bus arrangements
  * - optional audio buses
@@ -248,6 +246,288 @@ class PluginVst3
             numSidechain(0),
             numCV(0) {}
     } inputBuses, outputBuses;
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    /* handy class for storing and sorting events and MIDI CC parameters
+     * only stores events for which a MIDI conversion is possible.
+     */
+    struct InputEventsList {
+        enum Type {
+            NoteOn,
+            NoteOff,
+            SysexData,
+            PolyPressure,
+            CC_Normal,
+            CC_ChannelPressure,
+            CC_Pitchbend,
+            UI_MIDI // event from UI
+        };
+        struct InputEventStorage {
+            Type type;
+            union {
+                v3_event_note_on noteOn;
+                v3_event_note_off noteOff;
+                v3_event_data sysexData;
+                v3_event_poly_pressure polyPressure;
+                uint8_t midi[3];
+            };
+        } eventListStorage[kMaxMidiEvents];
+
+        struct InputEventTiming {
+            int32_t sampleOffset;
+            const InputEventStorage* storage;
+            InputEventTiming* next;
+        } eventList[kMaxMidiEvents];
+
+        uint16_t numUsed;
+        int32_t firstSampleOffset;
+        int32_t lastSampleOffset;
+        InputEventTiming* firstEvent;
+        InputEventTiming* lastEvent;
+
+        void init()
+        {
+            numUsed = 0;
+            firstSampleOffset = lastSampleOffset = 0;
+            firstEvent = nullptr;
+        }
+
+        uint32_t convert(MidiEvent midiEvents[kMaxMidiEvents]) const noexcept
+        {
+            uint32_t count = 0;
+
+            for (const InputEventTiming* event = firstEvent; event != nullptr; event = event->next)
+            {
+                MidiEvent& midiEvent(midiEvents[count++]);
+                midiEvent.frame = event->sampleOffset;
+
+                const InputEventStorage& eventStorage(*event->storage);
+
+                switch (eventStorage.type)
+                {
+                case NoteOn:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0x90 | (eventStorage.noteOn.channel & 0xf);
+                    midiEvent.data[1] = eventStorage.noteOn.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.noteOn.velocity * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                case NoteOff:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0x80 | (eventStorage.noteOff.channel & 0xf);
+                    midiEvent.data[1] = eventStorage.noteOff.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.noteOff.velocity * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                /* TODO
+                case SysexData:
+                    break;
+                */
+                case PolyPressure:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0xA0 | (eventStorage.polyPressure.channel & 0xf);
+                    midiEvent.data[1] = eventStorage.polyPressure.pitch;
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.polyPressure.pressure * 127)));
+                    midiEvent.data[3] = 0;
+                    break;
+                case CC_Normal:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0xB0 | (eventStorage.midi[0] & 0xf);
+                    midiEvent.data[1] = eventStorage.midi[1];
+                    midiEvent.data[2] = eventStorage.midi[2];
+                    break;
+                case CC_ChannelPressure:
+                    midiEvent.size = 2;
+                    midiEvent.data[0] = 0xD0 | (eventStorage.midi[0] & 0xf);
+                    midiEvent.data[1] = eventStorage.midi[1];
+                    midiEvent.data[2] = 0;
+                    break;
+                case CC_Pitchbend:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = 0xE0 | (eventStorage.midi[0] & 0xf);
+                    midiEvent.data[1] = eventStorage.midi[1];
+                    midiEvent.data[2] = eventStorage.midi[2];
+                    break;
+                case UI_MIDI:
+                    midiEvent.size = 3;
+                    midiEvent.data[0] = eventStorage.midi[0];
+                    midiEvent.data[1] = eventStorage.midi[1];
+                    midiEvent.data[2] = eventStorage.midi[2];
+                    break;
+                default:
+                    midiEvent.size = 0;
+                    break;
+                }
+            }
+
+            return count;
+        }
+
+        bool appendEvent(const v3_event& event) noexcept
+        {
+            // only save events that can be converted directly into MIDI
+            switch (event.type)
+            {
+            case V3_EVENT_NOTE_ON:
+            case V3_EVENT_NOTE_OFF:
+            // case V3_EVENT_DATA:
+            case V3_EVENT_POLY_PRESSURE:
+                break;
+            default:
+                return false;
+            }
+
+            InputEventStorage& eventStorage(eventListStorage[numUsed]);
+
+            switch (event.type)
+            {
+            case V3_EVENT_NOTE_ON:
+                eventStorage.type = NoteOn;
+                eventStorage.noteOn = event.note_on;
+                break;
+            case V3_EVENT_NOTE_OFF:
+                eventStorage.type = NoteOff;
+                eventStorage.noteOff = event.note_off;
+                break;
+            case V3_EVENT_DATA:
+                eventStorage.type = SysexData;
+                eventStorage.sysexData = event.data;
+                break;
+            case V3_EVENT_POLY_PRESSURE:
+                eventStorage.type = PolyPressure;
+                eventStorage.polyPressure = event.poly_pressure;
+                break;
+            default:
+                return false;
+            }
+
+            eventList[numUsed].sampleOffset = event.sample_offset;
+            eventList[numUsed].storage = &eventStorage;
+
+            return placeSorted(event.sample_offset);
+        }
+
+        bool appendCC(const int32_t sampleOffset, v3_param_id paramId, const double value) noexcept
+        {
+            InputEventStorage& eventStorage(eventListStorage[numUsed]);
+
+            const uint8_t cc = paramId % 130;
+
+            switch (cc)
+            {
+            case 128:
+                eventStorage.type = CC_ChannelPressure;
+                eventStorage.midi[1] = std::max(0, std::min(127, (int)(value * 127)));
+                eventStorage.midi[2] = 0;
+                break;
+            case 129:
+                eventStorage.type = CC_Pitchbend;
+                eventStorage.midi[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
+                eventStorage.midi[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
+                break;
+            default:
+                eventStorage.type = CC_Normal;
+                eventStorage.midi[1] = cc;
+                eventStorage.midi[2] = std::max(0, std::min(127, (int)(value * 127)));
+                break;
+            }
+
+            eventStorage.midi[0] = paramId / 130;
+
+            eventList[numUsed].sampleOffset = sampleOffset;
+            eventList[numUsed].storage = &eventStorage;
+
+            return placeSorted(sampleOffset);
+        }
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        // NOTE always runs first
+        bool appendFromUI(const uint8_t midiData[3])
+        {
+            InputEventStorage& eventStorage(eventListStorage[numUsed]);
+
+            eventStorage.type = UI_MIDI;
+            std::memcpy(eventStorage.midi, midiData, sizeof(uint8_t)*3);
+
+            InputEventTiming* const event = &eventList[numUsed];
+
+            event->sampleOffset = 0;
+            event->storage = &eventStorage;
+            event->next = nullptr;
+
+            if (numUsed == 0)
+            {
+                firstEvent = lastEvent = event;
+            }
+            else
+            {
+                lastEvent->next = event;
+                lastEvent = event;
+            }
+
+            return ++numUsed == kMaxMidiEvents;
+        }
+       #endif
+
+    private:
+        bool placeSorted(const int32_t sampleOffset) noexcept
+        {
+            InputEventTiming* const event = &eventList[numUsed];
+
+            // initialize
+            if (numUsed == 0)
+            {
+                firstSampleOffset = lastSampleOffset = sampleOffset;
+                firstEvent = lastEvent = event;
+                event->next = nullptr;
+            }
+            // push to the back
+            else if (sampleOffset >= lastSampleOffset)
+            {
+                lastSampleOffset = sampleOffset;
+                lastEvent->next = event;
+                lastEvent = event;
+                event->next = nullptr;
+            }
+            // push to the front
+            else if (sampleOffset < firstSampleOffset)
+            {
+                firstSampleOffset = sampleOffset;
+                event->next = firstEvent;
+                firstEvent = event;
+            }
+            // find place in between events
+            else
+            {
+                // keep reference out of the loop so we can check validity afterwards
+                InputEventTiming* event2 = firstEvent;
+
+                // iterate all events
+                for (; event2 != nullptr; event2 = event2->next)
+                {
+                    // if offset is higher than iterated event, stop and insert in-between
+                    if (sampleOffset > event2->sampleOffset)
+                        break;
+
+                    // if offset matches, find the last event with the same offset so we can push after it
+                    if (sampleOffset == event2->sampleOffset)
+                    {
+                        event2 = event2->next;
+                        for (; event2 != nullptr && sampleOffset == event2->sampleOffset; event2 = event2->next) {}
+                        break;
+                    }
+                }
+
+                DISTRHO_SAFE_ASSERT_RETURN(event2 != nullptr, true);
+
+                event->next = event2->next;
+                event2->next = event;
+            }
+
+            return ++numUsed == kMaxMidiEvents;
+        }
+    } inputEventList;
+   #endif // DISTRHO_PLUGIN_WANT_MIDI_INPUT
 
 public:
     PluginVst3(v3_host_application** const host)
@@ -1285,7 +1565,8 @@ public:
        #endif
 
       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        uint32_t midiEventCount = 0;
+        bool canAppendMoreEvents = true;
+        inputEventList.init();
 
        #if DISTRHO_PLUGIN_HAS_UI
         while (fNotesRingBuffer.isDataAvailableForReading())
@@ -1294,121 +1575,34 @@ public:
             if (! fNotesRingBuffer.readCustomData(midiData, 3))
                 break;
 
-            MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
-            midiEvent.frame = 0;
-            midiEvent.size  = 3;
-            std::memcpy(midiEvent.data, midiData, 3);
-
-            if (midiEventCount == kMaxMidiEvents)
+            if (inputEventList.appendFromUI(midiData))
+            {
+                canAppendMoreEvents = false;
                 break;
+            }
         }
        #endif
 
-        if (v3_event_list** const eventptr = data->input_events)
+        if (canAppendMoreEvents)
         {
-            v3_event event;
-            for (uint32_t i = 0, count = v3_cpp_obj(eventptr)->get_event_count(eventptr); i < count; ++i)
+            if (v3_event_list** const eventptr = data->input_events)
             {
-                if (v3_cpp_obj(eventptr)->get_event(eventptr, i, &event) != V3_OK)
-                    break;
-
-                // check if event can be encoded as MIDI
-                switch (event.type)
+                v3_event event;
+                for (uint32_t i = 0, count = v3_cpp_obj(eventptr)->get_event_count(eventptr); i < count; ++i)
                 {
-                case V3_EVENT_NOTE_ON:
-                case V3_EVENT_NOTE_OFF:
-                // case V3_EVENT_DATA:
-                case V3_EVENT_POLY_PRESSURE:
-                    break;
-                // case V3_EVENT_NOTE_EXP_VALUE:
-                // case V3_EVENT_NOTE_EXP_TEXT:
-                // case V3_EVENT_CHORD:
-                // case V3_EVENT_SCALE:
-                // case V3_EVENT_LEGACY_MIDI_CC_OUT:
-                default:
-                    continue;
+                    if (v3_cpp_obj(eventptr)->get_event(eventptr, i, &event) != V3_OK)
+                        break;
+
+                    if (inputEventList.appendEvent(event))
+                    {
+                        canAppendMoreEvents = false;
+                        break;
+                    }
                 }
-
-                MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
-                midiEvent.frame = event.sample_offset;
-
-                // encode event as MIDI
-                switch (event.type)
-                {
-                case V3_EVENT_NOTE_ON:
-                    midiEvent.size = 3;
-                    midiEvent.data[0] = 0x90 | (event.note_on.channel & 0xf);
-                    midiEvent.data[1] = event.note_on.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.note_on.velocity * 127)));
-                    midiEvent.data[3] = 0;
-                    break;
-                case V3_EVENT_NOTE_OFF:
-                    midiEvent.size = 3;
-                    midiEvent.data[0] = 0x80 | (event.note_off.channel & 0xf);
-                    midiEvent.data[1] = event.note_off.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.note_off.velocity * 127)));
-                    midiEvent.data[3] = 0;
-                    break;
-                case V3_EVENT_POLY_PRESSURE:
-                    midiEvent.size = 3;
-                    midiEvent.data[0] = 0xA0 | (event.poly_pressure.channel & 0xf);
-                    midiEvent.data[1] = event.poly_pressure.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(event.poly_pressure.pressure * 127)));
-                    midiEvent.data[3] = 0;
-                    break;
-                default:
-                    midiEvent.size = 0;
-                    break;
-                }
-
-                if (midiEventCount == kMaxMidiEvents)
-                    break;
             }
         }
-
-        // TODO append parameter MIDI events in a sorted way
-        /*
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
-        if (rindex == 0)
-            continue;
-        --rindex;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-          MidiEvent& midiEvent(fMidiEvents[midiEventCount++]);
-          midiEvent.frame = offset;
-          midiEvent.size = 3;
-          midiEvent.data[0] = (rindex / 130) & 0xf;
-
-          switch (rindex)
-          {
-          case 128: // channel pressure
-              midiEvent.data[0] |= 0xD0;
-              midiEvent.data[1] = std::max(0, std::min(127, (int)(value * 127)));
-              midiEvent.data[2] = 0;
-              midiEvent.data[3] = 0;
-              break;
-          case 129: // pitchbend
-              midiEvent.data[0] |= 0xE0;
-              midiEvent.data[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
-              midiEvent.data[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
-              midiEvent.data[3] = 0;
-              break;
-          default:
-              midiEvent.data[0] |= 0xB0;
-              midiEvent.data[1] = rindex % 130;
-              midiEvent.data[2] = std::max(0, std::min(127, (int)(value * 127)));
-              midiEvent.data[3] = 0;
-              break;
-          }
-
-          if (midiEventCount == kMaxMidiEvents)
-              break;
-      }
-#endif
-      */
       #endif
 
-        // if there are any parameter changes at frame 0, set them here
         if (v3_param_changes** const inparamsptr = data->input_params)
         {
             int32_t offset;
@@ -1424,12 +1618,32 @@ public:
 
                #if DPF_VST3_HAS_INTERNAL_PARAMETERS
                 if (rindex < kVst3InternalParameterCount)
+                {
+                   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                    // if there are any MIDI CC events as parameter changes, handle them here
+                    if (canAppendMoreEvents && rindex >= kVst3InternalParameterMidiCC_start && rindex <= kVst3InternalParameterMidiCC_end)
+                    {
+                        for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
+                        {
+                            if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
+                                break;
+
+                            if (inputEventList.appendCC(offset, rindex, value))
+                            {
+                                canAppendMoreEvents = false;
+                                break;
+                            }
+                        }
+                    }
+                   #endif
                     continue;
+                }
                #endif
 
                 if (v3_cpp_obj(queue)->get_point_count(queue) <= 0)
                     continue;
 
+                // if there are any parameter changes at frame 0, handle them here
                 if (v3_cpp_obj(queue)->get_point(queue, 0, &offset, &value) != V3_OK)
                     break;
 
@@ -1442,6 +1656,7 @@ public:
         }
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        const uint32_t midiEventCount = inputEventList.convert(fMidiEvents);
         fPlugin.run(inputs, outputs, data->nframes, fMidiEvents, midiEventCount);
        #else
         fPlugin.run(inputs, outputs, data->nframes);
