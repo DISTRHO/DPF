@@ -21,7 +21,6 @@ dgl:
 
 examples: dgl
 	$(MAKE) all -C examples/CVPort
-	$(MAKE) all -C examples/EmbedExternalUI
 	$(MAKE) all -C examples/FileHandling
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
@@ -33,6 +32,9 @@ examples: dgl
 	$(MAKE) all -C examples/States
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
+endif
+ifeq ($(HAVE_DGL),true)
+	$(MAKE) all -C examples/EmbedExternalUI
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
