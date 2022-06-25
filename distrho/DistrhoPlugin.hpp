@@ -750,6 +750,8 @@ struct TimePosition {
 
    /**
       Current host transport position in frames.
+      @note This value is not always monotonic,
+            with some plugin hosts assigning it based on a source that can accumulate rounding errors.
     */
     uint64_t frame;
 
