@@ -306,7 +306,6 @@ public:
         }
         else if (fNeedsResizeFromPlugin)
         {
-            fNeedsResizeFromPlugin = false;
             setSize(fUI.getWidth(), fUI.getHeight());
         }
 
@@ -669,6 +668,12 @@ public:
             requestMorePluginData();
         }
 
+        if (fNeedsResizeFromPlugin)
+        {
+            fNeedsResizeFromPlugin = false;
+            d_stdout("first resize forced behaviour is now stopped");
+        }
+
         if (fIsResizingFromHost)
         {
             fIsResizingFromHost = false;
@@ -798,11 +803,20 @@ private:
 
         if (fIsResizingFromHost)
         {
-            d_stdout("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
-            return;
+            if (fNeedsResizeFromPlugin)
+            {
+                d_stdout("plugin->host setSize %u %u (FORCED, exception for first resize)", width, height);
+            }
+            else
+            {
+                d_stdout("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
+                return;
+            }
         }
-
-        d_stdout("plugin->host setSize %u %u (OK)", width, height);
+        else
+        {
+            d_stdout("plugin->host setSize %u %u (OK)", width, height);
+        }
 
         fIsResizingFromPlugin = true;
 
