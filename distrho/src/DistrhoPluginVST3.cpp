@@ -3457,7 +3457,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
     static v3_result V3_API get_parameter_value_for_string(void* self, v3_param_id index, int16_t* input, double* output)
     {
-        d_stdout("dpf_edit_controller::get_parameter_value_for_string => %p %u %p %p", self, index, input, output);
+        d_debug("dpf_edit_controller::get_parameter_value_for_string => %p %u %p %p", self, index, input, output);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
@@ -3468,7 +3468,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
     static double V3_API normalised_parameter_to_plain(void* self, v3_param_id index, double normalised)
     {
-        d_stdout("dpf_edit_controller::normalised_parameter_to_plain => %p %u %f", self, index, normalised);
+        d_debug("dpf_edit_controller::normalised_parameter_to_plain => %p %u %f", self, index, normalised);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
@@ -3479,7 +3479,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
     static double V3_API plain_parameter_to_normalised(void* self, v3_param_id index, double plain)
     {
-        d_stdout("dpf_edit_controller::plain_parameter_to_normalised => %p %u %f", self, index, plain);
+        d_debug("dpf_edit_controller::plain_parameter_to_normalised => %p %u %f", self, index, plain);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
