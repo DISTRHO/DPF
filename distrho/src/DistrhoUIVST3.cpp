@@ -1541,20 +1541,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->checkSizeConstraint(rect);
 
-        // FIXME check if all this is really needed
-        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
-        UIExporter tmpUI(nullptr, 0, view->sampleRate,
-                         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-                         view->instancePointer, lastScaleFactor);
-        uint minimumWidth, minimumHeight;
-        bool keepAspectRatio;
-        tmpUI.getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-#ifdef DISTRHO_OS_MAC
-        const double scaleFactor = tmpUI.getScaleFactor();
-        minimumWidth /= scaleFactor;
-        minimumHeight /= scaleFactor;
-#endif
-        applyGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio, rect);
         return V3_NOT_INITIALIZED;
     }
 };
