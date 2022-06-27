@@ -1386,33 +1386,38 @@ struct VstObject {
 #define vstObjectPtr (VstObject*)effect->object
 #define pluginPtr    (vstObjectPtr)->plugin
 
+static ScopedPointer<PluginExporter> sPlugin;
+
 static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t index, intptr_t value, void* ptr, float opt)
 {
     // first internal init
     const bool doInternalInit = (opcode == -1729 && index == 0xdead && value == 0xf00d);
 
-    if (doInternalInit)
+    if (doInternalInit || opcode == effOpen)
     {
-        // set valid but dummy values
-        d_nextBufferSize = 512;
-        d_nextSampleRate = 44100.0;
-        d_nextPluginIsDummy = true;
-        d_nextCanRequestParameterValueChanges = true;
-    }
+        if (sPlugin == nullptr)
+        {
+            // set valid but dummy values
+            d_nextBufferSize = 512;
+            d_nextSampleRate = 44100.0;
+            d_nextPluginIsDummy = true;
+            d_nextCanRequestParameterValueChanges = true;
 
-    // Create dummy plugin to get data from
-    static PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
+            // Create dummy plugin to get data from
+            sPlugin = new PluginExporter(nullptr, nullptr, nullptr, nullptr);
 
-    if (doInternalInit)
-    {
-        // unset
-        d_nextBufferSize = 0;
-        d_nextSampleRate = 0.0;
-        d_nextPluginIsDummy = false;
-        d_nextCanRequestParameterValueChanges = false;
+            // unset
+            d_nextBufferSize = 0;
+            d_nextSampleRate = 0.0;
+            d_nextPluginIsDummy = false;
+            d_nextCanRequestParameterValueChanges = false;
+        }
 
-        *(PluginExporter**)ptr = &plugin;
-        return 0;
+        if (doInternalInit)
+        {
+            *(PluginExporter**)ptr = sPlugin.get();
+            return 0;
+        }
     }
 
     // handle base opcodes
@@ -1462,33 +1467,34 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             delete obj;
 #endif
 
+            sPlugin = nullptr;
             return 1;
         }
         //delete effect;
         return 0;
 
     case effGetParamLabel:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterUnit(index), 8);
+            DISTRHO_NAMESPACE::strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
             return 1;
         }
         return 0;
 
     case effGetParamName:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            const String& shortName(plugin.getParameterShortName(index));
+            const String& shortName(sPlugin->getParameterShortName(index));
             if (shortName.isNotEmpty())
                 DISTRHO_NAMESPACE::strncpy((char*)ptr, shortName, 16);
             else
-                DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterName(index), 16);
+                DISTRHO_NAMESPACE::strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
             return 1;
         }
         return 0;
 
     case effGetParameterProperties:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
             if (VstParameterProperties* const properties = (VstParameterProperties*)ptr)
             {
@@ -1496,19 +1502,19 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
                 // full name
                 DISTRHO_NAMESPACE::strncpy(properties->label,
-                                           plugin.getParameterName(index),
+                                           sPlugin->getParameterName(index),
                                            sizeof(properties->label));
 
                 // short name
-                const String& shortName(plugin.getParameterShortName(index));
+                const String& shortName(sPlugin->getParameterShortName(index));
 
                 if (shortName.isNotEmpty())
                     DISTRHO_NAMESPACE::strncpy(properties->shortLabel,
-                                               plugin.getParameterShortName(index),
+                                               sPlugin->getParameterShortName(index),
                                                sizeof(properties->shortLabel));
 
                 // parameter hints
-                const uint32_t hints = plugin.getParameterHints(index);
+                const uint32_t hints = sPlugin->getParameterHints(index);
 
                 if (hints & kParameterIsOutput)
                     return 1;
@@ -1520,7 +1526,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
                 if (hints & kParameterIsInteger)
                 {
-                    const ParameterRanges& ranges(plugin.getParameterRanges(index));
+                    const ParameterRanges& ranges(sPlugin->getParameterRanges(index));
                     properties->flags |= kVstParameterUsesIntegerMinMax;
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
@@ -1532,14 +1538,14 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                 }
 
                 // parameter group (category in vst)
-                const uint32_t groupId = plugin.getParameterGroupId(index);
+                const uint32_t groupId = sPlugin->getParameterGroupId(index);
 
                 if (groupId != kPortGroupNone)
                 {
                     // we can't use groupId directly, so use the index array where this group is stored in
-                    for (uint32_t i=0, count=plugin.getPortGroupCount(); i < count; ++i)
+                    for (uint32_t i=0, count=sPlugin->getPortGroupCount(); i < count; ++i)
                     {
-                        const PortGroupWithId& portGroup(plugin.getPortGroupByIndex(i));
+                        const PortGroupWithId& portGroup(sPlugin->getPortGroupByIndex(i));
 
                         if (portGroup.groupId == groupId)
                         {
@@ -1553,8 +1559,8 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
                     if (properties->category != 0)
                     {
-                        for (uint32_t i=0, count=plugin.getParameterCount(); i < count; ++i)
-                            if (plugin.getParameterGroupId(i) == groupId)
+                        for (uint32_t i=0, count=sPlugin->getParameterCount(); i < count; ++i)
+                            if (sPlugin->getParameterGroupId(i) == groupId)
                                 ++properties->numParametersInCategory;
                     }
                 }
@@ -1574,7 +1580,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetEffectName:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getName(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getName(), 32);
             return 1;
         }
         return 0;
@@ -1582,7 +1588,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetVendorString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getMaker(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getMaker(), 32);
             return 1;
         }
         return 0;
@@ -1590,13 +1596,13 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetProductString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getLabel(), 32);
+            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getLabel(), 32);
             return 1;
         }
         return 0;
 
     case effGetVendorVersion:
-        return plugin.getVersion();
+        return sPlugin->getVersion();
 
     case effGetVstVersion:
         return kVstVersion;
