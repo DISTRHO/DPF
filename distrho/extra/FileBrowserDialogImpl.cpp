@@ -59,6 +59,18 @@ START_NAMESPACE_DISTRHO
 // static pointer used for signal null/none action taken
 static const char* const kSelectedFileCancelled = "__dpf_cancelled__";
 
+#ifdef HAVE_DBUS
+static constexpr bool isHexChar(const char c) noexcept
+{
+    return c >= '0' && c <= 'f' && (c < '9' || (c >= 'A' && c <= 'F') || c >= 'a');
+}
+
+static constexpr int toHexChar(const char c) noexcept
+{
+    return c >= '0' && c <= '9' ? c - '0' : (c >= 'A' && c <= 'F' ? c - 'A' : c - 'a') + 10;
+}
+#endif
+
 struct FileBrowserData {
     const char* selectedFile;
 
@@ -568,7 +580,44 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
                     DISTRHO_SAFE_ASSERT_BREAK(value != nullptr);
 
                     if (const char* const localvalue = std::strstr(value, "file:///"))
-                        handle->selectedFile = strdup(localvalue + 7);
+                    {
+                        if (char* const decodedvalue = strdup(localvalue + 7))
+                        {
+                            for (char* s = decodedvalue; (s = std::strchr(s, '%')) != nullptr; ++s)
+                            {
+                                if (! isHexChar(s[1]) || ! isHexChar(s[2]))
+                                    continue;
+
+                                const int decodedNum = toHexChar(s[1]) * 0x10 + toHexChar(s[2]);
+
+                                char replacementChar;
+                                switch (decodedNum)
+                                {
+                                case 0x20: replacementChar = ' '; break;
+                                case 0x22: replacementChar = '\"'; break;
+                                case 0x23: replacementChar = '#'; break;
+                                case 0x25: replacementChar = '%'; break;
+                                case 0x3c: replacementChar = '<'; break;
+                                case 0x3e: replacementChar = '>'; break;
+                                case 0x5b: replacementChar = '['; break;
+                                case 0x5c: replacementChar = '\\'; break;
+                                case 0x5d: replacementChar = ']'; break;
+                                case 0x5e: replacementChar = '^'; break;
+                                case 0x60: replacementChar = '`'; break;
+                                case 0x7b: replacementChar = '{'; break;
+                                case 0x7c: replacementChar = '|'; break;
+                                case 0x7d: replacementChar = '}'; break;
+                                case 0x7e: replacementChar = '~'; break;
+                                default: continue;
+                                }
+
+                                s[0] = replacementChar;
+                                std::memmove(s + 1, s + 3, std::strlen(s) - 2);
+                            }
+
+                            handle->selectedFile = decodedvalue;
+                        }
+                    }
 
                 } while(false);
 
