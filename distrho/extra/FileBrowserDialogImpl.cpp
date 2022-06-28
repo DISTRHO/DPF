@@ -62,7 +62,7 @@ static const char* const kSelectedFileCancelled = "__dpf_cancelled__";
 #ifdef HAVE_DBUS
 static constexpr bool isHexChar(const char c) noexcept
 {
-    return c >= '0' && c <= 'f' && (c < '9' || (c >= 'A' && c <= 'F') || c >= 'a');
+    return c >= '0' && c <= 'f' && (c <= '9' || (c >= 'A' && c <= 'F') || c >= 'a');
 }
 
 static constexpr int toHexChar(const char c) noexcept
