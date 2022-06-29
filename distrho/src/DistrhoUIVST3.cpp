@@ -306,6 +306,7 @@ public:
         }
         else if (fNeedsResizeFromPlugin)
         {
+            d_stdout("postInit forcely sets size from plugin as %u %u", fUI.getWidth(), fUI.getHeight());
             setSize(fUI.getWidth(), fUI.getHeight());
         }
 
@@ -1478,6 +1479,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
             return uivst3->getSize(rect);
 
         d_stdout("dpf_plugin_view::get_size => %p | V3_NOT_INITIALIZED", self);
+        std::memset(rect, 0, sizeof(v3_view_rect));
         view->sizeRequestedBeforeBeingAttached = true;
         return V3_NOT_INITIALIZED;
     }

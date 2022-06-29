@@ -237,10 +237,20 @@ double puglGetScaleFactorFromParent(const PuglView* const view)
 {
     const PuglNativeView parent = view->parent ? view->parent : view->transientParent ? view->transientParent : 0;
 #if defined(DISTRHO_OS_MAC)
-    NSWindow* const window = parent != 0 ? [(NSView*)parent window]
-                                         : view->impl->window ? view->impl->window : [view->impl->wrapperView window];
-    NSScreen* const screen = window != nullptr ? [window screen] : [NSScreen mainScreen];
-    return [screen backingScaleFactor];
+    // some of these can return 0 as backingScaleFactor, pick the most relevant valid one
+    const NSWindow* possibleWindows[] = {
+        parent != 0 ? [(NSView*)parent window] : nullptr,
+        view->impl->window,
+        [view->impl->wrapperView window]
+    };
+    for (size_t i=0; i<ARRAY_SIZE(possibleWindows); ++i)
+    {
+        if (possibleWindows[i] == nullptr)
+            continue;
+        if (const double scaleFactor = [[possibleWindows[i] screen] backingScaleFactor])
+            return scaleFactor;
+    }
+    return [[NSScreen mainScreen] backingScaleFactor];
 #elif defined(DISTRHO_OS_WINDOWS)
     const HWND hwnd = parent != 0 ? (HWND)parent : view->impl->hwnd;
     return puglWinGetViewScaleFactor(hwnd);
