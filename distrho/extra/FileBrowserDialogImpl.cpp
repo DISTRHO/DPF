@@ -321,8 +321,9 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     ScopedPointer<FileBrowserData> handle(new FileBrowserData(options.saving));
 
 #ifdef DISTRHO_OS_MAC
-# if MAC_OS_X_VERSION_MIN_REQUIRED <= MAC_OS_X_VERSION_10_8
+# if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_8
     // unsupported
+    d_stderr2("fileBrowserCreate is unsupported on macos < 10.8");
     return nullptr;
 # else
     NSSavePanel* const nsBasePanel = handle->nsBasePanel;
