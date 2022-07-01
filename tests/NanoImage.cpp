@@ -38,8 +38,6 @@ class NanoImageExample : public NanoStandaloneWindow,
     static const int kImg2max = 500-CatPics::cat2Width;
     static const int kImg3max = 400-CatPics::cat3Height;
 
-    static const int kImgFlags = IMAGE_GENERATE_MIPMAPS | IMAGE_REPEAT_X;
-
     int imgTop1st, imgTop2nd, imgTop3rd;
     int img1x, img2x, img3y;
     bool img1rev, img2rev, img3rev;
@@ -57,9 +55,9 @@ public:
         img1rev(false),
         img2rev(true),
         img3rev(true),
-        img1(createImageFromRawMemory(CatPics::cat1Width, CatPics::cat1Height, (uchar*)CatPics::cat1Data, kImgFlags, kImageFormatBGR)),
-        img2(createImageFromRawMemory(CatPics::cat2Width, CatPics::cat2Height, (uchar*)CatPics::cat2Data, kImgFlags, kImageFormatBGR)),
-        img3(createImageFromRawMemory(CatPics::cat3Width, CatPics::cat3Height, (uchar*)CatPics::cat3Data, kImgFlags, kImageFormatBGR))
+        img1(createImageFromRawMemory(CatPics::cat1Width, CatPics::cat1Height, (uchar*)CatPics::cat1Data, 0, kImageFormatBGR)),
+        img2(createImageFromRawMemory(CatPics::cat2Width, CatPics::cat2Height, (uchar*)CatPics::cat2Data, 0, kImageFormatBGR)),
+        img3(createImageFromRawMemory(CatPics::cat3Width, CatPics::cat3Height, (uchar*)CatPics::cat3Data, 0, kImageFormatBGR))
     {
         DISTRHO_SAFE_ASSERT(img1.isValid());
         DISTRHO_SAFE_ASSERT(img2.isValid());

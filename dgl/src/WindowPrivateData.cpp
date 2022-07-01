@@ -253,9 +253,6 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     puglSetMatchingBackendForCurrentBuild(view);
     puglSetHandle(view, this);
 
-    // FIXME?
-    // puglClearMinSize(view);
-
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
 #if DGL_USE_RGBA

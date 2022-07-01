@@ -1,3 +1,0 @@
- 
-puglClearMinSize needed?
-puglSetWindowSize was used on first show, still needed?

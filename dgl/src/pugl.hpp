@@ -52,9 +52,6 @@ bool puglBackendLeave(PuglView* view);
 // DGL specific, assigns backend that matches current DGL build
 void puglSetMatchingBackendForCurrentBuild(PuglView* view);
 
-// clear minimum size to 0
-void puglClearMinSize(PuglView* view);
-
 // bring view window into the foreground, aka "raise" window
 void puglRaiseWindow(PuglView* view);
 

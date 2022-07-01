@@ -60,7 +60,9 @@ Application::PrivateData::PrivateData(const bool standalone)
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
 
     puglSetWorldHandle(world, this);
+#ifndef __EMSCRIPTEN__
     puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
+#endif
 }
 
 Application::PrivateData::~PrivateData()

@@ -45,6 +45,8 @@
 #  define DISTRHO_OS_BSD 1
 # elif defined(__GNU__)
 #  define DISTRHO_OS_GNU_HURD 1
+# elif defined(__EMSCRIPTEN__)
+#  define DISTRHO_OS_WASM 1
 # endif
 #endif
 

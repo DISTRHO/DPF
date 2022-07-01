@@ -62,7 +62,7 @@ protected:
         const double lineWidth = 1.0 * getScaleFactor();
 
        #if defined(DGL_OPENGL) && !defined(DGL_USE_OPENGL3)
-        glMatrixMode(GL_MODELVIEW);
+//         glMatrixMode(GL_MODELVIEW);
        #endif
 
         // draw white lines, 1px wide

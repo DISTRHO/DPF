@@ -22,17 +22,25 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 
 MANUAL_TESTS  =
-UNIT_TESTS    = Application Color Point
+UNIT_TESTS    = Color Point
 
 ifeq ($(HAVE_CAIRO),true)
 MANUAL_TESTS += Demo.cairo
-UNIT_TESTS   += Window.cairo
 endif
+
 ifeq ($(HAVE_OPENGL),true)
 MANUAL_TESTS += Demo.opengl
 MANUAL_TESTS += FileBrowserDialog
 MANUAL_TESTS += NanoImage
 MANUAL_TESTS += NanoSubWidgets
+endif
+
+ifneq ($(WASM),true)
+UNIT_TESTS   += Application
+ifeq ($(HAVE_CAIRO),true)
+UNIT_TESTS   += Window.cairo
+endif
+ifeq ($(HAVE_OPENGL),true)
 UNIT_TESTS   += Window.opengl
 endif
 ifeq ($(HAVE_STUB),true)
@@ -40,6 +48,7 @@ UNIT_TESTS   += Window.stub
 endif
 ifeq ($(HAVE_VULKAN),true)
 UNIT_TESTS   += Window.vulkan
+endif
 endif
 
 MANUAL_TARGETS = $(MANUAL_TESTS:%=../build/tests/%$(APP_EXT))
@@ -51,6 +60,13 @@ ALL_OBJS += $(UNIT_TESTS:%=../build/tests/%.cpp.o)
 # ---------------------------------------------------------------------------------------------------------------------
 
 all: $(MANUAL_TARGETS) $(UNIT_TARGET)
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+Demo.opengl: ../build/tests/Demo.opengl$(APP_EXT)
+FileBrowserDialog: ../build/tests/FileBrowserDialog$(APP_EXT)
+NanoImage: ../build/tests/NanoImage$(APP_EXT)
+NanoSubWidgets: ../build/tests/NanoSubWidgets$(APP_EXT)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -153,6 +169,8 @@ clean:
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(DGL_SYSTEM_LIBS) $(OPENGL_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+
+.PHONY: Demo.opengl FileBrowserDialog NanoImage NanoSubWidgets
 
 -include $(ALL_OBJS:%.o=%.d)
 

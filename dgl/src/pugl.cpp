@@ -51,6 +51,12 @@
 #  import <QuartzCore/CAMetalLayer.h>
 #  include <vulkan/vulkan_macos.h>
 # endif
+#elif defined(DISTRHO_OS_WASM)
+# include <emscripten/emscripten.h>
+# include <emscripten/html5.h>
+# ifdef DGL_OPENGL
+#  include <EGL/egl.h>
+# endif
 #elif defined(DISTRHO_OS_WINDOWS)
 # include <wctype.h>
 # include <winsock2.h>
@@ -66,7 +72,7 @@
 #  include <vulkan/vulkan.h>
 #  include <vulkan/vulkan_win32.h>
 # endif
-#else
+#elif defined(HAVE_X11)
 # include <dlfcn.h>
 # include <limits.h>
 # include <unistd.h>
@@ -141,6 +147,12 @@ START_NAMESPACE_DGL
 #  import "pugl-upstream/src/mac_vulkan.m"
 # endif
 # pragma clang diagnostic pop
+#elif defined(DISTRHO_OS_WASM)
+# include "pugl-upstream/src/wasm.c"
+# include "pugl-upstream/src/wasm_stub.c"
+# ifdef DGL_OPENGL
+#  include "pugl-upstream/src/wasm_gl.c"
+# endif
 #elif defined(DISTRHO_OS_WINDOWS)
 # include "pugl-upstream/src/win.c"
 # include "pugl-upstream/src/win_stub.c"
@@ -153,7 +165,7 @@ START_NAMESPACE_DGL
 # ifdef DGL_VULKAN
 #  include "pugl-upstream/src/win_vulkan.c"
 # endif
-#else
+#elif defined(HAVE_X11)
 # include "pugl-upstream/src/x11.c"
 # include "pugl-upstream/src/x11_stub.c"
 # ifdef DGL_CAIRO
@@ -205,15 +217,6 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// clear minimum size to 0
-
-// void puglClearMinSize(PuglView* const view)
-// {
-//     view->sizeHints[PUGL_MIN_SIZE].width  = 0;
-//     view->sizeHints[PUGL_MIN_SIZE].height = 0;
-// }
-
-// --------------------------------------------------------------------------------------------------------------------
 // bring view window into the foreground, aka "raise" window
 
 void puglRaiseWindow(PuglView* const view)
@@ -225,7 +228,7 @@ void puglRaiseWindow(PuglView* const view)
 #elif defined(DISTRHO_OS_WINDOWS)
     SetForegroundWindow(view->impl->hwnd);
     SetActiveWindow(view->impl->hwnd);
-#else
+#elif defined(HAVE_X11)
     XRaiseWindow(view->world->impl->display, view->impl->win);
 #endif
 }
@@ -288,7 +291,7 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
     }
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
-#else
+#elif defined(HAVE_X11)
     if (const PuglStatus status = updateSizeHints(view))
         return status;
 
@@ -320,7 +323,7 @@ void puglSetResizable(PuglView* const view, const bool resizable)
                                         : GetWindowLong(hwnd, GWL_STYLE) & ~(WS_SIZEBOX | WS_MAXIMIZEBOX);
         SetWindowLong(hwnd, GWL_STYLE, winFlags);
     }
-#else
+#elif defined(HAVE_X11)
     updateSizeHints(view);
 #endif
 }
@@ -355,6 +358,9 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
     const NSSize sizePt = [impl->drawView convertSizeFromBacking:sizePx];
     [impl->wrapperView setFrameSize:sizePt];
     [impl->drawView setFrameSize:sizePt];
+#elif defined(DISTRHO_OS_WASM)
+    d_stdout("className is %s", view->world->className);
+    emscripten_set_canvas_element_size(view->world->className, width, height);
 #elif defined(DISTRHO_OS_WINDOWS)
     // matches upstream pugl, except we re-enter context after resize
     if (const HWND hwnd = view->impl->hwnd)
@@ -369,7 +375,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
         // make sure to return context back to ourselves
         puglBackendEnter(view);
     }
-#else
+#elif defined(HAVE_X11)
     // matches upstream pugl, all in one
     if (const Window window = view->impl->win)
     {
@@ -395,7 +401,9 @@ void puglOnDisplayPrepare(PuglView*)
 {
 #ifdef DGL_OPENGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+# ifndef DGL_USE_GLES
     glLoadIdentity();
+# endif
 #endif
 }
 
@@ -407,12 +415,16 @@ void puglFallbackOnResize(PuglView* const view)
 #ifdef DGL_OPENGL
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+# ifndef DGL_USE_GLES
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, static_cast<GLdouble>(view->frame.width), static_cast<GLdouble>(view->frame.height), 0.0, 0.0, 1.0);
     glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+# else
+    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
+# endif
 #else
     return;
     // unused

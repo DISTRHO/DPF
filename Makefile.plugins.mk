@@ -51,7 +51,7 @@ BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
 # always needed
-ifneq ($(HAIKU_OR_MACOS_OR_WINDOWS),true)
+ifneq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 ifneq ($(STATIC_BUILD),true)
 LINK_FLAGS += -ldl
 endif
@@ -162,6 +162,15 @@ SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
 SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
 SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
 SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
+else ifeq ($(WASM),true)
+SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
+SYMBOLS_DSSI   = -sEXPORTED_FUNCTIONS="['ladspa_descriptor','dssi_descriptor']"
+SYMBOLS_LV2DSP = -sEXPORTED_FUNCTIONS="['lv2_descriptor']"
+SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
+SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2ui_descriptor']"
+SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
+SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
+SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
 else ifeq ($(WINDOWS),true)
 SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
 SYMBOLS_DSSI   = $(DPF_PATH)/utils/symbols/dssi.def
