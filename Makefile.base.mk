@@ -160,11 +160,11 @@ BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
 BASE_OPTS  = -O3 -ffast-math -fdata-sections -ffunction-sections
 
 ifeq ($(CPU_I386_OR_X86_64),true)
-BASE_OPTS += -mtune=generic -msse -msse2
+BASE_OPTS += -mtune=generic
 ifeq ($(WASM),true)
-BASE_OPTS += -msse3 -msimd128
+# BASE_OPTS += -msse -msse2 -msse3 -msimd128
 else
-BASE_OPTS += -mfpmath=sse
+BASE_OPTS += -msse -msse2 -mfpmath=sse
 endif
 endif
 
@@ -546,6 +546,8 @@ endif
 
 ifeq ($(MACOS),true)
 SHARED = -dynamiclib
+else ifeq ($(WASM),true)
+SHARED = -sSIDE_MODULE=1
 else
 SHARED = -shared
 endif

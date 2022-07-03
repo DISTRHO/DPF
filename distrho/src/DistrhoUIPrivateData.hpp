@@ -107,6 +107,7 @@ public:
     explicit PluginApplication()
         : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE)
     {
+#ifndef DISTRHO_OS_WASM
         const char* const className = (
 #ifdef DISTRHO_PLUGIN_BRAND
             DISTRHO_PLUGIN_BRAND
@@ -116,6 +117,7 @@ public:
             "-" DISTRHO_PLUGIN_NAME
         );
         setClassName(className);
+#endif
     }
 
     void triggerIdleCallbacks()

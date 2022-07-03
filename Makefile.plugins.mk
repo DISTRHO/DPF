@@ -60,7 +60,12 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK/Standalone setup
 
-ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
+ifeq ($(WASM),true)
+
+JACK_FLAGS += -sUSE_SDL=2
+JACK_LIBS  += -sUSE_SDL=2
+
+else ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
 
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
