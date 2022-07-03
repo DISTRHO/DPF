@@ -1,6 +1,6 @@
 /*
  * RtAudioBridge for DPF
- * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -167,14 +167,14 @@ struct RtAudioBridge {
     {
         bool isAudio, isInput;
 
-        if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
+        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
             isAudio = true;
         else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
             isAudio = false;
         else
             return nullptr;
 
-        if (flags & JackPortIsInput)
+        /**/ if (flags & JackPortIsInput)
             isInput = true;
         else if (flags & JackPortIsOutput)
             isInput = false;
@@ -230,7 +230,7 @@ struct RtAudioBridge {
 
         uint i = 0;
 # if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        if (float* const insPtr  = (float*)inputBuffer)
+        if (float* const insPtr = (float*)inputBuffer)
         {
             for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
                 selfAudioBuffers[i] = insPtr + (j * numFrames);

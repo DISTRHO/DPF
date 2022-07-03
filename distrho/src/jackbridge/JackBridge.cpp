@@ -1,6 +1,6 @@
 /*
  * JackBridge for DPF
- * Copyright (C) 2013-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2013-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -35,8 +35,10 @@
 #include <cerrno>
 #include "../../extra/LibraryUtils.hpp"
 
-// in case JACK fails, we fallback to RtAudio's native API
-#if defined(DISTRHO_PROPER_CPP11_SUPPORT) && !defined(DPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK)
+// in case JACK fails, we fallback to RtAudio or SDL native API
+#if defined(DISTRHO_OS_WASM)
+# include "SDLBridge.hpp"
+#elif defined(DISTRHO_PROPER_CPP11_SUPPORT) && !defined(DPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK)
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
 #  include "rtaudio/RtAudio.cpp"
@@ -312,7 +314,10 @@ struct JackBridge {
     jacksym_set_thread_creator set_thread_creator_ptr;
 #endif
 
-    static bool usingRtAudio;
+    static bool usingRtAudioOrSDL;
+#ifdef DISTRHO_OS_WASM
+    static SDLBridge sdl;
+#endif
 #ifdef RTAUDIO_API_TYPE
     static RtAudioBridge rtAudio;
 #endif
@@ -415,6 +420,9 @@ struct JackBridge {
         , set_thread_creator_ptr(nullptr)
 #endif
     {
+# ifdef DISTRHO_OS_WASM
+        return;
+# endif
 # if defined(DISTRHO_OS_MAC)
         const char* const filename("libjack.dylib");
 # elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
@@ -576,7 +584,10 @@ struct JackBridge {
     DISTRHO_DECLARE_NON_COPYABLE(JackBridge);
 };
 
-bool JackBridge::usingRtAudio = false;
+bool JackBridge::usingRtAudioOrSDL = false;
+#ifdef DISTRHO_OS_WASM
+SDLBridge JackBridge::sdl;
+#endif
 #ifdef RTAUDIO_API_TYPE
 RtAudioBridge JackBridge::rtAudio;
 #endif
@@ -808,7 +819,7 @@ bool jackbridge_is_ok() noexcept
 {
 #if defined(JACKBRIDGE_DUMMY)
     return false;
-#elif defined(JACKBRIDGE_DIRECT) || defined(RTAUDIO_API_TYPE)
+#elif defined(JACKBRIDGE_DIRECT) || defined(DISTRHO_OS_WASM) || defined(RTAUDIO_API_TYPE)
     return true;
 #else
     return (getBridgeInstance().lib != nullptr);
@@ -817,7 +828,7 @@ bool jackbridge_is_ok() noexcept
 
 void jackbridge_init()
 {
-#if defined(__WINE__) && ! defined(JACKBRIDGE_DIRECT)
+#if defined(__WINE__) && !defined(JACKBRIDGE_DIRECT)
     if (getBridgeInstance().set_thread_creator_ptr != nullptr)
         getBridgeInstance().set_thread_creator_ptr(WineBridge::thread_creator);
 #endif
@@ -831,7 +842,7 @@ void jackbridge_get_version(int* major_ptr, int* minor_ptr, int* micro_ptr, int*
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_version(major_ptr, minor_ptr, micro_ptr, proto_ptr);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_version_ptr != nullptr)
             return getBridgeInstance().get_version_ptr(major_ptr, minor_ptr, micro_ptr, proto_ptr);
 #endif
@@ -851,8 +862,12 @@ const char* jackbridge_get_version_string()
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_version_string();
 #else
+# ifdef DISTRHO_OS_WASM
+    if (JackBridge::usingRtAudioOrSDL)
+        return "2"; // SDL_VERSION;
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
+    if (JackBridge::usingRtAudioOrSDL)
         return RTAUDIO_VERSION;
 # endif
     if (getBridgeInstance().get_version_string_ptr != nullptr)
@@ -869,14 +884,27 @@ jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options,
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_client_open(client_name, static_cast<jack_options_t>(options), status);
 #else
+# ifdef DISTRHO_OS_WASM
+    if (JackBridge::sdl.open(client_name))
+    {
+        d_stdout("SDL audio setup ok");
+        JackBridge::usingRtAudioOrSDL = true;
+        return (jack_client_t*)0x1; // return non-null
+        // unused
+        (void)options;
+    }
+    d_stderr2("SDL audio setup failed");
+# else
     if (getBridgeInstance().client_open_ptr != nullptr)
         if (jack_client_t* const client = getBridgeInstance().client_open_ptr(client_name, static_cast<jack_options_t>(options), status))
             return client;
+    // TODO
+# endif
 # ifdef RTAUDIO_API_TYPE
     if (JackBridge::rtAudio.open())
     {
         d_stdout("JACK setup failed, using RtAudio instead");
-        JackBridge::usingRtAudio = true;
+        JackBridge::usingRtAudioOrSDL = true;
         return (jack_client_t*)0x1; // return non-null
     }
 # endif
@@ -892,13 +920,16 @@ bool jackbridge_client_close(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_client_close(client) == 0);
 #else
-# ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
+    if (JackBridge::usingRtAudioOrSDL)
     {
-        JackBridge::usingRtAudio = false;
-        return JackBridge::rtAudio.close();
-    }
+        JackBridge::usingRtAudioOrSDL = false;
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.close();
 # endif
+# ifdef RTAUDIO_API_TYPE
+        return JackBridge::rtAudio.close();
+# endif
+    }
     if (getBridgeInstance().client_close_ptr != nullptr)
         return (getBridgeInstance().client_close_ptr(client) == 0);
 #endif
@@ -913,22 +944,22 @@ int jackbridge_client_name_size()
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_client_name_size();
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().client_name_size_ptr != nullptr)
             return getBridgeInstance().client_name_size_ptr();
 #endif
     return 33;
 }
 
-char* jackbridge_get_client_name(jack_client_t* client)
+const char* jackbridge_get_client_name(jack_client_t* client)
 {
 #if defined(JACKBRIDGE_DUMMY)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_client_name(client);
 #else
-    if (JackBridge::usingRtAudio)
+    if (JackBridge::usingRtAudioOrSDL)
     {
-        char* const name = (char*)DISTRHO_PLUGIN_NAME;
+        static const char* const name = DISTRHO_PLUGIN_NAME;
         return name;
     }
     if (getBridgeInstance().get_client_name_ptr != nullptr)
@@ -945,7 +976,7 @@ char* jackbridge_client_get_uuid(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_client_get_uuid(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (const jacksym_client_get_uuid func = getBridgeInstance().client_get_uuid_ptr)
             return func(client);
 #endif
@@ -958,7 +989,7 @@ char* jackbridge_get_uuid_for_client_name(jack_client_t* client, const char* nam
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_uuid_for_client_name(client, name);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_uuid_for_client_name_ptr != nullptr)
             return getBridgeInstance().get_uuid_for_client_name_ptr(client, name);
 #endif
@@ -971,7 +1002,7 @@ char* jackbridge_get_client_name_by_uuid(jack_client_t* client, const char* uuid
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_client_name_by_uuid(client, uuid);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_client_name_by_uuid_ptr != nullptr)
             return getBridgeInstance().get_client_name_by_uuid_ptr(client, uuid);
 #endif
@@ -986,7 +1017,7 @@ bool jackbridge_uuid_parse(const char* buf, jack_uuid_t* uuid)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_uuid_parse(buf, uuid) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (const jacksym_uuid_parse func = getBridgeInstance().uuid_parse_ptr)
             return (func(buf, uuid) == 0);
 #endif
@@ -999,7 +1030,7 @@ void jackbridge_uuid_unparse(jack_uuid_t uuid, char buf[JACK_UUID_STRING_SIZE])
 #elif defined(JACKBRIDGE_DIRECT)
     jack_uuid_unparse(uuid, buf);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (const jacksym_uuid_unparse func = getBridgeInstance().uuid_unparse_ptr)
             return func(uuid, buf);
 #endif
@@ -1013,10 +1044,15 @@ bool jackbridge_activate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_activate(client) == 0);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.activate();
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.activate();
 # endif
+    }
     if (getBridgeInstance().activate_ptr != nullptr)
         return (getBridgeInstance().activate_ptr(client) == 0);
 #endif
@@ -1029,10 +1065,15 @@ bool jackbridge_deactivate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_deactivate(client) == 0);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.deactivate();
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.deactivate();
 # endif
+    }
     if (getBridgeInstance().deactivate_ptr != nullptr)
         return (getBridgeInstance().deactivate_ptr(client) == 0);
 #endif
@@ -1045,7 +1086,7 @@ bool jackbridge_is_realtime(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_is_realtime(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().is_realtime_ptr != nullptr)
             return getBridgeInstance().is_realtime_ptr(client);
 #endif
@@ -1060,7 +1101,7 @@ bool jackbridge_set_thread_init_callback(jack_client_t* client, JackThreadInitCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_thread_init_callback(client, thread_init_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_thread_init_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_thread_init_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_thread_init(thread_init_callback);
@@ -1079,7 +1120,7 @@ void jackbridge_on_shutdown(jack_client_t* client, JackShutdownCallback shutdown
 #elif defined(JACKBRIDGE_DIRECT)
     jack_on_shutdown(client, shutdown_callback, arg);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().on_shutdown_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().on_shutdown_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_shutdown(shutdown_callback);
@@ -1097,7 +1138,7 @@ void jackbridge_on_info_shutdown(jack_client_t* client, JackInfoShutdownCallback
 #elif defined(JACKBRIDGE_DIRECT)
     jack_on_info_shutdown(client, shutdown_callback, arg);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().on_info_shutdown_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().on_info_shutdown_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_info_shutdown(shutdown_callback);
@@ -1115,14 +1156,19 @@ bool jackbridge_set_process_callback(jack_client_t* client, JackProcessCallback 
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_process_callback(client, process_callback, arg) == 0);
 #else
-# ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
+    if (JackBridge::usingRtAudioOrSDL)
     {
+# ifdef DISTRHO_OS_WASM
+        JackBridge::sdl.jackProcessCallback = process_callback;
+        JackBridge::sdl.jackProcessArg = arg;
+        return true;
+# endif
+# ifdef RTAUDIO_API_TYPE
         JackBridge::rtAudio.jackProcessCallback = process_callback;
         JackBridge::rtAudio.jackProcessArg = arg;
         return true;
-    }
 # endif
+    }
     if (getBridgeInstance().set_process_callback_ptr != nullptr)
     {
 # ifdef __WINE__
@@ -1142,7 +1188,7 @@ bool jackbridge_set_freewheel_callback(jack_client_t* client, JackFreewheelCallb
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_freewheel_callback(client, freewheel_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_freewheel_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_freewheel_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_freewheel(freewheel_callback);
@@ -1161,7 +1207,7 @@ bool jackbridge_set_buffer_size_callback(jack_client_t* client, JackBufferSizeCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_buffer_size_callback(client, bufsize_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_buffer_size_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_buffer_size_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_bufsize(bufsize_callback);
@@ -1180,7 +1226,7 @@ bool jackbridge_set_sample_rate_callback(jack_client_t* client, JackSampleRateCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_sample_rate_callback(client, srate_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_sample_rate_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_sample_rate_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_srate(srate_callback);
@@ -1199,7 +1245,7 @@ bool jackbridge_set_client_registration_callback(jack_client_t* client, JackClie
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_client_registration_callback(client, registration_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_client_registration_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_client_registration_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_client_reg(registration_callback);
@@ -1218,7 +1264,7 @@ bool jackbridge_set_port_registration_callback(jack_client_t* client, JackPortRe
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_port_registration_callback(client, registration_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_port_registration_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_port_registration_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_port_reg(registration_callback);
@@ -1237,7 +1283,7 @@ bool jackbridge_set_port_rename_callback(jack_client_t* client, JackPortRenameCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_port_rename_callback(client, rename_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_port_rename_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_port_rename_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_port_rename(rename_callback);
@@ -1256,7 +1302,7 @@ bool jackbridge_set_port_connect_callback(jack_client_t* client, JackPortConnect
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_port_connect_callback(client, connect_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_port_connect_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_port_connect_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_port_conn(connect_callback);
@@ -1275,7 +1321,7 @@ bool jackbridge_set_graph_order_callback(jack_client_t* client, JackGraphOrderCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_graph_order_callback(client, graph_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_graph_order_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_graph_order_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_graph_order(graph_callback);
@@ -1294,7 +1340,7 @@ bool jackbridge_set_xrun_callback(jack_client_t* client, JackXRunCallback xrun_c
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_xrun_callback(client, xrun_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_xrun_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_xrun_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_xrun(xrun_callback);
@@ -1313,7 +1359,7 @@ bool jackbridge_set_latency_callback(jack_client_t* client, JackLatencyCallback 
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_latency_callback(client, latency_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_latency_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_latency_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_latency(latency_callback);
@@ -1334,7 +1380,7 @@ bool jackbridge_set_freewheel(jack_client_t* client, bool onoff)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_set_freewheel(client, onoff);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().set_freewheel_ptr != nullptr)
             return getBridgeInstance().set_freewheel_ptr(client, onoff);
 #endif
@@ -1347,7 +1393,7 @@ bool jackbridge_set_buffer_size(jack_client_t* client, jack_nframes_t nframes)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_set_buffer_size(client, nframes);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().set_buffer_size_ptr != nullptr)
             return getBridgeInstance().set_buffer_size_ptr(client, nframes);
 #endif
@@ -1362,10 +1408,15 @@ jack_nframes_t jackbridge_get_sample_rate(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_sample_rate(client);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.sampleRate;
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.sampleRate;
 # endif
+    }
     if (getBridgeInstance().get_sample_rate_ptr != nullptr)
         return getBridgeInstance().get_sample_rate_ptr(client);
 #endif
@@ -1378,10 +1429,15 @@ jack_nframes_t jackbridge_get_buffer_size(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_buffer_size(client);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.bufferSize;
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.bufferSize;
 # endif
+    }
     if (getBridgeInstance().get_buffer_size_ptr != nullptr)
         return getBridgeInstance().get_buffer_size_ptr(client);
 #endif
@@ -1394,7 +1450,7 @@ float jackbridge_cpu_load(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_cpu_load(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().cpu_load_ptr != nullptr)
             return getBridgeInstance().cpu_load_ptr(client);
 #endif
@@ -1409,10 +1465,15 @@ jack_port_t* jackbridge_port_register(jack_client_t* client, const char* port_na
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_register(client, port_name, type, flags, buffer_size);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.registerPort(type, flags);
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.registerPort(type, flags);
 # endif
+    }
     if (getBridgeInstance().port_register_ptr != nullptr)
         return getBridgeInstance().port_register_ptr(client, port_name, type,
                                                      static_cast<ulong>(flags),
@@ -1427,7 +1488,7 @@ bool jackbridge_port_unregister(jack_client_t* client, jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_unregister(client, port) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_unregister_ptr != nullptr)
             return (getBridgeInstance().port_unregister_ptr(client, port) == 0);
 #endif
@@ -1440,10 +1501,15 @@ void* jackbridge_port_get_buffer(jack_port_t* port, jack_nframes_t nframes)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_get_buffer(port, nframes);
 #else
+    if (JackBridge::usingRtAudioOrSDL)
+    {
+# ifdef DISTRHO_OS_WASM
+        return JackBridge::sdl.getPortBuffer(port);
+# endif
 # ifdef RTAUDIO_API_TYPE
-    if (JackBridge::usingRtAudio)
         return JackBridge::rtAudio.getPortBuffer(port);
 # endif
+    }
     if (getBridgeInstance().port_get_buffer_ptr != nullptr)
         return getBridgeInstance().port_get_buffer_ptr(port, nframes);
 #endif
@@ -1458,7 +1524,7 @@ const char* jackbridge_port_name(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_name(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_name_ptr != nullptr)
             return getBridgeInstance().port_name_ptr(port);
 #endif
@@ -1471,7 +1537,7 @@ jack_uuid_t jackbridge_port_uuid(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_uuid(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_uuid_ptr != nullptr)
             return getBridgeInstance().port_uuid_ptr(port);
 #endif
@@ -1484,7 +1550,7 @@ const char* jackbridge_port_short_name(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_short_name(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_short_name_ptr != nullptr)
             return getBridgeInstance().port_short_name_ptr(port);
 #endif
@@ -1497,7 +1563,7 @@ int jackbridge_port_flags(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_flags(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_flags_ptr != nullptr)
             return getBridgeInstance().port_flags_ptr(port);
 #endif
@@ -1510,7 +1576,7 @@ const char* jackbridge_port_type(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_type(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_type_ptr != nullptr)
             return getBridgeInstance().port_type_ptr(port);
 #endif
@@ -1523,7 +1589,7 @@ bool jackbridge_port_is_mine(const jack_client_t* client, const jack_port_t* por
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_is_mine(client, port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_is_mine_ptr != nullptr)
             return getBridgeInstance().port_is_mine_ptr(client, port);
 #endif
@@ -1536,7 +1602,7 @@ int jackbridge_port_connected(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_connected(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_connected_ptr != nullptr)
             return getBridgeInstance().port_connected_ptr(port);
 #endif
@@ -1549,7 +1615,7 @@ bool jackbridge_port_connected_to(const jack_port_t* port, const char* port_name
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_connected_to(port, port_name);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_connected_to_ptr != nullptr)
             return getBridgeInstance().port_connected_to_ptr(port, port_name);
 #endif
@@ -1562,7 +1628,7 @@ const char** jackbridge_port_get_connections(const jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_get_connections(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_get_connections_ptr != nullptr)
             return getBridgeInstance().port_get_connections_ptr(port);
 #endif
@@ -1575,7 +1641,7 @@ const char** jackbridge_port_get_all_connections(const jack_client_t* client, co
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_get_all_connections(client, port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_get_all_connections_ptr != nullptr)
             return getBridgeInstance().port_get_all_connections_ptr(client, port);
 #endif
@@ -1590,7 +1656,7 @@ bool jackbridge_port_rename(jack_client_t* client, jack_port_t* port, const char
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_rename(client, port, port_name) == 0);
 #else
-    if (JackBridge::usingRtAudio)
+    if (JackBridge::usingRtAudioOrSDL)
         return false;
     // Try new API first
     if (getBridgeInstance().port_rename_ptr != nullptr)
@@ -1608,7 +1674,7 @@ bool jackbridge_port_set_alias(jack_port_t* port, const char* alias)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_set_alias(port, alias) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_set_alias_ptr != nullptr)
             return (getBridgeInstance().port_set_alias_ptr(port, alias) == 0);
 #endif
@@ -1621,7 +1687,7 @@ bool jackbridge_port_unset_alias(jack_port_t* port, const char* alias)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_unset_alias(port, alias) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_unset_alias_ptr != nullptr)
             return (getBridgeInstance().port_unset_alias_ptr(port, alias) == 0);
 #endif
@@ -1634,7 +1700,7 @@ int jackbridge_port_get_aliases(const jack_port_t* port, char* const aliases[2])
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_get_aliases(port, aliases) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_get_aliases_ptr != nullptr)
             return getBridgeInstance().port_get_aliases_ptr(port, aliases);
 #endif
@@ -1649,7 +1715,7 @@ bool jackbridge_port_request_monitor(jack_port_t* port, bool onoff)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_request_monitor(port, onoff) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_request_monitor_ptr != nullptr)
             return (getBridgeInstance().port_request_monitor_ptr(port, onoff) == 0);
 #endif
@@ -1662,7 +1728,7 @@ bool jackbridge_port_request_monitor_by_name(jack_client_t* client, const char* 
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_request_monitor_by_name(client, port_name, onoff) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_request_monitor_by_name_ptr != nullptr)
             return (getBridgeInstance().port_request_monitor_by_name_ptr(client, port_name, onoff) == 0);
 #endif
@@ -1675,7 +1741,7 @@ bool jackbridge_port_ensure_monitor(jack_port_t* port, bool onoff)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_ensure_monitor(port, onoff) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_ensure_monitor_ptr != nullptr)
             return (getBridgeInstance().port_ensure_monitor_ptr(port, onoff) == 0);
 #endif
@@ -1688,7 +1754,7 @@ bool jackbridge_port_monitoring_input(jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_monitoring_input(port);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_monitoring_input_ptr != nullptr)
             return getBridgeInstance().port_monitoring_input_ptr(port);
 #endif
@@ -1703,7 +1769,7 @@ bool jackbridge_connect(jack_client_t* client, const char* source_port, const ch
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_connect(client, source_port, destination_port) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().connect_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().connect_ptr != nullptr)
     {
         const int ret = getBridgeInstance().connect_ptr(client, source_port, destination_port);
         return ret == 0 || ret == EEXIST;
@@ -1718,7 +1784,7 @@ bool jackbridge_disconnect(jack_client_t* client, const char* source_port, const
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_disconnect(client, source_port, destination_port) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().disconnect_ptr != nullptr)
             return (getBridgeInstance().disconnect_ptr(client, source_port, destination_port) == 0);
 #endif
@@ -1731,7 +1797,7 @@ bool jackbridge_port_disconnect(jack_client_t* client, jack_port_t* port)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_port_disconnect(client, port) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_disconnect_ptr != nullptr)
             return (getBridgeInstance().port_disconnect_ptr(client, port) == 0);
 #endif
@@ -1746,7 +1812,7 @@ int jackbridge_port_name_size()
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_name_size();
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_name_size_ptr != nullptr)
             return getBridgeInstance().port_name_size_ptr();
 #endif
@@ -1759,7 +1825,7 @@ int jackbridge_port_type_size()
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_type_size();
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_type_size_ptr != nullptr)
             return getBridgeInstance().port_type_size_ptr();
 #endif
@@ -1772,7 +1838,7 @@ uint32_t jackbridge_port_type_get_buffer_size(jack_client_t* client, const char*
 #elif defined(JACKBRIDGE_DIRECT)
     return static_cast<uint32_t>(jack_port_type_get_buffer_size(client, port_type));
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_type_get_buffer_size_ptr != nullptr)
             return static_cast<uint32_t>(getBridgeInstance().port_type_get_buffer_size_ptr(client, port_type));
 #endif
@@ -1787,7 +1853,7 @@ void jackbridge_port_get_latency_range(jack_port_t* port, uint32_t mode, jack_la
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_get_latency_range(port, static_cast<jack_latency_callback_mode_t>(mode), range);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_get_latency_range_ptr != nullptr)
             return getBridgeInstance().port_get_latency_range_ptr(port,
                                                                   static_cast<jack_latency_callback_mode_t>(mode),
@@ -1803,7 +1869,7 @@ void jackbridge_port_set_latency_range(jack_port_t* port, uint32_t mode, jack_la
 #elif defined(JACKBRIDGE_DIRECT)
     jack_port_set_latency_range(port, static_cast<jack_latency_callback_mode_t>(mode), range);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_set_latency_range_ptr != nullptr)
             getBridgeInstance().port_set_latency_range_ptr(port,
                                                            static_cast<jack_latency_callback_mode_t>(mode),
@@ -1817,7 +1883,7 @@ bool jackbridge_recompute_total_latencies(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_recompute_total_latencies(client) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().recompute_total_latencies_ptr != nullptr)
             return (getBridgeInstance().recompute_total_latencies_ptr(client) == 0);
 #endif
@@ -1832,7 +1898,7 @@ const char** jackbridge_get_ports(jack_client_t* client, const char* port_name_p
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_ports(client, port_name_pattern, type_name_pattern, flags);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_ports_ptr != nullptr)
             return getBridgeInstance().get_ports_ptr(client, port_name_pattern, type_name_pattern,
                                                      static_cast<ulong>(flags));
@@ -1846,7 +1912,7 @@ jack_port_t* jackbridge_port_by_name(jack_client_t* client, const char* port_nam
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_by_name(client, port_name);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_by_name_ptr != nullptr)
             return getBridgeInstance().port_by_name_ptr(client, port_name);
 #endif
@@ -1859,7 +1925,7 @@ jack_port_t* jackbridge_port_by_id(jack_client_t* client, jack_port_id_t port_id
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_port_by_id(client, port_id);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().port_by_id_ptr != nullptr)
             return getBridgeInstance().port_by_id_ptr(client, port_id);
 #endif
@@ -1874,7 +1940,7 @@ void jackbridge_free(void* ptr)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_free(ptr);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().free_ptr != nullptr)
             return getBridgeInstance().free_ptr(ptr);
 
@@ -1891,7 +1957,7 @@ uint32_t jackbridge_midi_get_event_count(void* port_buffer)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_midi_get_event_count(port_buffer);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().midi_get_event_count_ptr != nullptr)
             return getBridgeInstance().midi_get_event_count_ptr(port_buffer);
 #endif
@@ -1904,7 +1970,7 @@ bool jackbridge_midi_event_get(jack_midi_event_t* event, void* port_buffer, uint
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_midi_event_get(event, port_buffer, event_index) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().midi_event_get_ptr != nullptr)
             return (getBridgeInstance().midi_event_get_ptr(event, port_buffer, event_index) == 0);
 #endif
@@ -1917,7 +1983,7 @@ void jackbridge_midi_clear_buffer(void* port_buffer)
 #elif defined(JACKBRIDGE_DIRECT)
     jack_midi_clear_buffer(port_buffer);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().midi_clear_buffer_ptr != nullptr)
             getBridgeInstance().midi_clear_buffer_ptr(port_buffer);
 #endif
@@ -1929,7 +1995,7 @@ bool jackbridge_midi_event_write(void* port_buffer, jack_nframes_t time, const j
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_midi_event_write(port_buffer, time, data, data_size) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().midi_event_write_ptr != nullptr)
             return (getBridgeInstance().midi_event_write_ptr(port_buffer, time, data, data_size) == 0);
 #endif
@@ -1942,7 +2008,7 @@ jack_midi_data_t* jackbridge_midi_event_reserve(void* port_buffer, jack_nframes_
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_midi_event_reserve(port_buffer, time, data_size);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().midi_event_reserve_ptr != nullptr)
             return getBridgeInstance().midi_event_reserve_ptr(port_buffer, time, data_size);
 #endif
@@ -1957,7 +2023,7 @@ bool jackbridge_release_timebase(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_release_timebase(client) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().release_timebase_ptr != nullptr)
             return (getBridgeInstance().release_timebase_ptr(client) == 0);
 #endif
@@ -1970,7 +2036,7 @@ bool jackbridge_set_sync_callback(jack_client_t* client, JackSyncCallback sync_c
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_sync_callback(client, sync_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_sync_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_sync_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_sync(sync_callback);
@@ -1989,7 +2055,7 @@ bool jackbridge_set_sync_timeout(jack_client_t* client, jack_time_t timeout)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_sync_timeout(client, timeout) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().set_sync_timeout_ptr != nullptr)
             return (getBridgeInstance().set_sync_timeout_ptr(client, timeout) == 0);
 #endif
@@ -2002,7 +2068,7 @@ bool jackbridge_set_timebase_callback(jack_client_t* client, bool conditional, J
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_timebase_callback(client, conditional, timebase_callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_timebase_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_timebase_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_timebase(timebase_callback);
@@ -2021,7 +2087,7 @@ bool jackbridge_transport_locate(jack_client_t* client, jack_nframes_t frame)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_transport_locate(client, frame) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().transport_locate_ptr != nullptr)
             return (getBridgeInstance().transport_locate_ptr(client, frame) == 0);
 #endif
@@ -2034,7 +2100,7 @@ uint32_t jackbridge_transport_query(const jack_client_t* client, jack_position_t
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_transport_query(client, pos);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().transport_query_ptr != nullptr)
             return getBridgeInstance().transport_query_ptr(client, pos);
 #endif
@@ -2054,7 +2120,7 @@ jack_nframes_t jackbridge_get_current_transport_frame(const jack_client_t* clien
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_get_current_transport_frame(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_current_transport_frame_ptr != nullptr)
             return getBridgeInstance().get_current_transport_frame_ptr(client);
 #endif
@@ -2067,7 +2133,7 @@ bool jackbridge_transport_reposition(jack_client_t* client, const jack_position_
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_transport_reposition(client, pos) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().transport_reposition_ptr != nullptr)
             return (getBridgeInstance().transport_reposition_ptr(client, pos) == 0);
 #endif
@@ -2080,7 +2146,7 @@ void jackbridge_transport_start(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     jack_transport_start(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().transport_start_ptr != nullptr)
             getBridgeInstance().transport_start_ptr(client);
 #endif
@@ -2092,7 +2158,7 @@ void jackbridge_transport_stop(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     jack_transport_stop(client);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().transport_stop_ptr != nullptr)
             getBridgeInstance().transport_stop_ptr(client);
 #endif
@@ -2106,7 +2172,7 @@ bool jackbridge_set_property(jack_client_t* client, jack_uuid_t subject, const c
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_property(client, subject, key, value, type) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().set_property_ptr != nullptr)
             return (getBridgeInstance().set_property_ptr(client, subject, key, value, type) == 0);
 #endif
@@ -2119,7 +2185,7 @@ bool jackbridge_get_property(jack_uuid_t subject, const char* key, char** value,
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_get_property(subject, key, value, type) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_property_ptr != nullptr)
             return (getBridgeInstance().get_property_ptr(subject, key, value, type) == 0);
 #endif
@@ -2132,7 +2198,7 @@ void jackbridge_free_description(jack_description_t* desc, bool free_description
 #elif defined(JACKBRIDGE_DIRECT)
     jack_free_description(desc, free_description_itself);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().free_description_ptr != nullptr)
             getBridgeInstance().free_description_ptr(desc, free_description_itself);
 #endif
@@ -2144,7 +2210,7 @@ bool jackbridge_get_properties(jack_uuid_t subject, jack_description_t* desc)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_get_properties(subject, desc) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_properties_ptr != nullptr)
             return (getBridgeInstance().get_properties_ptr(subject, desc) == 0);
 #endif
@@ -2157,7 +2223,7 @@ bool jackbridge_get_all_properties(jack_description_t** descs)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_get_all_properties(descs) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().get_all_properties_ptr != nullptr)
             return (getBridgeInstance().get_all_properties_ptr(descs) == 0);
 #endif
@@ -2170,7 +2236,7 @@ bool jackbridge_remove_property(jack_client_t* client, jack_uuid_t subject, cons
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_remove_property(client, subject, key) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().remove_property_ptr != nullptr)
             return (getBridgeInstance().remove_property_ptr(client, subject, key) == 0);
 #endif
@@ -2183,7 +2249,7 @@ int jackbridge_remove_properties(jack_client_t* client, jack_uuid_t subject)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_remove_properties(client, subject);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().remove_properties_ptr != nullptr)
             return getBridgeInstance().remove_properties_ptr(client, subject);
 #endif
@@ -2196,7 +2262,7 @@ bool jackbridge_remove_all_properties(jack_client_t* client)
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_remove_all_properties(client) == 0);
 #else
-    if (! JackBridge::usingRtAudio)
+    if (! JackBridge::usingRtAudioOrSDL)
         if (getBridgeInstance().remove_all_properties_ptr != nullptr)
             return (getBridgeInstance().remove_all_properties_ptr(client) == 0);
 #endif
@@ -2209,7 +2275,7 @@ bool jackbridge_set_property_change_callback(jack_client_t* client, JackProperty
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_property_change_callback(client, callback, arg) == 0);
 #else
-    if (! JackBridge::usingRtAudio && getBridgeInstance().set_property_change_callback_ptr != nullptr)
+    if (! JackBridge::usingRtAudioOrSDL && getBridgeInstance().set_property_change_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_prop_change(callback);
