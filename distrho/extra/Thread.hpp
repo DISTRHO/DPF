@@ -25,6 +25,10 @@
 # include <sys/prctl.h>
 #endif
 
+#ifdef DISTRHO_OS_WASM
+# error Threads do not work under wasm!
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
