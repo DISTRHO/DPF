@@ -204,11 +204,13 @@ struct SDLBridge {
 
         self->jackProcessCallback(numFrames, self->jackProcessArg);
 
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
             for (uint j=0; j < numFrames; ++j)
                 fstream[j * DISTRHO_PLUGIN_NUM_OUTPUTS + i] = self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS+i][j];
         }
+#endif
     }
 
 };

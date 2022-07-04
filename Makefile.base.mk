@@ -175,20 +175,24 @@ endif
 endif
 
 ifeq ($(MACOS),true)
+
 # MacOS linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip,-dead_strip_dylibs
 ifneq ($(SKIP_STRIPPING),true)
 LINK_OPTS += -Wl,-x
 endif
+
 else
+
 # Common linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1,--gc-sections
+ifneq ($(WASM),true)
+LINK_OPTS += -Wl,--as-needed
 ifneq ($(SKIP_STRIPPING),true)
 LINK_OPTS += -Wl,--strip-all
 endif
-ifneq ($(WASM),true)
-LINK_OPTS += -Wl,--as-needed
 endif
+
 endif
 
 ifeq ($(SKIP_STRIPPING),true)
@@ -535,6 +539,8 @@ endif
 
 ifeq ($(MACOS),true)
 LIB_EXT = .dylib
+else ifeq ($(WASM),true)
+LIB_EXT = .wasm
 else ifeq ($(WINDOWS),true)
 LIB_EXT = .dll
 else
@@ -547,7 +553,7 @@ endif
 ifeq ($(MACOS),true)
 SHARED = -dynamiclib
 else ifeq ($(WASM),true)
-SHARED = -sSIDE_MODULE=1
+SHARED = -sSIDE_MODULE=2
 else
 SHARED = -shared
 endif

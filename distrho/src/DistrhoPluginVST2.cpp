@@ -1665,7 +1665,7 @@ static struct Cleanup {
 END_NAMESPACE_DISTRHO
 
 DISTRHO_PLUGIN_EXPORT
-#if DISTRHO_OS_WINDOWS || DISTRHO_OS_MAC
+#if DISTRHO_OS_MAC || DISTRHO_OS_WASM || DISTRHO_OS_WINDOWS
 const AEffect* VSTPluginMain(audioMasterCallback audioMaster);
 #else
 const AEffect* VSTPluginMain(audioMasterCallback audioMaster) asm ("main");
