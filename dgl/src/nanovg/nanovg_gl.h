@@ -404,7 +404,9 @@ static int glnvg__deleteTexture(GLNVGcontext* gl, int id)
 			if (gl->textureContext->textures[i].tex != 0 && (gl->textureContext->textures[i].flags & NVG_IMAGE_NODELETE) == 0)
 			{
 				glDeleteTextures(1, &gl->textureContext->textures[i].tex);
+#if defined NANOVG_GLES2
 				free(gl->textureContext->textures[i].data);
+#endif
 			}
 			memset(&gl->textureContext->textures[i], 0, sizeof(gl->textureContext->textures[i]));
 			return 1;
