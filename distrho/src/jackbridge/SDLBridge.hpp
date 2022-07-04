@@ -194,17 +194,19 @@ struct SDLBridge {
 
         float* const fstream = (float*)stream;
 
+#if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
         if (self->jackProcessCallback == nullptr)
+#endif
         {
             std::memset(fstream, 0, len);
             return;
         }
 
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         const uint numFrames = static_cast<uint>(static_cast<uint>(len) / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS);
 
         self->jackProcessCallback(numFrames, self->jackProcessArg);
 
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
             for (uint j=0; j < numFrames; ++j)
