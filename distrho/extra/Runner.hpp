@@ -22,6 +22,7 @@
 #ifndef DISTRHO_OS_WASM
 # include "Thread.hpp"
 #else
+# include "String.hpp"
 # include <emscripten/emscripten.h>
 #endif
 
