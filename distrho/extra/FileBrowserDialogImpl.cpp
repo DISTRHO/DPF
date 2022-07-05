@@ -27,6 +27,9 @@
 #ifdef DISTRHO_OS_MAC
 # import <Cocoa/Cocoa.h>
 #endif
+#ifdef DISTRHO_OS_WASM
+# include <emscripten/emscripten.h>
+#endif
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
 # include <process.h>
@@ -69,6 +72,52 @@ static constexpr int toHexChar(const char c) noexcept
 {
     return c >= '0' && c <= '9' ? c - '0' : (c >= 'A' && c <= 'F' ? c - 'A' : c - 'a') + 10;
 }
+#endif
+
+#ifdef DISTRHO_OS_WASM
+# define DISTRHO_WASM_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
+# define DISTRHO_WASM_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_WASM_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
+# define DISTRHO_WASM_NAMESPACE_HELPER(NS) #NS
+# define DISTRHO_WASM_NAMESPACE(NS) DISTRHO_WASM_NAMESPACE_HELPER(NS)
+// FIXME use world class name as prefix
+EM_JS(bool, DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, openWebBrowserFileDialog), (const char* funcname, void* handle), {
+    var canvasFileElem = document.getElementById('canvas_file_open');
+    var jsfuncname = UTF8ToString(funcname);
+    if (canvasFileElem) {
+        canvasFileElem.onchange = function(e) {
+            if (!!canvasFileElem.files) {
+                var file = canvasFileElem.files[0];
+                var filename = '/' + file.name;
+                var reader = new FileReader();
+                reader.onloadend = function(e) {
+                    var content = new Uint8Array(reader.result);
+                    Module.FS.writeFile(filename, content);
+                    Module.ccall(jsfuncname, 'null', ['number', 'string'], [handle, filename]);
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        };
+        canvasFileElem.click();
+        return true;
+    }
+    return false;
+});
+EM_JS(bool, DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, downloadWebBrowserFile), (), {
+    var canvasFileElem = document.getElementById('canvas_file_save');
+    if (canvasFileElem) {
+        // FIXME filename shouldn't change
+        var content = Module.FS.readFile('/download.vcv');
+        canvasFileElem.download = 'download.vcv';
+        canvasFileElem.href = URL.createObjectURL(new Blob([content]));
+        canvasFileElem.click();
+        return true;
+    }
+    return false;
+});
+# define openWebBrowserFileDialogNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, openWebBrowserFileDialog)
+# define downloadWebBrowserFileNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, downloadWebBrowserFile)
+# define fileBrowserSetPathNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, fileBrowserSetPath)
+# define fileBrowserSetPathFuncName DISTRHO_WASM_NAMESPACE(FILE_BROWSER_DIALOG_NAMESPACE) "_fileBrowserSetPath"
 #endif
 
 struct FileBrowserData {
@@ -284,6 +333,19 @@ struct FileBrowserData {
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifdef DISTRHO_OS_WASM
+extern "C" {
+EMSCRIPTEN_KEEPALIVE
+void fileBrowserSetPathNamespaced(FileBrowserHandle handle, const char* filename)
+{
+    handle->free();
+
+    if (filename != nullptr && filename[0] != '\0')
+        handle->selectedFile = strdup(filename);
+}
+}
+#endif
+
 FileBrowserHandle fileBrowserCreate(const bool isEmbed,
                                     const uintptr_t windowId,
                                     const double scaleFactor,
@@ -295,17 +357,13 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     {
 #ifdef DISTRHO_OS_WINDOWS
         if (char* const cwd = _getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
 #else
         if (char* const cwd = getcwd(nullptr, 0))
+#endif
         {
             startDir = cwd;
             std::free(cwd);
         }
-#endif
     }
 
     DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), nullptr);
@@ -373,6 +431,18 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
         }];
     });
 # endif
+#endif
+
+#ifdef DISTRHO_OS_WASM
+    if (options.saving)
+    {
+        handle->selectedFile = strdup("/download");
+        return handle.release();
+    }
+
+    const char* const funcname = fileBrowserSetPathFuncName;
+    if (openWebBrowserFileDialogNamespaced(funcname, handle.get()))
+        return handle.release();
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -663,6 +733,11 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
 
 void fileBrowserClose(const FileBrowserHandle handle)
 {
+#ifdef DISTRHO_OS_WASM
+    if (fileBrowserGetPath(handle) != nullptr)
+        downloadWebBrowserFileNamespaced();
+#endif
+
 #ifdef HAVE_X11
     if (Display* const x11display = handle->x11display)
         x_fib_close(x11display);
@@ -693,3 +768,9 @@ END_NAMESPACE_DISTRHO
 
 #undef FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
 #undef FILE_BROWSER_DIALOG_DGL_NAMESPACE
+#undef FILE_BROWSER_DIALOG_NAMESPACE
+
+#undef openWebBrowserFileDialogNamespaced
+#undef downloadWebBrowserFileNamespaced
+#undef fileBrowserSetPathNamespaced
+#undef fileBrowserSetPathFuncName

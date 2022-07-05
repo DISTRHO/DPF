@@ -481,7 +481,9 @@ inline void PluginWindow::onFileSelected(const char* const filename)
     }
    #endif
 
+    puglBackendEnter(pData->view);
     ui->uiFileBrowserSelected(filename);
+    puglBackendLeave(pData->view);
 }
 #endif
 

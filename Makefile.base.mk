@@ -172,7 +172,7 @@ BASE_OPTS  = -O3 -ffast-math -fdata-sections -ffunction-sections
 ifeq ($(CPU_I386_OR_X86_64),true)
 BASE_OPTS += -mtune=generic
 ifeq ($(WASM),true)
-# BASE_OPTS += -msse -msse2 -msse3 -msimd128
+BASE_OPTS += -msse -msse2 -msse3 -msimd128
 else
 BASE_OPTS += -msse -msse2 -mfpmath=sse
 endif
