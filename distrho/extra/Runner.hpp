@@ -191,7 +191,8 @@ private:
                     if (timeInterval != 0)
                         d_msleep(timeInterval);
 
-                    pthread_yield();
+                    // FIXME
+                    // pthread_yield();
                     continue;
                 }
 
