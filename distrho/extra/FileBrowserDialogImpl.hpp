@@ -34,6 +34,9 @@ struct FileBrowserOptions {
     /** Whether we are saving, opening files otherwise (default) */
     bool saving;
 
+    /** Default filename when saving, required in some platforms (basename without path separators) */
+    const char* defaultName;
+
     /** Start directory, uses current working directory if null */
     const char* startDir;
 
@@ -74,6 +77,7 @@ struct FileBrowserOptions {
     /** Constructor for default values */
     FileBrowserOptions()
       : saving(false),
+        defaultName(nullptr),
         startDir(nullptr),
         title(nullptr),
         buttons() {}

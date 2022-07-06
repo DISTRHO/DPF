@@ -267,6 +267,10 @@ ifeq ($(MACOS_OLD),true)
 BUILD_CXX_FLAGS = $(BASE_FLAGS) $(CXXFLAGS) -DHAVE_CPP11_SUPPORT=0
 endif
 
+ifeq ($(WASM_EXCEPTIONS),true)
+BUILD_CXX_FLAGS += -fexceptions
+endif
+
 ifeq ($(WINDOWS),true)
 # Always build statically on windows
 LINK_FLAGS     += -static -static-libgcc -static-libstdc++
