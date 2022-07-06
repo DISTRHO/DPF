@@ -65,6 +65,10 @@ ifeq ($(WASM),true)
 JACK_FLAGS += -sUSE_SDL=2
 JACK_LIBS  += -sUSE_SDL=2
 
+ifneq ($(FILE_BROWSER_DISABLED),true)
+JACK_LIBS  += -sEXPORTED_RUNTIME_METHODS=FS,cwrap
+endif
+
 else ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
 
 ifeq ($(MACOS),true)
