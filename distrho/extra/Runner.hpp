@@ -23,7 +23,7 @@
 # include "Thread.hpp"
 #else
 # include "String.hpp"
-# include <emscripten/emscripten.h>
+# include <emscripten/html5.h>
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -114,7 +114,7 @@ public:
         return fRunnerThread.startThread();
        #else
         fShouldStop = false;
-        emscripten_async_call(_entryPoint, this, timeIntervalMilliseconds);
+        emscripten_set_timeout_loop(_entryPoint, timeIntervalMilliseconds, this);
         return true;
        #endif
     }
@@ -204,10 +204,10 @@ private:
     const String fRunnerName;
     volatile bool fShouldStop;
 
-    void _runEntryPoint() noexcept
+    EM_BOOL _runEntryPoint() noexcept
     {
         if (fShouldStop)
-            return;
+            return EM_FALSE;
 
         bool stillRunning = false;
 
@@ -216,12 +216,14 @@ private:
         } catch(...) {}
 
         if (stillRunning && !fShouldStop)
-            emscripten_async_call(_entryPoint, this, fTimeInterval);
+            return EM_TRUE;
+
+        return EM_FALSE;
     }
 
-    static void _entryPoint(void* const userData) noexcept
+    static EM_BOOL _entryPoint(double, void* const userData) noexcept
     {
-        static_cast<Runner*>(userData)->_runEntryPoint();
+        return static_cast<Runner*>(userData)->_runEntryPoint();
     }
 #endif
 
