@@ -261,10 +261,18 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     puglSetViewHint(view, PUGL_DEPTH_BITS, 16);
 #endif
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
-#ifdef DGL_USE_OPENGL3
+
+#if defined(DGL_USE_OPENGL3) || defined(DGL_USE_GLES3)
     puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
     puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
+#elif defined(DGL_USE_GLES2)
+    puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+    puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+#else
+    puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_TRUE);
+    puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
 #endif
+
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
 
