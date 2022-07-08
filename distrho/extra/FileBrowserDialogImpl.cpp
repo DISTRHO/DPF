@@ -490,6 +490,8 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     const char* const funcname = fileBrowserSetPathFuncName;
     if (openWebBrowserFileDialogNamespaced(funcname, handle.get()))
         return handle.release();
+
+    return nullptr;
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
