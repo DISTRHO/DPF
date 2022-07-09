@@ -74,76 +74,97 @@ static constexpr int toHexChar(const char c) noexcept
 }
 #endif
 
+// --------------------------------------------------------------------------------------------------------------------
+
 #ifdef DISTRHO_OS_WASM
 # define DISTRHO_WASM_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
 # define DISTRHO_WASM_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_WASM_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
 # define DISTRHO_WASM_NAMESPACE_HELPER(NS) #NS
 # define DISTRHO_WASM_NAMESPACE(NS) DISTRHO_WASM_NAMESPACE_HELPER(NS)
-// FIXME use world class name as prefix
-EM_JS(bool, DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, openWebBrowserFileDialog), (const char* funcname, void* handle), {
-    var canvasFileOpenElem = document.getElementById('canvas_file_open');
-    var jsfuncname = UTF8ToString(funcname);
-    var jsfunc = Module.cwrap(jsfuncname, 'null', ['number', 'string']);
-
-    if (!canvasFileOpenElem) {
-        jsfunc(handle, "");
-        return false;
-    }
-
-    canvasFileOpenElem.onchange = function(e) {
-        if (!canvasFileOpenElem.files) {
-            jsfunc(handle, "");
-            return;
-        }
-
-        var file = canvasFileOpenElem.files[0];
-        var filename = '/' + file.name;
-        var reader = new FileReader();
-
-        reader.onloadend = function(e) {
-            var content = new Uint8Array(reader.result);
-            Module.FS.writeFile(filename, content);
-            jsfunc(handle, filename);
-        };
-
-        reader.readAsArrayBuffer(file);
-    };
-
-    canvasFileOpenElem.click();
-    return true;
-});
-EM_JS(bool, DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, downloadWebBrowserFile), (const char* nameprefix, const char* filename), {
-    var canvasFileObjName = UTF8ToString(nameprefix) + "_file_save";
-    var jsfilename = UTF8ToString(filename);
-
-    var canvasFileSaveElem = document.getElementById(canvasFileObjName);
-    if (canvasFileSaveElem) {
-        // only 1 file save allowed at once
-        console.warn("One file save operation already in progress, refusing to open another");
-        return false;
-    }
-
-    canvasFileSaveElem = document.createElement('a');
-    canvasFileSaveElem.download = jsfilename;
-    canvasFileSaveElem.id = canvasFileObjName;
-    canvasFileSaveElem.style.display = 'none';
-    document.body.appendChild(canvasFileSaveElem);
-
-    var content = Module.FS.readFile('/' + jsfilename);
-    canvasFileSaveElem.href = URL.createObjectURL(new Blob([content]));
-    canvasFileSaveElem.click();
-
-    setTimeout(function() {
-        URL.revokeObjectURL(canvasFileSaveElem.href);
-        document.body.removeChild(canvasFileSaveElem);
-    }, 2000);
-    return true;
-});
-# define openWebBrowserFileDialogNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, openWebBrowserFileDialog)
-# define downloadWebBrowserFileNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, downloadWebBrowserFile)
 # define fileBrowserSetPathNamespaced DISTRHO_WASM_NAMESPACE_MACRO(FILE_BROWSER_DIALOG_NAMESPACE, fileBrowserSetPath)
 # define fileBrowserSetPathFuncName DISTRHO_WASM_NAMESPACE(FILE_BROWSER_DIALOG_NAMESPACE) "_fileBrowserSetPath"
+
+// FIXME use world class name as prefix
+static bool openWebBrowserFileDialog(const char* const funcname, void* const handle)
+{
+    const char* const nameprefix = DISTRHO_WASM_NAMESPACE(FILE_BROWSER_DIALOG_NAMESPACE);
+
+    return EM_ASM_INT({
+        var canvasFileObjName = UTF8ToString($0) + "_file_open";
+        var canvasFileOpenElem = document.getElementById(canvasFileObjName);
+
+        var jsfuncname = UTF8ToString($1);
+        var jsfunc = Module.cwrap(jsfuncname, 'null', ['number', 'string']);
+
+        if (canvasFileOpenElem) {
+            document.body.removeChild(canvasFileOpenElem);
+        }
+
+        canvasFileOpenElem = document.createElement('input');
+        canvasFileOpenElem.type = 'file';
+        canvasFileOpenElem.id = canvasFileObjName;
+        canvasFileOpenElem.style.display = 'none';
+        document.body.appendChild(canvasFileOpenElem);
+
+        canvasFileOpenElem.onchange = function(e) {
+            if (!canvasFileOpenElem.files) {
+                jsfunc($2, "");
+                return;
+            }
+
+            var file = canvasFileOpenElem.files[0];
+            var filename = '/' + file.name;
+            var reader = new FileReader();
+
+            reader.onloadend = function(e) {
+                var content = new Uint8Array(reader.result);
+                Module.FS.writeFile(filename, content);
+                jsfunc($2, filename);
+            };
+
+            reader.readAsArrayBuffer(file);
+        };
+
+        canvasFileOpenElem.click();
+        return 1;
+    }, nameprefix, funcname, handle) != 0;
+}
+
+static bool downloadWebBrowserFile(const char* const filename)
+{
+    const char* const nameprefix = DISTRHO_WASM_NAMESPACE(FILE_BROWSER_DIALOG_NAMESPACE);
+
+    return EM_ASM_INT({
+        var canvasFileObjName = UTF8ToString($0) + "_file_save";
+        var jsfilename = UTF8ToString($1);
+
+        var canvasFileSaveElem = document.getElementById(canvasFileObjName);
+        if (canvasFileSaveElem) {
+            // only 1 file save allowed at once
+            console.warn("One file save operation already in progress, refusing to open another");
+            return 0;
+        }
+
+        canvasFileSaveElem = document.createElement('a');
+        canvasFileSaveElem.download = jsfilename;
+        canvasFileSaveElem.id = canvasFileObjName;
+        canvasFileSaveElem.style.display = 'none';
+        document.body.appendChild(canvasFileSaveElem);
+
+        var content = Module.FS.readFile('/' + jsfilename);
+        canvasFileSaveElem.href = URL.createObjectURL(new Blob([content]));
+        canvasFileSaveElem.click();
+
+        setTimeout(function() {
+            URL.revokeObjectURL(canvasFileSaveElem.href);
+            document.body.removeChild(canvasFileSaveElem);
+        }, 2000);
+        return 1;
+    }, nameprefix, filename) != 0;
+}
 #endif
+
+// --------------------------------------------------------------------------------------------------------------------
 
 struct FileBrowserData {
     const char* selectedFile;
@@ -488,7 +509,7 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
     }
 
     const char* const funcname = fileBrowserSetPathFuncName;
-    if (openWebBrowserFileDialogNamespaced(funcname, handle.get()))
+    if (openWebBrowserFileDialog(funcname, handle.get()))
         return handle.release();
 
     return nullptr;
@@ -784,7 +805,7 @@ void fileBrowserClose(const FileBrowserHandle handle)
 {
 #ifdef DISTRHO_OS_WASM
     if (handle->saving && fileBrowserGetPath(handle) != nullptr)
-        downloadWebBrowserFileNamespaced(DISTRHO_WASM_NAMESPACE(FILE_BROWSER_DIALOG_NAMESPACE), handle->defaultName);
+        downloadWebBrowserFile(handle->defaultName);
 #endif
 
 #ifdef HAVE_X11
@@ -819,7 +840,5 @@ END_NAMESPACE_DISTRHO
 #undef FILE_BROWSER_DIALOG_DGL_NAMESPACE
 #undef FILE_BROWSER_DIALOG_NAMESPACE
 
-#undef openWebBrowserFileDialogNamespaced
-#undef downloadWebBrowserFileNamespaced
 #undef fileBrowserSetPathNamespaced
 #undef fileBrowserSetPathFuncName
