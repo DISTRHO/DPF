@@ -53,11 +53,14 @@ protected:
     Runner(const char* const runnerName = nullptr) noexcept
        #ifndef DISTRHO_OS_WASM
         : fRunnerThread(this, runnerName),
+          fTimeInterval(0)
        #else
         : fRunnerName(runnerName),
-          fShouldStop(false),
+          fIntervalId(0)
        #endif
-          fTimeInterval(0) {}
+    {
+    }
+
 
     /*
      * Destructor.
@@ -84,7 +87,7 @@ protected:
        #ifndef DISTRHO_OS_WASM
         return fRunnerThread.shouldThreadExit();
        #else
-        return fShouldStop;
+        return fIntervalId == 0;
        #endif
     }
 
@@ -99,8 +102,7 @@ public:
        #ifndef DISTRHO_OS_WASM
         return fRunnerThread.isThreadRunning();
        #else
-        fShouldStop = false;
-        return true;
+        return fIntervalId != 0;
        #endif
     }
 
@@ -109,12 +111,13 @@ public:
      */
     bool startRunner(const uint timeIntervalMilliseconds = 0) noexcept
     {
-        fTimeInterval = timeIntervalMilliseconds;
        #ifndef DISTRHO_OS_WASM
+        DISTRHO_SAFE_ASSERT_RETURN(!fRunnerThread.isThreadRunning(), false);
+        fTimeInterval = timeIntervalMilliseconds;
         return fRunnerThread.startThread();
        #else
-        fShouldStop = false;
-        emscripten_set_timeout_loop(_entryPoint, timeIntervalMilliseconds, this);
+        DISTRHO_SAFE_ASSERT_RETURN(fIntervalId == 0, false);
+        fIntervalId = emscripten_set_interval(_entryPoint, timeIntervalMilliseconds, this);
         return true;
        #endif
     }
@@ -128,7 +131,7 @@ public:
        #ifndef DISTRHO_OS_WASM
         return fRunnerThread.stopThread(-1);
        #else
-        fShouldStop = true;
+        signalRunnerShouldStop();
         return true;
        #endif
     }
@@ -141,7 +144,11 @@ public:
        #ifndef DISTRHO_OS_WASM
         fRunnerThread.signalThreadShouldExit();
        #else
-        fShouldStop = true;
+        if (fIntervalId != 0)
+        {
+            emscripten_clear_interval(fIntervalId);
+            fIntervalId = 0;
+        }
        #endif
     }
 
@@ -200,34 +207,32 @@ private:
             }
         }
     } fRunnerThread;
+
+    uint fTimeInterval;
 #else
     const String fRunnerName;
-    volatile bool fShouldStop;
+    long fIntervalId;
 
-    EM_BOOL _runEntryPoint() noexcept
+    void _runEntryPoint() noexcept
     {
-        if (fShouldStop)
-            return EM_FALSE;
-
         bool stillRunning = false;
 
         try {
             stillRunning = run();
         } catch(...) {}
 
-        if (stillRunning && !fShouldStop)
-            return EM_TRUE;
-
-        return EM_FALSE;
+        if (fIntervalId != 0 && !stillRunning)
+        {
+            emscripten_clear_interval(fIntervalId);
+            fIntervalId = 0;
+        }
     }
 
-    static EM_BOOL _entryPoint(double, void* const userData) noexcept
+    static void _entryPoint(void* const userData) noexcept
     {
-        return static_cast<Runner*>(userData)->_runEntryPoint();
+        static_cast<Runner*>(userData)->_runEntryPoint();
     }
 #endif
-
-    uint fTimeInterval;
 
     DISTRHO_DECLARE_NON_COPYABLE(Runner)
 };
