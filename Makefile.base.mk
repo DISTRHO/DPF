@@ -269,6 +269,7 @@ endif
 
 ifeq ($(WASM_EXCEPTIONS),true)
 BUILD_CXX_FLAGS += -fexceptions
+LINK_FLAGS      += -fexceptions
 endif
 
 ifeq ($(WINDOWS),true)

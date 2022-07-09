@@ -28,6 +28,14 @@
 
 START_NAMESPACE_DISTRHO
 
+#ifdef DISTRHO_RUNNER_INDIRECT_WASM_CALLS
+long d_emscripten_set_interval(void (*)(void*), double, void*);
+void d_emscripten_clear_interval(long);
+#else
+# define d_emscripten_set_interval emscripten_set_interval
+# define d_emscripten_clear_interval emscripten_clear_interval
+#endif
+
 // -------------------------------------------------------------------------------------------------------------------
 // Runner class
 
@@ -60,7 +68,6 @@ protected:
        #endif
     {
     }
-
 
     /*
      * Destructor.
@@ -117,7 +124,7 @@ public:
         return fRunnerThread.startThread();
        #else
         DISTRHO_SAFE_ASSERT_RETURN(fIntervalId == 0, false);
-        fIntervalId = emscripten_set_interval(_entryPoint, timeIntervalMilliseconds, this);
+        fIntervalId = d_emscripten_set_interval(_entryPoint, timeIntervalMilliseconds, this);
         return true;
        #endif
     }
@@ -146,7 +153,7 @@ public:
        #else
         if (fIntervalId != 0)
         {
-            emscripten_clear_interval(fIntervalId);
+            d_emscripten_clear_interval(fIntervalId);
             fIntervalId = 0;
         }
        #endif
@@ -223,7 +230,7 @@ private:
 
         if (fIntervalId != 0 && !stillRunning)
         {
-            emscripten_clear_interval(fIntervalId);
+            d_emscripten_clear_interval(fIntervalId);
             fIntervalId = 0;
         }
     }
