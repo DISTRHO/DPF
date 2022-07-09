@@ -479,7 +479,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Backwards-compatible HAVE_DGL
 
-ifeq ($(MACOS_OR_WINDOWS),true)
+ifeq ($(MACOS_OR_WASM_OR_WINDOWS),true)
 HAVE_DGL = true
 else ifeq ($(HAVE_OPENGL),true)
 HAVE_DGL = $(HAVE_X11)
