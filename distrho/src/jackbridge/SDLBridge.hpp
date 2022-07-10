@@ -77,7 +77,7 @@ struct SDLBridge {
         requested.userdata = this;
 
         SDL_SetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME, clientName);
-        SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "2");
+        // SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "1");
        #endif
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
@@ -273,6 +273,9 @@ struct SDLBridge {
         DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(len > 0,);
 
+        if (self->jackProcessCallback == nullptr)
+            return;
+
         const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_INPUTS);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
@@ -284,11 +287,7 @@ struct SDLBridge {
                 self->audioBuffers[i][j] = fstream[j * DISTRHO_PLUGIN_NUM_INPUTS + i];
         }
 
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
-        // if there are no outputs, run process callback now
-        if (self->jackProcessCallback != nullptr)
-            self->jackProcessCallback(numFrames, self->jackProcessArg);
-       #endif
+        self->jackProcessCallback(numFrames, self->jackProcessArg);
     }
 #endif
 
@@ -310,9 +309,12 @@ struct SDLBridge {
         const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
-        float* const fstream = (float*)stream;
-
+       #if DISTRHO_PLUGIN_NUM_INPUTS == 0
+        // if there are no inputs, run process callback now
         self->jackProcessCallback(numFrames, self->jackProcessArg);
+       #endif
+
+        float* const fstream = (float*)stream;
 
         for (uint i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
