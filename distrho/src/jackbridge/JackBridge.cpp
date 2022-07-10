@@ -36,7 +36,7 @@
 #include "../../extra/LibraryUtils.hpp"
 
 // in case JACK fails, we fallback to RtAudio or SDL native API
-#if defined(DISTRHO_OS_WASM)
+#if defined(DISTRHO_OS_HAIKU) || defined(DISTRHO_OS_WASM)
 # include "SDLBridge.hpp"
 #elif defined(DISTRHO_PROPER_CPP11_SUPPORT) && !defined(DPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK)
 # include "RtAudioBridge.hpp"
