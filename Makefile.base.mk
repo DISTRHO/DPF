@@ -324,9 +324,9 @@ endif
 
 HAVE_LIBLO = $(shell $(PKG_CONFIG) --exists liblo && echo true)
 
-ifeq ($(SKIP_RTAUDIO_FALLBACK),true)
-CXXFLAGS += -DDPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK
-else
+ifneq ($(SKIP_NATIVE_AUDIO_FALLBACK),true)
+ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
+
 ifeq ($(MACOS),true)
 HAVE_RTAUDIO    = true
 else ifeq ($(WINDOWS),true)
@@ -334,11 +334,14 @@ HAVE_RTAUDIO    = true
 else
 HAVE_ALSA       = $(shell $(PKG_CONFIG) --exists alsa && echo true)
 HAVE_PULSEAUDIO = $(shell $(PKG_CONFIG) --exists libpulse-simple && echo true)
+HAVE_SDL2       = $(shell $(PKG_CONFIG) --exists sdl2 && echo true)
 ifeq ($(HAVE_ALSA),true)
 HAVE_RTAUDIO    = true
 else ifeq ($(HAVE_PULSEAUDIO),true)
 HAVE_RTAUDIO    = true
 endif
+endif
+
 endif
 endif
 
@@ -464,6 +467,11 @@ endif
 ifeq ($(HAVE_PULSEAUDIO),true)
 PULSEAUDIO_FLAGS = $(shell $(PKG_CONFIG) --cflags libpulse-simple)
 PULSEAUDIO_LIBS  = $(shell $(PKG_CONFIG) --libs libpulse-simple)
+endif
+
+ifeq ($(HAVE_SDL2),true)
+SDL2_FLAGS = $(shell $(PKG_CONFIG) --cflags sdl2)
+SDL2_LIBS  = $(shell $(PKG_CONFIG) --libs sdl2)
 endif
 
 ifeq ($(HAVE_JACK),true)
@@ -627,6 +635,7 @@ features:
 	$(call print_available,HAVE_OPENGL)
 	$(call print_available,HAVE_PULSEAUDIO)
 	$(call print_available,HAVE_RTAUDIO)
+	$(call print_available,HAVE_SDL2)
 	$(call print_available,HAVE_STUB)
 	$(call print_available,HAVE_VULKAN)
 	$(call print_available,HAVE_X11)

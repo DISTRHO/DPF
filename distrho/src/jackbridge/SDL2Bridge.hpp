@@ -1,5 +1,5 @@
 /*
- * SDLBridge for DPF
+ * SDL Bridge for DPF
  * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -14,15 +14,18 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef SDLBRIDGE_HPP_INCLUDED
-#define SDLBRIDGE_HPP_INCLUDED
+#ifndef SDL_BRIDGE_HPP_INCLUDED
+#define SDL_BRIDGE_HPP_INCLUDED
 
-#include "JackBridge.hpp"
-#include "../../extra/RingBuffer.hpp"
+#include "NativeBridge.hpp"
 
 #include <SDL.h>
 
-struct SDLBridge {
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+# error SDL without audio does not make sense
+#endif
+
+struct SDL2Bridge : NativeBridge {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
     SDL_AudioDeviceID captureDeviceId = 0;
 #endif
@@ -30,43 +33,8 @@ struct SDLBridge {
     SDL_AudioDeviceID playbackDeviceId = 0;
 #endif
 
-    // SDL information
-    uint bufferSize = 0;
-    uint sampleRate = 0;
-
-    // Port caching information
-    uint numAudioIns = 0;
-    uint numAudioOuts = 0;
-    uint numMidiIns = 0;
-    uint numMidiOuts = 0;
-
-    // JACK callbacks
-    JackProcessCallback jackProcessCallback = nullptr;
-    void* jackProcessArg = nullptr;
-
-    // Runtime buffers
-    enum PortMask {
-        kPortMaskAudio = 0x1000,
-        kPortMaskMIDI = 0x2000,
-        kPortMaskInput = 0x4000,
-        kPortMaskOutput = 0x8000,
-        kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
-        kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
-    };
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
-    float* audioBufferStorage;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    HeapRingBuffer midiInBuffer;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    HeapRingBuffer midiOutBuffer;
-#endif
-
-    bool open(const char* const clientName)
+    bool open(const char* const clientName) override
     {
-       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         SDL_InitSubSystem(SDL_INIT_AUDIO);
 
         SDL_AudioSpec requested;
@@ -78,7 +46,6 @@ struct SDLBridge {
 
         SDL_SetHint(SDL_HINT_AUDIO_DEVICE_APP_NAME, clientName);
         // SDL_SetHint(SDL_HINT_AUDIO_RESAMPLING_MODE, "1");
-       #endif
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, "Capure");
@@ -144,130 +111,67 @@ struct SDLBridge {
             d_stderr2("Mismatch sample rate %u vs %u", receivedCapture.freq, receivedCapture.freq);
             return false;
         }
-        bufferSize = receivedCapture.samples;
-        sampleRate = receivedCapture.freq;
-       #elif DISTRHO_PLUGIN_NUM_INPUTS > 0
-        bufferSize = receivedCapture.samples;
-        sampleRate = receivedCapture.freq;
-       #elif DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        bufferSize = receivedPlayback.samples;
-        sampleRate = receivedPlayback.freq;
-       #else
-        d_stderr2("SDL without audio, unsupported for now");
-        return false;
        #endif
 
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        bufferSize = receivedCapture.samples;
+        sampleRate = receivedCapture.freq;
+       #else
+        bufferSize = receivedPlayback.samples;
+        sampleRate = receivedPlayback.freq;
+       #endif
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        std::memset(audioBufferStorage, 0, sizeof(float)*bufferSize*DISTRHO_PLUGIN_NUM_INPUTS);
-#endif
-
-        for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-            audioBuffers[i] = audioBufferStorage + (bufferSize * i);
-#endif
-
+        allocBuffers();
         return true;
     }
 
-    bool close()
+    bool close() override
     {
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
         SDL_CloseAudioDevice(captureDeviceId);
         captureDeviceId = 0;
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
         SDL_CloseAudioDevice(playbackDeviceId);
         playbackDeviceId = 0;
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        delete[] audioBufferStorage;
-        audioBufferStorage = nullptr;
-#endif
-
+        freeBuffers();
         return true;
     }
 
-    bool activate()
+    bool activate() override
     {
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
         SDL_PauseAudioDevice(captureDeviceId, 0);
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
         SDL_PauseAudioDevice(playbackDeviceId, 0);
-#endif
+       #endif
         return true;
     }
 
-    bool deactivate()
+    bool deactivate() override
     {
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
         SDL_PauseAudioDevice(captureDeviceId, 1);
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
         SDL_PauseAudioDevice(playbackDeviceId, 1);
-#endif
+       #endif
         return true;
     }
 
-    jack_port_t* registerPort(const char* const type, const ulong flags)
-    {
-        bool isAudio, isInput;
-
-        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
-            isAudio = true;
-        else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
-            isAudio = false;
-        else
-            return nullptr;
-
-        /**/ if (flags & JackPortIsInput)
-            isInput = true;
-        else if (flags & JackPortIsOutput)
-            isInput = false;
-        else
-            return nullptr;
-
-        const uintptr_t ret = (isAudio ? kPortMaskAudio : kPortMaskMIDI)
-                            | (isInput ? kPortMaskInput : kPortMaskOutput);
-
-        return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++)
-                                             : (isInput ? numMidiIns++ : numMidiOuts++)));
-    }
-
-    void* getPortBuffer(jack_port_t* const port)
-    {
-        const uintptr_t portMask = (uintptr_t)port;
-        DISTRHO_SAFE_ASSERT_RETURN(portMask != 0x0, nullptr);
-
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        if (portMask & kPortMaskAudio)
-            return audioBuffers[(portMask & kPortMaskInput ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if ((portMask & kPortMaskInputMIDI) == kPortMaskInputMIDI)
-            return &midiInBuffer;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if ((portMask & kPortMaskOutputMIDI) == kPortMaskOutputMIDI)
-            return &midiOutBuffer;
-#endif
-
-        return nullptr;
-    }
-
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+   #if DISTRHO_PLUGIN_NUM_INPUTS > 0
     static void AudioInputCallback(void* const userData, uchar* const stream, const int len)
     {
-        SDLBridge* const self = (SDLBridge*)userData;
+        NativeBridge* const self = static_cast<NativeBridge*>(userData);
 
         // safety checks
         DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr,);
@@ -287,14 +191,17 @@ struct SDLBridge {
                 self->audioBuffers[i][j] = fstream[j * DISTRHO_PLUGIN_NUM_INPUTS + i];
         }
 
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+        // if there are no outputs, run process callback now
         self->jackProcessCallback(numFrames, self->jackProcessArg);
+       #endif
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+   #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     static void AudioOutputCallback(void* const userData, uchar* const stream, const int len)
     {
-        SDLBridge* const self = (SDLBridge*)userData;
+        NativeBridge* const self = static_cast<NativeBridge*>(userData);
 
         // safety checks
         DISTRHO_SAFE_ASSERT_RETURN(stream != nullptr,);
@@ -309,10 +216,7 @@ struct SDLBridge {
         const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS == 0
-        // if there are no inputs, run process callback now
         self->jackProcessCallback(numFrames, self->jackProcessArg);
-       #endif
 
         float* const fstream = (float*)stream;
 
@@ -322,7 +226,7 @@ struct SDLBridge {
                 fstream[j * DISTRHO_PLUGIN_NUM_OUTPUTS + i] = self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + i][j];
         }
     }
-#endif
+   #endif
 };
 
-#endif
+#endif // SDL_BRIDGE_HPP_INCLUDED

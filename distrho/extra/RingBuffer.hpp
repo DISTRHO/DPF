@@ -203,11 +203,23 @@ public:
     /*
      * Get the size of the data available to read.
      */
-    uint32_t getAvailableDataSize() const noexcept
+    uint32_t getReadableDataSize() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, 0);
 
-        const uint32_t wrap((buffer->tail > buffer->wrtn) ? 0 : buffer->size);
+        const uint32_t wrap = buffer->head > buffer->tail ? 0 : buffer->size;
+
+        return wrap + buffer->head - buffer->tail;
+    }
+
+    /*
+     * Get the size of the data available to write.
+     */
+    uint32_t getWritableDataSize() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, 0);
+
+        const uint32_t wrap = (buffer->tail > buffer->wrtn) ? 0 : buffer->size;
 
         return wrap + buffer->tail - buffer->wrtn;
     }
@@ -722,6 +734,15 @@ public:
         delete[] heapBuffer.buf;
         heapBuffer.buf  = nullptr;
         heapBuffer.size = 0;
+    }
+
+    void copyFromAndClearOther(HeapRingBuffer& other)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(other.heapBuffer.size == heapBuffer.size,);
+
+        std::memcpy(&heapBuffer, &other.heapBuffer, sizeof(HeapBuffer) - sizeof(uint8_t*));
+        std::memcpy(heapBuffer.buf, other.heapBuffer.buf, sizeof(uint8_t) * heapBuffer.size);
+        other.clearData();
     }
 
 private:

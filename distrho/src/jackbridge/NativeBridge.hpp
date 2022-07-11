@@ -1,0 +1,213 @@
+/*
+ * Native Bridge for DPF
+ * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with
+ * or without fee is hereby granted, provided that the above copyright notice and this
+ * permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN
+ * NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef NATIVE_BRIDGE_HPP_INCLUDED
+#define NATIVE_BRIDGE_HPP_INCLUDED
+
+#include "JackBridge.hpp"
+
+#include "../../extra/RingBuffer.hpp"
+
+using DISTRHO_NAMESPACE::HeapRingBuffer;
+
+struct NativeBridge {
+    // Current status information
+    uint bufferSize = 0;
+    uint sampleRate = 0;
+
+    // Port caching information
+    uint numAudioIns = 0;
+    uint numAudioOuts = 0;
+    uint numMidiIns = 0;
+    uint numMidiOuts = 0;
+
+    // JACK callbacks
+    JackProcessCallback jackProcessCallback = nullptr;
+    void* jackProcessArg = nullptr;
+
+    // Runtime buffers
+    enum PortMask {
+        kPortMaskAudio = 0x1000,
+        kPortMaskMIDI = 0x2000,
+        kPortMaskInput = 0x4000,
+        kPortMaskOutput = 0x8000,
+        kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
+        kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
+    };
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS] = {};
+    float* audioBufferStorage = nullptr;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static constexpr const uint32_t kMaxMIDIInputMessageSize = 3;
+    uint8_t midiDataStorage[kMaxMIDIInputMessageSize];
+    HeapRingBuffer midiInBufferCurrent;
+    HeapRingBuffer midiInBufferPending;
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    HeapRingBuffer midiOutBuffer;
+#endif
+
+    virtual ~NativeBridge() {}
+    virtual bool open(const char* const clientName) = 0;
+    virtual bool close() = 0;
+    virtual bool activate() = 0;
+    virtual bool deactivate() = 0;
+
+    uint32_t getEventCount()
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        // NOTE: this function is only called once per run
+        midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
+        return midiInBufferCurrent.getReadableDataSize() / (kMaxMIDIInputMessageSize + 1u);
+       #else
+        return 0;
+       #endif
+    }
+
+    bool getEvent(jack_midi_event_t* const event)
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        // NOTE: this function is called for all events in index succession
+        if (midiInBufferCurrent.getReadableDataSize() >= (kMaxMIDIInputMessageSize + 1u))
+        {
+            event->time   = 0; // TODO
+            event->size   = midiInBufferCurrent.readByte();
+            event->buffer = midiDataStorage;
+            return midiInBufferCurrent.readCustomData(midiDataStorage, kMaxMIDIInputMessageSize);
+        }
+       #endif
+        return false;
+    }
+
+    void clearEventBuffer()
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        midiOutBuffer.clearData();
+       #endif
+    }
+    
+    bool writeEvent(const jack_nframes_t time, const jack_midi_data_t* const data, const uint32_t size)
+    {
+        if (size > 3)
+            return false;
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (midiOutBuffer.writeByte(size) && midiOutBuffer.writeCustomData(data, size))
+        {
+            bool fail = false;
+            // align
+            switch (size)
+            {
+            case 1: fail |= !midiOutBuffer.writeByte(0);
+            // fall-through
+            case 2: fail |= !midiOutBuffer.writeByte(0);
+            }
+            fail |= !midiOutBuffer.writeUInt(time);
+            midiOutBuffer.commitWrite();
+            return !fail;
+        }
+        midiOutBuffer.commitWrite();
+       #endif
+        return false;
+    }
+
+    void allocBuffers()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(bufferSize != 0,);
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
+
+        for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            audioBuffers[i] = audioBufferStorage + (bufferSize * i);
+       #endif
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        std::memset(audioBufferStorage, 0, sizeof(float)*bufferSize*DISTRHO_PLUGIN_NUM_INPUTS);
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        midiInBufferCurrent.createBuffer(kMaxMIDIInputMessageSize * 512);
+        midiInBufferPending.createBuffer(kMaxMIDIInputMessageSize * 512);
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        midiOutBuffer.createBuffer(2048);
+       #endif
+    }
+
+    void freeBuffers()
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        delete[] audioBufferStorage;
+        audioBufferStorage = nullptr;
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        midiInBufferCurrent.deleteBuffer();
+        midiInBufferPending.deleteBuffer();
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        midiOutBuffer.deleteBuffer();
+       #endif
+    }
+
+    jack_port_t* registerPort(const char* const type, const ulong flags)
+    {
+        bool isAudio, isInput;
+
+        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
+            isAudio = true;
+        else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
+            isAudio = false;
+        else
+            return nullptr;
+
+        /**/ if (flags & JackPortIsInput)
+            isInput = true;
+        else if (flags & JackPortIsOutput)
+            isInput = false;
+        else
+            return nullptr;
+
+        const uintptr_t ret = (isAudio ? kPortMaskAudio : kPortMaskMIDI)
+                            | (isInput ? kPortMaskInput : kPortMaskOutput);
+
+        return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++)
+                                             : (isInput ? numMidiIns++ : numMidiOuts++)));
+    }
+
+    void* getPortBuffer(jack_port_t* const port)
+    {
+        const uintptr_t portMask = (uintptr_t)port;
+        DISTRHO_SAFE_ASSERT_RETURN(portMask != 0x0, nullptr);
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        if (portMask & kPortMaskAudio)
+            return audioBuffers[(portMask & kPortMaskInput ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if ((portMask & kPortMaskInputMIDI) == kPortMaskInputMIDI)
+            return (void*)0x1;
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if ((portMask & kPortMaskOutputMIDI) == kPortMaskOutputMIDI)
+            return (void*)0x2;
+       #endif
+
+        return nullptr;
+    }
+};
+
+#endif // NATIVE_BRIDGE_HPP_INCLUDED

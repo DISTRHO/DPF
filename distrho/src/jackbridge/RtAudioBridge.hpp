@@ -1,5 +1,5 @@
 /*
- * RtAudioBridge for DPF
+ * RtAudio Bridge for DPF
  * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -14,10 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef RTAUDIOBRIDGE_HPP_INCLUDED
-#define RTAUDIOBRIDGE_HPP_INCLUDED
+#ifndef RTAUDIO_BRIDGE_HPP_INCLUDED
+#define RTAUDIO_BRIDGE_HPP_INCLUDED
 
-#include "JackBridge.hpp"
+#include "NativeBridge.hpp"
+
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+# error RtAudio without audio does not make sense
+#endif
 
 #if defined(DISTRHO_OS_MAC)
 # define __MACOSX_CORE__
@@ -37,50 +41,20 @@
 # define Point CorePoint /* fix conflict between DGL and macOS Point name */
 # include "rtaudio/RtAudio.h"
 # undef Point
-# include "../../extra/RingBuffer.hpp"
 # include "../../extra/ScopedPointer.hpp"
 
-using DISTRHO_NAMESPACE::HeapRingBuffer;
 using DISTRHO_NAMESPACE::ScopedPointer;
 
-struct RtAudioBridge {
+struct RtAudioBridge : NativeBridge {
     // pointer to RtAudio instance
     ScopedPointer<RtAudio> handle;
 
-    // RtAudio information
-    uint bufferSize = 0;
-    uint sampleRate = 0;
+    const char* getVersion() const noexcept
+    {
+        return RTAUDIO_VERSION;
+    }
 
-    // Port caching information
-    uint numAudioIns = 0;
-    uint numAudioOuts = 0;
-    uint numMidiIns = 0;
-    uint numMidiOuts = 0;
-
-    // JACK callbacks
-    JackProcessCallback jackProcessCallback = nullptr;
-    void* jackProcessArg = nullptr;
-
-    // Runtime buffers
-    enum PortMask {
-        kPortMaskAudio = 0x1000,
-        kPortMaskMIDI = 0x2000,
-        kPortMaskInput = 0x4000,
-        kPortMaskOutput = 0x8000,
-        kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
-        kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
-    };
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    HeapRingBuffer midiInBuffer;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    HeapRingBuffer midiOutBuffer;
-#endif
-
-    bool open()
+    bool open(const char* const clientName) override
     {
         ScopedPointer<RtAudio> rtAudio;
 
@@ -90,24 +64,31 @@ struct RtAudioBridge {
 
         uint rtAudioBufferFrames = 512;
 
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         RtAudio::StreamParameters inParams;
-        RtAudio::StreamParameters* const inParamsPtr = &inParams;
         inParams.deviceId = rtAudio->getDefaultInputDevice();
         inParams.nChannels = DISTRHO_PLUGIN_NUM_INPUTS;
-#else
+        RtAudio::StreamParameters* const inParamsPtr = &inParams;
+       #else
         RtAudio::StreamParameters* const inParamsPtr = nullptr;
-#endif
+       #endif
 
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         RtAudio::StreamParameters outParams;
         outParams.deviceId = rtAudio->getDefaultOutputDevice();
         outParams.nChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+        RtAudio::StreamParameters* const outParamsPtr = &outParams;
+       #else
+        RtAudio::StreamParameters* const outParamsPtr = nullptr;
+       #endif
 
         RtAudio::StreamOptions opts;
         opts.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_ALSA_USE_DEFAULT;
+        opts.streamName = clientName;
 
         try {
-            rtAudio->openStream(&outParams, inParamsPtr, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames, RtAudioCallback, this, &opts, nullptr);
+            rtAudio->openStream(outParamsPtr, inParamsPtr, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames,
+                                RtAudioCallback, this, &opts, nullptr);
         } catch (const RtAudioError& err) {
             d_safe_exception(err.getMessage().c_str(), __FILE__, __LINE__);
             return false;
@@ -116,17 +97,10 @@ struct RtAudioBridge {
         handle = rtAudio;
         bufferSize = rtAudioBufferFrames;
         sampleRate = handle->getStreamSampleRate();
-
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        midiInBuffer.createBuffer(128);
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        midiOutBuffer.createBuffer(128);
-#endif
         return true;
     }
 
-    bool close()
+    bool close() override
     {
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
@@ -141,82 +115,40 @@ struct RtAudioBridge {
         return true;
     }
 
-    bool activate()
+    bool activate() override
     {
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
         try {
             handle->startStream();
-        } DISTRHO_SAFE_EXCEPTION("handle->startStream()");
+        } DISTRHO_SAFE_EXCEPTION_RETURN("handle->startStream()", false);
 
         return true;
     }
 
-    bool deactivate()
+    bool deactivate() override
     {
         DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, false);
 
         try {
             handle->stopStream();
-        } DISTRHO_SAFE_EXCEPTION("handle->stopStream()");
+        } DISTRHO_SAFE_EXCEPTION_RETURN("handle->stopStream()", false);
 
         return true;
     }
 
-    jack_port_t* registerPort(const char* const type, const ulong flags)
-    {
-        bool isAudio, isInput;
-
-        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
-            isAudio = true;
-        else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
-            isAudio = false;
-        else
-            return nullptr;
-
-        /**/ if (flags & JackPortIsInput)
-            isInput = true;
-        else if (flags & JackPortIsOutput)
-            isInput = false;
-        else
-            return nullptr;
-
-        const uintptr_t ret = (isAudio ? kPortMaskAudio : kPortMaskMIDI)
-                            | (isInput ? kPortMaskInput : kPortMaskOutput);
-
-        return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++) 
-                                             : (isInput ? numMidiIns++ : numMidiOuts++)));
-    }
-
-    void* getPortBuffer(jack_port_t* const port)
-    {
-        const uintptr_t portMask = (uintptr_t)port;
-        DISTRHO_SAFE_ASSERT_RETURN(portMask != 0x0, nullptr);
-
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        if (portMask & kPortMaskAudio)
-            return audioBuffers[(portMask & kPortMaskInput ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        if ((portMask & kPortMaskInputMIDI) == kPortMaskInputMIDI)
-            return &midiInBuffer;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if ((portMask & kPortMaskOutputMIDI) == kPortMaskOutputMIDI)
-            return &midiOutBuffer;
-#endif
-
-        return nullptr;
-    }
-
     static int RtAudioCallback(void* const outputBuffer,
+                              #if DISTRHO_PLUGIN_NUM_INPUTS > 0
                                void* const inputBuffer,
+                              #else
+                               void*,
+                              #endif
                                const uint numFrames,
                                const double /* streamTime */,
                                const RtAudioStreamStatus /* status */,
                                void* const userData)
     {
-        RtAudioBridge* const self = (RtAudioBridge*)userData;
+        RtAudioBridge* const self = static_cast<RtAudioBridge*>(userData);
 
         if (self->jackProcessCallback == nullptr)
         {
@@ -225,35 +157,27 @@ struct RtAudioBridge {
             return 0;
         }
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        float** const selfAudioBuffers = self->audioBuffers;
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        if (float* const insPtr = static_cast<float*>(inputBuffer))
+        {
+            for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+                self->audioBuffers[i] = insPtr + (i * numFrames);
+        }
+       #endif
 
-        uint i = 0;
-# if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        if (float* const insPtr = (float*)inputBuffer)
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        if (float* const outsPtr = static_cast<float*>(outputBuffer))
         {
-            for (uint j=0; j<DISTRHO_PLUGIN_NUM_INPUTS; ++j, ++i)
-                selfAudioBuffers[i] = insPtr + (j * numFrames);
+            for (uint i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + i] = outsPtr + (i * numFrames);
         }
-# endif
-# if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        if (float* const outsPtr = (float*)outputBuffer)
-        {
-            for (uint j=0; j<DISTRHO_PLUGIN_NUM_OUTPUTS; ++j, ++i)
-                selfAudioBuffers[i] = outsPtr + (j * numFrames);
-        }
-# endif
-#endif
+       #endif
 
         self->jackProcessCallback(numFrames, self->jackProcessArg);
-        return 0;
 
-#if DISTRHO_PLUGIN_NUM_INPUTS == 0
-        // unused
-        (void)inputBuffer;
-#endif
+        return 0;
     }
 };
 
 #endif // RTAUDIO_API_TYPE
-#endif // RTAUDIOBRIDGE_HPP_INCLUDED
+#endif // RTAUDIO_BRIDGE_HPP_INCLUDED

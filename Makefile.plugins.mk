@@ -50,6 +50,14 @@ ifeq ($(HAVE_PULSEAUDIO),true)
 BASE_FLAGS += -DHAVE_PULSEAUDIO
 endif
 
+ifeq ($(HAVE_RTAUDIO),true)
+BASE_FLAGS += -DHAVE_RTAUDIO
+endif
+
+ifeq ($(HAVE_SDL2),true)
+BASE_FLAGS += -DHAVE_SDL2
+endif
+
 # always needed
 ifneq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 ifneq ($(STATIC_BUILD),true)
@@ -92,6 +100,11 @@ ifeq ($(HAVE_RTAUDIO),true)
 ifneq ($(HAIKU),true)
 JACK_LIBS  += -lpthread
 endif
+endif
+
+ifeq ($(HAVE_SDL2),true)
+JACK_FLAGS += $(SDL2_FLAGS)
+JACK_LIBS  += $(SDL2_LIBS)
 endif
 
 endif
