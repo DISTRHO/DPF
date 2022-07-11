@@ -91,6 +91,8 @@ struct NativeBridge {
         }
        #endif
         return false;
+        // maybe unused
+        (void)event;
     }
 
     void clearEventBuffer()
@@ -122,6 +124,9 @@ struct NativeBridge {
         midiOutBuffer.commitWrite();
        #endif
         return false;
+        // maybe unused
+        (void)data;
+        (void)time;
     }
 
     void allocBuffers()
