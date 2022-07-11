@@ -67,6 +67,29 @@ struct NativeBridge {
     virtual bool activate() = 0;
     virtual bool deactivate() = 0;
 
+    virtual bool supportsAudioInput() const
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        return true;
+       #else
+        return false;
+       #endif
+    }
+
+    virtual bool isAudioInputEnabled() const
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        return true;
+       #else
+        return false;
+       #endif
+    }
+
+    virtual bool supportsMIDI() const { return false; }
+    virtual bool isMIDIEnabled() const { return false; }
+    virtual bool requestAudioInput() { return false; }
+    virtual bool requestMIDI() { return false; }
+
     uint32_t getEventCount()
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT

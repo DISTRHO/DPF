@@ -15,6 +15,7 @@
  */
 
 #include "JackBridge.hpp"
+#include "../../DistrhoStandaloneUtils.hpp"
 
 #if ! (defined(JACKBRIDGE_DIRECT) || defined(JACKBRIDGE_DUMMY))
 
@@ -42,7 +43,7 @@
 # include "WebBridge.hpp"
 #endif
 
-#if defined(HAVE_RTAUDIO) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+#if defined(HAVE_RTAUDIO) && defined(DISTRHO_PROPER_CPP11_SUPPORT) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
 #  include "rtaudio/RtAudio.cpp"
@@ -2240,5 +2241,73 @@ bool jackbridge_set_property_change_callback(jack_client_t* client, JackProperty
 #endif
     return false;
 }
+
+// -----------------------------------------------------------------------------
+
+START_NAMESPACE_DISTRHO
+
+bool supportsAudioInput()
+{
+#if defined(JACKBRIDGE_DUMMY)
+    return false;
+#elif !defined(JACKBRIDGE_DIRECT)
+    if (usingNativeBridge)
+        return nativeBridge->supportsAudioInput();
+#endif
+    return true;
+}
+
+bool supportsMIDI()
+{
+#if defined(JACKBRIDGE_DUMMY)
+    return false;
+#elif !defined(JACKBRIDGE_DIRECT)
+    if (usingNativeBridge)
+        return nativeBridge->supportsMIDI();
+#endif
+    return true;
+}
+
+bool isAudioInputEnabled()
+{
+#if defined(JACKBRIDGE_DUMMY)
+    return false;
+#elif !defined(JACKBRIDGE_DIRECT)
+    if (usingNativeBridge)
+        return nativeBridge->isAudioInputEnabled();
+#endif
+    return true;
+}
+
+bool isMIDIEnabled()
+{
+#if defined(JACKBRIDGE_DUMMY)
+    return false;
+#elif !defined(JACKBRIDGE_DIRECT)
+    if (usingNativeBridge)
+        return nativeBridge->isMIDIEnabled();
+#endif
+    return true;
+}
+
+bool requestAudioInput()
+{
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
+    if (usingNativeBridge)
+        return nativeBridge->requestAudioInput();
+#endif
+    return false;
+}
+
+bool requestMIDI()
+{
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
+    if (usingNativeBridge)
+        return nativeBridge->requestMIDI();
+#endif
+    return false;
+}
+
+END_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------------

@@ -131,7 +131,7 @@ struct WebBridge : NativeBridge {
             // main processor
             WAB.processor = WAB.audioContext['createScriptProcessor'](bufferSize, numInputs, numOutputs);
             WAB.processor['onaudioprocess'] = function (e) {
-                var timestamp = performance.now();
+                // var timestamp = performance.now();
                 for (var i = 0; i < numInputs; ++i) {
                     var buffer = e['inputBuffer']['getChannelData'](i);
                     for (var j = 0; j < bufferSize; ++j) {
@@ -139,7 +139,7 @@ struct WebBridge : NativeBridge {
                         HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[j];
                     }
                 }
-                dynCall('vif', $4, [$5, timestamp]);
+                dynCall('vi', $4, [$5]);
                 for (var i = 0; i < numOutputs; ++i) {
                     var buffer = e['outputBuffer']['getChannelData'](i);
                     var offset = bufferSize * (numInputs + i);
@@ -160,9 +160,6 @@ struct WebBridge : NativeBridge {
                     WAB.audioContext.resume();
             });
         }, DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS, bufferSize, audioBufferStorage, WebAudioCallback, this);
-
-//         enableInput();
-        enableMIDI();
 
         return true;
     }
@@ -185,7 +182,25 @@ struct WebBridge : NativeBridge {
         return true;
     }
 
-    bool enableInput()
+    bool supportsAudioInput() const override
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        return captureAvailable;
+       #else
+        return false;
+       #endif
+    }
+
+    bool isAudioInputEnabled() const override
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        return EM_ASM_INT({ return Module['WebAudioBridge'].captureStreamNode ? 1 : 0 }) != 0;
+       #else
+        return false;
+       #endif
+    }
+
+    bool requestAudioInput() override
     {
         DISTRHO_SAFE_ASSERT_RETURN(DISTRHO_PLUGIN_NUM_INPUTS > 0, false);
 
@@ -224,7 +239,25 @@ struct WebBridge : NativeBridge {
         return true;
     }
 
-    bool enableMIDI()
+    bool supportsMIDI() const override
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        return midiAvailable;
+       #else
+        return false;
+       #endif
+    }
+
+    bool isMIDIEnabled() const override
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        return EM_ASM_INT({ return Module['WebAudioBridge'].midi ? 1 : 0 }) != 0;
+       #else
+        return false;
+       #endif
+    }
+
+    bool requestMIDI() override
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         if (midiAvailable)
@@ -287,10 +320,10 @@ struct WebBridge : NativeBridge {
         }
     }
 
-    static void WebAudioCallback(void* const userData, const double timestamp)
+    static void WebAudioCallback(void* const userData /* , const double timestamp */)
     {
         WebBridge* const self = static_cast<WebBridge*>(userData);
-        self->timestamp = timestamp;
+        // self->timestamp = timestamp;
 
         const uint numFrames = self->bufferSize;
 
@@ -299,11 +332,12 @@ struct WebBridge : NativeBridge {
             self->jackProcessCallback(numFrames, self->jackProcessArg);
 
            #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-            if (self->midiAvailable)
+            if (self->midiAvailable && self->midiOutBuffer.isDataAvailableForReading())
             {
                 static_assert(kMaxMIDIInputMessageSize + 1u == 4, "change code if bumping this value");
                 uint32_t offset = 0;
                 uint8_t bytes[4] = {};
+                double timestamp = EM_ASM_DOUBLE({ return performance.now(); });
 
                 while (self->midiOutBuffer.isDataAvailableForReading() &&
                        self->midiOutBuffer.readCustomData(bytes, ARRAY_SIZE(bytes)))
@@ -313,7 +347,7 @@ struct WebBridge : NativeBridge {
                     EM_ASM({
                         var WAB = Module['WebAudioBridge'];
                         if (WAB.midi) {
-                            var timestamp = performance.now() + $0;
+                            var timestamp = $5 + $0;
                             var size = $1;
                             WAB.midi.outputs.forEach(function(port) {
                                 if (port.state !== 'disconnected') {
@@ -323,8 +357,9 @@ struct WebBridge : NativeBridge {
                                 }
                             });
                         }
-                    }, offset, bytes[0], bytes[1], bytes[2], bytes[3]);
+                    }, offset, bytes[0], bytes[1], bytes[2], bytes[3], timestamp);
                 }
+
                 self->midiOutBuffer.clearData();
             }
            #endif
