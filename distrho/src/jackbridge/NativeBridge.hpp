@@ -25,14 +25,14 @@ using DISTRHO_NAMESPACE::HeapRingBuffer;
 
 struct NativeBridge {
     // Current status information
-    uint bufferSize = 0;
-    uint sampleRate = 0;
+    uint bufferSize;
+    uint sampleRate;
 
     // Port caching information
-    uint numAudioIns = 0;
-    uint numAudioOuts = 0;
-    uint numMidiIns = 0;
-    uint numMidiOuts = 0;
+    uint numAudioIns;
+    uint numAudioOuts;
+    uint numMidiIns;
+    uint numMidiOuts;
 
     // JACK callbacks
     JackProcessCallback jackProcessCallback = nullptr;
@@ -50,8 +50,8 @@ struct NativeBridge {
         kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
     };
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS] = {};
-    float* audioBufferStorage = nullptr;
+    float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
+    float* audioBufferStorage;
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static constexpr const uint32_t kMaxMIDIInputMessageSize = 3;
@@ -62,6 +62,27 @@ struct NativeBridge {
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     HeapRingBuffer midiOutBuffer;
 #endif
+
+    NativeBridge()
+        : bufferSize(0),
+          sampleRate(0),
+          numAudioIns(0),
+          numAudioOuts(0),
+          numMidiIns(0),
+          numMidiOuts(0),
+          jackProcessCallback(nullptr),
+          bufferSizeCallback(nullptr),
+          jackProcessArg(nullptr),
+          jackBufferSizeArg(nullptr),
+         #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+          audioBuffers(),
+          audioBufferStorage(nullptr)
+         #endif
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        std::memset(audioBuffers, 0, sizeof(audioBuffers));
+       #endif
+    }
 
     virtual ~NativeBridge() {}
     virtual bool open(const char* const clientName) = 0;

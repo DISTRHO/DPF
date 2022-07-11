@@ -26,12 +26,22 @@
 #endif
 
 struct SDL2Bridge : NativeBridge {
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
-    SDL_AudioDeviceID captureDeviceId = 0;
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    SDL_AudioDeviceID playbackDeviceId = 0;
-#endif
+   #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+    SDL_AudioDeviceID captureDeviceId;
+   #endif
+   #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    SDL_AudioDeviceID playbackDeviceId;
+   #endif
+
+    SDL2Bridge()
+        : NativeBridge()
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+        , captureDeviceId(0)
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        , playbackDeviceId(0)
+       #endif
+    {}
 
     bool open(const char* const clientName) override
     {
