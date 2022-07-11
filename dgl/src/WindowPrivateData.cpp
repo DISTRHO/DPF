@@ -784,13 +784,11 @@ const void* Window::PrivateData::getClipboard(size_t& dataSize)
         return nullptr;
     }
 
+   #ifdef DGL_USING_X11
     // wait for type request, clipboardTypeId must be != 0 to be valid
     while (clipboardTypeId == 0 && waitingForClipboardData)
-    {
-       #ifdef DGL_USING_X11
         puglX11UpdateWithoutExposures(appData->world);
-       #endif
-    }
+   #endif
 
     if (clipboardTypeId == 0)
     {
@@ -799,13 +797,11 @@ const void* Window::PrivateData::getClipboard(size_t& dataSize)
         return nullptr;
     }
 
+   #ifdef DGL_USING_X11
     // wait for actual data (assumes offer was accepted)
     while (waitingForClipboardData)
-    {
-       #ifdef DGL_USING_X11
         puglX11UpdateWithoutExposures(appData->world);
-       #endif
-    }
+   #endif
 
     if (clipboardTypeId == 0)
     {
