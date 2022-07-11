@@ -1185,7 +1185,13 @@ bool jackbridge_set_buffer_size_callback(jack_client_t* client, JackBufferSizeCa
 #elif defined(JACKBRIDGE_DIRECT)
     return (jack_set_buffer_size_callback(client, bufsize_callback, arg) == 0);
 #else
-    if (usingRealJACK && getBridgeInstance().set_buffer_size_callback_ptr != nullptr)
+    if (usingNativeBridge)
+    {
+        nativeBridge->bufferSizeCallback = bufsize_callback;
+        nativeBridge->jackBufferSizeArg = arg;
+        return true;
+    }
+    if (getBridgeInstance().set_buffer_size_callback_ptr != nullptr)
     {
 # ifdef __WINE__
         WineBridge::getInstance().set_bufsize(bufsize_callback);
@@ -1371,9 +1377,10 @@ bool jackbridge_set_buffer_size(jack_client_t* client, jack_nframes_t nframes)
 #elif defined(JACKBRIDGE_DIRECT)
     return jack_set_buffer_size(client, nframes);
 #else
-    if (usingRealJACK)
-        if (getBridgeInstance().set_buffer_size_ptr != nullptr)
-            return getBridgeInstance().set_buffer_size_ptr(client, nframes);
+    if (usingNativeBridge)
+        return nativeBridge->requestBufferSizeChange(nframes);
+    if (getBridgeInstance().set_buffer_size_ptr != nullptr)
+        return getBridgeInstance().set_buffer_size_ptr(client, nframes);
 #endif
     return false;
 }
@@ -2257,6 +2264,15 @@ bool supportsAudioInput()
     return true;
 }
 
+bool supportsBufferSizeChanges()
+{
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
+    if (usingNativeBridge)
+        return nativeBridge->supportsBufferSizeChanges();
+#endif
+    return false;
+}
+
 bool supportsMIDI()
 {
 #if defined(JACKBRIDGE_DUMMY)
@@ -2290,11 +2306,29 @@ bool isMIDIEnabled()
     return true;
 }
 
+uint32_t getBufferSize()
+{
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
+    if (usingNativeBridge)
+        return nativeBridge->getBufferSize();
+#endif
+    return 0;
+}
+
 bool requestAudioInput()
 {
 #if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
         return nativeBridge->requestAudioInput();
+#endif
+    return false;
+}
+
+bool requestBufferSizeChange(const uint32_t newBufferSize)
+{
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
+    if (usingNativeBridge)
+        return nativeBridge->requestBufferSizeChange(newBufferSize);
 #endif
     return false;
 }

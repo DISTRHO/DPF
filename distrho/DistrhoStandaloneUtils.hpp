@@ -36,6 +36,11 @@ START_NAMESPACE_DISTRHO
 bool supportsAudioInput();
 
 /**
+   Check if the current standalone supports dynamic buffer size changes.
+*/
+bool supportsBufferSizeChanges();
+
+/**
    Check if the current standalone supports MIDI.
 */
 bool supportsMIDI();
@@ -51,10 +56,20 @@ bool isAudioInputEnabled();
 bool isMIDIEnabled();
 
 /**
+   Get the current buffer size.
+*/
+uint32_t getBufferSize();
+
+/**
    Request permissions to use audio input.
    Only valid to call if audio input is supported but not currently enabled.
 */
 bool requestAudioInput();
+
+/**
+   Request change to a new buffer size.
+*/
+bool requestBufferSizeChange(uint32_t newBufferSize);
 
 /**
    Request permissions to use MIDI.

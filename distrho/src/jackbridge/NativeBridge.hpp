@@ -36,7 +36,9 @@ struct NativeBridge {
 
     // JACK callbacks
     JackProcessCallback jackProcessCallback = nullptr;
+    JackBufferSizeCallback bufferSizeCallback = nullptr;
     void* jackProcessArg = nullptr;
+    void* jackBufferSizeArg = nullptr;
 
     // Runtime buffers
     enum PortMask {
@@ -85,10 +87,17 @@ struct NativeBridge {
        #endif
     }
 
+    virtual bool supportsBufferSizeChanges() const { return false; }
     virtual bool supportsMIDI() const { return false; }
     virtual bool isMIDIEnabled() const { return false; }
     virtual bool requestAudioInput() { return false; }
+    virtual bool requestBufferSizeChange(uint32_t) { return false; }
     virtual bool requestMIDI() { return false; }
+
+    uint32_t getBufferSize() const noexcept
+    {
+        return bufferSize;
+    }
 
     uint32_t getEventCount()
     {

@@ -114,7 +114,7 @@ struct WebBridge : NativeBridge {
             return false;
         }
 
-        bufferSize = 512;
+        bufferSize = 2048;
         sampleRate = EM_ASM_INT_V({
             var WAB = Module['WebAudioBridge'];
             return WAB.audioContext.sampleRate;
@@ -212,15 +212,24 @@ struct WebBridge : NativeBridge {
             // we need to use this weird awkward way for objects, otherwise build fails
             constraints['audio'] = true;
             constraints['video'] = false;
-            constraints['latency'] = 0;
-            constraints['sampleSize'] = 24;
-            constraints['mandatory'] = {};
-            constraints['mandatory']['autoGainControl'] = false;
-            constraints['mandatory']['echoCancellation'] = false;
-            constraints['mandatory']['noiseSuppression'] = false;
-            constraints['mandatory']['channelCount'] = numInputs;
+            constraints['autoGainControl'] = {};
+            constraints['autoGainControl']['exact'] = false;
+            constraints['echoCancellation'] = {};
+            constraints['echoCancellation']['exact'] = false;
+            constraints['noiseSuppression'] = {};
+            constraints['noiseSuppression']['exact'] = false;
+            constraints['channelCount'] = {};
+            constraints['channelCount']['min'] = 0;
+            constraints['channelCount']['ideal'] = numInputs;
+            constraints['latency'] = {};
+            constraints['latency']['min'] = 0;
+            constraints['latency']['ideal'] = 0;
+            constraints['sampleSize'] = {};
+            constraints['sampleSize']['min'] = 8;
+            constraints['sampleSize']['max'] = 32;
+            constraints['sampleSize']['ideal'] = 16;
             // old property for chrome
-            constraints['mandatory']['googAutoGainControl'] = false;
+            constraints['googAutoGainControl'] = false;
 
             var success = function(stream) {
                 WAB.captureStreamNode = WAB.audioContext['createMediaStreamSource'](stream);
@@ -235,6 +244,88 @@ struct WebBridge : NativeBridge {
                 navigator.webkitGetUserMedia(constraints, success, fail);
             }
         }, DISTRHO_PLUGIN_NUM_INPUTS);
+
+        return true;
+    }
+
+    bool supportsBufferSizeChanges() const override
+    {
+        return true;
+    }
+
+    bool requestBufferSizeChange(const uint32_t newBufferSize) override
+    {
+        // try to create new processor first
+        bool success = EM_ASM_INT({
+            var numInputs = $0;
+            var numOutputs = $1;
+            var newBufferSize = $2;
+            var WAB = Module['WebAudioBridge'];
+
+            try {
+                WAB.newProcessor = WAB.audioContext['createScriptProcessor'](newBufferSize, numInputs, numOutputs);
+            } catch (e) {
+                return 0;
+            }
+
+            // got new processor, disconnect old one
+            WAB.processor['disconnect'](WAB.audioContext['destination']);
+
+            if (WAB.captureStreamNode)
+                WAB.captureStreamNode.disconnect(WAB.processor);
+
+            return 1;
+        }, DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS, newBufferSize) != 0;
+
+        if (!success)
+            return false;
+
+        bufferSize = newBufferSize;
+        freeBuffers();
+        allocBuffers();
+
+        if (bufferSizeCallback != nullptr)
+            bufferSizeCallback(newBufferSize, jackBufferSizeArg);
+
+        EM_ASM({
+            var numInputs = $0;
+            var numOutputs = $1;
+            var bufferSize = $2;
+            var WAB = Module['WebAudioBridge'];
+
+            // store the new processor
+            delete WAB.processor;
+            WAB.processor = WAB.newProcessor;
+            delete WAB.newProcessor;
+
+            // setup new processor the same way as old one
+            WAB.processor['onaudioprocess'] = function (e) {
+                // var timestamp = performance.now();
+                for (var i = 0; i < numInputs; ++i) {
+                    var buffer = e['inputBuffer']['getChannelData'](i);
+                    for (var j = 0; j < bufferSize; ++j) {
+                        // setValue($3 + ((bufferSize * i) + j) * 4, buffer[j], 'float');
+                        HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[j];
+                    }
+                }
+                dynCall('vi', $4, [$5]);
+                for (var i = 0; i < numOutputs; ++i) {
+                    var buffer = e['outputBuffer']['getChannelData'](i);
+                    var offset = bufferSize * (numInputs + i);
+                    for (var j = 0; j < bufferSize; ++j) {
+                        buffer[j] = HEAPF32[$3 + ((offset + j) << 2) >> 2];
+                    }
+                }
+            };
+
+            // connect to output
+            WAB.processor['connect'](WAB.audioContext['destination']);
+
+            // and input, if available
+            if (WAB.captureStreamNode)
+                WAB.captureStreamNode.connect(WAB.processor);
+
+        }, DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS, bufferSize, audioBufferStorage, WebAudioCallback, this);
 
         return true;
     }
