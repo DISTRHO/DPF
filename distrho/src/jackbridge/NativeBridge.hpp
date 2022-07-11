@@ -73,11 +73,11 @@ struct NativeBridge {
           jackProcessCallback(nullptr),
           bufferSizeCallback(nullptr),
           jackProcessArg(nullptr),
-          jackBufferSizeArg(nullptr),
-         #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-          audioBuffers(),
-          audioBufferStorage(nullptr)
-         #endif
+          jackBufferSizeArg(nullptr)
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        , audioBuffers()
+        , audioBufferStorage(nullptr)
+       #endif
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         std::memset(audioBuffers, 0, sizeof(audioBuffers));
