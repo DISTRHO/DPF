@@ -109,7 +109,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      waitingForClipboard(false),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
@@ -137,7 +138,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      waitingForClipboard(false),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
@@ -167,7 +169,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      waitingForClipboard(false),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
@@ -198,7 +201,8 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-      waitingForClipboard(false),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
 #ifndef DGL_FILE_BROWSER_DISABLED
@@ -610,7 +614,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 
 void Window::PrivateData::onPuglExpose()
 {
-    DGL_DBGp("PUGL: onPuglExpose\n");
+    DGL_DBG("PUGL: onPuglExpose\n");
 
     puglOnDisplayPrepare(view);
 
@@ -769,36 +773,48 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
 const void* Window::PrivateData::getClipboard(size_t& dataSize)
 {
     clipboardTypeId = 0;
-    waitingForClipboard = true;
+    waitingForClipboardData = true,
+    waitingForClipboardEvents = true;
 
+    // begin clipboard dance here
     if (puglPaste(view) != PUGL_SUCCESS)
     {
         dataSize = 0;
-        waitingForClipboard = false;
+        waitingForClipboardEvents = false;
         return nullptr;
     }
 
-    // wait for type request
-    while (waitingForClipboard && clipboardTypeId == 0)
-        puglUpdate(appData->world, 0.03);
+    // wait for type request, clipboardTypeId must be != 0 to be valid
+    while (clipboardTypeId == 0 && waitingForClipboardData)
+    {
+       #ifdef DGL_USING_X11
+        puglX11UpdateWithoutExposures(appData->world);
+       #endif
+    }
 
     if (clipboardTypeId == 0)
     {
         dataSize = 0;
-        waitingForClipboard = false;
+        waitingForClipboardEvents = false;
         return nullptr;
     }
 
-    // wait for actual data
-    while (waitingForClipboard)
-        puglUpdate(appData->world, 0.03);
+    // wait for actual data (assumes offer was accepted)
+    while (waitingForClipboardData)
+    {
+       #ifdef DGL_USING_X11
+        puglX11UpdateWithoutExposures(appData->world);
+       #endif
+    }
 
     if (clipboardTypeId == 0)
     {
         dataSize = 0;
+        waitingForClipboardEvents = false;
         return nullptr;
     }
 
+    waitingForClipboardEvents = false;
     return puglGetClipboard(view, clipboardTypeId - 1, &dataSize);
 }
 
@@ -809,7 +825,8 @@ uint32_t Window::PrivateData::onClipboardDataOffer()
     if ((clipboardTypeId = self->onClipboardDataOffer()) != 0)
         return clipboardTypeId;
 
-    waitingForClipboard = false;
+    // stop waiting for data, it was rejected
+    waitingForClipboardData = false;
     return 0;
 }
 
@@ -818,7 +835,7 @@ void Window::PrivateData::onClipboardData(const uint32_t typeId)
     if (clipboardTypeId != typeId)
         clipboardTypeId = 0;
 
-    waitingForClipboard = false;
+    waitingForClipboardData = false;
 }
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
@@ -834,7 +851,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     }
 #endif
 
-    if (pData->waitingForClipboard)
+    if (pData->waitingForClipboardEvents)
     {
         switch (event->type)
         {
@@ -851,8 +868,15 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         case PUGL_BUTTON_RELEASE:
         case PUGL_MOTION:
         case PUGL_SCROLL:
+        case PUGL_TIMER:
+        case PUGL_LOOP_ENTER:
+        case PUGL_LOOP_LEAVE:
             return PUGL_SUCCESS;
+        case PUGL_DATA_OFFER:
+        case PUGL_DATA:
+            break;
         default:
+            d_stdout("Got event %d while waitingForClipboardEvents", event->type);
             break;
         }
     }
@@ -865,10 +889,10 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View created, a #PuglEventCreate
     case PUGL_CREATE:
-#if defined(HAVE_X11) && !defined(DISTRHO_OS_MAC) && !defined(DISTRHO_OS_WINDOWS)
+       #ifdef DGL_USING_X11
         if (! pData->isEmbed)
             puglX11SetWindowTypeAndPID(view, pData->appData->isStandalone);
-#endif
+       #endif
         break;
 
     ///< View destroyed, a #PuglEventDestroy

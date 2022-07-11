@@ -226,6 +226,8 @@ void puglRaiseWindow(PuglView* const view)
     if (NSWindow* const window = view->impl->window ? view->impl->window
                                                     : [view->impl->wrapperView window])
         [window orderFrontRegardless];
+#elif defined(DISTRHO_OS_WASM)
+    // nothing
 #elif defined(DISTRHO_OS_WINDOWS)
     SetForegroundWindow(view->impl->hwnd);
     SetActiveWindow(view->impl->hwnd);
@@ -290,6 +292,8 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         if (aspect && (status = updateSizeHint(view, PUGL_FIXED_ASPECT)) != PUGL_SUCCESS)
             return status;
     }
+#elif defined(DISTRHO_OS_WASM)
+    // nothing
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
 #elif defined(HAVE_X11)
@@ -317,6 +321,8 @@ void puglSetResizable(PuglView* const view, const bool resizable)
         [window setStyleMask:style];
     }
     // FIXME use [view setAutoresizingMask:NSViewNotSizable] ?
+#elif defined(DISTRHO_OS_WASM)
+    // nothing
 #elif defined(DISTRHO_OS_WINDOWS)
     if (const HWND hwnd = view->impl->hwnd)
     {
@@ -432,6 +438,8 @@ void puglFallbackOnResize(PuglView* const view)
     (void)view;
 #endif
 }
+
+// --------------------------------------------------------------------------------------------------------------------
 
 #if defined(DISTRHO_OS_MAC)
 
@@ -570,7 +578,21 @@ void puglWin32ShowCentered(PuglView* const view)
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#elif defined(DISTRHO_OS_WASM)
+
+// nothing here yet
+
+// --------------------------------------------------------------------------------------------------------------------
+
 #elif defined(HAVE_X11)
+
+PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
+{
+  world->impl->dispatchingEvents = true;
+  const PuglStatus st = dispatchX11Events(world);
+  world->impl->dispatchingEvents = false;
+  return st;
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // X11 specific, set dialog window type and pid hints
