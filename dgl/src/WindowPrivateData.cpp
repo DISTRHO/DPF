@@ -786,7 +786,8 @@ const void* Window::PrivateData::getClipboard(size_t& dataSize)
 
    #ifdef DGL_USING_X11
     // wait for type request, clipboardTypeId must be != 0 to be valid
-    while (clipboardTypeId == 0 && waitingForClipboardData)
+    int retry = static_cast<int>(2 / 0.03);
+    while (clipboardTypeId == 0 && waitingForClipboardData && --retry >= 0)
     {
         if (puglX11UpdateWithoutExposures(appData->world) != PUGL_SUCCESS)
             break;
@@ -802,7 +803,8 @@ const void* Window::PrivateData::getClipboard(size_t& dataSize)
 
    #ifdef DGL_USING_X11
     // wait for actual data (assumes offer was accepted)
-    while (waitingForClipboardData)
+    retry = static_cast<int>(2 / 0.03);
+    while (waitingForClipboardData && --retry >= 0)
     {
         if (puglX11UpdateWithoutExposures(appData->world) != PUGL_SUCCESS)
             break;

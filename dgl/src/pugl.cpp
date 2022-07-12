@@ -597,9 +597,8 @@ PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 
     for (double t = startTime; !st && t < endTime; t = puglGetTime(world))
     {
-        if (!(st = pollX11Socket(world, endTime - t))) {
-            st = dispatchX11Events(world);
-        }
+        pollX11Socket(world, endTime - t);
+        st = dispatchX11Events(world);
     }
 
     world->impl->dispatchingEvents = wasDispatchingEvents;
