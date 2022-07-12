@@ -588,10 +588,22 @@ void puglWin32ShowCentered(PuglView* const view)
 
 PuglStatus puglX11UpdateWithoutExposures(PuglWorld* const world)
 {
-  world->impl->dispatchingEvents = true;
-  const PuglStatus st = dispatchX11Events(world);
-  world->impl->dispatchingEvents = false;
-  return st;
+    const bool wasDispatchingEvents = world->impl->dispatchingEvents;
+    world->impl->dispatchingEvents = true;
+    PuglStatus st = PUGL_SUCCESS;
+
+    const double startTime = puglGetTime(world);
+    const double endTime  = startTime + 0.03;
+
+    for (double t = startTime; !st && t < endTime; t = puglGetTime(world))
+    {
+        if (!(st = pollX11Socket(world, endTime - t))) {
+            st = dispatchX11Events(world);
+        }
+    }
+
+    world->impl->dispatchingEvents = wasDispatchingEvents;
+    return st;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
