@@ -53,6 +53,9 @@ struct NativeBridge {
     float* audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS];
     float* audioBufferStorage;
 #endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool midiAvailable;
+#endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static constexpr const uint32_t kMaxMIDIInputMessageSize = 3;
     uint8_t midiDataStorage[kMaxMIDIInputMessageSize];
@@ -77,6 +80,9 @@ struct NativeBridge {
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         , audioBuffers()
         , audioBufferStorage(nullptr)
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+       , midiAvailable(false)
        #endif
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
@@ -109,7 +115,6 @@ struct NativeBridge {
     }
 
     virtual bool supportsBufferSizeChanges() const { return false; }
-    virtual bool supportsMIDI() const { return false; }
     virtual bool isMIDIEnabled() const { return false; }
     virtual bool requestAudioInput() { return false; }
     virtual bool requestBufferSizeChange(uint32_t) { return false; }
@@ -120,22 +125,34 @@ struct NativeBridge {
         return bufferSize;
     }
 
+    bool supportsMIDI() const noexcept
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        return midiAvailable;
+       #else
+        return false;
+       #endif
+    }
+
     uint32_t getEventCount()
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        // NOTE: this function is only called once per run
-        midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
-        return midiInBufferCurrent.getReadableDataSize() / (kMaxMIDIInputMessageSize + 1u);
-       #else
-        return 0;
+        if (midiAvailable)
+        {
+            // NOTE: this function is only called once per run
+            midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
+            return midiInBufferCurrent.getReadableDataSize() / (kMaxMIDIInputMessageSize + 1u);
+        }
        #endif
+
+        return 0;
     }
 
     bool getEvent(jack_midi_event_t* const event)
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         // NOTE: this function is called for all events in index succession
-        if (midiInBufferCurrent.getReadableDataSize() >= (kMaxMIDIInputMessageSize + 1u))
+        if (midiAvailable && midiInBufferCurrent.getReadableDataSize() >= (kMaxMIDIInputMessageSize + 1u))
         {
             event->time   = 0; // TODO
             event->size   = midiInBufferCurrent.readByte();
@@ -151,7 +168,8 @@ struct NativeBridge {
     void clearEventBuffer()
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        midiOutBuffer.clearData();
+        if (midiAvailable)
+            midiOutBuffer.clearData();
        #endif
     }
     
@@ -159,23 +177,28 @@ struct NativeBridge {
     {
         if (size > 3)
             return false;
+
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if (midiOutBuffer.writeByte(size) && midiOutBuffer.writeCustomData(data, size))
+        if (midiAvailable)
         {
-            bool fail = false;
-            // align
-            switch (size)
+            if (midiOutBuffer.writeByte(size) && midiOutBuffer.writeCustomData(data, size))
             {
-            case 1: fail |= !midiOutBuffer.writeByte(0);
-            // fall-through
-            case 2: fail |= !midiOutBuffer.writeByte(0);
+                bool fail = false;
+                // align
+                switch (size)
+                {
+                case 1: fail |= !midiOutBuffer.writeByte(0);
+                // fall-through
+                case 2: fail |= !midiOutBuffer.writeByte(0);
+                }
+                fail |= !midiOutBuffer.writeUInt(time);
+                midiOutBuffer.commitWrite();
+                return !fail;
             }
-            fail |= !midiOutBuffer.writeUInt(time);
             midiOutBuffer.commitWrite();
-            return !fail;
         }
-        midiOutBuffer.commitWrite();
        #endif
+
         return false;
         // maybe unused
         (void)data;

@@ -28,9 +28,6 @@ struct WebBridge : NativeBridge {
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     bool playbackAvailable = false;
 #endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    bool midiAvailable = false;
-#endif
     bool active = false;
     double timestamp = 0;
 
@@ -328,15 +325,6 @@ struct WebBridge : NativeBridge {
         }, DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS, bufferSize, audioBufferStorage, WebAudioCallback, this);
 
         return true;
-    }
-
-    bool supportsMIDI() const override
-    {
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        return midiAvailable;
-       #else
-        return false;
-       #endif
     }
 
     bool isMIDIEnabled() const override
