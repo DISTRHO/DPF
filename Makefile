@@ -40,9 +40,6 @@ endif
 ifeq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator
 	@$(CURDIR)/utils/generate-ttl.sh
-ifeq ($(MACOS),true)
-	@$(CURDIR)/utils/generate-vst-bundles.sh
-endif
 
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator
