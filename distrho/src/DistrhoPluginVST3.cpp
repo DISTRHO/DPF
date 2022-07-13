@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -4425,7 +4425,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
             v3_cpp_obj_query_interface(factory->hostContext, v3_host_application_iid, &hostApplication);
 
         // create component
-        if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) && v3_tuid_match(iid, v3_component_iid))
+        if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_class) && (v3_tuid_match(iid, v3_component_iid) ||
+                                                                          v3_tuid_match(iid, v3_funknown_iid)))
         {
             dpf_component** const componentptr = new dpf_component*;
             *componentptr = new dpf_component(hostApplication);
@@ -4435,7 +4436,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
 
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // create edit controller
-        if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_controller) && v3_tuid_match(iid, v3_edit_controller_iid))
+        if (v3_tuid_match(class_id, *(const v3_tuid*)&dpf_tuid_controller) && (v3_tuid_match(iid, v3_edit_controller_iid) ||
+                                                                               v3_tuid_match(iid, v3_funknown_iid)))
         {
             dpf_edit_controller** const controllerptr = new dpf_edit_controller*;
             *controllerptr = new dpf_edit_controller(hostApplication);
