@@ -126,7 +126,37 @@ const char* tuid2str(const v3_tuid iid)
         { V3_ID(0xF89F8CDF,0x699E4BA5,0x96AAC9A4,0x81452B01), "{v3_unit_handler2|NOT}" },
         { V3_ID(0x3D4BD6B5,0x913A4FD2,0xA886E768,0xA5EB92C1), "{v3_unit_info|NOT}" },
         // misc
+        { V3_ID(0x309ECE78,0xEB7D4FAE,0x8B2225D9,0x09FD08B6), "{v3_audio_presentation_latency|NOT}" },
+        { V3_ID(0xB4E8287F,0x1BB346AA,0x83A46667,0x68937BAB), "{v3_automation_state|NOT}" },
         { V3_ID(0x0F194781,0x8D984ADA,0xBBA0C1EF,0xC011D8D0), "{v3_info_listener|NOT}" },
+        { V3_ID(0x6D21E1DC,0x91199D4B,0xA2A02FEF,0x6C1AE55C), "{v3_parameter_function_name|NOT}" },
+        { V3_ID(0x8AE54FDA,0xE93046B9,0xA28555BC,0xDC98E21E), "{v3_prefetchable_support|NOT}" },
+        { V3_ID(0xA81A0471,0x48C34DC4,0xAC30C9E1,0x3C8393D5), "{v3_xml_representation_stream|NOT}" },
+        /*
+        // seen in the wild but unknown, related to component
+        { V3_ID(0x6548D671,0x997A4EA5,0x9B336A6F,0xB3E93B50), "{v3_|NOT}" },
+        { V3_ID(0xC2B7896B,0x069844D5,0x8F06E937,0x33A35FF7), "{v3_|NOT}" },
+        { V3_ID(0xE123DE93,0xE0F642A4,0xAE53867E,0x53F059EE), "{v3_|NOT}" },
+        { V3_ID(0x83850D7B,0xC12011D8,0xA143000A,0x959B31C6), "{v3_|NOT}" },
+        { V3_ID(0x9598D418,0xA00448AC,0x9C6D8248,0x065B2E5C), "{v3_|NOT}" },
+        { V3_ID(0xBD386132,0x45174BAD,0xA324390B,0xFD297506), "{v3_|NOT}" },
+        { V3_ID(0xD7296A84,0x23B1419C,0xAAD0FAA3,0x53BB16B7), "{v3_|NOT}" },
+        { V3_ID(0x181A0AF6,0xA10947BA,0x8A6F7C7C,0x3FF37129), "{v3_|NOT}" },
+        { V3_ID(0xC2B7896B,0x69A844D5,0x8F06E937,0x33A35FF7), "{v3_|NOT}" },
+        // seen in the wild but unknown, related to edit controller
+        { V3_ID(0x1F2F76D3,0xBFFB4B96,0xB99527A5,0x5EBCCEF4), "{v3_|NOT}" },
+        { V3_ID(0x6B2449CC,0x419740B5,0xAB3C79DA,0xC5FE5C86), "{v3_|NOT}" },
+        { V3_ID(0x67800560,0x5E784D90,0xB97BAB4C,0x8DC5BAA3), "{v3_|NOT}" },
+        { V3_ID(0xDB51DA00,0x8FD5416D,0xB84894D8,0x7FDE73E4), "{v3_|NOT}" },
+        { V3_ID(0xE90FC54F,0x76F24235,0x8AF8BD15,0x68C663D6), "{v3_|NOT}" },
+        { V3_ID(0x07938E89,0xBA0D4CA8,0x8C7286AB,0xA9DDA95B), "{v3_|NOT}" },
+        { V3_ID(0x42879094,0xA2F145ED,0xAC90E82A,0x99458870), "{v3_|NOT}" },
+        // seen in the wild but unknown, related to view
+        { V3_ID(0xAA3E50FF,0xB78840EE,0xADCD48E8,0x094CEDB7), "{v3_|NOT}" },
+        { V3_ID(0x2CAE14DB,0x4DE04C6E,0x8BD2E611,0x1B31A9C2), "{v3_|NOT}" },
+        { V3_ID(0xD868D61D,0x20F445F4,0x947D069E,0xC811D1E4), "{v3_|NOT}" },
+        { V3_ID(0xEE49E3CA,0x6FCB44FB,0xAEBEE6C3,0x48625122), "{v3_|NOT}" },
+        */
     };
 
     if (v3_tuid_match(iid, v3_audio_processor_iid))
