@@ -151,6 +151,14 @@ const char* tuid2str(const v3_tuid iid)
         { V3_ID(0xE90FC54F,0x76F24235,0x8AF8BD15,0x68C663D6), "{v3_|NOT}" },
         { V3_ID(0x07938E89,0xBA0D4CA8,0x8C7286AB,0xA9DDA95B), "{v3_|NOT}" },
         { V3_ID(0x42879094,0xA2F145ED,0xAC90E82A,0x99458870), "{v3_|NOT}" },
+        { V3_ID(0xC3B17BC0,0x2C174494,0x80293402,0xFBC4BBF8), "{v3_|NOT}" },
+        { V3_ID(0x31E29A7A,0xE55043AD,0x8B95B9B8,0xDA1FBE1E), "{v3_|NOT}" },
+        { V3_ID(0x8E3C292C,0x95924F9D,0xB2590B1E,0x100E4198), "{v3_|NOT}" },
+        { V3_ID(0x50553FD9,0x1D2C4C24,0xB410F484,0xC5FB9F3F), "{v3_|NOT}" },
+        { V3_ID(0xF185556C,0x5EE24FC7,0x92F28754,0xB7759EA8), "{v3_|NOT}" },
+        { V3_ID(0xD2CE9317,0xF24942C9,0x9742E82D,0xB10CCC52), "{v3_|NOT}" },
+        { V3_ID(0xDA57E6D1,0x1F3242D1,0xAD9C1A82,0xFDB95695), "{v3_|NOT}" },
+        { V3_ID(0x3ABDFC3E,0x4B964A66,0xFCD86F10,0x0D554023), "{v3_|NOT}" },
         // seen in the wild but unknown, related to view
         { V3_ID(0xAA3E50FF,0xB78840EE,0xADCD48E8,0x094CEDB7), "{v3_|NOT}" },
         { V3_ID(0x2CAE14DB,0x4DE04C6E,0x8BD2E611,0x1B31A9C2), "{v3_|NOT}" },
@@ -3133,6 +3141,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     v3_host_application** const hostApplicationFromFactory;
 #if !DPF_VST3_USES_SEPARATE_CONTROLLER
     v3_host_application** const hostApplicationFromComponent;
+    v3_host_application** hostApplicationFromComponentInitialize;
 #endif
     v3_host_application** hostApplicationFromInitialize;
 
@@ -3150,6 +3159,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
           hostApplicationFromFactory(hostApp),
 #if !DPF_VST3_USES_SEPARATE_CONTROLLER
           hostApplicationFromComponent(hostComp),
+          hostApplicationFromComponentInitialize(nullptr),
 #endif
           hostApplicationFromInitialize(nullptr)
     {
@@ -3576,6 +3586,8 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 #if !DPF_VST3_USES_SEPARATE_CONTROLLER
                                          : controller->hostApplicationFromComponent != nullptr
                                          ? controller->hostApplicationFromComponent
+                                         : controller->hostApplicationFromComponentInitialize != nullptr
+                                         ? controller->hostApplicationFromComponentInitialize
 #endif
                                          : controller->hostApplicationFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
@@ -4057,6 +4069,12 @@ struct dpf_component : v3_component_cpp {
         // save it for later so we can unref it
         component->hostApplicationFromInitialize = hostApplication;
 
+       #if !DPF_VST3_USES_SEPARATE_CONTROLLER
+        // save it in edit controller too, needed for some hosts
+        if (component->controller != nullptr)
+            component->controller->hostApplicationFromComponentInitialize = hostApplication;
+       #endif
+
         // provide the factory application to the plugin if this new one is missing
         if (hostApplication == nullptr)
             hostApplication = component->hostApplicationFromFactory;
@@ -4094,6 +4112,12 @@ struct dpf_component : v3_component_cpp {
 
         // delete actual plugin
         component->vst3 = nullptr;
+
+       #if !DPF_VST3_USES_SEPARATE_CONTROLLER
+        // remove previous host application saved during initialize
+        if (component->controller != nullptr)
+            component->controller->hostApplicationFromComponentInitialize = nullptr;
+       #endif
 
         // unref host application received during initialize
         if (component->hostApplicationFromInitialize != nullptr)
