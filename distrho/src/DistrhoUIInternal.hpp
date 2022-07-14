@@ -331,7 +331,9 @@ public:
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     bool handlePluginKeyboardVST(const bool press, const bool special, const uint keychar, const uint keycode, const uint16_t mods)
     {
-        DGL_NAMESPACE::Widget::KeyboardEvent ev;
+        using namespace DGL_NAMESPACE;
+
+        Widget::KeyboardEvent ev;
         ev.mod     = mods;
         ev.press   = press;
         ev.key     = keychar;
@@ -343,15 +345,15 @@ public:
 
         const bool ret = ui->onKeyboard(ev);
 
-        if (press && !special && (mods & (kModifierControl|kModifierAlt|kModifierSuper)) == 0x0)
+        if (press && !special && (mods & (kModifierControl|kModifierAlt|kModifierSuper)) == 0)
         {
-            DGL_NAMESPACE::Widget::CharacterInputEvent cev;
+            Widget::CharacterInputEvent cev;
             cev.mod       = mods;
             cev.character = keychar;
             cev.keycode   = keycode;
 
             // if shift modifier is on, convert a-z -> A-Z for character input
-            if (cev.character >= 'a' && cev.character <= 'z' && (mods & DGL_NAMESPACE::kModifierShift) != 0)
+            if (cev.character >= 'a' && cev.character <= 'z' && (mods & kModifierShift) != 0)
                 cev.character -= 'a' - 'A';
 
             ui->onCharacterInput(cev);
