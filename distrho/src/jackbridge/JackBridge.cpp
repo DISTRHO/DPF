@@ -43,7 +43,19 @@
 # include "WebBridge.hpp"
 #endif
 
-#if defined(HAVE_RTAUDIO) && defined(DISTRHO_PROPER_CPP11_SUPPORT) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+#ifndef DISTRHO_PROPER_CPP11_SUPPORT
+# undef HAVE_RTAUDIO
+#endif
+
+#ifdef DPF_JACK_STANDALONE_SKIP_RTAUDIO_FALLBACK
+# undef HAVE_RTAUDIO
+#endif
+
+#ifdef DPF_JACK_STANDALONE_SKIP_SDL2_FALLBACK
+# undef HAVE_SDL2
+#endif
+
+#if defined(HAVE_RTAUDIO) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
 #  include "rtaudio/RtAudio.cpp"
