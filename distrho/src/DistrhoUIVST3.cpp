@@ -108,6 +108,8 @@ static void applyGeometryConstraints(const uint minimumWidth,
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 static uint translateVST3Modifiers(const int64_t modifiers) noexcept
 {
+    using namespace DGL_NAMESPACE;
+
     uint dglmods = 0;
     if (modifiers & (1 << 0))
         dglmods |= kModifierShift;
@@ -124,6 +126,7 @@ static uint translateVST3Modifiers(const int64_t modifiers) noexcept
     if (modifiers & (1 << 3))
         dglmods |= kModifierSuper;
    #endif
+
     return dglmods;
 }
 #endif
