@@ -32,7 +32,6 @@
 
 /* TODO items:
  * - mousewheel event
- * - key down/up events
  * - file request?
  */
 
@@ -103,6 +102,31 @@ static void applyGeometryConstraints(const uint minimumWidth,
     d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | AFTER",
              minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
 }
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+static uint translateVST3Modifiers(const int64_t modifiers) noexcept
+{
+    uint dglmods = 0;
+    if (modifiers & (1 << 0))
+        dglmods |= kModifierShift;
+    if (modifiers & (1 << 1))
+        dglmods |= kModifierAlt;
+   #ifdef DISTRHO_OS_MAC
+    if (modifiers & (1 << 2))
+        dglmods |= kModifierSuper;
+    if (modifiers & (1 << 3))
+        dglmods |= kModifierControl;
+   #else
+    if (modifiers & (1 << 2))
+        dglmods |= kModifierControl;
+    if (modifiers & (1 << 3))
+        dglmods |= kModifierSuper;
+   #endif
+    return dglmods;
+}
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -330,64 +354,28 @@ public:
 
     v3_result onKeyDown(const int16_t keychar, const int16_t keycode, const int16_t modifiers)
     {
-        d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
 
-        using namespace DGL_NAMESPACE;
+        bool special;
+        const uint key = translateVstKeyCode(special, keychar, keycode);
+        d_debug("onKeyDown %d %d %x -> %d %d", keychar, keycode, modifiers, special, key);
 
-        // TODO
-        uint dglcode = 0;
-
-        // TODO verify these
-        uint dglmods = 0;
-        if (modifiers & (1 << 0))
-            dglmods |= kModifierShift;
-        if (modifiers & (1 << 1))
-            dglmods |= kModifierAlt;
-       #ifdef DISTRHO_OS_MAC
-        if (modifiers & (1 << 2))
-            dglmods |= kModifierSuper;
-        if (modifiers & (1 << 3))
-            dglmods |= kModifierControl;
-       #else
-        if (modifiers & (1 << 2))
-            dglmods |= kModifierControl;
-        if (modifiers & (1 << 3))
-            dglmods |= kModifierSuper;
-       #endif
-
-        return fUI.handlePluginKeyboardVST3(true, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
+        return fUI.handlePluginKeyboardVST(true, special, key,
+                                           keycode >= 0 ? static_cast<uint>(keycode) : 0,
+                                           translateVST3Modifiers(modifiers)) ? V3_TRUE : V3_FALSE;
     }
 
     v3_result onKeyUp(const int16_t keychar, const int16_t keycode, const int16_t modifiers)
     {
-        d_stdout("onKeyDown %i %i %x\n", keychar, keycode, modifiers);
         DISTRHO_SAFE_ASSERT_INT_RETURN(keychar >= 0 && keychar < 0x7f, keychar, V3_FALSE);
 
-        using namespace DGL_NAMESPACE;
+        bool special;
+        const uint key = translateVstKeyCode(special, keychar, keycode);
+        d_debug("onKeyUp %d %d %x -> %d %d", keychar, keycode, modifiers, special, key);
 
-        // TODO
-        uint dglcode = 0;
-
-        // TODO verify these
-        uint dglmods = 0;
-        if (modifiers & (1 << 0))
-            dglmods |= kModifierShift;
-        if (modifiers & (1 << 1))
-            dglmods |= kModifierAlt;
-       #ifdef DISTRHO_OS_MAC
-        if (modifiers & (1 << 2))
-            dglmods |= kModifierSuper;
-        if (modifiers & (1 << 3))
-            dglmods |= kModifierControl;
-       #else
-        if (modifiers & (1 << 2))
-            dglmods |= kModifierControl;
-        if (modifiers & (1 << 3))
-            dglmods |= kModifierSuper;
-       #endif
-
-        return fUI.handlePluginKeyboardVST3(false, static_cast<uint>(keychar), dglcode, dglmods) ? V3_TRUE : V3_FALSE;
+        return fUI.handlePluginKeyboardVST(false, special, key,
+                                           keycode >= 0 ? static_cast<uint>(keycode) : 0,
+                                           translateVST3Modifiers(modifiers)) ? V3_TRUE : V3_FALSE;
     }
 
     v3_result onFocus(const bool state)

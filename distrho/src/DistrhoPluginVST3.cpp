@@ -1019,22 +1019,22 @@ public:
         buffer[sizeof(buffer)-1] = '\xff';
         v3_result res;
 
-        for (int32_t pos = 0, term = 0, read; term == 0; pos += read)
+        for (int32_t terminated = 0, read; terminated == 0;)
         {
+            read = -1;
             res = v3_cpp_obj(stream)->read(stream, buffer, sizeof(buffer)-1, &read);
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
             if (read == 0)
                 return V3_OK;
-
-            DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
             for (int32_t i = 0; i < read; ++i)
             {
                 // found terminator, stop here
                 if (buffer[i] == '\xfe')
                 {
-                    term = 1;
+                    terminated = 1;
                     break;
                 }
 
@@ -1808,9 +1808,9 @@ public:
             info->flags = V3_PARAM_CAN_AUTOMATE | V3_PARAM_IS_HIDDEN;
             info->step_count = 127;
             char ccstr[24];
-            snprintf(ccstr, sizeof(ccstr)-1, "MIDI Ch. %d CC %d", static_cast<uint8_t>(index / 130) + 1, index % 130);
+            snprintf(ccstr, sizeof(ccstr), "MIDI Ch. %d CC %d", static_cast<uint8_t>(index / 130) + 1, index % 130);
             strncpy_utf16(info->title, ccstr, 128);
-            snprintf(ccstr, sizeof(ccstr)-1, "Ch.%d CC%d", index / 130 + 1, index % 130);
+            snprintf(ccstr, sizeof(ccstr), "Ch.%d CC%d", index / 130 + 1, index % 130);
             strncpy_utf16(info->short_title, ccstr+5, 128);
             return V3_OK;
         }
@@ -4300,10 +4300,10 @@ static const char* getPluginVersion()
         const uint32_t versionNum = getPluginInfo().getVersion();
 
         char versionBuf[64];
-        snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
-                 (versionNum >> 16) & 0xff,
-                 (versionNum >>  8) & 0xff,
-                 (versionNum >>  0) & 0xff);
+        std::snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
+                      (versionNum >> 16) & 0xff,
+                      (versionNum >>  8) & 0xff,
+                      (versionNum >>  0) & 0xff);
         versionBuf[sizeof(versionBuf)-1] = '\0';
         version = versionBuf;
     }

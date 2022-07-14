@@ -15,19 +15,10 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "DistrhoPluginVST.hpp"
 #include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedSafeLocale.hpp"
 #include "../extra/ScopedPointer.hpp"
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
@@ -82,37 +73,6 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
-
-// -----------------------------------------------------------------------
-
-void strncpy(char* const dst, const char* const src, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-
-    if (const size_t len = std::min(std::strlen(src), size-1U))
-    {
-        std::memcpy(dst, src, len);
-        dst[len] = '\0';
-    }
-    else
-    {
-        dst[0] = '\0';
-    }
-}
-
-void snprintf_param(char* const dst, const float value, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, "%f", value);
-    dst[size-1] = '\0';
-}
-
-void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, "%d", value);
-    dst[size-1] = '\0';
-}
 
 // -----------------------------------------------------------------------
 
@@ -257,85 +217,16 @@ public:
 # endif
 
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
+    int handlePluginKeyEvent(const bool down, const int32_t index, const intptr_t value)
     {
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         using namespace DGL_NAMESPACE;
 
-        switch (value)
-        {
-        // convert some VST2 special values to normal keys
-        case  1: index = kKeyBackspace; break;
-        case  2: index = '\t';          break;
-        // 3 clear
-        case  4: index = '\r';          break;
-        case  6: index = kKeyEscape;    break;
-        case  7: index = ' ';           break;
-        //  8 next
-        // 17 select
-        // 18 print
-        case 19: index = '\n';          break;
-        // 20 snapshot
-        case 22: index = kKeyDelete;    break;
-        // 23 help
-        case 57: index = '=';           break;
+        bool special;
+        const uint key = translateVstKeyCode(special, index, static_cast<int32_t>(value));
 
-        // numpad stuff follows
-        case 24: index = '0';           break;
-        case 25: index = '1';           break;
-        case 26: index = '2';           break;
-        case 27: index = '3';           break;
-        case 28: index = '4';           break;
-        case 29: index = '5';           break;
-        case 30: index = '6';           break;
-        case 31: index = '7';           break;
-        case 32: index = '8';           break;
-        case 33: index = '9';           break;
-        case 34: index = '*';           break;
-        case 35: index = '+';           break;
-        // 36 separator
-        case 37: index = '-';           break;
-        case 38: index = '.';           break;
-        case 39: index = '/';           break;
-
-        // handle rest of special keys
-        /* these special keys are missing:
-           - kKeySuper
-           - kKeyCapsLock
-           - kKeyPrintScreen
-         */
-        case 40: index = kKeyF1;         break;
-        case 41: index = kKeyF2;         break;
-        case 42: index = kKeyF3;         break;
-        case 43: index = kKeyF4;         break;
-        case 44: index = kKeyF5;         break;
-        case 45: index = kKeyF6;         break;
-        case 46: index = kKeyF7;         break;
-        case 47: index = kKeyF8;         break;
-        case 48: index = kKeyF9;         break;
-        case 49: index = kKeyF10;        break;
-        case 50: index = kKeyF11;        break;
-        case 51: index = kKeyF12;        break;
-        case 11: index = kKeyLeft;       break;
-        case 12: index = kKeyUp;         break;
-        case 13: index = kKeyRight;      break;
-        case 14: index = kKeyDown;       break;
-        case 15: index = kKeyPageUp;     break;
-        case 16: index = kKeyPageDown;   break;
-        case 10: index = kKeyHome;       break;
-        case  9: index = kKeyEnd;        break;
-        case 21: index = kKeyInsert;     break;
-        case 54: index = kKeyShift;      break;
-        case 55: index = kKeyControl;    break;
-        case 56: index = kKeyAlt;        break;
-        case 58: index = kKeyMenu;       break;
-        case 52: index = kKeyNumLock;    break;
-        case 53: index = kKeyScrollLock; break;
-        case  5: index = kKeyPause;      break;
-        }
-
-        switch (index)
+        switch (key)
         {
         case kKeyShift:
             if (down)
@@ -357,17 +248,9 @@ public:
             break;
         }
 
-        if (index > 0)
-        {
-            // keyboard events must always be lowercase
-            if (index >= 'A' && index <= 'Z')
-                index += 'a' - 'A'; // A-Z -> a-z
-
-            fUI.handlePluginKeyboardVST2(down, static_cast<uint>(index), fKeyboardModifiers);
-            return 1;
-        }
-
-        return 0;
+        return fUI.handlePluginKeyboardVST(down, special, key,
+                                           value >= 0 ? static_cast<uint>(value) : 0,
+                                           fKeyboardModifiers) ? 1 : 0;
     }
 # endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
@@ -490,7 +373,7 @@ public:
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
-        std::memset(fProgramName, 0, sizeof(char)*(32+1));
+        std::memset(fProgramName, 0, sizeof(fProgramName));
         std::strcpy(fProgramName, "Default");
 
         const uint32_t parameterCount = fPlugin.getParameterCount();
@@ -575,7 +458,7 @@ public:
         case effSetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(fProgramName, programName, 32);
+                strncpy(fProgramName, programName, 32);
                 return 1;
             }
             break;
@@ -583,7 +466,7 @@ public:
         case effGetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
+                strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -591,7 +474,7 @@ public:
         case effGetProgramNameIndexed:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
+                strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -621,14 +504,14 @@ public:
                     if (d_isNotEqual(value, enumValues.values[i].value))
                         continue;
 
-                    DISTRHO_NAMESPACE::strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
+                    strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
                     return 1;
                 }
 
                 if (hints & kParameterIsInteger)
-                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)value, 24);
+                    snprintf_i32((char*)ptr, (int32_t)value, 24);
                 else
-                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
+                    snprintf_f32((char*)ptr, value, 24);
 
                 return 1;
             }
@@ -1196,7 +1079,7 @@ private:
     AEffect* const fEffect;
 
     // Temporary data
-    char fProgramName[32+1];
+    char fProgramName[32];
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t  fMidiEventCount;
@@ -1477,7 +1360,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetParamLabel:
         if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            DISTRHO_NAMESPACE::strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
+            strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
             return 1;
         }
         return 0;
@@ -1487,9 +1370,9 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
         {
             const String& shortName(sPlugin->getParameterShortName(index));
             if (shortName.isNotEmpty())
-                DISTRHO_NAMESPACE::strncpy((char*)ptr, shortName, 16);
+                strncpy((char*)ptr, shortName, 16);
             else
-                DISTRHO_NAMESPACE::strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
+                strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
             return 1;
         }
         return 0;
@@ -1502,17 +1385,17 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                 memset(properties, 0, sizeof(VstParameterProperties));
 
                 // full name
-                DISTRHO_NAMESPACE::strncpy(properties->label,
-                                           sPlugin->getParameterName(index),
-                                           sizeof(properties->label));
+                strncpy(properties->label,
+                        sPlugin->getParameterName(index),
+                        sizeof(properties->label));
 
                 // short name
                 const String& shortName(sPlugin->getParameterShortName(index));
 
                 if (shortName.isNotEmpty())
-                    DISTRHO_NAMESPACE::strncpy(properties->shortLabel,
-                                               sPlugin->getParameterShortName(index),
-                                               sizeof(properties->shortLabel));
+                    strncpy(properties->shortLabel,
+                            sPlugin->getParameterShortName(index),
+                            sizeof(properties->shortLabel));
 
                 // parameter hints
                 const uint32_t hints = sPlugin->getParameterHints(index);
@@ -1551,9 +1434,9 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                         if (portGroup.groupId == groupId)
                         {
                             properties->category = i + 1;
-                            DISTRHO_NAMESPACE::strncpy(properties->categoryLabel,
-                                                       portGroup.name.buffer(),
-                                                       sizeof(properties->categoryLabel));
+                            strncpy(properties->categoryLabel,
+                                    portGroup.name.buffer(),
+                                    sizeof(properties->categoryLabel));
                             break;
                         }
                     }
@@ -1581,7 +1464,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetEffectName:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getName(), 32);
+            strncpy(cptr, sPlugin->getName(), 32);
             return 1;
         }
         return 0;
@@ -1589,7 +1472,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetVendorString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getMaker(), 32);
+            strncpy(cptr, sPlugin->getMaker(), 32);
             return 1;
         }
         return 0;
@@ -1597,7 +1480,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetProductString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, sPlugin->getLabel(), 32);
+            strncpy(cptr, sPlugin->getLabel(), 32);
             return 1;
         }
         return 0;
