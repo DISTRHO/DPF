@@ -15,12 +15,8 @@ LINK_FLAGS      += $(DGL_LIBS)
 
 ifeq ($(MACOS),true)
 BUILD_CXX_FLAGS += -Wno-deprecated-declarations
-endif
-
-# TODO fix these after pugl-upstream is done
-BUILD_CXX_FLAGS += -Wno-attributes -Wno-extra -Wno-missing-field-initializers
-ifneq ($(MACOS),true)
-BUILD_CXX_FLAGS += -Wno-narrowing
+else
+PUGL_EXTRA_FLAGS = -Wno-extra -Wmissing-field-initializers
 endif
 
 # ifneq ($(MACOS_OLD),true)
@@ -190,51 +186,63 @@ vulkan:  ../build/libdgl-vulkan.a
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+../build/dgl/pugl.cpp.o: src/pugl.cpp
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) -c -o $@
+
+../build/dgl/pugl.mm.o: src/pugl.mm
+	-@mkdir -p ../build/dgl
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) -c -ObjC++ -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 ../build/dgl/%.cpp.cairo.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -o $@
 
 ../build/dgl/%.mm.cairo.o: src/%.mm
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Cairo variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/dgl/%.cpp.opengl.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -o $@
 
 ../build/dgl/%.mm.opengl.o: src/%.mm
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/dgl/%.cpp.opengl3.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL3 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -o $@
 
 ../build/dgl/%.mm.opengl3.o: src/%.mm
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (OpenGL3 variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
 ../build/dgl/%.cpp.vulkan.o: src/%.cpp
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Vulkan variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -o $@
 
 ../build/dgl/%.mm.vulkan.o: src/%.mm
 	-@mkdir -p ../build/dgl
 	@echo "Compiling $< (Vulkan variant)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -ObjC++ -o $@
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(VULKAN_FLAGS) -DDGL_VULKAN -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
