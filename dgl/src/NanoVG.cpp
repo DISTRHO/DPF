@@ -318,12 +318,12 @@ NanoVG::NanoVG(int flags)
       fInFrame(false),
       fIsSubWidget(false)
 {
-    DISTRHO_SAFE_ASSERT(fContext);
+    DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
 }
 
 NanoVG::~NanoVG()
 {
-    DISTRHO_SAFE_ASSERT(! fInFrame);
+    DISTRHO_CUSTOM_SAFE_ASSERT("Destroying NanoVG context with still active frame", ! fInFrame);
 
     if (fContext != nullptr && ! fIsSubWidget)
         nvgDeleteGL(fContext);
