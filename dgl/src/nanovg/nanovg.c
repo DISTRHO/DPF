@@ -2592,6 +2592,11 @@ float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char*
 		nvgTransformPoint(&c[6],&c[7], state->xform, q.x0*invscale, q.y1*invscale);
 		// Create triangles
 		if (nverts+6 <= cverts) {
+#if NVG_FONT_TEXTURE_FLAGS
+			// align font kerning to integer pixel positions
+			for (int i = 0; i < 8; ++i)
+				c[i] = (int)(c[i] + 0.5f);
+#endif
 			nvg__vset(&verts[nverts], c[0], c[1], q.s0, q.t0); nverts++;
 			nvg__vset(&verts[nverts], c[4], c[5], q.s1, q.t1); nverts++;
 			nvg__vset(&verts[nverts], c[2], c[3], q.s1, q.t0); nverts++;
