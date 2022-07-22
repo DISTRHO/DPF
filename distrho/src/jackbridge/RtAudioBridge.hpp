@@ -45,6 +45,7 @@
 # include "../../extra/String.hpp"
 
 using DISTRHO_NAMESPACE::ScopedPointer;
+using DISTRHO_NAMESPACE::String;
 
 struct RtAudioBridge : NativeBridge {
     // pointer to RtAudio instance
