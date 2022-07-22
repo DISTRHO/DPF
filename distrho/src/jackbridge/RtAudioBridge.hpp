@@ -53,9 +53,7 @@ using DISTRHO_NAMESPACE::String;
 struct RtAudioBridge : NativeBridge {
     // pointer to RtAudio instance
     ScopedPointer<RtAudio> handle;
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
     bool captureEnabled = false;
-#endif
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
     std::vector<RtMidiIn> midiIns;
    #endif
@@ -233,7 +231,7 @@ struct RtAudioBridge : NativeBridge {
             } DISTRHO_SAFE_EXCEPTION("midiIn.openPort()");
         }
        #endif
-       #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         for (uint i=0; i<midiOutCount; ++i)
         {
             try {
@@ -379,7 +377,7 @@ struct RtAudioBridge : NativeBridge {
     }
 
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void RtMidiCallback(double timeStamp, std::vector<uchar>* message, void* userData)
+    static void RtMidiCallback(double /*timeStamp*/, std::vector<uchar>* message, void* userData)
     {
         const size_t len = message->size();
         DISTRHO_SAFE_ASSERT_RETURN(len > 0 && len <= kMaxMIDIInputMessageSize,);
