@@ -34,7 +34,8 @@ else
 TARGETS += lv2_dsp
 endif
 
-TARGETS += vst
+TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 
