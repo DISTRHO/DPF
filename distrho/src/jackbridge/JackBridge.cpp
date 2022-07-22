@@ -2327,7 +2327,7 @@ bool isMIDIEnabled()
     return true;
 }
 
-uint32_t getBufferSize()
+uint getBufferSize()
 {
 #if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
@@ -2345,7 +2345,7 @@ bool requestAudioInput()
     return false;
 }
 
-bool requestBufferSizeChange(const uint32_t newBufferSize)
+bool requestBufferSizeChange(const uint newBufferSize)
 {
 #if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
