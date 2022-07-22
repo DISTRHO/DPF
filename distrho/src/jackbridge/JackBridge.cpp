@@ -2265,6 +2265,15 @@ bool jackbridge_set_property_change_callback(jack_client_t* client, JackProperty
 
 START_NAMESPACE_DISTRHO
 
+bool isUsingNativeAudio() noexcept
+{
+#if defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT)
+    return false;
+#else
+    return usingNativeBridge;
+#endif
+}
+
 bool supportsAudioInput()
 {
 #if defined(JACKBRIDGE_DUMMY)

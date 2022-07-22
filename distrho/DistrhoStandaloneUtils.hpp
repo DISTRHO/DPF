@@ -25,10 +25,23 @@ START_NAMESPACE_DISTRHO
  * Standalone plugin related utilities */
 
 /**
-   @defgroup PluginRelatedUtilities Plugin related utilities
+   @defgroup StandalonePluginRelatedUtilities Plugin related utilities
+
+   When the plugin is running as standalone and JACK is not available, a native audio handling is in place.
+   It is a very simple handling, auto-connecting to the default audio interface for outputs.
+
+   !!EXPERIMENTAL!!
+
+   Still under development and testing.
 
    @{
  */
+
+/**
+   Check if the current standalone is using native audio methods.
+   If this function returns false, you MUST NOT use any other function from this group.
+*/
+bool isUsingNativeAudio() noexcept;
 
 /**
    Check if the current standalone supports audio input.
@@ -58,7 +71,7 @@ bool isMIDIEnabled();
 /**
    Get the current buffer size.
 */
-uint32_t getBufferSize();
+uint getBufferSize();
 
 /**
    Request permissions to use audio input.
@@ -69,7 +82,7 @@ bool requestAudioInput();
 /**
    Request change to a new buffer size.
 */
-bool requestBufferSizeChange(uint32_t newBufferSize);
+bool requestBufferSizeChange(uint newBufferSize);
 
 /**
    Request permissions to use MIDI.
