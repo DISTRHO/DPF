@@ -205,10 +205,12 @@ struct NativeBridge {
         (void)time;
     }
 
-    void allocBuffers()
+    void allocBuffers(const bool audio, const bool midi)
     {
         DISTRHO_SAFE_ASSERT_RETURN(bufferSize != 0,);
 
+        if (audio)
+        {
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
 
@@ -219,7 +221,10 @@ struct NativeBridge {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         std::memset(audioBufferStorage, 0, sizeof(float)*bufferSize*DISTRHO_PLUGIN_NUM_INPUTS);
        #endif
+        }
 
+        if (midi)
+        {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         midiInBufferCurrent.createBuffer(kMaxMIDIInputMessageSize * 512);
         midiInBufferPending.createBuffer(kMaxMIDIInputMessageSize * 512);
@@ -227,6 +232,7 @@ struct NativeBridge {
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         midiOutBuffer.createBuffer(2048);
        #endif
+        }
     }
 
     void freeBuffers()

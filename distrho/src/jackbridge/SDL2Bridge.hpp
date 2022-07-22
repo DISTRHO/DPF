@@ -131,7 +131,7 @@ struct SDL2Bridge : NativeBridge {
         sampleRate = receivedPlayback.freq;
        #endif
 
-        allocBuffers();
+        allocBuffers(true, false);
         return true;
     }
 

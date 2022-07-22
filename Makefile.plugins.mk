@@ -81,7 +81,7 @@ endif
 else ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
 
 ifeq ($(MACOS),true)
-JACK_LIBS  += -framework CoreAudio -framework CoreFoundation
+JACK_LIBS  += -framework CoreAudio -framework CoreFoundation -framework CoreMIDI
 else ifeq ($(WINDOWS),true)
 JACK_LIBS  += -lole32 -lwinmm
 # DirectSound

@@ -56,10 +56,18 @@
 #endif
 
 #if defined(HAVE_RTAUDIO) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+// fix conflict between DGL and macOS names
+# define Point CorePoint
+# define Size CoreSize
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
 #  include "rtaudio/RtAudio.cpp"
 # endif
+# ifdef RTMIDI_API_TYPE
+#  include "rtmidi/RtMidi.cpp"
+# endif
+# undef Point
+# undef Size
 #endif
 
 #if defined(HAVE_SDL2) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0

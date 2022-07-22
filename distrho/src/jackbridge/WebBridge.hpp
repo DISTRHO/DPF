@@ -52,7 +52,7 @@ struct WebBridge : NativeBridge {
             return 0;
         }) != 0;
        #endif
-        
+
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         midiAvailable = EM_ASM_INT({
             return typeof(navigator.requestMIDIAccess) === 'function' ? 1 : 0;
@@ -117,7 +117,7 @@ struct WebBridge : NativeBridge {
             return WAB.audioContext.sampleRate;
         });
 
-        allocBuffers();
+        allocBuffers(true, true);
 
         EM_ASM({
             var numInputs = $0;
@@ -279,7 +279,7 @@ struct WebBridge : NativeBridge {
 
         bufferSize = newBufferSize;
         freeBuffers();
-        allocBuffers();
+        allocBuffers(true, true);
 
         if (bufferSizeCallback != nullptr)
             bufferSizeCallback(newBufferSize, jackBufferSizeArg);
