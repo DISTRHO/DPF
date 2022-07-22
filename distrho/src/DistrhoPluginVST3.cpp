@@ -872,7 +872,7 @@ public:
                #if DISTRHO_PLUGIN_NUM_INPUTS > 0
                 if (busId < inputBuses.numGroups)
                 {
-                    numChannels = fPlugin.getPortCountWithGroupId(true, busId);
+                    numChannels = fPlugin.getAudioPortCountWithGroupId(true, busId);
                     busType = V3_AUX;
                     flags = 0;
 
@@ -972,7 +972,7 @@ public:
                #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
                 if (busId < outputBuses.numGroups)
                 {
-                    numChannels = fPlugin.getPortCountWithGroupId(false, busId);
+                    numChannels = fPlugin.getAudioPortCountWithGroupId(false, busId);
                     busType = V3_AUX;
                     flags = 0;
 
@@ -1499,7 +1499,7 @@ public:
                 default:
                     if (busId < inputBuses.numGroups)
                     {
-                        const uint32_t numPortsInBus = fPlugin.getPortCountWithGroupId(true, busId);
+                        const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(true, busId);
                         arr = 0x0;
                         for (uint32_t j=0; j<numPortsInBus; ++j)
                             arr |= 1ull << (j + 33ull);
@@ -1532,7 +1532,7 @@ public:
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_INPUTS
-            d_stdout("invalid bus arrangement %d", busId);
+            d_stdout("invalid bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
         else
@@ -1558,7 +1558,7 @@ public:
                 default:
                     if (busId < outputBuses.numGroups)
                     {
-                        const uint32_t numPortsInBus = fPlugin.getPortCountWithGroupId(false, busId);
+                        const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(false, busId);
                         arr = 0x0;
                         for (uint32_t j=0; j<numPortsInBus; ++j)
                             arr |= 1ull << (j + 33ull);
@@ -1591,7 +1591,7 @@ public:
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
-            d_stdout("invalid bus arrangement %d", busId);
+            d_stdout("invalid bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
     }
