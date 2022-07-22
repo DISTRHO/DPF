@@ -42,12 +42,17 @@
 # include "rtaudio/RtAudio.h"
 # undef Point
 # include "../../extra/ScopedPointer.hpp"
+# include "../../extra/String.hpp"
 
 using DISTRHO_NAMESPACE::ScopedPointer;
 
 struct RtAudioBridge : NativeBridge {
     // pointer to RtAudio instance
     ScopedPointer<RtAudio> handle;
+
+    // for buffer size changes
+    String name;
+    uint nextBufferSize = 512;
 
     const char* getVersion() const noexcept
     {
@@ -62,7 +67,7 @@ struct RtAudioBridge : NativeBridge {
             rtAudio = new RtAudio(RtAudio::RTAUDIO_API_TYPE);
         } DISTRHO_SAFE_EXCEPTION_RETURN("new RtAudio()", false);
 
-        uint rtAudioBufferFrames = 512;
+        uint rtAudioBufferFrames = nextBufferSize;
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         RtAudio::StreamParameters inParams;
@@ -94,6 +99,7 @@ struct RtAudioBridge : NativeBridge {
             return false;
         } DISTRHO_SAFE_EXCEPTION_RETURN("rtAudio->openStream()", false);
 
+        name = clientName;
         handle = rtAudio;
         bufferSize = rtAudioBufferFrames;
         sampleRate = handle->getStreamSampleRate();
@@ -136,6 +142,42 @@ struct RtAudioBridge : NativeBridge {
 
         return true;
     }
+
+    /* RtAudio in macOS uses a different than usual way to handle audio block size,
+     * where RTAUDIO_MINIMIZE_LATENCY makes CoreAudio use very low latencies (around 15 samples).
+     * As such, dynamic buffer sizes are meaningless there.
+     */
+   #ifndef DISTRHO_OS_MAC
+    bool supportsBufferSizeChanges() const override
+    {
+        return true;
+    }
+
+    bool requestBufferSizeChange(const uint32_t newBufferSize) override
+    {
+        // stop audio first
+        deactivate();
+        close();
+
+        // try to open with new buffer size
+        nextBufferSize = newBufferSize;
+
+        const bool ok = open(name);
+
+        if (!ok)
+        {
+            // revert to old buffer size if new one failed
+            nextBufferSize = bufferSize;
+            open(name);
+        }
+
+        if (bufferSizeCallback != nullptr)
+            bufferSizeCallback(bufferSize, jackBufferSizeArg);
+
+        activate();
+        return ok;
+    }
+   #endif
 
     static int RtAudioCallback(void* const outputBuffer,
                               #if DISTRHO_PLUGIN_NUM_INPUTS > 0
