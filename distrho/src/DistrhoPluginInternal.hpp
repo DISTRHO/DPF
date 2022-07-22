@@ -674,6 +674,32 @@ public:
         return fData->portGroupCount;
     }
 
+    uint32_t getPortCountWithGroupId(const bool input, const uint32_t groupId) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        uint32_t numPorts = 0;
+
+        if (input)
+        {
+            for (uint32_t i=0; i<(input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS); ++i)
+            {
+                if (fData->audioPorts[i].groupId == groupId)
+                    ++numPorts;
+            }
+        }
+        else
+        {
+            for (uint32_t i=0; i<(input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS); ++i)
+            {
+                if (fData->audioPorts[i + DISTRHO_PLUGIN_NUM_INPUTS].groupId == groupId)
+                    ++numPorts;
+            }
+        }
+
+        return numPorts;
+    }
+
     const PortGroupWithId& getPortGroupById(const uint32_t groupId) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && fData->portGroupCount != 0, sFallbackPortGroup);
