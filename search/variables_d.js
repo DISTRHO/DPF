@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['playing_1081',['playing',['../structTimePosition.html#a35db424bdf8ec01102a4fa6346c45574',1,'TimePosition']]]
+  ['oldpos_1140',['oldPos',['../structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d',1,'Widget::PositionChangedEvent']]],
+  ['oldsize_1141',['oldSize',['../structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960',1,'Widget::ResizeEvent']]],
+  ['outputs_1142',['outputs',['../structAudioMidiSyncHelper.html#a7b54cae0fdaae3d23aaccf2dbb9344ef',1,'AudioMidiSyncHelper']]]
 ];

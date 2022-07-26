@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['name_1079',['name',['../structAudioPort.html#adb3b58f79131b653d6b2adfa3ea07e5c',1,'AudioPort::name()'],['../structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da',1,'Parameter::name()'],['../structPortGroup.html#af3ab9eaf5eb1ad8165fc43b4518d2c5b',1,'PortGroup::name()']]]
+  ['max_1135',['max',['../structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0',1,'ParameterRanges']]],
+  ['midicc_1136',['midiCC',['../structParameter.html#a5389731e4cd95cac10af9aec9aa7b202',1,'Parameter']]],
+  ['min_1137',['min',['../structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b',1,'ParameterRanges']]],
+  ['mod_1138',['mod',['../structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448',1,'Widget::BaseEvent']]]
 ];

@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['valid_1096',['valid',['../structTimePosition_1_1BarBeatTick.html#a45a05047e923285af0fbeacb371e3f4e',1,'TimePosition::BarBeatTick']]],
-  ['value_1097',['value',['../structParameterEnumerationValue.html#a292f282837daa791205027d998907ae9',1,'ParameterEnumerationValue']]],
-  ['values_1098',['values',['../structParameterEnumerationValues.html#ae101471c5d819624398001c84c534b7a',1,'ParameterEnumerationValues']]]
+  ['unit_1162',['unit',['../structParameter.html#a2f79574998d34504e3a694163b4599a1',1,'Parameter']]]
 ];
