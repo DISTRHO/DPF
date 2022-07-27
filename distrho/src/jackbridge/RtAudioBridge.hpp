@@ -31,14 +31,17 @@
 # define __WINDOWS_DS__
 # define RTAUDIO_API_TYPE WINDOWS_DS
 # define RTMIDI_API_TYPE WINDOWS_MM
-#elif defined(HAVE_PULSEAUDIO)
-# define __LINUX_PULSE__
-# define RTAUDIO_API_TYPE LINUX_PULSE
-# define RTMIDI_API_TYPE LINUX_ALSA
-#elif defined(HAVE_ALSA)
-# define __LINUX_ALSA__
-# define RTAUDIO_API_TYPE LINUX_ALSA
-# define RTMIDI_API_TYPE LINUX_ALSA
+#else
+# if defined(HAVE_PULSEAUDIO)
+#  define __LINUX_PULSE__
+#  define RTAUDIO_API_TYPE LINUX_PULSE
+# elif defined(HAVE_ALSA)
+#  define __LINUX_ALSA__
+ # define RTAUDIO_API_TYPE LINUX_ALSA
+# endif
+# ifdef HAVE_ALSA
+#  define RTMIDI_API_TYPE LINUX_ALSA
+# endif
 #endif
 
 #ifdef RTAUDIO_API_TYPE

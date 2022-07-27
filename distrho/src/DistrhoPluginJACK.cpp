@@ -31,7 +31,7 @@
 # include "../extra/Thread.hpp"
 #endif
 
-#if defined(STATIC_BUILD) && !defined(DISTRHO_OS_WASM)
+#if defined(HAVE_JACK) && defined(STATIC_BUILD) && !defined(DISTRHO_OS_WASM)
 # define JACKBRIDGE_DIRECT
 #endif
 

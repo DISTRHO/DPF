@@ -88,12 +88,15 @@ JACK_LIBS  += -lole32 -lwinmm
 JACK_LIBS  += -ldsound
 # WASAPI
 # JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
-else ifeq ($(HAVE_PULSEAUDIO),true)
+else
+ifeq ($(HAVE_PULSEAUDIO),true)
 JACK_FLAGS += $(PULSEAUDIO_FLAGS)
 JACK_LIBS  += $(PULSEAUDIO_LIBS)
-else ifeq ($(HAVE_ALSA),true)
+endif
+ifeq ($(HAVE_ALSA),true)
 JACK_FLAGS += $(ALSA_FLAGS)
 JACK_LIBS  += $(ALSA_LIBS)
+endif
 endif
 
 ifeq ($(HAVE_RTAUDIO),true)

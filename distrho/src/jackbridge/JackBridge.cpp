@@ -441,8 +441,7 @@ struct JackBridge {
         , set_thread_creator_ptr(nullptr)
 #endif
     {
-       #ifdef DISTRHO_OS_WASM
-        // never use jack in wasm
+       #ifndef HAVE_JACK
         return;
        #endif
 
@@ -2284,13 +2283,11 @@ bool isUsingNativeAudio() noexcept
 
 bool supportsAudioInput()
 {
-#if defined(JACKBRIDGE_DUMMY)
-    return false;
-#elif !defined(JACKBRIDGE_DIRECT)
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
         return nativeBridge->supportsAudioInput();
 #endif
-    return true;
+    return false;
 }
 
 bool supportsBufferSizeChanges()
@@ -2304,35 +2301,29 @@ bool supportsBufferSizeChanges()
 
 bool supportsMIDI()
 {
-#if defined(JACKBRIDGE_DUMMY)
-    return false;
-#elif !defined(JACKBRIDGE_DIRECT)
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
         return nativeBridge->supportsMIDI();
 #endif
-    return true;
+    return false;
 }
 
 bool isAudioInputEnabled()
 {
-#if defined(JACKBRIDGE_DUMMY)
-    return false;
-#elif !defined(JACKBRIDGE_DIRECT)
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
         return nativeBridge->isAudioInputEnabled();
 #endif
-    return true;
+    return false;
 }
 
 bool isMIDIEnabled()
 {
-#if defined(JACKBRIDGE_DUMMY)
-    return false;
-#elif !defined(JACKBRIDGE_DIRECT)
+#if !(defined(JACKBRIDGE_DUMMY) || defined(JACKBRIDGE_DIRECT))
     if (usingNativeBridge)
         return nativeBridge->isMIDIEnabled();
 #endif
-    return true;
+    return false;
 }
 
 uint getBufferSize()

@@ -346,7 +346,9 @@ endif
 endif
 
 # backwards compat, always available/enabled
+ifneq ($(FORCE_NATIVE_AUDIO_FALLBACK),true)
 HAVE_JACK = true
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Generic DGL stuff
