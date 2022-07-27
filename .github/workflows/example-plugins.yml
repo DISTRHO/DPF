@@ -141,15 +141,11 @@ jobs:
             bin/*
 
   macos-universal:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Fix up Xcode
-        run: |
-          sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
-          sudo xcode-select -s "/Applications/Xcode_12.3.app"
       - name: Build macOS universal
         env:
           CFLAGS: -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_12 -mmacosx-version-min=10.12 -mtune=generic -msse -msse2
@@ -157,7 +153,7 @@ jobs:
           LDFLAGS: -arch x86_64 -arch arm64 -mmacosx-version-min=10.12
         run: |
           make features
-          make NOOPT=true -j $(sysctl -n hw.logicalcpu)
+          make HAVE_CAIRO=false NOOPT=true -j $(sysctl -n hw.logicalcpu)
           ./utils/package-osx-bundles.sh
       - name: Set sha8
         id: slug
