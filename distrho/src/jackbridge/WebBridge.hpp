@@ -111,7 +111,10 @@ struct WebBridge : NativeBridge {
             return false;
         }
 
-        bufferSize = 2048;
+        bufferSize = EM_ASM_INT({
+            var WAB = Module['WebAudioBridge'];
+            return WAB['minimizeBufferSize'] ? 256 : 2048;
+        });
         sampleRate = EM_ASM_INT_V({
             var WAB = Module['WebAudioBridge'];
             return WAB.audioContext.sampleRate;
@@ -125,23 +128,28 @@ struct WebBridge : NativeBridge {
             var bufferSize = $2;
             var WAB = Module['WebAudioBridge'];
 
+            var realBufferSize = WAB['minimizeBufferSize'] ? 2048 : bufferSize;
+            var divider = realBufferSize / bufferSize;
+
             // main processor
-            WAB.processor = WAB.audioContext['createScriptProcessor'](bufferSize, numInputs, numOutputs);
+            WAB.processor = WAB.audioContext['createScriptProcessor'](realBufferSize, numInputs, numOutputs);
             WAB.processor['onaudioprocess'] = function (e) {
                 // var timestamp = performance.now();
-                for (var i = 0; i < numInputs; ++i) {
-                    var buffer = e['inputBuffer']['getChannelData'](i);
-                    for (var j = 0; j < bufferSize; ++j) {
-                        // setValue($3 + ((bufferSize * i) + j) * 4, buffer[j], 'float');
-                        HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[j];
+                for (var k = 0; k < divider; ++k) {
+                    for (var i = 0; i < numInputs; ++i) {
+                        var buffer = e['inputBuffer']['getChannelData'](i);
+                        for (var j = 0; j < bufferSize; ++j) {
+                            // setValue($3 + ((bufferSize * i) + j) * 4, buffer[j], 'float');
+                            HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[bufferSize * k + j];
+                        }
                     }
-                }
-                dynCall('vi', $4, [$5]);
-                for (var i = 0; i < numOutputs; ++i) {
-                    var buffer = e['outputBuffer']['getChannelData'](i);
-                    var offset = bufferSize * (numInputs + i);
-                    for (var j = 0; j < bufferSize; ++j) {
-                        buffer[j] = HEAPF32[$3 + ((offset + j) << 2) >> 2];
+                    dynCall('vi', $4, [$5]);
+                    for (var i = 0; i < numOutputs; ++i) {
+                        var buffer = e['outputBuffer']['getChannelData'](i);
+                        var offset = bufferSize * (numInputs + i);
+                        for (var j = 0; j < bufferSize; ++j) {
+                            buffer[bufferSize * k + j] = HEAPF32[$3 + ((offset + j) << 2) >> 2];
+                        }
                     }
                 }
             };
