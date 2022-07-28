@@ -355,7 +355,9 @@ typedef struct _LV2_Descriptor {
    Put this (LV2_SYMBOL_EXPORT) before any functions that are to be loaded
    by the host as a symbol from the dynamic library.
 */
-#ifdef _WIN32
+#if defined(__EMSCRIPTEN__)
+#    define LV2_SYMBOL_EXPORT LV2_SYMBOL_EXTERN __attribute__((used))
+#elif defined(_WIN32)
 #    define LV2_SYMBOL_EXPORT LV2_SYMBOL_EXTERN __declspec(dllexport)
 #else
 #    define LV2_SYMBOL_EXPORT LV2_SYMBOL_EXTERN __attribute__((visibility("default")))
