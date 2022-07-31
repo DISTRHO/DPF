@@ -31,7 +31,7 @@
 
 START_NAMESPACE_DGL
 
-#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
+#ifdef DGL_DEBUG_EVENTS
 # define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
 # define DGL_DBGp(...) std::fprintf(stderr, __VA_ARGS__);
 # define DGL_DBGF      std::fflush(stderr);
@@ -614,7 +614,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 
 void Window::PrivateData::onPuglExpose()
 {
-    DGL_DBG("PUGL: onPuglExpose\n");
+    // DGL_DBG("PUGL: onPuglExpose\n");
 
     puglOnDisplayPrepare(view);
 
