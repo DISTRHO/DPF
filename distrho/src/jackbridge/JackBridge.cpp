@@ -34,7 +34,12 @@
 #endif
 
 #include <cerrno>
-#include "../../extra/LibraryUtils.hpp"
+
+#ifdef HAVE_JACK
+# include "../../extra/LibraryUtils.hpp"
+#else
+typedef void* lib_t;
+#endif
 
 // in case JACK fails, we fallback to native bridges simulating JACK API
 #include "NativeBridge.hpp"
@@ -339,9 +344,9 @@ struct JackBridge {
     jacksym_remove_all_properties remove_all_properties_ptr;
     jacksym_set_property_change_callback set_property_change_callback_ptr;
 
-#ifdef __WINE__
+   #ifdef __WINE__
     jacksym_set_thread_creator set_thread_creator_ptr;
-#endif
+   #endif
 
     JackBridge()
         : lib(nullptr),
@@ -437,14 +442,11 @@ struct JackBridge {
           remove_properties_ptr(nullptr),
           remove_all_properties_ptr(nullptr),
           set_property_change_callback_ptr(nullptr)
-#ifdef __WINE__
+         #ifdef __WINE__
         , set_thread_creator_ptr(nullptr)
-#endif
+         #endif
     {
-       #ifndef HAVE_JACK
-        return;
-       #endif
-
+      #ifdef HAVE_JACK
        #if defined(DISTRHO_OS_MAC)
         const char* const filename = "libjack.dylib";
        #elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
@@ -585,14 +587,16 @@ struct JackBridge {
         LIB_SYMBOL(remove_all_properties)
         LIB_SYMBOL(set_property_change_callback)
 
-#ifdef __WINE__
+       #ifdef __WINE__
         LIB_SYMBOL(set_thread_creator)
-#endif
+       #endif
+      #endif
 
         #undef JOIN
         #undef LIB_SYMBOL
     }
 
+   #ifdef HAVE_JACK
     ~JackBridge() noexcept
     {
         USE_NAMESPACE_DISTRHO
@@ -603,6 +607,7 @@ struct JackBridge {
             lib = nullptr;
         }
     }
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE(JackBridge);
 };
