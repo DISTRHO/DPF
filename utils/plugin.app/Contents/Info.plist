@@ -10,15 +10,11 @@
         <string></string>
         <key>CFBundleIdentifier</key>
         <string>studio.kx.distrho.@INFO_PLIST_PROJECT_NAME@</string>
-        <key>CFBundleInfoDictionaryVersion</key>
-        <string>6.0</string>
-        <key>CFBundlePackageType</key>
-        <string>BNDL</string>
-        <key>CFBundleSignature</key>
-        <string>????</string>
-        <key>CFBundleVersion</key>
-        <string>1.0</string>
-        <key>CSResourcesFileMapped</key>
-        <true/>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSRequiresAquaSystemAppearance</key>
+	<false/>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>@INFO_PLIST_PROJECT_NAME@ requires microphone permissions for audio input.</string>
 </dict>
 </plist>

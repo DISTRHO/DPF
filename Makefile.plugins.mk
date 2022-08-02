@@ -123,103 +123,6 @@ OBJS_UI += $(BUILD_DIR)/DistrhoUI_macOS_$(NAME).mm.o
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set VST2 filename, either single binary or inside a bundle
-
-ifeq ($(MACOS),true)
-VST2_CONTENTS = $(NAME).vst/Contents
-VST2_FILENAME = $(VST2_CONTENTS)/MacOS/$(NAME)
-else ifeq ($(USE_VST2_BUNDLE),true)
-VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
-else
-VST2_FILENAME = $(NAME)-vst$(LIB_EXT)
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
-
-ifeq ($(LINUX),true)
-VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
-else ifeq ($(MACOS),true)
-VST3_CONTENTS = $(NAME).vst3/Contents
-VST3_FILENAME = $(VST3_CONTENTS)/MacOS/$(NAME)
-else ifeq ($(WASM),true)
-VST3_FILENAME = $(NAME).vst3/Contents/wasm/$(NAME).vst3
-else ifeq ($(WINDOWS),true)
-ifeq ($(CPU_I386),true)
-VST3_FILENAME = $(NAME).vst3/Contents/x86-win/$(NAME).vst3
-else ifeq ($(CPU_X86_64),true)
-VST3_FILENAME = $(NAME).vst3/Contents/x86_64-win/$(NAME).vst3
-endif
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Set plugin binary file targets
-
-jack       = $(TARGET_DIR)/$(NAME)$(APP_EXT)
-ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
-dssi_dsp   = $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT)
-dssi_ui    = $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_ui$(APP_EXT)
-lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
-lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
-lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
-vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
-ifneq ($(VST3_FILENAME),)
-vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
-endif
-shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
-static     = $(TARGET_DIR)/$(NAME).a
-
-ifeq ($(MACOS),true)
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/PkgInfo
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Set plugin symbols to export
-
-ifeq ($(MACOS),true)
-SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
-SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
-SYMBOLS_LV2DSP = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-dsp.exp
-SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
-SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
-SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
-SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
-SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
-else ifeq ($(WASM),true)
-SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
-SYMBOLS_DSSI   = -sEXPORTED_FUNCTIONS="['ladspa_descriptor','dssi_descriptor']"
-SYMBOLS_LV2DSP = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl']"
-SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
-SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
-SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
-SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
-SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
-else ifeq ($(WINDOWS),true)
-SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
-SYMBOLS_DSSI   = $(DPF_PATH)/utils/symbols/dssi.def
-SYMBOLS_LV2DSP = $(DPF_PATH)/utils/symbols/lv2-dsp.def
-SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
-SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
-SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
-SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
-SYMBOLS_SHARED = $(DPF_PATH)/utils/symbols/shared.def
-else ifneq ($(DEBUG),true)
-SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
-SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
-SYMBOLS_LV2DSP = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-dsp.version
-SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
-SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
-SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
-SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
-SYMBOLS_SHARED = -Wl,--version-script=$(DPF_PATH)/utils/symbols/shared.version
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
 # Handle UI stuff, disable UI support automatically
 
 ifeq ($(FILES_UI),)
@@ -316,6 +219,114 @@ endif
 
 # TODO split dsp and ui object build flags
 BASE_FLAGS += $(DGL_FLAGS)
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set VST2 filename, either single binary or inside a bundle
+
+ifeq ($(MACOS),true)
+VST2_CONTENTS = $(NAME).vst/Contents
+VST2_FILENAME = $(VST2_CONTENTS)/MacOS/$(NAME)
+else ifeq ($(USE_VST2_BUNDLE),true)
+VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
+else
+VST2_FILENAME = $(NAME)-vst$(LIB_EXT)
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
+
+ifeq ($(LINUX),true)
+VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
+else ifeq ($(MACOS),true)
+VST3_CONTENTS = $(NAME).vst3/Contents
+VST3_FILENAME = $(VST3_CONTENTS)/MacOS/$(NAME)
+else ifeq ($(WASM),true)
+VST3_FILENAME = $(NAME).vst3/Contents/wasm/$(NAME).vst3
+else ifeq ($(WINDOWS),true)
+ifeq ($(CPU_I386),true)
+VST3_FILENAME = $(NAME).vst3/Contents/x86-win/$(NAME).vst3
+else ifeq ($(CPU_X86_64),true)
+VST3_FILENAME = $(NAME).vst3/Contents/x86_64-win/$(NAME).vst3
+endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set plugin binary file targets
+
+ifeq ($(MACOS),true)
+ifeq ($(HAVE_DGL),true)
+MACOS_APP_BUNDLE = true
+endif
+endif
+
+ifeq ($(MACOS_APP_BUNDLE),true)
+jack       = $(TARGET_DIR)/$(NAME).app/Contents/MacOS/$(NAME)
+jackfiles  = $(TARGET_DIR)/$(NAME).app/Contents/Info.plist
+else
+jack       = $(TARGET_DIR)/$(NAME)$(APP_EXT)
+endif
+ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
+dssi_dsp   = $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT)
+dssi_ui    = $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_ui$(APP_EXT)
+lv2        = $(TARGET_DIR)/$(NAME).lv2/$(NAME)$(LIB_EXT)
+lv2_dsp    = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_dsp$(LIB_EXT)
+lv2_ui     = $(TARGET_DIR)/$(NAME).lv2/$(NAME)_ui$(LIB_EXT)
+vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
+ifneq ($(VST3_FILENAME),)
+vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
+endif
+shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
+static     = $(TARGET_DIR)/$(NAME).a
+
+ifeq ($(MACOS),true)
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/PkgInfo
+vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
+vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set plugin symbols to export
+
+ifeq ($(MACOS),true)
+SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
+SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
+SYMBOLS_LV2DSP = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-dsp.exp
+SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
+SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
+SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
+SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
+SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
+else ifeq ($(WASM),true)
+SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
+SYMBOLS_DSSI   = -sEXPORTED_FUNCTIONS="['ladspa_descriptor','dssi_descriptor']"
+SYMBOLS_LV2DSP = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl']"
+SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
+SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
+SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
+SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
+SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
+else ifeq ($(WINDOWS),true)
+SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
+SYMBOLS_DSSI   = $(DPF_PATH)/utils/symbols/dssi.def
+SYMBOLS_LV2DSP = $(DPF_PATH)/utils/symbols/lv2-dsp.def
+SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
+SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
+SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
+SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
+SYMBOLS_SHARED = $(DPF_PATH)/utils/symbols/shared.def
+else ifneq ($(DEBUG),true)
+SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
+SYMBOLS_DSSI   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/dssi.version
+SYMBOLS_LV2DSP = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-dsp.version
+SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
+SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
+SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
+SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
+SYMBOLS_SHARED = -Wl,--version-script=$(DPF_PATH)/utils/symbols/shared.version
+endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Runtime test build
@@ -418,7 +429,7 @@ $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(E
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
 
-jack: $(jack)
+jack: $(jack) $(jackfiles)
 
 ifeq ($(HAVE_DGL),true)
 $(jack): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.o $(DGL_LIB)
@@ -542,7 +553,15 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # macOS files
 
-$(TARGET_DIR)/%/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+$(TARGET_DIR)/%.app/Contents/Info.plist: $(DPF_PATH)/utils/plugin.app/Contents/Info.plist
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
+
+$(TARGET_DIR)/%.vst/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
+
+$(TARGET_DIR)/%.vst3/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
