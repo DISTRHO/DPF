@@ -206,17 +206,6 @@ endif
 
 DGL_LIBS += $(DGL_SYSTEM_LIBS) -lm
 
-ifneq ($(HAVE_DGL),true)
-dssi_ui =
-lv2_ui =
-DGL_LIBS =
-OBJS_UI =
-endif
-
-ifneq ($(HAVE_LIBLO),true)
-dssi_ui =
-endif
-
 # TODO split dsp and ui object build flags
 BASE_FLAGS += $(DGL_FLAGS)
 
@@ -285,6 +274,17 @@ vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
+endif
+
+ifneq ($(HAVE_DGL),true)
+dssi_ui =
+lv2_ui =
+DGL_LIBS =
+OBJS_UI =
+endif
+
+ifneq ($(HAVE_LIBLO),true)
+dssi_ui =
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
