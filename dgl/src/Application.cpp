@@ -16,8 +16,10 @@
 
 #include "ApplicationPrivateData.hpp"
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
 # include <emscripten/emscripten.h>
+#elif defined(DISTRHO_OS_MAC)
+# include <CoreFoundation/CoreFoundation.h>
 #endif
 
 START_NAMESPACE_DGL
@@ -48,8 +50,18 @@ void Application::exec(const uint idleTimeInMs)
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->isStandalone,);
 
-#ifdef __EMSCRIPTEN__
+#if defined(__EMSCRIPTEN__)
     emscripten_set_main_loop_arg(app_idle, this, 0, true);
+#elif defined(DISTRHO_OS_MAC)
+    const CFTimeInterval idleTimeInSecs = static_cast<CFTimeInterval>(idleTimeInMs) / 1000;
+
+    while (! pData->isQuitting)
+    {
+        pData->idle(0);
+
+        if (CFRunLoopRunInMode(kCFRunLoopDefaultMode, idleTimeInSecs, true) == kCFRunLoopRunFinished)
+            break;
+    }
 #else
     while (! pData->isQuitting)
         pData->idle(idleTimeInMs);
