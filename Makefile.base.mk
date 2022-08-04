@@ -196,7 +196,9 @@ else
 
 # Common linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1,--gc-sections
-ifneq ($(WASM),true)
+ifeq ($(WASM),true)
+LINK_OPTS += -sAGGRESSIVE_VARIABLE_ELIMINATION=1
+else
 LINK_OPTS += -Wl,--as-needed
 ifneq ($(SKIP_STRIPPING),true)
 LINK_OPTS += -Wl,--strip-all
@@ -257,7 +259,7 @@ LINK_FLAGS      = $(LINK_OPTS) $(LDFLAGS)
 
 ifeq ($(WASM),true)
 # Special flag for emscripten
-LINK_FLAGS += -sLLD_REPORT_UNDEFINED
+LINK_FLAGS += -sENVIRONMENT=web -sLLD_REPORT_UNDEFINED
 else ifneq ($(MACOS),true)
 # Not available on MacOS
 LINK_FLAGS += -Wl,--no-undefined
