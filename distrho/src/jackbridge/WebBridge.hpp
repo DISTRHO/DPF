@@ -160,7 +160,6 @@ struct WebBridge : NativeBridge {
             // resume/start playback on first click
             document.addEventListener('click', function(e) {
                 var WAB = Module['WebAudioBridge'];
-                console.log(WAB.audioContext.state);
                 if (WAB.audioContext.state === 'suspended')
                     WAB.audioContext.resume();
             });

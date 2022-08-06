@@ -197,7 +197,10 @@ else
 # Common linker flags
 LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1,--gc-sections
 ifeq ($(WASM),true)
+LINK_OPTS += -O3
 LINK_OPTS += -sAGGRESSIVE_VARIABLE_ELIMINATION=1
+LINK_OPTS += -sASYNCIFY
+LINK_OPTS += -sASYNCIFY_IMPORTS=puglGetAsyncClipboardData
 else
 LINK_OPTS += -Wl,--as-needed
 ifneq ($(SKIP_STRIPPING),true)
@@ -414,7 +417,9 @@ else ifeq ($(MACOS),true)
 OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1 -Wno-deprecated-declarations
 OPENGL_LIBS  = -framework OpenGL
 else ifeq ($(WASM),true)
-ifneq ($(USE_GLES2),true)
+ifeq ($(USE_GLES2),true)
+OPENGL_LIBS  = -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
+else
 ifneq ($(USE_GLES3),true)
 OPENGL_LIBS  =  -sLEGACY_GL_EMULATION -sGL_UNSAFE_OPTS=0
 endif
