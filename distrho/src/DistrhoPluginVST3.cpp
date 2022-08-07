@@ -603,110 +603,10 @@ public:
 #endif
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        std::vector<uint32_t> visitedInputPortGroups;
-        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-        {
-            AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
-
-            if (port.groupId != kPortGroupNone)
-            {
-                const std::vector<uint32_t>::iterator end = visitedInputPortGroups.end();
-                if (std::find(visitedInputPortGroups.begin(), end, port.groupId) == end)
-                {
-                    visitedInputPortGroups.push_back(port.groupId);
-                    ++inputBuses.numGroups;
-                }
-                continue;
-            }
-
-            if (port.hints & kAudioPortIsCV)
-                ++inputBuses.numCV;
-            else
-                ++inputBuses.numMainAudio;
-
-            if (port.hints & kAudioPortIsSidechain)
-                ++inputBuses.numSidechain;
-        }
-
-        if (inputBuses.numMainAudio != 0)
-            inputBuses.audio = 1;
-        if (inputBuses.numSidechain != 0)
-            inputBuses.sidechain = 1;
-
-        uint32_t cvInputBusId = 0;
-        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-        {
-            AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
-
-            if (port.groupId != kPortGroupNone)
-            {
-                port.busId = port.groupId;
-            }
-            else
-            {
-                if (port.hints & kAudioPortIsCV)
-                    port.busId = inputBuses.audio + inputBuses.sidechain + cvInputBusId++;
-                else if (port.hints & kAudioPortIsSidechain)
-                    port.busId = inputBuses.audio;
-                else
-                    port.busId = 0;
-
-                port.busId += inputBuses.numGroups;
-            }
-        }
+        fillInBusInfoDetails<true>();
 #endif
 #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        std::vector<uint32_t> visitedOutputPortGroups;
-        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-        {
-            AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
-
-            if (port.groupId != kPortGroupNone)
-            {
-                const std::vector<uint32_t>::iterator end = visitedOutputPortGroups.end();
-                if (std::find(visitedOutputPortGroups.begin(), end, port.groupId) == end)
-                {
-                    visitedOutputPortGroups.push_back(port.groupId);
-                    ++outputBuses.numGroups;
-                }
-                continue;
-            }
-
-            if (port.hints & kAudioPortIsCV)
-                ++outputBuses.numCV;
-            else
-                ++outputBuses.numMainAudio;
-
-            if (port.hints & kAudioPortIsSidechain)
-                ++outputBuses.numSidechain;
-        }
-
-        if (outputBuses.numMainAudio != 0)
-            outputBuses.audio = 1;
-        if (outputBuses.numSidechain != 0)
-            outputBuses.sidechain = 1;
-
-        uint32_t cvOutputBusId = 0;
-        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-        {
-            AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
-
-            if (port.groupId != kPortGroupNone)
-            {
-                port.busId = port.groupId;
-            }
-            else
-            {
-                if (port.hints & kAudioPortIsCV)
-                    port.busId = outputBuses.audio + outputBuses.sidechain + cvOutputBusId++;
-                else if (port.hints & kAudioPortIsSidechain)
-                    port.busId = outputBuses.audio;
-                else
-                    port.busId = 0;
-
-                port.busId += outputBuses.numGroups;
-            }
-        }
+        fillInBusInfoDetails<false>();
 #endif
 
         if (const uint32_t extraParameterCount = fParameterCount + kVst3InternalParameterBaseCount)
@@ -1484,7 +1384,10 @@ public:
                 AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
 
                 if (port.busId != busId)
+                {
+                    d_stdout("port.busId != busId: %d %d", port.busId, busId);
                     continue;
+                }
 
                 v3_speaker_arrangement arr;
 
@@ -1532,7 +1435,7 @@ public:
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_INPUTS
-            d_stdout("invalid bus arrangement %d", busIndex);
+            d_stdout("invalid input bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
         else
@@ -1543,7 +1446,10 @@ public:
                 AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
 
                 if (port.busId != busId)
+                {
+                    d_stdout("port.busId != busId: %d %d", port.busId, busId);
                     continue;
+                }
 
                 v3_speaker_arrangement arr;
 
@@ -1591,7 +1497,7 @@ public:
                 return V3_OK;
             }
            #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
-            d_stdout("invalid bus arrangement %d", busIndex);
+            d_stdout("invalid output bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
     }
@@ -2723,6 +2629,71 @@ private:
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
 #endif
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // bus related helper functions called on constructor
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+    template<bool isInput>
+    void fillInBusInfoDetails()
+    {
+        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+        BusInfo& bufInfo(isInput ? inputBuses : outputBuses);
+
+        std::vector<uint32_t> visitedPortGroups;
+        for (uint32_t i=0; i<numPorts; ++i)
+        {
+            AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+            if (port.groupId != kPortGroupNone)
+            {
+                const std::vector<uint32_t>::iterator end = visitedPortGroups.end();
+                if (std::find(visitedPortGroups.begin(), end, port.groupId) == end)
+                {
+                    visitedPortGroups.push_back(port.groupId);
+                    ++bufInfo.numGroups;
+                }
+                continue;
+            }
+
+            if (port.hints & kAudioPortIsCV)
+                ++bufInfo.numCV;
+            else
+                ++bufInfo.numMainAudio;
+
+            if (port.hints & kAudioPortIsSidechain)
+                ++bufInfo.numSidechain;
+        }
+
+        if (bufInfo.numMainAudio != 0)
+            bufInfo.audio = 1;
+        if (bufInfo.numSidechain != 0)
+            bufInfo.sidechain = 1;
+
+        uint32_t busIdFromGroup = 0;
+        uint32_t busIdForCV = 0;
+        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+        {
+            AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+            if (port.groupId != kPortGroupNone)
+            {
+                port.busId = busIdFromGroup++;
+            }
+            else
+            {
+                if (port.hints & kAudioPortIsCV)
+                    port.busId = bufInfo.audio + bufInfo.sidechain + busIdForCV++;
+                else if (port.hints & kAudioPortIsSidechain)
+                    port.busId = bufInfo.audio;
+                else
+                    port.busId = 0;
+
+                port.busId += bufInfo.numGroups;
+            }
+        }
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during process, cannot block
@@ -4609,19 +4580,33 @@ struct dpf_factory : v3_plugin_factory_cpp {
     static int32_t V3_API num_classes(void*)
     {
         d_stdout("dpf_factory::num_classes");
-        return 1;
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
+        return 2; // factory can create component and edit-controller
+       #else
+        return 1; // factory can only create component, edit-controller must be casted
+       #endif
     }
 
     static v3_result V3_API get_class_info(void*, const int32_t idx, v3_class_info* const info)
     {
         d_stdout("dpf_factory::get_class_info => %i %p", idx, info);
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(idx <= 2, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-        std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-        DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
+
+        if (idx == 0)
+        {
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+        }
+        else
+        {
+            std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+        }
+
         return V3_OK;
     }
 
@@ -4671,19 +4656,29 @@ struct dpf_factory : v3_plugin_factory_cpp {
     {
         d_stdout("dpf_factory::get_class_info_2 => %i %p", idx, info);
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(idx <= 2, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-#if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
-#endif
-        std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-        DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+       #endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
         DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
+
+        if (idx == 0)
+        {
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+        }
+        else
+        {
+            std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+        }
+
         return V3_OK;
     }
 
@@ -4694,19 +4689,29 @@ struct dpf_factory : v3_plugin_factory_cpp {
     {
         d_stdout("dpf_factory::get_class_info_utf16 => %i %p", idx, info);
         std::memset(info, 0, sizeof(*info));
-        DISTRHO_SAFE_ASSERT_RETURN(idx == 0, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_RETURN(idx <= 2, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-#if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
-#endif
-        std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-        DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+       #endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy_utf16(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
         DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy_utf16(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
+
+        if (idx == 0)
+        {
+            std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+        }
+        else
+        {
+            std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
+            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+        }
+
         return V3_OK;
     }
 
