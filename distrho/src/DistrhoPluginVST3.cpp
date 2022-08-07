@@ -2537,13 +2537,8 @@ private:
 
                     if (port.busId == busId)
                     {
-                        const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                        if (group.name.isNotEmpty())
-                            strncpy_utf16(busName, group.name, 128);
-                        else
-                            strncpy_utf16(busName, port.name, 128);
-
+                        const String& groupName(busInfo.groups ? fPlugin.getPortGroupById(port.groupId).name : port.name);
+                        strncpy_utf16(busName, groupName, 128);
                         break;
                     }
                 }
@@ -2674,23 +2669,33 @@ private:
 
                 if (port.busId != busId)
                 {
-                    d_stdout("setAudioBusArrangement port.busId != busId: %d %d", port.busId, busId);
+                    // d_stdout("setAudioBusArrangement port.busId != busId: %d %d", port.busId, busId);
                     continue;
                 }
 
-                // special case for turning mono into "stereo"
-                /*
                 if (arr == (V3_SPEAKER_L|V3_SPEAKER_R))
                 {
+                    // some hosts try to make CV ports stereo, that doesn't make any sense!
+                    if (port.hints & kAudioPortIsCV)
+                        return false;
+
+                    // force stereo mode
+                    if (busId == 0 && busInfo.audioPorts != 0)
+                    {
+                        busInfo.audioPorts = 2;
+                        enabledPorts[i] = i < 2;
+                    }
+
+                    /*
+                    // special case for turning mono into "stereo"
                     if (port.groupId == kPortGroupMono)
                         port.groupId = kPortGroupStereo;
                     else if (busId == 0 && busInfo.audioPorts == 1)
                         busInfo.audioPorts = 2;
+                    */
                 }
-                */
 
                 enabledPorts[i] = arr != 0;
-                break;
             }
         }
 
@@ -4801,11 +4806,17 @@ bool ENTRYFNNAME(ENTRYFNNAMEARGS)
         String tmpPath(getBinaryFilename());
         tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
         tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
-        DISTRHO_SAFE_ASSERT_RETURN(tmpPath.endsWith(DISTRHO_OS_SEP_STR "Contents"), true);
 
-        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
-        bundlePath = tmpPath;
-        d_nextBundlePath = bundlePath.buffer();
+        if (tmpPath.endsWith(DISTRHO_OS_SEP_STR "Contents"))
+        {
+            tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+        else
+        {
+            bundlePath = "error";
+        }
     }
 
     // init dummy plugin and set uniqueId

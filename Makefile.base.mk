@@ -352,7 +352,11 @@ endif
 
 # backwards compat, always available/enabled
 ifneq ($(FORCE_NATIVE_AUDIO_FALLBACK),true)
+ifeq ($(STATIC_BUILD),true)
+HAVE_JACK = $(shell $(PKG_CONFIG) --exists jack && echo true)
+else
 HAVE_JACK = true
+endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
