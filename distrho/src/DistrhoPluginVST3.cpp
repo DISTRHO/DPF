@@ -54,7 +54,6 @@
  * - bus arrangements
  * - optional audio buses
  * - routing info, do we care?
- * - set sidechain bus name from port group
  * == CV
  * - cv scaling to -1/+1
  * - test in at least 1 host
@@ -257,13 +256,18 @@ v3_plugin_view** dpf_plugin_view_create(v3_host_application** host, void* instan
  * VST3 DSP class.
  *
  * All the dynamic things from VST3 get implemented here, free of complex low-level VST3 pointer things.
- * The DSP is created during the "initialize" component event, and destroyed during "terminate".
+ * This class is created during the "initialize" component event, and destroyed during "terminate".
  *
  * The low-level VST3 stuff comes after.
  */
 class PluginVst3
 {
-    /* buses: we provide 1 for the main audio (if there is any) plus 1 for each sidechain or cv port.
+    /* Buses: count possible buses we can provide to the host, in case they are not yet defined by the developer.
+     * These values are only used if port groups aren't set.
+     * We count the number of used port groups in `numGroups`.
+     *
+     * When port groups are not in use, we fill in appropriately.
+     * 1 bus is provided for the main audio (if there is any) plus 1 for each sidechain or cv port.
      * Main audio comes first, if available.
      * Then sidechain, also if available.
      * And finally each CV port individually.
@@ -288,10 +292,10 @@ class PluginVst3
     } inputBuses, outputBuses;
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    /* handy class for storing and sorting events and MIDI CC parameters
-     * only stores events for which a MIDI conversion is possible.
+    /* Handy class for storing and sorting VST3 events and MIDI CC parameters.
+     * It will only store events for which a MIDI conversion is possible.
      */
-    struct InputEventsList {
+    struct InputEventList {
         enum Type {
             NoteOn,
             NoteOff,
@@ -313,17 +317,17 @@ class PluginVst3
             };
         } eventListStorage[kMaxMidiEvents];
 
-        struct InputEventTiming {
+        struct InputEvent {
             int32_t sampleOffset;
             const InputEventStorage* storage;
-            InputEventTiming* next;
+            InputEvent* next;
         } eventList[kMaxMidiEvents];
 
         uint16_t numUsed;
         int32_t firstSampleOffset;
         int32_t lastSampleOffset;
-        InputEventTiming* firstEvent;
-        InputEventTiming* lastEvent;
+        InputEvent* firstEvent;
+        InputEvent* lastEvent;
 
         void init()
         {
@@ -336,7 +340,7 @@ class PluginVst3
         {
             uint32_t count = 0;
 
-            for (const InputEventTiming* event = firstEvent; event != nullptr; event = event->next)
+            for (const InputEvent* event = firstEvent; event != nullptr; event = event->next)
             {
                 MidiEvent& midiEvent(midiEvents[count++]);
                 midiEvent.frame = event->sampleOffset;
@@ -491,7 +495,7 @@ class PluginVst3
             eventStorage.type = UI_MIDI;
             std::memcpy(eventStorage.midi, midiData, sizeof(uint8_t)*3);
 
-            InputEventTiming* const event = &eventList[numUsed];
+            InputEvent* const event = &eventList[numUsed];
 
             event->sampleOffset = 0;
             event->storage = &eventStorage;
@@ -514,7 +518,7 @@ class PluginVst3
     private:
         bool placeSorted(const int32_t sampleOffset) noexcept
         {
-            InputEventTiming* const event = &eventList[numUsed];
+            InputEvent* const event = &eventList[numUsed];
 
             // initialize
             if (numUsed == 0)
@@ -542,7 +546,7 @@ class PluginVst3
             else
             {
                 // keep reference out of the loop so we can check validity afterwards
-                InputEventTiming* event2 = firstEvent;
+                InputEvent* event2 = firstEvent;
 
                 // iterate all events
                 for (; event2 != nullptr; event2 = event2->next)
@@ -575,39 +579,39 @@ public:
     PluginVst3(v3_host_application** const host)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
           fComponentHandler(nullptr),
-#if DISTRHO_PLUGIN_HAS_UI
-# if DPF_VST3_USES_SEPARATE_CONTROLLER
+        #if DISTRHO_PLUGIN_HAS_UI
+         #if DPF_VST3_USES_SEPARATE_CONTROLLER
           fConnectionFromCompToCtrl(nullptr),
-# endif
+         #endif
           fConnectionFromCtrlToView(nullptr),
           fHostApplication(host),
-#endif
+        #endif
           fParameterCount(fPlugin.getParameterCount()),
           fVst3ParameterCount(fParameterCount + kVst3InternalParameterCount),
           fCachedParameterValues(nullptr),
           fDummyAudioBuffer(nullptr),
           fParameterValuesChangedDuringProcessing(nullptr)
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         , fParameterValueChangesForUI(nullptr)
         , fConnectedToUI(false)
-#endif
-#if DISTRHO_PLUGIN_WANT_LATENCY
+       #endif
+       #if DISTRHO_PLUGIN_WANT_LATENCY
         , fLastKnownLatency(fPlugin.getLatency())
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         , fHostEventOutputHandle(nullptr)
-#endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+       #endif
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
         , fCurrentProgram(0)
         , fProgramCountMinusOne(fPlugin.getProgramCount()-1)
-#endif
+       #endif
     {
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         fillInBusInfoDetails<true>();
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         fillInBusInfoDetails<false>();
-#endif
+       #endif
 
         if (const uint32_t extraParameterCount = fParameterCount + kVst3InternalParameterBaseCount)
         {
@@ -732,14 +736,14 @@ public:
                 return outputBuses.audio + outputBuses.sidechain + outputBuses.numCV + outputBuses.numGroups;
             break;
         case V3_EVENT:
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             if (busDirection == V3_INPUT)
                 return 1;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+           #endif
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             if (busDirection == V3_OUTPUT)
                 return 1;
-#endif
+           #endif
             break;
         }
 
@@ -755,228 +759,31 @@ public:
         DISTRHO_SAFE_ASSERT_INT_RETURN(busDirection == V3_INPUT || busDirection == V3_OUTPUT, busDirection, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_INT_RETURN(busIndex >= 0, busIndex, V3_INVALID_ARG);
 
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0 || DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        uint32_t busId = static_cast<uint32_t>(busIndex);
-#endif
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0 || DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        const uint32_t busId = static_cast<uint32_t>(busIndex);
+       #endif
 
         if (mediaType == V3_AUDIO)
         {
            #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-            int32_t numChannels;
-            uint32_t flags;
-            v3_bus_types busType;
-            v3_str_128 busName = {};
-
             if (busDirection == V3_INPUT)
             {
                #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-                if (busId < inputBuses.numGroups)
-                {
-                    numChannels = fPlugin.getAudioPortCountWithGroupId(true, busId);
-                    busType = V3_AUX;
-                    flags = 0;
-
-                    for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-                    {
-                        const AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
-
-                        if (port.busId == busId)
-                        {
-                            const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                            switch (port.groupId)
-                            {
-                            case kPortGroupMono:
-                            case kPortGroupStereo:
-                                strncpy_utf16(busName, "Audio Input", 128);
-                                break;
-                            default:
-                                if (group.name.isNotEmpty())
-                                    strncpy_utf16(busName, group.name, 128);
-                                else
-                                    strncpy_utf16(busName, port.name, 128);
-                                break;
-                            }
-
-                            if (inputBuses.audio == 0 && (port.hints & kAudioPortIsSidechain) == 0x0)
-                            {
-                                busType = V3_MAIN;
-                                flags = V3_DEFAULT_ACTIVE;
-                            }
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    busId -= inputBuses.numGroups;
-
-                    switch (busId)
-                    {
-                    case 0:
-                        if (inputBuses.audio)
-                        {
-                            numChannels = inputBuses.numMainAudio;
-                            busType = V3_MAIN;
-                            flags = V3_DEFAULT_ACTIVE;
-                            break;
-                        }
-                    // fall-through
-                    case 1:
-                        if (inputBuses.sidechain)
-                        {
-                            numChannels = inputBuses.numSidechain;
-                            busType = V3_AUX;
-                            flags = 0;
-                            break;
-                        }
-                    // fall-through
-                    default:
-                        numChannels = 1;
-                        busType = V3_AUX;
-                        flags = V3_IS_CONTROL_VOLTAGE;
-                        break;
-                    }
-
-                    if (busType == V3_MAIN)
-                    {
-                        strncpy_utf16(busName, "Audio Input", 128);
-                    }
-                    else
-                    {
-                        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-                        {
-                            const AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
-
-                            if (port.busId == busId)
-                            {
-                                const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                                if (group.name.isNotEmpty())
-                                    strncpy_utf16(busName, group.name, 128);
-                                else
-                                    strncpy_utf16(busName, port.name, 128);
-
-                                break;
-                            }
-                        }
-                    }
-                }
+                return getAudioBusInfo<true>(busId, info);
                #else
-                d_stdout("invalid bus %d", busId);
+                d_stdout("invalid input bus %d", busId);
                 return V3_INVALID_ARG;
                #endif // DISTRHO_PLUGIN_NUM_INPUTS
             }
             else
             {
                #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-                if (busId < outputBuses.numGroups)
-                {
-                    numChannels = fPlugin.getAudioPortCountWithGroupId(false, busId);
-                    busType = V3_AUX;
-                    flags = 0;
-
-                    for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-                    {
-                        const AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
-
-                        if (port.busId == busId)
-                        {
-                            const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                            switch (port.groupId)
-                            {
-                            case kPortGroupMono:
-                            case kPortGroupStereo:
-                                strncpy_utf16(busName, "Audio Output", 128);
-                                break;
-                            default:
-                                if (group.name.isNotEmpty())
-                                    strncpy_utf16(busName, group.name, 128);
-                                else
-                                    strncpy_utf16(busName, port.name, 128);
-                                break;
-                            }
-
-                            if (outputBuses.audio == 0 && (port.hints & kAudioPortIsSidechain) == 0x0)
-                            {
-                                busType = V3_MAIN;
-                                flags = V3_DEFAULT_ACTIVE;
-                            }
-                            break;
-                        }
-                    }
-                }
-                else
-                {
-                    busId -= outputBuses.numGroups;
-
-                    switch (busId)
-                    {
-                    case 0:
-                        if (outputBuses.audio)
-                        {
-                            numChannels = outputBuses.numMainAudio;
-                            busType = V3_MAIN;
-                            flags = V3_DEFAULT_ACTIVE;
-                            break;
-                        }
-                    // fall-through
-                    case 1:
-                        if (outputBuses.sidechain)
-                        {
-                            numChannels = outputBuses.numSidechain;
-                            busType = V3_AUX;
-                            flags = 0;
-                            break;
-                        }
-                    // fall-through
-                    default:
-                        numChannels = 1;
-                        busType = V3_AUX;
-                        flags = V3_IS_CONTROL_VOLTAGE;
-                        break;
-                    }
-
-                    if (busType == V3_MAIN)
-                    {
-                        strncpy_utf16(busName, "Audio Output", 128);
-                    }
-                    else
-                    {
-                        for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-                        {
-                            const AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
-
-                            if (port.busId == busId)
-                            {
-                                const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                                if (group.name.isNotEmpty())
-                                    strncpy_utf16(busName, group.name, 128);
-                                else
-                                    strncpy_utf16(busName, port.name, 128);
-
-                                break;
-                            }
-                        }
-                    }
-
-                }
+                return getAudioBusInfo<false>(busId, info);
                #else
-                d_stdout("invalid bus %d", busId);
+                d_stdout("invalid output bus %d", busId);
                 return V3_INVALID_ARG;
                #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
             }
-
-            std::memset(info, 0, sizeof(v3_bus_info));
-            info->media_type = V3_AUDIO;
-            info->direction = busDirection;
-            info->channel_count = numChannels;
-            std::memcpy(info->bus_name, busName, sizeof(busName));
-            info->bus_type = busType;
-            info->flags = flags;
-            return V3_OK;
            #else
             d_stdout("invalid bus, line %d", __LINE__);
             return V3_INVALID_ARG;
@@ -1373,130 +1180,24 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(speaker != nullptr, V3_INVALID_ARG);
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        uint32_t busId = static_cast<uint32_t>(busIndex);
+        const uint32_t busId = static_cast<uint32_t>(busIndex);
        #endif
 
         if (busDirection == V3_INPUT)
         {
            #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-            {
-                AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
-
-                if (port.busId != busId)
-                {
-                    d_stdout("port.busId != busId: %d %d", port.busId, busId);
-                    continue;
-                }
-
-                v3_speaker_arrangement arr;
-
-                switch (port.groupId)
-                {
-                case kPortGroupMono:
-                    arr = V3_SPEAKER_M;
-                    break;
-                case kPortGroupStereo:
-                    arr = V3_SPEAKER_L | V3_SPEAKER_R;
-                    break;
-                default:
-                    if (busId < inputBuses.numGroups)
-                    {
-                        const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(true, busId);
-                        arr = 0x0;
-                        for (uint32_t j=0; j<numPortsInBus; ++j)
-                            arr |= 1ull << (j + 33ull);
-                    }
-                    else
-                    {
-                        busId -= inputBuses.numGroups;
-
-                        if (inputBuses.audio != 0 && busId == 0)
-                        {
-                            arr = 0x0;
-                            for (uint32_t j=0; j<inputBuses.numMainAudio; ++j)
-                                arr |= 1ull << (j + 33ull);
-                        }
-                        else if (inputBuses.sidechain != 0 && busId == inputBuses.audio)
-                        {
-                            arr = 0x0;
-                            for (uint32_t j=0; j<inputBuses.numSidechain; ++j)
-                                arr |= 1ull << (inputBuses.numMainAudio + j + 33ull);
-                        }
-                        else
-                        {
-                            arr = 1ull << (inputBuses.numMainAudio + inputBuses.numSidechain + busId + 33ull);
-                        }
-                    }
-                    break;
-                }
-
-                *speaker = arr;
+            if (getAudioBusArrangement<true>(busId, speaker))
                 return V3_OK;
-            }
-           #endif // DISTRHO_PLUGIN_NUM_INPUTS
+           #endif
             d_stdout("invalid input bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
         else
         {
            #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-            {
-                AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
-
-                if (port.busId != busId)
-                {
-                    d_stdout("port.busId != busId: %d %d", port.busId, busId);
-                    continue;
-                }
-
-                v3_speaker_arrangement arr;
-
-                switch (port.groupId)
-                {
-                case kPortGroupMono:
-                    arr = V3_SPEAKER_M;
-                    break;
-                case kPortGroupStereo:
-                    arr = V3_SPEAKER_L | V3_SPEAKER_R;
-                    break;
-                default:
-                    if (busId < outputBuses.numGroups)
-                    {
-                        const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(false, busId);
-                        arr = 0x0;
-                        for (uint32_t j=0; j<numPortsInBus; ++j)
-                            arr |= 1ull << (j + 33ull);
-                    }
-                    else
-                    {
-                        busId -= outputBuses.numGroups;
-
-                        if (outputBuses.audio != 0 && busId == 0)
-                        {
-                            arr = 0x0;
-                            for (uint32_t j=0; j<outputBuses.numMainAudio; ++j)
-                                arr |= 1ull << (j + 33ull);
-                        }
-                        else if (outputBuses.sidechain != 0 && busId == outputBuses.audio)
-                        {
-                            arr = 0x0;
-                            for (uint32_t j=0; j<outputBuses.numSidechain; ++j)
-                                arr |= 1ull << (outputBuses.numMainAudio + j + 33ull);
-                        }
-                        else
-                        {
-                            arr = 1ull << (outputBuses.numMainAudio + outputBuses.numSidechain + busId + 33ull);
-                        }
-                    }
-                    break;
-                }
-
-                *speaker = arr;
+            if (getAudioBusArrangement<false>(busId, speaker))
                 return V3_OK;
-            }
-           #endif // DISTRHO_PLUGIN_NUM_OUTPUTS
+           #endif
             d_stdout("invalid output bus arrangement %d", busIndex);
             return V3_INVALID_ARG;
         }
@@ -2589,13 +2290,13 @@ private:
 
     // VST3 stuff
     v3_component_handler** fComponentHandler;
-#if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
    #if DPF_VST3_USES_SEPARATE_CONTROLLER
     v3_connection_point** fConnectionFromCompToCtrl;
    #endif
     v3_connection_point** fConnectionFromCtrlToView;
     v3_host_application** const fHostApplication;
-#endif
+  #endif
 
     // Temporary data
     const uint32_t fParameterCount;
@@ -2603,35 +2304,35 @@ private:
     float* fCachedParameterValues; // basic offset + real
     float* fDummyAudioBuffer;
     bool* fParameterValuesChangedDuringProcessing; // basic offset + real
-#if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     bool* fParameterValueChangesForUI; // basic offset + real
     bool fConnectedToUI;
-#endif
-#if DISTRHO_PLUGIN_WANT_LATENCY
+   #endif
+   #if DISTRHO_PLUGIN_WANT_LATENCY
     uint32_t fLastKnownLatency;
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #endif
+  #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
-# if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     SmallStackRingBuffer fNotesRingBuffer;
-# endif
-#endif
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #endif
+  #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     v3_event_list** fHostEventOutputHandle;
-#endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+   #endif
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
     uint32_t fCurrentProgram;
     const uint32_t fProgramCountMinusOne;
-#endif
-#if DISTRHO_PLUGIN_WANT_STATE
+   #endif
+   #if DISTRHO_PLUGIN_WANT_STATE
     StringMap fStateMap;
-#endif
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+   #endif
+   #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
-#endif
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
-    // bus related helper functions called on constructor
+    // helper functions for dealing with buses
 
    #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     template<bool isInput>
@@ -2692,6 +2393,185 @@ private:
                 port.busId += bufInfo.numGroups;
             }
         }
+    }
+
+    template<bool isInput>
+    v3_result getAudioBusInfo(uint32_t busId, v3_bus_info* const info) const
+    {
+        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+        const BusInfo& bufInfo(isInput ? inputBuses : outputBuses);
+
+        int32_t numChannels;
+        uint32_t flags;
+        v3_bus_types busType;
+        v3_str_128 busName = {};
+
+        if (busId < bufInfo.numGroups)
+        {
+            numChannels = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
+            busType = V3_AUX;
+            flags = 0;
+
+            for (uint32_t i=0; i<numPorts; ++i)
+            {
+                const AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+                if (port.busId == busId)
+                {
+                    const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
+
+                    switch (port.groupId)
+                    {
+                    case kPortGroupMono:
+                    case kPortGroupStereo:
+                        strncpy_utf16(busName, isInput ? "Audio Input" : "Audio Output", 128);
+                        break;
+                    default:
+                        if (group.name.isNotEmpty())
+                            strncpy_utf16(busName, group.name, 128);
+                        else
+                            strncpy_utf16(busName, port.name, 128);
+                        break;
+                    }
+
+                    if (bufInfo.audio == 0 && (port.hints & kAudioPortIsSidechain) == 0x0)
+                    {
+                        busType = V3_MAIN;
+                        flags = V3_DEFAULT_ACTIVE;
+                    }
+                    break;
+                }
+            }
+        }
+        else
+        {
+            busId -= bufInfo.numGroups;
+
+            switch (busId)
+            {
+            case 0:
+                if (bufInfo.audio)
+                {
+                    numChannels = bufInfo.numMainAudio;
+                    busType = V3_MAIN;
+                    flags = V3_DEFAULT_ACTIVE;
+                    break;
+                }
+            // fall-through
+            case 1:
+                if (bufInfo.sidechain)
+                {
+                    numChannels = bufInfo.numSidechain;
+                    busType = V3_AUX;
+                    flags = 0;
+                    break;
+                }
+            // fall-through
+            default:
+                numChannels = 1;
+                busType = V3_AUX;
+                flags = V3_IS_CONTROL_VOLTAGE;
+                break;
+            }
+
+            if (busType == V3_MAIN)
+            {
+                strncpy_utf16(busName, isInput ? "Audio Input" : "Audio Output", 128);
+            }
+            else
+            {
+                for (uint32_t i=0; i<numPorts; ++i)
+                {
+                    const AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+                    if (port.busId == busId)
+                    {
+                        const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
+
+                        if (group.name.isNotEmpty())
+                            strncpy_utf16(busName, group.name, 128);
+                        else
+                            strncpy_utf16(busName, port.name, 128);
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        std::memset(info, 0, sizeof(v3_bus_info));
+        info->media_type = V3_AUDIO;
+        info->direction = isInput ? V3_INPUT : V3_OUTPUT;
+        info->channel_count = numChannels;
+        std::memcpy(info->bus_name, busName, sizeof(busName));
+        info->bus_type = busType;
+        info->flags = flags;
+        return V3_OK;
+    }
+
+    template<bool isInput>
+    bool getAudioBusArrangement(uint32_t busId, v3_speaker_arrangement* const speaker) const
+    {
+        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+        const BusInfo& bufInfo(isInput ? inputBuses : outputBuses);
+
+        for (uint32_t i=0; i<numPorts; ++i)
+        {
+            AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+            if (port.busId != busId)
+            {
+                d_stdout("port.busId != busId: %d %d", port.busId, busId);
+                continue;
+            }
+
+            v3_speaker_arrangement arr;
+
+            switch (port.groupId)
+            {
+            case kPortGroupMono:
+                arr = V3_SPEAKER_M;
+                break;
+            case kPortGroupStereo:
+                arr = V3_SPEAKER_L | V3_SPEAKER_R;
+                break;
+            default:
+                if (busId < bufInfo.numGroups)
+                {
+                    const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
+                    arr = 0x0;
+                    for (uint32_t j=0; j<numPortsInBus; ++j)
+                        arr |= 1ull << (j + 33ull);
+                }
+                else
+                {
+                    busId -= bufInfo.numGroups;
+
+                    if (bufInfo.audio != 0 && busId == 0)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<bufInfo.numMainAudio; ++j)
+                            arr |= 1ull << (j + 33ull);
+                    }
+                    else if (bufInfo.sidechain != 0 && busId == bufInfo.audio)
+                    {
+                        arr = 0x0;
+                        for (uint32_t j=0; j<bufInfo.numSidechain; ++j)
+                            arr |= 1ull << (bufInfo.numMainAudio + j + 33ull);
+                    }
+                    else
+                    {
+                        arr = 1ull << (bufInfo.numMainAudio + bufInfo.numSidechain + busId + 33ull);
+                    }
+                }
+                break;
+            }
+
+            *speaker = arr;
+            return true;
+        }
+
+        return false;
     }
    #endif
 
@@ -2790,7 +2670,7 @@ private:
         return true;
     }
 
-#if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     // ----------------------------------------------------------------------------------------------------------------
     // helper functions called during message passing, can block
 
@@ -2856,25 +2736,25 @@ private:
 
         v3_cpp_obj_unref(message);
     }
-#endif
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(const uint32_t index, float)
     {
         fParameterValuesChangedDuringProcessing[kVst3InternalParameterBaseCount + index] = true;
         return true;
     }
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
         return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
         DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN("MIDI output unsupported", fHostEventOutputHandle != nullptr, false);
@@ -2947,8 +2827,7 @@ private:
     {
         return ((PluginVst3*)ptr)->writeMidi(midiEvent);
     }
-#endif
-
+   #endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -3254,41 +3133,41 @@ struct dpf_midi_mapping : v3_midi_mapping_cpp {
 
 struct dpf_edit_controller : v3_edit_controller_cpp {
     std::atomic_int refcounter;
-#if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     ScopedPointer<dpf_ctrl2view_connection_point> connectionCtrl2View;
-#endif
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+   #endif
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     ScopedPointer<dpf_comp2ctrl_connection_point> connectionComp2Ctrl;
     ScopedPointer<PluginVst3> vst3;
-#else
+   #else
     ScopedPointer<PluginVst3>& vst3;
     bool initialized;
-#endif
+   #endif
     // cached values
     v3_component_handler** handler;
     v3_host_application** const hostApplicationFromFactory;
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if !DPF_VST3_USES_SEPARATE_CONTROLLER
     v3_host_application** const hostApplicationFromComponent;
     v3_host_application** hostApplicationFromComponentInitialize;
-#endif
+   #endif
     v3_host_application** hostApplicationFromInitialize;
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     dpf_edit_controller(v3_host_application** const hostApp)
         : refcounter(1),
           vst3(nullptr),
-#else
+   #else
     dpf_edit_controller(ScopedPointer<PluginVst3>& v, v3_host_application** const hostApp, v3_host_application** const hostComp)
         : refcounter(1),
           vst3(v),
           initialized(false),
-#endif
+   #endif
           handler(nullptr),
           hostApplicationFromFactory(hostApp),
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+         #if !DPF_VST3_USES_SEPARATE_CONTROLLER
           hostApplicationFromComponent(hostComp),
           hostApplicationFromComponentInitialize(nullptr),
-#endif
+         #endif
           hostApplicationFromInitialize(nullptr)
     {
         d_stdout("dpf_edit_controller() with hostApplication %p", hostApplicationFromFactory);
@@ -3296,10 +3175,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // make sure host application is valid through out this controller lifetime
         if (hostApplicationFromFactory != nullptr)
             v3_cpp_obj_ref(hostApplicationFromFactory);
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if !DPF_VST3_USES_SEPARATE_CONTROLLER
         if (hostApplicationFromComponent != nullptr)
             v3_cpp_obj_ref(hostApplicationFromComponent);
-#endif
+       #endif
 
         // v3_funknown, everything custom
         query_interface = query_interface_edit_controller;
@@ -3329,18 +3208,18 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     ~dpf_edit_controller()
     {
         d_stdout("~dpf_edit_controller()");
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         connectionCtrl2View = nullptr;
-#endif
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #endif
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         connectionComp2Ctrl = nullptr;
         vst3 = nullptr;
-#endif
+       #endif
 
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if !DPF_VST3_USES_SEPARATE_CONTROLLER
         if (hostApplicationFromComponent != nullptr)
             v3_cpp_obj_unref(hostApplicationFromComponent);
-#endif
+       #endif
         if (hostApplicationFromFactory != nullptr)
             v3_cpp_obj_unref(hostApplicationFromFactory);
     }
@@ -3364,22 +3243,22 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         if (v3_tuid_match(iid, v3_midi_mapping_iid))
         {
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             d_stdout("query_interface_edit_controller => %p %s %p | OK convert static", self, tuid2str(iid), iface);
             static dpf_midi_mapping midi_mapping;
             static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
             *iface = &midi_mapping_ptr;
             return V3_OK;
-#else
+           #else
             d_stdout("query_interface_edit_controller => %p %s %p | reject unused", self, tuid2str(iid), iface);
             *iface = nullptr;
             return V3_NO_INTERFACE;
-#endif
+           #endif
         }
 
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_edit_controller => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, controller->connectionComp2Ctrl.get());
 
@@ -3389,11 +3268,11 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
                 ++controller->connectionComp2Ctrl->refcounter;
             *iface = &controller->connectionComp2Ctrl;
             return V3_OK;
-#else
+           #else
             d_stdout("query_interface_edit_controller => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
             *iface = nullptr;
             return V3_NO_INTERFACE;
-#endif
+           #endif
         }
 
         d_stdout("query_interface_edit_controller => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
@@ -3420,7 +3299,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             return refcount;
         }
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         /**
          * Some hosts will have unclean instances of a few of the controller child classes at this point.
          * We check for those here, going through the whole possible chain to see if it is safe to delete.
@@ -3445,9 +3324,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
 
         delete controller;
         delete controllerptr;
-#else
+       #else
         d_stdout("dpf_edit_controller::unref => %p | refcount is zero, deletion will be done by component later", self);
-#endif
+       #endif
         return 0;
     }
 
@@ -3459,11 +3338,11 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         // check if already initialized
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 == nullptr, V3_INVALID_ARG);
-#else
+       #else
         DISTRHO_SAFE_ASSERT_RETURN(! controller->initialized, V3_INVALID_ARG);
-#endif
+       #endif
 
         // query for host application
         v3_host_application** hostApplication = nullptr;
@@ -3475,7 +3354,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // save it for later so we can unref it
         controller->hostApplicationFromInitialize = hostApplication;
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // provide the factory application to the plugin if this new one is missing
         if (hostApplication == nullptr)
             hostApplication = controller->hostApplicationFromFactory;
@@ -3497,10 +3376,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
             if (point->other != nullptr)
                 controller->vst3->comp2ctrl_connect(point->other);
         }
-#else
+       #else
         // mark as initialized
         controller->initialized = true;
-#endif
+       #endif
 
         return V3_OK;
     }
@@ -3510,19 +3389,19 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         d_stdout("dpf_edit_controller::terminate => %p", self);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // check if already terminated
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_INVALID_ARG);
 
         // delete actual plugin
         controller->vst3 = nullptr;
-#else
+       #else
         // check if already terminated
         DISTRHO_SAFE_ASSERT_RETURN(controller->initialized, V3_INVALID_ARG);
 
         // mark as uninitialzed
         controller->initialized = false;
-#endif
+       #endif
 
         // unref host application received during initialize
         if (controller->hostApplicationFromInitialize != nullptr)
@@ -3541,30 +3420,30 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         d_stdout("dpf_edit_controller::set_component_state => %p %p", self, stream);
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
         return vst3->setState(stream);
-#else
+       #else
         return V3_OK;
 
         // unused
         (void)self;
         (void)stream;
-#endif
+       #endif
     }
 
     static v3_result V3_API set_state(void* const self, v3_bstream** const stream)
     {
         d_stdout("dpf_edit_controller::set_state => %p %p", self, stream);
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
-#endif
+       #endif
 
         return V3_NOT_IMPLEMENTED;
 
@@ -3577,10 +3456,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     {
         d_stdout("dpf_edit_controller::get_state => %p %p", self, stream);
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(controller->vst3 != nullptr, V3_NOT_INITIALIZED);
-#endif
+       #endif
 
         return V3_NOT_IMPLEMENTED;
 
@@ -3698,7 +3577,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         d_stdout("create_view has contexts %p %p",
                  controller->hostApplicationFromFactory, controller->hostApplicationFromInitialize);
 
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         // plugin must be initialized
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
@@ -3711,12 +3590,12 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         // we require a host application for message creation
         v3_host_application** const host = controller->hostApplicationFromInitialize != nullptr
                                          ? controller->hostApplicationFromInitialize
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+                                        #if !DPF_VST3_USES_SEPARATE_CONTROLLER
                                          : controller->hostApplicationFromComponent != nullptr
                                          ? controller->hostApplicationFromComponent
                                          : controller->hostApplicationFromComponentInitialize != nullptr
                                          ? controller->hostApplicationFromComponentInitialize
-#endif
+                                        #endif
                                          : controller->hostApplicationFromFactory;
         DISTRHO_SAFE_ASSERT_RETURN(host != nullptr, nullptr);
 
@@ -3742,9 +3621,9 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         }
 
         return view;
-#else
+       #else
         return nullptr;
-#endif
+       #endif
     }
 };
 
@@ -3787,16 +3666,16 @@ struct dpf_process_context_requirements : v3_process_context_requirements_cpp {
 
     static uint32_t V3_API get_process_context_requirements(void*)
     {
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
         return 0x0
             | V3_PROCESS_CTX_NEED_CONTINUOUS_TIME  // V3_PROCESS_CTX_CONT_TIME_VALID
             | V3_PROCESS_CTX_NEED_PROJECT_TIME     // V3_PROCESS_CTX_PROJECT_TIME_VALID
             | V3_PROCESS_CTX_NEED_TEMPO            // V3_PROCESS_CTX_TEMPO_VALID
             | V3_PROCESS_CTX_NEED_TIME_SIG         // V3_PROCESS_CTX_TIME_SIG_VALID
             | V3_PROCESS_CTX_NEED_TRANSPORT_STATE; // V3_PROCESS_CTX_PLAYING
-#else
+       #else
         return 0x0;
-#endif
+       #endif
     }
 
     DISTRHO_PREVENT_HEAP_ALLOCATION
@@ -3867,9 +3746,9 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
                                                  v3_speaker_arrangement* const inputs, const int32_t num_inputs,
                                                  v3_speaker_arrangement* const outputs, const int32_t num_outputs)
     {
-        // NOTE this is called a bunch of times
-        // d_stdout("dpf_audio_processor::set_bus_arrangements => %p %p %i %p %i",
-        //          self, inputs, num_inputs, outputs, num_outputs);
+        // NOTE this is called a bunch of times in JUCE hosts
+        d_stdout("dpf_audio_processor::set_bus_arrangements => %p %p %i %p %i",
+                 self, inputs, num_inputs, outputs, num_outputs);
         dpf_audio_processor* const processor = *static_cast<dpf_audio_processor**>(self);
 
         PluginVst3* const vst3 = processor->vst3;
@@ -3965,11 +3844,11 @@ struct dpf_audio_processor : v3_audio_processor_cpp {
 struct dpf_component : v3_component_cpp {
     std::atomic_int refcounter;
     ScopedPointer<dpf_audio_processor> processor;
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     ScopedPointer<dpf_comp2ctrl_connection_point> connectionComp2Ctrl;
-#else
+   #else
     ScopedPointer<dpf_edit_controller> controller;
-#endif
+   #endif
     ScopedPointer<PluginVst3> vst3;
     v3_host_application** const hostApplicationFromFactory;
     v3_host_application** hostApplicationFromInitialize;
@@ -4010,11 +3889,11 @@ struct dpf_component : v3_component_cpp {
     {
         d_stdout("~dpf_component()");
         processor = nullptr;
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         connectionComp2Ctrl = nullptr;
-#else
+       #else
         controller = nullptr;
-#endif
+       #endif
         vst3 = nullptr;
 
         if (hostApplicationFromFactory != nullptr)
@@ -4040,17 +3919,17 @@ struct dpf_component : v3_component_cpp {
 
         if (v3_tuid_match(iid, v3_midi_mapping_iid))
         {
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             d_stdout("query_interface_component => %p %s %p | OK convert static", self, tuid2str(iid), iface);
             static dpf_midi_mapping midi_mapping;
             static dpf_midi_mapping* midi_mapping_ptr = &midi_mapping;
             *iface = &midi_mapping_ptr;
             return V3_OK;
-#else
+           #else
             d_stdout("query_interface_component => %p %s %p | reject unused", self, tuid2str(iid), iface);
             *iface = nullptr;
             return V3_NO_INTERFACE;
-#endif
+           #endif
         }
 
         if (v3_tuid_match(iid, v3_audio_processor_iid))
@@ -4068,7 +3947,7 @@ struct dpf_component : v3_component_cpp {
 
         if (v3_tuid_match(iid, v3_connection_point_iid))
         {
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+           #if DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_component => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, component->connectionComp2Ctrl.get());
 
@@ -4078,16 +3957,16 @@ struct dpf_component : v3_component_cpp {
                 ++component->connectionComp2Ctrl->refcounter;
             *iface = &component->connectionComp2Ctrl;
             return V3_OK;
-#else
+           #else
             d_stdout("query_interface_component => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
             *iface = nullptr;
             return V3_NO_INTERFACE;
-#endif
+           #endif
         }
 
         if (v3_tuid_match(iid, v3_edit_controller_iid))
         {
-#if !DPF_VST3_USES_SEPARATE_CONTROLLER
+           #if !DPF_VST3_USES_SEPARATE_CONTROLLER
             d_stdout("query_interface_component => %p %s %p | OK convert %p",
                      self, tuid2str(iid), iface, component->controller.get());
 
@@ -4099,11 +3978,11 @@ struct dpf_component : v3_component_cpp {
                 ++component->controller->refcounter;
             *iface = &component->controller;
             return V3_OK;
-#else
+           #else
             d_stdout("query_interface_component => %p %s %p | reject unwanted", self, tuid2str(iid), iface);
             *iface = nullptr;
             return V3_NO_INTERFACE;
-#endif
+           #endif
         }
 
         d_stdout("query_interface_component => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
@@ -4147,7 +4026,7 @@ struct dpf_component : v3_component_cpp {
             }
         }
 
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
         if (dpf_comp2ctrl_connection_point* const point = component->connectionComp2Ctrl)
         {
             if (const int refcount = point->refcounter)
@@ -4156,7 +4035,7 @@ struct dpf_component : v3_component_cpp {
                 d_stderr("DPF warning: asked to delete component while connection point still active (refcount %d)", refcount);
             }
         }
-#else
+       #else
         if (dpf_edit_controller* const controller = component->controller)
         {
             if (const int refcount = controller->refcounter)
@@ -4165,7 +4044,7 @@ struct dpf_component : v3_component_cpp {
                 d_stderr("DPF warning: asked to delete component while edit controller still active (refcount %d)", refcount);
             }
         }
-#endif
+       #endif
 
         if (unclean)
             return handleUncleanComponent(componentptr);
