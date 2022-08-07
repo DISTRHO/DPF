@@ -199,8 +199,6 @@ LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1,--gc-sections
 ifeq ($(WASM),true)
 LINK_OPTS += -O3
 LINK_OPTS += -sAGGRESSIVE_VARIABLE_ELIMINATION=1
-LINK_OPTS += -sASYNCIFY
-LINK_OPTS += -sASYNCIFY_IMPORTS=puglGetAsyncClipboardData
 else
 LINK_OPTS += -Wl,--as-needed
 ifneq ($(SKIP_STRIPPING),true)
@@ -270,6 +268,11 @@ endif
 
 ifeq ($(MACOS_OLD),true)
 BUILD_CXX_FLAGS = $(BASE_FLAGS) $(CXXFLAGS) -DHAVE_CPP11_SUPPORT=0
+endif
+
+ifeq ($(WASM_CLIPBOARD),true)
+BUILD_CXX_FLAGS += -DPUGL_WASM_ASYNC_CLIPBOARD
+LINK_FLAGS      += -sASYNCIFY -sASYNCIFY_IMPORTS=puglGetAsyncClipboardData
 endif
 
 ifeq ($(WASM_EXCEPTIONS),true)
