@@ -846,7 +846,7 @@ public:
 
         if (mediaType == V3_AUDIO)
         {
-           #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+           #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             const uint32_t busId = static_cast<uint32_t>(busIndex);
 
             if (busDirection == V3_INPUT)
@@ -877,6 +877,11 @@ public:
         }
 
         return V3_OK;
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+        // unused
+        (void)state;
+       #endif
     }
 
     v3_result setActive(const bool active)
@@ -2438,8 +2443,8 @@ private:
 
             if (port.groupId != kPortGroupNone)
             {
-                const std::vector<uint32_t>::const_iterator end = visitedPortGroups.cend();
-                if (std::find(visitedPortGroups.cbegin(), end, port.groupId) == end)
+                const std::vector<uint32_t>::iterator end = visitedPortGroups.end();
+                if (std::find(visitedPortGroups.begin(), end, port.groupId) == end)
                 {
                     visitedPortGroups.push_back(port.groupId);
                     ++busInfo.groups;
@@ -2462,8 +2467,8 @@ private:
             busInfo.sidechain = 1;
 
         uint32_t busIdForCV = 0;
-        const std::vector<uint32_t>::const_iterator vpgStart = visitedPortGroups.cbegin();
-        const std::vector<uint32_t>::const_iterator vpgEnd = visitedPortGroups.cend();
+        const std::vector<uint32_t>::iterator vpgStart = visitedPortGroups.begin();
+        const std::vector<uint32_t>::iterator vpgEnd = visitedPortGroups.end();
 
         for (uint32_t i=0; i<numPorts; ++i)
         {
