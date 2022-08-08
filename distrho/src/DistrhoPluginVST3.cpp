@@ -51,8 +51,6 @@
  * - MIDI program changes
  * - MIDI sysex
  * == BUSES
- * - bus arrangements
- * - optional audio buses
  * - routing info, do we care?
  * == CV
  * - cv scaling to -1/+1
@@ -265,8 +263,11 @@ class PluginVst3
     /* Buses: count possible buses we can provide to the host, in case they are not yet defined by the developer.
      * These values are only used if port groups aren't set.
      *
-     * When port groups are not in use, we fill in appropriately.
-     * 1 bus is provided for the main audio (if there is any) plus 1 for sidechain and 1 for each cv port.
+     * When port groups are not in use:
+     * - 1 bus is provided for the main audio (if there is any)
+     * - 1 for sidechain
+     * - 1 for each cv port
+     * So basically:
      * Main audio is used as first bus, if available.
      * Then sidechain, also if available.
      * And finally each CV port individually.
@@ -608,12 +609,12 @@ public:
        #endif
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        fillInBusInfoDetails<true>();
         std::memset(fEnabledInputs, 0, sizeof(fEnabledInputs));
+        fillInBusInfoDetails<true>();
        #endif
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        fillInBusInfoDetails<false>();
         std::memset(fEnabledOutputs, 0, sizeof(fEnabledOutputs));
+        fillInBusInfoDetails<false>();
        #endif
 
         if (const uint32_t extraParameterCount = fParameterCount + kVst3InternalParameterBaseCount)
@@ -706,9 +707,9 @@ public:
         }
 
         fCachedParameterValues[kVst3InternalParameterBaseCount + index] = value;
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         fParameterValueChangesForUI[kVst3InternalParameterBaseCount + index] = true;
-#endif
+       #endif
         fPlugin.setParameterValue(index, value);
     }
 
@@ -825,16 +826,56 @@ public:
 
     v3_result getRoutingInfo(v3_routing_info*, v3_routing_info*)
     {
-        // TODO
+        /*
+        output->media_type = V3_AUDIO;
+        output->bus_idx = 0;
+        output->channel = -1;
+        d_stdout("getRoutingInfo %s %d %d",
+                 v3_media_type_str(input->media_type), input->bus_idx, input->channel);
+        */
         return V3_NOT_IMPLEMENTED;
     }
 
-    v3_result activateBus(const int32_t /* mediaType */,
-                          const int32_t /* busDirection */,
-                          const int32_t /* busIndex */,
-                          const bool /* state */)
+    v3_result activateBus(const int32_t mediaType,
+                          const int32_t busDirection,
+                          const int32_t busIndex,
+                          const bool state) noexcept
     {
-        // TODO, returning ok to make bitwig happy
+        DISTRHO_SAFE_ASSERT_INT_RETURN(busDirection == V3_INPUT || busDirection == V3_OUTPUT, busDirection, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT_INT_RETURN(busIndex >= 0, busIndex, V3_INVALID_ARG);
+
+        if (mediaType == V3_AUDIO)
+        {
+           #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            const uint32_t busId = static_cast<uint32_t>(busIndex);
+
+            if (busDirection == V3_INPUT)
+            {
+               #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+                for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+                {
+                    const AudioPortWithBusId& port(fPlugin.getAudioPort(true, i));
+
+                    if (port.busId == busId)
+                        fEnabledInputs[i] = state;
+                }
+               #endif
+            }
+            else
+            {
+               #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+                for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                {
+                    const AudioPortWithBusId& port(fPlugin.getAudioPort(false, i));
+
+                    if (port.busId == busId)
+                        fEnabledOutputs[i] = state;
+                }
+               #endif
+            }
+           #endif
+        }
+
         return V3_OK;
     }
 
@@ -1360,28 +1401,38 @@ public:
 
         {
             int32_t i = 0;
+           #if DISTRHO_PLUGIN_NUM_INPUTS > 0
             if (data->inputs != nullptr)
             {
-                for (; i < data->inputs->num_channels; ++i)
+                for (int32_t j = 0; j < data->inputs->num_channels; ++j)
                 {
+                    while (!fEnabledInputs[i] && i < DISTRHO_PLUGIN_NUM_INPUTS)
+                        inputs[i++] = fDummyAudioBuffer;
+
                     DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_INPUTS, i);
-                    inputs[i] = data->inputs->channel_buffers_32[i];
+                    inputs[i++] = data->inputs->channel_buffers_32[j];
                 }
             }
+           #endif
             for (; i < std::max(1, DISTRHO_PLUGIN_NUM_INPUTS); ++i)
                 inputs[i] = fDummyAudioBuffer;
         }
 
         {
             int32_t i = 0;
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             if (data->outputs != nullptr)
             {
-                for (; i < data->outputs->num_channels; ++i)
+                for (int32_t j = 0; j < data->outputs->num_channels; ++j)
                 {
+                    while (!fEnabledOutputs[i] && i < DISTRHO_PLUGIN_NUM_OUTPUTS)
+                        outputs[i++] = fDummyAudioBuffer;
+
                     DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_OUTPUTS, i);
-                    outputs[i] = data->outputs->channel_buffers_32[i];
+                    outputs[i++] = data->outputs->channel_buffers_32[j];
                 }
             }
+           #endif
             for (; i < std::max(1, DISTRHO_PLUGIN_NUM_OUTPUTS); ++i)
                 outputs[i] = fDummyAudioBuffer;
         }
@@ -2387,8 +2438,8 @@ private:
 
             if (port.groupId != kPortGroupNone)
             {
-                const std::vector<uint32_t>::iterator end = visitedPortGroups.end();
-                if (std::find(visitedPortGroups.begin(), end, port.groupId) == end)
+                const std::vector<uint32_t>::const_iterator end = visitedPortGroups.cend();
+                if (std::find(visitedPortGroups.cbegin(), end, port.groupId) == end)
                 {
                     visitedPortGroups.push_back(port.groupId);
                     ++busInfo.groups;
@@ -2410,15 +2461,17 @@ private:
         if (busInfo.sidechainPorts != 0)
             busInfo.sidechain = 1;
 
-        uint32_t busIdFromGroup = 0;
         uint32_t busIdForCV = 0;
+        const std::vector<uint32_t>::const_iterator vpgStart = visitedPortGroups.cbegin();
+        const std::vector<uint32_t>::const_iterator vpgEnd = visitedPortGroups.cend();
+
         for (uint32_t i=0; i<numPorts; ++i)
         {
             AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
 
             if (port.groupId != kPortGroupNone)
             {
-                port.busId = busIdFromGroup++;
+                port.busId = std::find(vpgStart, vpgEnd, port.groupId) - vpgStart;
 
                 if (busInfo.audio == 0 && (port.hints & kAudioPortIsSidechain) == 0x0)
                     enabledPorts[i] = true;
@@ -2457,9 +2510,7 @@ private:
 
         if (busId < busInfo.groups)
         {
-            numChannels = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
-            busType = V3_AUX;
-            flags = 0;
+            numChannels = 0;
 
             for (uint32_t i=0; i<numPorts; ++i)
             {
@@ -2472,8 +2523,6 @@ private:
                     switch (port.groupId)
                     {
                     case kPortGroupStereo:
-                        numChannels = 2;
-                    // fall-through
                     case kPortGroupMono:
                         strncpy_utf16(busName, isInput ? "Audio Input" : "Audio Output", 128);
                         break;
@@ -2485,14 +2534,23 @@ private:
                         break;
                     }
 
+                    numChannels = fPlugin.getAudioPortCountWithGroupId(isInput, port.groupId);
+
                     if (busInfo.audio == 0 && (port.hints & kAudioPortIsSidechain) == 0x0)
                     {
                         busType = V3_MAIN;
                         flags = V3_DEFAULT_ACTIVE;
                     }
+                    else
+                    {
+                        busType = V3_AUX;
+                        flags = 0;
+                    }
                     break;
                 }
             }
+
+            DISTRHO_SAFE_ASSERT_RETURN(numChannels != 0, V3_INTERNAL_ERR);
         }
         else
         {
@@ -2545,7 +2603,7 @@ private:
             }
         }
 
-        // d_stdout("getAudioBusInfo %d %d", busId, numChannels);
+        // d_stdout("getAudioBusInfo %d %d %d", (int)isInput, busId, numChannels);
         std::memset(info, 0, sizeof(v3_bus_info));
         info->media_type = V3_AUDIO;
         info->direction = isInput ? V3_INPUT : V3_OUTPUT;
@@ -2554,6 +2612,50 @@ private:
         info->bus_type = busType;
         info->flags = flags;
         return V3_OK;
+    }
+
+    template<bool isInput>
+    v3_speaker_arrangement getSpeakerArrangementForAudioPort(const BusInfo& busInfo, const uint32_t portGroupId, uint32_t busId) const noexcept
+    {
+        switch (portGroupId)
+        {
+        case kPortGroupMono:
+            return V3_SPEAKER_M;
+        case kPortGroupStereo:
+            return V3_SPEAKER_L | V3_SPEAKER_R;
+        }
+
+        v3_speaker_arrangement arr = 0x0;
+
+        if (busId < busInfo.groups)
+        {
+            const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
+            for (uint32_t j=0; j<numPortsInBus; ++j)
+                arr |= 1ull << (j + 33ull);
+        }
+        else
+        {
+            busId -= busInfo.groups;
+
+            if (busInfo.audio != 0 && busId == 0)
+            {
+                arr = 0x0;
+                for (uint32_t j=0; j<busInfo.audioPorts; ++j)
+                    arr |= 1ull << (j + 33ull);
+            }
+            else if (busInfo.sidechain != 0 && busId == busInfo.audio)
+            {
+                arr = 0x0;
+                for (uint32_t j=0; j<busInfo.sidechainPorts; ++j)
+                    arr |= 1ull << (busInfo.audioPorts + j + 33ull);
+            }
+            else
+            {
+                arr = 1ull << (busInfo.audioPorts + busInfo.sidechainPorts + busId + 33ull);
+            }
+        }
+
+        return arr;
     }
 
     template<bool isInput>
@@ -2586,54 +2688,12 @@ private:
             if (!enabledPorts[i])
             {
                 *speaker = 0;
-                // d_stdout("getAudioBusArrangement %d %lx", busId, 0);
+                // d_stdout("getAudioBusArrangement %d %d not enabled", i, busId);
                 return true;
             }
 
-            v3_speaker_arrangement arr;
-
-            switch (port.groupId)
-            {
-            case kPortGroupMono:
-                arr = V3_SPEAKER_M;
-                break;
-            case kPortGroupStereo:
-                arr = V3_SPEAKER_L | V3_SPEAKER_R;
-                break;
-            default:
-                if (busId < busInfo.groups)
-                {
-                    const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
-                    arr = 0x0;
-                    for (uint32_t j=0; j<numPortsInBus; ++j)
-                        arr |= 1ull << (j + 33ull);
-                }
-                else
-                {
-                    busId -= busInfo.groups;
-
-                    if (busInfo.audio != 0 && busId == 0)
-                    {
-                        arr = 0x0;
-                        for (uint32_t j=0; j<busInfo.audioPorts; ++j)
-                            arr |= 1ull << (j + 33ull);
-                    }
-                    else if (busInfo.sidechain != 0 && busId == busInfo.audio)
-                    {
-                        arr = 0x0;
-                        for (uint32_t j=0; j<busInfo.sidechainPorts; ++j)
-                            arr |= 1ull << (busInfo.audioPorts + j + 33ull);
-                    }
-                    else
-                    {
-                        arr = 1ull << (busInfo.audioPorts + busInfo.sidechainPorts + busId + 33ull);
-                    }
-                }
-                break;
-            }
-
-            *speaker = arr;
-            // d_stdout("getAudioBusArrangement %d %lx", busId, arr);
+            *speaker = getSpeakerArrangementForAudioPort<isInput>(busInfo, port.groupId, busId);
+            // d_stdout("getAudioBusArrangement %d enabled by value %lx", busId, *speaker);
             return true;
         }
 
@@ -2657,6 +2717,8 @@ private:
                                  : nullptr;
                                 #endif
 
+        bool ok = true;
+
         for (uint32_t busId=0; busId<numBuses; ++busId)
         {
             const v3_speaker_arrangement arr = speakers[busId];
@@ -2673,26 +2735,14 @@ private:
                     continue;
                 }
 
-                if (arr == (V3_SPEAKER_L|V3_SPEAKER_R))
+                // get the only valid speaker arrangement for this bus, assuming enabled
+                const v3_speaker_arrangement earr = getSpeakerArrangementForAudioPort<isInput>(busInfo, port.groupId, busId);
+
+                // fail if host tries to map it to anything else
+                if (earr != arr && arr != 0)
                 {
-                    // some hosts try to make CV ports stereo, that doesn't make any sense!
-                    if (port.hints & kAudioPortIsCV)
-                        return false;
-
-                    // force stereo mode
-                    if (busId == 0 && busInfo.audioPorts != 0)
-                    {
-                        busInfo.audioPorts = 2;
-                        enabledPorts[i] = i < 2;
-                    }
-
-                    /*
-                    // special case for turning mono into "stereo"
-                    if (port.groupId == kPortGroupMono)
-                        port.groupId = kPortGroupStereo;
-                    else if (busId == 0 && busInfo.audioPorts == 1)
-                        busInfo.audioPorts = 2;
-                    */
+                    ok = false;
+                    continue;
                 }
 
                 enabledPorts[i] = arr != 0;
@@ -2716,7 +2766,7 @@ private:
             }
         }
 
-        return true;
+        return ok;
     }
    #endif
 
@@ -4594,7 +4644,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         d_stdout("dpf_factory::get_factory_info => %p", info);
         std::memset(info, 0, sizeof(*info));
 
-        info->flags = 0x10;
+        info->flags = 0x10; // unicode
         DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy(info->url, getPluginInfo().getHomePage(), ARRAY_SIZE(info->url));
         // DISTRHO_NAMESPACE::strncpy(info->email, "", ARRAY_SIZE(info->email)); // TODO

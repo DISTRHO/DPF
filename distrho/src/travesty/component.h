@@ -73,6 +73,12 @@ enum v3_bus_flags {
 	V3_IS_CONTROL_VOLTAGE = 1 << 1
 };
 
+enum v3_io_mode {
+	V3_SIMPLE = 0,
+	V3_ADVANCED,
+	V3_OFFLINE_PROCESSING
+};
+
 struct v3_bus_info {
 	int32_t media_type;
 	int32_t direction;
@@ -82,11 +88,15 @@ struct v3_bus_info {
 	uint32_t flags;
 };
 
+struct v3_routing_info {
+	int32_t media_type;
+	int32_t bus_idx;
+	int32_t channel;
+};
+
 /**
  * component
  */
-
-struct v3_routing_info;
 
 struct v3_component {
 #ifndef __cplusplus
