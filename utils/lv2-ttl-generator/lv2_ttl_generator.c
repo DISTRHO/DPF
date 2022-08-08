@@ -63,7 +63,14 @@ int main(int argc, char* argv[])
     }
 
 #ifdef TTL_GENERATOR_WINDOWS
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
     const TTL_Generator_Function ttlFn = (TTL_Generator_Function)GetProcAddress(handle, "lv2_generate_ttl");
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic pop
+# endif
 #else
     const TTL_Generator_Function ttlFn = (TTL_Generator_Function)dlsym(handle, "lv2_generate_ttl");
 #endif

@@ -23,6 +23,11 @@
 #include "TopLevelWidget.hpp"
 #include "StandaloneWindow.hpp"
 
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable:4661) /* instantiated template classes whose methods are defined elsewhere */
+#endif
+
 #ifndef DGL_NO_SHARED_RESOURCES
 # define NANOVG_DEJAVU_SANS_TTF "__dpf_dejavusans_ttf__"
 #endif
@@ -36,6 +41,15 @@ START_NAMESPACE_DGL
 // Forward class names
 
 class NanoVG;
+
+// -----------------------------------------------------------------------
+// Helper methods
+
+/**
+   Create a NanoVG context using the DPF-provided NanoVG library.
+   On Windows this will load a few extra OpenGL functions required for NanoVG to work.
+ */
+NVGcontext* nvgCreateGL(int flags);
 
 // -----------------------------------------------------------------------
 // NanoImage
@@ -439,6 +453,11 @@ public:
     */
     void globalAlpha(float alpha);
 
+   /**
+      Sets the color tint applied to all rendered shapes.
+    */
+    void globalTint(Color tint);
+
    /* --------------------------------------------------------------------
     * Transforms */
 
@@ -582,12 +601,26 @@ public:
     NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, int imageFlags);
 
    /**
-      Creates image from specified image data.
+      Creates image from specified raw format image data.
+    */
+    NanoImage::Handle createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                               ImageFlags imageFlags, ImageFormat format);
+
+   /**
+      Creates image from specified raw format image data.
+      Overloaded function for convenience.
+      @see ImageFlags
+    */
+    NanoImage::Handle createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                               int imageFlags, ImageFormat format);
+
+   /**
+      Creates image from specified RGBA image data.
     */
     NanoImage::Handle createImageFromRGBA(uint w, uint h, const uchar* data, ImageFlags imageFlags);
 
    /**
-      Creates image from specified image data.
+      Creates image from specified RGBA image data.
       Overloaded function for convenience.
       @see ImageFlags
     */
@@ -884,7 +917,7 @@ public:
       Constructor for a NanoSubWidget.
       @see CreateFlags
     */
-    explicit NanoBaseWidget(Widget* const parentGroupWidget, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Widget* parentGroupWidget, int flags = CREATE_ANTIALIAS);
 
    /**
       Constructor for a NanoTopLevelWidget.
@@ -893,21 +926,21 @@ public:
     explicit NanoBaseWidget(Window& windowToMapTo, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a NanoStandaloneWindow without parent window.
+      Constructor for a NanoStandaloneWindow without transient parent window.
       @see CreateFlags
     */
     explicit NanoBaseWidget(Application& app, int flags = CREATE_ANTIALIAS);
 
    /**
-      Constructor for a NanoStandaloneWindow with parent window.
+      Constructor for a NanoStandaloneWindow with transient parent window.
       @see CreateFlags
     */
-    explicit NanoBaseWidget(Application& app, Window& parentWindow, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Application& app, Window& transientParentWindow, int flags = CREATE_ANTIALIAS);
 
    /**
       Destructor.
     */
-    virtual ~NanoBaseWidget() {}
+    ~NanoBaseWidget() override {}
 
 protected:
    /**
@@ -949,5 +982,9 @@ typedef NanoSubWidget NanoWidget;
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 #endif // DGL_NANO_WIDGET_HPP_INCLUDED

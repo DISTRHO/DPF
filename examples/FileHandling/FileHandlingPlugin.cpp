@@ -99,6 +99,19 @@ protected:
     * Init */
 
    /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupMono;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
+   /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
@@ -124,42 +137,28 @@ protected:
     }
 
    /**
-      Set the state key and default value of @a index.@n
-      This function will be called once, shortly after the plugin is created.@n
-      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
+      Initialize the state @a index.@n
+      This function will be called once, shortly after the plugin is created.
     */
-    void initState(uint32_t index, String& stateKey, String& defaultStateValue) override
+    void initState(uint32_t index, State& state) override
     {
         switch (index)
         {
         case kStateFile1:
-            stateKey = "file1";
+            state.key = "file1";
+            state.label = "File 1";
             break;
         case kStateFile2:
-            stateKey = "file2";
+            state.key = "file2";
+            state.label = "File 2";
             break;
         case kStateFile3:
-            stateKey = "file3";
+            state.key = "file3";
+            state.label = "File 3";
             break;
         }
 
-        defaultStateValue = "";
-    }
-
-   /**
-      TODO API under construction
-    */
-    bool isStateFile(uint32_t index) override
-    {
-        switch (index)
-        {
-        case kStateFile1:
-        case kStateFile2:
-        case kStateFile3:
-            return true;
-        }
-
-        return false;
+        state.hints = kStateIsFilenamePath;
     }
 
    /* --------------------------------------------------------------------------------------------------------

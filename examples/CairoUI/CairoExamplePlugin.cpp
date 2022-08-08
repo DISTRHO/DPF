@@ -54,6 +54,19 @@ public:
         return d_cconst('d', 'C', 'a', 'i');
     }
 
+   /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupMono;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
     void initParameter(uint32_t index, Parameter& parameter)
     {
         // unused

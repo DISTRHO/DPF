@@ -1,6 +1,6 @@
 /*
   LV2 Data Access Extension
-  Copyright 2008-2011 David Robillard <http://drobilla.net>
+  Copyright 2008-2016 David Robillard <http://drobilla.net>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -16,18 +16,19 @@
 */
 
 /**
-   @file data-access.h
-   C header for the LV2 Extension Data extension
-   <http://lv2plug.in/ns/ext/data-access>.
+   @defgroup data-access Data Access
 
-   This extension defines a method for (e.g.) plugin UIs to have (possibly
-   marshalled) access to the extension_data function on a plugin instance.
+   Access to plugin extension_data() for UIs, see
+   <http://lv2plug.in/ns/ext/data-acess> for details.
+
+   @{
 */
 
 #ifndef LV2_DATA_ACCESS_H
 #define LV2_DATA_ACCESS_H
 
-#define LV2_DATA_ACCESS_URI "http://lv2plug.in/ns/ext/data-access"
+#define LV2_DATA_ACCESS_URI    "http://lv2plug.in/ns/ext/data-access"  ///< http://lv2plug.in/ns/ext/data-access
+#define LV2_DATA_ACCESS_PREFIX LV2_DATA_ACCESS_URI "#"                 ///< http://lv2plug.in/ns/ext/data-access#
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,3 +62,7 @@ typedef struct {
 #endif
 
 #endif  /* LV2_DATA_ACCESS_H */
+
+/**
+   @}
+*/

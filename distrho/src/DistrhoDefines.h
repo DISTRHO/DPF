@@ -27,10 +27,12 @@
 
 /* Check OS */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
+# define DISTRHO_API
 # define DISTRHO_PLUGIN_EXPORT extern "C" __declspec (dllexport)
 # define DISTRHO_OS_WINDOWS 1
 # define DISTRHO_DLL_EXTENSION "dll"
 #else
+# define DISTRHO_API
 # define DISTRHO_PLUGIN_EXPORT extern "C" __attribute__ ((visibility("default")))
 # if defined(__APPLE__)
 #  define DISTRHO_OS_MAC 1
@@ -43,6 +45,8 @@
 #  define DISTRHO_OS_BSD 1
 # elif defined(__GNU__)
 #  define DISTRHO_OS_GNU_HURD 1
+# elif defined(__EMSCRIPTEN__)
+#  define DISTRHO_OS_WASM 1
 # endif
 #endif
 
@@ -71,6 +75,13 @@
 # define nullptr NULL
 #endif
 
+/* Define unlikely */
+#ifdef __GNUC__
+# define unlikely(x) __builtin_expect(x,0)
+#else
+# define unlikely(x) x
+#endif
+
 /* Define DISTRHO_DEPRECATED */
 #if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
 # define DISTRHO_DEPRECATED __attribute__((deprecated))
@@ -81,49 +92,49 @@
 #endif
 
 /* Define DISTRHO_DEPRECATED_BY */
-#if defined(__clang__) && defined(DISTRHO_PROPER_CPP11_SUPPORT)
+#if defined(__clang__) && (__clang_major__ * 100 + __clang_minor__) >= 502
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("", other)))
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 480
+#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 408
 # define DISTRHO_DEPRECATED_BY(other) __attribute__((deprecated("Use " other)))
 #else
 # define DISTRHO_DEPRECATED_BY(other) DISTRHO_DEPRECATED
 #endif
 
 /* Define DISTRHO_SAFE_ASSERT* */
-#define DISTRHO_SAFE_ASSERT(cond)               if (! (cond)) d_safe_assert      (#cond, __FILE__, __LINE__);
-#define DISTRHO_SAFE_ASSERT_INT(cond, value)    if (! (cond)) d_safe_assert_int  (#cond, __FILE__, __LINE__, static_cast<int>(value));
-#define DISTRHO_SAFE_ASSERT_INT2(cond, v1, v2)  if (! (cond)) d_safe_assert_int2 (#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2));
-#define DISTRHO_SAFE_ASSERT_UINT(cond, value)   if (! (cond)) d_safe_assert_uint (#cond, __FILE__, __LINE__, static_cast<uint>(value));
-#define DISTRHO_SAFE_ASSERT_UINT2(cond, v1, v2) if (! (cond)) d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2));
+#define DISTRHO_SAFE_ASSERT(cond)               if (unlikely(!(cond))) d_safe_assert      (#cond, __FILE__, __LINE__);
+#define DISTRHO_SAFE_ASSERT_INT(cond, value)    if (unlikely(!(cond))) d_safe_assert_int  (#cond, __FILE__, __LINE__, static_cast<int>(value));
+#define DISTRHO_SAFE_ASSERT_INT2(cond, v1, v2)  if (unlikely(!(cond))) d_safe_assert_int2 (#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2));
+#define DISTRHO_SAFE_ASSERT_UINT(cond, value)   if (unlikely(!(cond))) d_safe_assert_uint (#cond, __FILE__, __LINE__, static_cast<uint>(value));
+#define DISTRHO_SAFE_ASSERT_UINT2(cond, v1, v2) if (unlikely(!(cond))) d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2));
 
-#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
-#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
-#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (! (cond)) { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
+#define DISTRHO_SAFE_ASSERT_BREAK(cond)         if (unlikely(!(cond))) { d_safe_assert(#cond, __FILE__, __LINE__); break; }
+#define DISTRHO_SAFE_ASSERT_CONTINUE(cond)      if (unlikely(!(cond))) { d_safe_assert(#cond, __FILE__, __LINE__); continue; }
+#define DISTRHO_SAFE_ASSERT_RETURN(cond, ret)   if (unlikely(!(cond))) { d_safe_assert(#cond, __FILE__, __LINE__); return ret; }
 
-#define DISTRHO_CUSTOM_SAFE_ASSERT(msg, cond)             if (! (cond))   d_custom_safe_assert(msg, #cond, __FILE__, __LINE__);
-#define DISTRHO_CUSTOM_SAFE_ASSERT_BREAK(msg, cond)       if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); break; }
-#define DISTRHO_CUSTOM_SAFE_ASSERT_CONTINUE(msg, cond)    if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); continue; }
-#define DISTRHO_CUSTOM_SAFE_ASSERT_RETURN(msg, cond, ret) if (! (cond)) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); return ret; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT(msg, cond)             if (unlikely(!(cond)))   d_custom_safe_assert(msg, #cond, __FILE__, __LINE__);
+#define DISTRHO_CUSTOM_SAFE_ASSERT_BREAK(msg, cond)       if (unlikely(!(cond))) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); break; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_CONTINUE(msg, cond)    if (unlikely(!(cond))) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); continue; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_RETURN(msg, cond, ret) if (unlikely(!(cond))) { d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); return ret; }
 
-#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_BREAK(msg, cond)       if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } break; }
-#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_CONTINUE(msg, cond)    if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } continue; }
-#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN(msg, cond, ret) if (! (cond)) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } return ret; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_BREAK(msg, cond)       if (unlikely(!(cond))) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } break; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_CONTINUE(msg, cond)    if (unlikely(!(cond))) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } continue; }
+#define DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN(msg, cond, ret) if (unlikely(!(cond))) { static bool _p; if (!_p) { _p = true; d_custom_safe_assert(msg, #cond, __FILE__, __LINE__); } return ret; }
 
-#define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value); break; }
-#define DISTRHO_SAFE_ASSERT_INT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); continue; }
-#define DISTRHO_SAFE_ASSERT_INT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); return ret; }
+#define DISTRHO_SAFE_ASSERT_INT_BREAK(cond, value)       if (unlikely(!(cond))) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); break; }
+#define DISTRHO_SAFE_ASSERT_INT_CONTINUE(cond, value)    if (unlikely(!(cond))) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); continue; }
+#define DISTRHO_SAFE_ASSERT_INT_RETURN(cond, value, ret) if (unlikely(!(cond))) { d_safe_assert_int(#cond, __FILE__, __LINE__, static_cast<int>(value)); return ret; }
 
-#define DISTRHO_SAFE_ASSERT_INT2_BREAK(cond, v1, v2)        if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); break; }
-#define DISTRHO_SAFE_ASSERT_INT2_CONTINUE(cond, v1, v2)     if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); continue; }
-#define DISTRHO_SAFE_ASSERT_INT2_RETURN(cond, v1, v2, ret)  if (! (cond)) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); return ret; }
+#define DISTRHO_SAFE_ASSERT_INT2_BREAK(cond, v1, v2)        if (unlikely(!(cond))) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); break; }
+#define DISTRHO_SAFE_ASSERT_INT2_CONTINUE(cond, v1, v2)     if (unlikely(!(cond))) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); continue; }
+#define DISTRHO_SAFE_ASSERT_INT2_RETURN(cond, v1, v2, ret)  if (unlikely(!(cond))) { d_safe_assert_int2(#cond, __FILE__, __LINE__, static_cast<int>(v1), static_cast<int>(v2)); return ret; }
 
-#define DISTRHO_SAFE_ASSERT_UINT_BREAK(cond, value)       if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value); break; }
-#define DISTRHO_SAFE_ASSERT_UINT_CONTINUE(cond, value)    if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); continue; }
-#define DISTRHO_SAFE_ASSERT_UINT_RETURN(cond, value, ret) if (! (cond)) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); return ret; }
+#define DISTRHO_SAFE_ASSERT_UINT_BREAK(cond, value)       if (unlikely(!(cond))) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); break; }
+#define DISTRHO_SAFE_ASSERT_UINT_CONTINUE(cond, value)    if (unlikely(!(cond))) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); continue; }
+#define DISTRHO_SAFE_ASSERT_UINT_RETURN(cond, value, ret) if (unlikely(!(cond))) { d_safe_assert_uint(#cond, __FILE__, __LINE__, static_cast<uint>(value)); return ret; }
 
-#define DISTRHO_SAFE_ASSERT_UINT2_BREAK(cond, v1, v2)       if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); break; }
-#define DISTRHO_SAFE_ASSERT_UINT2_CONTINUE(cond, v1, v2)    if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); continue; }
-#define DISTRHO_SAFE_ASSERT_UINT2_RETURN(cond, v1, v2, ret) if (! (cond)) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); return ret; }
+#define DISTRHO_SAFE_ASSERT_UINT2_BREAK(cond, v1, v2)       if (unlikely(!(cond))) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); break; }
+#define DISTRHO_SAFE_ASSERT_UINT2_CONTINUE(cond, v1, v2)    if (unlikely(!(cond))) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); continue; }
+#define DISTRHO_SAFE_ASSERT_UINT2_RETURN(cond, v1, v2, ret) if (unlikely(!(cond))) { d_safe_assert_uint2(#cond, __FILE__, __LINE__, static_cast<uint>(v1), static_cast<uint>(v2)); return ret; }
 
 /* Define DISTRHO_SAFE_EXCEPTION */
 #define DISTRHO_SAFE_EXCEPTION(msg)             catch(...) { d_safe_exception(msg, __FILE__, __LINE__); }
@@ -193,11 +204,21 @@ private:                                         \
 # define DISTRHO_OS_SPLIT_STR ":"
 #endif
 
+/* MSVC warnings */
+#ifdef _MSC_VER
+# define strdup _strdup
+# pragma warning(disable:4244) /* possible loss of data */
+#endif
+
+/* Useful macros */
+#define ARRAY_SIZE(ARRAY) sizeof(ARRAY)/sizeof(ARRAY[0])
+
 /* Useful typedefs */
 typedef unsigned char uchar;
 typedef unsigned short int ushort;
 typedef unsigned int uint;
 typedef unsigned long int ulong;
+typedef unsigned long long int ulonglong;
 
 /* Deprecated macros */
 #define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) DISTRHO_DECLARE_NON_COPYABLE(ClassName)

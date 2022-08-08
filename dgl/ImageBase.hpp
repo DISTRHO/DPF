@@ -39,7 +39,7 @@ enum ImageFormat {
    It is an abstract class that provides the common methods to build on top.
    Cairo and OpenGL Image classes are based upon this one.
 
-   @see Image
+   @see CairoImage, OpenGLImage
  */
 class ImageBase
 {

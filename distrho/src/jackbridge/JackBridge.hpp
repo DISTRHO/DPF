@@ -300,8 +300,8 @@ JACKBRIDGE_API const char* jackbridge_get_version_string();
 JACKBRIDGE_API jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options, jack_status_t* status);
 JACKBRIDGE_API bool           jackbridge_client_close(jack_client_t* client);
 
-JACKBRIDGE_API int   jackbridge_client_name_size();
-JACKBRIDGE_API char* jackbridge_get_client_name(jack_client_t* client);
+JACKBRIDGE_API int         jackbridge_client_name_size();
+JACKBRIDGE_API const char* jackbridge_get_client_name(jack_client_t* client);
 
 JACKBRIDGE_API char* jackbridge_client_get_uuid(jack_client_t* client);
 JACKBRIDGE_API char* jackbridge_get_uuid_for_client_name(jack_client_t* client, const char* name);
@@ -407,20 +407,5 @@ JACKBRIDGE_API bool jackbridge_remove_property(jack_client_t* client, jack_uuid_
 JACKBRIDGE_API int  jackbridge_remove_properties(jack_client_t* client, jack_uuid_t subject);
 JACKBRIDGE_API bool jackbridge_remove_all_properties(jack_client_t* client);
 JACKBRIDGE_API bool jackbridge_set_property_change_callback(jack_client_t* client, JackPropertyChangeCallback callback, void* arg);
-
-JACKBRIDGE_API bool jackbridge_sem_init(void* sem) noexcept;
-JACKBRIDGE_API void jackbridge_sem_destroy(void* sem) noexcept;
-JACKBRIDGE_API bool jackbridge_sem_connect(void* sem) noexcept;
-JACKBRIDGE_API void jackbridge_sem_post(void* sem, bool server) noexcept;
-JACKBRIDGE_API bool jackbridge_sem_timedwait(void* sem, uint msecs, bool server) noexcept;
-
-JACKBRIDGE_API bool  jackbridge_shm_is_valid(const void* shm) noexcept;
-JACKBRIDGE_API void  jackbridge_shm_init(void* shm) noexcept;
-JACKBRIDGE_API void  jackbridge_shm_attach(void* shm, const char* name) noexcept;
-JACKBRIDGE_API void  jackbridge_shm_close(void* shm) noexcept;
-JACKBRIDGE_API void* jackbridge_shm_map(void* shm, uint64_t size) noexcept;
-JACKBRIDGE_API void  jackbridge_shm_unmap(void* shm, void* ptr) noexcept;
-
-JACKBRIDGE_API void jackbridge_parent_deathsig(bool kill) noexcept;
 
 #endif // JACKBRIDGE_HPP_INCLUDED

@@ -38,21 +38,26 @@ public:
         loadSharedResources();
 #endif
         setResizable(true);
-        setSize(500, 200);
-        setGeometryConstraints(500, 200, true);
         setTitle("FileBrowserDialog");
+
+        const double scaleFactor = getScaleFactor();
+        setGeometryConstraints(500 * scaleFactor, 200 * scaleFactor, true);
+        setSize(500 * scaleFactor, 200 * scaleFactor);
+
         done();
     }
 
 protected:
     void onNanoDisplay() override
     {
+        const double scaleFactor = getScaleFactor();
+
         // Selected file
         beginPath();
-        fontSize(14);
+        fontSize(14 * scaleFactor);
         textAlign(ALIGN_LEFT | ALIGN_MIDDLE);
         fillColor(255, 255, 255, 255);
-        text(20, getHeight()/2, selectedFile, NULL);
+        text(20 * scaleFactor, getHeight()/2, selectedFile, NULL);
         closePath();
 
         // Button background
@@ -66,7 +71,7 @@ protected:
 
         // Button label
         beginPath();
-        fontSize(14);
+        fontSize(14 * scaleFactor);
         Rectangle<float> buttonTextBounds;
         textBounds(0, 0, "Press me", NULL, buttonTextBounds);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
@@ -120,6 +125,7 @@ protected:
                 repaint();
 
                 FileBrowserOptions opts;
+                // opts.saving = true;
                 opts.title = "Look at me";
                 if (! openFileBrowser(opts))
                 {
@@ -138,8 +144,12 @@ protected:
     {
         const uint width  = ev.size.getWidth();
         const uint height = ev.size.getHeight();
+        const double scaleFactor = getScaleFactor();
 
-        buttonBounds = Rectangle<uint>(width - 120, height/2 - 20, 100, 40);
+        buttonBounds = Rectangle<uint>(width - 120 * scaleFactor,
+                                       height/2 - 20 * scaleFactor,
+                                       100 * scaleFactor,
+                                       40 * scaleFactor);
     }
 
     void onFocus(const bool focus, CrossingMode) override

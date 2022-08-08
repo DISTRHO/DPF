@@ -105,9 +105,17 @@ The plugin will be treated as an effect, but it will not change the host audio."
     * Init */
 
    /**
-      This plugin has no parameters..
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
     */
-    void  initParameter(uint32_t, Parameter&) override {}
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupStereo;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
 
    /**
       Set the name of the program @a index.
@@ -127,53 +135,58 @@ The plugin will be treated as an effect, but it will not change the host audio."
     }
 
    /**
-      Set the state key and default value of @a index.
-      This function will be called once, shortly after the plugin is created.
+      Initialize the state @a index.@n
+      This function will be called once, shortly after the plugin is created.@n
+      Must be implemented by your plugin class only if DISTRHO_PLUGIN_WANT_STATE is enabled.
     */
-    void initState(uint32_t index, String& stateKey, String& defaultStateValue) override
+    void initState(uint32_t index, State& state) override
     {
         switch (index)
         {
         case 0:
-            stateKey = "top-left";
+            state.key = "top-left";
+            state.label = "Top Left";
             break;
         case 1:
-            stateKey = "top-center";
+            state.key = "top-center";
+            state.label = "Top Center";
             break;
         case 2:
-            stateKey = "top-right";
+            state.key = "top-right";
+            state.label = "Top Right";
             break;
         case 3:
-            stateKey = "middle-left";
+            state.key = "middle-left";
+            state.label = "Middle Left";
             break;
         case 4:
-            stateKey = "middle-center";
+            state.key = "middle-center";
+            state.label = "Middle Center";
             break;
         case 5:
-            stateKey = "middle-right";
+            state.key = "middle-right";
+            state.label = "Middle Right";
             break;
         case 6:
-            stateKey = "bottom-left";
+            state.key = "bottom-left";
+            state.label = "Bottom Left";
             break;
         case 7:
-            stateKey = "bottom-center";
+            state.key = "bottom-center";
+            state.label = "Bottom Center";
             break;
         case 8:
-            stateKey = "bottom-right";
+            state.key = "bottom-right";
+            state.label = "Bottom Right";
             break;
         }
 
-        defaultStateValue = "false";
+        state.hints = kStateIsHostWritable;
+        state.defaultValue = "false";
     }
 
    /* --------------------------------------------------------------------------------------------------------
     * Internal data */
-
-   /**
-      This plugin has no parameters..
-    */
-    void  setParameterValue(uint32_t, float) override {}
-    float getParameterValue(uint32_t) const  override { return 0.0f; }
 
    /**
       Load a program.
@@ -208,7 +221,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
         }
     }
 
-#if DISTRHO_PLUGIN_WANT_FULL_STATE /* FIXME */
    /**
       Get the value of an internal state.
       The host may call this function from any non-realtime context.
@@ -240,7 +252,6 @@ The plugin will be treated as an effect, but it will not change the host audio."
 
         return sFalse;
     }
-#endif
 
    /**
       Change an internal state.

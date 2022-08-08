@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,10 +15,46 @@
  */
 
 #include "src/DistrhoPluginChecks.h"
+#include "src/DistrhoDefines.h"
+
+#include <cstddef>
+
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+# include <cstdint>
+#else
+# include <stdint.h>
+#endif
+
+#if DISTRHO_UI_FILE_BROWSER && !defined(DISTRHO_OS_MAC)
+# define DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, SEP, FUNCTION) NS ## SEP ## FUNCTION
+# define DISTRHO_PUGL_NAMESPACE_MACRO(NS, FUNCTION) DISTRHO_PUGL_NAMESPACE_MACRO_HELPER(NS, _, FUNCTION)
+# define x_fib_add_recent          DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_add_recent)
+# define x_fib_cfg_buttons         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_cfg_buttons)
+# define x_fib_cfg_filter_callback DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_cfg_filter_callback)
+# define x_fib_close               DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_close)
+# define x_fib_configure           DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_configure)
+# define x_fib_filename            DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_filename)
+# define x_fib_free_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_free_recent)
+# define x_fib_handle_events       DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_handle_events)
+# define x_fib_load_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_load_recent)
+# define x_fib_recent_at           DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_at)
+# define x_fib_recent_count        DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_count)
+# define x_fib_recent_file         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_recent_file)
+# define x_fib_save_recent         DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_save_recent)
+# define x_fib_show                DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_show)
+# define x_fib_status              DISTRHO_PUGL_NAMESPACE_MACRO(plugin, x_fib_status)
+# define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED
+# define FILE_BROWSER_DIALOG_NAMESPACE DISTRHO_NAMESPACE
+# define FILE_BROWSER_DIALOG_DISTRHO_NAMESPACE
+START_NAMESPACE_DISTRHO
+# include "../extra/FileBrowserDialogImpl.hpp"
+END_NAMESPACE_DISTRHO
+# include "../extra/FileBrowserDialogImpl.cpp"
+#endif
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # if defined(DISTRHO_OS_WINDOWS)
-#  define WIN32_LEAN_AND_MEAN
+#  include <winsock2.h>
 #  include <windows.h>
 # elif defined(HAVE_X11)
 #  include <X11/Xresource.h>
@@ -32,14 +68,16 @@
 
 START_NAMESPACE_DISTRHO
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * Static data, see DistrhoUIInternal.hpp */
 
+const char* g_nextBundlePath  = nullptr;
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 uintptr_t   g_nextWindowId    = 0;
 double      g_nextScaleFactor = 1.0;
-const char* g_nextBundlePath  = nullptr;
+#endif
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
  * get global scale factor */
 
@@ -71,22 +109,18 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 # endif
 
         DWORD dpiAware = 0;
+        DWORD scaleFactor = 100;
         if (GetProcessDpiAwareness && GetScaleFactorForMonitor
-            && GetProcessDpiAwareness(NULL, &dpiAware) == 0 && dpiAware != 0)
+            && GetProcessDpiAwareness(nullptr, &dpiAware) == 0 && dpiAware != 0)
         {
             const HMONITOR hMon = parentWindowHandle != 0
                                 ? MonitorFromWindow((HWND)parentWindowHandle, MONITOR_DEFAULTTOPRIMARY)
                                 : MonitorFromPoint(POINT{0,0}, MONITOR_DEFAULTTOPRIMARY);
-
-            DWORD scaleFactor = 0;
-            if (GetScaleFactorForMonitor(hMon, &scaleFactor) == 0 && scaleFactor != 0)
-            {
-                FreeLibrary(Shcore);
-                return static_cast<double>(scaleFactor) / 100.0;
-            }
+            GetScaleFactorForMonitor(hMon, &scaleFactor);
         }
 
         FreeLibrary(Shcore);
+        return static_cast<double>(scaleFactor) / 100.0;
     }
 #elif defined(HAVE_X11)
     ::Display* const display = XOpenDisplay(nullptr);
@@ -94,28 +128,31 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
     XrmInitialize();
 
+    double dpi = 96.0;
     if (char* const rms = XResourceManagerString(display))
     {
-        if (const XrmDatabase sdb = XrmGetStringDatabase(rms))
+        if (const XrmDatabase db = XrmGetStringDatabase(rms))
         {
             char* type = nullptr;
-            XrmValue ret;
+            XrmValue value = {};
 
-            if (XrmGetResource(sdb, "Xft.dpi", "String", &type, &ret)
-                && ret.addr != nullptr
+            if (XrmGetResource(db, "Xft.dpi", "Xft.Dpi", &type, &value)
                 && type != nullptr
-                && std::strncmp("String", type, 6) == 0)
+                && std::strcmp(type, "String") == 0
+                && value.addr != nullptr)
             {
-                if (const double dpi = std::atof(ret.addr))
-                {
-                    XCloseDisplay(display);
-                    return dpi / 96;
-                }
+                char*        end    = nullptr;
+                const double xftDpi = std::strtod(value.addr, &end);
+                if (xftDpi > 0.0 && xftDpi < HUGE_VAL)
+                    dpi = xftDpi;
             }
+
+            XrmDestroyDatabase(db);
         }
     }
 
     XCloseDisplay(display);
+    return dpi / 96;
 #endif
 
     return 1.0;
@@ -164,21 +201,21 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
 
-UI::UI(const uint width, const uint height, const bool automaticallyScale)
+UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetAsMinimumSize)
     : UIWidget(UI::PrivateData::createNextWindow(this, width, height)),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    if (width > 0 && height > 0)
+    if (width != 0 && height != 0)
     {
         Widget::setSize(width, height);
 
-        if (automaticallyScale)
-            setGeometryConstraints(width, height, true, true);
+        if (automaticallyScaleAndSetAsMinimumSize)
+            setGeometryConstraints(width, height, true, true, true);
     }
 #else
     // unused
-    return; (void)automaticallyScale;
+    (void)automaticallyScaleAndSetAsMinimumSize;
 #endif
 }
 
@@ -217,6 +254,11 @@ double UI::getSampleRate() const noexcept
     return uiData->sampleRate;
 }
 
+const char* UI::getBundlePath() const noexcept
+{
+    return uiData->bundlePath;
+}
+
 void UI::editParameter(uint32_t index, bool started)
 {
     uiData->editParamCallback(index + uiData->parameterOffset, started);
@@ -234,7 +276,7 @@ void UI::setState(const char* key, const char* value)
 }
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATEFILES
+#if DISTRHO_PLUGIN_WANT_STATE
 bool UI::requestStateFile(const char* key)
 {
     return uiData->fileRequestCallback(key);
@@ -245,6 +287,13 @@ bool UI::requestStateFile(const char* key)
 void UI::sendNote(uint8_t channel, uint8_t note, uint8_t velocity)
 {
     uiData->sendNoteCallback(channel, note, velocity);
+}
+#endif
+
+#if DISTRHO_UI_FILE_BROWSER
+bool UI::openFileBrowser(const FileBrowserOptions& options)
+{
+    return getWindow().openFileBrowser((DGL_NAMESPACE::FileBrowserOptions&)options);
 }
 #endif
 
@@ -260,7 +309,7 @@ void* UI::getPluginInstancePointer() const noexcept
 
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 /* ------------------------------------------------------------------------------------------------------------
- * External UI helpers */
+ * External UI helpers (static calls) */
 
 const char* UI::getNextBundlePath() noexcept
 {
@@ -295,6 +344,25 @@ void UI::uiScaleFactorChanged(double)
 }
 
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+std::vector<DGL_NAMESPACE::ClipboardDataOffer> UI::getClipboardDataOfferTypes()
+{
+    return uiData->window->getClipboardDataOfferTypes();
+}
+
+uint32_t UI::uiClipboardDataOffer()
+{
+    std::vector<DGL_NAMESPACE::ClipboardDataOffer> offers(uiData->window->getClipboardDataOfferTypes());
+
+    for (std::vector<DGL_NAMESPACE::ClipboardDataOffer>::iterator it=offers.begin(), end=offers.end(); it != end;++it)
+    {
+        const DGL_NAMESPACE::ClipboardDataOffer offer = *it;
+        if (std::strcmp(offer.type, "text/plain") == 0)
+            return offer.id;
+    }
+
+    return 0;
+}
+
 void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }
@@ -304,13 +372,13 @@ void UI::uiReshape(uint, uint)
     // NOTE this must be the same as Window::onReshape
     pData->fallbackOnResize();
 }
+#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
-# ifndef DGL_FILE_BROWSER_DISABLED
+#if DISTRHO_UI_FILE_BROWSER
 void UI::uiFileBrowserSelected(const char*)
 {
 }
-# endif
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
@@ -327,9 +395,29 @@ void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
 
+#ifndef DISTRHO_PLUGIN_TARGET_VST3
+    if (uiData->initializing)
+        return;
+
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
     uiData->setSizeCallback(width, height);
+#endif
+}
+
+// NOTE: only used for VST3
+void UI::requestSizeChange(const uint width, const uint height)
+{
+# ifdef DISTRHO_PLUGIN_TARGET_VST3
+    if (uiData->initializing)
+        uiData->window->setSizeForVST3(width, height);
+    else
+        uiData->setSizeCallback(width, height);
+# else
+    // unused
+    (void)width;
+    (void)height;
+# endif
 }
 #endif
 

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,18 @@
 #define DGL_WINDOW_HPP_INCLUDED
 
 #include "Geometry.hpp"
+
+#ifndef DGL_FILE_BROWSER_DISABLED
+# include "FileBrowserDialog.hpp"
+#endif
+
+#include <vector>
+
+#ifdef DISTRHO_NAMESPACE
+START_NAMESPACE_DISTRHO
+class PluginWindow;
+END_NAMESPACE_DISTRHO
+#endif
 
 START_NAMESPACE_DGL
 
@@ -47,60 +59,11 @@ class TopLevelWidget;
 
    ...
  */
-class Window
+class DISTRHO_API Window
 {
    struct PrivateData;
 
 public:
-#ifndef DGL_FILE_BROWSER_DISABLED
-   /**
-      File browser options.
-      @see Window::openFileBrowser
-    */
-    struct FileBrowserOptions {
-       /**
-          File browser button state.
-          This allows to customize the behaviour of the file browse dialog buttons.
-          Note these are merely hints, not all systems support them.
-        */
-        enum ButtonState {
-            kButtonInvisible,
-            kButtonVisibleUnchecked,
-            kButtonVisibleChecked,
-        };
-
-        /** Start directory, uses current working directory if null */
-        const char* startDir;
-        /** File browser dialog window title, uses "FileBrowser" if null */
-        const char* title;
-        // TODO file filter
-
-       /**
-          File browser buttons.
-        */
-        struct Buttons {
-            /** Whether to list all files vs only those with matching file extension */
-            ButtonState listAllFiles;
-            /** Whether to show hidden files */
-            ButtonState showHidden;
-            /** Whether to show list of places (bookmarks) */
-            ButtonState showPlaces;
-
-            /** Constructor for default values */
-            Buttons()
-                : listAllFiles(kButtonVisibleChecked),
-                  showHidden(kButtonVisibleUnchecked),
-                  showPlaces(kButtonVisibleChecked) {}
-        } buttons;
-
-        /** Constructor for default values */
-        FileBrowserOptions()
-            : startDir(nullptr),
-              title(nullptr),
-              buttons() {}
-    };
-#endif // DGL_FILE_BROWSER_DISABLED
-
    /**
       Window graphics context as a scoped struct.
       This class gives graphics context drawing time to a window's widgets.
@@ -157,10 +120,10 @@ public:
     explicit Window(Application& app);
 
    /**
-      Constructor for a modal window, by having another window as its parent.
+      Constructor for a modal window, by having another window as its transient parent.
       The Application instance must be the same between the 2 windows.
     */
-    explicit Window(Application& app, Window& parent);
+    explicit Window(Application& app, Window& transientParentWindow);
 
    /**
       Constructor for an embed Window without known size,
@@ -246,6 +209,41 @@ public:
     void setResizable(bool resizable);
 
    /**
+      Get X offset, typically 0.
+    */
+    int getOffsetX() const noexcept;
+
+   /**
+      Get Y offset, typically 0.
+    */
+    int getOffsetY() const noexcept;
+
+   /**
+      Get offset.
+    */
+    Point<int> getOffset() const noexcept;
+
+   /**
+      Set X offset.
+    */
+    void setOffsetX(int x);
+
+   /**
+      Set Y offset.
+    */
+    void setOffsetY(int y);
+
+   /**
+      Set offset using @a x and @a y values.
+    */
+    void setOffset(int x, int y);
+
+   /**
+      Set offset.
+    */
+    void setOffset(const Point<int>& offset);
+
+   /**
       Get width.
     */
     uint getWidth() const noexcept;
@@ -301,6 +299,39 @@ public:
       Set to ignore (or not) key repeat events according to @a ignore.
     */
     void setIgnoringKeyRepeat(bool ignore) noexcept;
+
+   /**
+      Get the clipboard contents.
+
+      This gets the system clipboard contents,
+      which may have been set with setClipboard() or copied from another application.
+
+      Returns the clipboard contents, or null.
+
+      @note By default only "text/plain" mimetype is supported and returned.
+            Override onClipboardDataOffer for supporting other types.
+    */
+    const void* getClipboard(size_t& dataSize);
+
+   /**
+      Set the clipboard contents.
+
+      This sets the system clipboard contents,
+      which can be retrieved with getClipboard() or pasted into other applications.
+
+      If using a string, the use of a null terminator is required (and must be part of dataSize).@n
+      The MIME type of the data "text/plain" is assumed if null is used.
+    */
+    bool setClipboard(const char* mimeType, const void* data, size_t dataSize);
+
+   /**
+      Set the mouse cursor.
+
+      This changes the system cursor that is displayed when the pointer is inside the window.
+      May fail if setting the cursor is not supported on this system,
+      for example if compiled on X11 without Xcursor support.
+    */
+    bool setCursor(MouseCursor cursor);
 
    /**
       Add a callback function to be triggered on every idle cycle or on a specific timer frequency.
@@ -361,7 +392,7 @@ public:
 
 #ifndef DGL_FILE_BROWSER_DISABLED
    /**
-      Open a file browser dialog with this window as parent.
+      Open a file browser dialog with this window as transient parent.
       A few options can be specified to setup the dialog.
 
       If a path is selected, onFileSelected() will be called with the user chosen path.
@@ -369,7 +400,7 @@ public:
 
       This function does not block the event loop.
     */
-    bool openFileBrowser(const FileBrowserOptions& options);
+    bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options = FileBrowserOptions());
 #endif
 
    /**
@@ -383,6 +414,13 @@ public:
     void repaint(const Rectangle<uint>& rect) noexcept;
 
    /**
+      Render this window's content into a picture file, specified by @a filename.
+      Window must be visible and on screen.
+      Written picture format is PPM.
+    */
+    void renderToPicture(const char* filename);
+
+   /**
       Run this window as a modal, blocking input events from the parent.
       Only valid for windows that have been created with another window as parent (as passed in the constructor).
       Can optionally block-wait, but such option is only available if the application is running as standalone.
@@ -390,12 +428,27 @@ public:
     void runAsModal(bool blockWait = false);
 
    /**
+      Get the geometry constraints set for the Window.
+      @see setGeometryConstraints
+    */
+    Size<uint> getGeometryConstraints(bool& keepAspectRatio);
+
+   /**
       Set geometry constraints for the Window when resized by the user, and optionally scale contents automatically.
     */
     void setGeometryConstraints(uint minimumWidth,
                                 uint minimumHeight,
                                 bool keepAspectRatio = false,
-                                bool automaticallyScale = false);
+                                bool automaticallyScale = false,
+                                bool resizeNowIfAutoScaling = true);
+
+   /**
+      Set the transient parent of the window.
+
+      Set this for transient children like dialogs, to have them properly associated with their parent window.
+      This should be not be called for embed windows, or after making the window visible.
+    */
+    void setTransientParent(uintptr_t transientParentWindowHandle);
 
    /** DEPRECATED Use isIgnoringKeyRepeat(). */
     DISTRHO_DEPRECATED_BY("isIgnoringKeyRepeat()")
@@ -410,6 +463,23 @@ public:
     inline void exec(bool blockWait = false) { runAsModal(blockWait); }
 
 protected:
+   /**
+      Get the types available for the data in a clipboard.
+      Must only be called within the context of onClipboardDataOffer.
+    */
+    std::vector<ClipboardDataOffer> getClipboardDataOfferTypes();
+
+   /**
+      A function called when clipboard has data present, possibly with several datatypes.
+      While handling this event, the data types can be investigated with getClipboardDataOfferTypes() to decide whether to accept the offer.
+
+      Reimplement and return a non-zero id to accept the clipboard data offer for a particular type.
+      Applications must ignore any type they do not recognize.
+
+      The default implementation accepts the "text/plain" mimetype.
+    */
+    virtual uint32_t onClipboardDataOffer();
+
    /**
       A function called when the window is attempted to be closed.
       Returning true closes the window, which is the default behaviour.
@@ -459,8 +529,10 @@ protected:
 private:
     PrivateData* const pData;
     friend class Application;
-    friend class PluginWindow;
     friend class TopLevelWidget;
+   #ifdef DISTRHO_NAMESPACE
+    friend class DISTRHO_NAMESPACE::PluginWindow;
+   #endif
 
    /** @internal */
     explicit Window(Application& app,
@@ -469,9 +541,10 @@ private:
                     uint height,
                     double scaleFactor,
                     bool resizable,
+                    bool isVST3,
                     bool doPostInit);
 
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window);
+    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
 };
 
 // -----------------------------------------------------------------------

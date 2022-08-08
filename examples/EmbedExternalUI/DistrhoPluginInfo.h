@@ -27,6 +27,7 @@
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
 #define DISTRHO_PLUGIN_NUM_INPUTS      2
 #define DISTRHO_PLUGIN_NUM_OUTPUTS     2
+#define DISTRHO_UI_FILE_BROWSER        0
 #define DISTRHO_UI_USER_RESIZABLE      1
 
 enum Parameters {

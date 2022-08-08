@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,6 +19,12 @@
 
 #include "Base.hpp"
 
+#ifdef DISTRHO_NAMESPACE
+START_NAMESPACE_DISTRHO
+class PluginApplication;
+END_NAMESPACE_DISTRHO
+#endif
+
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -33,7 +39,7 @@ START_NAMESPACE_DGL
 
    Unless stated otherwise, functions within this class are not thread-safe.
  */
-class Application
+class DISTRHO_API Application
 {
 public:
    /**
@@ -81,6 +87,15 @@ public:
     bool isStandalone() const noexcept;
 
    /**
+      Return the time in seconds.
+
+      This is a monotonically increasing clock with high resolution.@n
+      The returned time is only useful to compare against other times returned by this function,
+      its absolute value has no meaning.
+   */
+    double getTime() const;
+
+   /**
       Add a callback function to be triggered on every idle cycle.
       You can add more than one, and remove them at anytime with removeIdleCallback().
       Idle callbacks trigger right after OS event handling and Window idle events (within the same cycle).
@@ -94,7 +109,7 @@ public:
     void removeIdleCallback(IdleCallback* callback);
 
    /**
-      Set the class name of the application.
+      Get the class name of the application.
 
       This is a stable identifier for the application, used as the window class/instance name on X11 and Windows.
       It is not displayed to the user, but can be used in scripts and by window managers,
@@ -102,12 +117,21 @@ public:
 
       Plugins created with DPF have their class name automatically set based on DGL_NAMESPACE and plugin name.
     */
+    const char* getClassName() const noexcept;
+
+   /**
+      Set the class name of the application.
+      @see getClassName
+    */
     void setClassName(const char* name);
 
 private:
     struct PrivateData;
     PrivateData* const pData;
     friend class Window;
+   #ifdef DISTRHO_NAMESPACE
+    friend class DISTRHO_NAMESPACE::PluginApplication;
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Application)
 };

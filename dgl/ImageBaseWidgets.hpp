@@ -25,13 +25,36 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
+/**
+   DGL Image About Window class.
+
+   This is a Window attached (transient) to another Window that simply shows an Image as its content.
+   It is typically used for "about this project" style pop-up Windows.
+
+   Pressing 'Esc' or clicking anywhere on the window will automatically close it.
+
+   @see CairoImageAboutWindow, OpenGLImageAboutWindow, Window::runAsModal(bool)
+ */
 template <class ImageType>
 class ImageBaseAboutWindow : public StandaloneWindow
 {
 public:
-    explicit ImageBaseAboutWindow(Window& parentWindow, const ImageType& image = ImageType());
-    explicit ImageBaseAboutWindow(TopLevelWidget* parentTopLevelWidget, const ImageType& image = ImageType());
+   /**
+      Constructor taking an existing Window as the parent transient window and an optional image.
+      If @a image is valid, the about window size will match the image size.
+    */
+    explicit ImageBaseAboutWindow(Window& transientParentWindow, const ImageType& image = ImageType());
 
+   /**
+      Constructor taking a top-level-widget's Window as the parent transient window and an optional image.
+      If @a image is valid, the about window size will match the image size.
+    */
+    explicit ImageBaseAboutWindow(TopLevelWidget* topLevelWidget, const ImageType& image = ImageType());
+
+   /**
+      Set a new image to use as background for this window.
+      Window size will adjust to match the image size.
+    */
     void setImage(const ImageType& image);
 
 protected:
@@ -47,6 +70,16 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 
+/**
+   DGL Image Button class.
+
+   This is a typical button, where the drawing comes from a pregenerated set of images.
+   The button can be under "normal", "hover" and "down" states, with one separate image possible for each.
+
+   The event logic for this button comes from the ButtonEventHandler class.
+
+   @see CairoImageButton, OpenGLImageButton
+ */
 template <class ImageType>
 class ImageBaseButton : public SubWidget,
                         public ButtonEventHandler
@@ -81,6 +114,18 @@ private:
 
 // --------------------------------------------------------------------------------------------------------------------
 
+/**
+   DGL Image Knob class.
+
+   This is a typical knob/dial, where the drawing comes from a pregenerated image "filmstrip".
+   The knob's "filmstrip" image can be either horizontal or vertical,
+   with the number of steps automatically based on the largest value (ie, horizontal if width>height, vertical if height>width).
+   There are no different images for "hover" or "down" states.
+
+   The event logic for this knob comes from the KnobEventHandler class.
+
+   @see CairoImageKnob, OpenGLImageKnob
+ */
 template <class ImageType>
 class ImageBaseKnob : public SubWidget,
                       public KnobEventHandler

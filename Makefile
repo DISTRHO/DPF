@@ -21,7 +21,6 @@ dgl:
 
 examples: dgl
 	$(MAKE) all -C examples/CVPort
-	$(MAKE) all -C examples/EmbedExternalUI
 	$(MAKE) all -C examples/FileHandling
 	$(MAKE) all -C examples/Info
 	$(MAKE) all -C examples/Latency
@@ -34,13 +33,13 @@ examples: dgl
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
+ifeq ($(HAVE_DGL),true)
+	$(MAKE) all -C examples/EmbedExternalUI
+endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator
 	@$(CURDIR)/utils/generate-ttl.sh
-ifeq ($(MACOS),true)
-	@$(CURDIR)/utils/generate-vst-bundles.sh
-endif
 
 utils/lv2_ttl_generator:
 	$(MAKE) -C utils/lv2-ttl-generator

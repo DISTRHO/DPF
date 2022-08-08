@@ -42,26 +42,8 @@ bool TopLevelWidget::PrivateData::keyboardEvent(const KeyboardEvent& ev)
     if (! selfw->pData->visible)
         return false;
 
-    // give top-level widget chance to catch this event first
-    if (self->onKeyboard(ev))
-        return true;
-
     // propagate event to all subwidgets recursively
     return selfw->pData->giveKeyboardEventForSubWidgets(ev);
-}
-
-bool TopLevelWidget::PrivateData::specialEvent(const SpecialEvent& ev)
-{
-    // ignore event if we are not visible
-    if (! selfw->pData->visible)
-        return false;
-
-    // give top-level widget chance to catch this event first
-    if (self->onSpecial(ev))
-        return true;
-
-    // propagate event to all subwidgets recursively
-    return selfw->pData->giveSpecialEventForSubWidgets(ev);
 }
 
 bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent& ev)
@@ -69,10 +51,6 @@ bool TopLevelWidget::PrivateData::characterInputEvent(const CharacterInputEvent&
     // ignore event if we are not visible
     if (! selfw->pData->visible)
         return false;
-
-    // give top-level widget chance to catch this event first
-    if (self->onCharacterInput(ev))
-        return true;
 
     // propagate event to all subwidgets recursively
     return selfw->pData->giveCharacterInputEventForSubWidgets(ev);
@@ -96,10 +74,6 @@ bool TopLevelWidget::PrivateData::mouseEvent(const MouseEvent& ev)
         rev.absolutePos.setY(ev.absolutePos.getY() / autoScaleFactor);
     }
 
-    // give top-level widget chance to catch this event first
-    if (self->onMouse(ev))
-        return true;
-
     // propagate event to all subwidgets recursively
     return selfw->pData->giveMouseEventForSubWidgets(rev);
 }
@@ -121,10 +95,6 @@ bool TopLevelWidget::PrivateData::motionEvent(const MotionEvent& ev)
         rev.absolutePos.setX(ev.absolutePos.getX() / autoScaleFactor);
         rev.absolutePos.setY(ev.absolutePos.getY() / autoScaleFactor);
     }
-
-    // give top-level widget chance to catch this event first
-    if (self->onMotion(ev))
-        return true;
 
     // propagate event to all subwidgets recursively
     return selfw->pData->giveMotionEventForSubWidgets(rev);
@@ -149,10 +119,6 @@ bool TopLevelWidget::PrivateData::scrollEvent(const ScrollEvent& ev)
         rev.delta.setX(ev.delta.getX() / autoScaleFactor);
         rev.delta.setY(ev.delta.getY() / autoScaleFactor);
     }
-
-    // give top-level widget chance to catch this event first
-    if (self->onScroll(ev))
-        return true;
 
     // propagate event to all subwidgets recursively
     return selfw->pData->giveScrollEventForSubWidgets(rev);

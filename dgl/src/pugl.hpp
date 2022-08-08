@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,7 +19,7 @@
 
 #include "../Base.hpp"
 
-/* we will include all header files used in pugl in their C++ friendly form, then pugl stuff in custom namespace */
+/* we will include all header files used in pugl.h in their C++ friendly form, then pugl stuff in custom namespace */
 #include <cstddef>
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <cstdbool>
@@ -29,135 +29,84 @@
 # include <stdint.h>
 #endif
 
+// hidden api
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
+#define PUGL_NO_INCLUDE_GL_H
 #define PUGL_NO_INCLUDE_GLU_H
-
-// --------------------------------------------------------------------------------------------------------------------
 
 #ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
-#else
-USE_NAMESPACE_DGL
 #endif
 
 #include "pugl-upstream/include/pugl/pugl.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 
-PUGL_BEGIN_DECLS
+// DGL specific, expose backend enter
+bool puglBackendEnter(PuglView* view);
 
-// expose backend enter
-PUGL_API bool
-puglBackendEnter(PuglView* view);
-
-// expose backend leave
-PUGL_API void
-puglBackendLeave(PuglView* view);
-
-// clear minimum size to 0
-PUGL_API void
-puglClearMinSize(PuglView* view);
-
-// missing in pugl, directly returns transient parent
-PUGL_API PuglNativeView
-puglGetTransientParent(const PuglView* view);
-
-// missing in pugl, directly returns title char* pointer
-PUGL_API const char*
-puglGetWindowTitle(const PuglView* view);
-
-// get global scale factor
-PUGL_API double
-puglGetDesktopScaleFactor(const PuglView* view);
-
-// bring view window into the foreground, aka "raise" window
-PUGL_API void
-puglRaiseWindow(PuglView* view);
+// DGL specific, expose backend leave
+bool puglBackendLeave(PuglView* view);
 
 // DGL specific, assigns backend that matches current DGL build
-PUGL_API void
-puglSetMatchingBackendForCurrentBuild(PuglView* view);
+void puglSetMatchingBackendForCurrentBuild(PuglView* view);
 
-// Combine puglSetMinSize and puglSetAspectRatio
-PUGL_API PuglStatus
-puglSetGeometryConstraints(PuglView* view, unsigned int width, unsigned int height, bool aspect);
+// bring view window into the foreground, aka "raise" window
+void puglRaiseWindow(PuglView* view);
 
-// set window size with default size and without changing frame x/y position
-PUGL_API PuglStatus
-puglSetWindowSize(PuglView* view, unsigned int width, unsigned int height);
+// get scale factor from parent window if possible, fallback to puglGetScaleFactor
+double puglGetScaleFactorFromParent(const PuglView* view);
+
+// combined puglSetSizeHint using PUGL_MIN_SIZE, PUGL_MIN_ASPECT and PUGL_MAX_ASPECT
+PuglStatus puglSetGeometryConstraints(PuglView* view, uint width, uint height, bool aspect);
+
+// set view as resizable (or not) during runtime
+void puglSetResizable(PuglView* view, bool resizable);
+
+// set window size while also changing default
+PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height);
 
 // DGL specific, build-specific drawing prepare
-PUGL_API void
-puglOnDisplayPrepare(PuglView* view);
+void puglOnDisplayPrepare(PuglView* view);
 
 // DGL specific, build-specific fallback resize
-PUGL_API void
-puglFallbackOnResize(PuglView* view);
+void puglFallbackOnResize(PuglView* view);
 
-#ifdef DISTRHO_OS_MAC
-// macOS specific, allow standalone window to gain focus
-PUGL_API void
-puglMacOSActivateApp();
+#if defined(DISTRHO_OS_MAC)
 
 // macOS specific, add another view's window as child
-PUGL_API PuglStatus
-puglMacOSAddChildWindow(PuglView* view, PuglView* child);
+PuglStatus puglMacOSAddChildWindow(PuglView* view, PuglView* child);
 
 // macOS specific, remove another view's window as child
-PUGL_API PuglStatus
-puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
+PuglStatus puglMacOSRemoveChildWindow(PuglView* view, PuglView* child);
 
 // macOS specific, center view based on parent coordinates (if there is one)
-PUGL_API void
-puglMacOSShowCentered(PuglView* view);
+void puglMacOSShowCentered(PuglView* view);
 
-// macOS specific, setup file browser dialog
-typedef void (*openPanelCallback)(PuglView* view, const char* path);
-bool puglMacOSFilePanelOpen(PuglView* view, const char* startDir, const char* title, uint flags, openPanelCallback callback);
-#endif
+#elif defined(DISTRHO_OS_WASM)
 
-#ifdef DISTRHO_OS_WINDOWS
+// nothing here yet
+
+#elif defined(DISTRHO_OS_WINDOWS)
+
 // win32 specific, call ShowWindow with SW_RESTORE
-PUGL_API void
-puglWin32RestoreWindow(PuglView* view);
+void puglWin32RestoreWindow(PuglView* view);
 
 // win32 specific, center view based on parent coordinates (if there is one)
-PUGL_API void
-puglWin32ShowCentered(PuglView* view);
+void puglWin32ShowCentered(PuglView* view);
 
-// win32 specific, set or unset WS_SIZEBOX style flag
-PUGL_API void
-puglWin32SetWindowResizable(PuglView* view, bool resizable);
-#endif
+#elif defined(HAVE_X11)
 
-#ifdef HAVE_X11
-// X11 specific, safer way to grab focus
-PUGL_API PuglStatus
-puglX11GrabFocus(const PuglView* view);
+#define DGL_USING_X11
+
+// X11 specific, update world without triggering exposure evente
+PuglStatus puglX11UpdateWithoutExposures(PuglWorld* world);
 
 // X11 specific, set dialog window type and pid hints
-PUGL_API void
-puglX11SetWindowTypeAndPID(const PuglView* view);
+void puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
 
-// X11 specific, show file dialog via sofd
-PUGL_API bool
-sofdFileDialogShow(PuglView* view, const char* startDir, const char* title, uint flags, double scaleFactor);
-
-// X11 specific, idle sofd file dialog, returns true if dialog was closed (with or without a file selection)
-PUGL_API bool
-sofdFileDialogIdle(PuglView* const view);
-
-// X11 specific, close sofd file dialog
-PUGL_API void
-sofdFileDialogClose();
-
-// X11 specific, get path chosen via sofd file dialog
-PUGL_API const char*
-sofdFileDialogGetPath();
 #endif
-
-PUGL_END_DECLS
 
 // --------------------------------------------------------------------------------------------------------------------
 

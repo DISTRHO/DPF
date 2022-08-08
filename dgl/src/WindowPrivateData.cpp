@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,26 +19,19 @@
 
 #include "pugl.hpp"
 
-#include "../../distrho/extra/String.hpp"
-
-#ifdef DISTRHO_OS_WINDOWS
-# include <direct.h>
-# include <winsock2.h>
-# include <windows.h>
-# include <vector>
-#else
-# include <unistd.h>
-#endif
-
-#define DGL_DEBUG_EVENTS
+// #define DGL_DEBUG_EVENTS
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-# include <cinttypes>
+# ifdef DISTRHO_PROPER_CPP11_SUPPORT
+#  include <cinttypes>
+# else
+#  include <inttypes.h>
+# endif
 #endif
 
 START_NAMESPACE_DGL
 
-#if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
+#ifdef DGL_DEBUG_EVENTS
 # define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
 # define DGL_DBGp(...) std::fprintf(stderr, __VA_ARGS__);
 # define DGL_DBGF      std::fflush(stderr);
@@ -59,21 +52,42 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-#ifdef DISTRHO_OS_WINDOWS
-// static pointer used for direct comparisons
-static const char* const kWin32SelectedFileCancelled = "__dpf_cancelled__";
-#endif
-
-static double getDesktopScaleFactor(const PuglView* const view)
+static double getScaleFactorFromParent(const PuglView* const view)
 {
     // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
     if (view != nullptr)
-        return puglGetDesktopScaleFactor(view);
+        return puglGetScaleFactorFromParent(view);
 
     return 1.0;
+}
+
+static PuglView* puglNewViewWithTransientParent(PuglWorld* const world, PuglView* const transientParentView)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, nullptr);
+
+    if (PuglView* const view = puglNewView(world))
+    {
+        puglSetTransientParent(view, puglGetNativeView(transientParentView));
+        return view;
+    }
+
+    return nullptr;
+}
+
+static PuglView* puglNewViewWithParentWindow(PuglWorld* const world, const uintptr_t parentWindowHandle)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, nullptr);
+
+    if (PuglView* const view = puglNewView(world))
+    {
+        puglSetParentWindow(view, parentWindowHandle);
+        return view;
+    }
+
+    return nullptr;
 }
 
 // -----------------------------------------------------------------------
@@ -82,21 +96,25 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
     : app(a),
       appData(a.pData),
       self(s),
-      view(puglNewView(appData->world)),
-      transientParentView(nullptr),
+      view(appData->world != nullptr ? puglNewView(appData->world) : nullptr),
       topLevelWidgets(),
       isClosed(true),
       isVisible(false),
       isEmbed(false),
-      scaleFactor(getDesktopScaleFactor(view)),
+      usesSizeRequest(false),
+      scaleFactor(getScaleFactorFromParent(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
+      clipboardTypeId(0),
+      filenameToRenderInto(nullptr),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
@@ -107,12 +125,12 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
     : app(a),
       appData(a.pData),
       self(s),
-      view(puglNewView(appData->world)),
-      transientParentView(ppData->view),
+      view(puglNewViewWithTransientParent(appData->world, ppData->view)),
       topLevelWidgets(),
       isClosed(true),
       isVisible(false),
       isEmbed(false),
+      usesSizeRequest(false),
       scaleFactor(ppData->scaleFactor),
       autoScaling(false),
       autoScaleFactor(1.0),
@@ -120,13 +138,15 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
+      clipboardTypeId(0),
+      filenameToRenderInto(nullptr),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal(ppData)
 {
-    puglSetTransientFor(view, puglGetNativeWindow(transientParentView));
-
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
 }
 
@@ -136,52 +156,57 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
     : app(a),
       appData(a.pData),
       self(s),
-      view(puglNewView(appData->world)),
-      transientParentView(nullptr),
+      view(puglNewViewWithParentWindow(appData->world, parentWindowHandle)),
       topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor(view)),
+      usesSizeRequest(false),
+      scaleFactor(scale != 0.0 ? scale : getScaleFactorFromParent(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
+      clipboardTypeId(0),
+      filenameToRenderInto(nullptr),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
-    if (isEmbed)
-        puglSetParentWindow(view, parentWindowHandle);
-
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
 }
 
 Window::PrivateData::PrivateData(Application& a, Window* const s,
                                  const uintptr_t parentWindowHandle,
                                  const uint width, const uint height,
-                                 const double scale, const bool resizable)
+                                 const double scale, const bool resizable, const bool isVST3)
     : app(a),
       appData(a.pData),
       self(s),
-      view(appData->world != nullptr ? puglNewView(appData->world) : nullptr),
-      transientParentView(nullptr),
+      view(puglNewViewWithParentWindow(appData->world, parentWindowHandle)),
       topLevelWidgets(),
       isClosed(parentWindowHandle == 0),
       isVisible(parentWindowHandle != 0 && view != nullptr),
       isEmbed(parentWindowHandle != 0),
-      scaleFactor(scale != 0.0 ? scale : getDesktopScaleFactor(view)),
+      usesSizeRequest(isVST3),
+      scaleFactor(scale != 0.0 ? scale : getScaleFactorFromParent(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
       minHeight(0),
       keepAspectRatio(false),
       ignoreIdleCallbacks(false),
-#ifdef DISTRHO_OS_WINDOWS
-      win32SelectedFile(nullptr),
+      waitingForClipboardData(false),
+      waitingForClipboardEvents(false),
+      clipboardTypeId(0),
+      filenameToRenderInto(nullptr),
+#ifndef DGL_FILE_BROWSER_DISABLED
+      fileBrowserHandle(nullptr),
 #endif
       modal()
 {
@@ -195,25 +220,22 @@ Window::PrivateData::~PrivateData()
 {
     appData->idleCallbacks.remove(this);
     appData->windows.remove(self);
+    std::free(filenameToRenderInto);
 
     if (view == nullptr)
         return;
 
     if (isEmbed)
     {
-#ifdef HAVE_X11
-        sofdFileDialogClose();
+#ifndef DGL_FILE_BROWSER_DISABLED
+        if (fileBrowserHandle != nullptr)
+            fileBrowserClose(fileBrowserHandle);
 #endif
         puglHide(view);
         appData->oneWindowClosed();
         isClosed = true;
         isVisible = false;
     }
-
-#ifdef DISTRHO_OS_WINDOWS
-    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
-        std::free(const_cast<char*>(win32SelectedFile));
-#endif
 
     puglFreeView(view);
 }
@@ -233,21 +255,33 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
     }
 
     puglSetMatchingBackendForCurrentBuild(view);
-
-    puglClearMinSize(view);
-    puglSetWindowSize(view, width, height);
-
     puglSetHandle(view, this);
+
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
+#if DGL_USE_RGBA
+    puglSetViewHint(view, PUGL_DEPTH_BITS, 24);
+#else
     puglSetViewHint(view, PUGL_DEPTH_BITS, 16);
+#endif
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
-#ifdef DGL_USE_OPENGL3
+
+#if defined(DGL_USE_OPENGL3) || defined(DGL_USE_GLES3)
     puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
     puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
+#elif defined(DGL_USE_GLES2)
+    puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+    puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+#else
+    puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_TRUE);
+    puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
 #endif
+
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
+
+    // setting default size triggers system-level calls, do it last
+    puglSetSizeHint(view, PUGL_DEFAULT_SIZE, width, height);
 }
 
 bool Window::PrivateData::initPost()
@@ -313,8 +347,8 @@ void Window::PrivateData::show()
         appData->oneWindowShown();
 
         // FIXME
-        PuglRect rect = puglGetFrame(view);
-        puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
+//         PuglRect rect = puglGetFrame(view);
+//         puglSetWindowSize(view, static_cast<uint>(rect.width), static_cast<uint>(rect.height));
 
 #if defined(DISTRHO_OS_WINDOWS)
         puglWin32ShowCentered(view);
@@ -354,9 +388,14 @@ void Window::PrivateData::hide()
     if (modal.enabled)
         stopModal();
 
-#ifdef HAVE_X11
-    sofdFileDialogClose();
+#ifndef DGL_FILE_BROWSER_DISABLED
+    if (fileBrowserHandle != nullptr)
+    {
+        fileBrowserClose(fileBrowserHandle);
+        fileBrowserHandle = nullptr;
+    }
 #endif
+
     puglHide(view);
 
     isVisible = false;
@@ -372,11 +411,7 @@ void Window::PrivateData::focus()
     if (! isEmbed)
         puglRaiseWindow(view);
 
-#ifdef HAVE_X11
-    puglX11GrabFocus(view);
-#else
     puglGrabFocus(view);
-#endif
 }
 
 // -----------------------------------------------------------------------
@@ -387,10 +422,7 @@ void Window::PrivateData::setResizable(const bool resizable)
 
     DGL_DBG("Window setResizable called\n");
 
-    puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
-#ifdef DISTRHO_OS_WINDOWS
-    puglWin32SetWindowResizable(view, resizable);
-#endif
+    puglSetResizable(view, resizable);
 }
 
 // -----------------------------------------------------------------------
@@ -398,20 +430,12 @@ void Window::PrivateData::setResizable(const bool resizable)
 void Window::PrivateData::idleCallback()
 {
 #ifndef DGL_FILE_BROWSER_DISABLED
-# ifdef DISTRHO_OS_WINDOWS
-    if (const char* path = win32SelectedFile)
+    if (fileBrowserHandle != nullptr && fileBrowserIdle(fileBrowserHandle))
     {
-        win32SelectedFile = nullptr;
-        if (path == kWin32SelectedFileCancelled)
-            path = nullptr;
-        self->onFileSelected(path);
-        std::free(const_cast<char*>(path));
+        self->onFileSelected(fileBrowserGetPath(fileBrowserHandle));
+        fileBrowserClose(fileBrowserHandle);
+        fileBrowserHandle = nullptr;
     }
-# endif
-# ifdef HAVE_X11
-    if (sofdFileDialogIdle(view))
-        self->onFileSelected(sofdFileDialogGetPath());
-# endif
 #endif
 }
 
@@ -451,164 +475,23 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 // -----------------------------------------------------------------------
 // file handling
 
-bool Window::PrivateData::openFileBrowser(const Window::FileBrowserOptions& options)
+bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 {
-    using DISTRHO_NAMESPACE::String;
+    if (fileBrowserHandle != nullptr)
+        fileBrowserClose(fileBrowserHandle);
 
-    // --------------------------------------------------------------------------
-    // configure start dir
+    FileBrowserOptions options2 = options;
 
-    // TODO: get abspath if needed
-    // TODO: cross-platform
+    if (options2.title == nullptr)
+        options2.title = puglGetWindowTitle(view);
 
-    String startDir(options.startDir);
+    fileBrowserHandle = fileBrowserCreate(isEmbed,
+                                          puglGetNativeView(view),
+                                          autoScaling ? autoScaleFactor : scaleFactor,
+                                          options2);
 
-    if (startDir.isEmpty())
-    {
-        // TESTING verify this whole thing...
-# ifdef DISTRHO_OS_WINDOWS
-        if (char* const cwd = _getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# else
-        if (char* const cwd = getcwd(nullptr, 0))
-        {
-            startDir = cwd;
-            std::free(cwd);
-        }
-# endif
-    }
-
-    DISTRHO_SAFE_ASSERT_RETURN(startDir.isNotEmpty(), false);
-
-    if (! startDir.endsWith(DISTRHO_OS_SEP))
-        startDir += DISTRHO_OS_SEP_STR;
-
-    // --------------------------------------------------------------------------
-    // configure title
-
-    String title(options.title);
-
-    if (title.isEmpty())
-    {
-        title = puglGetWindowTitle(view);
-
-        if (title.isEmpty())
-            title = "FileBrowser";
-    }
-
-    // --------------------------------------------------------------------------
-    // show
-
-# ifdef DISTRHO_OS_MAC
-    uint flags = 0x0;
-
-    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x001;
-    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x002;
-
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x010;
-    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x020;
-
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x100;
-    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x200;
-
-    return puglMacOSFilePanelOpen(view, startDir, title, flags, openPanelCallback);
-# endif
-
-# ifdef DISTRHO_OS_WINDOWS
-    // the old and compatible dialog API
-    OPENFILENAMEW ofn;
-    memset(&ofn, 0, sizeof(ofn));
-    if (win32SelectedFile != nullptr && win32SelectedFile != kWin32SelectedFileCancelled)
-        std::free(const_cast<char*>(win32SelectedFile));
-    win32SelectedFile = nullptr;
-
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = (HWND)puglGetNativeWindow(view);
-
-    // set start directory in UTF-16 encoding
-    std::vector<WCHAR> startDirW;
-    startDirW.resize(startDir.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, startDir.buffer(), -1, startDirW.data(), startDirW.size()))
-        ofn.lpstrInitialDir = startDirW.data();
-
-    // set title in UTF-16 encoding
-    std::vector<WCHAR> titleW;
-    titleW.resize(title.length() + 1);
-    if (MultiByteToWideChar(CP_UTF8, 0, title.buffer(), -1, titleW.data(), titleW.size()))
-        ofn.lpstrTitle = titleW.data();
-
-    // prepare a buffer to receive the result
-    std::vector<WCHAR> fileNameW(32768); // the Unicode maximum
-    ofn.lpstrFile = fileNameW.data();
-    ofn.nMaxFile = (DWORD)fileNameW.size();
-
-    // flags
-    ofn.Flags = OFN_PATHMUSTEXIST;
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        ofn.Flags |= OFN_FORCESHOWHIDDEN;
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonInvisible)
-        ofn.FlagsEx |= OFN_EX_NOPLACESBAR;
-
-    // TODO synchronous only, can't do better with WinAPI native dialogs.
-    // threading might work, if someone is motivated to risk it.
-    if (GetOpenFileNameW(&ofn))
-    {
-        // back to UTF-8
-        std::vector<char> fileNameA(4 * 32768);
-        if (WideCharToMultiByte(CP_UTF8, 0, fileNameW.data(), -1,
-                                fileNameA.data(), (int)fileNameA.size(),
-                                nullptr, nullptr))
-        {
-            // handle it during the next idle cycle (fake async)
-            win32SelectedFile = strdup(fileNameA.data());
-        }
-    }
-
-    if (win32SelectedFile == nullptr)
-        win32SelectedFile = kWin32SelectedFileCancelled;
-
-    return true;
-# endif
-
-# ifdef HAVE_X11
-    uint flags = 0x0;
-
-    if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x001;
-    else if (options.buttons.listAllFiles == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x002;
-
-    if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x010;
-    else if (options.buttons.showHidden == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x020;
-
-    if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleChecked)
-        flags |= 0x100;
-    else if (options.buttons.showPlaces == FileBrowserOptions::kButtonVisibleUnchecked)
-        flags |= 0x200;
-
-    return sofdFileDialogShow(view, startDir, title, flags, autoScaling ? autoScaleFactor : scaleFactor);
-# endif
-
-    return false;
+    return fileBrowserHandle != nullptr;
 }
-
-# ifdef DISTRHO_OS_MAC
-void Window::PrivateData::openPanelCallback(PuglView* const view, const char* const path)
-{
-    ((Window::PrivateData*)puglGetHandle(view))->self->onFileSelected(path);
-}
-# endif
 #endif // ! DGL_FILE_BROWSER_DISABLED
 
 // -----------------------------------------------------------------------
@@ -731,7 +614,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 
 void Window::PrivateData::onPuglExpose()
 {
-    DGL_DBGp("PUGL: onPuglExpose\n");
+    // DGL_DBG("PUGL: onPuglExpose\n");
 
     puglOnDisplayPrepare(view);
 
@@ -742,6 +625,14 @@ void Window::PrivateData::onPuglExpose()
 
         if (widget->isVisible())
             widget->pData->display();
+    }
+
+    if (char* const filename = filenameToRenderInto)
+    {
+        const PuglRect rect = puglGetFrame(view);
+        filenameToRenderInto = nullptr;
+        renderToPicture(filename, getGraphicsContext(), static_cast<uint>(rect.width), static_cast<uint>(rect.height));
+        std::free(filename);
     }
 #endif
 }
@@ -801,25 +692,7 @@ void Window::PrivateData::onPuglKey(const Widget::KeyboardEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->keyboardEvent(ev))
-            break;
-    }
-#endif
-}
-
-void Window::PrivateData::onPuglSpecial(const Widget::SpecialEvent& ev)
-{
-    DGL_DBGp("onPuglSpecial : %i %u\n", ev.press, ev.key);
-
-    if (modal.child != nullptr)
-        return modal.child->focus();
-
-#ifndef DPF_TEST_WINDOW_CPP
-    FOR_EACH_TOP_LEVEL_WIDGET_INV(rit)
-    {
-        TopLevelWidget* const widget(*rit);
-
-        if (widget->isVisible() && widget->pData->specialEvent(ev))
+        if (widget->isVisible() && widget->onKeyboard(ev))
             break;
     }
 #endif
@@ -837,7 +710,7 @@ void Window::PrivateData::onPuglText(const Widget::CharacterInputEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->characterInputEvent(ev))
+        if (widget->isVisible() && widget->onCharacterInput(ev))
             break;
     }
 #endif
@@ -855,7 +728,7 @@ void Window::PrivateData::onPuglMouse(const Widget::MouseEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->mouseEvent(ev))
+        if (widget->isVisible() && widget->onMouse(ev))
             break;
     }
 #endif
@@ -873,7 +746,7 @@ void Window::PrivateData::onPuglMotion(const Widget::MotionEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->motionEvent(ev))
+        if (widget->isVisible() && widget->onMotion(ev))
             break;
     }
 #endif
@@ -891,10 +764,82 @@ void Window::PrivateData::onPuglScroll(const Widget::ScrollEvent& ev)
     {
         TopLevelWidget* const widget(*rit);
 
-        if (widget->isVisible() && widget->pData->scrollEvent(ev))
+        if (widget->isVisible() && widget->onScroll(ev))
             break;
     }
 #endif
+}
+
+const void* Window::PrivateData::getClipboard(size_t& dataSize)
+{
+    clipboardTypeId = 0;
+    waitingForClipboardData = true,
+    waitingForClipboardEvents = true;
+
+    // begin clipboard dance here
+    if (puglPaste(view) != PUGL_SUCCESS)
+    {
+        dataSize = 0;
+        waitingForClipboardEvents = false;
+        return nullptr;
+    }
+
+   #ifdef DGL_USING_X11
+    // wait for type request, clipboardTypeId must be != 0 to be valid
+    int retry = static_cast<int>(2 / 0.03);
+    while (clipboardTypeId == 0 && waitingForClipboardData && --retry >= 0)
+    {
+        if (puglX11UpdateWithoutExposures(appData->world) != PUGL_SUCCESS)
+            break;
+    }
+   #endif
+
+    if (clipboardTypeId == 0)
+    {
+        dataSize = 0;
+        waitingForClipboardEvents = false;
+        return nullptr;
+    }
+
+   #ifdef DGL_USING_X11
+    // wait for actual data (assumes offer was accepted)
+    retry = static_cast<int>(2 / 0.03);
+    while (waitingForClipboardData && --retry >= 0)
+    {
+        if (puglX11UpdateWithoutExposures(appData->world) != PUGL_SUCCESS)
+            break;
+    }
+   #endif
+
+    if (clipboardTypeId == 0)
+    {
+        dataSize = 0;
+        waitingForClipboardEvents = false;
+        return nullptr;
+    }
+
+    waitingForClipboardEvents = false;
+    return puglGetClipboard(view, clipboardTypeId - 1, &dataSize);
+}
+
+uint32_t Window::PrivateData::onClipboardDataOffer()
+{
+    DGL_DBG("onClipboardDataOffer\n");
+
+    if ((clipboardTypeId = self->onClipboardDataOffer()) != 0)
+        return clipboardTypeId;
+
+    // stop waiting for data, it was rejected
+    waitingForClipboardData = false;
+    return 0;
+}
+
+void Window::PrivateData::onClipboardData(const uint32_t typeId)
+{
+    if (clipboardTypeId != typeId)
+        clipboardTypeId = 0;
+
+    waitingForClipboardData = false;
 }
 
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
@@ -905,8 +850,40 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 {
     Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-    printEvent(event, "pugl event: ", true);
+    if (event->type != PUGL_TIMER) {
+        printEvent(event, "pugl event: ", true);
+    }
 #endif
+
+    if (pData->waitingForClipboardEvents)
+    {
+        switch (event->type)
+        {
+        case PUGL_UPDATE:
+        case PUGL_EXPOSE:
+        case PUGL_FOCUS_IN:
+        case PUGL_FOCUS_OUT:
+        case PUGL_KEY_PRESS:
+        case PUGL_KEY_RELEASE:
+        case PUGL_TEXT:
+        case PUGL_POINTER_IN:
+        case PUGL_POINTER_OUT:
+        case PUGL_BUTTON_PRESS:
+        case PUGL_BUTTON_RELEASE:
+        case PUGL_MOTION:
+        case PUGL_SCROLL:
+        case PUGL_TIMER:
+        case PUGL_LOOP_ENTER:
+        case PUGL_LOOP_LEAVE:
+            return PUGL_SUCCESS;
+        case PUGL_DATA_OFFER:
+        case PUGL_DATA:
+            break;
+        default:
+            d_stdout("Got event %d while waitingForClipboardEvents", event->type);
+            break;
+        }
+    }
 
     switch (event->type)
     {
@@ -916,10 +893,10 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< View created, a #PuglEventCreate
     case PUGL_CREATE:
-#ifdef HAVE_X11
+       #ifdef DGL_USING_X11
         if (! pData->isEmbed)
-            puglX11SetWindowTypeAndPID(view);
-#endif
+            puglX11SetWindowTypeAndPID(view, pData->appData->isStandalone);
+       #endif
         break;
 
     ///< View destroyed, a #PuglEventDestroy
@@ -969,7 +946,6 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_KEY_RELEASE:
     {
         // unused x, y, xRoot, yRoot (double)
-        // TODO special keys?
         Widget::KeyboardEvent ev;
         ev.mod     = event->key.state;
         ev.flags   = event->key.flags;
@@ -977,8 +953,14 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.press   = event->type == PUGL_KEY_PRESS;
         ev.key     = event->key.key;
         ev.keycode = event->key.keycode;
-        if ((ev.mod & kModifierShift) != 0 && ev.key >= 'a' && ev.key <= 'z')
-            ev.key -= 'a' - 'A'; // a-z -> A-Z
+
+        // keyboard events must always be lowercase
+        if (ev.key >= 'A' && ev.key <= 'Z')
+        {
+            ev.key += 'a' - 'A'; // A-Z -> a-z
+            ev.mod |= kModifierShift;
+        }
+
         pData->onPuglKey(ev);
         break;
     }
@@ -1014,7 +996,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.mod    = event->button.state;
         ev.flags  = event->button.flags;
         ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
-        ev.button = event->button.button;
+        ev.button = event->button.button + 1;
         ev.press  = event->type == PUGL_BUTTON_PRESS;
         ev.pos    = Point<double>(event->button.x, event->button.y);
         ev.absolutePos = ev.pos;
@@ -1066,6 +1048,17 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 
     ///< Recursive loop left, a #PuglEventLoopLeave
     case PUGL_LOOP_LEAVE:
+        break;
+
+    ///< Data offered from clipboard, a #PuglDataOfferEvent
+    case PUGL_DATA_OFFER:
+        if (const uint32_t offerTypeId = pData->onClipboardDataOffer())
+            puglAcceptOffer(view, &event->offer, offerTypeId - 1);
+        break;
+
+    ///< Data available from clipboard, a #PuglDataEvent
+    case PUGL_DATA:
+        pData->onClipboardData(event->data.typeIndex + 1);
         break;
     }
 

@@ -111,6 +111,19 @@ The plugin will be treated as an effect, but it will not change the host audio."
     };
 
    /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupStereo;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
+   /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
@@ -122,10 +135,10 @@ The plugin will be treated as an effect, but it will not change the host audio."
         */
 
        /**
-          Changing parameters does not cause any realtime-unsafe operations, so we can mark them as automable.
+          Changing parameters does not cause any realtime-unsafe operations, so we can mark them as automatable.
           Also set as boolean because they work as on/off switches.
         */
-        parameter.hints = kParameterIsAutomable|kParameterIsBoolean;
+        parameter.hints = kParameterIsAutomatable|kParameterIsBoolean;
 
        /**
           Minimum 0 (off), maximum 1 (on).

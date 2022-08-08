@@ -144,6 +144,14 @@ enum NVGimageFlags {
 	NVG_IMAGE_NEAREST			= 1<<5,		// Image interpolation is Nearest instead Linear
 };
 
+enum NVGtexture {
+	NVG_TEXTURE_ALPHA,
+	NVG_TEXTURE_BGR,
+	NVG_TEXTURE_BGRA,
+	NVG_TEXTURE_RGB,
+	NVG_TEXTURE_RGBA,
+};
+
 // Begin drawing a new frame
 // Calls to nanovg drawing API should be wrapped in nvgBeginFrame() & nvgEndFrame()
 // nvgBeginFrame() defines the size of the window to render to in relation currently
@@ -271,6 +279,10 @@ void nvgLineJoin(NVGcontext* ctx, int join);
 // Sets the transparency applied to all rendered shapes.
 // Already transparent paths will get proportionally more transparent as well.
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
+void nvgGlobalTint(NVGcontext* ctx, NVGcolor tint);
+NVGcolor nvgGetGlobalTint(NVGcontext* ctx);
+void nvgAlpha(NVGcontext* ctx, float alpha);
+void nvgTint(NVGcontext* ctx, NVGcolor tint);
 
 //
 // Transforms
@@ -375,6 +387,10 @@ int nvgCreateImage(NVGcontext* ctx, const char* filename, int imageFlags);
 // Returns handle to the image.
 int nvgCreateImageMem(NVGcontext* ctx, int imageFlags, unsigned char* data, int ndata);
 
+// Creates image from specified image data and texture format.
+// Returns handle to the image.
+int nvgCreateImageRaw(NVGcontext* ctx, int w, int h, int imageFlags, enum NVGtexture format, const unsigned char* data);
+
 // Creates image from specified image data.
 // Returns handle to the image.
 int nvgCreateImageRGBA(NVGcontext* ctx, int w, int h, int imageFlags, const unsigned char* data);
@@ -414,7 +430,7 @@ NVGpaint nvgBoxGradient(NVGcontext* ctx, float x, float y, float w, float h,
 NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float outr,
 						   NVGcolor icol, NVGcolor ocol);
 
-// Creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
+// Creates and returns an image pattern. Parameters (ox,oy) specify the left-top location of the image pattern,
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
@@ -627,11 +643,6 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 //
 // Internal Render API
 //
-enum NVGtexture {
-	NVG_TEXTURE_ALPHA = 0x01,
-	NVG_TEXTURE_RGBA = 0x02,
-};
-
 struct NVGscissor {
 	float xform[6];
 	float extent[2];
@@ -660,7 +671,7 @@ typedef struct NVGpath NVGpath;
 struct NVGparams {
 	void* userPtr;
 	int edgeAntiAlias;
-	int (*renderCreate)(void* uptr);
+	int (*renderCreate)(void* uptr, void* otherUptr);
 	int (*renderCreateTexture)(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
 	int (*renderDeleteTexture)(void* uptr, int image);
 	int (*renderUpdateTexture)(void* uptr, int image, int x, int y, int w, int h, const unsigned char* data);
@@ -676,7 +687,7 @@ struct NVGparams {
 typedef struct NVGparams NVGparams;
 
 // Constructor and destructor, called by the render back-end.
-NVGcontext* nvgCreateInternal(NVGparams* params);
+NVGcontext* nvgCreateInternal(NVGparams* params, NVGcontext* other);
 void nvgDeleteInternal(NVGcontext* ctx);
 
 NVGparams* nvgInternalParams(NVGcontext* ctx);

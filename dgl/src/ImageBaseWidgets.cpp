@@ -22,8 +22,8 @@ START_NAMESPACE_DGL
 // --------------------------------------------------------------------------------------------------------------------
 
 template <class ImageType>
-ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(Window& parentWindow, const ImageType& image)
-    : StandaloneWindow(parentWindow.getApp(), parentWindow),
+ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(Window& transientParentWindow, const ImageType& image)
+    : StandaloneWindow(transientParentWindow.getApp(), transientParentWindow),
       img(image)
 {
     setResizable(false);
@@ -39,8 +39,8 @@ ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(Window& parentWindow, cons
 }
 
 template <class ImageType>
-ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(TopLevelWidget* const parentTopLevelWidget, const ImageType& image)
-    : StandaloneWindow(parentTopLevelWidget->getApp(), parentTopLevelWidget->getWindow()),
+ImageBaseAboutWindow<ImageType>::ImageBaseAboutWindow(TopLevelWidget* const topLevelWidget, const ImageType& image)
+    : StandaloneWindow(topLevelWidget->getApp(), topLevelWidget->getWindow()),
       img(image)
 {
     setResizable(false);

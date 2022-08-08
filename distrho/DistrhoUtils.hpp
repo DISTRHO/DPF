@@ -58,11 +58,18 @@ inline float round(float __x)
 #define DISTRHO_MACRO_AS_STRING_VALUE(MACRO) #MACRO
 #define DISTRHO_MACRO_AS_STRING(MACRO) DISTRHO_MACRO_AS_STRING_VALUE(MACRO)
 
-// -----------------------------------------------------------------------
-// misc functions
+/* ------------------------------------------------------------------------------------------------------------
+ * misc functions */
 
-/*
- * Return a 64-bit number from 4 8-bit numbers.
+/**
+   @defgroup MiscellaneousFunctions Miscellaneous functions
+
+   @{
+ */
+
+/**
+   Return a 32-bit number from 4 8-bit numbers.@n
+   The return type is a int64_t for better compatibility with plugin formats that use such numbers.
  */
 static inline constexpr
 int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept
@@ -70,8 +77,8 @@ int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_
     return (a << 24) | (b << 16) | (c << 8) | (d << 0);
 }
 
-/*
- * Return an hexadecimal representation of a MAJ.MIN.MICRO version number.
+/**
+   Return an hexadecimal representation of a MAJ.MIN.MICRO version number.
  */
 static inline constexpr
 uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept
@@ -79,18 +86,26 @@ uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro
     return uint32_t(major << 16) | uint32_t(minor << 8) | (micro << 0);
 }
 
-/*
- * Dummy function.
+/**
+   Dummy, no-op function.
  */
 static inline
 void d_pass() noexcept {}
 
-// -----------------------------------------------------------------------
-// string print functions
+/** @} */
 
-/*
- * Print a string to stdout with newline (gray color).
- * Does nothing if DEBUG is not defined.
+/* ------------------------------------------------------------------------------------------------------------
+ * string print functions */
+
+/**
+   @defgroup StringPrintFunctions String print functions
+
+   @{
+ */
+
+/**
+   Print a string to stdout with newline (gray color).
+   Does nothing if DEBUG is not defined.
  */
 #ifndef DEBUG
 # define d_debug(...)
@@ -109,8 +124,8 @@ void d_debug(const char* const fmt, ...) noexcept
 }
 #endif
 
-/*
- * Print a string to stdout with newline.
+/**
+   Print a string to stdout with newline.
  */
 static inline
 void d_stdout(const char* const fmt, ...) noexcept
@@ -124,8 +139,8 @@ void d_stdout(const char* const fmt, ...) noexcept
     } catch (...) {}
 }
 
-/*
- * Print a string to stderr with newline.
+/**
+   Print a string to stderr with newline.
  */
 static inline
 void d_stderr(const char* const fmt, ...) noexcept
@@ -139,8 +154,8 @@ void d_stderr(const char* const fmt, ...) noexcept
     } catch (...) {}
 }
 
-/*
- * Print a string to stderr with newline (red color).
+/**
+   Print a string to stderr with newline (red color).
  */
 static inline
 void d_stderr2(const char* const fmt, ...) noexcept
@@ -155,8 +170,8 @@ void d_stderr2(const char* const fmt, ...) noexcept
     } catch (...) {}
 }
 
-/*
- * Print a safe assertion error message.
+/**
+   Print a safe assertion error message.
  */
 static inline
 void d_safe_assert(const char* const assertion, const char* const file, const int line) noexcept
@@ -164,8 +179,8 @@ void d_safe_assert(const char* const assertion, const char* const file, const in
     d_stderr2("assertion failure: \"%s\" in file %s, line %i", assertion, file, line);
 }
 
-/*
- * Print a safe assertion error message, with 1 extra signed integer value.
+/**
+   Print a safe assertion error message, with 1 extra signed integer value.
  */
 static inline
 void d_safe_assert_int(const char* const assertion, const char* const file,
@@ -174,8 +189,8 @@ void d_safe_assert_int(const char* const assertion, const char* const file,
     d_stderr2("assertion failure: \"%s\" in file %s, line %i, value %i", assertion, file, line, value);
 }
 
-/*
- * Print a safe assertion error message, with 1 extra unsigned integer value.
+/**
+   Print a safe assertion error message, with 1 extra unsigned integer value.
  */
 static inline
 void d_safe_assert_uint(const char* const assertion, const char* const file,
@@ -184,8 +199,8 @@ void d_safe_assert_uint(const char* const assertion, const char* const file,
     d_stderr2("assertion failure: \"%s\" in file %s, line %i, value %u", assertion, file, line, value);
 }
 
-/*
- * Print a safe assertion error message, with 2 extra signed integer values.
+/**
+   Print a safe assertion error message, with 2 extra signed integer values.
  */
 static inline
 void d_safe_assert_int2(const char* const assertion, const char* const file,
@@ -194,8 +209,8 @@ void d_safe_assert_int2(const char* const assertion, const char* const file,
     d_stderr2("assertion failure: \"%s\" in file %s, line %i, v1 %i, v2 %i", assertion, file, line, v1, v2);
 }
 
-/*
- * Print a safe assertion error message, with 2 extra unsigned integer values.
+/**
+   Print a safe assertion error message, with 2 extra unsigned integer values.
  */
 static inline
 void d_safe_assert_uint2(const char* const assertion, const char* const file,
@@ -204,8 +219,8 @@ void d_safe_assert_uint2(const char* const assertion, const char* const file,
     d_stderr2("assertion failure: \"%s\" in file %s, line %i, v1 %u, v2 %u", assertion, file, line, v1, v2);
 }
 
-/*
- * Print a safe assertion error message, with a custom error message.
+/**
+   Print a safe assertion error message, with a custom error message.
  */
 static inline
 void d_custom_safe_assert(const char* const message, const char* const assertion, const char* const file,
@@ -214,8 +229,8 @@ void d_custom_safe_assert(const char* const message, const char* const assertion
     d_stderr2("assertion failure: %s, condition \"%s\" in file %s, line %i", message, assertion, file, line);
 }
 
-/*
- * Print a safe exception error message.
+/**
+   Print a safe exception error message.
  */
 static inline
 void d_safe_exception(const char* const exception, const char* const file, const int line) noexcept
@@ -223,12 +238,20 @@ void d_safe_exception(const char* const exception, const char* const file, const
     d_stderr2("exception caught: \"%s\" in file %s, line %i", exception, file, line);
 }
 
-// -----------------------------------------------------------------------
-// math functions
+/** @} */
 
-/*
- * Safely compare two floating point numbers.
- * Returns true if they match.
+/* ------------------------------------------------------------------------------------------------------------
+ * math functions */
+
+/**
+   @defgroup MathFunctions Math related functions
+
+   @{
+ */
+
+/**
+   Safely compare two floating point numbers.
+   Returns true if they match.
  */
 template<typename T>
 static inline
@@ -237,9 +260,9 @@ bool d_isEqual(const T& v1, const T& v2)
     return std::abs(v1-v2) < std::numeric_limits<T>::epsilon();
 }
 
-/*
- * Safely compare two floating point numbers.
- * Returns true if they don't match.
+/**
+   Safely compare two floating point numbers.
+   Returns true if they don't match.
  */
 template<typename T>
 static inline
@@ -248,8 +271,8 @@ bool d_isNotEqual(const T& v1, const T& v2)
     return std::abs(v1-v2) >= std::numeric_limits<T>::epsilon();
 }
 
-/*
- * Safely check if a floating point number is zero.
+/**
+   Safely check if a floating point number is zero.
  */
 template<typename T>
 static inline
@@ -258,8 +281,8 @@ bool d_isZero(const T& value)
     return std::abs(value) < std::numeric_limits<T>::epsilon();
 }
 
-/*
- * Safely check if a floating point number is not zero.
+/**
+   Safely check if a floating point number is not zero.
  */
 template<typename T>
 static inline
@@ -268,8 +291,8 @@ bool d_isNotZero(const T& value)
     return std::abs(value) >= std::numeric_limits<T>::epsilon();
 }
 
-/*
- * Get next power of 2.
+/**
+   Get next power of 2.
  */
 static inline
 uint32_t d_nextPowerOf2(uint32_t size) noexcept
@@ -285,6 +308,8 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
     size |= size >> 16;
     return ++size;
 }
+
+/** @} */
 
 // -----------------------------------------------------------------------
 

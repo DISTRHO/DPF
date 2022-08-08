@@ -22,6 +22,9 @@
 #include <list>
 
 #ifdef DISTRHO_OS_WINDOWS
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
 # include <winsock2.h>
 # include <windows.h>
 typedef HANDLE d_ThreadHandle;
@@ -30,11 +33,17 @@ typedef HANDLE d_ThreadHandle;
 typedef pthread_t d_ThreadHandle;
 #endif
 
+#ifdef DISTRHO_OS_MAC
 typedef struct PuglWorldImpl PuglWorld;
+#endif
 
 START_NAMESPACE_DGL
 
 class Window;
+
+#ifndef DISTRHO_OS_MAC
+typedef struct PuglWorldImpl PuglWorld;
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -84,9 +93,15 @@ struct Application::PrivateData {
     /** Run Pugl world update for @a timeoutInMs, and then each idle callback in order of registration. */
     void idle(uint timeoutInMs);
 
+    /** Run each idle callback without updating pugl world. */
+    void triggerIdleCallbacks();
+
     /** Set flag indicating application is quitting, and close all windows in reverse order of registration.
         For standalone mode only. */
     void quit();
+
+    /** Get time via pugl */
+    double getTime() const;
 
     /** Set pugl world class name. */
     void setClassName(const char* name);

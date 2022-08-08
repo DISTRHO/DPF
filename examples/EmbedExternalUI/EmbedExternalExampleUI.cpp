@@ -19,7 +19,8 @@
 
 #include "DistrhoUI.hpp"
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
 # import <Cocoa/Cocoa.h>
 #elif defined(DISTRHO_OS_WINDOWS)
 # define WIN32_CLASS_NAME "DPF-EmbedExternalExampleUI"
@@ -60,7 +61,9 @@ START_NAMESPACE_DISTRHO
 
 class EmbedExternalExampleUI : public UI
 {
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+    char d;
+#elif defined(DISTRHO_OS_MAC)
     NSView* fView;
     NSExternalWindow* fWindow;
 #elif defined(DISTRHO_OS_WINDOWS)
@@ -73,7 +76,9 @@ class EmbedExternalExampleUI : public UI
 public:
     EmbedExternalExampleUI()
         : UI(512, 256),
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+          d(0)
+#elif defined(DISTRHO_OS_MAC)
           fView(nullptr),
           fWindow(nullptr)
 #elif defined(DISTRHO_OS_WINDOWS)
@@ -86,7 +91,8 @@ public:
         const bool standalone = isStandalone();
         d_stdout("isStandalone %d", (int)standalone);
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         NSAutoreleasePool* const pool = [[NSAutoreleasePool alloc]init];
         [NSApplication sharedApplication];
 
@@ -218,7 +224,8 @@ public:
 
     ~EmbedExternalExampleUI()
     {
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         if (fView == nullptr)
             return;
 
@@ -274,7 +281,8 @@ protected:
     void focus() override
     {
         d_stdout("focus");
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != nullptr,);
 
         [fWindow orderFrontRegardless];
@@ -295,13 +303,14 @@ protected:
 
     uintptr_t getNativeWindowHandle() const noexcept override
     {
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         return (uintptr_t)fView;
 #elif defined(DISTRHO_OS_WINDOWS)
+        return (uintptr_t)fWindow;
 #else
         return (uintptr_t)fWindow;
 #endif
-        return 0;
     }
 
     void sizeChanged(uint width, uint height) override
@@ -309,7 +318,8 @@ protected:
         d_stdout("sizeChanged %u %u", width, height);
         UI::sizeChanged(width, height);
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         NSRect rect = [fView frame];
         rect.size = CGSizeMake((CGFloat)width, (CGFloat)height);
         [fView setFrame:rect];
@@ -329,7 +339,8 @@ protected:
     void titleChanged(const char* const title) override
     {
         d_stdout("titleChanged %s", title);
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         if (fWindow != nil)
         {
             if (NSString* const nsTitle = [[NSString alloc]
@@ -351,7 +362,8 @@ protected:
     void transientParentWindowChanged(const uintptr_t winId) override
     {
         d_stdout("transientParentWindowChanged %lu", winId);
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
 #elif defined(DISTRHO_OS_WINDOWS)
 #else
         DISTRHO_SAFE_ASSERT_RETURN(fWindow != 0,);
@@ -362,7 +374,8 @@ protected:
     void visibilityChanged(const bool visible) override
     {
         d_stdout("visibilityChanged %d", visible);
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         if (fWindow != nil)
         {
@@ -394,7 +407,8 @@ protected:
     void uiIdle() override
     {
         // d_stdout("uiIdle");
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
         if (isEmbed()) {
             return;
         }

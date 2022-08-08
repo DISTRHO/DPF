@@ -87,24 +87,6 @@ bool Widget::PrivateData::giveKeyboardEventForSubWidgets(const KeyboardEvent& ev
     return false;
 }
 
-bool Widget::PrivateData::giveSpecialEventForSubWidgets(const SpecialEvent& ev)
-{
-    if (! visible)
-        return false;
-    if (subWidgets.size() == 0)
-        return false;
-
-    FOR_EACH_SUBWIDGET_INV(rit)
-    {
-        SubWidget* const widget(*rit);
-
-        if (widget->isVisible() && widget->onSpecial(ev))
-            return true;
-    }
-
-    return false;
-}
-
 bool Widget::PrivateData::giveCharacterInputEventForSubWidgets(const CharacterInputEvent& ev)
 {
     if (! visible)
@@ -130,18 +112,15 @@ bool Widget::PrivateData::giveMouseEventForSubWidgets(MouseEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 
@@ -169,18 +148,15 @@ bool Widget::PrivateData::giveMotionEventForSubWidgets(MotionEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 
@@ -208,18 +184,15 @@ bool Widget::PrivateData::giveScrollEventForSubWidgets(ScrollEvent& ev)
     if (subWidgets.size() == 0)
         return false;
 
-    double x = ev.absolutePos.getX();
-    double y = ev.absolutePos.getY();
+    const double x = ev.absolutePos.getX();
+    const double y = ev.absolutePos.getY();
 
     if (SubWidget* const selfw = dynamic_cast<SubWidget*>(self))
     {
         if (selfw->pData->needsViewportScaling)
         {
-            x -= selfw->getAbsoluteX();
-            y -= selfw->getAbsoluteY();
-
-            ev.absolutePos.setX(x);
-            ev.absolutePos.setY(y);
+            ev.absolutePos.setX(x - selfw->getAbsoluteX() + selfw->getMargin().getX());
+            ev.absolutePos.setY(y - selfw->getAbsoluteY() + selfw->getMargin().getY());
         }
     }
 

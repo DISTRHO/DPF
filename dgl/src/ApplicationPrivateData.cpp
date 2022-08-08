@@ -45,6 +45,13 @@ static bool isThisTheMainThread(const d_ThreadHandle mainThreadHandle) noexcept
 
 // --------------------------------------------------------------------------------------------------------------------
 
+const char* Application::getClassName() const noexcept
+{
+    return puglGetClassName(pData->world);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
 Application::PrivateData::PrivateData(const bool standalone)
     : world(puglNewWorld(standalone ? PUGL_PROGRAM : PUGL_MODULE,
                          standalone ? PUGL_WORLD_THREADS : 0x0)),
@@ -60,11 +67,8 @@ Application::PrivateData::PrivateData(const bool standalone)
     DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
 
     puglSetWorldHandle(world, this);
+#ifndef __EMSCRIPTEN__
     puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
-
-#ifdef DISTRHO_OS_MAC
-    if (standalone)
-        puglMacOSActivateApp();
 #endif
 }
 
@@ -118,6 +122,11 @@ void Application::PrivateData::idle(const uint timeoutInMs)
         puglUpdate(world, timeoutInSeconds);
     }
 
+    triggerIdleCallbacks();
+}
+
+void Application::PrivateData::triggerIdleCallbacks()
+{
     for (std::list<IdleCallback*>::iterator it = idleCallbacks.begin(), ite = idleCallbacks.end(); it != ite; ++it)
     {
         IdleCallback* const idleCallback(*it);
@@ -145,6 +154,13 @@ void Application::PrivateData::quit()
         window->close();
     }
 #endif
+}
+
+double Application::PrivateData::getTime() const
+{
+    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, 0.0);
+
+    return puglGetTime(world);
 }
 
 void Application::PrivateData::setClassName(const char* const name)

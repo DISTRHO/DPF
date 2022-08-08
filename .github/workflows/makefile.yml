@@ -20,7 +20,7 @@ jobs:
     - name: Set up dependencies
       run: |
         sudo apt-get update -qq
-        sudo apt-get install -yq libasound2-dev libcairo2-dev libgl1-mesa-dev liblo-dev libpulse-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev xvfb
+        sudo apt-get install -yq libasound2-dev libcairo2-dev libdbus-1-dev libgl1-mesa-dev liblo-dev libpulse-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev xvfb
     - name: Without any warnings
       env:
         CFLAGS: -Werror
@@ -40,7 +40,7 @@ jobs:
         CXXFLAGS: -Werror -std=gnu++98
       run: |
         make clean >/dev/null
-        make -j $(nproc) VST3_FILENAME=
+        make -j $(nproc)
     - name: No namespace
       env:
         CFLAGS: -Werror

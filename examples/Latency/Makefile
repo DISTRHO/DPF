@@ -24,8 +24,9 @@ include ../../Makefile.plugins.mk
 # Enable all possible plugin types
 
 TARGETS += ladspa
-TARGETS += lv2_dsp
-TARGETS += vst
+TARGETS += lv2_sep
+TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 

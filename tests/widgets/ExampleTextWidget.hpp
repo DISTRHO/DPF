@@ -42,23 +42,28 @@ public:
     // StandaloneWindow
     explicit ExampleTextWidget(Application& app);
 
+    // helper
+    double getScaleFactor();
+
 protected:
     void onNanoDisplay() override
     {
         const int width  = BaseWidget::getWidth();
         const int height = BaseWidget::getHeight();
+        const double scaleFactor = getScaleFactor();
 
-        NanoVG::fontSize(40.0f);
+        NanoVG::fontSize(40.0f * scaleFactor);
         NanoVG::textAlign(NanoVG::Align(NanoVG::ALIGN_CENTER|NanoVG::ALIGN_MIDDLE));
-        NanoVG::textLineHeight(20.0f);
+        NanoVG::textLineHeight(20.0f * scaleFactor);
 
         NanoVG::beginPath();
         NanoVG::fillColor(220,220,220,255);
-        NanoVG::roundedRect(10, height/4+10, width-20, height/2-20, 3);
+        NanoVG::roundedRect(10 * scaleFactor, height/4 + 10 * scaleFactor,
+                            width - 20 * scaleFactor, height/2 - 20 * scaleFactor, 3 * scaleFactor);
         NanoVG::fill();
 
         NanoVG::fillColor(0,150,0,220);
-        NanoVG::textBox(10, height/2, width-20, "Hello World!", nullptr);
+        NanoVG::textBox(10 * scaleFactor, height/2, width - 20 * scaleFactor, "Hello World!", nullptr);
     }
 };
 
@@ -71,6 +76,12 @@ ExampleTextWidget<NanoSubWidget>::ExampleTextWidget(Widget* const parent)
     setSize(500, 300);
 }
 
+template<> inline
+double ExampleTextWidget<NanoSubWidget>::getScaleFactor()
+{
+    return getWindow().getScaleFactor();
+}
+
 // TopLevelWidget
 template<> inline
 ExampleTextWidget<NanoTopLevelWidget>::ExampleTextWidget(Window& windowToMapTo)
@@ -78,6 +89,12 @@ ExampleTextWidget<NanoTopLevelWidget>::ExampleTextWidget(Window& windowToMapTo)
 {
     loadSharedResources();
     setSize(500, 300);
+}
+
+template<> inline
+double ExampleTextWidget<NanoTopLevelWidget>::getScaleFactor()
+{
+    return NanoTopLevelWidget::getScaleFactor();
 }
 
 // StandaloneWindow
@@ -88,6 +105,12 @@ ExampleTextWidget<NanoStandaloneWindow>::ExampleTextWidget(Application& app)
     loadSharedResources();
     setSize(500, 300);
     done();
+}
+
+template<> inline
+double ExampleTextWidget<NanoStandaloneWindow>::getScaleFactor()
+{
+    return Window::getScaleFactor();
 }
 
 template class ExampleTextWidget<NanoSubWidget>;

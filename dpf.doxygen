@@ -242,6 +242,7 @@ SEARCH_INCLUDES        = YES
 INCLUDE_PATH           =
 INCLUDE_FILE_PATTERNS  =
 PREDEFINED             = DOXYGEN \
+                         DEBUG \
                          HAVE_CAIRO=1 \
                          HAVE_OPENGL=1 \
                          DISTRHO_PLUGIN_NAME="Plugin Name" \

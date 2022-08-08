@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -384,8 +384,8 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
 
     cairo_surface_t* const newsurface = cairo_image_surface_create_for_data(newdata, cairoformat, width, height, stride);
     DISTRHO_SAFE_ASSERT_RETURN(newsurface != nullptr,);
-    DISTRHO_SAFE_ASSERT_RETURN(s.getWidth() == cairo_image_surface_get_width(newsurface),);
-    DISTRHO_SAFE_ASSERT_RETURN(s.getHeight() == cairo_image_surface_get_height(newsurface),);
+    DISTRHO_SAFE_ASSERT_RETURN(static_cast<int>(s.getWidth()) == cairo_image_surface_get_width(newsurface),);
+    DISTRHO_SAFE_ASSERT_RETURN(static_cast<int>(s.getHeight()) == cairo_image_surface_get_height(newsurface),);
 
     cairo_surface_destroy(surface);
 
@@ -804,6 +804,13 @@ void TopLevelWidget::PrivateData::display()
 
     // now draw subwidgets if there are any
     selfw->pData->displaySubWidgets(width, height, autoScaleFactor);
+}
+
+// -----------------------------------------------------------------------
+
+void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, uint, uint)
+{
+    notImplemented("Window::PrivateData::renderToPicture");
 }
 
 // -----------------------------------------------------------------------

@@ -35,6 +35,7 @@ TARGETS += jack
 TARGETS += dssi
 TARGETS += lv2_sep
 TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 

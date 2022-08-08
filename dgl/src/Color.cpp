@@ -114,10 +114,10 @@ Color::Color(const Color& color1, const Color& color2, const float u) noexcept
     interpolate(color2, u);
 }
 
-Color Color::withAlpha(const float alpha) noexcept
+Color Color::withAlpha(const float alpha2) noexcept
 {
     Color color(*this);
-    color.alpha = alpha;
+    color.alpha = alpha2;
     return color;
 }
 

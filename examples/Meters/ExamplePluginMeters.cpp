@@ -102,6 +102,19 @@ protected:
     * Init */
 
    /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupStereo;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
+   /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
@@ -120,7 +133,7 @@ protected:
         switch (index)
         {
         case 0:
-            parameter.hints  = kParameterIsAutomable|kParameterIsInteger;
+            parameter.hints  = kParameterIsAutomatable|kParameterIsInteger;
             parameter.name   = "color";
             parameter.symbol = "color";
             parameter.enumValues.count = 2;
@@ -136,12 +149,12 @@ protected:
             }
             break;
         case 1:
-            parameter.hints  = kParameterIsAutomable|kParameterIsOutput;
+            parameter.hints  = kParameterIsAutomatable|kParameterIsOutput;
             parameter.name   = "out-left";
             parameter.symbol = "out_left";
             break;
         case 2:
-            parameter.hints  = kParameterIsAutomable|kParameterIsOutput;
+            parameter.hints  = kParameterIsAutomatable|kParameterIsOutput;
             parameter.name   = "out-right";
             parameter.symbol = "out_right";
             break;

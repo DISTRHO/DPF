@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -15,17 +15,10 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "DistrhoPluginVST.hpp"
+#include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedSafeLocale.hpp"
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
+#include "../extra/ScopedPointer.hpp"
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
@@ -44,6 +37,7 @@
 #include <clocale>
 #include <map>
 #include <string>
+#include <vector>
 
 #if VESTIGE_HEADER
 # include "vestige/vestige.h"
@@ -79,37 +73,6 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
-
-// -----------------------------------------------------------------------
-
-void strncpy(char* const dst, const char* const src, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-
-    if (const size_t len = std::min(std::strlen(src), size-1U))
-    {
-        std::memcpy(dst, src, len);
-        dst[len] = '\0';
-    }
-    else
-    {
-        dst[0] = '\0';
-    }
-}
-
-void snprintf_param(char* const dst, const float value, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, "%f", value);
-    dst[size-1] = '\0';
-}
-
-void snprintf_iparam(char* const dst, const int32_t value, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, "%d", value);
-    dst[size-1] = '\0';
-}
 
 // -----------------------------------------------------------------------
 
@@ -187,7 +150,7 @@ public:
               sendNoteCallback,
               setSizeCallback,
               nullptr, // TODO file request
-              nullptr,
+              d_nextBundlePath,
               plugin->getInstancePointer(),
               scaleFactor)
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -254,86 +217,16 @@ public:
 # endif
 
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    int handlePluginKeyEvent(const bool down, int32_t index, const intptr_t value)
+    int handlePluginKeyEvent(const bool down, const int32_t index, const intptr_t value)
     {
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
 
         using namespace DGL_NAMESPACE;
 
-        int special = 0;
-        switch (value)
-        {
-        // convert some VST special values to normal keys
-        case  1: index = kKeyBackspace; break;
-        case  2: index = '\t';          break;
-        // 3 clear
-        case  4: index = '\r';          break;
-        case  6: index = kKeyEscape;    break;
-        case  7: index = ' ';           break;
-        //  8 next
-        // 17 select
-        // 18 print
-        case 19: index = '\n';          break;
-        // 20 snapshot
-        case 22: index = kKeyDelete;    break;
-        // 23 help
-        case 57: index = '=';           break;
+        bool special;
+        const uint key = translateVstKeyCode(special, index, static_cast<int32_t>(value));
 
-        // numpad stuff follows
-        case 24: index = '0';           break;
-        case 25: index = '1';           break;
-        case 26: index = '2';           break;
-        case 27: index = '3';           break;
-        case 28: index = '4';           break;
-        case 29: index = '5';           break;
-        case 30: index = '6';           break;
-        case 31: index = '7';           break;
-        case 32: index = '8';           break;
-        case 33: index = '9';           break;
-        case 34: index = '*';           break;
-        case 35: index = '+';           break;
-        // 36 separator
-        case 37: index = '-';           break;
-        case 38: index = '.';           break;
-        case 39: index = '/';           break;
-
-        // handle rest of special keys
-        /* these special keys are missing:
-           - kKeySuper
-           - kKeyCapsLock
-           - kKeyPrintScreen
-         */
-        case 40: special = kKeyF1;         break;
-        case 41: special = kKeyF2;         break;
-        case 42: special = kKeyF3;         break;
-        case 43: special = kKeyF4;         break;
-        case 44: special = kKeyF5;         break;
-        case 45: special = kKeyF6;         break;
-        case 46: special = kKeyF7;         break;
-        case 47: special = kKeyF8;         break;
-        case 48: special = kKeyF9;         break;
-        case 49: special = kKeyF10;        break;
-        case 50: special = kKeyF11;        break;
-        case 51: special = kKeyF12;        break;
-        case 11: special = kKeyLeft;       break;
-        case 12: special = kKeyUp;         break;
-        case 13: special = kKeyRight;      break;
-        case 14: special = kKeyDown;       break;
-        case 15: special = kKeyPageUp;     break;
-        case 16: special = kKeyPageDown;   break;
-        case 10: special = kKeyHome;       break;
-        case  9: special = kKeyEnd;        break;
-        case 21: special = kKeyInsert;     break;
-        case 54: special = kKeyShift;      break;
-        case 55: special = kKeyControl;    break;
-        case 56: special = kKeyAlt;        break;
-        case 58: special = kKeyMenu;       break;
-        case 52: special = kKeyNumLock;    break;
-        case 53: special = kKeyScrollLock; break;
-        case  5: special = kKeyPause;      break;
-        }
-
-        switch (special)
+        switch (key)
         {
         case kKeyShift:
             if (down)
@@ -355,19 +248,9 @@ public:
             break;
         }
 
-        if (special != 0)
-        {
-            fUI.handlePluginSpecial(down, static_cast<Key>(special), fKeyboardModifiers);
-            return 1;
-        }
-
-        if (index > 0)
-        {
-            fUI.handlePluginKeyboard(down, static_cast<uint>(index), fKeyboardModifiers);
-            return 1;
-        }
-
-        return 0;
+        return fUI.handlePluginKeyboardVST(down, special, key,
+                                           value >= 0 ? static_cast<uint>(value) : 0,
+                                           fKeyboardModifiers) ? 1 : 0;
     }
 # endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
@@ -486,11 +369,11 @@ class PluginVst : public ParameterAndNotesHelper
 {
 public:
     PluginVst(const audioMasterCallback audioMaster, AEffect* const effect)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
           fAudioMaster(audioMaster),
           fEffect(effect)
     {
-        std::memset(fProgramName, 0, sizeof(char)*(32+1));
+        std::memset(fProgramName, 0, sizeof(fProgramName));
         std::strcpy(fProgramName, "Default");
 
         const uint32_t parameterCount = fPlugin.getParameterCount();
@@ -575,7 +458,7 @@ public:
         case effSetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(fProgramName, programName, 32);
+                strncpy(fProgramName, programName, 32);
                 return 1;
             }
             break;
@@ -583,7 +466,7 @@ public:
         case effGetProgramName:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
+                strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -591,7 +474,7 @@ public:
         case effGetProgramNameIndexed:
             if (char* const programName = (char*)ptr)
             {
-                DISTRHO_NAMESPACE::strncpy(programName, fProgramName, 24);
+                strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -621,14 +504,14 @@ public:
                     if (d_isNotEqual(value, enumValues.values[i].value))
                         continue;
 
-                    DISTRHO_NAMESPACE::strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
+                    strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
                     return 1;
                 }
 
                 if (hints & kParameterIsInteger)
-                    DISTRHO_NAMESPACE::snprintf_iparam((char*)ptr, (int32_t)value, 24);
+                    snprintf_i32((char*)ptr, (int32_t)value, 24);
                 else
-                    DISTRHO_NAMESPACE::snprintf_param((char*)ptr, value, 24);
+                    snprintf_f32((char*)ptr, value, 24);
 
                 return 1;
             }
@@ -693,7 +576,7 @@ public:
             else
             {
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
-                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                                 nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
                                  fPlugin.getInstancePointer(), fLastScaleFactor);
                 fVstRect.right  = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
@@ -725,7 +608,7 @@ public:
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const String& key = cit->first;
-                    fStateMap[key] = fPlugin.getState(key);
+                    fStateMap[key] = fPlugin.getStateValue(key);
                 }
 # endif
 
@@ -801,7 +684,7 @@ public:
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const String& key = cit->first;
-                    fStateMap[key] = fPlugin.getState(key);
+                    fStateMap[key] = fPlugin.getStateValue(key);
                 }
 # endif
 
@@ -980,8 +863,8 @@ public:
             {
                 const uint32_t hints(fPlugin.getParameterHints(index));
 
-                // must be automable, and not output
-                if ((hints & kParameterIsAutomable) != 0 && (hints & kParameterIsOutput) == 0)
+                // must be automatable, and not output
+                if ((hints & kParameterIsAutomatable) != 0 && (hints & kParameterIsOutput) == 0)
                     return 1;
             }
             break;
@@ -1020,6 +903,8 @@ public:
 #else
                     return -1;
 #endif
+                if (std::strcmp(canDo, "offline") == 0)
+                    return -1;
             }
             break;
 
@@ -1055,7 +940,7 @@ public:
 
     void vst_setParameter(const int32_t index, const float value)
     {
-        const uint32_t hints(fPlugin.getParameterHints(index));
+        const uint32_t hints = fPlugin.getParameterHints(index);
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
         // TODO figure out how to detect kVstParameterUsesIntegerMinMax host support, and skip normalization
@@ -1099,11 +984,10 @@ public:
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)hostCallback(audioMasterGetTime, 0, kWantVstTimeFlags))
         {
-            fTimePosition.frame     =   vstTimeInfo->samplePos;
-            fTimePosition.playing   =  (vstTimeInfo->flags & kVstTransportPlaying);
-            fTimePosition.bbt.valid = ((vstTimeInfo->flags & kVstTempoValid) != 0 || (vstTimeInfo->flags & kVstTimeSigValid) != 0);
+            fTimePosition.frame   = vstTimeInfo->samplePos;
+            fTimePosition.playing = vstTimeInfo->flags & kVstTransportPlaying;
 
-            // ticksPerBeat is not possible with VST
+            // ticksPerBeat is not possible with VST2
             fTimePosition.bbt.ticksPerBeat = 1920.0;
 
             if (vstTimeInfo->flags & kVstTempoValid)
@@ -1118,6 +1002,7 @@ public:
                 const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * vstTimeInfo->timeSigNumerator;
                 const double rest      =  std::fmod(barBeats, 1.0);
 
+                fTimePosition.bbt.valid       = true;
                 fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
                 fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
                 fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
@@ -1133,6 +1018,7 @@ public:
             }
             else
             {
+                fTimePosition.bbt.valid       = false;
                 fTimePosition.bbt.bar         = 1;
                 fTimePosition.bbt.beat        = 1;
                 fTimePosition.bbt.tick        = 0.0;
@@ -1193,7 +1079,7 @@ private:
     AEffect* const fEffect;
 
     // Temporary data
-    char fProgramName[32+1];
+    char fProgramName[32];
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t  fMidiEventCount;
@@ -1384,31 +1270,38 @@ struct VstObject {
 #define vstObjectPtr (VstObject*)effect->object
 #define pluginPtr    (vstObjectPtr)->plugin
 
+static ScopedPointer<PluginExporter> sPlugin;
+
 static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t index, intptr_t value, void* ptr, float opt)
 {
     // first internal init
     const bool doInternalInit = (opcode == -1729 && index == 0xdead && value == 0xf00d);
 
-    if (doInternalInit)
+    if (doInternalInit || opcode == effOpen)
     {
-        // set valid but dummy values
-        d_lastBufferSize = 512;
-        d_lastSampleRate = 44100.0;
-        d_lastCanRequestParameterValueChanges = true;
-    }
+        if (sPlugin == nullptr)
+        {
+            // set valid but dummy values
+            d_nextBufferSize = 512;
+            d_nextSampleRate = 44100.0;
+            d_nextPluginIsDummy = true;
+            d_nextCanRequestParameterValueChanges = true;
 
-    // Create dummy plugin to get data from
-    static PluginExporter plugin(nullptr, nullptr, nullptr);
+            // Create dummy plugin to get data from
+            sPlugin = new PluginExporter(nullptr, nullptr, nullptr, nullptr);
 
-    if (doInternalInit)
-    {
-        // unset
-        d_lastBufferSize = 0;
-        d_lastSampleRate = 0.0;
-        d_lastCanRequestParameterValueChanges = false;
+            // unset
+            d_nextBufferSize = 0;
+            d_nextSampleRate = 0.0;
+            d_nextPluginIsDummy = false;
+            d_nextCanRequestParameterValueChanges = false;
+        }
 
-        *(PluginExporter**)ptr = &plugin;
-        return 0;
+        if (doInternalInit)
+        {
+            *(PluginExporter**)ptr = sPlugin.get();
+            return 0;
+        }
     }
 
     // handle base opcodes
@@ -1426,15 +1319,15 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
             audioMasterCallback audioMaster = (audioMasterCallback)obj->audioMaster;
 
-            d_lastBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
-            d_lastSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
-            d_lastCanRequestParameterValueChanges = true;
+            d_nextBufferSize = audioMaster(effect, audioMasterGetBlockSize, 0, 0, nullptr, 0.0f);
+            d_nextSampleRate = audioMaster(effect, audioMasterGetSampleRate, 0, 0, nullptr, 0.0f);
+            d_nextCanRequestParameterValueChanges = true;
 
             // some hosts are not ready at this point or return 0 buffersize/samplerate
-            if (d_lastBufferSize == 0)
-                d_lastBufferSize = 2048;
-            if (d_lastSampleRate <= 0.0)
-                d_lastSampleRate = 44100.0;
+            if (d_nextBufferSize == 0)
+                d_nextBufferSize = 2048;
+            if (d_nextSampleRate <= 0.0)
+                d_nextSampleRate = 44100.0;
 
             obj->plugin = new PluginVst(audioMaster, effect);
             return 1;
@@ -1458,53 +1351,54 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
             delete obj;
 #endif
 
+            sPlugin = nullptr;
             return 1;
         }
         //delete effect;
         return 0;
 
     case effGetParamLabel:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterUnit(index), 8);
+            strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
             return 1;
         }
         return 0;
 
     case effGetParamName:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            const String& shortName(plugin.getParameterShortName(index));
+            const String& shortName(sPlugin->getParameterShortName(index));
             if (shortName.isNotEmpty())
-                DISTRHO_NAMESPACE::strncpy((char*)ptr, shortName, 16);
+                strncpy((char*)ptr, shortName, 16);
             else
-                DISTRHO_NAMESPACE::strncpy((char*)ptr, plugin.getParameterName(index), 16);
+                strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
             return 1;
         }
         return 0;
 
     case effGetParameterProperties:
-        if (ptr != nullptr && index < static_cast<int32_t>(plugin.getParameterCount()))
+        if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
             if (VstParameterProperties* const properties = (VstParameterProperties*)ptr)
             {
                 memset(properties, 0, sizeof(VstParameterProperties));
 
                 // full name
-                DISTRHO_NAMESPACE::strncpy(properties->label,
-                                           plugin.getParameterName(index),
-                                           sizeof(properties->label));
+                strncpy(properties->label,
+                        sPlugin->getParameterName(index),
+                        sizeof(properties->label));
 
                 // short name
-                const String& shortName(plugin.getParameterShortName(index));
+                const String& shortName(sPlugin->getParameterShortName(index));
 
                 if (shortName.isNotEmpty())
-                    DISTRHO_NAMESPACE::strncpy(properties->shortLabel,
-                                               plugin.getParameterShortName(index),
-                                               sizeof(properties->shortLabel));
+                    strncpy(properties->shortLabel,
+                            sPlugin->getParameterShortName(index),
+                            sizeof(properties->shortLabel));
 
                 // parameter hints
-                const uint32_t hints = plugin.getParameterHints(index);
+                const uint32_t hints = sPlugin->getParameterHints(index);
 
                 if (hints & kParameterIsOutput)
                     return 1;
@@ -1516,7 +1410,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
 
                 if (hints & kParameterIsInteger)
                 {
-                    const ParameterRanges& ranges(plugin.getParameterRanges(index));
+                    const ParameterRanges& ranges(sPlugin->getParameterRanges(index));
                     properties->flags |= kVstParameterUsesIntegerMinMax;
                     properties->minInteger = static_cast<int32_t>(ranges.min);
                     properties->maxInteger = static_cast<int32_t>(ranges.max);
@@ -1528,29 +1422,29 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
                 }
 
                 // parameter group (category in vst)
-                const uint32_t groupId = plugin.getParameterGroupId(index);
+                const uint32_t groupId = sPlugin->getParameterGroupId(index);
 
                 if (groupId != kPortGroupNone)
                 {
                     // we can't use groupId directly, so use the index array where this group is stored in
-                    for (uint32_t i=0, count=plugin.getPortGroupCount(); i < count; ++i)
+                    for (uint32_t i=0, count=sPlugin->getPortGroupCount(); i < count; ++i)
                     {
-                        const PortGroupWithId& portGroup(plugin.getPortGroupByIndex(i));
+                        const PortGroupWithId& portGroup(sPlugin->getPortGroupByIndex(i));
 
                         if (portGroup.groupId == groupId)
                         {
                             properties->category = i + 1;
-                            DISTRHO_NAMESPACE::strncpy(properties->categoryLabel,
-                                                       portGroup.name.buffer(),
-                                                       sizeof(properties->categoryLabel));
+                            strncpy(properties->categoryLabel,
+                                    portGroup.name.buffer(),
+                                    sizeof(properties->categoryLabel));
                             break;
                         }
                     }
 
                     if (properties->category != 0)
                     {
-                        for (uint32_t i=0, count=plugin.getParameterCount(); i < count; ++i)
-                            if (plugin.getParameterGroupId(i) == groupId)
+                        for (uint32_t i=0, count=sPlugin->getParameterCount(); i < count; ++i)
+                            if (sPlugin->getParameterGroupId(i) == groupId)
                                 ++properties->numParametersInCategory;
                     }
                 }
@@ -1570,7 +1464,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetEffectName:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getName(), 32);
+            strncpy(cptr, sPlugin->getName(), 32);
             return 1;
         }
         return 0;
@@ -1578,7 +1472,7 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetVendorString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getMaker(), 32);
+            strncpy(cptr, sPlugin->getMaker(), 32);
             return 1;
         }
         return 0;
@@ -1586,13 +1480,13 @@ static intptr_t vst_dispatcherCallback(AEffect* effect, int32_t opcode, int32_t 
     case effGetProductString:
         if (char* const cptr = (char*)ptr)
         {
-            DISTRHO_NAMESPACE::strncpy(cptr, plugin.getLabel(), 32);
+            strncpy(cptr, sPlugin->getLabel(), 32);
             return 1;
         }
         return 0;
 
     case effGetVendorVersion:
-        return plugin.getVersion();
+        return sPlugin->getVersion();
 
     case effGetVstVersion:
         return kVstVersion;
@@ -1635,12 +1529,26 @@ static void vst_processReplacingCallback(AEffect* effect, float** inputs, float*
 #undef validPlugin
 #undef vstObjectPtr
 
+static struct Cleanup {
+    std::vector<AEffect*> effects;
+
+    ~Cleanup()
+    {
+        for (std::vector<AEffect*>::iterator it = effects.begin(), end = effects.end(); it != end; ++it)
+        {
+            AEffect* const effect = *it;
+            delete (VstObject*)effect->object;
+            delete effect;
+        }
+    }
+} sCleanup;
+
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 
 DISTRHO_PLUGIN_EXPORT
-#if DISTRHO_OS_WINDOWS || DISTRHO_OS_MAC
+#if DISTRHO_OS_MAC || DISTRHO_OS_WASM || DISTRHO_OS_WINDOWS
 const AEffect* VSTPluginMain(audioMasterCallback audioMaster);
 #else
 const AEffect* VSTPluginMain(audioMasterCallback audioMaster) asm ("main");
@@ -1654,6 +1562,32 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     // old version
     if (audioMaster(nullptr, audioMasterVersion, 0, 0, nullptr, 0.0f) == 0)
         return nullptr;
+
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+#ifdef DISTRHO_OS_MAC
+        if (tmpPath.endsWith("/MacOS"))
+        {
+            tmpPath.truncate(tmpPath.rfind('/'));
+            if (tmpPath.endsWith("/Contents"))
+            {
+                tmpPath.truncate(tmpPath.rfind('/'));
+                bundlePath = tmpPath;
+                d_nextBundlePath = bundlePath.buffer();
+            }
+        }
+#else
+        if (tmpPath.endsWith(".vst"))
+        {
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+#endif
+    }
 
     // first internal init
     PluginExporter* plugin = nullptr;
@@ -1714,12 +1648,13 @@ const AEffect* VSTPluginMain(audioMasterCallback audioMaster)
     effect->processReplacing = vst_processReplacingCallback;
 
     // pointers
-    VstObject* const obj(new VstObject());
+    VstObject* const obj = new VstObject();
     obj->audioMaster = audioMaster;
     obj->plugin      = nullptr;
 
     // done
     effect->object = obj;
+    sCleanup.effects.push_back(effect);
 
     return effect;
 }

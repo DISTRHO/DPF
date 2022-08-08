@@ -7,7 +7,7 @@ DPF is designed to make development of new plugins an easy and enjoyable task.<b
 It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
 The framework facilitates exporting various different plugin formats from the same code-base.<br/>
 
-DPF can build for LADSPA, DSSI, LV2 and VST formats.<br/>
+DPF can build for LADSPA, DSSI, LV2, VST2 and VST3 formats.<br/>
 All current plugin format implementations are complete.<br/>
 A JACK/Standalone mode is also available, allowing you to quickly test plugins.<br/>
 
@@ -17,6 +17,12 @@ You send messages from the UI to the DSP side, which is automatically saved in t
 
 Getting time information from the host is possible.<br/>
 It uses the same format as the JACK Transport API, making porting some code easier.<br/>
+
+
+## Licensing
+
+DPF is released under ISC, which basically means you can do whatever you want as long as you credit the original authors.  
+Some plugin formats may have additional restrictions, see [LICENSING.md](LICENSING.md) for details.
 
 
 ## Help and documentation

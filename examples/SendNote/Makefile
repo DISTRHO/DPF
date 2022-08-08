@@ -29,12 +29,11 @@ include ../../Makefile.plugins.mk
 
 ifeq ($(HAVE_OPENGL),true)
 TARGETS += jack
-TARGETS += lv2_sep
-else
-TARGETS += lv2_dsp
 endif
 
-TARGETS += vst
+TARGETS += lv2_sep
+TARGETS += vst2
+TARGETS += vst3
 
 all: $(TARGETS)
 

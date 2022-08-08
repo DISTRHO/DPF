@@ -18,6 +18,28 @@
 #ifndef NANOVG_GL_H
 #define NANOVG_GL_H
 
+#if defined NANOVG_GL2_FORCED
+#  undef NANOVG_GL3
+#  undef NANOVG_GLES2
+#  undef NANOVG_GLES3
+#  define NANOVG_GL2 1
+#elif defined NANOVG_GL3_FORCED
+#  undef NANOVG_GL2
+#  undef NANOVG_GLES2
+#  undef NANOVG_GLES3
+#  define NANOVG_GL3 1
+#elif defined NANOVG_GLES2_FORCED
+#  undef NANOVG_GL2
+#  undef NANOVG_GL3
+#  undef NANOVG_GLES3
+#  define NANOVG_GLES2 1
+#elif defined NANOVG_GLES3_FORCED
+#  undef NANOVG_GL2
+#  undef NANOVG_GL3
+#  undef NANOVG_GLES2
+#  define NANOVG_GLES3 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -40,9 +62,7 @@ enum NVGcreateFlags {
 #elif defined NANOVG_GL3_IMPLEMENTATION
 #  define NANOVG_GL3 1
 #  define NANOVG_GL_IMPLEMENTATION 1
-#  ifndef __APPLE__
-#   define NANOVG_GL_USE_UNIFORMBUFFER 1
-#  endif
+#  define NANOVG_GL_USE_UNIFORMBUFFER 1
 #elif defined NANOVG_GLES2_IMPLEMENTATION
 #  define NANOVG_GLES2 1
 #  define NANOVG_GL_IMPLEMENTATION 1
@@ -59,6 +79,7 @@ enum NVGcreateFlags {
 #if defined NANOVG_GL2
 
 NVGcontext* nvgCreateGL2(int flags);
+NVGcontext* nvgCreateSharedGL2(NVGcontext* other, int flags);
 void nvgDeleteGL2(NVGcontext* ctx);
 
 int nvglCreateImageFromHandleGL2(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
@@ -69,6 +90,7 @@ GLuint nvglImageHandleGL2(NVGcontext* ctx, int image);
 #if defined NANOVG_GL3
 
 NVGcontext* nvgCreateGL3(int flags);
+NVGcontext* nvgCreateSharedGL3(NVGcontext* other, int flags);
 void nvgDeleteGL3(NVGcontext* ctx);
 
 int nvglCreateImageFromHandleGL3(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
@@ -79,6 +101,7 @@ GLuint nvglImageHandleGL3(NVGcontext* ctx, int image);
 #if defined NANOVG_GLES2
 
 NVGcontext* nvgCreateGLES2(int flags);
+NVGcontext* nvgCreateSharedGLES2(NVGcontext* other, int flags);
 void nvgDeleteGLES2(NVGcontext* ctx);
 
 int nvglCreateImageFromHandleGLES2(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
@@ -89,6 +112,7 @@ GLuint nvglImageHandleGLES2(NVGcontext* ctx, int image);
 #if defined NANOVG_GLES3
 
 NVGcontext* nvgCreateGLES3(int flags);
+NVGcontext* nvgCreateSharedGLES3(NVGcontext* other, int flags);
 void nvgDeleteGLES3(NVGcontext* ctx);
 
 int nvglCreateImageFromHandleGLES3(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
@@ -149,6 +173,9 @@ struct GLNVGtexture {
 	int width, height;
 	int type;
 	int flags;
+#if defined NANOVG_GLES2
+	unsigned char* data;
+#endif
 };
 typedef struct GLNVGtexture GLNVGtexture;
 
@@ -230,13 +257,19 @@ struct GLNVGfragUniforms {
 };
 typedef struct GLNVGfragUniforms GLNVGfragUniforms;
 
-struct GLNVGcontext {
-	GLNVGshader shader;
+struct GLNVGtextureContext {  // Textures; shared between shared NanoVG contexts.
+	int refCount;
 	GLNVGtexture* textures;
-	float view[2];
 	int ntextures;
 	int ctextures;
 	int textureId;
+};
+typedef struct GLNVGtextureContext GLNVGtextureContext;
+
+struct GLNVGcontext {
+	GLNVGshader shader;
+	GLNVGtextureContext* textureContext;
+	float view[2];
 	GLuint vertBuf;
 #if defined NANOVG_GL3
 	GLuint vertArr;
@@ -352,26 +385,26 @@ static GLNVGtexture* glnvg__allocTexture(GLNVGcontext* gl)
 	GLNVGtexture* tex = NULL;
 	int i;
 
-	for (i = 0; i < gl->ntextures; i++) {
-		if (gl->textures[i].id == 0) {
-			tex = &gl->textures[i];
+	for (i = 0; i < gl->textureContext->ntextures; i++) {
+		if (gl->textureContext->textures[i].id == 0) {
+			tex = &gl->textureContext->textures[i];
 			break;
 		}
 	}
 	if (tex == NULL) {
-		if (gl->ntextures+1 > gl->ctextures) {
+		if (gl->textureContext->ntextures+1 > gl->textureContext->ctextures) {
 			GLNVGtexture* textures;
-			int ctextures = glnvg__maxi(gl->ntextures+1, 4) +  gl->ctextures/2; // 1.5x Overallocate
-			textures = (GLNVGtexture*)realloc(gl->textures, sizeof(GLNVGtexture)*ctextures);
+			int ctextures = glnvg__maxi(gl->textureContext->ntextures+1, 4) +  gl->textureContext->ctextures/2; // 1.5x Overallocate
+			textures = (GLNVGtexture*)realloc(gl->textureContext->textures, sizeof(GLNVGtexture)*ctextures);
 			if (textures == NULL) return NULL;
-			gl->textures = textures;
-			gl->ctextures = ctextures;
+			gl->textureContext->textures = textures;
+			gl->textureContext->ctextures = ctextures;
 		}
-		tex = &gl->textures[gl->ntextures++];
+		tex = &gl->textureContext->textures[gl->textureContext->ntextures++];
 	}
 
 	memset(tex, 0, sizeof(*tex));
-	tex->id = ++gl->textureId;
+	tex->id = ++gl->textureContext->textureId;
 
 	return tex;
 }
@@ -379,20 +412,25 @@ static GLNVGtexture* glnvg__allocTexture(GLNVGcontext* gl)
 static GLNVGtexture* glnvg__findTexture(GLNVGcontext* gl, int id)
 {
 	int i;
-	for (i = 0; i < gl->ntextures; i++)
-		if (gl->textures[i].id == id)
-			return &gl->textures[i];
+	for (i = 0; i < gl->textureContext->ntextures; i++)
+		if (gl->textureContext->textures[i].id == id)
+			return &gl->textureContext->textures[i];
 	return NULL;
 }
 
 static int glnvg__deleteTexture(GLNVGcontext* gl, int id)
 {
 	int i;
-	for (i = 0; i < gl->ntextures; i++) {
-		if (gl->textures[i].id == id) {
-			if (gl->textures[i].tex != 0 && (gl->textures[i].flags & NVG_IMAGE_NODELETE) == 0)
-				glDeleteTextures(1, &gl->textures[i].tex);
-			memset(&gl->textures[i], 0, sizeof(gl->textures[i]));
+	for (i = 0; i < gl->textureContext->ntextures; i++) {
+		if (gl->textureContext->textures[i].id == id) {
+			if (gl->textureContext->textures[i].tex != 0 && (gl->textureContext->textures[i].flags & NVG_IMAGE_NODELETE) == 0)
+			{
+				glDeleteTextures(1, &gl->textureContext->textures[i].tex);
+#if defined NANOVG_GLES2
+				free(gl->textureContext->textures[i].data);
+#endif
+			}
+			memset(&gl->textureContext->textures[i], 0, sizeof(gl->textureContext->textures[i]));
 			return 1;
 		}
 	}
@@ -506,9 +544,20 @@ static void glnvg__getUniforms(GLNVGshader* shader)
 
 static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
 
-static int glnvg__renderCreate(void* uptr)
+static int glnvg__renderCreate(void* uptr, void* otherUptr)   // Share the textures of GLNVGcontext 'otherUptr' if it's non-NULL.
 {
 	GLNVGcontext* gl = (GLNVGcontext*)uptr;
+
+	if (otherUptr) {
+	    GLNVGcontext* other = (GLNVGcontext*)otherUptr;
+		gl->textureContext = other->textureContext;
+		gl->textureContext->refCount++;
+	} else {
+		gl->textureContext = (GLNVGtextureContext*)malloc(sizeof(GLNVGtextureContext));
+		memset(gl->textureContext, 0, sizeof(GLNVGtextureContext));
+		gl->textureContext->refCount = 1;
+	}
+
 	int align = 4;
 
 	// TODO: mediump float may not be enough for GLES2 in iOS.
@@ -734,7 +783,7 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 		}
 		// No mips.
 		if (imageFlags & NVG_IMAGE_GENERATE_MIPMAPS) {
-			printf("Mip-maps is not support for non power-of-two textures (%d x %d)\n", w, h);
+			printf("Mip-maps is not supported for non power-of-two textures (%d x %d)\n", w, h);
 			imageFlags &= ~NVG_IMAGE_GENERATE_MIPMAPS;
 		}
 	}
@@ -761,9 +810,48 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 	}
 #endif
 
-	if (type == NVG_TEXTURE_RGBA)
+	switch (type)
+	{
+	case NVG_TEXTURE_BGR:
+#if NANOVG_GLES2
+		// GLES2 cannot handle GL_BGR, do local conversion to GL_RGB
+		tex->data = (uint8_t*)malloc(sizeof(uint8_t) * 3 * w * h);
+		for (uint32_t i=0; i<w*h; ++i)
+		{
+			tex->data[i*3+0] = data[i*3+2];
+			tex->data[i*3+1] = data[i*3+1];
+			tex->data[i*3+2] = data[i*3+0];
+		}
+		data = tex->data;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+#else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_BGR, GL_UNSIGNED_BYTE, data);
+#endif
+		break;
+	case NVG_TEXTURE_BGRA:
+#if NANOVG_GLES2
+		// GLES2 cannot handle GL_BGRA, do local conversion to GL_RGBA
+		tex->data = (uint8_t*)malloc(sizeof(uint8_t) * 4 * w * h);
+		for (uint32_t i=0; i<w*h; ++i)
+		{
+			tex->data[i*3+0] = data[i*3+3];
+			tex->data[i*3+1] = data[i*3+2];
+			tex->data[i*3+2] = data[i*3+1];
+			tex->data[i*3+3] = data[i*3+0];
+		}
+		data = tex->data;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+#else
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_BGRA, GL_UNSIGNED_BYTE, data);
+#endif
+		break;
+	case NVG_TEXTURE_RGB:
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGBA:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	else
+		break;
+	default:
 #if defined(NANOVG_GLES2) || defined (NANOVG_GL2)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, w, h, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 #elif defined(NANOVG_GLES3)
@@ -771,6 +859,8 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 #else
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, w, h, 0, GL_RED, GL_UNSIGNED_BYTE, data);
 #endif
+		break;
+	}
 
 	if (imageFlags & NVG_IMAGE_GENERATE_MIPMAPS) {
 		if (imageFlags & NVG_IMAGE_NEAREST) {
@@ -845,22 +935,50 @@ static int glnvg__renderUpdateTexture(void* uptr, int image, int x, int y, int w
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
 #else
 	// No support for all of skip, need to update a whole row at a time.
-	if (tex->type == NVG_TEXTURE_RGBA)
+	switch (tex->type)
+	{
+	case NVG_TEXTURE_BGR:
+		data += y*tex->width*3;
+		break;
+	case NVG_TEXTURE_BGRA:
 		data += y*tex->width*4;
-	else
+		break;
+	case NVG_TEXTURE_RGB:
+		data += y*tex->width*3;
+		break;
+	case NVG_TEXTURE_RGBA:
+		data += y*tex->width*4;
+		break;
+	default:
 		data += y*tex->width;
+		break;
+	}
 	x = 0;
 	w = tex->width;
 #endif
 
-	if (tex->type == NVG_TEXTURE_RGBA)
+	switch (tex->type)
+	{
+	case NVG_TEXTURE_BGR:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_BGR, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_BGRA:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_BGRA, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGB:
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RGB, GL_UNSIGNED_BYTE, data);
+		break;
+	case NVG_TEXTURE_RGBA:
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RGBA, GL_UNSIGNED_BYTE, data);
-	else
+		break;
+	default:
 #if defined(NANOVG_GLES2) || defined(NANOVG_GL2)
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
 #else
 		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RED, GL_UNSIGNED_BYTE, data);
 #endif
+		break;
+	}
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 #ifndef NANOVG_GLES2
@@ -956,15 +1074,31 @@ static int glnvg__convertPaint(GLNVGcontext* gl, GLNVGfragUniforms* frag, NVGpai
 		frag->type = NSVG_SHADER_FILLIMG;
 
 		#if NANOVG_GL_USE_UNIFORMBUFFER
-		if (tex->type == NVG_TEXTURE_RGBA)
+		switch (tex->type)
+		{
+		case NVG_TEXTURE_BGR:
+		case NVG_TEXTURE_BGRA:
+		case NVG_TEXTURE_RGB:
+		case NVG_TEXTURE_RGBA:
 			frag->texType = (tex->flags & NVG_IMAGE_PREMULTIPLIED) ? 0 : 1;
-		else
+			break;
+		default:
 			frag->texType = 2;
+			break;
+		}
 		#else
-		if (tex->type == NVG_TEXTURE_RGBA)
+		switch (tex->type)
+		{
+		case NVG_TEXTURE_BGR:
+		case NVG_TEXTURE_BGRA:
+		case NVG_TEXTURE_RGB:
+		case NVG_TEXTURE_RGBA:
 			frag->texType = (tex->flags & NVG_IMAGE_PREMULTIPLIED) ? 0.0f : 1.0f;
-		else
+			break;
+		default:
 			frag->texType = 2.0f;
+			break;
+		}
 		#endif
 //		printf("frag->texType = %d\n", frag->texType);
 	} else {
@@ -1547,11 +1681,14 @@ static void glnvg__renderDelete(void* uptr)
 	if (gl->vertBuf != 0)
 		glDeleteBuffers(1, &gl->vertBuf);
 
-	for (i = 0; i < gl->ntextures; i++) {
-		if (gl->textures[i].tex != 0 && (gl->textures[i].flags & NVG_IMAGE_NODELETE) == 0)
-			glDeleteTextures(1, &gl->textures[i].tex);
+	if (gl->textureContext != NULL && --gl->textureContext->refCount == 0) {
+		for (i = 0; i < gl->textureContext->ntextures; i++) {
+			if (gl->textureContext->textures[i].tex != 0 && (gl->textureContext->textures[i].flags & NVG_IMAGE_NODELETE) == 0)
+				glDeleteTextures(1, &gl->textureContext->textures[i].tex);
+		}
+		free(gl->textureContext->textures);
+		free(gl->textureContext);
 	}
-	free(gl->textures);
 
 	free(gl->paths);
 	free(gl->verts);
@@ -1570,6 +1707,28 @@ NVGcontext* nvgCreateGL3(int flags)
 NVGcontext* nvgCreateGLES2(int flags)
 #elif defined NANOVG_GLES3
 NVGcontext* nvgCreateGLES3(int flags)
+#endif
+{
+#if defined NANOVG_GL2
+	return nvgCreateSharedGL2(NULL, flags);
+#elif defined NANOVG_GL3
+	return nvgCreateSharedGL3(NULL, flags);
+#elif defined NANOVG_GLES2
+	return nvgCreateSharedGLES2(NULL, flags);
+#elif defined NANOVG_GLES3
+	return nvgCreateSharedGLES3(NULL, flags);
+#endif
+}
+
+// Share the fonts and textures of 'other' if it's non-NULL.
+#if defined NANOVG_GL2
+NVGcontext* nvgCreateSharedGL2(NVGcontext* other, int flags)
+#elif defined NANOVG_GL3
+NVGcontext* nvgCreateSharedGL3(NVGcontext* other, int flags)
+#elif defined NANOVG_GLES2
+NVGcontext* nvgCreateSharedGLES2(NVGcontext* other, int flags)
+#elif defined NANOVG_GLES3
+NVGcontext* nvgCreateSharedGLES3(NVGcontext* other, int flags)
 #endif
 {
 	NVGparams params;
@@ -1596,7 +1755,7 @@ NVGcontext* nvgCreateGLES3(int flags)
 
 	gl->flags = flags;
 
-	ctx = nvgCreateInternal(&params);
+	ctx = nvgCreateInternal(&params, other);
 	if (ctx == NULL) goto error;
 
 	return ctx;

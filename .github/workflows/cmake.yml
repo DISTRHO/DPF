@@ -30,6 +30,7 @@ jobs:
           liblo-dev \
           libgl-dev \
           libcairo2-dev \
+          libdbus-1-dev \
           libx11-dev
     - name: Create Build Environment
       shell: bash
@@ -55,7 +56,7 @@ jobs:
         path: ${{runner.workspace}}/build/bin/
 
   cmake_macos:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
     - uses: actions/checkout@v2
       with:

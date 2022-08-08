@@ -54,6 +54,18 @@ DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
+# ifdef DGL_USE_NANOVG_FBO
+DGL_EXT(PFNGLCHECKFRAMEBUFFERSTATUSPROC,   glCheckFramebufferStatus)
+DGL_EXT(PFNGLBINDFRAMEBUFFERPROC,          glBindFramebuffer)
+DGL_EXT(PFNGLBINDRENDERBUFFERPROC,         glBindRenderbuffer)
+DGL_EXT(PFNGLDELETEFRAMEBUFFERSPROC,       glDeleteFramebuffers)
+DGL_EXT(PFNGLDELETERENDERBUFFERSPROC,      glDeleteRenderbuffers)
+DGL_EXT(PFNGLFRAMEBUFFERTEXTURE2DPROC,     glFramebufferTexture2D)
+DGL_EXT(PFNGLFRAMEBUFFERRENDERBUFFERPROC,  glFramebufferRenderbuffer)
+DGL_EXT(PFNGLGENFRAMEBUFFERSPROC,          glGenFramebuffers)
+DGL_EXT(PFNGLGENRENDERBUFFERSPROC,         glGenRenderbuffers)
+DGL_EXT(PFNGLRENDERBUFFERSTORAGEPROC,      glRenderbufferStorage)
+# endif
 # ifdef DGL_USE_OPENGL3
 DGL_EXT(PFNGLBINDBUFFERRANGEPROC,          glBindBufferRange)
 DGL_EXT(PFNGLBINDVERTEXARRAYPROC,          glBindVertexArray)
@@ -70,13 +82,15 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 // Include NanoVG OpenGL implementation
 
 //#define STB_IMAGE_STATIC
-#ifdef DGL_USE_OPENGL3
+#if defined(DGL_USE_GLES2)
+# define NANOVG_GLES2_IMPLEMENTATION
+#elif defined(DGL_USE_OPENGL3)
 # define NANOVG_GL3_IMPLEMENTATION
 #else
 # define NANOVG_GL2_IMPLEMENTATION
 #endif
 
-#if defined(DISTRHO_OS_MAC) && defined(NANOVG_GL3_IMPLEMENTATION)
+#if defined(DISTRHO_OS_MAC) && defined(NANOVG_GL2_IMPLEMENTATION)
 # define glBindVertexArray glBindVertexArrayAPPLE
 # define glDeleteVertexArrays glDeleteVertexArraysAPPLE
 # define glGenVertexArrays glGenVertexArraysAPPLE
@@ -84,29 +98,38 @@ DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 
 #include "nanovg/nanovg_gl.h"
 
+#ifdef DGL_USE_NANOVG_FBO
+# define NANOVG_FBO_VALID 1
+# include "nanovg/nanovg_gl_utils.h"
+#endif
+
 #if defined(NANOVG_GL2)
-# define nvgCreateGL nvgCreateGL2
+# define nvgCreateGLfn nvgCreateGL2
 # define nvgDeleteGL nvgDeleteGL2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL2
 # define nvglImageHandle nvglImageHandleGL2
 #elif defined(NANOVG_GL3)
-# define nvgCreateGL nvgCreateGL3
+# define nvgCreateGLfn nvgCreateGL3
 # define nvgDeleteGL nvgDeleteGL3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGL3
 # define nvglImageHandle nvglImageHandleGL3
 #elif defined(NANOVG_GLES2)
-# define nvgCreateGL nvgCreateGLES2
+# define nvgCreateGLfn nvgCreateGLES2
 # define nvgDeleteGL nvgDeleteGLES2
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES2
 # define nvglImageHandle nvglImageHandleGLES2
 #elif defined(NANOVG_GLES3)
-# define nvgCreateGL nvgCreateGLES3
+# define nvgCreateGLfn nvgCreateGLES3
 # define nvgDeleteGL nvgDeleteGLES3
 # define nvglCreateImageFromHandle nvglCreateImageFromHandleGLES3
 # define nvglImageHandle nvglImageHandleGLES3
 #endif
 
-static NVGcontext* nvgCreateGL_helper(int flags)
+// -----------------------------------------------------------------------
+
+START_NAMESPACE_DGL
+
+NVGcontext* nvgCreateGL(int flags)
 {
 #if defined(DISTRHO_OS_WINDOWS)
 # if defined(__GNUC__) && (__GNUC__ >= 9)
@@ -117,6 +140,11 @@ static NVGcontext* nvgCreateGL_helper(int flags)
 # define DGL_EXT(PROC, func) \
       if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
       DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, nullptr);
+# define DGL_EXT2(PROC, func, fallback) \
+      if (needsInit) { \
+        func = (PROC) wglGetProcAddress ( #func ); \
+        if (func == nullptr) func = (PROC) wglGetProcAddress ( #fallback ); \
+      } DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, nullptr);
 DGL_EXT(PFNGLACTIVETEXTUREPROC,            glActiveTexture)
 DGL_EXT(PFNGLATTACHSHADERPROC,             glAttachShader)
 DGL_EXT(PFNGLBINDATTRIBLOCATIONPROC,       glBindAttribLocation)
@@ -145,6 +173,18 @@ DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
 DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
 DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 DGL_EXT(PFNGLBLENDFUNCSEPARATEPROC,        glBlendFuncSeparate)
+# ifdef DGL_USE_NANOVG_FBO
+DGL_EXT(PFNGLCHECKFRAMEBUFFERSTATUSPROC,   glCheckFramebufferStatus)
+DGL_EXT2(PFNGLBINDFRAMEBUFFERPROC,         glBindFramebuffer,         glBindFramebufferEXT)
+DGL_EXT2(PFNGLBINDRENDERBUFFERPROC,        glBindRenderbuffer,        glBindRenderbufferEXT)
+DGL_EXT2(PFNGLDELETEFRAMEBUFFERSPROC,      glDeleteFramebuffers,      glDeleteFramebuffersEXT)
+DGL_EXT2(PFNGLDELETERENDERBUFFERSPROC,     glDeleteRenderbuffers,     glDeleteRenderbuffersEXT)
+DGL_EXT2(PFNGLFRAMEBUFFERTEXTURE2DPROC,    glFramebufferTexture2D,    glFramebufferTexture2DEXT)
+DGL_EXT2(PFNGLFRAMEBUFFERRENDERBUFFERPROC, glFramebufferRenderbuffer, glFramebufferRenderbufferEXT)
+DGL_EXT2(PFNGLGENFRAMEBUFFERSPROC,         glGenFramebuffers,         glGenFramebuffersEXT)
+DGL_EXT2(PFNGLGENRENDERBUFFERSPROC,        glGenRenderbuffers,        glGenRenderbuffersEXT)
+DGL_EXT2(PFNGLRENDERBUFFERSTORAGEPROC,     glRenderbufferStorage,     glRenderbufferStorageEXT)
+# endif
 # ifdef DGL_USE_OPENGL3
 DGL_EXT(PFNGLBINDBUFFERRANGEPROC,          glBindBufferRange)
 DGL_EXT(PFNGLBINDVERTEXARRAYPROC,          glBindVertexArray)
@@ -155,17 +195,14 @@ DGL_EXT(PFNGLGENVERTEXARRAYSPROC,          glGenVertexArrays)
 DGL_EXT(PFNGLUNIFORMBLOCKBINDINGPROC,      glUniformBlockBinding)
 # endif
 # undef DGL_EXT
+# undef DGL_EXT2
     needsInit = false;
 # if defined(__GNUC__) && (__GNUC__ >= 9)
 #  pragma GCC diagnostic pop
 # endif
 #endif
-    return nvgCreateGL(flags);
+    return nvgCreateGLfn(flags);
 }
-
-// -----------------------------------------------------------------------
-
-START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 // DGL Color class conversion
@@ -215,6 +252,7 @@ NanoImage& NanoImage::operator=(const Handle& handle)
 
     fHandle.context = handle.context;
     fHandle.imageId = handle.imageId;
+    _updateSize();
 
     return *this;
 }
@@ -282,13 +320,16 @@ NanoVG::Paint::operator NVGpaint() const noexcept
 // NanoVG
 
 NanoVG::NanoVG(int flags)
-    : fContext(nvgCreateGL_helper(flags)),
+    : fContext(nvgCreateGL(flags)),
       fInFrame(false),
-      fIsSubWidget(false) {}
+      fIsSubWidget(false)
+{
+    DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
+}
 
 NanoVG::~NanoVG()
 {
-    DISTRHO_SAFE_ASSERT(! fInFrame);
+    DISTRHO_CUSTOM_SAFE_ASSERT("Destroying NanoVG context with still active frame", ! fInFrame);
 
     if (fContext != nullptr && ! fIsSubWidget)
         nvgDeleteGL(fContext);
@@ -483,6 +524,12 @@ void NanoVG::globalAlpha(float alpha)
         nvgGlobalAlpha(fContext, alpha);
 }
 
+void NanoVG::globalTint(Color tint)
+{
+    if (fContext != nullptr)
+        nvgGlobalTint(fContext, tint);
+}
+
 // -----------------------------------------------------------------------
 // Transforms
 
@@ -631,6 +678,45 @@ NanoImage::Handle NanoVG::createImageFromMemory(uchar* data, uint dataSize, int 
     return NanoImage::Handle(fContext, nvgCreateImageMem(fContext, imageFlags, data,static_cast<int>(dataSize)));
 }
 
+NanoImage::Handle NanoVG::createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                                   ImageFlags imageFlags, ImageFormat format)
+{
+    return createImageFromRawMemory(w, h, data, static_cast<int>(imageFlags), format);
+}
+
+NanoImage::Handle NanoVG::createImageFromRawMemory(uint w, uint h, const uchar* data,
+                                                   int imageFlags, ImageFormat format)
+{
+    if (fContext == nullptr) return NanoImage::Handle();
+    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, NanoImage::Handle());
+
+    NVGtexture nvgformat;
+    switch (format)
+    {
+    case kImageFormatGrayscale:
+        nvgformat = NVG_TEXTURE_ALPHA;
+        break;
+    case kImageFormatBGR:
+        nvgformat = NVG_TEXTURE_BGR;
+        break;
+    case kImageFormatBGRA:
+        nvgformat = NVG_TEXTURE_BGRA;
+        break;
+    case kImageFormatRGB:
+        nvgformat = NVG_TEXTURE_RGB;
+        break;
+    case kImageFormatRGBA:
+        nvgformat = NVG_TEXTURE_RGBA;
+        break;
+    default:
+        return NanoImage::Handle();
+    }
+
+    return NanoImage::Handle(fContext, nvgCreateImageRaw(fContext,
+                                                         static_cast<int>(w),
+                                                         static_cast<int>(h), imageFlags, nvgformat, data));
+}
+
 NanoImage::Handle NanoVG::createImageFromRGBA(uint w, uint h, const uchar* data, ImageFlags imageFlags)
 {
     return createImageFromRGBA(w, h, data, static_cast<int>(imageFlags));
@@ -646,12 +732,14 @@ NanoImage::Handle NanoVG::createImageFromRGBA(uint w, uint h, const uchar* data,
                                                           static_cast<int>(h), imageFlags, data));
 }
 
-NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h, ImageFlags imageFlags, bool deleteTexture)
+NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h,
+                                                       ImageFlags imageFlags, bool deleteTexture)
 {
     return createImageFromTextureHandle(textureId, w, h, static_cast<int>(imageFlags), deleteTexture);
 }
 
-NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h, int imageFlags, bool deleteTexture)
+NanoImage::Handle NanoVG::createImageFromTextureHandle(GLuint textureId, uint w, uint h,
+                                                       int imageFlags, bool deleteTexture)
 {
     if (fContext == nullptr) return NanoImage::Handle();
     DISTRHO_SAFE_ASSERT_RETURN(textureId != 0, NanoImage::Handle());

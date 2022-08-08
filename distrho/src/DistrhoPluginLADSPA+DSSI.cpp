@@ -50,7 +50,7 @@ class PluginLadspaDssi
 {
 public:
     PluginLadspaDssi()
-        : fPlugin(nullptr, nullptr, nullptr),
+        : fPlugin(nullptr, nullptr, nullptr, nullptr),
           fPortControls(nullptr),
           fLastControlValues(nullptr)
     {
@@ -418,9 +418,9 @@ private:
 
 static LADSPA_Handle ladspa_instantiate(const LADSPA_Descriptor*, ulong sampleRate)
 {
-    if (d_lastBufferSize == 0)
-        d_lastBufferSize = 2048;
-    d_lastSampleRate = sampleRate;
+    if (d_nextBufferSize == 0)
+        d_nextBufferSize = 2048;
+    d_nextSampleRate = sampleRate;
 
     return new PluginLadspaDssi();
 }
@@ -551,11 +551,13 @@ static const struct DescriptorInitializer
     DescriptorInitializer()
     {
         // Create dummy plugin to get data from
-        d_lastBufferSize = 512;
-        d_lastSampleRate = 44100.0;
-        const PluginExporter plugin(nullptr, nullptr, nullptr);
-        d_lastBufferSize = 0;
-        d_lastSampleRate = 0.0;
+        d_nextBufferSize = 512;
+        d_nextSampleRate = 44100.0;
+        d_nextPluginIsDummy = true;
+        const PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
+        d_nextBufferSize = 0;
+        d_nextSampleRate = 0.0;
+        d_nextPluginIsDummy = false;
 
         // Get port count, init
         ulong port = 0;

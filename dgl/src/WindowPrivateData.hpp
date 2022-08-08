@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -44,9 +44,6 @@ struct Window::PrivateData : IdleCallback {
     /** Pugl view instance. */
     PuglView* view;
 
-    /** Pugl view instance of the transient parent window. */
-    PuglView* const transientParentView;
-
     /** Reserved space for graphics context. */
     mutable uint8_t graphicsContext[sizeof(void*)];
 
@@ -63,6 +60,9 @@ struct Window::PrivateData : IdleCallback {
     /** Whether this Window is embed into another (usually not DGL-controlled) Window. */
     const bool isEmbed;
 
+    /** Whether to ignore resize requests and feed them into the host instead. used for VST3 */
+    const bool usesSizeRequest;
+
     /** Scale factor to report to widgets on request, purely informational. */
     double scaleFactor;
 
@@ -77,9 +77,19 @@ struct Window::PrivateData : IdleCallback {
     /** Whether to ignore idle callback requests, useful for temporary windows. */
     bool ignoreIdleCallbacks;
 
-#ifdef DISTRHO_OS_WINDOWS
-    /** Selected file for openFileBrowser on windows, stored for fake async operation. */
-    const char* win32SelectedFile;
+    /** Whether we are waiting to receive clipboard data, ignoring some events in the process. */
+    bool waitingForClipboardData;
+    bool waitingForClipboardEvents;
+
+    /** The type id returned by the last onClipboardDataOffer call. */
+    uint32_t clipboardTypeId;
+
+    /** Render to a picture file when non-null, automatically free+unset after saving. */
+    char* filenameToRenderInto;
+
+#ifndef DGL_FILE_BROWSER_DISABLED
+    /** Handle for file browser dialog operations. */
+    DGL_NAMESPACE::FileBrowserHandle fileBrowserHandle;
 #endif
 
     /** Modal window setup. */
@@ -121,7 +131,7 @@ struct Window::PrivateData : IdleCallback {
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
     explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
-                         uint width, uint height, double scaling, bool resizable);
+                         uint width, uint height, double scaling, bool resizable, bool isVST3);
 
     /** Destructor. */
     ~PrivateData() override;
@@ -156,11 +166,10 @@ struct Window::PrivateData : IdleCallback {
 
 #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
-    bool openFileBrowser(const Window::FileBrowserOptions& options);
-# ifdef DISTRHO_OS_MAC
-    static void openPanelCallback(PuglView* view, const char* path);
-# endif
+    bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options);
 #endif
+
+    static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);
 
     // modal handling
     void startModal();
@@ -173,11 +182,15 @@ struct Window::PrivateData : IdleCallback {
     void onPuglClose();
     void onPuglFocus(bool focus, CrossingMode mode);
     void onPuglKey(const Widget::KeyboardEvent& ev);
-    void onPuglSpecial(const Widget::SpecialEvent& ev);
     void onPuglText(const Widget::CharacterInputEvent& ev);
     void onPuglMouse(const Widget::MouseEvent& ev);
     void onPuglMotion(const Widget::MotionEvent& ev);
     void onPuglScroll(const Widget::ScrollEvent& ev);
+
+    // clipboard related handling
+    const void* getClipboard(size_t& dataSize);
+    uint32_t onClipboardDataOffer();
+    void onClipboardData(uint32_t typeId);
 
     // Pugl event handling entry point
     static PuglStatus puglEventCallback(PuglView* view, const PuglEvent* event);
@@ -188,125 +201,5 @@ struct Window::PrivateData : IdleCallback {
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-#if 0
-// #if defined(DISTRHO_OS_HAIKU)
-//     BApplication* bApplication;
-//     BView*        bView;
-//     BWindow*      bWindow;
-#if defined(DISTRHO_OS_MAC)
-//     NSView<PuglGenericView>* mView;
-//     id              mWindow;
-//     id              mParentWindow;
-# ifndef DGL_FILE_BROWSER_DISABLED
-    NSOpenPanel*    fOpenFilePanel;
-    id              fFilePanelDelegate;
-# endif
-#elif defined(DISTRHO_OS_WINDOWS)
-//     HWND hwnd;
-//     HWND hwndParent;
-# ifndef DGL_FILE_BROWSER_DISABLED
-    String fSelectedFile;
-# endif
-#endif
-#endif
-
-#if 0
-// -----------------------------------------------------------------------
-// Window Private
-
-struct Window::PrivateData {
-    // -------------------------------------------------------------------
-
-    bool handlePluginSpecial(const bool press, const Key key)
-    {
-        DBGp("PUGL: handlePluginSpecial : %i %i\n", press, key);
-
-        if (fModal.childFocus != nullptr)
-        {
-            fModal.childFocus->focus();
-            return true;
-        }
-
-        int mods = 0x0;
-
-        switch (key)
-        {
-        case kKeyShift:
-            mods |= kModifierShift;
-            break;
-        case kKeyControl:
-            mods |= kModifierControl;
-            break;
-        case kKeyAlt:
-            mods |= kModifierAlt;
-            break;
-        default:
-            break;
-        }
-
-        if (mods != 0x0)
-        {
-            if (press)
-                fView->mods |= mods;
-            else
-                fView->mods &= ~(mods);
-        }
-
-        Widget::SpecialEvent ev;
-        ev.press = press;
-        ev.key   = key;
-        ev.mod   = static_cast<Modifier>(fView->mods);
-        ev.time  = 0;
-
-        FOR_EACH_WIDGET_INV(rit)
-        {
-            Widget* const widget(*rit);
-
-            if (widget->isVisible() && widget->onSpecial(ev))
-                return true;
-        }
-
-        return false;
-    }
-
-#if defined(DISTRHO_OS_MAC) && !defined(DGL_FILE_BROWSER_DISABLED)
-    static void openPanelDidEnd(NSOpenPanel* panel, int returnCode, void *userData)
-    {
-        PrivateData* pData = (PrivateData*)userData;
-
-        if (returnCode == NSOKButton)
-        {
-            NSArray* urls = [panel URLs];
-            NSURL* fileUrl = nullptr;
-
-            for (NSUInteger i = 0, n = [urls count]; i < n && !fileUrl; ++i)
-            {
-                NSURL* url = (NSURL*)[urls objectAtIndex:i];
-                if ([url isFileURL])
-                    fileUrl = url;
-            }
-
-            if (fileUrl)
-            {
-                PuglView* view = pData->fView;
-                if (view->fileSelectedFunc)
-                {
-                    const char* fileName = [fileUrl.path UTF8String];
-                    view->fileSelectedFunc(view, fileName);
-                }
-            }
-        }
-
-        [pData->fOpenFilePanel release];
-        pData->fOpenFilePanel = nullptr;
-    }
-#endif
-
-    // -------------------------------------------------------------------
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PrivateData)
-};
-#endif
 
 #endif // DGL_WINDOW_PRIVATE_DATA_HPP_INCLUDED

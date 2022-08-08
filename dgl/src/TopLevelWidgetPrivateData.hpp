@@ -30,11 +30,10 @@ struct TopLevelWidget::PrivateData {
     Widget* const selfw;
     Window& window;
 
-    explicit PrivateData(TopLevelWidget* const s, Window& w);
+    explicit PrivateData(TopLevelWidget* self, Window& window);
     ~PrivateData();
     void display();
     bool keyboardEvent(const KeyboardEvent& ev);
-    bool specialEvent(const SpecialEvent& ev);
     bool characterInputEvent(const CharacterInputEvent& ev);
     bool mouseEvent(const MouseEvent& ev);
     bool motionEvent(const MotionEvent& ev);

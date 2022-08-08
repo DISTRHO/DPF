@@ -72,7 +72,9 @@ public:
         : Plugin(4, 0, 0), // 4 parameters, 0 programs, 0 states
           sampleRate(getSampleRate()),
           counter(0),
+          wasPlaying(false),
           phase(0.0f),
+          envelope(1.0f),
           decay(0.0f),
           gain(0.5f),
           semitone(72),
@@ -149,12 +151,25 @@ protected:
     * Init */
 
    /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupMono;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
+   /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
     void initParameter(uint32_t index, Parameter& parameter) override
     {
-        parameter.hints = kParameterIsAutomable;
+        parameter.hints = kParameterIsAutomatable;
 
         switch (index)
         {

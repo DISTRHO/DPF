@@ -107,7 +107,7 @@ protected:
         if (index != 0)
             return;
 
-        parameter.hints      = kParameterIsAutomable|kParameterIsInteger;
+        parameter.hints      = kParameterIsAutomatable|kParameterIsInteger;
         parameter.ranges.def = 0.0f;
         parameter.ranges.min = 0.0f;
         parameter.ranges.max = 100.0f;
@@ -134,7 +134,7 @@ protected:
    /**
       Change a parameter value.
       The host may call this function from any context, including realtime processing.
-      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
+      When a parameter is marked as automatable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
     void setParameterValue(uint32_t index, float value) override

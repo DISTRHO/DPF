@@ -1,6 +1,6 @@
 /*
- * travesty, pure C interface to steinberg VST3 SDK
- * Copyright (C) 2021 Filipe Coelho <falktx@falktx.com>
+ * travesty, pure C VST3-compatible interface
+ * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -25,17 +25,14 @@ enum v3_seek_mode {
 };
 
 struct v3_bstream {
+#ifndef __cplusplus
 	struct v3_funknown;
-
-	V3_API v3_result (*read)
-		(void *self, void *buffer, int32_t num_bytes, int32_t *bytes_read);
-	V3_API v3_result (*write)
-		(void *self, void *buffer, int32_t num_bytes, int32_t *bytes_written);
-	V3_API v3_result (*seek)
-		(void *self, int64_t pos, int32_t seek_mode, int64_t *result);
-	V3_API v3_result (*tell)
-		(void *self, int64_t *pos);
+#endif
+	v3_result (V3_API *read)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_read);
+	v3_result (V3_API *write)(void* self, void* buffer, int32_t num_bytes, int32_t* bytes_written);
+	v3_result (V3_API *seek)(void* self, int64_t pos, int32_t seek_mode, int64_t* result);
+	v3_result (V3_API *tell)(void* self, int64_t* pos);
 };
 
-static const v3_tuid v3_bstream_iid =
+static constexpr const v3_tuid v3_bstream_iid =
 	V3_ID(0xC3BF6EA2, 0x30994752, 0x9B6BF990, 0x1EE33E9B);

@@ -109,6 +109,19 @@ protected:
     * Init */
 
    /**
+      Initialize the audio port @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    {
+        // treat meter audio ports as stereo
+        port.groupId = kPortGroupMono;
+
+        // everything else is as default
+        Plugin::initAudioPort(input, index, port);
+    }
+
+   /**
       Initialize the parameter @a index.
       This function will be called once, shortly after the plugin is created.
     */
@@ -117,7 +130,7 @@ protected:
         if (index != 0)
             return;
 
-        parameter.hints  = kParameterIsAutomable;
+        parameter.hints  = kParameterIsAutomatable;
         parameter.name   = "Latency";
         parameter.symbol = "latency";
         parameter.unit   = "s";
@@ -144,7 +157,7 @@ protected:
    /**
       Change a parameter value.
       The host may call this function from any context, including realtime processing.
-      When a parameter is marked as automable, you must ensure no non-realtime operations are performed.
+      When a parameter is marked as automatable, you must ensure no non-realtime operations are performed.
       @note This function will only be called for parameter inputs.
     */
     void setParameterValue(uint32_t index, float value) override

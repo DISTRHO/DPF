@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -16,6 +16,10 @@
 
 #include "DistrhoPluginInternal.hpp"
 
+#if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
+# include "../DistrhoPluginUtils.hpp"
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 # include "../extra/RingBuffer.hpp"
@@ -23,11 +27,20 @@
 # include "../extra/Sleep.hpp"
 #endif
 
+#ifdef DPF_RUNTIME_TESTING
+# include "../extra/Thread.hpp"
+#endif
+
+#if defined(HAVE_JACK) && defined(STATIC_BUILD) && !defined(DISTRHO_OS_WASM)
+# define JACKBRIDGE_DIRECT
+#endif
+
 #include "jackbridge/JackBridge.cpp"
 #include "lv2/lv2.h"
 
 #ifndef DISTRHO_OS_WINDOWS
 # include <signal.h>
+# include <unistd.h>
 #endif
 
 #ifndef JACK_METADATA_ORDER
@@ -110,12 +123,12 @@ class PluginJack
 #endif
 {
 public:
-    PluginJack(jack_client_t* const client)
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback),
+    PluginJack(jack_client_t* const client, const uintptr_t winId)
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
 #if DISTRHO_PLUGIN_HAS_UI
           fUI(this,
-              0, // winId
-              d_lastSampleRate,
+              winId,
+              d_nextSampleRate,
               nullptr, // edit param
               setParameterValueCallback,
               setStateCallback,
@@ -218,6 +231,9 @@ public:
 #else
         while (! gCloseSignalReceived)
             d_sleep(1);
+
+        // unused
+        (void)winId;
 #endif
     }
 
@@ -422,7 +438,7 @@ protected:
 
             for (uint32_t i=0; i < eventCount; ++i)
             {
-                if (jackbridge_midi_event_get(&jevent, midiInBuf, i) != 0)
+                if (! jackbridge_midi_event_get(&jevent, midiInBuf, i))
                     break;
 
                 // Check if message is control change on channel 1
@@ -469,7 +485,7 @@ protected:
                 MidiEvent& midiEvent(midiEvents[midiEventCount++]);
 
                 midiEvent.frame = jevent.time;
-                midiEvent.size  = jevent.size;
+                midiEvent.size  = static_cast<uint32_t>(jevent.size);
 
                 if (midiEvent.size > MidiEvent::kDataSize)
                     midiEvent.dataExt = jevent.buffer;
@@ -735,7 +751,7 @@ private:
         return jackbridge_midi_event_write(fPortMidiOutBuffer,
                                            midiEvent.frame,
                                            midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data,
-                                           midiEvent.size) == 0;
+                                           midiEvent.size);
     }
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
@@ -747,13 +763,182 @@ private:
     #undef thisPtr
 };
 
+// -----------------------------------------------------------------------
+
+#ifdef DPF_RUNTIME_TESTING
+class PluginProcessTestingThread : public Thread
+{
+    PluginExporter& plugin;
+
+public:
+    PluginProcessTestingThread(PluginExporter& p) : plugin(p) {}
+
+protected:
+    void run() override
+    {
+        plugin.setBufferSize(256);
+        plugin.activate();
+
+        float buffer[256];
+        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS > 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
+        float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS > 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            inputs[i] = buffer;
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            outputs[i] = buffer;
+
+        while (! shouldThreadExit())
+        {
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            plugin.run(inputs, outputs, 128, nullptr, 0);
+#else
+            plugin.run(inputs, outputs, 128);
+#endif
+            d_msleep(100);
+        }
+
+        plugin.deactivate();
+    }
+};
+
+bool runSelfTests()
+{
+    // simple plugin creation first
+    {
+        d_nextBufferSize = 512;
+        d_nextSampleRate = 44100.0;
+        PluginExporter plugin(nullptr, nullptr, nullptr);
+        d_nextBufferSize = 0;
+        d_nextSampleRate = 0.0;
+    }
+
+    // keep values for all tests now
+    d_nextBufferSize = 512;
+    d_nextSampleRate = 44100.0;
+
+    // simple processing
+    {
+        PluginExporter plugin(nullptr, nullptr, nullptr);
+        plugin.activate();
+        plugin.deactivate();
+        plugin.setBufferSize(128);
+        plugin.setSampleRate(48000);
+        plugin.activate();
+
+        float buffer[128];
+        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS > 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
+        float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS > 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            inputs[i] = buffer;
+        for (int i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            outputs[i] = buffer;
+
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        plugin.run(inputs, outputs, 128, nullptr, 0);
+#else
+        plugin.run(inputs, outputs, 128);
+#endif
+
+        plugin.deactivate();
+    }
+
+    // multi-threaded processing with UI
+    {
+        PluginExporter pluginA(nullptr, nullptr, nullptr);
+        PluginExporter pluginB(nullptr, nullptr, nullptr);
+        PluginExporter pluginC(nullptr, nullptr, nullptr);
+        PluginProcessTestingThread procTestA(pluginA);
+        PluginProcessTestingThread procTestB(pluginB);
+        PluginProcessTestingThread procTestC(pluginC);
+        procTestA.startThread();
+        procTestB.startThread();
+        procTestC.startThread();
+
+        // wait 2s
+        d_sleep(2);
+
+        // stop the 2nd instance now
+        procTestB.stopThread(5000);
+
+#if DISTRHO_PLUGIN_HAS_UI
+        // start UI in the middle of this
+        {
+            UIExporter uiA(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginA.getInstancePointer(), 0.0);
+            UIExporter uiB(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginB.getInstancePointer(), 0.0);
+            UIExporter uiC(nullptr, 0, pluginA.getSampleRate(),
+                           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                           pluginC.getInstancePointer(), 0.0);
+
+            // show UIs
+            uiB.showAndFocus();
+            uiA.showAndFocus();
+            uiC.showAndFocus();
+
+            // idle for 3s
+            for (int i=0; i<30; i++)
+            {
+                uiC.plugin_idle();
+                uiB.plugin_idle();
+                uiA.plugin_idle();
+                d_msleep(100);
+            }
+        }
+#endif
+
+        procTestA.stopThread(5000);
+        procTestC.stopThread(5000);
+    }
+
+    return true;
+}
+#endif // DPF_RUNTIME_TESTING
+
 END_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
 
-int main()
+int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO;
+
+#ifdef DPF_RUNTIME_TESTING
+    if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
+        return runSelfTests() ? 0 : 1;
+#endif
+
+#if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+    /* the code below is based on
+     * https://www.tillett.info/2013/05/13/how-to-create-a-windows-program-that-works-as-both-as-a-gui-and-console-application/
+     */
+    bool hasConsole = false;
+
+    HANDLE consoleHandleOut, consoleHandleError;
+
+    if (AttachConsole(ATTACH_PARENT_PROCESS))
+    {
+        // Redirect unbuffered STDOUT to the console
+        consoleHandleOut = GetStdHandle(STD_OUTPUT_HANDLE);
+        if (consoleHandleOut != INVALID_HANDLE_VALUE)
+        {
+            freopen("CONOUT$", "w", stdout);
+            setvbuf(stdout, NULL, _IONBF, 0);
+        }
+
+        // Redirect unbuffered STDERR to the console
+        consoleHandleError = GetStdHandle(STD_ERROR_HANDLE);
+        if (consoleHandleError != INVALID_HANDLE_VALUE)
+        {
+            freopen("CONOUT$", "w", stderr);
+            setvbuf(stderr, NULL, _IONBF, 0);
+        }
+
+        hasConsole = true;
+    }
+#endif
 
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
@@ -792,25 +977,112 @@ int main()
         if (errorString.isNotEmpty())
         {
             errorString[errorString.length()-2] = '.';
-            d_stderr("Failed to create jack client, reason was:\n%s", errorString.buffer());
+            d_stderr("Failed to create the JACK client, reason was:\n%s", errorString.buffer());
         }
         else
-            d_stderr("Failed to create jack client, cannot continue!");
+            d_stderr("Failed to create the JACK client, cannot continue!");
+
+       #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+        // make sure message box is high-dpi aware
+        if (const HMODULE user32 = LoadLibrary("user32.dll"))
+        {
+            typedef BOOL(WINAPI* SPDA)(void);
+           #if defined(__GNUC__) && (__GNUC__ >= 9)
+           # pragma GCC diagnostic push
+           # pragma GCC diagnostic ignored "-Wcast-function-type"
+           #endif
+            const SPDA SetProcessDPIAware = (SPDA)GetProcAddress(user32, "SetProcessDPIAware");
+           #if defined(__GNUC__) && (__GNUC__ >= 9)
+           # pragma GCC diagnostic pop
+           #endif
+            if (SetProcessDPIAware)
+                SetProcessDPIAware();
+            FreeLibrary(user32);
+        }
+
+        const String win32error = "Failed to create JACK client, reason was:\n" + errorString;
+        MessageBoxA(nullptr, win32error.buffer(), "", MB_ICONERROR);
+       #endif
 
         return 1;
     }
 
-    USE_NAMESPACE_DISTRHO;
-
     initSignalHandler();
 
-    d_lastBufferSize = jackbridge_get_buffer_size(client);
-    d_lastSampleRate = jackbridge_get_sample_rate(client);
-    d_lastCanRequestParameterValueChanges = true;
+    d_nextBufferSize = jackbridge_get_buffer_size(client);
+    d_nextSampleRate = jackbridge_get_sample_rate(client);
+    d_nextCanRequestParameterValueChanges = true;
 
-    const PluginJack p(client);
+   #if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+       #ifdef DISTRHO_OS_MAC
+        if (tmpPath.endsWith("/MacOS"))
+        {
+            tmpPath.truncate(tmpPath.rfind('/'));
+            if (tmpPath.endsWith("/Contents"))
+            {
+                tmpPath.truncate(tmpPath.rfind('/'));
+                bundlePath = tmpPath;
+                d_nextBundlePath = bundlePath.buffer();
+            }
+        }
+       #else
+        if (access(tmpPath + DISTRHO_OS_SEP_STR "resources", F_OK) == 0)
+        {
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+       #endif
+    }
+   #endif
+
+    uintptr_t winId = 0;
+#if DISTRHO_PLUGIN_HAS_UI
+    if (argc == 3 && std::strcmp(argv[1], "embed") == 0)
+        winId = static_cast<uintptr_t>(std::atoll(argv[2]));
+#endif
+
+    const PluginJack p(client, winId);
+
+#if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+    /* the code below is based on
+     * https://www.tillett.info/2013/05/13/how-to-create-a-windows-program-that-works-as-both-as-a-gui-and-console-application/
+     */
+
+    // Send "enter" to release application from the console
+    // This is a hack, but if not used the console doesn't know the application has
+    // returned. The "enter" key only sent if the console window is in focus.
+    if (hasConsole && (GetConsoleWindow() == GetForegroundWindow() || SetFocus(GetConsoleWindow()) != nullptr))
+    {
+        INPUT ip;
+        // Set up a generic keyboard event.
+        ip.type = INPUT_KEYBOARD;
+        ip.ki.wScan = 0; // hardware scan code for key
+        ip.ki.time = 0;
+        ip.ki.dwExtraInfo = 0;
+
+        // Send the "Enter" key
+        ip.ki.wVk = 0x0D; // virtual-key code for the "Enter" key
+        ip.ki.dwFlags = 0; // 0 for key press
+        SendInput(1, &ip, sizeof(INPUT));
+
+        // Release the "Enter" key
+        ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
+        SendInput(1, &ip, sizeof(INPUT));
+    }
+#endif
 
     return 0;
+
+#ifndef DPF_RUNTIME_TESTING
+    // unused
+    (void)argc; (void)argv;
+#endif
 }
 
 // -----------------------------------------------------------------------

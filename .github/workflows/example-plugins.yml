@@ -26,7 +26,7 @@ jobs:
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list
           echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-arm64.list
           sudo apt-get update -qq
-          sudo apt-get install -yq g++-aarch64-linux-gnu libasound2-dev:arm64 libcairo2-dev:arm64 libgl1-mesa-dev:arm64 liblo-dev:arm64 libpulse-dev:arm64 libx11-dev:arm64 libxcursor-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 qemu-user-static
+          sudo apt-get install -yq g++-aarch64-linux-gnu libasound2-dev:arm64 libcairo2-dev:arm64 libdbus-1-dev:arm64 libgl1-mesa-dev:arm64 liblo-dev:arm64 libpulse-dev:arm64 libx11-dev:arm64 libxcursor-dev:arm64 libxext-dev:arm64 libxrandr-dev:arm64 qemu-user-static
           # fix broken Ubuntu packages missing pkg-config file in multi-arch package
           sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev libxcursor-dev libxrandr-dev
           sudo ln -s /usr/lib/aarch64-linux-gnu/liblo.so.7 /usr/lib/aarch64-linux-gnu/liblo.so
@@ -63,7 +63,7 @@ jobs:
           echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list
           echo "deb [arch=armhf] http://ports.ubuntu.com/ubuntu-ports bionic-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-armhf.list
           sudo apt-get update -qq
-          sudo apt-get install -yq g++-arm-linux-gnueabihf libasound2-dev:armhf libcairo2-dev:armhf libgl1-mesa-dev:armhf liblo-dev:armhf libpulse-dev:armhf libx11-dev:armhf libxcursor-dev:armhf libxext-dev:armhf libxrandr-dev:armhf qemu-user-static
+          sudo apt-get install -yq g++-arm-linux-gnueabihf libasound2-dev:armhf libcairo2-dev:armhf libdbus-1-dev:armhf libgl1-mesa-dev:armhf liblo-dev:armhf libpulse-dev:armhf libx11-dev:armhf libxcursor-dev:armhf libxext-dev:armhf libxrandr-dev:armhf qemu-user-static
           # fix broken Ubuntu packages missing pkg-config file in multi-arch package
           sudo apt-get install -yq libasound2-dev libgl1-mesa-dev liblo-dev libpulse-dev libxcursor-dev libxrandr-dev
           sudo ln -s /usr/lib/arm-linux-gnueabihf/liblo.so.7 /usr/lib/arm-linux-gnueabihf/liblo.so
@@ -96,7 +96,7 @@ jobs:
         run: |
           sudo dpkg --add-architecture i386
           sudo apt-get update -qq
-          sudo apt-get install -yq g++-multilib libasound2-dev:i386 libcairo2-dev:i386 libgl1-mesa-dev:i386 liblo-dev:i386 libpulse-dev:i386 libx11-dev:i386 libxcursor-dev:i386 libxext-dev:i386 libxrandr-dev:i386
+          sudo apt-get install -yq g++-multilib libasound2-dev:i386 libcairo2-dev:i386 libdbus-1-dev:i386 libgl1-mesa-dev:i386 liblo-dev:i386 libpulse-dev:i386 libx11-dev:i386 libxcursor-dev:i386 libxext-dev:i386 libxrandr-dev:i386
       - name: Build linux x86
         env:
           CFLAGS: -m32
@@ -124,7 +124,7 @@ jobs:
       - name: Set up dependencies
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -yq libasound2-dev libcairo2-dev libgl1-mesa-dev liblo-dev libpulse-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev
+          sudo apt-get install -yq libasound2-dev libcairo2-dev libdbus-1-dev libgl1-mesa-dev liblo-dev libpulse-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev
       - name: Build linux x86_64
         env:
           LDFLAGS: -static-libgcc -static-libstdc++
@@ -141,15 +141,11 @@ jobs:
             bin/*
 
   macos-universal:
-    runs-on: macos-10.15
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: Fix up Xcode
-        run: |
-          sudo rm -Rf /Library/Developer/CommandLineTools/SDKs/*
-          sudo xcode-select -s "/Applications/Xcode_12.3.app"
       - name: Build macOS universal
         env:
           CFLAGS: -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_12 -mmacosx-version-min=10.12 -mtune=generic -msse -msse2
@@ -157,7 +153,7 @@ jobs:
           LDFLAGS: -arch x86_64 -arch arm64 -mmacosx-version-min=10.12
         run: |
           make features
-          make NOOPT=true -j $(sysctl -n hw.logicalcpu)
+          make HAVE_CAIRO=false NOOPT=true -j $(sysctl -n hw.logicalcpu)
           ./utils/package-osx-bundles.sh
       - name: Set sha8
         id: slug
@@ -172,9 +168,10 @@ jobs:
             !bin/*-dssi.dylib
             !bin/lv2
             !bin/vst2
+            !bin/vst3
 
   win32:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -235,3 +232,100 @@ jobs:
             bin/*
             !bin/*-ladspa.dll
             !bin/*-dssi.dll
+
+  plugin-validation:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Set up dependencies
+        run: |
+          # custom repos
+          wget https://launchpad.net/~kxstudio-debian/+archive/kxstudio/+files/kxstudio-repos_10.0.3_all.deb
+          sudo dpkg -i kxstudio-repos_10.0.3_all.deb
+          sudo apt-get update -qq
+          # build-deps
+          sudo apt-get install -yq libasound2-dev libcairo2-dev libdbus-1-dev libgl1-mesa-dev liblo-dev libpulse-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev
+          # runtime testing
+          sudo apt-get install -yq carla-git lilv-utils lv2-dev lv2lint valgrind
+      - name: Build plugins
+        env:
+          CFLAGS: -g
+          CXXFLAGS: -g -DDPF_ABORT_ON_ERROR
+          LDFLAGS: -static-libgcc -static-libstdc++
+        run: |
+          make features
+          make NOOPT=true SKIP_STRIPPING=true -j $(nproc)
+      - name: Validate LV2 ttl syntax
+        run: |
+          lv2_validate \
+              /usr/lib/lv2/mod.lv2/*.ttl \
+              /usr/lib/lv2/kx-meta/*.ttl \
+              /usr/lib/lv2/kx-control-input-port-change-request.lv2/*.ttl \
+              /usr/lib/lv2/kx-programs.lv2/*.ttl \
+              ./bin/*.lv2/*.ttl
+      - name: Validate LV2 metadata and binaries
+        run: |
+          export LV2_PATH=/tmp/lv2-path
+          mkdir ${LV2_PATH}
+          cp -r bin/*.lv2 \
+              /usr/lib/lv2/{atom,buf-size,core,data-access,kx-control-input-port-change-request,kx-programs,instance-access,midi,parameters,port-groups,port-props,options,patch,presets,resize-port,state,time,ui,units,urid,worker}.lv2 \
+              ${LV2_PATH}
+          lv2lint -s lv2_generate_ttl -l ld-linux-x86-64.so.2 -M nopack $(lv2ls)
+      - name: Test LADSPA plugins
+        run: |
+            for p in $(ls bin/ | grep ladspa.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native ladspa ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test DSSI plugins
+        run: |
+            for p in $(ls bin/ | grep dssi.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native dssi ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test LV2 plugins
+        run: |
+            export LV2_PATH=/tmp/lv2-path
+            for p in $(lv2ls); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native lv2 "" ${p} 1>/dev/null; \
+            done
+      - name: Test VST2 plugins
+        run: |
+            for p in $(ls bin/ | grep vst.so); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native vst2 ./bin/${p} "" 1>/dev/null; \
+            done
+      - name: Test VST3 plugins
+        run: |
+            for p in $(ls bin/ | grep vst3); do \
+                env CARLA_BRIDGE_DUMMY=1 CARLA_BRIDGE_TESTING=native \
+                    valgrind \
+                    --error-exitcode=255 \
+                    --leak-check=full \
+                    --track-origins=yes \
+                    --suppressions=./utils/valgrind-dpf.supp \
+                    /usr/lib/carla/carla-bridge-native vst3 ./bin/${p} "" 1>/dev/null; \
+            done

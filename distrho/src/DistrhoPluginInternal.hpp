@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,6 +19,10 @@
 
 #include "../DistrhoPlugin.hpp"
 
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
+# include "DistrhoPluginVST.hpp"
+#endif
+
 #include <set>
 
 START_NAMESPACE_DISTRHO
@@ -31,18 +35,29 @@ static const uint32_t kMaxMidiEvents = 512;
 // -----------------------------------------------------------------------
 // Static data, see DistrhoPlugin.cpp
 
-extern uint32_t d_lastBufferSize;
-extern double   d_lastSampleRate;
-extern bool     d_lastCanRequestParameterValueChanges;
+extern uint32_t    d_nextBufferSize;
+extern double      d_nextSampleRate;
+extern const char* d_nextBundlePath;
+extern bool        d_nextPluginIsDummy;
+extern bool        d_nextCanRequestParameterValueChanges;
 
 // -----------------------------------------------------------------------
 // DSP callbacks
 
 typedef bool (*writeMidiFunc) (void* ptr, const MidiEvent& midiEvent);
 typedef bool (*requestParameterValueChangeFunc) (void* ptr, uint32_t index, float value);
+typedef bool (*updateStateValueFunc) (void* ptr, const char* key, const char* value);
 
 // -----------------------------------------------------------------------
 // Helpers
+
+struct AudioPortWithBusId : AudioPort {
+    uint32_t busId;
+
+    AudioPortWithBusId()
+        : AudioPort(),
+          busId(0) {}
+};
 
 struct PortGroupWithId : PortGroup {
     uint32_t groupId;
@@ -75,10 +90,12 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
 // Plugin private data
 
 struct Plugin::PrivateData {
+    const bool canRequestParameterValueChanges;
+    const bool isDummy;
     bool isProcessing;
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    AudioPort* audioPorts;
+    AudioPortWithBusId* audioPorts;
 #endif
 
     uint32_t   parameterCount;
@@ -95,8 +112,7 @@ struct Plugin::PrivateData {
 
 #if DISTRHO_PLUGIN_WANT_STATE
     uint32_t stateCount;
-    String*  stateKeys;
-    String*  stateDefValues;
+    State*   states;
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
@@ -111,13 +127,16 @@ struct Plugin::PrivateData {
     void*         callbacksPtr;
     writeMidiFunc writeMidiCallbackFunc;
     requestParameterValueChangeFunc requestParameterValueChangeCallbackFunc;
+    updateStateValueFunc updateStateValueCallbackFunc;
 
     uint32_t bufferSize;
     double   sampleRate;
-    bool     canRequestParameterValueChanges;
+    char*    bundlePath;
 
     PrivateData() noexcept
-        : isProcessing(false),
+        : canRequestParameterValueChanges(d_nextCanRequestParameterValueChanges),
+          isDummy(d_nextPluginIsDummy),
+          isProcessing(false),
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
           audioPorts(nullptr),
 #endif
@@ -132,8 +151,7 @@ struct Plugin::PrivateData {
 #endif
 #if DISTRHO_PLUGIN_WANT_STATE
           stateCount(0),
-          stateKeys(nullptr),
-          stateDefValues(nullptr),
+          states(nullptr),
 #endif
 #if DISTRHO_PLUGIN_WANT_LATENCY
           latency(0),
@@ -141,9 +159,10 @@ struct Plugin::PrivateData {
           callbacksPtr(nullptr),
           writeMidiCallbackFunc(nullptr),
           requestParameterValueChangeCallbackFunc(nullptr),
-          bufferSize(d_lastBufferSize),
-          sampleRate(d_lastSampleRate),
-          canRequestParameterValueChanges(d_lastCanRequestParameterValueChanges)
+          updateStateValueCallbackFunc(nullptr),
+          bufferSize(d_nextBufferSize),
+          sampleRate(d_nextSampleRate),
+          bundlePath(d_nextBundlePath != nullptr ? strdup(d_nextBundlePath) : nullptr)
     {
         DISTRHO_SAFE_ASSERT(bufferSize != 0);
         DISTRHO_SAFE_ASSERT(d_isNotZero(sampleRate));
@@ -156,12 +175,16 @@ struct Plugin::PrivateData {
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_LV2
-# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
+# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_STATE || DISTRHO_PLUGIN_WANT_TIMEPOS)
         parameterOffset += 1;
 # endif
 # if (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
         parameterOffset += 1;
 # endif
+#endif
+
+#ifdef DISTRHO_PLUGIN_TARGET_VST3
+        parameterOffset += kVst3InternalParameterCount;
 #endif
     }
 
@@ -196,18 +219,18 @@ struct Plugin::PrivateData {
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-        if (stateKeys != nullptr)
+        if (states != nullptr)
         {
-            delete[] stateKeys;
-            stateKeys = nullptr;
-        }
-
-        if (stateDefValues != nullptr)
-        {
-            delete[] stateDefValues;
-            stateDefValues = nullptr;
+            delete[] states;
+            states = nullptr;
         }
 #endif
+
+        if (bundlePath != nullptr)
+        {
+            std::free(bundlePath);
+            bundlePath = nullptr;
+        }
     }
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
@@ -229,6 +252,17 @@ struct Plugin::PrivateData {
         return false;
     }
 #endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
+    bool updateStateValueCallback(const char* const key, const char* const value)
+    {
+        d_stdout("updateStateValueCallback %p", updateStateValueCallbackFunc);
+        if (updateStateValueCallbackFunc != nullptr)
+            return updateStateValueCallbackFunc(callbacksPtr, key, value);
+
+        return false;
+    }
+#endif
 };
 
 // -----------------------------------------------------------------------
@@ -239,13 +273,87 @@ class PluginExporter
 public:
     PluginExporter(void* const callbacksPtr,
                    const writeMidiFunc writeMidiCall,
-                   const requestParameterValueChangeFunc requestParameterValueChangeCall)
+                   const requestParameterValueChangeFunc requestParameterValueChangeCall,
+                   const updateStateValueFunc updateStateValueCall)
         : fPlugin(createPlugin()),
           fData((fPlugin != nullptr) ? fPlugin->pData : nullptr),
           fIsActive(false)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
+
+#if defined(DPF_RUNTIME_TESTING) && defined(__GNUC__) && !defined(__clang__)
+        /* Run-time testing build.
+         * Verify that virtual functions are overriden if parameters, programs or states are in use.
+         * This does not work on all compilers, but we use it purely as informational check anyway. */
+        if (fData->parameterCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initParameter)) == (void*)&Plugin::initParameter)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `initParameter`");
+                abort();
+            }
+            if ((void*)(fPlugin->*(&Plugin::getParameterValue)) == (void*)&Plugin::getParameterValue)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `getParameterValue`");
+                abort();
+            }
+            if ((void*)(fPlugin->*(&Plugin::setParameterValue)) == (void*)&Plugin::setParameterValue)
+            {
+                d_stderr2("DPF warning: Plugins with parameters must implement `setParameterValue`");
+                abort();
+            }
+        }
+
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (fData->programCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initProgramName)) == (void*)&Plugin::initProgramName)
+            {
+                d_stderr2("DPF warning: Plugins with programs must implement `initProgramName`");
+                abort();
+            }
+            if ((void*)(fPlugin->*(&Plugin::loadProgram)) == (void*)&Plugin::loadProgram)
+            {
+                d_stderr2("DPF warning: Plugins with programs must implement `loadProgram`");
+                abort();
+            }
+        }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_STATE
+        if (fData->stateCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::initState)) == (void*)&Plugin::initState)
+            {
+                d_stderr2("DPF warning: Plugins with state must implement `initState`");
+                abort();
+            }
+
+            if ((void*)(fPlugin->*(&Plugin::setState)) == (void*)&Plugin::setState)
+            {
+                d_stderr2("DPF warning: Plugins with state must implement `setState`");
+                abort();
+            }
+        }
+# endif
+
+# if DISTRHO_PLUGIN_WANT_FULL_STATE
+        if (fData->stateCount != 0)
+        {
+            if ((void*)(fPlugin->*(&Plugin::getState)) == (void*)&Plugin::getState)
+            {
+                d_stderr2("DPF warning: Plugins with full state must implement `getState`");
+                abort();
+            }
+        }
+        else
+        {
+            d_stderr2("DPF warning: Plugins with full state must have at least 1 state");
+            abort();
+        }
+# endif
+#endif
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         {
@@ -276,7 +384,7 @@ public:
 
             portGroupIndices.erase(kPortGroupNone);
 
-            if (const size_t portGroupSize = portGroupIndices.size())
+            if (const uint32_t portGroupSize = static_cast<uint32_t>(portGroupIndices.size()))
             {
                 fData->portGroups = new PortGroupWithId[portGroupSize];
                 fData->portGroupCount = portGroupSize;
@@ -302,12 +410,13 @@ public:
 
 #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fData->stateCount; i < count; ++i)
-            fPlugin->initState(i, fData->stateKeys[i], fData->stateDefValues[i]);
+            fPlugin->initState(i, fData->states[i]);
 #endif
 
         fData->callbacksPtr = callbacksPtr;
         fData->writeMidiCallbackFunc = writeMidiCall;
         fData->requestParameterValueChangeCallbackFunc = requestParameterValueChangeCall;
+        fData->updateStateValueCallbackFunc = updateStateValueCall;
     }
 
     ~PluginExporter()
@@ -390,7 +499,7 @@ public:
 #endif
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    const AudioPort& getAudioPort(const bool input, const uint32_t index) const noexcept
+    AudioPortWithBusId& getAudioPort(const bool input, const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackAudioPort);
 
@@ -408,6 +517,41 @@ public:
         }
 
         return fData->audioPorts[index + (input ? 0 : DISTRHO_PLUGIN_NUM_INPUTS)];
+    }
+
+    uint32_t getAudioPortHints(const bool input, const uint32_t index) const noexcept
+    {
+        return getAudioPort(input, index).hints;
+    }
+    
+    uint32_t getAudioPortCountWithGroupId(const bool input, const uint32_t groupId) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);
+
+        uint32_t numPorts = 0;
+
+        if (input)
+        {
+           #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            {
+                if (fData->audioPorts[i].groupId == groupId)
+                    ++numPorts;
+            }
+           #endif
+        }
+        else
+        {
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            {
+                if (fData->audioPorts[i + DISTRHO_PLUGIN_NUM_INPUTS].groupId == groupId)
+                    ++numPorts;
+            }
+           #endif
+        }
+
+        return numPorts;
     }
 #endif
 
@@ -447,6 +591,11 @@ public:
     bool isParameterOutput(const uint32_t index) const noexcept
     {
         return (getParameterHints(index) & kParameterIsOutput) != 0x0;
+    }
+
+    bool isParameterTrigger(const uint32_t index) const noexcept
+    {
+        return (getParameterHints(index) & kParameterIsTrigger) == kParameterIsTrigger;
     }
 
     bool isParameterOutputOrTrigger(const uint32_t index) const noexcept
@@ -522,6 +671,14 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, kPortGroupNone);
 
         return fData->parameters[index].groupId;
+    }
+
+    float getParameterDefault(const uint32_t index) const
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0.0f);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, 0.0f);
+
+        return fData->parameters[index].ranges.def;
     }
 
     float getParameterValue(const uint32_t index) const
@@ -608,31 +765,43 @@ public:
         return fData->stateCount;
     }
 
+    uint32_t getStateHints(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, 0x0);
+
+        return fData->states[index].hints;
+    }
+
     const String& getStateKey(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
-        return fData->stateKeys[index];
+        return fData->states[index].key;
     }
 
     const String& getStateDefaultValue(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
-        return fData->stateDefValues[index];
+        return fData->states[index].defaultValue;
     }
 
-# if DISTRHO_PLUGIN_WANT_STATEFILES
-    bool isStateFile(const uint32_t index) const
+    const String& getStateLabel(const uint32_t index) const noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, false);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
 
-        return fPlugin->isStateFile(index);
+        return fData->states[index].label;
     }
-# endif
+
+    const String& getStateDescription(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
+
+        return fData->states[index].description;
+    }
 
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
-    String getState(const char* key) const
+    String getStateValue(const char* const key) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackString);
         DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0', sFallbackString);
@@ -657,7 +826,7 @@ public:
 
         for (uint32_t i=0; i < fData->stateCount; ++i)
         {
-            if (fData->stateKeys[i] == key)
+            if (fData->states[i].key == key)
                 return true;
         }
 
@@ -809,15 +978,12 @@ private:
     // Static fallback data, see DistrhoPlugin.cpp
 
     static const String                     sFallbackString;
-    static const AudioPort                  sFallbackAudioPort;
+    static /* */ AudioPortWithBusId         sFallbackAudioPort;
     static const ParameterRanges            sFallbackRanges;
     static const ParameterEnumerationValues sFallbackEnumValues;
     static const PortGroupWithId            sFallbackPortGroup;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
-#ifndef DISTRHO_PLUGIN_TARGET_VST3 /* there is no way around this for VST3 */
-    DISTRHO_PREVENT_HEAP_ALLOCATION
-#endif
 };
 
 // -----------------------------------------------------------------------

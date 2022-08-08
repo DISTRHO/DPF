@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -23,6 +23,7 @@
 #ifdef DGL_OPENGL
 #include "widgets/ExampleTextWidget.hpp"
 #endif
+#include "widgets/ResizeHandle.hpp"
 
 #include "demo_res/DemoArtwork.cpp"
 #include "images_res/CatPics.cpp"
@@ -103,12 +104,13 @@ protected:
     void onDisplay() override
     {
         const GraphicsContext& context(getGraphicsContext());
+        const double scaleFactor = getWindow().getScaleFactor();
         const int iconSize = bgIcon.getWidth();
 
         Color(0.027f, 0.027f, 0.027f).setFor(context);
         Rectangle<uint>(0, 0, getSize()).draw(context);
 
-        bgIcon.setY(curPage*iconSize + curPage*3);
+        bgIcon.setY(curPage * iconSize + curPage * 3 * scaleFactor);
 
         Color(0.129f, 0.129f, 0.129f).setFor(context);
         bgIcon.draw(context);
@@ -118,7 +120,8 @@ protected:
 
         if (curHover != curPage && curHover != -1)
         {
-            Rectangle<int> rHover(1, curHover*iconSize + curHover*3, iconSize-2, iconSize-2);
+            Rectangle<int> rHover(1 * scaleFactor, curHover * iconSize + curHover * 3 * scaleFactor,
+                                  iconSize - 2 * scaleFactor, iconSize - 2 * scaleFactor);
 
             Color(0.071f, 0.071f, 0.071f).setFor(context);
             rHover.draw(context);
@@ -146,13 +149,13 @@ protected:
         // draw some text
         nvg.beginFrame(this);
 
-        nvg.fontSize(23.0f);
+        nvg.fontSize(23.0f * scaleFactor);
         nvg.textAlign(NanoVG::ALIGN_LEFT|NanoVG::ALIGN_TOP);
         //nvg.textLineHeight(20.0f);
 
         nvg.fillColor(220,220,220,220);
-        nvg.textBox(10, 420, iconSize, "Haha,", nullptr);
-        nvg.textBox(15, 440, iconSize, "Look!", nullptr);
+        nvg.textBox(10 * scaleFactor, 420 * scaleFactor, iconSize, "Haha,", nullptr);
+        nvg.textBox(15 * scaleFactor, 440 * scaleFactor, iconSize, "Look!", nullptr);
 
         nvg.endFrame();
 #endif
@@ -226,9 +229,10 @@ protected:
     {
         const uint width  = ev.size.getWidth();
         const uint height = ev.size.getHeight();
+        const double scaleFactor = getWindow().getScaleFactor();
 
-        bgIcon.setWidth(width-4);
-        bgIcon.setHeight(width-4);
+        bgIcon.setWidth(width - 4 * scaleFactor);
+        bgIcon.setHeight(width - 4 * scaleFactor);
 
         lineSep.setStartPos(width, 0);
         lineSep.setEndPos(width, height);
@@ -245,155 +249,6 @@ private:
     // for text
     NanoVG nvg;
 #endif
-};
-
-// --------------------------------------------------------------------------------------------------------------------
-// Resize handle widget
-
-class ResizeHandle : public TopLevelWidget
-{
-    Rectangle<uint> area;
-    Line<double> l1, l2, l3;
-    uint baseSize;
-
-    // event handling state
-    bool resizing;
-    Point<double> lastResizePoint;
-    Size<double> resizingSize;
-
-public:
-    explicit ResizeHandle(TopLevelWidget* const tlw)
-        : TopLevelWidget(tlw->getWindow()),
-          baseSize(16),
-          resizing(false)
-    {
-        resetArea();
-    }
-
-    explicit ResizeHandle(Window& window)
-        : TopLevelWidget(window),
-          baseSize(16),
-          resizing(false)
-    {
-        resetArea();
-    }
-
-    void setBaseSize(const uint size)
-    {
-        baseSize = std::max(16u, size);
-        resetArea();
-    }
-
-protected:
-    void onDisplay() override
-    {
-        const GraphicsContext& context(getGraphicsContext());
-        const double offset = getScaleFactor();
-
-        // draw white lines, 1px wide
-        Color(1.0f, 1.0f, 1.0f).setFor(context);
-        l1.draw(context, 1);
-        l2.draw(context, 1);
-        l3.draw(context, 1);
-
-        // draw black lines, offset by 1px and 2px wide
-        Color(0.0f, 0.0f, 0.0f).setFor(context);
-        Line<double> l1b(l1), l2b(l2), l3b(l3);
-        l1b.moveBy(offset, offset);
-        l2b.moveBy(offset, offset);
-        l3b.moveBy(offset, offset);
-        l1b.draw(context, 1);
-        l2b.draw(context, 1);
-        l3b.draw(context, 1);
-    }
-
-    bool onMouse(const MouseEvent& ev) override
-    {
-        if (ev.button != 1)
-            return false;
-
-        if (ev.press && area.contains(ev.pos))
-        {
-            resizing = true;
-            resizingSize = Size<double>(getWidth(), getHeight());
-            lastResizePoint = ev.pos;
-            return true;
-        }
-
-        if (resizing && ! ev.press)
-        {
-            resizing = false;
-            return true;
-        }
-
-        return false;
-    }
-
-    bool onMotion(const MotionEvent& ev) override
-    {
-        if (! resizing)
-            return false;
-
-        const Size<double> offset(ev.pos.getX() - lastResizePoint.getX(),
-                                  ev.pos.getY() - lastResizePoint.getY());
-
-        resizingSize += offset;
-        lastResizePoint = ev.pos;
-
-        // TODO min width, min height
-        const uint minWidth = 16;
-        const uint minHeight = 16;
-
-        if (resizingSize.getWidth() < minWidth)
-            resizingSize.setWidth(minWidth);
-        if (resizingSize.getHeight() < minHeight)
-            resizingSize.setHeight(minHeight);
-
-        setSize(resizingSize.getWidth(), resizingSize.getHeight());
-        return true;
-    }
-
-    void onResize(const ResizeEvent& ev) override
-    {
-        TopLevelWidget::onResize(ev);
-        resetArea();
-    }
-
-private:
-    void resetArea()
-    {
-        const double scaleFactor = getScaleFactor();
-        const uint margin = 0.0 * scaleFactor;
-        const uint size = baseSize * scaleFactor;
-
-        area = Rectangle<uint>(getWidth() - size - margin,
-                               getHeight() - size - margin,
-                               size, size);
-
-        recreateLines(area.getX(), area.getY(), size);
-    }
-
-    void recreateLines(const uint x, const uint y, const uint size)
-    {
-        uint linesize = size;
-        uint offset = 0;
-
-        // 1st line, full diagonal size
-        l1.setStartPos(x + size, y);
-        l1.setEndPos(x, y + size);
-
-        // 2nd line, bit more to the right and down, cropped
-        offset += size / 3;
-        linesize -= size / 3;
-        l2.setStartPos(x + linesize + offset, y + offset);
-        l2.setEndPos(x + offset, y + linesize + offset);
-
-        // 3rd line, even more right and down
-        offset += size / 3;
-        linesize -= size / 3;
-        l3.setStartPos(x + linesize + offset, y + offset);
-        l3.setEndPos(x + offset, y + linesize + offset);
-    }
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -420,30 +275,31 @@ public:
           curWidget(nullptr)
     {
         const ScopedGraphicsContext sgc(*this);
+        const double scaleFactor = getScaleFactor();
 
         wColor = new ExampleColorSubWidget(this);
         wColor->hide();
-        wColor->setAbsoluteX(kSidebarWidth);
+        wColor->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wImages = new ExampleImagesSubWidget(this);
         wImages->hide();
-        wImages->setAbsoluteX(kSidebarWidth);
+        wImages->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wRects = new ExampleRectanglesSubWidget(this);
         wRects->hide();
-        wRects->setAbsoluteX(kSidebarWidth);
+        wRects->setAbsoluteX(kSidebarWidth * scaleFactor);
 
         wShapes = new ExampleShapesSubWidget(this);
         wShapes->hide();
-        wShapes->setAbsoluteX(kSidebarWidth);
+        wShapes->setAbsoluteX(kSidebarWidth * scaleFactor);
 
 #ifdef DGL_OPENGL
         wText = new ExampleTextSubWidget(this),
         wText->hide();
-        wText->setAbsoluteX(kSidebarWidth);
+        wText->setAbsoluteX(kSidebarWidth * scaleFactor);
 #endif
         wLeft = new LeftSideWidget(this, this),
-        wLeft->setAbsolutePos(2, 2);
+        wLeft->setAbsolutePos(2 * scaleFactor, 2 * scaleFactor);
 
         resizer = new ResizeHandle(this);
 
@@ -493,10 +349,12 @@ protected:
     {
         StandaloneWindow::onReshape(width, height);
 
-        if (width < kSidebarWidth)
+        const double scaleFactor = getScaleFactor();
+
+        if (width < kSidebarWidth * scaleFactor)
             return;
 
-        Size<uint> size(width-kSidebarWidth, height);
+        const Size<uint> size(width - kSidebarWidth * scaleFactor, height);
         wColor->setSize(size);
         wImages->setSize(size);
         wRects->setSize(size);
@@ -504,7 +362,7 @@ protected:
 #ifdef DGL_OPENGL
         wText->setSize(size);
 #endif
-        wLeft->setSize(kSidebarWidth-4, height-4);
+        wLeft->setSize((kSidebarWidth - 4) * scaleFactor, (height - 4) * scaleFactor);
     }
 
 private:
@@ -528,8 +386,10 @@ template <class ExampleWidgetStandaloneWindow>
 void createAndShowExampleWidgetStandaloneWindow(Application& app)
 {
     ExampleWidgetStandaloneWindow swin(app);
+    const double scaleFactor = swin.getScaleFactor();
+    swin.setGeometryConstraints(128 * scaleFactor, 128 * scaleFactor);
     swin.setResizable(true);
-    swin.setSize(600, 500);
+    swin.setSize(600 * scaleFactor, 500 * scaleFactor);
     swin.setTitle(ExampleWidgetStandaloneWindow::kExampleWidgetName);
     swin.show();
     app.exec();

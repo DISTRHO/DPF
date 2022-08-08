@@ -516,7 +516,7 @@ public:
      */
     String& replace(const char before, const char after) noexcept
     {
-        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' && after != '\0', *this);
+        DISTRHO_SAFE_ASSERT_RETURN(before != '\0' /* && after != '\0' */, *this);
 
         for (std::size_t i=0; i < fBufferLen; ++i)
         {
@@ -616,6 +616,36 @@ public:
         }
 
         return *this;
+    }
+
+    /*
+     * Create a new string where all non-basic characters are converted to '_'.
+     * @see toBasic()
+     */
+    String asBasic() const noexcept
+    {
+        String s(*this);
+        return s.toBasic();
+    }
+
+    /*
+     * Create a new string where all ascii characters are converted lowercase.
+     * @see toLower()
+     */
+    String asLower() const noexcept
+    {
+        String s(*this);
+        return s.toLower();
+    }
+
+    /*
+     * Create a new string where all ascii characters are converted to uppercase.
+     * @see toUpper()
+     */
+    String asUpper() const noexcept
+    {
+        String s(*this);
+        return s.toUpper();
     }
 
     /*
@@ -831,12 +861,18 @@ public:
         std::memcpy(newBuf, fBuffer, fBufferLen);
         std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);
 
-        return String(newBuf);
+        return String(newBuf, false);
     }
 
     String operator+(const String& str) noexcept
     {
         return operator+(str.fBuffer);
+    }
+
+    // needed for std::map compatibility
+    bool operator<(const String& str) const noexcept
+    {
+        return std::strcmp(fBuffer, str.fBuffer) < 0;
     }
 
     // -------------------------------------------------------------------

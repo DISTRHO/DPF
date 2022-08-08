@@ -54,7 +54,7 @@ public:
    /**
       Destructor.
     */
-    virtual ~TopLevelWidget();
+    ~TopLevelWidget() override;
 
    /**
       Get the application associated with this top-level widget's window.
@@ -101,13 +101,17 @@ public:
     void repaint(const Rectangle<uint>& rect) noexcept;
 
     // TODO group stuff after here, convenience functions present in Window class
+    const void* getClipboard(size_t& dataSize);
+    bool setClipboard(const char* mimeType, const void* data, size_t dataSize);
+    bool setCursor(MouseCursor cursor);
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs = 0);
     bool removeIdleCallback(IdleCallback* callback);
     double getScaleFactor() const noexcept;
     void setGeometryConstraints(uint minimumWidth,
                                 uint minimumHeight,
                                 bool keepAspectRatio = false,
-                                bool automaticallyScale = false);
+                                bool automaticallyScale = false,
+                                bool resizeNowIfAutoScaling = true);
 
     DISTRHO_DEPRECATED_BY("getApp()")
     Application& getParentApp() const noexcept { return getApp(); }
@@ -117,7 +121,6 @@ public:
 
 protected:
     bool onKeyboard(const KeyboardEvent&) override;
-    bool onSpecial(const SpecialEvent&) override;
     bool onCharacterInput(const CharacterInputEvent&) override;
     bool onMouse(const MouseEvent&) override;
     bool onMotion(const MotionEvent&) override;
@@ -130,6 +133,8 @@ private:
 #ifdef DISTRHO_DEFINES_H_INCLUDED
     friend class DISTRHO_NAMESPACE::UI;
 #endif
+   /** @internal */
+    virtual void requestSizeChange(uint width, uint height);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(TopLevelWidget)
 };

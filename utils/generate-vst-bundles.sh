@@ -1,5 +1,8 @@
 #!/bin/bash
 
+echo "WARNING: generate-vst-bundles.sh script is no longer used"
+exit 0
+
 set -e
 
 if [ -d bin ]; then
