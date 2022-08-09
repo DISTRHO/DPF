@@ -8,6 +8,23 @@ AR  ?= ar
 CC  ?= gcc
 CXX ?= g++
 
+# Before including this file, a few variables can be set in order to tweak build behaviour:
+# DEBUG=true
+# NOOPT=true
+# SKIP_STRIPPING=true
+# NVG_DISABLE_SKIPPING_WHITESPACE=true
+# NVG_FONT_TEXTURE_FLAGS=0
+# FILE_BROWSER_DISABLED=true
+# WINDOWS_ICON_ID=0
+# USE_GLES2=true
+# USE_GLES3=true
+# USE_OPENGL3=true
+# USE_NANOVG_FBO=true
+# USE_NANOVG_FREETYPE=true
+# STATIC_BUILD=true
+# FORCE_NATIVE_AUDIO_FALLBACK=true
+# SKIP_NATIVE_AUDIO_FALLBACK=true
+
 # ---------------------------------------------------------------------------------------------------------------------
 # Protect against multiple inclusion
 
@@ -16,7 +33,24 @@ ifneq ($(DPF_MAKEFILE_BASE_INCLUDED),true)
 DPF_MAKEFILE_BASE_INCLUDED = true
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Auto-detect OS if not defined
+# Auto-detect target compiler if not defined
+
+TARGET_COMPILER = $(shell echo '\#ifdef __clang__\nclang\n\#else\ngcc\n\#endif' | $(CC) -E -P -x c - 2>/dev/null)
+
+ifneq ($(CLANG),true)
+ifneq ($(GCC),true)
+
+ifneq (,$(findstring clang,$(TARGET_COMPILER)))
+CLANG = true
+else
+GCC = true
+endif
+
+endif
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Auto-detect target OS if not defined
 
 TARGET_MACHINE := $(shell $(CC) -dumpmachine)
 
@@ -57,7 +91,7 @@ endif # HAIKU
 endif # BSD
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Auto-detect the processor
+# Auto-detect target processor
 
 TARGET_PROCESSOR := $(firstword $(subst -, ,$(TARGET_MACHINE)))
 
@@ -75,15 +109,21 @@ CPU_I386_OR_X86_64 = true
 endif
 ifneq (,$(filter arm%,$(TARGET_PROCESSOR)))
 CPU_ARM = true
-CPU_ARM_OR_AARCH64 = true
+CPU_ARM_OR_ARM64 = true
 endif
 ifneq (,$(filter arm64%,$(TARGET_PROCESSOR)))
 CPU_ARM64 = true
-CPU_ARM_OR_AARCH64 = true
+CPU_ARM_OR_ARM64 = true
 endif
 ifneq (,$(filter aarch64%,$(TARGET_PROCESSOR)))
-CPU_AARCH64 = true
-CPU_ARM_OR_AARCH64 = true
+CPU_ARM64 = true
+CPU_ARM_OR_ARM64 = true
+endif
+
+ifeq ($(CPU_ARM),true)
+ifneq ($(CPU_ARM64),true)
+CPU_ARM32 = true
+endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -168,59 +208,18 @@ endif
 
 BASE_FLAGS = -Wall -Wextra -pipe -MD -MP
 BASE_OPTS  = -O3 -ffast-math -fdata-sections -ffunction-sections
+LINK_OPTS  = -fdata-sections -ffunction-sections
 
-ifeq ($(CPU_I386_OR_X86_64),true)
-BASE_OPTS += -mtune=generic
-ifeq ($(WASM),true)
-BASE_OPTS += -msse -msse2 -msse3 -msimd128
-else
-BASE_OPTS += -msse -msse2 -mfpmath=sse
-endif
-endif
-
-ifeq ($(CPU_ARM),true)
-ifneq ($(CPU_ARM64),true)
-BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
-endif
-endif
-
-ifeq ($(MACOS),true)
-
-# MacOS linker flags
-LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-dead_strip,-dead_strip_dylibs
-ifneq ($(SKIP_STRIPPING),true)
-LINK_OPTS += -Wl,-x
-endif
-
-else
-
-# Common linker flags
-LINK_OPTS  = -fdata-sections -ffunction-sections -Wl,-O1,--gc-sections
-ifeq ($(WASM),true)
-LINK_OPTS += -O3
-LINK_OPTS += -sAGGRESSIVE_VARIABLE_ELIMINATION=1
-else
-LINK_OPTS += -Wl,--as-needed
-ifneq ($(SKIP_STRIPPING),true)
-LINK_OPTS += -Wl,--strip-all
-endif
-endif
-
+ifeq ($(GCC),true)
+BASE_FLAGS += -fno-gnu-unique
 endif
 
 ifeq ($(SKIP_STRIPPING),true)
 BASE_FLAGS += -g
 endif
 
-ifeq ($(NOOPT),true)
-# Non-CPU-specific optimization flags
-BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
-endif
-
-ifneq ($(MACOS_OR_WASM_OR_WINDOWS),true)
-ifneq ($(BSD),true)
-BASE_FLAGS += -fno-gnu-unique
-endif
+ifeq ($(STATIC_BUILD),true)
+BASE_FLAGS += -DSTATIC_BUILD
 endif
 
 ifeq ($(WINDOWS),true)
@@ -233,6 +232,39 @@ else
 BASE_FLAGS += -fPIC -DPIC
 endif
 
+ifeq ($(WASM),true)
+BASE_OPTS += -msse -msse2 -msse3 -msimd128
+else ifeq ($(CPU_ARM32),true)
+BASE_OPTS += -mfpu=neon-vfpv4 -mfloat-abi=hard
+else ifeq ($(CPU_I386_OR_X86_64),true)
+BASE_OPTS += -mtune=generic -msse -msse2 -mfpmath=sse
+endif
+
+ifeq ($(MACOS),true)
+LINK_OPTS += -Wl,-dead_strip,-dead_strip_dylibs
+else ifeq ($(WASM),true)
+LINK_OPTS += -O3
+LINK_OPTS += -Wl,--gc-sections
+else
+LINK_OPTS += -Wl,-O1,--gc-sections
+LINK_OPTS += -Wl,--as-needed
+endif
+
+ifneq ($(SKIP_STRIPPING),true)
+ifeq ($(MACOS),true)
+LINK_OPTS += -Wl,-x
+else ifeq ($(WASM),true)
+LINK_OPTS += -sAGGRESSIVE_VARIABLE_ELIMINATION=1
+else
+LINK_OPTS += -Wl,--strip-all
+endif
+endif
+
+ifeq ($(NOOPT),true)
+# Non-CPU-specific optimization flags
+BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
+endif
+
 ifeq ($(DEBUG),true)
 BASE_FLAGS += -DDEBUG -O0 -g
 LINK_OPTS   =
@@ -242,11 +274,6 @@ endif
 else
 BASE_FLAGS += -DNDEBUG $(BASE_OPTS) -fvisibility=hidden
 CXXFLAGS   += -fvisibility-inlines-hidden
-endif
-
-ifeq ($(STATIC_BUILD),true)
-BASE_FLAGS += -DSTATIC_BUILD
-# LINK_OPTS  += -static
 endif
 
 ifeq ($(WITH_LTO),true)
@@ -292,7 +319,7 @@ ifeq ($(TESTBUILD),true)
 BASE_FLAGS += -Werror -Wcast-qual -Wconversion -Wformat -Wformat-security -Wredundant-decls -Wshadow -Wstrict-overflow -fstrict-overflow -Wundef -Wwrite-strings
 BASE_FLAGS += -Wpointer-arith -Wabi=98 -Winit-self -Wuninitialized -Wstrict-overflow=5
 # BASE_FLAGS += -Wfloat-equal
-ifeq ($(CC),clang)
+ifeq ($(CLANG),true)
 BASE_FLAGS += -Wdocumentation -Wdocumentation-unknown-command
 BASE_FLAGS += -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -Wno-padded -Wno-exit-time-destructors -Wno-float-equal
 else
@@ -300,7 +327,7 @@ BASE_FLAGS += -Wcast-align -Wunsafe-loop-optimizations
 endif
 ifneq ($(MACOS),true)
 BASE_FLAGS += -Wmissing-declarations -Wsign-conversion
-ifneq ($(CC),clang)
+ifeq ($(GCC),true)
 BASE_FLAGS += -Wlogical-op
 endif
 endif
@@ -621,11 +648,14 @@ all:
 print_available = @echo $(1): $(shell echo $($(1)) | grep -q true && echo Yes || echo No)
 
 features:
+	@echo === Detected Compiler
+	$(call print_available,CLANG)
+	$(call print_available,GCC)
 	@echo === Detected CPU
-	$(call print_available,CPU_AARCH64)
 	$(call print_available,CPU_ARM)
+	$(call print_available,CPU_ARM32)
 	$(call print_available,CPU_ARM64)
-	$(call print_available,CPU_ARM_OR_AARCH64)
+	$(call print_available,CPU_ARM_OR_ARM64)
 	$(call print_available,CPU_I386)
 	$(call print_available,CPU_I386_OR_X86_64)
 	@echo === Detected OS
