@@ -2619,6 +2619,24 @@ private:
         return V3_OK;
     }
 
+    // someone please tell me what is up with these..
+    static inline v3_speaker_arrangement indexToSpeaker(const uint32_t index)
+    {
+        switch (index)
+        {
+        case 0:  return 1ull << 23ull;
+        case 1:  return 1ull << 22ull;
+        case 2:  return 1ull << 20ull;
+        case 3:  return 1ull << 21ull;
+        case 4:  return 1ull << 28ull;
+        case 5:  return 1ull << 29ull;
+        case 6:  return 1ull << 30ull;
+        case 7:  return 1ull << 31ull;
+        case 8:  return 1ull << 32ull;
+        default: return 1ull << (index - 8ull + 33ull);
+        }
+    }
+
     template<bool isInput>
     v3_speaker_arrangement getSpeakerArrangementForAudioPort(const BusInfo& busInfo, const uint32_t portGroupId, uint32_t busId) const noexcept
     {
@@ -2636,7 +2654,7 @@ private:
         {
             const uint32_t numPortsInBus = fPlugin.getAudioPortCountWithGroupId(isInput, busId);
             for (uint32_t j=0; j<numPortsInBus; ++j)
-                arr |= 1ull << (j + 33ull);
+                arr |= indexToSpeaker(j);
         }
         else
         {
@@ -2644,19 +2662,17 @@ private:
 
             if (busInfo.audio != 0 && busId == 0)
             {
-                arr = 0x0;
                 for (uint32_t j=0; j<busInfo.audioPorts; ++j)
-                    arr |= 1ull << (j + 33ull);
+                    arr |= indexToSpeaker(j);
             }
             else if (busInfo.sidechain != 0 && busId == busInfo.audio)
             {
-                arr = 0x0;
                 for (uint32_t j=0; j<busInfo.sidechainPorts; ++j)
-                    arr |= 1ull << (busInfo.audioPorts + j + 33ull);
+                    arr |= indexToSpeaker(busInfo.audioPorts + j);
             }
             else
             {
-                arr = 1ull << (busInfo.audioPorts + busInfo.sidechainPorts + busId + 33ull);
+                arr = indexToSpeaker(busInfo.audioPorts + busInfo.sidechainPorts + busId);
             }
         }
 
@@ -2668,6 +2684,7 @@ private:
     {
         constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
         const BusInfo& busInfo(isInput ? inputBuses : outputBuses);
+        /*
         const bool* const enabledPorts = isInput
                                       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
                                        ? fEnabledInputs
@@ -2679,6 +2696,7 @@ private:
                                       #else
                                        : nullptr;
                                       #endif
+        */
 
         for (uint32_t i=0; i<numPorts; ++i)
         {
@@ -2690,12 +2708,14 @@ private:
                 continue;
             }
 
+            /* FIXME should we disable this by default?
             if (!enabledPorts[i])
             {
                 *speaker = 0;
                 // d_stdout("getAudioBusArrangement %d %d not enabled", i, busId);
                 return true;
             }
+            */
 
             *speaker = getSpeakerArrangementForAudioPort<isInput>(busInfo, port.groupId, busId);
             // d_stdout("getAudioBusArrangement %d enabled by value %lx", busId, *speaker);
@@ -2744,7 +2764,8 @@ private:
                 const v3_speaker_arrangement earr = getSpeakerArrangementForAudioPort<isInput>(busInfo, port.groupId, busId);
 
                 // fail if host tries to map it to anything else
-                if (earr != arr && arr != 0)
+                // FIXME should we allow to map speaker to zero as a way to disable it?
+                if (earr != arr /* && arr != 0 */)
                 {
                     ok = false;
                     continue;
