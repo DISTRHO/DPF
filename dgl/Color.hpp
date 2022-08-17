@@ -68,7 +68,7 @@ struct Color {
    /**
       Create a new color based on this one but with a different alpha value.
     */
-    Color withAlpha(float alpha) noexcept;
+    Color withAlpha(float alpha) const noexcept;
 
    /**
       Create a color specified by hue, saturation and lightness.
