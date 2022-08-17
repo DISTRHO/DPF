@@ -211,7 +211,7 @@ private:                                         \
 #endif
 
 /* Useful macros */
-#define ARRAY_SIZE(ARRAY) sizeof(ARRAY)/sizeof(ARRAY[0])
+#define ARRAY_SIZE(ARRAY) (sizeof(ARRAY)/sizeof(ARRAY[0]))
 
 /* Useful typedefs */
 typedef unsigned char uchar;
