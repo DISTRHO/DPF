@@ -38,6 +38,12 @@
 #include "jackbridge/JackBridge.cpp"
 #include "lv2/lv2.h"
 
+#ifdef DISTRHO_OS_MAC
+# define Point CocoaPoint
+# include <CoreFoundation/CoreFoundation.h>
+# undef Point
+#endif
+
 #ifndef DISTRHO_OS_WINDOWS
 # include <signal.h>
 # include <unistd.h>
@@ -982,7 +988,17 @@ int main(int argc, char* argv[])
         else
             d_stderr("Failed to create the JACK client, cannot continue!");
 
-       #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+       #if defined(DISTRHO_OS_MAC)
+        CFStringRef errorTitleRef = CFStringCreateWithCString(nullptr,
+           DISTRHO_PLUGIN_NAME ": Error", kCFStringEncodingUTF8);
+        CFStringRef errorStringRef = CFStringCreateWithCString(nullptr,
+           String("Failed to create JACK client, reason was:\n" + errorString).buffer(), kCFStringEncodingUTF8);
+
+        CFUserNotificationDisplayAlert(0, kCFUserNotificationCautionAlertLevel,
+           nullptr, nullptr, nullptr,
+           errorTitleRef, errorStringRef,
+           nullptr, nullptr, nullptr, nullptr);
+       #elif defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
         // make sure message box is high-dpi aware
         if (const HMODULE user32 = LoadLibrary("user32.dll"))
         {
