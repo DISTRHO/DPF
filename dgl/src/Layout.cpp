@@ -19,6 +19,9 @@
 
 START_NAMESPACE_DGL
 
+typedef std::list<SubWidgetWithSizeHint>::iterator SubWidgetWithSizeHintIterator;
+typedef std::list<HorizontalLayout*>::iterator HorizontalLayoutIterator;
+
 // --------------------------------------------------------------------------------------------------------------------
 
 template<> // horizontal
@@ -26,8 +29,9 @@ uint Layout<true>::setAbsolutePos(int x, const int y, const uint padding)
 {
     uint maxHeight = 0;
 
-    for (SubWidgetWithSizeHint& s : widgets)
+    for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
+        SubWidgetWithSizeHint& s(*it);
         maxHeight = std::max(maxHeight, s.widget->getHeight());
         s.widget->setAbsolutePos(x, y);
         x += s.widget->getWidth();
@@ -44,8 +48,9 @@ void Layout<true>::setSize(const uint width, const uint padding)
     uint nonFixedWidth = width;
     uint numDynamiclySizedWidgets = 0;
 
-    for (SubWidgetWithSizeHint& s : widgets)
+    for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
+        SubWidgetWithSizeHint& s(*it);
         maxHeight = std::max(maxHeight, s.widget->getHeight());
 
         if (s.sizeHint == Fixed)
@@ -58,8 +63,9 @@ void Layout<true>::setSize(const uint width, const uint padding)
                               ? (nonFixedWidth - padding * numDynamiclySizedWidgets) / numDynamiclySizedWidgets
                               : 0;
 
-    for (SubWidgetWithSizeHint& s : widgets)
+    for (SubWidgetWithSizeHintIterator it=widgets.begin(), end=widgets.end(); it != end; ++it)
     {
+        SubWidgetWithSizeHint& s(*it);
         if (s.sizeHint != Fixed)
             s.widget->setSize(widthPerWidget, maxHeight);
         else
@@ -71,8 +77,9 @@ void Layout<true>::setSize(const uint width, const uint padding)
 
 void VerticallyStackedHorizontalLayout::setAbsolutePos(const int x, int y, const uint padding)
 {
-    for (HorizontalLayout* l : items)
+    for (HorizontalLayoutIterator it=items.begin(), end=items.end(); it != end; ++it)
     {
+        HorizontalLayout* l(*it);
         y += l->setAbsolutePos(x, y, padding);
         y += padding;
     }
@@ -80,8 +87,11 @@ void VerticallyStackedHorizontalLayout::setAbsolutePos(const int x, int y, const
 
 void VerticallyStackedHorizontalLayout::setWidth(const uint width, const uint padding)
 {
-    for (HorizontalLayout* l : items)
+    for (HorizontalLayoutIterator it=items.begin(), end=items.end(); it != end; ++it)
+    {
+        HorizontalLayout* l(*it);
         l->setSize(width, padding);
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
