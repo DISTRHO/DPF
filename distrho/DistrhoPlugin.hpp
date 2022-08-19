@@ -951,6 +951,16 @@ public:
     */
     bool isDummyInstance() const noexcept;
 
+   /**
+      Check if this plugin instance is a "selftest" one used for automated plugin tests.@n
+      To enable this mode build with `DPF_RUNTIME_TESTING` macro defined (i.e. set as compiler build flag),
+      and run the JACK/Standalone executable with "selftest" as its only and single argument.
+
+      A few basic DSP and UI tests will run in self-test mode, with once instance having this function returning true.@n
+      You can use this chance to do a few tests of your own as well.
+    */
+    bool isSelfTestInstance() const noexcept;
+
 #if DISTRHO_PLUGIN_WANT_TIMEPOS
    /**
       Get the current host transport time position.@n

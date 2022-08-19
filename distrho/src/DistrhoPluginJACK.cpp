@@ -795,11 +795,11 @@ protected:
 
         while (! shouldThreadExit())
         {
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             plugin.run(inputs, outputs, 128, nullptr, 0);
-#else
+           #else
             plugin.run(inputs, outputs, 128);
-#endif
+           #endif
             d_msleep(100);
         }
 
@@ -824,7 +824,17 @@ bool runSelfTests()
 
     // simple processing
     {
+        d_nextPluginIsSelfTest = true;
         PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
+        d_nextPluginIsSelfTest = false;
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        UIExporter ui(nullptr, 0, plugin.getSampleRate(),
+                      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+                      plugin.getInstancePointer(), 0.0);
+        ui.showAndFocus();
+       #endif
+
         plugin.activate();
         plugin.deactivate();
         plugin.setBufferSize(128);
@@ -839,14 +849,20 @@ bool runSelfTests()
         for (int i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
             outputs[i] = buffer;
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         plugin.run(inputs, outputs, 128, nullptr, 0);
-#else
+       #else
         plugin.run(inputs, outputs, 128);
-#endif
+       #endif
 
         plugin.deactivate();
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        ui.plugin_idle();
+       #endif
     }
+
+    return true;
 
     // multi-threaded processing with UI
     {
@@ -866,7 +882,7 @@ bool runSelfTests()
         // stop the 2nd instance now
         procTestB.stopThread(5000);
 
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         // start UI in the middle of this
         {
             UIExporter uiA(nullptr, 0, pluginA.getSampleRate(),
@@ -893,7 +909,7 @@ bool runSelfTests()
                 d_msleep(100);
             }
         }
-#endif
+       #endif
 
         procTestA.stopThread(5000);
         procTestC.stopThread(5000);
@@ -911,12 +927,47 @@ int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO;
 
-#ifdef DPF_RUNTIME_TESTING
-    if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
-        return runSelfTests() ? 0 : 1;
-#endif
+    initSignalHandler();
 
-#if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+   #if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
+    // find plugin bundle
+    static String bundlePath;
+    if (bundlePath.isEmpty())
+    {
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+       #ifdef DISTRHO_OS_MAC
+        if (tmpPath.endsWith("/MacOS"))
+        {
+            tmpPath.truncate(tmpPath.rfind('/'));
+            if (tmpPath.endsWith("/Contents"))
+            {
+                tmpPath.truncate(tmpPath.rfind('/'));
+                bundlePath = tmpPath;
+                d_nextBundlePath = bundlePath.buffer();
+            }
+        }
+       #else
+        if (access(tmpPath + DISTRHO_OS_SEP_STR "resources", F_OK) == 0)
+        {
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
+        }
+       #endif
+    }
+   #endif
+
+    if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
+    {
+       #ifdef DPF_RUNTIME_TESTING
+        return runSelfTests() ? 0 : 1;
+       #else
+        d_stderr2("Code was built without DPF_RUNTIME_TESTING macro enabled, selftest option is not available");
+        return 1;
+       #endif
+    }
+
+   #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
     /* the code below is based on
      * https://www.tillett.info/2013/05/13/how-to-create-a-windows-program-that-works-as-both-as-a-gui-and-console-application/
      */
@@ -944,7 +995,7 @@ int main(int argc, char* argv[])
 
         hasConsole = true;
     }
-#endif
+   #endif
 
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
@@ -1023,49 +1074,19 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    initSignalHandler();
-
     d_nextBufferSize = jackbridge_get_buffer_size(client);
     d_nextSampleRate = jackbridge_get_sample_rate(client);
     d_nextCanRequestParameterValueChanges = true;
 
-   #if !defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD)
-    // find plugin bundle
-    static String bundlePath;
-    if (bundlePath.isEmpty())
-    {
-        String tmpPath(getBinaryFilename());
-        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
-       #ifdef DISTRHO_OS_MAC
-        if (tmpPath.endsWith("/MacOS"))
-        {
-            tmpPath.truncate(tmpPath.rfind('/'));
-            if (tmpPath.endsWith("/Contents"))
-            {
-                tmpPath.truncate(tmpPath.rfind('/'));
-                bundlePath = tmpPath;
-                d_nextBundlePath = bundlePath.buffer();
-            }
-        }
-       #else
-        if (access(tmpPath + DISTRHO_OS_SEP_STR "resources", F_OK) == 0)
-        {
-            bundlePath = tmpPath;
-            d_nextBundlePath = bundlePath.buffer();
-        }
-       #endif
-    }
-   #endif
-
     uintptr_t winId = 0;
-#if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     if (argc == 3 && std::strcmp(argv[1], "embed") == 0)
         winId = static_cast<uintptr_t>(std::atoll(argv[2]));
-#endif
+   #endif
 
     const PluginJack p(client, winId);
 
-#if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
+   #if defined(DISTRHO_OS_WINDOWS) && DISTRHO_PLUGIN_HAS_UI
     /* the code below is based on
      * https://www.tillett.info/2013/05/13/how-to-create-a-windows-program-that-works-as-both-as-a-gui-and-console-application/
      */
@@ -1091,14 +1112,9 @@ int main(int argc, char* argv[])
         ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
         SendInput(1, &ip, sizeof(INPUT));
     }
-#endif
+   #endif
 
     return 0;
-
-#ifndef DPF_RUNTIME_TESTING
-    // unused
-    (void)argc; (void)argv;
-#endif
 }
 
 // -----------------------------------------------------------------------

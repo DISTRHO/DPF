@@ -25,6 +25,7 @@ uint32_t    d_nextBufferSize = 0;
 double      d_nextSampleRate = 0.0;
 const char* d_nextBundlePath = nullptr;
 bool        d_nextPluginIsDummy = false;
+bool        d_nextPluginIsSelfTest = false;
 bool        d_nextCanRequestParameterValueChanges = false;
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -42,45 +43,45 @@ const PortGroupWithId            PluginExporter::sFallbackPortGroup;
 Plugin::Plugin(uint32_t parameterCount, uint32_t programCount, uint32_t stateCount)
     : pData(new PrivateData())
 {
-#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     pData->audioPorts = new AudioPortWithBusId[DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS];
-#endif
+   #endif
 
-#ifdef DPF_ABORT_ON_ERROR
-# define DPF_ABORT abort();
-#else
-# define DPF_ABORT
-#endif
+   #if defined(DPF_ABORT_ON_ERROR) || defined(DPF_RUNTIME_TESTING)
+    #define DPF_ABORT abort();
+   #else
+    #define DPF_ABORT
+   #endif
 
     if (parameterCount > 0)
     {
         pData->parameterCount = parameterCount;
-        pData->parameters     = new Parameter[parameterCount];
+        pData->parameters = new Parameter[parameterCount];
     }
 
     if (programCount > 0)
     {
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
         pData->programCount = programCount;
         pData->programNames = new String[programCount];
-#else
+       #else
         d_stderr2("DPF warning: Plugins with programs must define `DISTRHO_PLUGIN_WANT_PROGRAMS` to 1");
         DPF_ABORT
-#endif
+       #endif
     }
 
     if (stateCount > 0)
     {
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         pData->stateCount = stateCount;
-        pData->states     = new State[stateCount];
-#else
+        pData->states = new State[stateCount];
+       #else
         d_stderr2("DPF warning: Plugins with state must define `DISTRHO_PLUGIN_WANT_STATE` to 1");
         DPF_ABORT
-#endif
+       #endif
     }
 
-#undef DPF_ABORT
+    #undef DPF_ABORT
 }
 
 Plugin::~Plugin()
@@ -109,6 +110,11 @@ const char* Plugin::getBundlePath() const noexcept
 bool Plugin::isDummyInstance() const noexcept
 {
     return pData->isDummy;
+}
+
+bool Plugin::isSelfTestInstance() const noexcept
+{
+    return pData->isSelfTest;
 }
 
 #if DISTRHO_PLUGIN_WANT_TIMEPOS

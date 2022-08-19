@@ -39,6 +39,7 @@ extern uint32_t    d_nextBufferSize;
 extern double      d_nextSampleRate;
 extern const char* d_nextBundlePath;
 extern bool        d_nextPluginIsDummy;
+extern bool        d_nextPluginIsSelfTest;
 extern bool        d_nextCanRequestParameterValueChanges;
 
 // -----------------------------------------------------------------------
@@ -92,6 +93,7 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
 struct Plugin::PrivateData {
     const bool canRequestParameterValueChanges;
     const bool isDummy;
+    const bool isSelfTest;
     bool isProcessing;
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
@@ -136,6 +138,7 @@ struct Plugin::PrivateData {
     PrivateData() noexcept
         : canRequestParameterValueChanges(d_nextCanRequestParameterValueChanges),
           isDummy(d_nextPluginIsDummy),
+          isSelfTest(d_nextPluginIsSelfTest),
           isProcessing(false),
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
           audioPorts(nullptr),
