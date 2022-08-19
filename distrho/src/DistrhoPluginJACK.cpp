@@ -813,7 +813,7 @@ bool runSelfTests()
     {
         d_nextBufferSize = 512;
         d_nextSampleRate = 44100.0;
-        PluginExporter plugin(nullptr, nullptr, nullptr);
+        PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
         d_nextBufferSize = 0;
         d_nextSampleRate = 0.0;
     }
@@ -824,7 +824,7 @@ bool runSelfTests()
 
     // simple processing
     {
-        PluginExporter plugin(nullptr, nullptr, nullptr);
+        PluginExporter plugin(nullptr, nullptr, nullptr, nullptr);
         plugin.activate();
         plugin.deactivate();
         plugin.setBufferSize(128);
@@ -850,9 +850,9 @@ bool runSelfTests()
 
     // multi-threaded processing with UI
     {
-        PluginExporter pluginA(nullptr, nullptr, nullptr);
-        PluginExporter pluginB(nullptr, nullptr, nullptr);
-        PluginExporter pluginC(nullptr, nullptr, nullptr);
+        PluginExporter pluginA(nullptr, nullptr, nullptr, nullptr);
+        PluginExporter pluginB(nullptr, nullptr, nullptr, nullptr);
+        PluginExporter pluginC(nullptr, nullptr, nullptr, nullptr);
         PluginProcessTestingThread procTestA(pluginA);
         PluginProcessTestingThread procTestB(pluginB);
         PluginProcessTestingThread procTestC(pluginC);
