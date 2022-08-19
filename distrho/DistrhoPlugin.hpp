@@ -706,6 +706,16 @@ struct State {
       @note This value is optional and only used for LV2.
     */
     String description;
+
+   /**
+      Default constructor for a null state.
+    */
+    State() noexcept
+        : hints(0x0),
+          key(),
+          defaultValue(),
+          label(),
+          description() {}
 };
 
 /**
