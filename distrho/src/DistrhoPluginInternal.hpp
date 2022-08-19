@@ -327,7 +327,8 @@ public:
 # if DISTRHO_PLUGIN_WANT_STATE
         if (fData->stateCount != 0)
         {
-            if ((void*)(fPlugin->*(&Plugin::initState)) == (void*)&Plugin::initState)
+            if ((void*)(fPlugin->*(static_cast<void(Plugin::*)(uint32_t,State&)>(&Plugin::initState))) ==
+                (void*)static_cast<void(Plugin::*)(uint32_t,State&)>(&Plugin::initState))
             {
                 d_stderr2("DPF warning: Plugins with state must implement `initState`");
                 abort();
