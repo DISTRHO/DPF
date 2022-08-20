@@ -32,6 +32,12 @@
    fun:call_init.part.0
 }
 {
+   libdl is really something else
+   Memcheck:Addr8
+   ...
+   fun:dl_open_worker
+}
+{
    ignore XInitThreads
    Memcheck:Leak
    ...
@@ -43,5 +49,13 @@
    Memcheck:Leak
    ...
    fun:XrmGetStringDatabase
+   ...
+}
+{
+   ignore XPutImage
+   Memcheck:Param
+   writev(vector[...])
+   ...
+   fun:XPutImage
    ...
 }
