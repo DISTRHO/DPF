@@ -17,7 +17,7 @@
 #ifndef DGL_LAYOUT_HPP_INCLUDED
 #define DGL_LAYOUT_HPP_INCLUDED
 
-#include "Base.hpp"
+#include "Geometry.hpp"
 
 #include <list>
 
@@ -50,11 +50,18 @@ struct Layout
 typedef Layout<true> HorizontalLayout;
 typedef Layout<false> VerticalLayout;
 
+struct HorizontallyStackedVerticalLayout
+{
+    std::list<VerticalLayout*> items;
+    Size<uint> adjustSize(uint padding); // TODO
+    void setAbsolutePos(int x, int y, uint padding);
+};
+
 struct VerticallyStackedHorizontalLayout
 {
     std::list<HorizontalLayout*> items;
+    Size<uint> adjustSize(uint padding);
     void setAbsolutePos(int x, int y, uint padding);
-    void setWidth(uint width, uint padding);
 };
 
 // --------------------------------------------------------------------------------------------------------------------
