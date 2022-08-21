@@ -157,8 +157,10 @@ Size<uint> VerticallyStackedHorizontalLayout::adjustSize(const uint padding)
         uint width = 0;
         uint height = 0;
 
-        for (SubWidgetWithSizeHint& s : l->widgets)
+        for (SubWidgetWithSizeHintIterator it=l->widgets.begin(), end=l->widgets.end(); it != end; ++it)
         {
+            SubWidgetWithSizeHint& s(*it);
+
             if (width != 0)
                 width += padding;
 
