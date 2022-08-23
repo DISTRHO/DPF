@@ -145,6 +145,14 @@ void SubWidget::repaint() noexcept
     }
 }
 
+void SubWidget::toBottom()
+{
+    std::list<SubWidget*>& subwidgets(pData->parentWidget->pData->subWidgets);
+
+    subwidgets.remove(this);
+    subwidgets.insert(subwidgets.begin(), this);
+}
+
 void SubWidget::toFront()
 {
     std::list<SubWidget*>& subwidgets(pData->parentWidget->pData->subWidgets);
