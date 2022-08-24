@@ -94,7 +94,8 @@ class KnobEventHandler
 public:
     enum Orientation {
         Horizontal,
-        Vertical
+        Vertical,
+        Both
     };
 
     // NOTE hover not implemented yet
@@ -139,7 +140,7 @@ public:
     void setUsingLogScale(bool yesNo) noexcept;
 
     Orientation getOrientation() const noexcept;
-    void setOrientation(const Orientation orientation) noexcept;
+    void setOrientation(Orientation orientation) noexcept;
 
     void setCallback(Callback* callback) noexcept;
 

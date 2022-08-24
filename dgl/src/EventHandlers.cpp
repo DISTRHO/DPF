@@ -402,23 +402,35 @@ struct KnobEventHandler::PrivateData {
         bool doVal = false;
         float d, value2 = 0.0f;
 
-        if (orientation == Horizontal)
+        switch (orientation)
         {
+        case Horizontal:
             if (const double movX = ev.pos.getX() - lastX)
             {
                 d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
                 value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movX));
                 doVal  = true;
             }
-        }
-        else if (orientation == Vertical)
-        {
+            break;
+        case Vertical:
             if (const double movY = lastY - ev.pos.getY())
             {
                 d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
                 value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movY));
                 doVal  = true;
             }
+            break;
+        case Both:
+            const double movX = ev.pos.getX() - lastX;
+            const double movY = lastY - ev.pos.getY();
+
+            if (const double mov = movX + movY)
+            {
+                d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+                value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(mov));
+                doVal  = true;
+            }
+            break;
         }
 
         if (! doVal)
@@ -596,9 +608,6 @@ KnobEventHandler::Orientation KnobEventHandler::getOrientation() const noexcept
 
 void KnobEventHandler::setOrientation(const Orientation orientation) noexcept
 {
-    if (pData->orientation == orientation)
-        return;
-
     pData->orientation = orientation;
 }
 
