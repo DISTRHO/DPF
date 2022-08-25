@@ -274,6 +274,7 @@ struct KnobEventHandler::PrivateData {
     SubWidget* const widget;
     KnobEventHandler::Callback* callback;
 
+    float accel;
     float minimum;
     float maximum;
     float step;
@@ -292,8 +293,9 @@ struct KnobEventHandler::PrivateData {
         : self(s),
           widget(w),
           callback(nullptr),
-          minimum(0.0f),
-          maximum(1.0f),
+          accel(200.f),
+          minimum(0.f),
+          maximum(1.f),
           step(0.0f),
           value(0.5f),
           valueDef(value),
@@ -309,6 +311,7 @@ struct KnobEventHandler::PrivateData {
         : self(s),
           widget(w),
           callback(other->callback),
+          accel(other->accel),
           minimum(other->minimum),
           maximum(other->maximum),
           step(other->step),
@@ -325,6 +328,7 @@ struct KnobEventHandler::PrivateData {
     void assignFrom(PrivateData* const other)
     {
         callback     = other->callback;
+        accel        = other->accel;
         minimum      = other->minimum;
         maximum      = other->maximum;
         step         = other->step;
@@ -407,7 +411,7 @@ struct KnobEventHandler::PrivateData {
         case Horizontal:
             if (const double movX = ev.pos.getX() - lastX)
             {
-                d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
                 value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movX));
                 doVal  = true;
             }
@@ -415,7 +419,7 @@ struct KnobEventHandler::PrivateData {
         case Vertical:
             if (const double movY = lastY - ev.pos.getY())
             {
-                d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
                 value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movY));
                 doVal  = true;
             }
@@ -426,7 +430,7 @@ struct KnobEventHandler::PrivateData {
 
             if (const double mov = movX + movY)
             {
-                d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
                 value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(mov));
                 doVal  = true;
             }
@@ -477,7 +481,7 @@ struct KnobEventHandler::PrivateData {
             return false;
 
         const float dir    = (ev.delta.getY() > 0.f) ? 1.f : -1.f;
-        const float d      = (ev.mod & kModifierControl) ? 2000.0f : 200.0f;
+        const float d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
         float       value2 = (usingLog ? invlogscale(valueTmp) : valueTmp)
                            + ((maximum - minimum) / d * 10.f * dir);
 
@@ -624,6 +628,11 @@ void KnobEventHandler::setOrientation(const Orientation orientation) noexcept
 void KnobEventHandler::setCallback(Callback* const callback) noexcept
 {
     pData->callback = callback;
+}
+
+void KnobEventHandler::setMouseDeceleration(float accel) noexcept
+{
+    pData->accel = accel;
 }
 
 bool KnobEventHandler::mouseEvent(const Widget::MouseEvent& ev)

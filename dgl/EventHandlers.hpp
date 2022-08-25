@@ -147,6 +147,9 @@ public:
 
     void setCallback(Callback* callback) noexcept;
 
+    // default 200, higher means slower
+    void setMouseDeceleration(float accel) noexcept;
+
     bool mouseEvent(const Widget::MouseEvent& ev);
     bool motionEvent(const Widget::MotionEvent& ev);
     bool scrollEvent(const Widget::ScrollEvent& ev);
