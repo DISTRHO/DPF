@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -455,6 +455,11 @@ struct KnobEventHandler::PrivateData {
             {
                 const float rest = std::fmod(value2, step);
                 value2 -= rest + (rest > step/2.0f ? step : 0.0f);
+
+                if (value2 < minimum)
+                    valueTmp = value2 = minimum;
+                else if (value2 > maximum)
+                    valueTmp = value2 = maximum;
             }
         }
 
@@ -563,6 +568,11 @@ KnobEventHandler& KnobEventHandler::operator=(const KnobEventHandler& other)
 KnobEventHandler::~KnobEventHandler()
 {
     delete pData;
+}
+
+bool KnobEventHandler::isInteger() const noexcept
+{
+    return d_isEqual(pData->step, 1.f);
 }
 
 float KnobEventHandler::getValue() const noexcept

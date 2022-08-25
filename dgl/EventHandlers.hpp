@@ -120,6 +120,9 @@ public:
     KnobEventHandler& operator=(const KnobEventHandler& other);
     virtual ~KnobEventHandler();
 
+    // if setStep(1) has been called before, this returns true
+    bool isInteger() const noexcept;
+
     // returns raw value, is assumed to be scaled if using log
     float getValue() const noexcept;
 
