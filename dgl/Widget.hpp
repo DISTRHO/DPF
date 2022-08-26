@@ -64,7 +64,7 @@ public:
         uint mod;
         /** Event flags. @see EventFlag */
         uint flags;
-        /** Event timestamp (if any). */
+        /** Event timestamp in milliseconds (if any). */
         uint time;
 
         /** Constructor for default/null values */

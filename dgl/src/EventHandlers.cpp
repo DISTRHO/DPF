@@ -288,6 +288,7 @@ struct KnobEventHandler::PrivateData {
 
     double lastX;
     double lastY;
+    uint lastClickTime;
 
     PrivateData(KnobEventHandler* const s, SubWidget* const w)
         : self(s),
@@ -305,7 +306,8 @@ struct KnobEventHandler::PrivateData {
           orientation(Vertical),
           state(kKnobStateDefault),
           lastX(0.0),
-          lastY(0.0) {}
+          lastY(0.0),
+          lastClickTime(0) {}
 
     PrivateData(KnobEventHandler* const s, SubWidget* const w, PrivateData* const other)
         : self(s),
@@ -323,7 +325,8 @@ struct KnobEventHandler::PrivateData {
           orientation(other->orientation),
           state(kKnobStateDefault),
           lastX(0.0),
-          lastY(0.0) {}
+          lastY(0.0),
+          lastClickTime(0) {}
 
     void assignFrom(PrivateData* const other)
     {
@@ -341,6 +344,7 @@ struct KnobEventHandler::PrivateData {
         state        = kKnobStateDefault;
         lastX        = 0.0;
         lastY        = 0.0;
+        lastClickTime = 0;
     }
 
     inline float logscale(const float v) const
@@ -374,9 +378,21 @@ struct KnobEventHandler::PrivateData {
                 return true;
             }
 
-            state |= kKnobStateDragging;
             lastX = ev.pos.getX();
             lastY = ev.pos.getY();
+
+            if (lastClickTime > 0 && ev.time > lastClickTime && ev.time - lastClickTime <= 300)
+            {
+                lastClickTime = 0;
+
+                if (callback != nullptr)
+                    callback->knobDoubleClicked(widget);
+
+                return true;
+            }
+
+            lastClickTime = ev.time;
+            state |= kKnobStateDragging;
             widget->repaint();
 
             if (callback != nullptr)

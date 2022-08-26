@@ -113,6 +113,7 @@ public:
         virtual void knobDragStarted(SubWidget* widget) = 0;
         virtual void knobDragFinished(SubWidget* widget) = 0;
         virtual void knobValueChanged(SubWidget* widget, float value) = 0;
+        virtual void knobDoubleClicked(SubWidget*) {};
     };
 
     explicit KnobEventHandler(SubWidget* self);
