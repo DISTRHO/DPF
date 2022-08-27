@@ -40,13 +40,13 @@ def res2c(namespace, filenames):
 
     for filename in filenames:
         shortFilename = filename.rsplit(os.sep, 1)[-1].split(".", 1)[0]
-        shortFilename = shortFilename.replace("-", "_")
+        shortFilename = shortFilename.replace("-", "_").replace("@","_")
 
         resData = open(filename, 'rb').read()
 
         print("Generating data for \"%s\"" % (filename))
 
-        fdH.write("    extern const char* %sData;\n" % shortFilename)
+        fdH.write("    extern const unsigned char* %sData;\n" % shortFilename)
         fdH.write("    const unsigned int %sDataSize = %i;\n" % (shortFilename, len(resData)))
 
         if tempIndex != len(filenames):
@@ -70,7 +70,7 @@ def res2c(namespace, filenames):
                 curColumn += 1
 
         fdC.write("};\n")
-        fdC.write("const char* %s::%sData = (const char*)temp_%s_%i;\n" % (namespace, shortFilename, shortFilename, tempIndex))
+        fdC.write("const unsigned char* %s::%sData = (const unsigned char*)temp_%s_%i;\n" % (namespace, shortFilename, shortFilename, tempIndex))
 
         if tempIndex != len(filenames):
             fdC.write("\n")
@@ -89,15 +89,20 @@ def res2c(namespace, filenames):
 # -----------------------------------------------------
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print("Usage: %s <namespace> <resource-folder>" % sys.argv[0])
+    if len(sys.argv) not in (3, 4):
+        print("Usage: %s <namespace> <resource-folder> [output-folder=$CWD]" % sys.argv[0])
         quit()
 
     namespace = sys.argv[1].replace("-","_")
     resFolder = sys.argv[2]
+    outFolder = sys.argv[3] if len(sys.argv) == 4 else None
 
     if not os.path.exists(resFolder):
         print("Folder '%s' does not exist" % resFolder)
+        quit()
+
+    if outFolder is not None and not os.path.exists(outFolder):
+        print("Output folder '%s' does not exist" % outFolder)
         quit()
 
     # find resource files
@@ -105,9 +110,12 @@ if __name__ == '__main__':
 
     for root, dirs, files in os.walk(resFolder):
         for name in files:
-            resFiles.append(os.path.join(root, name))
+            resFiles.append(os.path.abspath(os.path.join(root, name)))
 
     resFiles.sort()
+
+    if outFolder is not None:
+        os.chdir(outFolder)
 
     # create code now
     res2c(namespace, resFiles)
