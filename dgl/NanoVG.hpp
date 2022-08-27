@@ -591,14 +591,14 @@ public:
    /**
       Creates image by loading it from the specified chunk of memory.
     */
-    NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, ImageFlags imageFlags);
+    NanoImage::Handle createImageFromMemory(const uchar* data, uint dataSize, ImageFlags imageFlags);
 
    /**
       Creates image by loading it from the specified chunk of memory.
       Overloaded function for convenience.
       @see ImageFlags
     */
-    NanoImage::Handle createImageFromMemory(uchar* data, uint dataSize, int imageFlags);
+    NanoImage::Handle createImageFromMemory(const uchar* data, uint dataSize, int imageFlags);
 
    /**
       Creates image from specified raw format image data.

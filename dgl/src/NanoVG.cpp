@@ -664,18 +664,18 @@ NanoImage::Handle NanoVG::createImageFromFile(const char* filename, int imageFla
     return NanoImage::Handle(fContext, nvgCreateImage(fContext, filename, imageFlags));
 }
 
-NanoImage::Handle NanoVG::createImageFromMemory(uchar* data, uint dataSize, ImageFlags imageFlags)
+NanoImage::Handle NanoVG::createImageFromMemory(const uchar* data, uint dataSize, ImageFlags imageFlags)
 {
     return createImageFromMemory(data, dataSize, static_cast<int>(imageFlags));
 }
 
-NanoImage::Handle NanoVG::createImageFromMemory(uchar* data, uint dataSize, int imageFlags)
+NanoImage::Handle NanoVG::createImageFromMemory(const uchar* data, uint dataSize, int imageFlags)
 {
     if (fContext == nullptr) return NanoImage::Handle();
     DISTRHO_SAFE_ASSERT_RETURN(data != nullptr, NanoImage::Handle());
     DISTRHO_SAFE_ASSERT_RETURN(dataSize > 0,    NanoImage::Handle());
 
-    return NanoImage::Handle(fContext, nvgCreateImageMem(fContext, imageFlags, data,static_cast<int>(dataSize)));
+    return NanoImage::Handle(fContext, nvgCreateImageMem(fContext, imageFlags, data, static_cast<int>(dataSize)));
 }
 
 NanoImage::Handle NanoVG::createImageFromRawMemory(uint w, uint h, const uchar* data,
