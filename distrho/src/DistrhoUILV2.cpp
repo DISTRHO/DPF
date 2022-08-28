@@ -89,6 +89,7 @@ public:
               bgColor,
               fgColor),
           fUridMap(uridMap),
+          fUridUnmap(getLv2Feature<LV2_URID_Unmap>(features, LV2_URID__unmap)),
           fUiPortMap(getLv2Feature<LV2UI_Port_Map>(features, LV2_UI__portMap)),
           fUiRequestValue(getLv2Feature<LV2UI_Request_Value>(features, LV2_UI__requestValue)),
           fUiTouch(getLv2Feature<LV2UI_Touch>(features, LV2_UI__touch)),
@@ -181,36 +182,41 @@ public:
 
                 fUI.stateChanged(key, value);
             }
-            else if (atom->type == fURIDs.atomObject)
+            else if (atom->type == fURIDs.atomObject && fUridUnmap != nullptr)
             {
-                /* TODO
-                const LV2_Atom_Object* const obj = (const LV2_Atom_Object*)LV2_ATOM_BODY_CONST(atom);
+                const LV2_Atom_Object* const obj = (const LV2_Atom_Object*)atom;
 
                 const LV2_Atom* property = nullptr;
-                const LV2_Atom* avalue = nullptr;
-                lv2_atom_object_get(obj, fURIDs.patchProperty, &property, fURIDs.patchValue, &avalue, 0);
+                const LV2_Atom* atomvalue = nullptr;
+                lv2_atom_object_get(obj, fURIDs.patchProperty, &property, fURIDs.patchValue, &atomvalue, 0);
 
                 DISTRHO_SAFE_ASSERT_RETURN(property != nullptr,);
-                DISTRHO_SAFE_ASSERT_RETURN(avalue != nullptr,);
+                DISTRHO_SAFE_ASSERT_RETURN(atomvalue != nullptr,);
 
                 DISTRHO_SAFE_ASSERT_RETURN(property->type == fURIDs.atomURID,);
-                DISTRHO_SAFE_ASSERT_RETURN(avalue->type == fURIDs.atomPath || avalue->type == fURIDs.atomString,);
+                DISTRHO_SAFE_ASSERT_RETURN(atomvalue->type == fURIDs.atomPath || atomvalue->type == fURIDs.atomString,);
 
                 if (property != nullptr && property->type == fURIDs.atomURID &&
-                    avalue != nullptr && (avalue->type == fURIDs.atomPath || avalue->type == fURIDs.atomString))
+                    atomvalue != nullptr && (atomvalue->type == fURIDs.atomPath || atomvalue->type == fURIDs.atomString))
                 {
-                    const char* const key   = (const char*)LV2_ATOM_BODY_CONST(property);
-                    const char* const value = (const char*)LV2_ATOM_BODY_CONST(avalue);
+                    const LV2_URID dpf_lv2_urid = ((const LV2_Atom_URID*)property)->body;
+                    DISTRHO_SAFE_ASSERT_RETURN(dpf_lv2_urid != 0,);
 
-                    d_stdout("received atom object '%s' '%s'", key, value);
+                    const char* const dpf_lv2_key = fUridUnmap->unmap(fUridUnmap->handle, dpf_lv2_urid);
+                    DISTRHO_SAFE_ASSERT_RETURN(dpf_lv2_key != nullptr,);
+
+                    constexpr const size_t reqLen = std::strlen(DISTRHO_PLUGIN_URI "#");
+                    DISTRHO_SAFE_ASSERT_RETURN(std::strlen(dpf_lv2_key) > reqLen,);
+
+                    const char* const key   = dpf_lv2_key + reqLen;
+                    const char* const value = (const char*)LV2_ATOM_BODY_CONST(atomvalue);
 
                     fUI.stateChanged(key, value);
                 }
-                */
             }
             else
             {
-                d_stdout("received atom not dpfKeyValue");
+                d_stdout("DPF :: received atom not handled");
             }
         }
 #endif
@@ -384,6 +390,7 @@ private:
 
     // LV2 features
     const LV2_URID_Map*        const fUridMap;
+    const LV2_URID_Unmap*      const fUridUnmap;
     const LV2UI_Port_Map*      const fUiPortMap;
     const LV2UI_Request_Value* const fUiRequestValue;
     const LV2UI_Touch*         const fUiTouch;
