@@ -205,7 +205,7 @@ public:
                     const char* const dpf_lv2_key = fUridUnmap->unmap(fUridUnmap->handle, dpf_lv2_urid);
                     DISTRHO_SAFE_ASSERT_RETURN(dpf_lv2_key != nullptr,);
 
-                    constexpr const size_t reqLen = std::strlen(DISTRHO_PLUGIN_URI "#");
+                    /*constexpr*/ const size_t reqLen = std::strlen(DISTRHO_PLUGIN_URI "#");
                     DISTRHO_SAFE_ASSERT_RETURN(std::strlen(dpf_lv2_key) > reqLen,);
 
                     const char* const key   = dpf_lv2_key + reqLen;
