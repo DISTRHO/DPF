@@ -432,13 +432,15 @@ struct KnobEventHandler::PrivateData {
         case Both:
             movDiff = (ev.pos.getX() - lastX) + (lastY - ev.pos.getY());
             break;
+        default:
+            return false;
         }
 
         if (d_isZero(movDiff))
             return false;
 
         const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-        valueTmp += ((maximum - minimum) / divisor * movDiff);
+        valueTmp += (maximum - minimum) / divisor * movDiff;
 
         if (usingLog)
             valueTmp = logscale(valueTmp);
