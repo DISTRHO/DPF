@@ -419,71 +419,70 @@ struct KnobEventHandler::PrivateData {
         if ((state & kKnobStateDragging) == 0x0)
             return false;
 
-        bool doVal = false;
-        float d, value2 = 0.0f;
+        float movDiff;
 
         switch (orientation)
         {
         case Horizontal:
-            if (const double movX = ev.pos.getX() - lastX)
-            {
-                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-                value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movX));
-                doVal  = true;
-            }
+            movDiff = ev.pos.getX() - lastX;
             break;
         case Vertical:
-            if (const double movY = lastY - ev.pos.getY())
-            {
-                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-                value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(movY));
-                doVal  = true;
-            }
+            movDiff = lastY - ev.pos.getY();
             break;
         case Both:
-            const double movX = ev.pos.getX() - lastX;
-            const double movY = lastY - ev.pos.getY();
-
-            if (const double mov = movX + movY)
-            {
-                d      = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-                value2 = (usingLog ? invlogscale(valueTmp) : valueTmp) + (float(maximum - minimum) / d * float(mov));
-                doVal  = true;
-            }
+            movDiff = (ev.pos.getX() - lastX) + (lastY - ev.pos.getY());
             break;
         }
 
-        if (! doVal)
+        if (d_isZero(movDiff))
             return false;
 
-        if (usingLog)
-            value2 = logscale(value2);
+        const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
+        valueTmp += ((maximum - minimum) / divisor * movDiff);
 
-        if (value2 < minimum)
+        if (usingLog)
+            valueTmp = logscale(valueTmp);
+
+        float value2;
+        bool valueChanged = false;
+
+        if (valueTmp < minimum)
         {
             valueTmp = value2 = minimum;
+            valueChanged = true;
         }
-        else if (value2 > maximum)
+        else if (valueTmp > maximum)
         {
             valueTmp = value2 = maximum;
+            valueChanged = true;
         }
         else
         {
-            valueTmp = value2;
-
             if (d_isNotZero(step))
             {
-                const float rest = std::fmod(value2, step);
-                value2 -= rest + (rest > step/2.0f ? step : 0.0f);
+                if (std::abs(valueTmp - value) >= step)
+                {
+                    valueChanged = true;
+                    value2 = valueTmp + std::fmod(valueTmp, step);
 
-                if (value2 < minimum)
-                    valueTmp = value2 = minimum;
-                else if (value2 > maximum)
-                    valueTmp = value2 = maximum;
+                    if (movDiff < 0.0)
+                        value2 += step;
+
+                    if (value2 < minimum)
+                        value2 = minimum;
+                    else if (value2 > maximum)
+                        value2 = maximum;
+                }
+            }
+            else
+            {
+                value2 = valueTmp;
+                valueChanged = true;
             }
         }
 
-        setValue(value2, true);
+        if (valueChanged)
+            setValue(value2, true);
 
         lastX = ev.pos.getX();
         lastY = ev.pos.getY();
