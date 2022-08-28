@@ -1469,10 +1469,25 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
 
-        d_stdout("dpf_plugin_view::get_size => %p | V3_NOT_INITIALIZED", self);
-        std::memset(rect, 0, sizeof(v3_view_rect));
+        d_stdout("dpf_plugin_view::get_size => %p | NOTE: size request before attach", self);
+
         view->sizeRequestedBeforeBeingAttached = true;
-        return V3_NOT_INITIALIZED;
+
+        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
+        UIExporter tmpUI(nullptr, 0, view->sampleRate,
+                         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
+                         view->instancePointer, lastScaleFactor);
+        rect->left = rect->top = 0;
+        rect->right  = tmpUI.getWidth();
+        rect->bottom = tmpUI.getHeight();
+       #ifdef DISTRHO_OS_MAC
+        const double scaleFactor = tmpUI.getScaleFactor();
+        rect->right /= scaleFactor;
+        rect->bottom /= scaleFactor;
+       #endif
+        tmpUI.quit();
+
+        return V3_OK;
     }
 
     static v3_result V3_API on_size(void* const self, v3_view_rect* const rect)
