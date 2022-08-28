@@ -202,13 +202,23 @@ UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint hei
  * UI */
 
 UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetAsMinimumSize)
-    : UIWidget(UI::PrivateData::createNextWindow(this, width, height)),
+    : UIWidget(UI::PrivateData::createNextWindow(this,
+              #ifdef DISTRHO_UI_DEFAULT_WIDTH
+               width == 0 ? DISTRHO_UI_DEFAULT_WIDTH :
+              #endif
+               width,
+              #ifdef DISTRHO_UI_DEFAULT_WIDTH
+               height == 0 ? DISTRHO_UI_DEFAULT_WIDTH :
+              #endif
+               height)),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     if (width != 0 && height != 0)
     {
+       #ifndef DISTRHO_UI_DEFAULT_WIDTH
         Widget::setSize(width, height);
+       #endif
 
         if (automaticallyScaleAndSetAsMinimumSize)
             setGeometryConstraints(width, height, true, true, true);

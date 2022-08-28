@@ -184,6 +184,17 @@
 #endif
 
 // -----------------------------------------------------------------------
+// Make sure both default width and height are provided
+
+#if defined(DISTRHO_UI_DEFAULT_WIDTH) && !defined(DISTRHO_UI_DEFAULT_HEIGHT)
+# error DISTRHO_UI_DEFAULT_WIDTH is defined but DISTRHO_UI_DEFAULT_HEIGHT is not
+#endif
+
+#if defined(DISTRHO_UI_DEFAULT_HEIGHT) && !defined(DISTRHO_UI_DEFAULT_WIDTH)
+# error DISTRHO_UI_DEFAULT_HEIGHT is defined but DISTRHO_UI_DEFAULT_WIDTH is not
+#endif
+
+// -----------------------------------------------------------------------
 // Prevent users from messing about with DPF internals
 
 #ifdef DISTRHO_UI_IS_STANDALONE

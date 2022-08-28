@@ -1473,19 +1473,26 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         view->sizeRequestedBeforeBeingAttached = true;
 
-        const float lastScaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0f;
+        double scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0;
+       #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
+        rect->right = DISTRHO_UI_DEFAULT_WIDTH;
+        rect->bottom = DISTRHO_UI_DEFAULT_HEIGHT;
+        if (d_isZero(scaleFactor))
+            scaleFactor = 1.0;
+       #else
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                         view->instancePointer, lastScaleFactor);
-        rect->left = rect->top = 0;
-        rect->right  = tmpUI.getWidth();
+                         view->instancePointer, scaleFactor);
+        rect->right = tmpUI.getWidth();
         rect->bottom = tmpUI.getHeight();
+        scaleFactor = tmpUI.getScaleFactor();
+        tmpUI.quit();
+       #endif
+        rect->left = rect->top = 0;
        #ifdef DISTRHO_OS_MAC
-        const double scaleFactor = tmpUI.getScaleFactor();
         rect->right /= scaleFactor;
         rect->bottom /= scaleFactor;
        #endif
-        tmpUI.quit();
 
         return V3_OK;
     }

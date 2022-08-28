@@ -575,17 +575,25 @@ public:
             }
             else
             {
+                double scaleFactor = fLastScaleFactor;
+               #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
+                fVstRect.right = DISTRHO_UI_DEFAULT_WIDTH;
+                fVstRect.bottom = DISTRHO_UI_DEFAULT_HEIGHT;
+                if (d_isZero(scaleFactor))
+                    scaleFactor = 1.0;
+               #else
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                                 fPlugin.getInstancePointer(), fLastScaleFactor);
-                fVstRect.right  = tmpUI.getWidth();
+                                 fPlugin.getInstancePointer(), scaleFactor);
+                fVstRect.right = tmpUI.getWidth();
                 fVstRect.bottom = tmpUI.getHeight();
-# ifdef DISTRHO_OS_MAC
-                const double scaleFactor = tmpUI.getScaleFactor();
+                scaleFactor = tmpUI.getScaleFactor();
+                tmpUI.quit();
+               #endif
+               #ifdef DISTRHO_OS_MAC
                 fVstRect.right /= scaleFactor;
                 fVstRect.bottom /= scaleFactor;
-# endif
-                tmpUI.quit();
+               #endif
             }
             *(ERect**)ptr = &fVstRect;
             return 1;
