@@ -395,7 +395,7 @@ bool ImageBaseKnob<ImageType>::onMouse(const MouseEvent& ev)
 {
     if (SubWidget::onMouse(ev))
         return true;
-    return KnobEventHandler::mouseEvent(ev);
+    return KnobEventHandler::mouseEvent(ev, getTopLevelWidget()->getScaleFactor());
 }
 
 template <class ImageType>
@@ -403,7 +403,7 @@ bool ImageBaseKnob<ImageType>::onMotion(const MotionEvent& ev)
 {
     if (SubWidget::onMotion(ev))
         return true;
-    return KnobEventHandler::motionEvent(ev);
+    return KnobEventHandler::motionEvent(ev, getTopLevelWidget()->getScaleFactor());
 }
 
 template <class ImageType>

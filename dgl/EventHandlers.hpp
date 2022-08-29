@@ -151,8 +151,8 @@ public:
     // default 200, higher means slower
     void setMouseDeceleration(float accel) noexcept;
 
-    bool mouseEvent(const Widget::MouseEvent& ev);
-    bool motionEvent(const Widget::MotionEvent& ev);
+    bool mouseEvent(const Widget::MouseEvent& ev, double scaleFactor = 1.0);
+    bool motionEvent(const Widget::MotionEvent& ev, double scaleFactor = 1.0);
     bool scrollEvent(const Widget::ScrollEvent& ev);
 
 protected:

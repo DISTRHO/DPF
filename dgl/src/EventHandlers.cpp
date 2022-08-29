@@ -361,7 +361,7 @@ struct KnobEventHandler::PrivateData {
         return std::log(v/a)/b;
     }
 
-    bool mouseEvent(const Widget::MouseEvent& ev)
+    bool mouseEvent(const Widget::MouseEvent& ev, const double scaleFactor)
     {
         if (ev.button != 1)
             return false;
@@ -378,8 +378,8 @@ struct KnobEventHandler::PrivateData {
                 return true;
             }
 
-            lastX = ev.pos.getX();
-            lastY = ev.pos.getY();
+            lastX = ev.pos.getX() / scaleFactor;
+            lastY = ev.pos.getY() / scaleFactor;
 
             if (lastClickTime > 0 && ev.time > lastClickTime && ev.time - lastClickTime <= 300)
             {
@@ -414,7 +414,7 @@ struct KnobEventHandler::PrivateData {
         return false;
     }
 
-    bool motionEvent(const Widget::MotionEvent& ev)
+    bool motionEvent(const Widget::MotionEvent& ev, const double scaleFactor)
     {
         if ((state & kKnobStateDragging) == 0x0)
             return false;
@@ -424,13 +424,13 @@ struct KnobEventHandler::PrivateData {
         switch (orientation)
         {
         case Horizontal:
-            movDiff = ev.pos.getX() - lastX;
+            movDiff = ev.pos.getX() / scaleFactor - lastX;
             break;
         case Vertical:
-            movDiff = lastY - ev.pos.getY();
+            movDiff = lastY - ev.pos.getY() / scaleFactor;
             break;
         case Both:
-            movDiff = (ev.pos.getX() - lastX) + (lastY - ev.pos.getY());
+            movDiff = (ev.pos.getX() / scaleFactor - lastX) + (lastY - ev.pos.getY() / scaleFactor);
             break;
         default:
             return false;
@@ -486,8 +486,8 @@ struct KnobEventHandler::PrivateData {
         if (valueChanged)
             setValue(value2, true);
 
-        lastX = ev.pos.getX();
-        lastY = ev.pos.getY();
+        lastX = ev.pos.getX() / scaleFactor;
+        lastY = ev.pos.getY() / scaleFactor;
 
         return true;
     }
@@ -652,14 +652,14 @@ void KnobEventHandler::setMouseDeceleration(float accel) noexcept
     pData->accel = accel;
 }
 
-bool KnobEventHandler::mouseEvent(const Widget::MouseEvent& ev)
+bool KnobEventHandler::mouseEvent(const Widget::MouseEvent& ev, const double scaleFactor)
 {
-    return pData->mouseEvent(ev);
+    return pData->mouseEvent(ev, scaleFactor);
 }
 
-bool KnobEventHandler::motionEvent(const Widget::MotionEvent& ev)
+bool KnobEventHandler::motionEvent(const Widget::MotionEvent& ev, const double scaleFactor)
 {
-    return pData->motionEvent(ev);
+    return pData->motionEvent(ev, scaleFactor);
 }
 
 bool KnobEventHandler::scrollEvent(const Widget::ScrollEvent& ev)
