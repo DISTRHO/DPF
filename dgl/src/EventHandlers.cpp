@@ -430,7 +430,11 @@ struct KnobEventHandler::PrivateData {
             movDiff = lastY - ev.pos.getY() / scaleFactor;
             break;
         case Both:
-            movDiff = (ev.pos.getX() / scaleFactor - lastX) + (lastY - ev.pos.getY() / scaleFactor);
+            {
+                const float movDiffX = ev.pos.getX() / scaleFactor - lastX;
+                const float movDiffY = lastY - ev.pos.getY() / scaleFactor;
+                movDiff = std::abs(movDiffX) > std::abs(movDiffY) ? movDiffX : movDiffY;
+            }
             break;
         default:
             return false;
@@ -464,10 +468,13 @@ struct KnobEventHandler::PrivateData {
             {
                 if (std::abs(valueTmp - value) >= step)
                 {
+                    const float rest = std::fmod(valueTmp, step);
                     valueChanged = true;
-                    value2 = valueTmp + std::fmod(valueTmp, step);
+                    value2 = valueTmp - rest;
 
-                    if (movDiff < 0.0)
+                    if (rest < 0 && rest < step * -0.5f)
+                        value2 -= step;
+                    else if (rest > 0 && rest > step * 0.5f)
                         value2 += step;
 
                     if (value2 < minimum)
