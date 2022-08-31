@@ -556,10 +556,13 @@ public:
                #endif
                 }
 
+                // others like latency and buffer-size do not matter on UI side
                 return V3_OK;
             }
 
-            const uint32_t index = static_cast<uint32_t>(rindex) - kVst3InternalParameterBaseCount;
+            DISTRHO_SAFE_ASSERT_UINT2_RETURN(rindex >= kVst3InternalParameterCount, rindex, kVst3InternalParameterCount, V3_INVALID_ARG);
+            const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
+
             fUI.parameterChanged(index, value);
             return V3_OK;
         }

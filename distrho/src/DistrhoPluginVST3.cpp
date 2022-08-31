@@ -1095,7 +1095,7 @@ public:
                 if (fPlugin.isParameterOutputOrTrigger(i))
                     continue;
                 fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = false;
-                sendParameterSetToUI(kVst3InternalParameterBaseCount + i,
+                sendParameterSetToUI(kVst3InternalParameterCount + i,
                                      fCachedParameterValues[kVst3InternalParameterBaseCount + i]);
             }
         }
@@ -1933,7 +1933,7 @@ public:
             return 0.0;
        #endif
 
-       #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
+      #if DPF_VST3_HAS_INTERNAL_PARAMETERS && !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1948,7 +1948,7 @@ public:
        #endif
             return plainParameterToNormalized(rindex, fCachedParameterValues[rindex]);
         }
-       #endif
+      #endif
 
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
@@ -2002,7 +2002,7 @@ public:
                 {
                     if (fPlugin.isParameterOutputOrTrigger(i))
                         continue;
-                    fCachedParameterValues[kVst3InternalParameterCount + i] = fPlugin.getParameterValue(i);
+                    fCachedParameterValues[kVst3InternalParameterBaseCount + i] = fPlugin.getParameterValue(i);
                 }
 
                #if DISTRHO_PLUGIN_HAS_UI
@@ -2019,6 +2019,8 @@ public:
         }
        #endif
 
+        DISTRHO_SAFE_ASSERT_UINT2_RETURN(rindex >= kVst3InternalParameterCount, rindex, kVst3InternalParameterCount, V3_INVALID_ARG);
+
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, V3_INVALID_ARG);
@@ -2026,11 +2028,6 @@ public:
         setNormalizedPluginParameterValue(index, normalized);
        #endif
         return V3_OK;
-
-       #if !DPF_VST3_HAS_INTERNAL_PARAMETERS
-        // unused
-        (void)rindex;
-       #endif
     }
 
     v3_result setComponentHandler(v3_component_handler** const handler) noexcept
@@ -2139,7 +2136,7 @@ public:
             for (uint32_t i=0; i<fParameterCount; ++i)
             {
                 fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = false;
-                sendParameterSetToUI(kVst3InternalParameterBaseCount + i,
+                sendParameterSetToUI(kVst3InternalParameterCount + i,
                                      fCachedParameterValues[kVst3InternalParameterBaseCount + i]);
             }
 
@@ -2177,7 +2174,7 @@ public:
                     continue;
 
                 fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = false;
-                sendParameterSetToUI(kVst3InternalParameterBaseCount + i,
+                sendParameterSetToUI(kVst3InternalParameterCount + i,
                                      fCachedParameterValues[kVst3InternalParameterBaseCount + i]);
             }
 

@@ -67,24 +67,24 @@ START_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 enum Vst3InternalParameters {
-#if DPF_VST3_USES_SEPARATE_CONTROLLER
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
     kVst3InternalParameterBufferSize,
     kVst3InternalParameterSampleRate,
-#endif
-#if DISTRHO_PLUGIN_WANT_LATENCY
+   #endif
+   #if DISTRHO_PLUGIN_WANT_LATENCY
     kVst3InternalParameterLatency,
-#endif
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+   #endif
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
     kVst3InternalParameterProgram,
-#endif
+   #endif
     kVst3InternalParameterBaseCount,
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     kVst3InternalParameterMidiCC_start = kVst3InternalParameterBaseCount,
     kVst3InternalParameterMidiCC_end = kVst3InternalParameterMidiCC_start + 130*16,
     kVst3InternalParameterCount = kVst3InternalParameterMidiCC_end
-#else
+   #else
     kVst3InternalParameterCount = kVst3InternalParameterBaseCount
-#endif
+   #endif
 };
 
 #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS || DISTRHO_PLUGIN_WANT_MIDI_INPUT
