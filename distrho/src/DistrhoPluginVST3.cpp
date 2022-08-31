@@ -3822,12 +3822,13 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
     static v3_plugin_view** V3_API create_view(void* self, const char* name)
     {
         d_debug("dpf_edit_controller::create_view => %p %s", self, name);
+
+       #if DISTRHO_PLUGIN_HAS_UI
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         d_debug("create_view has contexts %p %p",
                 controller->hostApplicationFromFactory, controller->hostApplicationFromInitialize);
 
-       #if DISTRHO_PLUGIN_HAS_UI
         // plugin must be initialized
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, nullptr);
@@ -3874,6 +3875,10 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
        #else
         return nullptr;
        #endif
+
+        // maybe unused
+        (void)self;
+        (void)name;
     }
 };
 
@@ -4408,6 +4413,9 @@ struct dpf_component : v3_component_cpp {
 
         // TODO
         return V3_NOT_IMPLEMENTED;
+
+        // unused
+        (void)io_mode;
     }
 
     static int32_t V3_API get_bus_count(void* const self, const int32_t media_type, const int32_t bus_direction)
