@@ -691,30 +691,44 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // utilities and common code
 
-    float unnormalizeParameterValue(const uint32_t index, const double normalized)
+    double _getNormalizedParameterValue(const uint32_t index, const double plain)
+    {
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        return ranges.getFixedAndNormalizedValue(plain);
+    }
+
+    void _setNormalizedPluginParameterValue(const uint32_t index, const double normalized)
     {
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
         const uint32_t hints = fPlugin.getParameterHints(index);
         float value = ranges.getUnnormalizedValue(normalized);
 
+        // convert as needed as check for changes
         if (hints & kParameterIsBoolean)
         {
-            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-            return value > midRange ? ranges.max : ranges.min;
+            const float midRange = ranges.min + (ranges.max - ranges.min) / 2.f;
+            const bool isHigh = value > midRange;
+
+            if (isHigh == (fCachedParameterValues[kVst3InternalParameterBaseCount + index] > midRange))
+                return;
+
+            value = isHigh ? ranges.max : ranges.min;
         }
+        else if (hints & kParameterIsInteger)
+        {
+            const int ivalue = static_cast<int>(std::round(value));
 
-        if (hints & kParameterIsInteger)
-            return std::round(value);
+            if (static_cast<int>(fCachedParameterValues[kVst3InternalParameterBaseCount + index]) == ivalue)
+                return;
 
-        return value;
-    }
-
-    void setNormalizedPluginParameterValue(const uint32_t index, const double normalized)
-    {
-        const float value = unnormalizeParameterValue(index, normalized);
-
-        if (d_isEqual(fCachedParameterValues[kVst3InternalParameterBaseCount + index], value))
-            return;
+            value = ivalue;
+        }
+        else
+        {
+            // deal with low resolution of some hosts, which convert double to float internally and lose precision
+            if (std::abs(ranges.getNormalizedValue(static_cast<double>(fCachedParameterValues[kVst3InternalParameterBaseCount + index])) - normalized) < 0.0000001)
+                return;
+        }
 
         fCachedParameterValues[kVst3InternalParameterBaseCount + index] = value;
 
@@ -1551,7 +1565,7 @@ public:
                     continue;
 
                 const uint32_t index = rindex - kVst3InternalParameterCount;
-                setNormalizedPluginParameterValue(index, normalized);
+                _setNormalizedPluginParameterValue(index, normalized);
             }
         }
 
@@ -1597,7 +1611,7 @@ public:
                     continue;
 
                 const uint32_t index = rindex - kVst3InternalParameterCount;
-                setNormalizedPluginParameterValue(index, normalized);
+                _setNormalizedPluginParameterValue(index, normalized);
             }
         }
 
@@ -1935,8 +1949,7 @@ public:
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-        return ranges.getFixedAndNormalizedValue(plain);
+        return _getNormalizedParameterValue(index, plain);
     }
 
     double getParameterNormalized(const v3_param_id rindex)
@@ -1971,8 +1984,7 @@ public:
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
 
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-        return ranges.getFixedAndNormalizedValue(static_cast<double>(fCachedParameterValues[kVst3InternalParameterBaseCount + index]));
+        return _getNormalizedParameterValue(index, fCachedParameterValues[kVst3InternalParameterBaseCount + index]);
     }
 
     v3_result setParameterNormalized(const v3_param_id rindex, const double normalized)
@@ -2047,8 +2059,9 @@ public:
             DISTRHO_SAFE_ASSERT_RETURN(!fPlugin.isParameterOutputOrTrigger(index), V3_INVALID_ARG);
         }
 
-        setNormalizedPluginParameterValue(index, normalized);
+        _setNormalizedPluginParameterValue(index, normalized);
        #endif
+
         return V3_OK;
     }
 
@@ -2252,7 +2265,7 @@ public:
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
 
             const uint32_t index = rindex - kVst3InternalParameterCount;
-            const double normalized = fPlugin.getParameterRanges(index).getFixedAndNormalizedValue(value);
+            const double normalized = _getNormalizedParameterValue(index, value);
 
             fCachedParameterValues[kVst3InternalParameterBaseCount + index] = value;
 
@@ -2878,7 +2891,7 @@ private:
             fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = true;
            #endif
 
-            normalized = fPlugin.getParameterRanges(i).getFixedAndNormalizedValue(static_cast<double>(curValue));
+            normalized = _getNormalizedParameterValue(i, curValue);
 
             if (! addParameterDataToHostOutputEvents(outparamsptr, kVst3InternalParameterCount + i, normalized, offset))
                 break;
@@ -3740,16 +3753,16 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterInfo(param_idx, param_info);
     }
 
-    static v3_result V3_API get_parameter_string_for_value(void* self, v3_param_id index, double normalised, v3_str_128 output)
+    static v3_result V3_API get_parameter_string_for_value(void* self, v3_param_id index, double normalized, v3_str_128 output)
     {
         // NOTE very noisy, called many times
-        // d_debug("dpf_edit_controller::get_parameter_string_for_value => %p %u %f %p", self, index, normalised, output);
+        // d_debug("dpf_edit_controller::get_parameter_string_for_value => %p %u %f %p", self, index, normalized, output);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
-        return vst3->getParameterStringForValue(index, normalised, output);
+        return vst3->getParameterStringForValue(index, normalized, output);
     }
 
     static v3_result V3_API get_parameter_value_for_string(void* self, v3_param_id index, int16_t* input, double* output)
@@ -3763,15 +3776,15 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterValueForString(index, input, output);
     }
 
-    static double V3_API normalised_parameter_to_plain(void* self, v3_param_id index, double normalised)
+    static double V3_API normalised_parameter_to_plain(void* self, v3_param_id index, double normalized)
     {
-        d_debug("dpf_edit_controller::normalised_parameter_to_plain => %p %u %f", self, index, normalised);
+        d_debug("dpf_edit_controller::normalised_parameter_to_plain => %p %u %f", self, index, normalized);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
-        return vst3->normalizedParameterToPlain(index, normalised);
+        return vst3->normalizedParameterToPlain(index, normalized);
     }
 
     static double V3_API plain_parameter_to_normalised(void* self, v3_param_id index, double plain)
@@ -3795,15 +3808,15 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         return vst3->getParameterNormalized(index);
     }
 
-    static v3_result V3_API set_parameter_normalised(void* const self, const v3_param_id index, const double normalised)
+    static v3_result V3_API set_parameter_normalised(void* const self, const v3_param_id index, const double normalized)
     {
-        // d_debug("dpf_edit_controller::set_parameter_normalised => %p %u %f", self, index, normalised);
+        // d_debug("dpf_edit_controller::set_parameter_normalised => %p %u %f", self, index, normalized);
         dpf_edit_controller* const controller = *static_cast<dpf_edit_controller**>(self);
 
         PluginVst3* const vst3 = controller->vst3;
         DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
 
-        return vst3->setParameterNormalized(index, normalised);
+        return vst3->setParameterNormalized(index, normalized);
     }
 
     static v3_result V3_API set_component_handler(void* self, v3_component_handler** handler)
