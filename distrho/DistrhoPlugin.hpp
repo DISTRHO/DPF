@@ -362,12 +362,27 @@ struct ParameterRanges {
     */
     float getNormalizedValue(const float& value) const noexcept
     {
-        const float normValue((value - min) / (max - min));
+        const float normValue = (value - min) / (max - min);
 
         if (normValue <= 0.0f)
             return 0.0f;
         if (normValue >= 1.0f)
             return 1.0f;
+        return normValue;
+    }
+
+   /**
+      Get a value normalized to 0.0<->1.0.
+      Overloaded function using double precision values.
+    */
+    double getNormalizedValue(const double& value) const noexcept
+    {
+        const double normValue = (value - min) / (max - min);
+
+        if (normValue <= 0.0)
+            return 0.0;
+        if (normValue >= 1.0)
+            return 1.0;
         return normValue;
     }
 
@@ -381,12 +396,33 @@ struct ParameterRanges {
         if (value >= max)
             return 1.0f;
 
-        const float normValue((value - min) / (max - min));
+        const float normValue = (value - min) / (max - min);
 
         if (normValue <= 0.0f)
             return 0.0f;
         if (normValue >= 1.0f)
             return 1.0f;
+
+        return normValue;
+    }
+
+   /**
+      Get a value normalized to 0.0<->1.0, fixed within range.
+      Overloaded function using double precision values.
+    */
+    double getFixedAndNormalizedValue(const double& value) const noexcept
+    {
+        if (value <= min)
+            return 0.0;
+        if (value >= max)
+            return 1.0;
+
+        const double normValue = (value - min) / (max - min);
+
+        if (normValue <= 0.0)
+            return 0.0;
+        if (normValue >= 1.0)
+            return 1.0;
 
         return normValue;
     }
@@ -399,6 +435,20 @@ struct ParameterRanges {
         if (value <= 0.0f)
             return min;
         if (value >= 1.0f)
+            return max;
+
+        return value * (max - min) + min;
+    }
+
+   /**
+      Get a proper value previously normalized to 0.0<->1.0.
+      Overloaded function using double precision values.
+    */
+    double getUnnormalizedValue(const double& value) const noexcept
+    {
+        if (value <= 0.0)
+            return min;
+        if (value >= 1.0)
             return max;
 
         return value * (max - min) + min;
