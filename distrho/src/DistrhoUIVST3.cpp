@@ -73,8 +73,8 @@ static void applyGeometryConstraints(const uint minimumWidth,
                                      const bool keepAspectRatio,
                                      v3_view_rect* const rect)
 {
-    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | BEFORE",
-             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
+    d_debug("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | BEFORE",
+            minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
     const int32_t minWidth = static_cast<int32_t>(minimumWidth);
     const int32_t minHeight = static_cast<int32_t>(minimumHeight);
 
@@ -99,8 +99,8 @@ static void applyGeometryConstraints(const uint minimumWidth,
     if (minHeight > rect->bottom)
         rect->bottom = minHeight;
 
-    d_stdout("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | AFTER",
-             minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
+    d_debug("applyGeometryConstraints %u %u %d {%d,%d,%d,%d} | AFTER",
+            minimumWidth, minimumHeight, keepAspectRatio, rect->top, rect->left, rect->right, rect->bottom);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -327,13 +327,13 @@ public:
 
             if (fUI.getWidth() != nextWidth || fUI.getHeight() != nextHeight)
             {
-                d_stdout("postInit sets new size as %u %u", nextWidth, nextHeight);
+                d_debug("postInit sets new size as %u %u", nextWidth, nextHeight);
                 fUI.setWindowSizeForVST3(nextWidth, nextHeight);
             }
         }
         else if (fNeedsResizeFromPlugin)
         {
-            d_stdout("postInit forcely sets size from plugin as %u %u", fUI.getWidth(), fUI.getHeight());
+            d_debug("postInit forcely sets size from plugin as %u %u", fUI.getWidth(), fUI.getHeight());
             setSize(fUI.getWidth(), fUI.getHeight());
         }
 
@@ -408,7 +408,7 @@ public:
            #endif
         }
 
-        d_stdout("getSize request returning %i %i", rect->right, rect->bottom);
+        d_debug("getSize request returning %i %i", rect->right, rect->bottom);
         return V3_OK;
     }
 
@@ -426,13 +426,13 @@ public:
 
         if (fIsResizingFromPlugin)
         {
-            d_stdout("host->plugin onSize request %i %i (plugin resize was active, unsetting now)",
-                     rect.right - rect.left, rect.bottom - rect.top);
+            d_debug("host->plugin onSize request %i %i (plugin resize was active, unsetting now)",
+                    rect.right - rect.left, rect.bottom - rect.top);
             fIsResizingFromPlugin = false;
         }
         else
         {
-            d_stdout("host->plugin onSize request %i %i (OK)", rect.right - rect.left, rect.bottom - rect.top);
+            d_debug("host->plugin onSize request %i %i (OK)", rect.right - rect.left, rect.bottom - rect.top);
         }
 
         fIsResizingFromHost = true;
@@ -476,7 +476,7 @@ public:
 
         fConnection = point;
 
-        d_stdout("requesting current plugin state");
+        d_debug("requesting current plugin state");
 
         v3_message** const message = createMessage("init");
         DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
@@ -494,7 +494,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
 
-        d_stdout("reporting UI closed");
+        d_debug("reporting UI closed");
         fReadyForPluginData = false;
 
         v3_message** const message = createMessage("close");
@@ -617,7 +617,7 @@ public:
         }
        #endif
 
-        d_stdout("UIVst3 received unknown msg '%s'", msgid);
+        d_stderr("UIVst3 received unknown msg '%s'", msgid);
 
         return V3_NOT_IMPLEMENTED;
     }
@@ -666,19 +666,19 @@ public:
         if (fNeedsResizeFromPlugin)
         {
             fNeedsResizeFromPlugin = false;
-            d_stdout("first resize forced behaviour is now stopped");
+            d_debug("first resize forced behaviour is now stopped");
         }
 
         if (fIsResizingFromHost)
         {
             fIsResizingFromHost = false;
-            d_stdout("was resizing from host, now stopped");
+            d_debug("was resizing from host, now stopped");
         }
 
         if (fIsResizingFromPlugin)
         {
             fIsResizingFromPlugin = false;
-            d_stdout("was resizing from plugin, now stopped");
+            d_debug("was resizing from plugin, now stopped");
         }
     }
 
@@ -800,17 +800,17 @@ private:
         {
             if (fNeedsResizeFromPlugin)
             {
-                d_stdout("plugin->host setSize %u %u (FORCED, exception for first resize)", width, height);
+                d_debug("plugin->host setSize %u %u (FORCED, exception for first resize)", width, height);
             }
             else
             {
-                d_stdout("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
+                d_debug("plugin->host setSize %u %u (IGNORED, host resize active)", width, height);
                 return;
             }
         }
         else
         {
-            d_stdout("plugin->host setSize %u %u (OK)", width, height);
+            d_debug("plugin->host setSize %u %u (OK)", width, height);
         }
 
         fIsResizingFromPlugin = true;
@@ -940,13 +940,13 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_connection_point_iid))
         {
-            d_stdout("UI|query_interface_connection_point => %p %s %p | OK", self, tuid2str(iid), iface);
+            d_debug("UI|query_interface_connection_point => %p %s %p | OK", self, tuid2str(iid), iface);
             ++point->refcounter;
             *iface = self;
             return V3_OK;
         }
 
-        d_stdout("DSP|query_interface_connection_point => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+        d_debug("DSP|query_interface_connection_point => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = NULL;
         return V3_NO_INTERFACE;
@@ -958,7 +958,7 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
     static v3_result V3_API connect(void* const self, v3_connection_point** const other)
     {
         dpf_ui_connection_point* const point = *static_cast<dpf_ui_connection_point**>(self);
-        d_stdout("UI|dpf_ui_connection_point::connect => %p %p", self, other);
+        d_debug("UI|dpf_ui_connection_point::connect => %p %p", self, other);
 
         DISTRHO_SAFE_ASSERT_RETURN(point->other == nullptr, V3_INVALID_ARG);
 
@@ -972,10 +972,11 @@ struct dpf_ui_connection_point : v3_connection_point_cpp {
 
     static v3_result V3_API disconnect(void* const self, v3_connection_point** const other)
     {
-        d_stdout("UI|dpf_ui_connection_point::disconnect => %p %p", self, other);
+        d_debug("UI|dpf_ui_connection_point::disconnect => %p %p", self, other);
         dpf_ui_connection_point* const point = *static_cast<dpf_ui_connection_point**>(self);
 
         DISTRHO_SAFE_ASSERT_RETURN(point->other != nullptr, V3_INVALID_ARG);
+        DISTRHO_SAFE_ASSERT(point->other == other);
 
         point->other = nullptr;
 
@@ -1029,13 +1030,13 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_plugin_view_content_scale_iid))
         {
-            d_stdout("query_interface_view_content_scale => %p %s %p | OK", self, tuid2str(iid), iface);
+            d_debug("query_interface_view_content_scale => %p %s %p | OK", self, tuid2str(iid), iface);
             ++scale->refcounter;
             *iface = self;
             return V3_OK;
         }
 
-        d_stdout("query_interface_view_content_scale => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+        d_debug("query_interface_view_content_scale => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = NULL;
         return V3_NO_INTERFACE;
@@ -1047,7 +1048,7 @@ struct dpf_plugin_view_content_scale : v3_plugin_view_content_scale_cpp {
     static v3_result V3_API set_content_scale_factor(void* const self, const float factor)
     {
         dpf_plugin_view_content_scale* const scale = *static_cast<dpf_plugin_view_content_scale**>(self);
-        d_stdout("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
+        d_debug("dpf_plugin_view::set_content_scale_factor => %p %f", self, factor);
 
         scale->scaleFactor = factor;
 
@@ -1091,13 +1092,13 @@ struct dpf_timer_handler : v3_timer_handler_cpp {
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_timer_handler_iid))
         {
-            d_stdout("query_interface_timer_handler => %p %s %p | OK", self, tuid2str(iid), iface);
+            d_debug("query_interface_timer_handler => %p %s %p | OK", self, tuid2str(iid), iface);
             ++timer->refcounter;
             *iface = self;
             return V3_OK;
         }
 
-        d_stdout("query_interface_timer_handler => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+        d_debug("query_interface_timer_handler => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = NULL;
         return V3_NO_INTERFACE;
@@ -1158,7 +1159,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
           nextHeight(0),
           sizeRequestedBeforeBeingAttached(false)
     {
-        d_stdout("dpf_plugin_view() with hostApplication %p", hostApplication);
+        d_debug("dpf_plugin_view() with hostApplication %p", hostApplication);
 
         // make sure host application is valid through out this view lifetime
         if (hostApplication != nullptr)
@@ -1186,7 +1187,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     ~dpf_plugin_view()
     {
-        d_stdout("~dpf_plugin_view()");
+        d_debug("~dpf_plugin_view()");
 
         connection = nullptr;
         scale = nullptr;
@@ -1209,7 +1210,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (v3_tuid_match(iid, v3_funknown_iid) ||
             v3_tuid_match(iid, v3_plugin_view_iid))
         {
-            d_stdout("query_interface_view => %p %s %p | OK", self, tuid2str(iid), iface);
+            d_debug("query_interface_view => %p %s %p | OK", self, tuid2str(iid), iface);
             ++view->refcounter;
             *iface = self;
             return V3_OK;
@@ -1217,8 +1218,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         if (v3_tuid_match(v3_connection_point_iid, iid))
         {
-            d_stdout("query_interface_view => %p %s %p | OK convert %p",
-                     self, tuid2str(iid), iface, view->connection.get());
+            d_debug("query_interface_view => %p %s %p | OK convert %p",
+                    self, tuid2str(iid), iface, view->connection.get());
 
             if (view->connection == nullptr)
                 view->connection = new dpf_ui_connection_point(view->uivst3);
@@ -1231,8 +1232,8 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
        #ifndef DISTRHO_OS_MAC
         if (v3_tuid_match(v3_plugin_view_content_scale_iid, iid))
         {
-            d_stdout("query_interface_view => %p %s %p | OK convert %p",
-                     self, tuid2str(iid), iface, view->scale.get());
+            d_debug("query_interface_view => %p %s %p | OK convert %p",
+                    self, tuid2str(iid), iface, view->scale.get());
 
             if (view->scale == nullptr)
                 view->scale = new dpf_plugin_view_content_scale(view->uivst3);
@@ -1243,7 +1244,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         }
        #endif
 
-        d_stdout("query_interface_view => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
+        d_debug("query_interface_view => %p %s %p | WARNING UNSUPPORTED", self, tuid2str(iid), iface);
 
         *iface = nullptr;
         return V3_NO_INTERFACE;
@@ -1253,7 +1254,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     {
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         const int refcount = ++view->refcounter;
-        d_stdout("dpf_plugin_view::ref => %p | refcount %i", self, refcount);
+        d_debug("dpf_plugin_view::ref => %p | refcount %i", self, refcount);
         return refcount;
     }
 
@@ -1264,7 +1265,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         if (const int refcount = --view->refcounter)
         {
-            d_stdout("dpf_plugin_view::unref => %p | refcount %i", self, refcount);
+            d_debug("dpf_plugin_view::unref => %p | refcount %i", self, refcount);
             return refcount;
         }
 
@@ -1303,7 +1304,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         if (unclean)
             return 0;
 
-        d_stdout("dpf_plugin_view::unref => %p | refcount is zero, deleting everything now!", self);
+        d_debug("dpf_plugin_view::unref => %p | refcount is zero, deleting everything now!", self);
 
         delete view;
         delete viewptr;
@@ -1315,7 +1316,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API is_platform_type_supported(void* const self, const char* const platform_type)
     {
-        d_stdout("dpf_plugin_view::is_platform_type_supported => %p %s", self, platform_type);
+        d_debug("dpf_plugin_view::is_platform_type_supported => %p %s", self, platform_type);
 
         for (size_t i=0; i<ARRAY_SIZE(kSupportedPlatforms); ++i)
         {
@@ -1324,11 +1325,14 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         }
 
         return V3_NOT_IMPLEMENTED;
+
+        // unused unless debug
+        (void)self;
     }
 
     static v3_result V3_API attached(void* const self, void* const parent, const char* const platform_type)
     {
-        d_stdout("dpf_plugin_view::attached => %p %p %s", self, parent, platform_type);
+        d_debug("dpf_plugin_view::attached => %p %p %s", self, parent, platform_type);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 == nullptr, V3_INVALID_ARG);
 
@@ -1381,7 +1385,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API removed(void* const self)
     {
-        d_stdout("dpf_plugin_view::removed => %p", self);
+        d_debug("dpf_plugin_view::removed => %p", self);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
         DISTRHO_SAFE_ASSERT_RETURN(view->uivst3 != nullptr, V3_INVALID_ARG);
 
@@ -1416,7 +1420,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_wheel(void* const self, const float distance)
     {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        d_stdout("dpf_plugin_view::on_wheel => %p %f", self, distance);
+        d_debug("dpf_plugin_view::on_wheel => %p %f", self, distance);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
@@ -1433,7 +1437,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_key_down(void* const self, const int16_t key_char, const int16_t key_code, const int16_t modifiers)
     {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        d_stdout("dpf_plugin_view::on_key_down => %p %i %i %i", self, key_char, key_code, modifiers);
+        d_debug("dpf_plugin_view::on_key_down => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
@@ -1450,7 +1454,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_key_up(void* const self, const int16_t key_char, const int16_t key_code, const int16_t modifiers)
     {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        d_stdout("dpf_plugin_view::on_key_up => %p %i %i %i", self, key_char, key_code, modifiers);
+        d_debug("dpf_plugin_view::on_key_up => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
@@ -1466,13 +1470,13 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API get_size(void* const self, v3_view_rect* const rect)
     {
-        d_stdout("dpf_plugin_view::get_size => %p", self);
+        d_debug("dpf_plugin_view::get_size => %p", self);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         if (UIVst3* const uivst3 = view->uivst3)
             return uivst3->getSize(rect);
 
-        d_stdout("dpf_plugin_view::get_size => %p | NOTE: size request before attach", self);
+        d_debug("dpf_plugin_view::get_size => %p | NOTE: size request before attach", self);
 
         view->sizeRequestedBeforeBeingAttached = true;
 
@@ -1502,7 +1506,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_size(void* const self, v3_view_rect* const rect)
     {
-        d_stdout("dpf_plugin_view::on_size => %p {%d,%d,%d,%d}",
+        d_debug("dpf_plugin_view::on_size => %p {%d,%d,%d,%d}",
                 self, rect->top, rect->left, rect->right, rect->bottom);
         DISTRHO_SAFE_ASSERT_INT2_RETURN(rect->right > rect->left, rect->right, rect->left, V3_INVALID_ARG);
         DISTRHO_SAFE_ASSERT_INT2_RETURN(rect->bottom > rect->top, rect->bottom, rect->top, V3_INVALID_ARG);
@@ -1520,7 +1524,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
     static v3_result V3_API on_focus(void* const self, const v3_bool state)
     {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        d_stdout("dpf_plugin_view::on_focus => %p %u", self, state);
+        d_debug("dpf_plugin_view::on_focus => %p %u", self, state);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         UIVst3* const uivst3 = view->uivst3;
@@ -1536,7 +1540,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API set_frame(void* const self, v3_plugin_frame** const frame)
     {
-        d_stdout("dpf_plugin_view::set_frame => %p %p", self, frame);
+        d_debug("dpf_plugin_view::set_frame => %p %p", self, frame);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
         view->frame = frame;
@@ -1566,7 +1570,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API check_size_constraint(void* const self, v3_view_rect* const rect)
     {
-        d_stdout("dpf_plugin_view::check_size_constraint => %p {%d,%d,%d,%d}",
+        d_debug("dpf_plugin_view::check_size_constraint => %p {%d,%d,%d,%d}",
                 self, rect->top, rect->left, rect->right, rect->bottom);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
