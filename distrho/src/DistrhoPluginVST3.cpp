@@ -453,7 +453,7 @@ class PluginVst3
             return placeSorted(event.sample_offset);
         }
 
-        bool appendCC(const int32_t sampleOffset, v3_param_id paramId, const double value) noexcept
+        bool appendCC(const int32_t sampleOffset, v3_param_id paramId, const double normalized) noexcept
         {
             InputEventStorage& eventStorage(eventListStorage[numUsed]);
 
@@ -465,18 +465,18 @@ class PluginVst3
             {
             case 128:
                 eventStorage.type = CC_ChannelPressure;
-                eventStorage.midi[1] = std::max(0, std::min(127, (int)(value * 127)));
+                eventStorage.midi[1] = std::max(0, std::min(127, (int)(normalized * 127)));
                 eventStorage.midi[2] = 0;
                 break;
             case 129:
                 eventStorage.type = CC_Pitchbend;
-                eventStorage.midi[1] = std::max(0, std::min(16384, (int)(value * 16384))) & 0x7f;
-                eventStorage.midi[2] = std::max(0, std::min(16384, (int)(value * 16384))) >> 7;
+                eventStorage.midi[1] = std::max(0, std::min(16384, (int)(normalized * 16384))) & 0x7f;
+                eventStorage.midi[2] = std::max(0, std::min(16384, (int)(normalized * 16384))) >> 7;
                 break;
             default:
                 eventStorage.type = CC_Normal;
                 eventStorage.midi[1] = cc;
-                eventStorage.midi[2] = std::max(0, std::min(127, (int)(value * 127)));
+                eventStorage.midi[2] = std::max(0, std::min(127, (int)(normalized * 127)));
                 break;
             }
 
@@ -578,7 +578,7 @@ class PluginVst3
    #endif // DISTRHO_PLUGIN_WANT_MIDI_INPUT
 
 public:
-    PluginVst3(v3_host_application** const host)
+    PluginVst3(v3_host_application** const host, const bool isComponent)
         : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, nullptr),
           fComponentHandler(nullptr),
         #if DISTRHO_PLUGIN_HAS_UI
@@ -588,6 +588,7 @@ public:
           fConnectionFromCtrlToView(nullptr),
           fHostApplication(host),
         #endif
+          fIsComponent(isComponent),
           fParameterCount(fPlugin.getParameterCount()),
           fVst3ParameterCount(fParameterCount + kVst3InternalParameterCount),
           fCachedParameterValues(nullptr),
@@ -690,7 +691,7 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // utilities and common code
 
-    void setNormalizedPluginParameterValue(const uint32_t index, const float normalized)
+    float unnormalizeParameterValue(const uint32_t index, const double normalized)
     {
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
         const uint32_t hints = fPlugin.getParameterHints(index);
@@ -699,18 +700,35 @@ public:
         if (hints & kParameterIsBoolean)
         {
             const float midRange = ranges.min + (ranges.max - ranges.min) / 2.0f;
-            value = value > midRange ? ranges.max : ranges.min;
-        }
-        else if (hints & kParameterIsInteger)
-        {
-            value = std::round(value);
+            return value > midRange ? ranges.max : ranges.min;
         }
 
+        if (hints & kParameterIsInteger)
+            return std::round(value);
+
+        return value;
+    }
+
+    void setNormalizedPluginParameterValue(const uint32_t index, const double normalized)
+    {
+        const float value = unnormalizeParameterValue(index, normalized);
+
+        if (d_isEqual(fCachedParameterValues[kVst3InternalParameterBaseCount + index], value))
+            return;
+
         fCachedParameterValues[kVst3InternalParameterBaseCount + index] = value;
-       #if DISTRHO_PLUGIN_HAS_UI
-        fParameterValueChangesForUI[kVst3InternalParameterBaseCount + index] = true;
+
+      #if DISTRHO_PLUGIN_HAS_UI
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
+        if (!fIsComponent)
        #endif
-        fPlugin.setParameterValue(index, value);
+        {
+            fParameterValueChangesForUI[kVst3InternalParameterBaseCount + index] = true;
+        }
+      #endif
+
+        if (!fPlugin.isParameterOutputOrTrigger(index))
+            fPlugin.setParameterValue(index, value);
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1488,7 +1506,7 @@ public:
         if (v3_param_changes** const inparamsptr = data->input_params)
         {
             int32_t offset;
-            double value;
+            double normalized;
 
             for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
             {
@@ -1507,10 +1525,10 @@ public:
                     {
                         for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
                         {
-                            if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &value) != V3_OK)
+                            if (v3_cpp_obj(queue)->get_point(queue, j, &offset, &normalized) != V3_OK)
                                 break;
 
-                            if (inputEventList.appendCC(offset, rindex, value))
+                            if (inputEventList.appendCC(offset, rindex, normalized))
                             {
                                 canAppendMoreEvents = false;
                                 break;
@@ -1526,14 +1544,14 @@ public:
                     continue;
 
                 // if there are any parameter changes at frame 0, handle them here
-                if (v3_cpp_obj(queue)->get_point(queue, 0, &offset, &value) != V3_OK)
+                if (v3_cpp_obj(queue)->get_point(queue, 0, &offset, &normalized) != V3_OK)
                     break;
 
                 if (offset != 0)
                     continue;
 
                 const uint32_t index = rindex - kVst3InternalParameterCount;
-                setNormalizedPluginParameterValue(index, value);
+                setNormalizedPluginParameterValue(index, normalized);
             }
         }
 
@@ -1552,7 +1570,7 @@ public:
         if (v3_param_changes** const inparamsptr = data->input_params)
         {
             int32_t offset;
-            double value;
+            double normalized;
 
             for (int32_t i = 0, count = v3_cpp_obj(inparamsptr)->get_param_count(inparamsptr); i < count; ++i)
             {
@@ -1572,14 +1590,14 @@ public:
                 if (pcount <= 0)
                     continue;
 
-                if (v3_cpp_obj(queue)->get_point(queue, pcount - 1, &offset, &value) != V3_OK)
+                if (v3_cpp_obj(queue)->get_point(queue, pcount - 1, &offset, &normalized) != V3_OK)
                     break;
 
                 if (offset == 0)
                     continue;
 
                 const uint32_t index = rindex - kVst3InternalParameterCount;
-                setNormalizedPluginParameterValue(index, value);
+                setNormalizedPluginParameterValue(index, normalized);
             }
         }
 
@@ -1918,7 +1936,7 @@ public:
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-        return ranges.getNormalizedValue(plain);
+        return ranges.getFixedAndNormalizedValue(plain);
     }
 
     double getParameterNormalized(const v3_param_id rindex)
@@ -1954,7 +1972,7 @@ public:
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, 0.0);
 
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-        return ranges.getNormalizedValue(fCachedParameterValues[kVst3InternalParameterBaseCount + index]);
+        return ranges.getFixedAndNormalizedValue(static_cast<double>(fCachedParameterValues[kVst3InternalParameterBaseCount + index]));
     }
 
     v3_result setParameterNormalized(const v3_param_id rindex, const double normalized)
@@ -2024,6 +2042,10 @@ public:
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < fParameterCount, index, fParameterCount, V3_INVALID_ARG);
+
+        if (fIsComponent) {
+            DISTRHO_SAFE_ASSERT_RETURN(!fPlugin.isParameterOutputOrTrigger(index), V3_INVALID_ARG);
+        }
 
         setNormalizedPluginParameterValue(index, normalized);
        #endif
@@ -2230,7 +2252,12 @@ public:
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
 
             const uint32_t index = rindex - kVst3InternalParameterCount;
-            const double normalized = fPlugin.getParameterRanges(index).getNormalizedValue(value);
+            const double normalized = fPlugin.getParameterRanges(index).getFixedAndNormalizedValue(value);
+
+            fCachedParameterValues[kVst3InternalParameterBaseCount + index] = value;
+
+            if (! fPlugin.isParameterOutputOrTrigger(index))
+                fPlugin.setParameterValue(index, value);
 
             return v3_cpp_obj(fComponentHandler)->perform_edit(fComponentHandler, rindex, normalized);
         }
@@ -2374,6 +2401,7 @@ private:
   #endif
 
     // Temporary data
+    const bool fIsComponent;
     const uint32_t fParameterCount;
     const uint32_t fVst3ParameterCount; // full offset + real
     float* fCachedParameterValues; // basic offset + real
@@ -2800,8 +2828,8 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(outparamsptr != nullptr,);
 
-        v3_param_id paramId;
         float curValue;
+        double normalized;
 
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         for (v3_param_id i=kVst3InternalParameterBufferSize; i<=kVst3InternalParameterSampleRate; ++i)
@@ -2809,9 +2837,9 @@ private:
             if (! fParameterValuesChangedDuringProcessing[i])
                 continue;
 
-            curValue = plainParameterToNormalized(i, fCachedParameterValues[i]);
+            normalized = plainParameterToNormalized(i, fCachedParameterValues[i]);
             fParameterValuesChangedDuringProcessing[i] = false;
-            addParameterDataToHostOutputEvents(outparamsptr, i, curValue);
+            addParameterDataToHostOutputEvents(outparamsptr, i, normalized);
         }
        #endif
 
@@ -2850,10 +2878,9 @@ private:
             fParameterValueChangesForUI[kVst3InternalParameterBaseCount + i] = true;
            #endif
 
-            paramId = kVst3InternalParameterCount + i;
-            curValue = fPlugin.getParameterRanges(i).getNormalizedValue(curValue);
+            normalized = fPlugin.getParameterRanges(i).getFixedAndNormalizedValue(static_cast<double>(curValue));
 
-            if (! addParameterDataToHostOutputEvents(outparamsptr, paramId, curValue, offset))
+            if (! addParameterDataToHostOutputEvents(outparamsptr, kVst3InternalParameterCount + i, normalized, offset))
                 break;
         }
 
@@ -2864,28 +2891,33 @@ private:
         {
             fLastKnownLatency = latency;
 
-            curValue = plainParameterToNormalized(kVst3InternalParameterLatency,
-                                                  fCachedParameterValues[kVst3InternalParameterLatency]);
-            addParameterDataToHostOutputEvents(outparamsptr, kVst3InternalParameterLatency, curValue);
+            normalized = plainParameterToNormalized(kVst3InternalParameterLatency,
+                                                    fCachedParameterValues[kVst3InternalParameterLatency]);
+            addParameterDataToHostOutputEvents(outparamsptr, kVst3InternalParameterLatency, normalized);
         }
        #endif
     }
 
     bool addParameterDataToHostOutputEvents(v3_param_changes** const outparamsptr,
                                             v3_param_id paramId,
-                                            const float curValue,
+                                            const double normalized,
                                             const int32_t offset = 0)
     {
         int32_t index = 0;
         v3_param_value_queue** const queue = v3_cpp_obj(outparamsptr)->add_param_data(outparamsptr,
                                                                                       &paramId, &index);
         DISTRHO_SAFE_ASSERT_RETURN(queue != nullptr, false);
-        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj(queue)->add_point(queue, 0, curValue, &index) == V3_OK, false);
+        DISTRHO_SAFE_ASSERT_RETURN(v3_cpp_obj(queue)->add_point(queue, 0, normalized, &index) == V3_OK, false);
 
+        /* FLStudio gets confused with this one, skip it for now
         if (offset != 0)
-            v3_cpp_obj(queue)->add_point(queue, offset, curValue, &index);
+            v3_cpp_obj(queue)->add_point(queue, offset, normalized, &index);
+        */
 
         return true;
+
+        // unused at the moment, buggy VST3 hosts :/
+        (void)offset;
     }
 
    #if DISTRHO_PLUGIN_HAS_UI
@@ -3586,7 +3618,7 @@ struct dpf_edit_controller : v3_edit_controller_cpp {
         d_nextCanRequestParameterValueChanges = true;
 
         // create the actual plugin
-        controller->vst3 = new PluginVst3(hostApplication);
+        controller->vst3 = new PluginVst3(hostApplication, false);
 
         // set connection point if needed
         if (dpf_comp2ctrl_connection_point* const point = controller->connectionComp2Ctrl)
@@ -4313,7 +4345,7 @@ struct dpf_component : v3_component_cpp {
         d_nextCanRequestParameterValueChanges = true;
 
         // create the actual plugin
-        component->vst3 = new PluginVst3(hostApplication);
+        component->vst3 = new PluginVst3(hostApplication, true);
 
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         // set connection point if needed
