@@ -23,6 +23,11 @@
 
 #include "nanovg.h"
 #define FONTSTASH_IMPLEMENTATION
+#define stbtt_fontinfo dpf_nvg_stbtt_fontinfo
+#define stbrp_context dpf_nvg_stbrp_context
+#define stbrp_rect dpf_nvg_stbrp_rect
+#define stbrp_node dpf_nvg_stbrp_node
+#define stbrp_coord dpf_nvg_stbrp_coord
 #include "fontstash.h"
 
 #ifndef NVG_NO_STB
