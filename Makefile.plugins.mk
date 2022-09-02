@@ -264,6 +264,7 @@ vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
+clap       = $(TARGET_DIR)/$(NAME)-clap$(LIB_EXT)
 shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
 static     = $(TARGET_DIR)/$(NAME).a
 
@@ -298,6 +299,7 @@ SYMBOLS_LV2UI  = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-ui.exp
 SYMBOLS_LV2    = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2.exp
 SYMBOLS_VST2   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst2.exp
 SYMBOLS_VST3   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/vst3.exp
+SYMBOLS_CLAP   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/clap.exp
 SYMBOLS_SHARED = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/shared.exp
 else ifeq ($(WASM),true)
 SYMBOLS_LADSPA = -sEXPORTED_FUNCTIONS="['ladspa_descriptor']"
@@ -307,6 +309,7 @@ SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
 SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
 SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
 SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
+SYMBOLS_CLAP   = -sEXPORTED_FUNCTIONS="['']"
 SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
 else ifeq ($(WINDOWS),true)
 SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
@@ -316,6 +319,7 @@ SYMBOLS_LV2UI  = $(DPF_PATH)/utils/symbols/lv2-ui.def
 SYMBOLS_LV2    = $(DPF_PATH)/utils/symbols/lv2.def
 SYMBOLS_VST2   = $(DPF_PATH)/utils/symbols/vst2.def
 SYMBOLS_VST3   = $(DPF_PATH)/utils/symbols/vst3.def
+SYMBOLS_CLAP   = $(DPF_PATH)/utils/symbols/clap.def
 SYMBOLS_SHARED = $(DPF_PATH)/utils/symbols/shared.def
 else ifneq ($(DEBUG),true)
 SYMBOLS_LADSPA = -Wl,--version-script=$(DPF_PATH)/utils/symbols/ladspa.version
@@ -325,6 +329,7 @@ SYMBOLS_LV2UI  = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2-ui.version
 SYMBOLS_LV2    = -Wl,--version-script=$(DPF_PATH)/utils/symbols/lv2.version
 SYMBOLS_VST2   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst2.version
 SYMBOLS_VST3   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/vst3.version
+SYMBOLS_CLAP   = -Wl,--version-script=$(DPF_PATH)/utils/symbols/clap.version
 SYMBOLS_SHARED = -Wl,--version-script=$(DPF_PATH)/utils/symbols/shared.version
 endif
 
@@ -520,6 +525,20 @@ endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating VST3 plugin for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_VST3) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CLAP
+
+clap: $(clap) $(clapfiles)
+
+ifeq ($(HAVE_DGL),true)
+$(clap): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.o $(DGL_LIB)
+else
+$(clap): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o
+endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating CLAP plugin for $(NAME)"
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_CLAP) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Shared

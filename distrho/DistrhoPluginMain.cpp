@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,8 @@
 
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
 # include "src/DistrhoPluginCarla.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_CLAP)
+# include "src/DistrhoPluginStub.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_JACK)
 # include "src/DistrhoPluginJACK.cpp"
 #elif (defined(DISTRHO_PLUGIN_TARGET_LADSPA) || defined(DISTRHO_PLUGIN_TARGET_DSSI))

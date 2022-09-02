@@ -18,6 +18,8 @@
 
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
 // nothing
+#elif defined(DISTRHO_PLUGIN_TARGET_CLAP)
+# include "src/DistrhoUIStub.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_JACK)
 // nothing
 #elif defined(DISTRHO_PLUGIN_TARGET_DSSI)
