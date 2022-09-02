@@ -757,7 +757,7 @@ private:
         v3_cpp_obj_unref(message);
     }
 
-    static void editParameterCallback(void* ptr, uint32_t rindex, bool started)
+    static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
     {
         ((UIVst3*)ptr)->editParameter(rindex, started);
     }
@@ -780,7 +780,7 @@ private:
         v3_cpp_obj_unref(message);
     }
 
-    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
+    static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
     {
         ((UIVst3*)ptr)->setParameterValue(rindex, value);
     }
@@ -823,7 +823,7 @@ private:
         v3_cpp_obj(fFrame)->resize_view(fFrame, fView, &rect);
     }
 
-    static void setSizeCallback(void* ptr, uint width, uint height)
+    static void setSizeCallback(void* const ptr, const uint width, const uint height)
     {
         ((UIVst3*)ptr)->setSize(width, height);
     }
@@ -851,7 +851,7 @@ private:
         v3_cpp_obj_unref(message);
     }
 
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
         ((UIVst3*)ptr)->sendNote(channel, note, velocity);
     }
@@ -878,7 +878,7 @@ private:
         v3_cpp_obj_unref(message);
     }
 
-    static void setStateCallback(void* ptr, const char* key, const char* value)
+    static void setStateCallback(void* const ptr, const char* const key, const char* const value)
     {
         ((UIVst3*)ptr)->setState(key, value);
     }

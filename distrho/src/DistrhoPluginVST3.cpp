@@ -3086,7 +3086,7 @@ private:
         return v3_cpp_obj(fHostEventOutputHandle)->add_event(fHostEventOutputHandle, &event) == V3_OK;
     }
 
-    static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
+    static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
     {
         return ((PluginVst3*)ptr)->writeMidi(midiEvent);
     }
