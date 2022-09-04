@@ -1376,10 +1376,10 @@ public:
             // ticksPerBeat is not possible with VST3
             fTimePosition.bbt.ticksPerBeat = 1920.0;
 
-            if (ctx->state & V3_PROCESS_CTX_CONT_TIME_VALID)
-                fTimePosition.frame = ctx->continuous_time_in_samples;
-            else
+            if (ctx->state & V3_PROCESS_CTX_PROJECT_TIME_VALID)
                 fTimePosition.frame = ctx->project_time_in_samples;
+            else if (ctx->state & V3_PROCESS_CTX_CONT_TIME_VALID)
+                fTimePosition.frame = ctx->continuous_time_in_samples;
 
             if (ctx->state & V3_PROCESS_CTX_TEMPO_VALID)
                 fTimePosition.bbt.beatsPerMinute = ctx->bpm;
