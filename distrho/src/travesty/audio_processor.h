@@ -30,6 +30,23 @@ typedef uint64_t v3_speaker_arrangement;
 enum {
 	V3_SPEAKER_L = 1 << 0,
 	V3_SPEAKER_R = 1 << 1,
+	V3_SPEAKER_C = 1 << 2,
+	V3_SPEAKER_LFE = 1 << 3,
+	V3_SPEAKER_LS = 1 << 4,
+	V3_SPEAKER_RS = 1 << 5,
+	V3_SPEAKER_LC = 1 << 6,
+	V3_SPEAKER_RC = 1 << 7,
+	V3_SPEAKER_S = 1 << 8,
+	V3_SPEAKER_SL = 1 << 9,
+	V3_SPEAKER_SR = 1 << 10,
+	V3_SPEAKER_TC = 1 << 11,
+	V3_SPEAKER_TFL = 1 << 12,
+	V3_SPEAKER_TFC = 1 << 13,
+	V3_SPEAKER_TFR = 1 << 14,
+	V3_SPEAKER_TRL = 1 << 15,
+	V3_SPEAKER_TRC = 1 << 16,
+	V3_SPEAKER_TRR = 1 << 17,
+	V3_SPEAKER_LFE2 = 1 << 18,
 	V3_SPEAKER_M = 1 << 19
 };
 
