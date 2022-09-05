@@ -1392,7 +1392,7 @@ public:
             else
                 fTimePosition.bbt.beatsPerMinute = 120.0;
 
-            if (ctx->state & (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID))
+            if ((ctx->state & (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID)) == (V3_PROCESS_CTX_PROJECT_TIME_VALID|V3_PROCESS_CTX_TIME_SIG_VALID))
             {
                 const double ppqPos    = std::abs(ctx->project_time_quarters);
                 const int    ppqPerBar = ctx->time_sig_numerator * 4 / ctx->time_sig_denom;
@@ -4526,26 +4526,7 @@ struct dpf_component : v3_component_cpp {
 // --------------------------------------------------------------------------------------------------------------------
 // Dummy plugin to get data from
 
-static const PluginExporter& _getPluginInfo()
-{
-    d_nextBufferSize = 1024;
-    d_nextSampleRate = 44100.0;
-    d_nextPluginIsDummy = true;
-    d_nextCanRequestParameterValueChanges = true;
-    static const PluginExporter gPluginInfo(nullptr, nullptr, nullptr, nullptr);
-    d_nextBufferSize = 0;
-    d_nextSampleRate = 0.0;
-    d_nextPluginIsDummy = false;
-    d_nextCanRequestParameterValueChanges = false;
-
-    return gPluginInfo;
-}
-
-static const PluginExporter& getPluginInfo()
-{
-    static const PluginExporter& info(_getPluginInfo());
-    return info;
-}
+static ScopedPointer<PluginExporter> sPlugin;
 
 static const char* getPluginCategories()
 {
@@ -4554,20 +4535,11 @@ static const char* getPluginCategories()
 
     if (firstInit)
     {
-#ifdef DISTRHO_PLUGIN_VST3_CATEGORIES
+       #ifdef DISTRHO_PLUGIN_VST3_CATEGORIES
         categories = DISTRHO_PLUGIN_VST3_CATEGORIES;
-#elif DISTRHO_PLUGIN_IS_SYNTH
+       #elif DISTRHO_PLUGIN_IS_SYNTH
         categories = "Instrument";
-#endif
-#if (DISTRHO_PLUGIN_NUM_INPUTS == 0 || DISTRHO_PLUGIN_NUM_INPUTS == 1) && DISTRHO_PLUGIN_NUM_OUTPUTS == 1
-        if (categories.isNotEmpty())
-            categories += "|";
-        categories += "Mono";
-#elif (DISTRHO_PLUGIN_NUM_INPUTS == 0 || DISTRHO_PLUGIN_NUM_INPUTS == 2) && DISTRHO_PLUGIN_NUM_OUTPUTS == 2
-        if (categories.isNotEmpty())
-            categories += "|";
-        categories += "Stereo";
-#endif
+       #endif
         firstInit = false;
     }
 
@@ -4580,7 +4552,7 @@ static const char* getPluginVersion()
 
     if (version.isEmpty())
     {
-        const uint32_t versionNum = getPluginInfo().getVersion();
+        const uint32_t versionNum = sPlugin->getVersion();
 
         char versionBuf[64];
         std::snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
@@ -4726,8 +4698,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         std::memset(info, 0, sizeof(*info));
 
         info->flags = 0x10; // unicode
-        DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
-        DISTRHO_NAMESPACE::strncpy(info->url, getPluginInfo().getHomePage(), ARRAY_SIZE(info->url));
+        DISTRHO_NAMESPACE::strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
+        DISTRHO_NAMESPACE::strncpy(info->url, sPlugin->getHomePage(), ARRAY_SIZE(info->url));
         // DISTRHO_NAMESPACE::strncpy(info->email, "", ARRAY_SIZE(info->email)); // TODO
         return V3_OK;
     }
@@ -4749,7 +4721,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(idx <= 2, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-        DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
+        DISTRHO_NAMESPACE::strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
 
         if (idx == 0)
         {
@@ -4818,8 +4790,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         info->class_flags = V3_DISTRIBUTABLE;
        #endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
-        DISTRHO_NAMESPACE::strncpy(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
-        DISTRHO_NAMESPACE::strncpy(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
+        DISTRHO_NAMESPACE::strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
+        DISTRHO_NAMESPACE::strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
 
@@ -4851,8 +4823,8 @@ struct dpf_factory : v3_plugin_factory_cpp {
         info->class_flags = V3_DISTRIBUTABLE;
        #endif
         DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
-        DISTRHO_NAMESPACE::strncpy_utf16(info->name, getPluginInfo().getName(), ARRAY_SIZE(info->name));
-        DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, getPluginInfo().getMaker(), ARRAY_SIZE(info->vendor));
+        DISTRHO_NAMESPACE::strncpy_utf16(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
+        DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy_utf16(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
         DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
 
@@ -4951,8 +4923,26 @@ bool ENTRYFNNAME(ENTRYFNNAMEARGS)
     }
 
     // init dummy plugin and set uniqueId
-    dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
-        = dpf_tuid_processor[2] = dpf_tuid_view[2] = getPluginInfo().getUniqueId();
+    if (sPlugin == nullptr)
+    {
+        // set valid but dummy values
+        d_nextBufferSize = 512;
+        d_nextSampleRate = 44100.0;
+        d_nextPluginIsDummy = true;
+        d_nextCanRequestParameterValueChanges = true;
+
+        // Create dummy plugin to get data from
+        sPlugin = new PluginExporter(nullptr, nullptr, nullptr, nullptr);
+
+        // unset
+        d_nextBufferSize = 0;
+        d_nextSampleRate = 0.0;
+        d_nextPluginIsDummy = false;
+        d_nextCanRequestParameterValueChanges = false;
+
+        dpf_tuid_class[2] = dpf_tuid_component[2] = dpf_tuid_controller[2]
+            = dpf_tuid_processor[2] = dpf_tuid_view[2] = sPlugin->getUniqueId();
+    }
 
     return true;
 }
@@ -4962,6 +4952,7 @@ bool EXITFNNAME(void);
 
 bool EXITFNNAME(void)
 {
+    sPlugin = nullptr;
     return true;
 }
 
