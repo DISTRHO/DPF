@@ -663,9 +663,8 @@ START_NAMESPACE_DISTRHO
 
 /**
    Custom LV2 category for the plugin.@n
-   This can be one of the following values:
+   This is a single string, and can be one of the following values:
 
-      - lv2:Plugin
       - lv2:AllpassPlugin
       - lv2:AmplifierPlugin
       - lv2:AnalyserPlugin
@@ -711,7 +710,7 @@ START_NAMESPACE_DISTRHO
 
 /**
    Custom VST3 categories for the plugin.@n
-   This is a list of categories, separated by a @c |.
+   This is a single concatenated string of categories, separated by a @c |.
 
    Each effect category can be one of the following values:
 
@@ -746,9 +745,70 @@ START_NAMESPACE_DISTRHO
       - Instrument|Synth
       - Instrument|Synth|Sampler
 
-   @note DPF will automatically set Mono and Stereo categories when appropriate.
+   And extra categories possible for any plugin type:
+
+      - Mono
+      - Stereo
  */
-#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx"
+#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Stereo"
+
+/**
+   Custom CLAP features for the plugin.@n
+   This is a list of features defined as a string array body, without the terminating @c , or nullptr.
+
+   A top-level category can be set as feature and be one of the following values:
+
+      - instrument
+      - audio-effect
+      - note-effect
+      - analyzer
+
+   The following sub-categories can also be set:
+
+      - synthesizer
+      - sampler
+      - drum
+      - drum-machine
+
+      - filter
+      - phaser
+      - equalizer
+      - de-esser
+      - phase-vocoder
+      - granular
+      - frequency-shifter
+      - pitch-shifter
+
+      - distortion
+      - transient-shaper
+      - compressor
+      - limiter
+
+      - flanger
+      - chorus
+      - delay
+      - reverb
+
+      - tremolo
+      - glitch
+
+      - utility
+      - pitch-correction
+      - restoration
+
+      - multi-effects
+
+      - mixing
+      - mastering
+
+   And finally the following audio capabilities can be set:
+
+      - mono
+      - stereo
+      - surround
+      - ambisonic
+*/
+#define DISTRHO_PLUGIN_CLAP_FEATURES "audio-effect", "stereo"
 
 /** @} */
 
