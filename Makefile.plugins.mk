@@ -591,23 +591,23 @@ $(TARGET_DIR)/%.app/Contents/Info.plist: $(DPF_PATH)/utils/plugin.app/Contents/I
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
-$(TARGET_DIR)/%.vst/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+$(TARGET_DIR)/%.vst/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
-$(TARGET_DIR)/%.vst3/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+$(TARGET_DIR)/%.vst3/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
-$(TARGET_DIR)/%.clap/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+$(TARGET_DIR)/%.clap/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
-$(TARGET_DIR)/%/Contents/PkgInfo: $(DPF_PATH)/utils/plugin.vst/Contents/PkgInfo
+$(TARGET_DIR)/%/Contents/PkgInfo: $(DPF_PATH)/utils/plugin.bundle/Contents/PkgInfo
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)cp $< $@
 
-$(TARGET_DIR)/%/Resources/empty.lproj: $(DPF_PATH)/utils/plugin.vst/Contents/Resources/empty.lproj
+$(TARGET_DIR)/%/Resources/empty.lproj: $(DPF_PATH)/utils/plugin.bundle/Contents/Resources/empty.lproj
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)cp $< $@
 
