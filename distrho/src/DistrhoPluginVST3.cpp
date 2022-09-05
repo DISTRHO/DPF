@@ -588,12 +588,14 @@ public:
           fConnectionFromCtrlToView(nullptr),
           fHostApplication(host),
         #endif
-          fIsComponent(isComponent),
           fParameterCount(fPlugin.getParameterCount()),
           fVst3ParameterCount(fParameterCount + kVst3InternalParameterCount),
           fCachedParameterValues(nullptr),
           fDummyAudioBuffer(nullptr),
           fParameterValuesChangedDuringProcessing(nullptr)
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER
+        , fIsComponent(isComponent)
+       #endif
        #if DISTRHO_PLUGIN_HAS_UI
         , fParameterValueChangesForUI(nullptr)
         , fConnectedToUI(false)
@@ -609,6 +611,10 @@ public:
         , fProgramCountMinusOne(fPlugin.getProgramCount()-1)
        #endif
     {
+       #if !DPF_VST3_USES_SEPARATE_CONTROLLER
+        DISTRHO_SAFE_ASSERT(isComponent);
+       #endif
+
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         std::memset(fEnabledInputs, 0, sizeof(fEnabledInputs));
         fillInBusInfoDetails<true>();
@@ -2414,7 +2420,6 @@ private:
   #endif
 
     // Temporary data
-    const bool fIsComponent;
     const uint32_t fParameterCount;
     const uint32_t fVst3ParameterCount; // full offset + real
     float* fCachedParameterValues; // basic offset + real
@@ -2425,6 +2430,9 @@ private:
    #endif
    #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     bool fEnabledOutputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
+   #endif
+   #if DPF_VST3_USES_SEPARATE_CONTROLLER
+    const bool fIsComponent;
    #endif
    #if DISTRHO_PLUGIN_HAS_UI
     bool* fParameterValueChangesForUI; // basic offset + real
