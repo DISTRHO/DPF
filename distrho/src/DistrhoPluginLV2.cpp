@@ -620,22 +620,22 @@ public:
         // Run plugin
         if (sampleCount != 0)
         {
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+           #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
             fRunCount = mod_license_run_begin(fRunCount, sampleCount);
-#endif
+           #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount, fMidiEvents, midiEventCount);
-#else
+           #else
             fPlugin.run(fPortAudioIns, fPortAudioOuts, sampleCount);
-#endif
+           #endif
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+           #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
             for (uint32_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
                 mod_license_run_silence(fRunCount, fPortAudioOuts[i], sampleCount, i);
-#endif
+           #endif
 
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+           #if DISTRHO_PLUGIN_WANT_TIMEPOS
             // update timePos for next callback
             if (d_isNotZero(fLastPositionData.speed))
             {
@@ -691,12 +691,12 @@ public:
 
                 fPlugin.setTimePosition(fTimePosition);
             }
-#endif
+           #endif
         }
 
         updateParameterOutputsAndTriggers();
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         fEventsOutData.initIfNeeded(fURIDs.atomSequence);
 
         LV2_Atom_Event* aev;
@@ -797,11 +797,11 @@ public:
                 break;
             }
         }
-#endif
+       #endif
 
-#if DISTRHO_LV2_USE_EVENTS_OUT
+       #if DISTRHO_LV2_USE_EVENTS_OUT
         fEventsOutData.endRun();
-#endif
+       #endif
     }
 
     // -------------------------------------------------------------------
@@ -860,7 +860,7 @@ public:
 
     // -------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_PROGRAMS
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
     const LV2_Program_Descriptor* lv2_get_program(const uint32_t index)
     {
         if (index >= fPlugin.getProgramCount())
@@ -895,30 +895,30 @@ public:
             setPortControlValue(i, fLastControlValues[i]);
         }
 
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
         // Update state
         for (StringToStringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
             fStateMap[key] = fPlugin.getStateValue(key);
         }
-# endif
+       #endif
     }
-#endif
+   #endif
 
     // -------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle)
     {
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
         // Update current state
         for (StringToStringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
             const String& key = cit->first;
             fStateMap[key] = fPlugin.getStateValue(key);
         }
-# endif
+       #endif
 
         String lv2key;
         LV2_URID urid;
@@ -1021,11 +1021,11 @@ public:
 
             setState(key, value);
 
-#if DISTRHO_PLUGIN_WANT_STATE
+           #if DISTRHO_PLUGIN_WANT_STATE
             // signal msg needed for UI
             if ((hints & kStateIsOnlyForDSP) == 0x0)
                 fNeededUiSends[i] = true;
-#endif
+           #endif
         }
 
         return LV2_STATE_SUCCESS;
@@ -1090,16 +1090,16 @@ public:
     {
         return LV2_WORKER_SUCCESS;
     }
-#endif
+   #endif
 
     // -------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+   #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     void* lv2_get_instance_pointer()
     {
         return fPlugin.getInstancePointer();
     }
-#endif
+   #endif
 
     // -------------------------------------------------------------------
 
@@ -1107,36 +1107,36 @@ private:
     PluginExporter fPlugin;
     const bool fUsingNominal; // if false use maxBlockLength
 
-#ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
+   #ifdef DISTRHO_PLUGIN_LICENSED_FOR_MOD
     uint32_t fRunCount;
-#endif
+   #endif
 
     // LV2 ports
-#if DISTRHO_PLUGIN_NUM_INPUTS > 0
+   #if DISTRHO_PLUGIN_NUM_INPUTS > 0
     const float*  fPortAudioIns[DISTRHO_PLUGIN_NUM_INPUTS];
-#else
+   #else
     const float** fPortAudioIns;
-#endif
-#if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+   #endif
+   #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     float*  fPortAudioOuts[DISTRHO_PLUGIN_NUM_OUTPUTS];
-#else
+   #else
     float** fPortAudioOuts;
-#endif
+   #endif
     float** fPortControls;
-#if DISTRHO_LV2_USE_EVENTS_IN
+   #if DISTRHO_LV2_USE_EVENTS_IN
     LV2_Atom_Sequence* fPortEventsIn;
-#endif
-#if DISTRHO_PLUGIN_WANT_LATENCY
+   #endif
+   #if DISTRHO_PLUGIN_WANT_LATENCY
     float* fPortLatency;
-#endif
+   #endif
 
     // Temporary data
     float* fLastControlValues;
     double fSampleRate;
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     MidiEvent fMidiEvents[kMaxMidiEvents];
-#endif
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+   #endif
+   #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
 
     struct Lv2PositionData {
@@ -1160,9 +1160,9 @@ private:
               ticksPerBeat(-1.0) {}
 
     } fLastPositionData;
-#endif
+   #endif
 
-#if DISTRHO_LV2_USE_EVENTS_OUT
+   #if DISTRHO_LV2_USE_EVENTS_OUT
     struct Lv2EventsOutData {
         uint32_t capacity, offset;
         LV2_Atom_Sequence* port;
@@ -1198,7 +1198,7 @@ private:
         }
 
     } fEventsOutData;
-#endif
+   #endif
 
     // LV2 URIDs
     struct URIDs {
@@ -1262,13 +1262,13 @@ private:
     } fURIDs;
 
     // LV2 features
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     const LV2_ControlInputPort_Change_Request* const fCtrlInPortChangeReq;
-#endif
+   #endif
     const LV2_URID_Map* const fUridMap;
     const LV2_Worker_Schedule* const fWorker;
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     LV2_Atom_Forge fAtomForge;
     StringToStringMap fStateMap;
     UridToStringMap fUridStateMap;
@@ -1321,7 +1321,7 @@ private:
         d_stderr("Failed to find plugin state with key \"%s\"", key);
         return false;
     }
-#endif
+   #endif
 
     void updateParameterOutputsAndTriggers()
     {
@@ -1341,13 +1341,13 @@ private:
             }
         }
 
-#if DISTRHO_PLUGIN_WANT_LATENCY
+       #if DISTRHO_PLUGIN_WANT_LATENCY
         if (fPortLatency != nullptr)
             *fPortLatency = fPlugin.getLatency();
-#endif
+       #endif
     }
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
         if (fCtrlInPortChangeReq == nullptr)
@@ -1359,16 +1359,16 @@ private:
     {
         return (((PluginLv2*)ptr)->requestParameterValueChange(index, value) == 0);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
     {
         return ((PluginLv2*)ptr)->updateState(key, value);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fEventsOutData.port != nullptr, false);
@@ -1398,7 +1398,7 @@ private:
     {
         return ((PluginLv2*)ptr)->writeMidi(midiEvent);
     }
-#endif
+   #endif
 };
 
 // -----------------------------------------------------------------------
