@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -54,6 +54,9 @@ START_NAMESPACE_DISTRHO
    Let's begin with some examples.@n
    Here is one of a stereo audio plugin that simply mutes the host output:
    @code
+   /* DPF plugin include */
+   #include "DistrhoPlugin.hpp"
+
    /* Make DPF related classes available for us to use without any extra namespace references */
    USE_NAMESPACE_DISTRHO;
 
@@ -115,7 +118,7 @@ START_NAMESPACE_DISTRHO
 
      /**
         Get the plugin unique Id.
-        This value is used by LADSPA, DSSI and VST plugin formats.
+        This value is used by LADSPA, DSSI, VST2 and VST3 plugin formats.
       */
       int64_t getUniqueId() const override
       {
@@ -157,7 +160,7 @@ START_NAMESPACE_DISTRHO
    A plugin is nothing without parameters.@n
    In DPF parameters can be inputs or outputs.@n
    They have hints to describe how they behave plus a name and a symbol identifying them.@n
-   Parameters also have 'ranges' – a minimum, maximum and default value.
+   Parameters also have 'ranges' - a minimum, maximum and default value.
 
    Input parameters are by default "read-only": the plugin can read them but not change them.
    (there are exceptions and possibly a request to the host to change values, more on that below)@n
@@ -349,10 +352,10 @@ START_NAMESPACE_DISTRHO
           }
       }
 
-      /**
-          Set the name of the program @a index.
-          This function will be called once, shortly after the plugin is created.
-        */
+     /**
+        Set the name of the program @a index.
+        This function will be called once, shortly after the plugin is created.
+      */
       void initProgramName(uint32_t index, String& programName)
       {
           // we only have one program so we can skip checking the index
@@ -374,6 +377,8 @@ START_NAMESPACE_DISTRHO
               return fGainL;
           case 1;
               return fGainR;
+         default:
+               return 0.f;
           }
       }
 
