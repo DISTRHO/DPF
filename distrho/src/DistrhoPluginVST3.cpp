@@ -4952,7 +4952,7 @@ bool EXITFNNAME(void);
 
 bool EXITFNNAME(void)
 {
-    sPlugin = nullptr;
+    DISTRHO_NAMESPACE::sPlugin = nullptr;
     return true;
 }
 

@@ -177,17 +177,17 @@ public:
 
         if (const uint32_t frames = process->frames_count)
         {
-            DISTRHO_SAFE_ASSERT_UINT2_RETURN(process->audio_inputs_count == DISTRHO_PLUGIN_NUM_INPUTS,
-                                             process->audio_inputs_count, DISTRHO_PLUGIN_NUM_INPUTS, false);
-            DISTRHO_SAFE_ASSERT_UINT2_RETURN(process->audio_outputs_count == DISTRHO_PLUGIN_NUM_OUTPUTS,
-                                             process->audio_outputs_count, DISTRHO_PLUGIN_NUM_OUTPUTS, false);
-
             // TODO multi-port bus stuff
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(process->audio_inputs_count == 0 || process->audio_inputs_count == 1,
+                                            process->audio_inputs_count, false);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(process->audio_outputs_count == 0 || process->audio_outputs_count == 1,
+                                            process->audio_outputs_count, false);
+
             const float** inputs = process->audio_inputs != nullptr
-                                 ? const_cast<const float**>(process->audio_inputs->data32)
+                                 ? const_cast<const float**>(process->audio_inputs[0].data32)
                                  : nullptr;
             /**/ float** outputs = process->audio_outputs != nullptr
-                                 ? process->audio_inputs->data32
+                                 ? process->audio_outputs[0].data32
                                  : nullptr;
 
             fOutputEvents = process->out_events;
@@ -266,7 +266,7 @@ static ScopedPointer<PluginExporter> sPlugin;
 
 static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t*, const bool is_input)
 {
-    return is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+    return (is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS) != 0 ? 1 : 0;
 }
 
 static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
@@ -277,6 +277,7 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
     const uint32_t maxPortCount = is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
     DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < maxPortCount, index, maxPortCount, false);
 
+    // TODO use groups
     AudioPortWithBusId& audioPort(sPlugin->getAudioPort(is_input, index));
 
     info->id = index;
@@ -290,10 +291,8 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
     // info->port_type = audioPort.hints & kAudioPortIsCV ? CLAP_PORT_CV : nullptr;
     info->port_type = nullptr;
 
-    info->in_place_pair = index < (is_input ? DISTRHO_PLUGIN_NUM_OUTPUTS : DISTRHO_PLUGIN_NUM_INPUTS)
-                        ? index
-                        : CLAP_INVALID_ID;
-    
+    info->in_place_pair = DISTRHO_PLUGIN_NUM_INPUTS == DISTRHO_PLUGIN_NUM_OUTPUTS ? index : CLAP_INVALID_ID;
+
     return true;
 }
 

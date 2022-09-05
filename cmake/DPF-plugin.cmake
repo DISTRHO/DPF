@@ -336,9 +336,9 @@ function(dpf__build_vst2 NAME DGL_LIBRARY)
       OUTPUT_NAME "${NAME}"
       SUFFIX "")
     set(INFO_PLIST_PROJECT_NAME "${NAME}")
-    configure_file("${DPF_ROOT_DIR}/utils/plugin.vst/Contents/Info.plist"
+    configure_file("${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/Info.plist"
       "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents/Info.plist" @ONLY)
-    file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst/Contents/PkgInfo"
+    file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
       DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst/Contents")
   endif()
 endfunction()
@@ -425,9 +425,9 @@ function(dpf__build_vst3 NAME DGL_LIBRARY)
   if(APPLE)
     # Uses the same macOS bundle template as VST2
     set(INFO_PLIST_PROJECT_NAME "${NAME}")
-    configure_file("${DPF_ROOT_DIR}/utils/plugin.vst/Contents/Info.plist"
+    configure_file("${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/Info.plist"
      "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents/Info.plist" @ONLY)
-    file(COPY "${DPF_ROOT_DIR}/utils/plugin.vst/Contents/PkgInfo"
+    file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
      DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.vst3/Contents")
   endif()
 endfunction()
