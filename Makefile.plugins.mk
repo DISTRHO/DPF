@@ -240,6 +240,18 @@ endif
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set CLAP filename, either single binary or inside a bundle
+
+ifeq ($(MACOS),true)
+CLAP_CONTENTS = $(NAME).clap/Contents
+CLAP_FILENAME = $(CLAP_CONTENTS)/MacOS/$(NAME)
+else ifeq ($(USE_CLAP_BUNDLE),true)
+CLAP_FILENAME = $(NAME).clap/$(NAME).clap
+else
+CLAP_FILENAME = $(NAME).clap
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set plugin binary file targets
 
 ifeq ($(MACOS),true)
@@ -264,7 +276,7 @@ vst2       = $(TARGET_DIR)/$(VST2_FILENAME)
 ifneq ($(VST3_FILENAME),)
 vst3       = $(TARGET_DIR)/$(VST3_FILENAME)
 endif
-clap       = $(TARGET_DIR)/$(NAME)-clap$(LIB_EXT)
+clap       = $(TARGET_DIR)/$(CLAP_FILENAME)
 shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
 static     = $(TARGET_DIR)/$(NAME).a
 
@@ -275,6 +287,9 @@ vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
 vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
+clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/Info.plist
+clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/PkgInfo
+clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/Resources/empty.lproj
 endif
 
 ifneq ($(HAVE_DGL),true)
@@ -581,6 +596,10 @@ $(TARGET_DIR)/%.vst/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/I
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
 $(TARGET_DIR)/%.vst3/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
+	-@mkdir -p $(shell dirname $@)
+	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
+
+$(TARGET_DIR)/%.clap/Contents/Info.plist: $(DPF_PATH)/utils/plugin.vst/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 

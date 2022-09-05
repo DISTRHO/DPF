@@ -21,8 +21,6 @@
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
 #include "clap/ext/audio-ports.h"
-#include "src/DistrhoDefines.h"
-#include "src/clap/version.h"
 
 START_NAMESPACE_DISTRHO
 
