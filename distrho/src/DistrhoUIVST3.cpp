@@ -49,11 +49,11 @@ START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static constexpr const sendNoteFunc sendNoteCallback = nullptr;
-#endif
 #if ! DISTRHO_PLUGIN_WANT_STATE
 static constexpr const setStateFunc setStateCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -133,35 +133,27 @@ static uint translateVST3Modifiers(const int64_t modifiers) noexcept
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !DPF_VST3_USING_HOST_RUN_LOOP
 /**
- * Helper class for getting a native idle timer, either through pugl or via native APIs.
+ * Helper class for getting a native idle timer via native APIs.
  */
-#if !DPF_VST3_USING_HOST_RUN_LOOP
-class NativeIdleCallback : public IdleCallback
+class NativeIdleHelper
 {
 public:
-    NativeIdleCallback(UIExporter& ui)
-        : fUI(ui),
-          fCallbackRegistered(false)
-  #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   #if defined(DISTRHO_OS_MAC)
-        , fTimerRef(nullptr)
-   #elif defined(DISTRHO_OS_WINDOWS)
-        , fTimerWindow(nullptr)
-        , fTimerWindowClassName()
-   #endif
-  #endif
+    NativeIdleHelper(IdleCallback* const callback)
+        : fCallback(callback),
+       #ifdef DISTRHO_OS_MAC
+          fTimerRef(nullptr)
+       #else
+          fTimerWindow(nullptr),
+          fTimerWindowClassName()
+       #endif
     {
     }
 
     void registerNativeIdleCallback()
     {
-        DISTRHO_SAFE_ASSERT_RETURN(!fCallbackRegistered,);
-        fCallbackRegistered = true;
-
-       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
-       #elif defined(DISTRHO_OS_MAC)
+       #ifdef DISTRHO_OS_MAC
         constexpr const CFTimeInterval interval = DPF_VST3_TIMER_INTERVAL * 0.0001;
 
         CFRunLoopTimerContext context = {};
@@ -171,12 +163,9 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fTimerRef != nullptr,);
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
-       #elif defined(DISTRHO_OS_WINDOWS)
-        /* We cannot assume anything about the native parent window passed as a parameter (winId) to the
-         * UIVst3 constructor because we do not own it.
-         * These parent windows have class names like 'reaperPluginHostWrapProc' and 'JUCE_nnnnnn'.
-         *
-         * Create invisible window to handle a timer instead.
+       #else
+        /* 
+         * Create an invisible window to handle a timer.
          * There is no need for implementing a window proc because DefWindowProc already calls the
          * callback function when processing WM_TIMER messages.
          */
@@ -214,12 +203,10 @@ public:
 
     void unregisterNativeIdleCallback()
     {
-       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        fUI.removeIdleCallbackForVST3(this);
-       #elif defined(DISTRHO_OS_MAC)
+       #ifdef DISTRHO_OS_MAC
         CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
         CFRelease(fTimerRef);
-       #elif defined(DISTRHO_OS_WINDOWS)
+       #else
         DISTRHO_SAFE_ASSERT_RETURN(fTimerWindow != nullptr,);
         KillTimer(fTimerWindow, DPF_VST3_WIN32_TIMER_ID);
         DestroyWindow(fTimerWindow);
@@ -228,27 +215,79 @@ public:
     }
 
 private:
-    UIExporter& fUI;
-    bool fCallbackRegistered;
+    IdleCallback* const fCallback;
 
-  #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   #if defined(DISTRHO_OS_MAC)
+   #ifdef DISTRHO_OS_MAC
     CFRunLoopTimerRef fTimerRef;
 
     static void platformIdleTimerCallback(CFRunLoopTimerRef, void* const info)
     {
-        static_cast<NativeIdleCallback*>(info)->idleCallback();
+        static_cast<NativeIdleHelper*>(info)->fCallback->idleCallback();
     }
-   #elif defined(DISTRHO_OS_WINDOWS)
+   #else
     HWND fTimerWindow;
     String fTimerWindowClassName;
 
     WINAPI static void platformIdleTimerCallback(const HWND hwnd, UINT, UINT_PTR, DWORD)
     {
-        reinterpret_cast<NativeIdleCallback*>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->idleCallback();
+        reinterpret_cast<NativeIdleHelper*>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->fCallback->idleCallback();
     }
    #endif
-  #endif
+};
+#endif
+
+/**
+ * Helper class for getting a native idle timer, either through pugl or via native APIs.
+ */
+#if !DPF_VST3_USING_HOST_RUN_LOOP
+class NativeIdleCallback : public IdleCallback
+{
+public:
+    NativeIdleCallback(UIExporter& ui)
+        : fCallbackRegistered(false),
+         #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+          fIdleHelper(this)
+         #else
+          fUI(ui)
+         #endif
+    {
+       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        // unused
+        (void)ui;
+       #endif
+    }
+
+    void registerNativeIdleCallback()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(!fCallbackRegistered,);
+        fCallbackRegistered = true;
+
+       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        fIdleHelper.registerNativeIdleCallback();
+       #else
+        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+       #endif
+    }
+
+    void unregisterNativeIdleCallback()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fCallbackRegistered,);
+        fCallbackRegistered = false;
+
+       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+        fIdleHelper.unregisterNativeIdleCallback();
+       #else
+        fUI.removeIdleCallbackForVST3(this);
+       #endif
+    }
+
+private:
+    bool fCallbackRegistered;
+   #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    NativeIdleHelper fIdleHelper;
+   #else
+    UIExporter& fUI;
+   #endif
 };
 #endif
 
@@ -759,7 +798,7 @@ private:
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
     {
-        ((UIVst3*)ptr)->editParameter(rindex, started);
+        static_cast<UIVst3*>(ptr)->editParameter(rindex, started);
     }
 
     void setParameterValue(const uint32_t rindex, const float realValue)
@@ -782,8 +821,64 @@ private:
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
     {
-        ((UIVst3*)ptr)->setParameterValue(rindex, value);
+        static_cast<UIVst3*>(ptr)->setParameterValue(rindex, value);
     }
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char* const key, const char* const value)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+
+        v3_message** const message = createMessage("state-set");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
+        v3_cpp_obj(attrlist)->set_int(attrlist, "key:length", std::strlen(key));
+        v3_cpp_obj(attrlist)->set_int(attrlist, "value:length", std::strlen(value));
+        v3_cpp_obj(attrlist)->set_string(attrlist, "key", ScopedUTF16String(key));
+        v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
+
+    static void setStateCallback(void* const ptr, const char* const key, const char* const value)
+    {
+        static_cast<UIVst3*>(ptr)->setState(key, value);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
+
+        v3_message** const message = createMessage("midi");
+        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
+
+        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
+        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
+
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+
+        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
+        v3_cpp_obj(attrlist)->set_binary(attrlist, "data", midiData, sizeof(midiData));
+        v3_cpp_obj(fConnection)->notify(fConnection, message);
+
+        v3_cpp_obj_unref(message);
+    }
+
+    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        static_cast<UIVst3*>(ptr)->sendNote(channel, note, velocity);
+    }
+   #endif
 
     void setSize(uint width, uint height)
     {
@@ -825,64 +920,8 @@ private:
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
     {
-        ((UIVst3*)ptr)->setSize(width, height);
+        static_cast<UIVst3*>(ptr)->setSize(width, height);
     }
-
-   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
-
-        v3_message** const message = createMessage("midi");
-        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
-
-        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
-        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
-
-        uint8_t midiData[3];
-        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
-        midiData[1] = note;
-        midiData[2] = velocity;
-
-        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
-        v3_cpp_obj(attrlist)->set_binary(attrlist, "data", midiData, sizeof(midiData));
-        v3_cpp_obj(fConnection)->notify(fConnection, message);
-
-        v3_cpp_obj_unref(message);
-    }
-
-    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        ((UIVst3*)ptr)->sendNote(channel, note, velocity);
-    }
-   #endif
-
-   #if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char* const key, const char* const value)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(fConnection != nullptr,);
-
-        v3_message** const message = createMessage("state-set");
-        DISTRHO_SAFE_ASSERT_RETURN(message != nullptr,);
-
-        v3_attribute_list** const attrlist = v3_cpp_obj(message)->get_attributes(message);
-        DISTRHO_SAFE_ASSERT_RETURN(attrlist != nullptr,);
-
-        v3_cpp_obj(attrlist)->set_int(attrlist, "__dpf_msg_target__", 1);
-        v3_cpp_obj(attrlist)->set_int(attrlist, "key:length", std::strlen(key));
-        v3_cpp_obj(attrlist)->set_int(attrlist, "value:length", std::strlen(value));
-        v3_cpp_obj(attrlist)->set_string(attrlist, "key", ScopedUTF16String(key));
-        v3_cpp_obj(attrlist)->set_string(attrlist, "value", ScopedUTF16String(value));
-        v3_cpp_obj(fConnection)->notify(fConnection, message);
-
-        v3_cpp_obj_unref(message);
-    }
-
-    static void setStateCallback(void* const ptr, const char* const key, const char* const value)
-    {
-        ((UIVst3*)ptr)->setState(key, value);
-    }
-   #endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------

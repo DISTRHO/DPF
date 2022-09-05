@@ -20,11 +20,11 @@ START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static constexpr const sendNoteFunc sendNoteCallback = nullptr;
-#endif
 #if ! DISTRHO_PLUGIN_WANT_STATE
 static constexpr const setStateFunc setStateCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ private:
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
     {
-        ((UIStub*)ptr)->editParameter(rindex, started);
+        static_cast<UIStub*>(ptr)->editParameter(rindex, started);
     }
 
     void setParameterValue(uint32_t, float)
@@ -77,7 +77,7 @@ private:
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
     {
-        ((UIStub*)ptr)->setParameterValue(rindex, value);
+        static_cast<UIStub*>(ptr)->setParameterValue(rindex, value);
     }
 
     void setSize(uint, uint)
@@ -86,19 +86,8 @@ private:
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
     {
-        ((UIStub*)ptr)->setSize(width, height);
+        static_cast<UIStub*>(ptr)->setSize(width, height);
     }
-
-   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-    }
-
-    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
-    {
-        ((UIStub*)ptr)->sendNote(channel, note, velocity);
-    }
-   #endif
 
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char*, const char*)
@@ -107,7 +96,18 @@ private:
 
     static void setStateCallback(void* const ptr, const char* key, const char* value)
     {
-        ((UIStub*)ptr)->setState(key, value);
+        static_cast<UIStub*>(ptr)->setState(key, value);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+    }
+
+    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        static_cast<UIStub*>(ptr)->sendNote(channel, note, velocity);
     }
    #endif
 
@@ -118,7 +118,7 @@ private:
 
     static bool fileRequestCallback(void* const ptr, const char* const key)
     {
-        return ((UIStub*)ptr)->fileRequest(key);
+        return static_cast<UIStub*>(ptr)->fileRequest(key);
     }
 };
 
