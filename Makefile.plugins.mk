@@ -309,7 +309,7 @@ SYMBOLS_LV2UI  = -sEXPORTED_FUNCTIONS="['lv2ui_descriptor']"
 SYMBOLS_LV2    = -sEXPORTED_FUNCTIONS="['lv2_descriptor','lv2_generate_ttl','lv2ui_descriptor']"
 SYMBOLS_VST2   = -sEXPORTED_FUNCTIONS="['VSTPluginMain']"
 SYMBOLS_VST3   = -sEXPORTED_FUNCTIONS="['GetPluginFactory','ModuleEntry','ModuleExit']"
-SYMBOLS_CLAP   = -sEXPORTED_FUNCTIONS="['']"
+SYMBOLS_CLAP   = -sEXPORTED_FUNCTIONS="['clap_entry']"
 SYMBOLS_SHARED = -sEXPORTED_FUNCTIONS="['createSharedPlugin']"
 else ifeq ($(WINDOWS),true)
 SYMBOLS_LADSPA = $(DPF_PATH)/utils/symbols/ladspa.def
@@ -605,6 +605,7 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 
@@ -613,6 +614,7 @@ endif
 -include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.d
 

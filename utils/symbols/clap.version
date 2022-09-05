@@ -1,4 +1,4 @@
 {
-    global: __name;
+    global: clap_entry;
     local: *;
 };
