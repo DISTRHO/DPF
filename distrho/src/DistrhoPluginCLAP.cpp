@@ -133,7 +133,7 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 /**
  * CLAP UI class.
  */
-class ClapUI : public IdleCallback
+class ClapUI : public DGL_NAMESPACE::IdleCallback
 {
 public:
     ClapUI(PluginExporter& plugin, ClapEventQueue* const eventQueue, const bool isFloating)
@@ -1176,6 +1176,7 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
     const uint32_t maxPortCount = is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
     DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < maxPortCount, index, maxPortCount, false);
 
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
     // PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
 
     // TODO use groups
@@ -1195,6 +1196,9 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
     info->in_place_pair = DISTRHO_PLUGIN_NUM_INPUTS == DISTRHO_PLUGIN_NUM_OUTPUTS ? index : CLAP_INVALID_ID;
 
     return true;
+   #else
+    return false;
+   #endif
 }
 
 static const clap_plugin_audio_ports_t clap_plugin_audio_ports = {
