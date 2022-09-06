@@ -68,7 +68,8 @@ struct PortGroupWithId : PortGroup {
           groupId(kPortGroupNone) {}
 };
 
-static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& portGroup)
+static inline
+void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& portGroup)
 {
     switch (groupId)
     {
@@ -85,6 +86,55 @@ static void fillInPredefinedPortGroupData(const uint32_t groupId, PortGroup& por
         portGroup.symbol = "dpf_stereo";
         break;
     }
+}
+
+static inline
+void strncpy(char* const dst, const char* const src, const size_t length)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
+
+    if (const size_t len = std::min(std::strlen(src), length-1U))
+    {
+        std::memcpy(dst, src, len);
+        dst[len] = '\0';
+    }
+    else
+    {
+        dst[0] = '\0';
+    }
+}
+
+template<typename T>
+static inline
+void snprintf_t(char* const dst, const T value, const char* const format, const size_t size)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
+    std::snprintf(dst, size-1, format, value);
+    dst[size-1] = '\0';
+}
+
+static inline
+void snprintf_f32(char* const dst, const float value, const size_t size)
+{
+    return snprintf_t<float>(dst, value, "%f", size);
+}
+
+static inline
+void snprintf_f32(char* const dst, const double value, const size_t size)
+{
+    return snprintf_t<double>(dst, value, "%f", size);
+}
+
+static inline
+void snprintf_i32(char* const dst, const int32_t value, const size_t size)
+{
+    return snprintf_t<int32_t>(dst, value, "%d", size);
+}
+
+static inline
+void snprintf_u32(char* const dst, const uint32_t value, const size_t size)
+{
+    return snprintf_t<uint32_t>(dst, value, "%u", size);
 }
 
 // -----------------------------------------------------------------------
@@ -595,6 +645,11 @@ public:
     bool isParameterOutput(const uint32_t index) const noexcept
     {
         return (getParameterHints(index) & kParameterIsOutput) != 0x0;
+    }
+
+    bool isParameterInteger(const uint32_t index) const noexcept
+    {
+        return (getParameterHints(index) & kParameterIsInteger) != 0x0;
     }
 
     bool isParameterTrigger(const uint32_t index) const noexcept

@@ -137,22 +137,6 @@ size_t strlen_utf16(const int16_t* const str)
 // --------------------------------------------------------------------------------------------------------------------
 
 static inline
-void strncpy(char* const dst, const char* const src, const size_t length)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
-
-    if (const size_t len = std::min(std::strlen(src), length-1U))
-    {
-        std::memcpy(dst, src, len);
-        dst[len] = '\0';
-    }
-    else
-    {
-        dst[0] = '\0';
-    }
-}
-
-static inline
 void strncpy_utf8(char* const dst, const int16_t* const src, const size_t length)
 {
     DISTRHO_SAFE_ASSERT_RETURN(length > 0,);
@@ -201,15 +185,8 @@ void strncpy_utf16(int16_t* const dst, const char* const src, const size_t lengt
 // --------------------------------------------------------------------------------------------------------------------
 
 template<typename T>
-static void snprintf_t(char* const dst, const T value, const char* const format, const size_t size)
-{
-    DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
-    std::snprintf(dst, size-1, format, value);
-    dst[size-1] = '\0';
-}
-
-template<typename T>
-static void snprintf_utf16_t(int16_t* const dst, const T value, const char* const format, const size_t size)
+static inline
+void snprintf_utf16_t(int16_t* const dst, const T value, const char* const format, const size_t size)
 {
     DISTRHO_SAFE_ASSERT_RETURN(size > 0,);
 
@@ -224,27 +201,15 @@ static void snprintf_utf16_t(int16_t* const dst, const T value, const char* cons
 }
 
 static inline
-void snprintf_f32(char* const dst, const float value, const size_t size)
-{
-    return snprintf_t<float>(dst, value, "%f", size);
-}
-
-static inline
-void snprintf_i32(char* const dst, const int32_t value, const size_t size)
-{
-    return snprintf_t<int32_t>(dst, value, "%d", size);
-}
-
-static inline
-void snprintf_u32(char* const dst, const uint32_t value, const size_t size)
-{
-    return snprintf_t<uint32_t>(dst, value, "%u", size);
-}
-
-static inline
 void snprintf_f32_utf16(int16_t* const dst, const float value, const size_t size)
 {
     return snprintf_utf16_t<float>(dst, value, "%f", size);
+}
+
+static inline
+void snprintf_f32_utf16(int16_t* const dst, const double value, const size_t size)
+{
+    return snprintf_utf16_t<double>(dst, value, "%f", size);
 }
 
 static inline
