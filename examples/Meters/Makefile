@@ -39,6 +39,7 @@ endif # MACOS_OR_WINDOWS
 TARGETS += lv2_sep
 TARGETS += vst2
 TARGETS += vst3
+TARGETS += clap
 
 endif # HAVE_OPENGL
 

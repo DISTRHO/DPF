@@ -30,12 +30,11 @@
 
 START_NAMESPACE_DISTRHO
 
-#if DISTRHO_PLUGIN_HAS_UI
-
 // --------------------------------------------------------------------------------------------------------------------
 
 struct ClapEventQueue
 {
+   #if DISTRHO_PLUGIN_HAS_UI
     enum EventType {
         kEventGestureBegin,
         kEventGestureEnd,
@@ -45,8 +44,7 @@ struct ClapEventQueue
     struct Event {
         EventType type;
         uint32_t index;
-        float plain;
-        double value;
+        float value;
     };
 
     struct Queue {
@@ -83,11 +81,43 @@ struct ClapEventQueue
             std::memcpy(&events[used++], &event, sizeof(Event));
         }
     } fEventQueue;
+   #endif
+
+    struct CachedParameters {
+        uint numParams;
+        bool* changed;
+        float* values;
+
+        CachedParameters()
+            : changed(nullptr),
+              values(nullptr) {}
+
+        ~CachedParameters()
+        {
+            delete[] changed;
+            delete[] values;
+        }
+
+        void setup(const uint numParameters)
+        {
+            if (numParameters == 0)
+                return;
+
+            numParams = numParameters;
+            changed = new bool[numParameters];
+            values = new float[numParameters];
+
+            std::memset(changed, 0, sizeof(bool)*numParameters);
+            std::memset(values, 0, sizeof(float)*numParameters);
+        }
+    } fCachedParameters;
 
     virtual ~ClapEventQueue() {}
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+
+#if DISTRHO_PLUGIN_HAS_UI
 
 #if ! DISTRHO_PLUGIN_WANT_STATE
 static constexpr const setStateFunc setStateCallback = nullptr;
@@ -99,18 +129,31 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 /**
  * CLAP UI class.
  */
-class ClapUI
+class ClapUI : public IdleCallback
 {
 public:
     ClapUI(PluginExporter& plugin, ClapEventQueue* const eventQueue, const bool isFloating)
         : fPlugin(plugin),
           fEventQueue(eventQueue->fEventQueue),
+          fCachedParameters(eventQueue->fCachedParameters),
           fUI(),
           fIsFloating(isFloating),
+          fCallbackRegistered(false),
           fScaleFactor(0.0),
           fParentWindow(0),
           fTransientWindow(0)
     {
+    }
+
+    ~ClapUI() override
+    {
+        if (fCallbackRegistered)
+        {
+           #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+            if (UIExporter* const ui = fUI.get())
+                ui->removeIdleCallbackForVST3(this);
+           #endif
+        }
     }
 
     bool setScaleFactor(const double scaleFactor)
@@ -283,13 +326,23 @@ public:
         if (fIsFloating)
             fUI->setWindowVisible(true);
 
+       #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+        fUI->addIdleCallbackForVST3(this, 16);
+       #endif
+        fCallbackRegistered = true;
         return true;
     }
 
     bool hide()
     {
         if (UIExporter* const ui = fUI.get())
+        {
             ui->setWindowVisible(false);
+           #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+            ui->removeIdleCallbackForVST3(this);
+           #endif
+            fCallbackRegistered = false;
+        }
 
         return true;
     }
@@ -300,11 +353,13 @@ private:
     // Plugin and UI
     PluginExporter& fPlugin;
     ClapEventQueue::Queue& fEventQueue;
+    ClapEventQueue::CachedParameters& fCachedParameters;
     ScopedPointer<UIExporter> fUI;
 
     const bool fIsFloating;
 
     // Temporary data
+    bool fCallbackRegistered;
     double fScaleFactor;
     uintptr_t fParentWindow;
     uintptr_t fTransientWindow;
@@ -337,7 +392,25 @@ private:
             if (fTransientWindow != 0)
                 fUI->setWindowTransientWinId(fTransientWindow);
         }
+    }
 
+    void idleCallback() override
+    {
+       #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+        if (UIExporter* const ui = fUI.get())
+        {
+            ui->idleForVST3();
+
+            for (uint i=0; i<fCachedParameters.numParams; ++i)
+            {
+                if (fCachedParameters.changed[i])
+                {
+                    fCachedParameters.changed[i] = false;
+                    ui->parameterChanged(i, fCachedParameters.values[i]);
+                }
+            }
+        }
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -347,7 +420,7 @@ private:
     {
         const ClapEventQueue::Event ev = {
             started ? ClapEventQueue::kEventGestureBegin : ClapEventQueue::kEventGestureBegin,
-            rindex, 0.f, 0.0
+            rindex, 0.f
         };
         fEventQueue.addEventFromUI(ev);
     }
@@ -357,17 +430,11 @@ private:
         static_cast<ClapUI*>(ptr)->editParameter(rindex, started);
     }
 
-    void setParameterValue(const uint32_t rindex, const float plain)
+    void setParameterValue(const uint32_t rindex, const float value)
     {
-        double value;
-        if (fPlugin.isParameterInteger(rindex))
-            value = plain;
-        else
-            value = fPlugin.getParameterRanges(rindex).getNormalizedValue(static_cast<double>(plain));
-
         const ClapEventQueue::Event ev = {
             ClapEventQueue::kEventParamSet,
-            rindex, plain, value
+            rindex, value
         };
         fEventQueue.addEventFromUI(ev);
     }
@@ -438,10 +505,7 @@ static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
 /**
  * CLAP plugin class.
  */
-class PluginCLAP
-#if DISTRHO_PLUGIN_HAS_UI
-    : ClapEventQueue
-#endif
+class PluginCLAP : ClapEventQueue
 {
 public:
     PluginCLAP(const clap_host_t* const host)
@@ -452,6 +516,7 @@ public:
           fHost(host),
           fOutputEvents(nullptr)
     {
+        fCachedParameters.setup(fPlugin.getParameterCount());
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -514,7 +579,7 @@ public:
                         clapEvent.header.type = CLAP_EVENT_PARAM_VALUE;
                         clapEvent.param_id = event.index;
                         clapEvent.value = event.value;
-                        fPlugin.setParameterValue(event.index, event.plain);
+                        fPlugin.setParameterValue(event.index, event.value);
                         break;
                     default:
                         continue;
@@ -649,10 +714,13 @@ public:
             fOutputEvents = process->out_events;
 
            #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            fPlugin.run(inputs, outputs, frames, fMidiEvents, midiEventCount);
+            fPlugin.run(inputs, outputs, frames, nullptr, 0);
            #else
             fPlugin.run(inputs, outputs, frames);
            #endif
+
+            // TODO set last frame
+            flushParameters(nullptr, process->out_events);
 
             fOutputEvents = nullptr;
         }
@@ -720,42 +788,29 @@ public:
 
     bool getParameterValue(const clap_id param_id, double* const value) const
     {
-        const float plain = fPlugin.getParameterValue(param_id);
-
-        if (fPlugin.isParameterInteger(param_id))
-        {
-            *value = plain;
-            return true;
-        }
-
-        *value = fPlugin.getParameterRanges(param_id).getNormalizedValue(static_cast<double>(plain));
+        *value = fPlugin.getParameterValue(param_id);
         return true;
     }
 
-    bool getParameterStringForValue(const clap_id param_id, const double value, char* const display, const uint32_t size) const
+    bool getParameterStringForValue(const clap_id param_id, double value, char* const display, const uint32_t size) const
     {
         const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(param_id));
         const uint32_t hints = fPlugin.getParameterHints(param_id);
 
-        double plain;
-        if (hints & kParameterIsInteger)
-        {
-            plain = value;
-        }
-        else if (hints & kParameterIsBoolean)
+        if (hints & kParameterIsBoolean)
         {
             const float midRange = ranges.min + (ranges.max - ranges.min) * 0.5f;
-            plain = value > midRange ? ranges.max : ranges.min;
+            value = value > midRange ? ranges.max : ranges.min;
         }
-        else
+        else if (hints & kParameterIsInteger)
         {
-            plain = ranges.getUnnormalizedValue(value);
+            value = std::round(value);
         }
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (d_isEqual(static_cast<double>(enumValues.values[i].value), plain))
+            if (d_isEqual(static_cast<double>(enumValues.values[i].value), value))
             {
                 DISTRHO_NAMESPACE::strncpy(display, enumValues.values[i].label, size);
                 return true;
@@ -763,9 +818,9 @@ public:
         }
 
         if (hints & kParameterIsInteger)
-            snprintf_i32(display, plain, size);
+            snprintf_i32(display, value, size);
         else
-            snprintf_f32(display, plain, size);
+            snprintf_f32(display, value, size);
 
         return true;
     }
@@ -773,42 +828,35 @@ public:
     bool getParameterValueForString(const clap_id param_id, const char* const display, double* const value) const
     {
         const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(param_id));
         const bool isInteger = fPlugin.isParameterInteger(param_id);
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
             if (std::strcmp(display, enumValues.values[i].label) == 0)
             {
-                *value = isInteger 
-                       ? enumValues.values[i].value
-                       : ranges.getNormalizedValue(enumValues.values[i].value);
+                *value = enumValues.values[i].value;
                 return true;
             }
         }
 
-        double plain;
         if (isInteger)
-            plain = std::atoi(display);
+            *value = std::atoi(display);
         else
-            plain = std::atof(display);
+            *value = std::atof(display);
 
-        *value = ranges.getNormalizedValue(plain);
         return true;
     }
 
     void setParameterValueFromEvent(const clap_event_param_value* const param)
     {
-        const double plain = fPlugin.isParameterInteger(param->param_id)
-                           ? param->value
-                           : fPlugin.getParameterRanges(param->param_id).getFixedAndNormalizedValue(param->value);
-
-        fPlugin.setParameterValue(param->param_id, plain);
+        fCachedParameters.values[param->param_id] = param->value;
+        fCachedParameters.changed[param->param_id] = true;
+        fPlugin.setParameterValue(param->param_id, param->value);
     }
 
-    void flushParameters(const clap_input_events_t* const in, const clap_output_events_t* /* const out */)
+    void flushParameters(const clap_input_events_t* const in, const clap_output_events_t* const out)
     {
-        if (const uint32_t len = in->size(in))
+        if (const uint32_t len = in != nullptr ? in->size(in) : 0)
         {
             for (uint32_t i=0; i<len; ++i)
             {
@@ -821,6 +869,33 @@ public:
                                                 event->size, sizeof(clap_event_param_value));
                 
                 setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
+            }
+        }
+
+        if (out != nullptr)
+        {
+            clap_event_param_value_t clapEvent = {
+                { sizeof(clap_event_param_value_t), 0, 0, CLAP_EVENT_PARAM_VALUE, CLAP_EVENT_IS_LIVE },
+                0, nullptr, 0, 0, 0, 0, 0.0
+            };
+
+            float value;
+            for (uint i=0; i<fCachedParameters.numParams; ++i)
+            {
+                if (fPlugin.isParameterOutputOrTrigger(i))
+                {
+                    value = fPlugin.getParameterValue(i);
+
+                    if (d_isEqual(fCachedParameters.values[i], value))
+                        continue;
+
+                    fCachedParameters.values[i] = value;
+                    fCachedParameters.changed[i] = true;
+
+                    clapEvent.param_id = i;
+                    clapEvent.value = value;
+                    out->try_push(out, &clapEvent.header);
+                }
             }
         }
     }
@@ -873,7 +948,7 @@ private:
 
     static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
     {
-        return ((PluginStub*)ptr)->writeMidi(midiEvent);
+        return static_cast<PluginCLAP*>(ptr)->writeMidi(midiEvent);
     }
    #endif
 
@@ -885,7 +960,7 @@ private:
 
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
-        return ((PluginStub*)ptr)->requestParameterValueChange(index, value);
+        return static_cast<PluginCLAP*>(ptr)->requestParameterValueChange(index, value);
     }
    #endif
 
@@ -897,7 +972,7 @@ private:
 
     static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
     {
-        return ((PluginStub*)ptr)->updateState(key, value);
+        return static_cast<PluginCLAP*>(ptr)->updateState(key, value);
     }
    #endif
 };
