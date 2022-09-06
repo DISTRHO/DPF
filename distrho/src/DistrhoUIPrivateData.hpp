@@ -215,7 +215,7 @@ public:
         puglBackendLeave(pData->view);
     }
 
-    // used for temporary windows (VST2/3 get size without active/visible view)
+    // used for temporary windows (VST/CLAP get size without active/visible view)
     void setIgnoreIdleCallbacks(const bool ignore = true)
     {
         pData->ignoreIdleCallbacks = ignore;
@@ -228,8 +228,8 @@ public:
             puglBackendEnter(pData->view);
     }
 
-   #ifdef DISTRHO_PLUGIN_TARGET_VST3
-    void setSizeForVST3(const uint width, const uint height)
+   #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+    void setSizeFromHost(const uint width, const uint height)
     {
         puglSetSizeAndDefault(pData->view, width, height);
     }

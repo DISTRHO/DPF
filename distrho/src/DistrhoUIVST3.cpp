@@ -80,6 +80,11 @@ static void applyGeometryConstraints(const uint minimumWidth,
 
     if (keepAspectRatio)
     {
+        if (rect->right < 1)
+            rect->right = 1;
+        if (rect->bottom < 1)
+            rect->bottom = 1;
+
         const double ratio = static_cast<double>(minWidth) / static_cast<double>(minHeight);
         const double reqRatio = static_cast<double>(rect->right) / static_cast<double>(rect->bottom);
 
@@ -367,7 +372,7 @@ public:
             if (fUI.getWidth() != nextWidth || fUI.getHeight() != nextHeight)
             {
                 d_debug("postInit sets new size as %u %u", nextWidth, nextHeight);
-                fUI.setWindowSizeForVST3(nextWidth, nextHeight);
+                fUI.setWindowSizeFromHost(nextWidth, nextHeight);
             }
         }
         else if (fNeedsResizeFromPlugin)
@@ -475,7 +480,7 @@ public:
         }
 
         fIsResizingFromHost = true;
-        fUI.setWindowSizeForVST3(rect.right - rect.left, rect.bottom - rect.top);
+        fUI.setWindowSizeFromHost(rect.right - rect.left, rect.bottom - rect.top);
         return V3_OK;
     }
 

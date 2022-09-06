@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -288,24 +288,24 @@ public:
 
     void setWindowOffset(const int x, const int y)
     {
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         // TODO
         (void)x; (void)y;
-#else
+       #else
         uiData->window->setOffset(x, y);
-#endif
+       #endif
     }
 
-#ifdef DISTRHO_PLUGIN_TARGET_VST3
-    void setWindowSizeForVST3(const uint width, const uint height)
+   #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+    void setWindowSizeFromHost(const uint width, const uint height)
     {
-# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         ui->setSize(width, height);
-# else
-        uiData->window->setSizeForVST3(width, height);
-# endif
+       #else
+        uiData->window->setSizeFromHost(width, height);
+       #endif
     }
-#endif
+   #endif
 
     void setWindowTitle(const char* const uiTitle)
     {

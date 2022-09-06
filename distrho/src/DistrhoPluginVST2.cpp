@@ -65,7 +65,7 @@ START_NAMESPACE_DISTRHO
 
 typedef std::map<const String, String> StringMap;
 
-static const int kVstMidiEventSize = static_cast<int>(sizeof(VstMidiEvent));
+static constexpr const int kVstMidiEventSize = static_cast<int>(sizeof(VstMidiEvent));
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static const writeMidiFunc writeMidiCallback = nullptr;
@@ -1139,7 +1139,7 @@ private:
         {
             if (fPlugin.isParameterOutput(i))
             {
-                // NOTE: no output parameter support in VST, simulate it here
+                // NOTE: no output parameter support in VST2, simulate it here
                 curValue = fPlugin.getParameterValue(i);
 
                 if (d_isEqual(curValue, parameterValues[i]))
