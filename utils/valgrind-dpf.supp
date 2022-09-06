@@ -59,3 +59,8 @@
    fun:XPutImage
    ...
 }
+{
+   ignore mesa stuff
+   Memcheck:Value8
+   obj:/usr/lib/x86_64-linux-gnu/dri/swrast_dri.so
+}
