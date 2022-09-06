@@ -117,7 +117,7 @@ struct ParameterAndNotesHelper
     }
 
 #if DISTRHO_PLUGIN_WANT_STATE
-    virtual void setStateFromUI(const char* const newKey, const char* const newValue) = 0;
+    virtual void setStateFromUI(const char* key, const char* value) = 0;
 #endif
 };
 
@@ -1238,12 +1238,12 @@ private:
     // functions called from the UI side, may block
 
 # if DISTRHO_PLUGIN_HAS_UI
-    void setStateFromUI(const char* const key, const char* const newValue) override
+    void setStateFromUI(const char* const key, const char* const value) override
 # else
-    void setStateFromUI(const char* const key, const char* const newValue)
+    void setStateFromUI(const char* const key, const char* const value)
 # endif
     {
-        fPlugin.setState(key, newValue);
+        fPlugin.setState(key, value);
 
         // check if we want to save this key
         if (! fPlugin.wantStateKey(key))
@@ -1256,7 +1256,7 @@ private:
 
             if (dkey == key)
             {
-                it->second = newValue;
+                it->second = value;
                 return;
             }
         }

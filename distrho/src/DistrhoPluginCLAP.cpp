@@ -83,6 +83,10 @@ struct ClapEventQueue
     } fEventQueue;
    #endif
 
+   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+    virtual void setStateFromUI(const char* key, const char* value) = 0;
+   #endif
+
     struct CachedParameters {
         uint numParams;
         bool* changed;
@@ -134,6 +138,7 @@ class ClapUI : public IdleCallback
 public:
     ClapUI(PluginExporter& plugin, ClapEventQueue* const eventQueue, const bool isFloating)
         : fPlugin(plugin),
+          fPluinEventQueue(eventQueue),
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
           fUI(),
@@ -352,6 +357,7 @@ public:
 private:
     // Plugin and UI
     PluginExporter& fPlugin;
+    ClapEventQueue* const fPluinEventQueue;
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
     ScopedPointer<UIExporter> fUI;
@@ -454,8 +460,9 @@ private:
     }
 
    #if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char*, const char*)
+    void setState(const char* const key, const char* const value)
     {
+        fPluinEventQueue->setStateFromUI(key, value);
     }
 
     static void setStateCallback(void* const ptr, const char* key, const char* value)
@@ -752,12 +759,13 @@ public:
             const uint32_t groupId = fPlugin.getParameterGroupId(index);
 
             info->flags = 0;
-            if (hints & kParameterIsAutomatable)
-                info->flags |= CLAP_PARAM_IS_AUTOMATABLE;
-            if (hints & (kParameterIsBoolean|kParameterIsInteger))
-                info->flags |= CLAP_PARAM_IS_STEPPED;
             if (hints & kParameterIsOutput)
                 info->flags |= CLAP_PARAM_IS_READONLY;
+            else if (hints & kParameterIsAutomatable)
+                info->flags |= CLAP_PARAM_IS_AUTOMATABLE;
+
+            if (hints & (kParameterIsBoolean|kParameterIsInteger))
+                info->flags |= CLAP_PARAM_IS_STEPPED;
 
             DISTRHO_NAMESPACE::strncpy(info->name, fPlugin.getParameterName(index), CLAP_NAME_SIZE);
 
@@ -918,6 +926,15 @@ public:
     ClapUI* getUI() const noexcept
     {
         return fUI.get();
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+    void setStateFromUI(const char* const key, const char* const value) override
+    {
+        fPlugin.setState(key, value);
+
+        // TODO check if we want to save this key, and save it
     }
    #endif
 
