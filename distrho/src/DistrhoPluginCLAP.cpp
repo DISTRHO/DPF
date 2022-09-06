@@ -14,17 +14,131 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "DistrhoPluginInfo.h"
 #include "DistrhoPluginInternal.hpp"
 #include "extra/ScopedPointer.hpp"
+
+#undef DISTRHO_PLUGIN_HAS_UI
+#define DISTRHO_PLUGIN_HAS_UI 0
+
+#if DISTRHO_PLUGIN_HAS_UI
+# include "DistrhoUIInternal.hpp"
+#endif
 
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
 #include "clap/ext/audio-ports.h"
+#include "clap/ext/gui.h"
+#include "clap/ext/params.h"
 
 START_NAMESPACE_DISTRHO
 
+#if DISTRHO_PLUGIN_HAS_UI
+
 // --------------------------------------------------------------------------------------------------------------------
+
+#if ! DISTRHO_PLUGIN_WANT_STATE
+static constexpr const setStateFunc setStateCallback = nullptr;
+#endif
+#if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
+static constexpr const sendNoteFunc sendNoteCallback = nullptr;
+#endif
+
+/**
+ * CLAP UI class.
+ */
+class ClapUI
+{
+public:
+    ClapUI(const intptr_t winId,
+           const double sampleRate,
+           const char* const bundlePath,
+           void* const dspPtr,
+           const float scaleFactor)
+        : fUI(this, winId, sampleRate,
+              editParameterCallback,
+              setParameterCallback,
+              setStateCallback,
+              sendNoteCallback,
+              setSizeCallback,
+              fileRequestCallback,
+              bundlePath, dspPtr, scaleFactor)
+    {
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+
+private:
+    // Stub stuff here
+
+    // Plugin UI (after Stub stuff so the UI can call into us during its constructor)
+    UIExporter fUI;
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // DPF callbacks
+
+    void editParameter(uint32_t, bool) const
+    {
+    }
+
+    static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
+    {
+        static_cast<ClapUI*>(ptr)->editParameter(rindex, started);
+    }
+
+    void setParameterValue(uint32_t, float)
+    {
+    }
+
+    static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
+    {
+        static_cast<ClapUI*>(ptr)->setParameterValue(rindex, value);
+    }
+
+    void setSize(uint, uint)
+    {
+    }
+
+    static void setSizeCallback(void* const ptr, const uint width, const uint height)
+    {
+        static_cast<ClapUI*>(ptr)->setSize(width, height);
+    }
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    void setState(const char*, const char*)
+    {
+    }
+
+    static void setStateCallback(void* const ptr, const char* key, const char* value)
+    {
+        static_cast<ClapUI*>(ptr)->setState(key, value);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+    }
+
+    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
+    {
+        static_cast<ClapUI*>(ptr)->sendNote(channel, note, velocity);
+    }
+   #endif
+
+    bool fileRequest(const char*)
+    {
+        return true;
+    }
+
+    static bool fileRequestCallback(void* const ptr, const char* const key)
+    {
+        return static_cast<ClapUI*>(ptr)->fileRequest(key);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#endif // DISTRHO_PLUGIN_HAS_UI
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static constexpr const writeMidiFunc writeMidiCallback = nullptr;
@@ -33,7 +147,7 @@ static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 static constexpr const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_STATE
-static const updateStateValueFunc updateStateValueCallback = nullptr;
+static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -53,6 +167,9 @@ public:
           fOutputEvents(nullptr)
     {
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // core
 
     bool init()
     {
@@ -161,7 +278,12 @@ public:
                     case CLAP_EVENT_NOTE_CHOKE:
                     case CLAP_EVENT_NOTE_END:
                     case CLAP_EVENT_NOTE_EXPRESSION:
+                        break;
                     case CLAP_EVENT_PARAM_VALUE:
+                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
+                                                        event->size, sizeof(clap_event_param_value));
+                        setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
+                        break;
                     case CLAP_EVENT_PARAM_MOD:
                     case CLAP_EVENT_PARAM_GESTURE_BEGIN:
                     case CLAP_EVENT_PARAM_GESTURE_END:
@@ -205,10 +327,305 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // parameters
+
+    uint32_t getParameterCount() const
+    {
+        return fPlugin.getParameterCount();
+    }
+
+    bool getParameterInfo(const uint32_t index, clap_param_info_t* const info) const
+    {
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+        if (fPlugin.getParameterDesignation(index) == kParameterDesignationBypass)
+        {
+            info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_BYPASS|CLAP_PARAM_IS_AUTOMATABLE;
+            std::strcpy(info->name, "Bypass");
+            std::strcpy(info->module, "dpf_bypass");
+        }
+        else
+        {
+            const uint32_t hints = fPlugin.getParameterHints(index);
+            const uint32_t groupId = fPlugin.getParameterGroupId(index);
+
+            info->flags = 0;
+            if (hints & kParameterIsAutomatable)
+                info->flags |= CLAP_PARAM_IS_AUTOMATABLE;
+            if (hints & (kParameterIsBoolean|kParameterIsInteger))
+                info->flags |= CLAP_PARAM_IS_STEPPED;
+            if (hints & kParameterIsOutput)
+                info->flags |= CLAP_PARAM_IS_READONLY;
+
+            DISTRHO_NAMESPACE::strncpy(info->name, fPlugin.getParameterName(index), CLAP_NAME_SIZE);
+
+            uint wrtn;
+            if (groupId != kPortGroupNone)
+            {
+                const PortGroupWithId& portGroup(fPlugin.getPortGroupById(groupId));
+                strncpy(info->module, portGroup.symbol, CLAP_PATH_SIZE / 2);
+                info->module[CLAP_PATH_SIZE / 2] = '\0';
+                wrtn = std::strlen(info->module);
+                info->module[wrtn++] = '/';
+            }
+            else
+            {
+                wrtn = 0;
+            }
+
+            DISTRHO_NAMESPACE::strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
+        }
+
+        info->id = index;
+        info->cookie = nullptr;
+        info->min_value = ranges.min;
+        info->max_value = ranges.max;
+        info->default_value = ranges.def;
+        return true;
+    }
+
+    bool getParameterValue(const clap_id param_id, double* const value) const
+    {
+        const float plain = fPlugin.getParameterValue(param_id);
+
+        if (fPlugin.isParameterInteger(param_id))
+        {
+            *value = plain;
+            return true;
+        }
+
+        *value = fPlugin.getParameterRanges(param_id).getNormalizedValue(static_cast<double>(plain));
+        return true;
+    }
+
+    bool getParameterStringForValue(const clap_id param_id, const double value, char* const display, const uint32_t size) const
+    {
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(param_id));
+        const uint32_t hints = fPlugin.getParameterHints(param_id);
+
+        double plain;
+        if (hints & kParameterIsInteger)
+        {
+            plain = value;
+        }
+        else if (hints & kParameterIsBoolean)
+        {
+            const float midRange = ranges.min + (ranges.max - ranges.min) * 0.5f;
+            plain = value > midRange ? ranges.max : ranges.min;
+        }
+        else
+        {
+            plain = ranges.getUnnormalizedValue(value);
+        }
+
+        for (uint32_t i=0; i < enumValues.count; ++i)
+        {
+            if (d_isEqual(static_cast<double>(enumValues.values[i].value), plain))
+            {
+                DISTRHO_NAMESPACE::strncpy(display, enumValues.values[i].label, size);
+                return true;
+            }
+        }
+
+        if (hints & kParameterIsInteger)
+            snprintf_i32(display, plain, size);
+        else
+            snprintf_f32(display, plain, size);
+
+        return true;
+    }
+
+    bool getParameterValueForString(const clap_id param_id, const char* const display, double* const value) const
+    {
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(param_id));
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(param_id));
+        const bool isInteger = fPlugin.isParameterInteger(param_id);
+
+        for (uint32_t i=0; i < enumValues.count; ++i)
+        {
+            if (std::strcmp(display, enumValues.values[i].label) == 0)
+            {
+                *value = isInteger 
+                       ? enumValues.values[i].value
+                       : ranges.getNormalizedValue(enumValues.values[i].value);
+                return true;
+            }
+        }
+
+        double plain;
+        if (isInteger)
+            plain = std::atoi(display);
+        else
+            plain = std::atof(display);
+
+        *value = ranges.getNormalizedValue(plain);
+        return true;
+    }
+
+    void setParameterValueFromEvent(const clap_event_param_value* const param)
+    {
+        const double plain = fPlugin.isParameterInteger(param->param_id)
+                           ? param->value
+                           : fPlugin.getParameterRanges(param->param_id).getFixedAndNormalizedValue(param->value);
+
+        fPlugin.setParameterValue(param->param_id, plain);
+    }
+
+    void flushParameters(const clap_input_events_t* const in, const clap_output_events_t* /* const out */)
+    {
+        if (const uint32_t len = in->size(in))
+        {
+            for (uint32_t i=0; i<len; ++i)
+            {
+                const clap_event_header_t* const event = in->get(in, i);
+
+                if (event->type != CLAP_EVENT_PARAM_VALUE)
+                    continue;
+
+                DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
+                                                event->size, sizeof(clap_event_param_value));
+                
+                setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // gui
+
+   #if DISTRHO_PLUGIN_HAS_UI
+    bool createUI(const bool floating)
+    {
+        fUI = new ClapUI();
+        return true;
+    }
+
+    void destroyUI()
+    {
+        fUI = nullptr;
+    }
+
+    bool setScale(const double scale)
+    {
+        fUI.scale = scale;
+
+        if (ClapUI* const ui = fUI.instance)
+            ui->notifyScaleFactorChange(scale);
+
+        return true;
+    }
+
+    bool getSize(uint32_t* const width, uint32_t* const height) const
+    {
+        if (ClapUI* const ui = fUI.instance)
+        {
+            *width = ui->getWidth();
+            *height = ui->getHeight();
+        }
+        else
+        {
+            // TODO
+        }
+        return true;
+    }
+
+    bool canResize() const
+    {
+        if (ClapUI* const ui = fUI.instance)
+            return ui->canResize();
+
+        return DISTRHO_PLUGIN_IS_UI_USER_RESIZABLE != 0;
+    }
+
+    bool getResizeHints(clap_gui_resize_hints_t* const hints) const
+    {
+        // TODO
+        return true;
+    }
+
+    bool adjustSize(uint32_t* const width, uint32_t* const height) const
+    {
+        // TODO
+        return true;
+    }
+
+    bool setSize(const uint32_t width, const uint32_t height)
+    {
+        // TODO
+        return true;
+    }
+
+    bool setParent(const clap_window_t* const window)
+    {
+        // TODO
+
+        if (ClapUI* const ui = fUI.instance)
+        {
+            // TODO
+        }
+
+        return true;
+    }
+
+    bool setTransient(const clap_window_t* const window)
+    {
+        fUI.transient = window;
+
+        if (ClapUI* const ui = fUI.instance)
+            ui->setTransient(window);
+    }
+
+    void suggestTitle(const char* const title)
+    {
+        fUI.title = window;
+
+        if (ClapUI* const ui = fUI.instance)
+            ui->setTitle(title);
+    }
+
+    bool show()
+    {
+        if (fUI.instance == nullptr)
+            fUI.instance = new ClapUI();
+
+        fUI.instance->show();
+        return true;
+    }
+
+    bool hide()
+    {
+        if (ClapUI* const ui = fUI.instance)
+            ui->hide();
+        return true;
+    }
+   #endif
+
+    // ----------------------------------------------------------------------------------------------------------------
 
 private:
     // Plugin
     PluginExporter fPlugin;
+
+   #if DISTRHO_PLUGIN_HAS_UI
+    // UI
+    struct UI {
+        double scale;
+        uint32_t hostSetWidth, hostSetHeight;
+        clap_window_t parent, transient;
+        String title;
+        ScopedPointer<ClapUI> instance;
+
+        UI()
+          : scale(0.0),
+            hostSetWidth(0),
+            hostSetHeight(0),
+            parent(0),
+            transient(0),
+            title(),
+            instance() {}
+    } fUI;
+   #endif
 
     // CLAP stuff
     const clap_host_t* const fHost;
@@ -262,6 +679,111 @@ private:
 static ScopedPointer<PluginExporter> sPlugin;
 
 // --------------------------------------------------------------------------------------------------------------------
+// plugin gui
+
+#if DISTRHO_PLUGIN_HAS_UI
+static bool clap_gui_is_api_supported(const clap_plugin_t*, const char* const api, const bool is_floating)
+{
+    return true;
+}
+
+static bool clap_gui_get_preferred_api(const clap_plugin_t*, const char** const api, bool* const is_floating)
+{
+    return true;
+}
+
+static bool clap_gui_create(const clap_plugin_t* const plugin, const char* const api, const bool is_floating)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->createUI();
+}
+
+static void clap_gui_destroy(const clap_plugin_t* const plugin)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    instance->destroyUI();
+}
+
+static bool clap_gui_set_scale(const clap_plugin_t* const plugin, const double scale)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    UICLAP* const gui = instance->getUI();
+    return gui->setScale(scale);
+}
+
+static bool clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    UICLAP* const gui = instance->getUI();
+    return gui->getSize(width, height);
+}
+
+static bool clap_gui_can_resize(const clap_plugin_t* const plugin)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    UICLAP* const gui = instance->getUI();
+    return gui->canResize();
+}
+
+static bool clap_gui_get_resize_hints(const clap_plugin_t* const plugin, clap_gui_resize_hints_t* const hints)
+{
+    return true;
+}
+
+static bool clap_gui_adjust_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
+{
+    return true;
+}
+
+static bool clap_gui_set_size(const clap_plugin_t* const plugin, const uint32_t width, const uint32_t height)
+{
+    return true;
+}
+
+static bool clap_gui_set_parent(const clap_plugin_t* const plugin, const clap_window_t* const window)
+{
+    return true;
+}
+
+static bool clap_gui_set_transient(const clap_plugin_t* const plugin, const clap_window_t* const window)
+{
+    return true;
+}
+
+static void clap_gui_suggest_title(const clap_plugin_t* const plugin, const char* const title)
+{
+}
+
+static bool clap_gui_show(const clap_plugin_t* const plugin)
+{
+    return true;
+}
+
+static bool clap_gui_hide(const clap_plugin_t* const plugin)
+{
+    return true;
+}
+
+static const clap_plugin_gui_t clap_plugin_gui = {
+    clap_gui_is_api_supported,
+    clap_gui_get_preferred_api,
+    clap_gui_create,
+    clap_gui_destroy,
+    clap_gui_set_scale,
+    clap_gui_get_size,
+    clap_gui_can_resize,
+    clap_gui_get_resize_hints,
+    clap_gui_adjust_size,
+    clap_gui_set_size,
+    clap_gui_set_parent,
+    clap_gui_set_transient,
+    clap_gui_suggest_title,
+    clap_gui_show,
+    clap_gui_hide
+};
+#endif // DISTRHO_PLUGIN_HAS_UI
+
+// --------------------------------------------------------------------------------------------------------------------
 // plugin audio ports
 
 static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t*, const bool is_input)
@@ -269,7 +791,7 @@ static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t*, const bool i
     return (is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS) != 0 ? 1 : 0;
 }
 
-static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
+static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
                                         const uint32_t index,
                                         const bool is_input,
                                         clap_audio_port_info_t* const info)
@@ -277,11 +799,13 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
     const uint32_t maxPortCount = is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
     DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < maxPortCount, index, maxPortCount, false);
 
+    // PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+
     // TODO use groups
     AudioPortWithBusId& audioPort(sPlugin->getAudioPort(is_input, index));
 
     info->id = index;
-    std::strncpy(info->name, audioPort.name, CLAP_NAME_SIZE-1);
+    DISTRHO_NAMESPACE::strncpy(info->name, audioPort.name, CLAP_NAME_SIZE);
 
     // TODO bus stuff
     info->flags = CLAP_AUDIO_PORT_IS_MAIN;
@@ -299,6 +823,54 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t*,
 static const clap_plugin_audio_ports_t clap_plugin_audio_ports = {
     clap_plugin_audio_ports_count,
     clap_plugin_audio_ports_get
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+// plugin parameters
+
+static uint32_t clap_plugin_params_count(const clap_plugin_t* const plugin)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getParameterCount();
+}
+
+static bool clap_plugin_params_get_info(const clap_plugin_t* const plugin, const uint32_t index, clap_param_info_t* const info)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getParameterInfo(index, info);
+}
+
+static bool clap_plugin_params_get_value(const clap_plugin_t* const plugin, const clap_id param_id, double* const value)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getParameterValue(param_id, value);
+}
+
+static bool clap_plugin_params_value_to_text(const clap_plugin_t* plugin, const clap_id param_id, const double value, char* const display, const uint32_t size)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getParameterStringForValue(param_id, value, display, size);
+}
+
+static bool clap_plugin_params_text_to_value(const clap_plugin_t* plugin, const clap_id param_id, const char* const display, double* const value)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getParameterValueForString(param_id, display, value);
+}
+
+static void clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->flushParameters(in, out);
+}
+
+static const clap_plugin_params_t clap_plugin_params = {
+    clap_plugin_params_count,
+    clap_plugin_params_get_info,
+    clap_plugin_params_get_value,
+    clap_plugin_params_value_to_text,
+    clap_plugin_params_text_to_value,
+    clap_plugin_params_flush
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -361,6 +933,12 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
 {
     if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
         return &clap_plugin_audio_ports;
+    if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
+        return &clap_plugin_params;
+   #if DISTRHO_PLUGIN_HAS_UI
+    if (std::strcmp(id, CLAP_EXT_GUI) == 0)
+        return &clap_plugin_gui;
+   #endif
     return nullptr;
 }
 
