@@ -77,6 +77,7 @@ typedef struct clap_window {
       clap_xwnd   x11;
       clap_hwnd   win32;
       void       *ptr; // for anything defined outside of clap
+      uintptr_t   uptr;
    };
 } clap_window_t;
 

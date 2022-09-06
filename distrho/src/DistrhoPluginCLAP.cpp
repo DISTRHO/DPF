@@ -17,11 +17,9 @@
 #include "DistrhoPluginInternal.hpp"
 #include "extra/ScopedPointer.hpp"
 
-#undef DISTRHO_PLUGIN_HAS_UI
-#define DISTRHO_PLUGIN_HAS_UI 0
-
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
+# include "extra/Mutex.hpp"
 #endif
 
 #include "clap/entry.h"
@@ -33,6 +31,60 @@
 START_NAMESPACE_DISTRHO
 
 #if DISTRHO_PLUGIN_HAS_UI
+
+// --------------------------------------------------------------------------------------------------------------------
+
+struct ClapEventQueue
+{
+    enum EventType {
+        kEventGestureBegin,
+        kEventGestureEnd,
+        kEventParamSet
+    };
+
+    struct Event {
+        EventType type;
+        uint32_t index;
+        double value;
+    };
+
+    struct Queue {
+        Mutex lock;
+        uint allocated;
+        uint used;
+        Event* events;
+
+        Queue()
+            : allocated(0),
+              used(0),
+              events(nullptr) {}
+
+        ~Queue()
+        {
+            delete[] events;
+        }
+
+        void addEventFromUI(const Event& event)
+        {
+            const MutexLocker cml(lock);
+
+            if (events == nullptr)
+            {
+                events = static_cast<Event*>(std::malloc(sizeof(Event) * 8));
+                allocated = 8;
+            }
+            else if (used + 1 > allocated)
+            {
+                allocated = used * 2;
+                events = static_cast<Event*>(std::realloc(events, sizeof(Event) * allocated));
+            }
+
+            std::memcpy(&events[used++], &event, sizeof(Event));
+        }
+    } fEventQueue;
+
+    virtual ~ClapEventQueue() {}
+};
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -49,35 +101,254 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 class ClapUI
 {
 public:
-    ClapUI(const intptr_t winId,
-           const double sampleRate,
-           const char* const bundlePath,
-           void* const dspPtr,
-           const float scaleFactor)
-        : fUI(this, winId, sampleRate,
-              editParameterCallback,
-              setParameterCallback,
-              setStateCallback,
-              sendNoteCallback,
-              setSizeCallback,
-              fileRequestCallback,
-              bundlePath, dspPtr, scaleFactor)
+    ClapUI(PluginExporter& plugin, ClapEventQueue* const eventQueue, const bool isFloating)
+        : fPlugin(plugin),
+          fEventQueue(eventQueue->fEventQueue),
+          fUI(),
+          fIsFloating(isFloating),
+          fScaleFactor(0.0),
+          fParentWindow(0),
+          fTransientWindow(0)
     {
+    }
+
+    bool setScaleFactor(const double scaleFactor)
+    {
+        if (d_isEqual(fScaleFactor, scaleFactor))
+            return true;
+
+        fScaleFactor = scaleFactor;
+
+        if (UIExporter* const ui = fUI.get())
+            ui->notifyScaleFactorChanged(scaleFactor);
+
+        return true;
+    }
+
+    bool getSize(uint32_t* const width, uint32_t* const height) const
+    {
+        if (UIExporter* const ui = fUI.get())
+        {
+            *width = ui->getWidth();
+            *height = ui->getHeight();
+            return true;
+        }
+
+       #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
+        *width = DISTRHO_UI_DEFAULT_WIDTH;
+        *height = DISTRHO_UI_DEFAULT_HEIGHT;
+       #else
+        UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
+                         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
+                         fPlugin.getInstancePointer(), fScaleFactor);
+        *width = tmpUI.getWidth();
+        *height = tmpUI.getHeight();
+        tmpUI.quit();
+       #endif
+
+        return true;
+    }
+
+    bool canResize() const noexcept
+    {
+       #if DISTRHO_UI_USER_RESIZABLE
+        if (UIExporter* const ui = fUI.get())
+            return ui->isResizable();
+       #endif
+        return false;
+    }
+
+    bool getResizeHints(clap_gui_resize_hints_t* const hints) const
+    {
+        if (canResize())
+        {
+            uint minimumWidth, minimumHeight;
+            bool keepAspectRatio;
+            fUI->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+
+            hints->can_resize_horizontally = true;
+            hints->can_resize_vertically = true;
+            hints->preserve_aspect_ratio = keepAspectRatio;
+            hints->aspect_ratio_width = minimumWidth;
+            hints->aspect_ratio_height = minimumHeight;
+
+            return true;
+        }
+
+        hints->can_resize_horizontally = false;
+        hints->can_resize_vertically = false;
+        hints->preserve_aspect_ratio = false;
+        hints->aspect_ratio_width = 0;
+        hints->aspect_ratio_height = 0;
+
+        return false;
+    }
+
+    bool adjustSize(uint32_t* const width, uint32_t* const height) const
+    {
+        if (canResize())
+        {
+            uint minimumWidth, minimumHeight;
+            bool keepAspectRatio;
+            fUI->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+
+            if (keepAspectRatio)
+            {
+                if (*width < 1)
+                    *width = 1;
+                if (*height < 1)
+                    *height = 1;
+
+                const double ratio = static_cast<double>(minimumWidth) / static_cast<double>(minimumHeight);
+                const double reqRatio = static_cast<double>(*width) / static_cast<double>(*height);
+
+                if (d_isNotEqual(ratio, reqRatio))
+                {
+                    // fix width
+                    if (reqRatio > ratio)
+                        *width = static_cast<int32_t>(*height * ratio + 0.5);
+                    // fix height
+                    else
+                        *height = static_cast<int32_t>(static_cast<double>(*width) / ratio + 0.5);
+                }
+            }
+
+            if (minimumWidth > *width)
+                *width = minimumWidth;
+            if (minimumHeight > *height)
+                *height = minimumHeight;
+            
+            return true;
+        }
+
+        return false;
+    }
+
+    bool setSizeFromHost(const uint32_t width, const uint32_t height)
+    {
+        if (UIExporter* const ui = fUI.get())
+        {
+            ui->setWindowSizeFromHost(width, height);
+            return true;
+        }
+
+        return false;
+    }
+
+    bool setParent(const clap_window_t* const window)
+    {
+        if (fIsFloating)
+            return false;
+
+        fParentWindow = window->uptr;
+
+        /*
+        if (fUI != nullptr)
+            createUI();
+        */
+
+        return true;
+    }
+
+    bool setTransient(const clap_window_t* const window)
+    {
+        if (! fIsFloating)
+            return false;
+
+        fTransientWindow = window->uptr;
+
+        if (UIExporter* const ui = fUI.get())
+            ui->setWindowTransientWinId(window->uptr);
+
+        return true;
+    }
+
+    void suggestTitle(const char* const title)
+    {
+        if (! fIsFloating)
+            return;
+
+        fWindowTitle = title;
+
+        if (UIExporter* const ui = fUI.get())
+            ui->setWindowTitle(title);
+    }
+
+    bool show()
+    {
+        if (fUI == nullptr)
+            createUI();
+
+        if (fIsFloating)
+            fUI->setWindowVisible(true);
+
+        return true;
+    }
+
+    bool hide()
+    {
+        if (UIExporter* const ui = fUI.get())
+            ui->setWindowVisible(false);
+
+        return true;
     }
 
     // ----------------------------------------------------------------------------------------------------------------
 
 private:
-    // Stub stuff here
+    // Plugin and UI
+    PluginExporter& fPlugin;
+    ClapEventQueue::Queue& fEventQueue;
+    ScopedPointer<UIExporter> fUI;
 
-    // Plugin UI (after Stub stuff so the UI can call into us during its constructor)
-    UIExporter fUI;
+    const bool fIsFloating;
+
+    // Temporary data
+    double fScaleFactor;
+    uintptr_t fParentWindow;
+    uintptr_t fTransientWindow;
+    String fWindowTitle;
+
+    // ----------------------------------------------------------------------------------------------------------------
+
+    void createUI()
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fUI == nullptr,);
+
+        fUI = new UIExporter(this,
+                             fParentWindow,
+                             fPlugin.getSampleRate(),
+                             editParameterCallback,
+                             setParameterCallback,
+                             setStateCallback,
+                             sendNoteCallback,
+                             setSizeCallback,
+                             fileRequestCallback,
+                             d_nextBundlePath,
+                             fPlugin.getInstancePointer(),
+                             fScaleFactor);
+
+        if (fIsFloating)
+        {
+            if (fWindowTitle.isNotEmpty())
+                fUI->setWindowTitle(fWindowTitle);
+
+            if (fTransientWindow != 0)
+                fUI->setWindowTransientWinId(fTransientWindow);
+        }
+
+    }
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-    void editParameter(uint32_t, bool) const
+    void editParameter(const uint32_t rindex, const bool started) const
     {
+        const ClapEventQueue::Event ev = {
+            started ? ClapEventQueue::kEventGestureBegin : ClapEventQueue::kEventGestureBegin,
+            rindex, 0.0
+        };
+        fEventQueue.addEventFromUI(ev);
     }
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
@@ -85,8 +356,19 @@ private:
         static_cast<ClapUI*>(ptr)->editParameter(rindex, started);
     }
 
-    void setParameterValue(uint32_t, float)
+    void setParameterValue(const uint32_t rindex, const float plain)
     {
+        double value;
+        if (fPlugin.isParameterInteger(rindex))
+            value = plain;
+        else
+            value = fPlugin.getParameterRanges(rindex).getNormalizedValue(static_cast<double>(plain));
+
+        const ClapEventQueue::Event ev = {
+            ClapEventQueue::kEventParamSet,
+            rindex, value
+        };
+        fEventQueue.addEventFromUI(ev);
     }
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
@@ -94,13 +376,13 @@ private:
         static_cast<ClapUI*>(ptr)->setParameterValue(rindex, value);
     }
 
-    void setSize(uint, uint)
+    void setSizeFromPlugin(uint, uint)
     {
     }
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
     {
-        static_cast<ClapUI*>(ptr)->setSize(width, height);
+        static_cast<ClapUI*>(ptr)->setSizeFromPlugin(width, height);
     }
 
    #if DISTRHO_PLUGIN_WANT_STATE
@@ -156,6 +438,9 @@ static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
  * CLAP plugin class.
  */
 class PluginCLAP
+#if DISTRHO_PLUGIN_HAS_UI
+    : ClapEventQueue
+#endif
 {
 public:
     PluginCLAP(const clap_host_t* const host)
@@ -194,6 +479,53 @@ public:
 
     bool process(const clap_process_t* const process)
     {
+       #if DISTRHO_PLUGIN_HAS_UI
+        if (const clap_output_events_t* const outputEvents = process->out_events)
+        {
+            const MutexTryLocker cmtl(fEventQueue.lock);
+
+            if (cmtl.wasLocked())
+            {
+                // reuse the same struct for gesture and parameters, they are compatible up to where it matters
+                clap_event_param_value_t clapEvent = {
+                    { 0, 0, 0, 0, CLAP_EVENT_IS_LIVE },
+                    0, nullptr, 0, 0, 0, 0, 0.0
+                };
+
+                for (uint32_t i=0; i<fEventQueue.used; ++i)
+                {
+                    const Event& event(fEventQueue.events[i]);
+
+                    switch (event.type)
+                    {
+                    case kEventGestureBegin:
+                        clapEvent.header.size = sizeof(clap_event_param_gesture_t);
+                        clapEvent.header.type = CLAP_EVENT_PARAM_GESTURE_BEGIN;
+                        clapEvent.param_id = event.index;
+                        break;
+                    case kEventGestureEnd:
+                        clapEvent.header.size = sizeof(clap_event_param_gesture_t);
+                        clapEvent.header.type = CLAP_EVENT_PARAM_GESTURE_END;
+                        clapEvent.param_id = event.index;
+                        break;
+                    case kEventParamSet:
+                        clapEvent.header.size = sizeof(clap_event_param_value_t);
+                        clapEvent.header.type = CLAP_EVENT_PARAM_VALUE;
+                        clapEvent.param_id = event.index;
+                        clapEvent.value = event.value;
+                        break;
+                    default:
+                        continue;
+                    }
+
+                    outputEvents->try_push(outputEvents, &clapEvent.header);
+                }
+
+                fEventQueue.used = 0;
+            }
+        }
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         if (const clap_event_transport_t* const transport = process->transport)
         {
@@ -495,9 +827,9 @@ public:
     // gui
 
    #if DISTRHO_PLUGIN_HAS_UI
-    bool createUI(const bool floating)
+    bool createUI(const bool isFloating)
     {
-        fUI = new ClapUI();
+        fUI = new ClapUI(fPlugin, this, isFloating);
         return true;
     }
 
@@ -506,125 +838,19 @@ public:
         fUI = nullptr;
     }
 
-    bool setScale(const double scale)
+    ClapUI* getUI() const noexcept
     {
-        fUI.scale = scale;
-
-        if (ClapUI* const ui = fUI.instance)
-            ui->notifyScaleFactorChange(scale);
-
-        return true;
-    }
-
-    bool getSize(uint32_t* const width, uint32_t* const height) const
-    {
-        if (ClapUI* const ui = fUI.instance)
-        {
-            *width = ui->getWidth();
-            *height = ui->getHeight();
-        }
-        else
-        {
-            // TODO
-        }
-        return true;
-    }
-
-    bool canResize() const
-    {
-        if (ClapUI* const ui = fUI.instance)
-            return ui->canResize();
-
-        return DISTRHO_PLUGIN_IS_UI_USER_RESIZABLE != 0;
-    }
-
-    bool getResizeHints(clap_gui_resize_hints_t* const hints) const
-    {
-        // TODO
-        return true;
-    }
-
-    bool adjustSize(uint32_t* const width, uint32_t* const height) const
-    {
-        // TODO
-        return true;
-    }
-
-    bool setSize(const uint32_t width, const uint32_t height)
-    {
-        // TODO
-        return true;
-    }
-
-    bool setParent(const clap_window_t* const window)
-    {
-        // TODO
-
-        if (ClapUI* const ui = fUI.instance)
-        {
-            // TODO
-        }
-
-        return true;
-    }
-
-    bool setTransient(const clap_window_t* const window)
-    {
-        fUI.transient = window;
-
-        if (ClapUI* const ui = fUI.instance)
-            ui->setTransient(window);
-    }
-
-    void suggestTitle(const char* const title)
-    {
-        fUI.title = window;
-
-        if (ClapUI* const ui = fUI.instance)
-            ui->setTitle(title);
-    }
-
-    bool show()
-    {
-        if (fUI.instance == nullptr)
-            fUI.instance = new ClapUI();
-
-        fUI.instance->show();
-        return true;
-    }
-
-    bool hide()
-    {
-        if (ClapUI* const ui = fUI.instance)
-            ui->hide();
-        return true;
+        return fUI.get();
     }
    #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
 private:
-    // Plugin
+    // Plugin and UI
     PluginExporter fPlugin;
-
    #if DISTRHO_PLUGIN_HAS_UI
-    // UI
-    struct UI {
-        double scale;
-        uint32_t hostSetWidth, hostSetHeight;
-        clap_window_t parent, transient;
-        String title;
-        ScopedPointer<ClapUI> instance;
-
-        UI()
-          : scale(0.0),
-            hostSetWidth(0),
-            hostSetHeight(0),
-            parent(0),
-            transient(0),
-            title(),
-            instance() {}
-    } fUI;
+    ScopedPointer<ClapUI> fUI;
    #endif
 
     // CLAP stuff
@@ -682,20 +908,49 @@ static ScopedPointer<PluginExporter> sPlugin;
 // plugin gui
 
 #if DISTRHO_PLUGIN_HAS_UI
-static bool clap_gui_is_api_supported(const clap_plugin_t*, const char* const api, const bool is_floating)
+
+static const char* const kSupportedAPIs[] = {
+#if defined(DISTRHO_OS_WINDOWS)
+    CLAP_WINDOW_API_WIN32,
+#elif defined(DISTRHO_OS_MAC)
+    CLAP_WINDOW_API_COCOA,
+#else
+    CLAP_WINDOW_API_X11,
+#endif
+};
+
+// TODO DPF external UI
+static bool clap_gui_is_api_supported(const clap_plugin_t*, const char* const api, bool)
 {
-    return true;
+    for (size_t i=0; i<ARRAY_SIZE(kSupportedAPIs); ++i)
+    {
+        if (std::strcmp(kSupportedAPIs[i], api) == 0)
+            return true;
+    }
+
+    return false;
 }
 
+// TODO DPF external UI
 static bool clap_gui_get_preferred_api(const clap_plugin_t*, const char** const api, bool* const is_floating)
 {
+    *api = kSupportedAPIs[0];
+    *is_floating = false;
     return true;
 }
 
 static bool clap_gui_create(const clap_plugin_t* const plugin, const char* const api, const bool is_floating)
 {
-    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    return instance->createUI();
+    for (size_t i=0; i<ARRAY_SIZE(kSupportedAPIs); ++i)
+    {
+        if (std::strcmp(kSupportedAPIs[i], api) == 0)
+        {
+            PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+            return instance->createUI(is_floating);
+        }
+    }
+
+    return false;
 }
 
 static void clap_gui_destroy(const clap_plugin_t* const plugin)
@@ -707,61 +962,89 @@ static void clap_gui_destroy(const clap_plugin_t* const plugin)
 static bool clap_gui_set_scale(const clap_plugin_t* const plugin, const double scale)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    UICLAP* const gui = instance->getUI();
-    return gui->setScale(scale);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->setScaleFactor(scale);
 }
 
 static bool clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    UICLAP* const gui = instance->getUI();
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
     return gui->getSize(width, height);
 }
 
 static bool clap_gui_can_resize(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    UICLAP* const gui = instance->getUI();
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
     return gui->canResize();
 }
 
 static bool clap_gui_get_resize_hints(const clap_plugin_t* const plugin, clap_gui_resize_hints_t* const hints)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->getResizeHints(hints);
 }
 
 static bool clap_gui_adjust_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->adjustSize(width, height);
 }
 
 static bool clap_gui_set_size(const clap_plugin_t* const plugin, const uint32_t width, const uint32_t height)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->setSizeFromHost(width, height);
 }
 
 static bool clap_gui_set_parent(const clap_plugin_t* const plugin, const clap_window_t* const window)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->setParent(window);
 }
 
 static bool clap_gui_set_transient(const clap_plugin_t* const plugin, const clap_window_t* const window)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->setTransient(window);
 }
 
 static void clap_gui_suggest_title(const clap_plugin_t* const plugin, const char* const title)
 {
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr,);
+    return gui->suggestTitle(title);
 }
 
 static bool clap_gui_show(const clap_plugin_t* const plugin)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->show();
 }
 
 static bool clap_gui_hide(const clap_plugin_t* const plugin)
 {
-    return true;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+    return gui->hide();
 }
 
 static const clap_plugin_gui_t clap_plugin_gui = {
