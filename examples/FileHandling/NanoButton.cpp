@@ -39,6 +39,10 @@ Button::Button(Widget* const parent, ButtonEventHandler::Callback* const cb)
     ButtonEventHandler::setCallback(cb);
 }
 
+Button::~Button()
+{
+}
+
 void Button::setBackgroundColor(const Color color)
 {
     backgroundColor = color;

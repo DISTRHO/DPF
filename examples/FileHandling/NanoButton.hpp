@@ -33,6 +33,7 @@ class Button : public NanoSubWidget,
 {
 public:
     explicit Button(Widget* parent, ButtonEventHandler::Callback* cb);
+    ~Button() override;
 
     void setBackgroundColor(Color color);
     void setFontScale(float scale);
