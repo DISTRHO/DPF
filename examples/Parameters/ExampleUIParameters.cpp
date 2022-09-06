@@ -33,7 +33,7 @@ class ExampleUIParameters : public UI
 public:
     /* constructor */
     ExampleUIParameters()
-        : UI(512, 512)
+        : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT)
     {
        /**
           Initialize all our parameters to their defaults.
