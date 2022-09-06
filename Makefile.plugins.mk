@@ -544,6 +544,12 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # CLAP
 
+ifeq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
+ifeq ($(HAVE_DGL),true)
+CLAP_LIBS = -lpthread
+endif
+endif
+
 clap: $(clap) $(clapfiles)
 
 ifeq ($(HAVE_DGL),true)
@@ -553,7 +559,7 @@ $(clap): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating CLAP plugin for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_CLAP) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(DGL_LIBS) $(CLAP_LIBS) $(SHARED) $(SYMBOLS_CLAP) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Shared

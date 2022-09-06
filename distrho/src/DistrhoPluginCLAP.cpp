@@ -45,6 +45,7 @@ struct ClapEventQueue
     struct Event {
         EventType type;
         uint32_t index;
+        float plain;
         double value;
     };
 
@@ -346,7 +347,7 @@ private:
     {
         const ClapEventQueue::Event ev = {
             started ? ClapEventQueue::kEventGestureBegin : ClapEventQueue::kEventGestureBegin,
-            rindex, 0.0
+            rindex, 0.f, 0.0
         };
         fEventQueue.addEventFromUI(ev);
     }
@@ -366,7 +367,7 @@ private:
 
         const ClapEventQueue::Event ev = {
             ClapEventQueue::kEventParamSet,
-            rindex, value
+            rindex, plain, value
         };
         fEventQueue.addEventFromUI(ev);
     }
@@ -513,6 +514,7 @@ public:
                         clapEvent.header.type = CLAP_EVENT_PARAM_VALUE;
                         clapEvent.param_id = event.index;
                         clapEvent.value = event.value;
+                        fPlugin.setParameterValue(event.index, event.plain);
                         break;
                     default:
                         continue;
