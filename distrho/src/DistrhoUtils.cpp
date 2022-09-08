@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -56,9 +56,9 @@ const char* getBinaryFilename()
         return filename;
 
 # ifdef DISTRHO_OS_WINDOWS
-#  if DISTRHO_IS_STANDALONE
+   #if DISTRHO_IS_STANDALONE
     constexpr const HINSTANCE hInstance = nullptr;
-#  endif
+   #endif
     CHAR filenameBuf[MAX_PATH];
     filenameBuf[0] = '\0';
     GetModuleFileNameA(hInstance, filenameBuf, sizeof(filenameBuf));
@@ -79,11 +79,13 @@ const char* getPluginFormatName() noexcept
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
     return "Carla";
 #elif defined(DISTRHO_PLUGIN_TARGET_JACK)
-# ifdef DISTRHO_OS_WASM
+   #if defined(DISTRHO_OS_WASM)
     return "Wasm/Standalone";
-# else
+   #elif defined(HAVE_JACK)
     return "JACK/Standalone";
-# endif
+   #else
+    return "Standalone";
+   #endif
 #elif defined(DISTRHO_PLUGIN_TARGET_LADSPA)
     return "LADSPA";
 #elif defined(DISTRHO_PLUGIN_TARGET_DSSI)
@@ -94,6 +96,8 @@ const char* getPluginFormatName() noexcept
     return "VST2";
 #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
     return "VST3";
+#elif defined(DISTRHO_PLUGIN_TARGET_CLAP)
+    return "CLAP";
 #else
     return "Unknown";
 #endif
@@ -103,21 +107,21 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(bundlePath != nullptr, nullptr);
 
-#if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_VST2)
+   #if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_VST2) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
     static String resourcePath;
 
     if (resourcePath.isEmpty())
     {
         resourcePath = bundlePath;
-# ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         resourcePath += "/Contents/Resources";
-# else
+       #else
         resourcePath += DISTRHO_OS_SEP_STR "resources";
-# endif
+       #endif
     }
 
     return resourcePath.buffer();
-#elif defined(DISTRHO_PLUGIN_TARGET_LV2)
+   #elif defined(DISTRHO_PLUGIN_TARGET_LV2)
     static String resourcePath;
 
     if (resourcePath.isEmpty())
@@ -127,7 +131,7 @@ const char* getResourcePath(const char* const bundlePath) noexcept
     }
 
     return resourcePath.buffer();
-#elif defined(DISTRHO_PLUGIN_TARGET_VST3)
+   #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
     static String resourcePath;
 
     if (resourcePath.isEmpty())
@@ -137,7 +141,7 @@ const char* getResourcePath(const char* const bundlePath) noexcept
     }
 
     return resourcePath.buffer();
-#endif
+   #endif
 
     return nullptr;
 }
