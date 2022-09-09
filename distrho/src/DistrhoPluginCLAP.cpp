@@ -17,6 +17,11 @@
 #include "DistrhoPluginInternal.hpp"
 #include "extra/ScopedPointer.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# undef DISTRHO_PLUGIN_HAS_UI
+# define DISTRHO_PLUGIN_HAS_UI 0
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
 # include "../extra/Mutex.hpp"

@@ -127,6 +127,45 @@ jobs:
           path: |
             bin/*
 
+  linux-riscv64:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Fix GitHub's mess
+        run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo apt-get update -qq
+          sudo apt-get install -yqq --allow-downgrades libgd3/focal libpcre2-8-0/focal libpcre2-16-0/focal libpcre2-32-0/focal libpcre2-posix2/focal
+          sudo apt-get purge -yqq libclang* libgbm* libllvm* libmono* moby* mono* php* libgdiplus libpcre2-posix3 libzip4
+      - name: Set up dependencies
+        run: |
+          sudo dpkg --add-architecture riscv64
+          sudo sed -i "s/deb http/deb [arch=amd64] http/" /etc/apt/sources.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports focal main restricted universe multiverse" | sudo tee /etc/apt/sources.list.d/ports-riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports focal-updates main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-riscv64.list
+          echo "deb [arch=riscv64] http://ports.ubuntu.com/ubuntu-ports focal-backports main restricted universe multiverse" | sudo tee -a /etc/apt/sources.list.d/ports-riscv64.list
+          sudo apt-get update -qq
+          sudo apt-get install -yqq g++-riscv64-linux-gnu libasound2-dev:riscv64 libcairo2-dev:riscv64 libdbus-1-dev:riscv64 libgl1-mesa-dev:riscv64 libglapi-mesa:riscv64 libglvnd0:riscv64 liblo-dev:riscv64 libpulse-dev:riscv64 libx11-dev:riscv64 libxcursor-dev:riscv64 libxext-dev:riscv64 libxrandr-dev:riscv64 qemu-user-static
+      - name: Build linux riscv64 cross-compiled
+        env:
+          CC: riscv64-linux-gnu-gcc
+          CXX: riscv64-linux-gnu-g++
+          LDFLAGS: -static-libgcc -static-libstdc++
+          PKG_CONFIG_PATH: /usr/lib/riscv64-linux-gnu/pkgconfig
+        run: |
+          make features
+          make WITH_LTO=true -j $(nproc)
+      - name: Set sha8
+        id: slug
+        run: echo "::set-output name=sha8::$(echo ${{ github.sha }} | cut -c1-8)"
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ github.event.repository.name }}-linux-riscv64-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
+          path: |
+            bin/*
+
   linux-x86_64:
     runs-on: ubuntu-20.04
     steps:
