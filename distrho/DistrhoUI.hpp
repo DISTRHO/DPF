@@ -51,6 +51,9 @@ typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #if DISTRHO_UI_FILE_BROWSER
 # include "extra/FileBrowserDialog.hpp"
 #endif
+#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# include <vector>
+#endif
 
 START_NAMESPACE_DISTRHO
 
