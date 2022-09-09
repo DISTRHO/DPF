@@ -565,6 +565,12 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // core
 
+    template <class T>
+    const T* getHostExtension(const char* const extensionId) const
+    {
+        return static_cast<const T*>(fHost->get_extension(fHost, extensionId));
+    }
+
     bool init()
     {
         if (!clap_version_is_compatible(fHost->clap_version))
@@ -1054,9 +1060,20 @@ private:
     // DPF callbacks
 
    #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    bool writeMidi(const MidiEvent&)
+    bool writeMidi(const MidiEvent& midiEvent)
     {
-        return true;
+        DISTRHO_SAFE_ASSERT_RETURN(fOutputEvents != nullptr, false);
+
+        if (midiEvent.size > 3)
+            return true;
+
+        const clap_event_midi clapEvent = {
+            { sizeof(clap_event_midi), midiEvent.frame, 0, CLAP_EVENT_MIDI, CLAP_EVENT_IS_LIVE },
+            0, { midiEvent.data[0],
+                 static_cast<uint8_t>(midiEvent.size >= 2 ? midiEvent.data[1] : 0),
+                 static_cast<uint8_t>(midiEvent.size >= 3 ? midiEvent.data[2] : 0) }
+        };
+        return fOutputEvents->try_push(fOutputEvents, &clapEvent.header);
     }
 
     static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
@@ -1294,6 +1311,8 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
     return true;
    #else
     return false;
+    // unused
+    (void)info;
    #endif
 }
 

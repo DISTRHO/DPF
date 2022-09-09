@@ -27,6 +27,7 @@ TARGETS += jack
 TARGETS += lv2_dsp
 TARGETS += vst2
 TARGETS += vst3
+TARGETS += clap
 
 all: $(TARGETS)
 
