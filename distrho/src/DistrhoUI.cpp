@@ -174,28 +174,44 @@ ExternalWindow::PrivateData
 #else
 PluginWindow&
 #endif
-UI::PrivateData::createNextWindow(UI* const ui, const uint width, const uint height)
+UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const bool adjustForScaleFactor)
 {
     UI::PrivateData* const pData = s_nextPrivateData;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    const double scaleFactor = d_isNotZero(pData->scaleFactor) ? pData->scaleFactor : getDesktopScaleFactor(pData->winId);
+
+    if (adjustForScaleFactor && d_isNotZero(scaleFactor) && d_isNotEqual(scaleFactor, 1.0))
+    {
+        width *= scaleFactor;
+        height *= scaleFactor;
+    }
+
     pData->window = new PluginWindow(ui, pData->app);
     ExternalWindow::PrivateData ewData;
     ewData.parentWindowHandle = pData->winId;
     ewData.width = width;
     ewData.height = height;
-    ewData.scaleFactor = pData->scaleFactor != 0.0 ? pData->scaleFactor : getDesktopScaleFactor(pData->winId);
+    ewData.scaleFactor = scaleFactor;
     ewData.title = DISTRHO_PLUGIN_NAME;
     ewData.isStandalone = DISTRHO_UI_IS_STANDALONE;
     return ewData;
-#else
-    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, pData->scaleFactor);
+   #else
+    const double scaleFactor = pData->scaleFactor;
+
+    if (adjustForScaleFactor && d_isNotZero(scaleFactor) && d_isNotEqual(scaleFactor, 1.0))
+    {
+        width *= scaleFactor;
+        height *= scaleFactor;
+    }
+
+    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, scaleFactor);
 
     // If there are no callbacks, this is most likely a temporary window, so ignore idle callbacks
     if (pData->callbacksPtr == nullptr)
         pData->window->setIgnoreIdleCallbacks();
 
     return pData->window.getObject();
-#endif
+   #endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -207,10 +223,16 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
                width == 0 ? DISTRHO_UI_DEFAULT_WIDTH :
               #endif
                width,
-              #ifdef DISTRHO_UI_DEFAULT_WIDTH
-               height == 0 ? DISTRHO_UI_DEFAULT_WIDTH :
+              #ifdef DISTRHO_UI_DEFAULT_HEIGHT
+               height == 0 ? DISTRHO_UI_DEFAULT_HEIGHT :
               #endif
-               height)),
+               height,
+              #ifdef DISTRHO_UI_DEFAULT_WIDTH
+               width == 0
+              #else
+               false
+              #endif
+               )),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI

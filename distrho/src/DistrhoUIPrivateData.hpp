@@ -424,9 +424,9 @@ struct UI::PrivateData {
 
     static UI::PrivateData* s_nextPrivateData;
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    static ExternalWindow::PrivateData createNextWindow(UI* ui, uint width, uint height);
+    static ExternalWindow::PrivateData createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
 #else
-    static PluginWindow& createNextWindow(UI* ui, uint width, uint height);
+    static PluginWindow& createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
 #endif
 };
 
