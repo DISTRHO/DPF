@@ -19,12 +19,17 @@
 
 #if DISTRHO_PLUGIN_HAS_UI
 # include "DistrhoUIInternal.hpp"
-# include "extra/Mutex.hpp"
+# include "../extra/Mutex.hpp"
+#endif
+
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+# include "../extra/RingBuffer.hpp"
 #endif
 
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
 #include "clap/ext/audio-ports.h"
+#include "clap/ext/note-ports.h"
 #include "clap/ext/gui.h"
 #include "clap/ext/params.h"
 
@@ -83,6 +88,10 @@ struct ClapEventQueue
     } fEventQueue;
    #endif
 
+   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    SmallStackBuffer fNotesBuffer;
+   #endif
+
    #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* key, const char* value) = 0;
    #endif
@@ -116,6 +125,16 @@ struct ClapEventQueue
         }
     } fCachedParameters;
 
+    ClapEventQueue()
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        : fNotesBuffer(StackBuffer_INIT)
+       #endif
+    {
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
+        std::memset(&fNotesBuffer, 0, sizeof(fNotesBuffer));
+       #endif
+    }
+
     virtual ~ClapEventQueue() {}
 };
 
@@ -141,13 +160,15 @@ public:
           fPluinEventQueue(eventQueue),
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
-          fUI(),
           fIsFloating(isFloating),
           fCallbackRegistered(false),
           fScaleFactor(0.0),
           fParentWindow(0),
           fTransientWindow(0)
     {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&eventQueue->fNotesBuffer, false);
+       #endif
     }
 
     ~ClapUI() override
@@ -360,6 +381,9 @@ private:
     ClapEventQueue* const fPluinEventQueue;
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
+   #endif
     ScopedPointer<UIExporter> fUI;
 
     const bool fIsFloating;
@@ -474,6 +498,12 @@ private:
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
+        uint8_t midiData[3];
+        midiData[0] = (velocity != 0 ? 0x90 : 0x80) | channel;
+        midiData[1] = note;
+        midiData[2] = velocity;
+        fNotesRingBuffer.writeCustomData(midiData, 3);
+        fNotesRingBuffer.commitWrite();
     }
 
     static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
@@ -522,8 +552,14 @@ public:
                   updateStateValueCallback),
           fHost(host),
           fOutputEvents(nullptr)
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , fMidiEventCount(0)
+       #endif
     {
         fCachedParameters.setup(fPlugin.getParameterCount());
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fNotesRingBuffer.setRingBuffer(&fNotesBuffer, true);
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -552,6 +588,10 @@ public:
 
     bool process(const clap_process_t* const process)
     {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fMidiEventCount = 0;
+       #endif
+
        #if DISTRHO_PLUGIN_HAS_UI
         if (const clap_output_events_t* const outputEvents = process->out_events)
         {
@@ -697,6 +737,12 @@ public:
                     case CLAP_EVENT_PARAM_GESTURE_END:
                     case CLAP_EVENT_TRANSPORT:
                     case CLAP_EVENT_MIDI:
+                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_midi_t),
+                                                        event->size, sizeof(clap_event_midi_t));
+                       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                        addMidiEvent(static_cast<const clap_event_midi_t*>(static_cast<const void*>(event)));
+                       #endif
+                        break;
                     case CLAP_EVENT_MIDI_SYSEX:
                     case CLAP_EVENT_MIDI2:
                         break;
@@ -704,6 +750,28 @@ public:
                 }
             }
         }
+
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            const uint32_t frame = fMidiEventCount != 0 ? fMidiEvents[fMidiEventCount-1].frame : 0;
+
+            while (fNotesRingBuffer.isDataAvailableForReading())
+            {
+                if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                    break;
+
+                MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+                midiEvent.frame = frame;
+                midiEvent.size  = 3;
+                std::memcpy(midiEvent.data, midiData, 3);
+
+                if (fMidiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
+       #endif
 
         if (const uint32_t frames = process->frames_count)
         {
@@ -723,7 +791,7 @@ public:
             fOutputEvents = process->out_events;
 
            #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            fPlugin.run(inputs, outputs, frames, nullptr, 0);
+            fPlugin.run(inputs, outputs, frames, fMidiEvents, fMidiEventCount);
            #else
             fPlugin.run(inputs, outputs, frames);
            #endif
@@ -857,13 +925,6 @@ public:
         return true;
     }
 
-    void setParameterValueFromEvent(const clap_event_param_value* const param)
-    {
-        fCachedParameters.values[param->param_id] = param->value;
-        fCachedParameters.changed[param->param_id] = true;
-        fPlugin.setParameterValue(param->param_id, param->value);
-    }
-
     void flushParameters(const clap_input_events_t* const in, const clap_output_events_t* const out)
     {
         if (const uint32_t len = in != nullptr ? in->size(in) : 0)
@@ -911,6 +972,30 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    void addMidiEvent(const clap_event_midi_t* const event)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(event->port_index == 0, event->port_index,);
+
+        if (fMidiEventCount == kMaxMidiEvents)
+            return;
+
+        MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+        midiEvent.frame = event->header.time;
+        midiEvent.size  = 3;
+        std::memcpy(midiEvent.data, event->data, 3);
+    }
+   #endif
+
+    void setParameterValueFromEvent(const clap_event_param_value* const event)
+    {
+        fCachedParameters.values[event->param_id] = event->value;
+        fCachedParameters.changed[event->param_id] = true;
+        fPlugin.setParameterValue(event->param_id, event->value);
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
     // gui
 
    #if DISTRHO_PLUGIN_HAS_UI
@@ -952,6 +1037,15 @@ private:
     // CLAP stuff
     const clap_host_t* const fHost;
     const clap_output_events_t* fOutputEvents;
+
+  #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    uint32_t fMidiEventCount;
+    MidiEvent fMidiEvents[kMaxMidiEvents];
+   #if DISTRHO_PLUGIN_HAS_UI
+    RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
+   #endif
+  #endif
+
    #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
    #endif
@@ -1209,6 +1303,52 @@ static const clap_plugin_audio_ports_t clap_plugin_audio_ports = {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// plugin audio ports
+
+static uint32_t clap_plugin_note_ports_count(const clap_plugin_t*, const bool is_input)
+{
+    return (is_input ? DISTRHO_PLUGIN_WANT_MIDI_INPUT : DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) != 0 ? 1 : 0;
+}
+
+static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t, const bool is_input, clap_note_port_info_t* const info)
+{
+    if (is_input)
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        info->id = 0;
+        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
+        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+        std::strcpy(info->name, "Event/MIDI Input");
+        return true;
+       #else
+        return false;
+       #endif
+    }
+    else
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        info->id = 0;
+        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
+        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+        std::strcpy(info->name, "Event/MIDI Output");
+        return true;
+       #else
+        return false;
+       #endif
+    }
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT+DISTRHO_PLUGIN_WANT_MIDI_OUTPUT == 0
+    // unused
+    (void)info;
+   #endif
+}
+
+static const clap_plugin_note_ports_t clap_plugin_note_ports = {
+    clap_plugin_note_ports_count,
+    clap_plugin_note_ports_get
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // plugin parameters
 
 static uint32_t clap_plugin_params_count(const clap_plugin_t* const plugin)
@@ -1316,6 +1456,8 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
 {
     if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
         return &clap_plugin_audio_ports;
+    if (std::strcmp(id, CLAP_EXT_NOTE_PORTS) == 0)
+        return &clap_plugin_note_ports;
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
    #if DISTRHO_PLUGIN_HAS_UI
