@@ -603,7 +603,8 @@ public:
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         if (const clap_event_transport_t* const transport = process->transport)
         {
-            fTimePosition.playing = transport->flags & CLAP_TRANSPORT_IS_PLAYING;
+            fTimePosition.playing = (transport->flags & CLAP_TRANSPORT_IS_PLAYING) != 0 &&
+                                    (transport->flags & CLAP_TRANSPORT_IS_WITHIN_PRE_ROLL) == 0;
 
             fTimePosition.frame = process->steady_time >= 0 ? process->steady_time : 0;
 
@@ -615,27 +616,28 @@ public:
             // ticksPerBeat is not possible with CLAP
             fTimePosition.bbt.ticksPerBeat = 1920.0;
 
-            // TODO verify if this works or makes any sense
             if ((transport->flags & (CLAP_TRANSPORT_HAS_BEATS_TIMELINE|CLAP_TRANSPORT_HAS_TIME_SIGNATURE)) == (CLAP_TRANSPORT_HAS_BEATS_TIMELINE|CLAP_TRANSPORT_HAS_TIME_SIGNATURE))
             {
-                const double ppqPos    = std::abs(transport->song_pos_beats);
-                const int    ppqPerBar = transport->tsig_num * 4 / transport->tsig_denom;
-                const double barBeats  = (std::fmod(ppqPos, ppqPerBar) / ppqPerBar) * transport->tsig_num;
-                const double rest      =  std::fmod(barBeats, 1.0);
+                if (transport->song_pos_beats >= 0)
+                {
+                    const int64_t clapPos   = std::abs(transport->song_pos_beats);
+                    const int64_t clapBeats = clapPos >> 31;
+                    const double  clapRest  = static_cast<double>(clapPos & 0x7fffffff) / CLAP_BEATTIME_FACTOR;
+
+                    fTimePosition.bbt.bar  = static_cast<int32_t>(clapBeats) / transport->tsig_num + 1;
+                    fTimePosition.bbt.beat = static_cast<int32_t>(clapBeats % transport->tsig_num) + 1;
+                    fTimePosition.bbt.tick = clapRest * fTimePosition.bbt.ticksPerBeat;
+                }
+                else
+                {
+                    fTimePosition.bbt.bar  = 1;
+                    fTimePosition.bbt.beat = 1;
+                    fTimePosition.bbt.tick = 0.0;
+                }
 
                 fTimePosition.bbt.valid       = true;
-                fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
-                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
-                fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
                 fTimePosition.bbt.beatsPerBar = transport->tsig_num;
                 fTimePosition.bbt.beatType    = transport->tsig_denom;
-
-                if (transport->song_pos_beats < 0.0)
-                {
-                    --fTimePosition.bbt.bar;
-                    fTimePosition.bbt.beat = transport->tsig_num - fTimePosition.bbt.beat + 1;
-                    fTimePosition.bbt.tick = fTimePosition.bbt.ticksPerBeat - fTimePosition.bbt.tick - 1;
-                }
             }
             else
             {
