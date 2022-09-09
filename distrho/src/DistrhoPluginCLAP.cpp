@@ -31,6 +31,16 @@
 # include "../extra/RingBuffer.hpp"
 #endif
 
+#if (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# define DPF_CLAP_USING_HOST_TIMER 0
+#else
+# define DPF_CLAP_USING_HOST_TIMER 1
+#endif
+
+#ifndef DPF_CLAP_TIMER_INTERVAL
+# define DPF_CLAP_TIMER_INTERVAL 16 /* ~60 fps */
+#endif
+
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
 #include "clap/ext/audio-ports.h"
@@ -166,6 +176,9 @@ public:
            ClapEventQueue* const eventQueue,
            const clap_host_t* const host,
            const clap_host_gui_t* const hostGui,
+          #if DPF_CLAP_USING_HOST_TIMER
+           const clap_host_timer_support_t* const hostTimer,
+          #endif
            const bool isFloating)
         : fPlugin(plugin),
           fPluinEventQueue(eventQueue),
@@ -173,8 +186,13 @@ public:
           fCachedParameters(eventQueue->fCachedParameters),
           fHost(host),
           fHostGui(hostGui),
-          fIsFloating(isFloating),
+         #if DPF_CLAP_USING_HOST_TIMER
+          fTimerId(0),
+          fHostTimer(hostTimer),
+         #else
           fCallbackRegistered(false),
+         #endif
+          fIsFloating(isFloating),
           fScaleFactor(0.0),
           fParentWindow(0),
           fTransientWindow(0)
@@ -186,13 +204,13 @@ public:
 
     ~ClapUI() override
     {
-        if (fCallbackRegistered)
-        {
-           #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-            if (UIExporter* const ui = fUI.get())
-                ui->removeIdleCallbackForVST3(this);
-           #endif
-        }
+       #if DPF_CLAP_USING_HOST_TIMER
+        if (fTimerId != 0)
+            fHostTimer->unregister_timer(fHost, fTimerId);
+       #else
+        if (fCallbackRegistered && fUI != nullptr)
+            fUI->removeIdleCallbackForNativeIdle(this);
+       #endif
     }
 
     bool setScaleFactor(const double scaleFactor)
@@ -368,10 +386,12 @@ public:
         if (fIsFloating)
             fUI->setWindowVisible(true);
 
-       #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-        fUI->addIdleCallbackForVST3(this, 16);
-       #endif
+       #if DPF_CLAP_USING_HOST_TIMER
+        fHostTimer->register_timer(fHost, DPF_CLAP_TIMER_INTERVAL, &fTimerId);
+       #else
         fCallbackRegistered = true;
+        fUI->addIdleCallbackForNativeIdle(this, DPF_CLAP_TIMER_INTERVAL);
+       #endif
         return true;
     }
 
@@ -380,13 +400,39 @@ public:
         if (UIExporter* const ui = fUI.get())
         {
             ui->setWindowVisible(false);
-           #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-            ui->removeIdleCallbackForVST3(this);
-           #endif
+           #if DPF_CLAP_USING_HOST_TIMER
+            fHostTimer->unregister_timer(fHost, fTimerId);
+            fTimerId = 0;
+           #else
+            ui->removeIdleCallbackForNativeIdle(this);
             fCallbackRegistered = false;
+           #endif
         }
 
         return true;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
+
+    void idleCallback() override
+    {
+        if (UIExporter* const ui = fUI.get())
+        {
+           #if DPF_CLAP_USING_HOST_TIMER
+            ui->plugin_idle();
+           #else
+            ui->idleFromNativeIdle();
+           #endif
+
+            for (uint i=0; i<fCachedParameters.numParams; ++i)
+            {
+                if (fCachedParameters.changed[i])
+                {
+                    fCachedParameters.changed[i] = false;
+                    ui->parameterChanged(i, fCachedParameters.values[i]);
+                }
+            }
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -399,6 +445,12 @@ private:
     ClapEventQueue::CachedParameters& fCachedParameters;
     const clap_host_t* const fHost;
     const clap_host_gui_t* const fHostGui;
+   #if DPF_CLAP_USING_HOST_TIMER
+    clap_id fTimerId;
+    const clap_host_timer_support_t* const fHostTimer;
+   #else
+    bool fCallbackRegistered;
+   #endif
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
    #endif
@@ -407,7 +459,6 @@ private:
     const bool fIsFloating;
 
     // Temporary data
-    bool fCallbackRegistered;
     double fScaleFactor;
     uintptr_t fParentWindow;
     uintptr_t fTransientWindow;
@@ -440,25 +491,6 @@ private:
             if (fTransientWindow != 0)
                 fUI->setWindowTransientWinId(fTransientWindow);
         }
-    }
-
-    void idleCallback() override
-    {
-       #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-        if (UIExporter* const ui = fUI.get())
-        {
-            ui->idleForVST3();
-
-            for (uint i=0; i<fCachedParameters.numParams; ++i)
-            {
-                if (fCachedParameters.changed[i])
-                {
-                    fCachedParameters.changed[i] = false;
-                    ui->parameterChanged(i, fCachedParameters.values[i]);
-                }
-            }
-        }
-       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1030,7 +1062,16 @@ public:
         const clap_host_gui_t* const hostGui = getHostExtension<clap_host_gui_t>(CLAP_EXT_GUI);
         DISTRHO_SAFE_ASSERT_RETURN(hostGui != nullptr, false);
 
-        fUI = new ClapUI(fPlugin, this, fHost, hostGui, isFloating);
+       #if DPF_CLAP_USING_HOST_TIMER
+        const clap_host_timer_support_t* const hostTimer = getHostExtension<clap_host_timer_support_t>(CLAP_EXT_TIMER_SUPPORT);
+        DISTRHO_SAFE_ASSERT_RETURN(hostTimer != nullptr, false);
+       #endif
+
+        fUI = new ClapUI(fPlugin, this, fHost, hostGui,
+                        #if DPF_CLAP_USING_HOST_TIMER
+                         hostTimer,
+                        #endif
+                         isFloating);
         return true;
     }
 
@@ -1294,6 +1335,24 @@ static const clap_plugin_gui_t clap_plugin_gui = {
     clap_gui_show,
     clap_gui_hide
 };
+
+// --------------------------------------------------------------------------------------------------------------------
+// plugin timer
+
+#if DPF_CLAP_USING_HOST_TIMER
+static void clap_plugin_on_timer(const clap_plugin_t* const plugin, clap_id)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    ClapUI* const gui = instance->getUI();
+    DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr,);
+    return gui->idleCallback();
+}
+
+static const clap_plugin_timer_support_t clap_timer = {
+    clap_plugin_on_timer
+};
+#endif
+
 #endif // DISTRHO_PLUGIN_HAS_UI
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1502,10 +1561,14 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
         return &clap_plugin_note_ports;
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
-   #if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     if (std::strcmp(id, CLAP_EXT_GUI) == 0)
         return &clap_plugin_gui;
+   #if DPF_CLAP_USING_HOST_TIMER
+    if (std::strcmp(id, CLAP_EXT_TIMER_SUPPORT) == 0)
+        return &clap_timer;
    #endif
+  #endif
     return nullptr;
 }
 

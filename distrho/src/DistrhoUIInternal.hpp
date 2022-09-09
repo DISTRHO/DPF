@@ -263,7 +263,7 @@ public:
     // -------------------------------------------------------------------
 
   #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
-    void idleForVST3()
+    void idleFromNativeIdle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
@@ -272,12 +272,12 @@ public:
     }
 
    #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    void addIdleCallbackForVST3(IdleCallback* const cb, const uint timerFrequencyInMs)
+    void addIdleCallbackForNativeIdle(IdleCallback* const cb, const uint timerFrequencyInMs)
     {
         uiData->window->addIdleCallback(cb, timerFrequencyInMs);
     }
 
-    void removeIdleCallbackForVST3(IdleCallback* const cb)
+    void removeIdleCallbackForNativeIdle(IdleCallback* const cb)
     {
         uiData->window->removeIdleCallback(cb);
     }

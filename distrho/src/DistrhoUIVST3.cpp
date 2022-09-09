@@ -270,7 +270,7 @@ public:
        #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         fIdleHelper.registerNativeIdleCallback();
        #else
-        fUI.addIdleCallbackForVST3(this, DPF_VST3_TIMER_INTERVAL);
+        fUI.addIdleCallbackForNativeIdle(this, DPF_VST3_TIMER_INTERVAL);
        #endif
     }
 
@@ -282,7 +282,7 @@ public:
        #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         fIdleHelper.unregisterNativeIdleCallback();
        #else
-        fUI.removeIdleCallbackForVST3(this);
+        fUI.removeIdleCallbackForNativeIdle(this);
        #endif
     }
 
@@ -694,7 +694,7 @@ public:
 
     void idleCallback() override
     {
-        fUI.idleForVST3();
+        fUI.idleFromNativeIdle();
         doIdleStuff();
     }
    #endif
