@@ -405,14 +405,14 @@ void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
 
-#ifndef DISTRHO_PLUGIN_TARGET_VST3
+   #if !(defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP))
     if (uiData->initializing)
         return;
 
     const uint width = ev.size.getWidth();
     const uint height = ev.size.getHeight();
     uiData->setSizeCallback(width, height);
-#endif
+   #endif
 }
 
 // NOTE: only used for VST3 and CLAP

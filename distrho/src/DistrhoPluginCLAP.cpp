@@ -37,6 +37,8 @@
 #include "clap/ext/note-ports.h"
 #include "clap/ext/gui.h"
 #include "clap/ext/params.h"
+#include "clap/ext/state.h"
+#include "clap/ext/timer-support.h"
 
 START_NAMESPACE_DISTRHO
 
@@ -160,11 +162,17 @@ static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 class ClapUI : public DGL_NAMESPACE::IdleCallback
 {
 public:
-    ClapUI(PluginExporter& plugin, ClapEventQueue* const eventQueue, const bool isFloating)
+    ClapUI(PluginExporter& plugin,
+           ClapEventQueue* const eventQueue,
+           const clap_host_t* const host,
+           const clap_host_gui_t* const hostGui,
+           const bool isFloating)
         : fPlugin(plugin),
           fPluinEventQueue(eventQueue),
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
+          fHost(host),
+          fHostGui(hostGui),
           fIsFloating(isFloating),
           fCallbackRegistered(false),
           fScaleFactor(0.0),
@@ -352,7 +360,10 @@ public:
     bool show()
     {
         if (fUI == nullptr)
+        {
             createUI();
+            fHostGui->resize_hints_changed(fHost);
+        }
 
         if (fIsFloating)
             fUI->setWindowVisible(true);
@@ -386,6 +397,8 @@ private:
     ClapEventQueue* const fPluinEventQueue;
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
+    const clap_host_t* const fHost;
+    const clap_host_gui_t* const fHostGui;
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
    #endif
@@ -479,8 +492,10 @@ private:
         static_cast<ClapUI*>(ptr)->setParameterValue(rindex, value);
     }
 
-    void setSizeFromPlugin(uint, uint)
+    void setSizeFromPlugin(const uint width, const uint height)
     {
+        if (fHostGui->request_resize(fHost, width, height) && fUI != nullptr)
+            fUI->setWindowSizeFromHost(width, height);
     }
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
@@ -1012,7 +1027,10 @@ public:
    #if DISTRHO_PLUGIN_HAS_UI
     bool createUI(const bool isFloating)
     {
-        fUI = new ClapUI(fPlugin, this, isFloating);
+        const clap_host_gui_t* const hostGui = getHostExtension<clap_host_gui_t>(CLAP_EXT_GUI);
+        DISTRHO_SAFE_ASSERT_RETURN(hostGui != nullptr, false);
+
+        fUI = new ClapUI(fPlugin, this, fHost, hostGui, isFloating);
         return true;
     }
 
