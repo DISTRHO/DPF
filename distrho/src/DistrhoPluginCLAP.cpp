@@ -483,6 +483,15 @@ private:
                              fPlugin.getInstancePointer(),
                              fScaleFactor);
 
+        // TODO fetch and set state too
+
+        for (uint32_t i=0; i<fCachedParameters.numParams; ++i)
+        {
+            const float value = fCachedParameters.values[i] = fPlugin.getParameterValue(i);
+            fCachedParameters.changed[i] = false;
+            fUI->parameterChanged(i, value);
+        }
+
         if (fIsFloating)
         {
             if (fWindowTitle.isNotEmpty())
