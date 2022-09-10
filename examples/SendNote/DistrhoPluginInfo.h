@@ -17,9 +17,10 @@
 #ifndef DISTRHO_PLUGIN_INFO_H_INCLUDED
 #define DISTRHO_PLUGIN_INFO_H_INCLUDED
 
-#define DISTRHO_PLUGIN_BRAND "DISTRHO"
-#define DISTRHO_PLUGIN_NAME  "SendNote"
-#define DISTRHO_PLUGIN_URI   "http://distrho.sf.net/examples/SendNote"
+#define DISTRHO_PLUGIN_BRAND   "DISTRHO"
+#define DISTRHO_PLUGIN_NAME    "SendNote"
+#define DISTRHO_PLUGIN_URI     "http://distrho.sf.net/examples/SendNote"
+#define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.send-note"
 
 #define DISTRHO_PLUGIN_HAS_UI           1
 #define DISTRHO_PLUGIN_HAS_EMBED_UI     1

@@ -17,6 +17,10 @@
 #include "DistrhoPluginInternal.hpp"
 #include "extra/ScopedPointer.hpp"
 
+#ifndef DISTRHO_PLUGIN_CLAP_ID
+# error DISTRHO_PLUGIN_CLAP_ID undefined!
+#endif
+
 #if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
@@ -2032,7 +2036,7 @@ static const clap_plugin_descriptor_t* clap_get_plugin_descriptor(const clap_plu
 
     static const clap_plugin_descriptor_t descriptor = {
         CLAP_VERSION,
-        sPlugin->getLabel(),
+        DISTRHO_PLUGIN_CLAP_ID,
         sPlugin->getName(),
         sPlugin->getMaker(),
         // TODO url

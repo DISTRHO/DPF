@@ -475,6 +475,8 @@ START_NAMESPACE_DISTRHO
     - @ref DISTRHO_PLUGIN_NUM_INPUTS
     - @ref DISTRHO_PLUGIN_NUM_OUTPUTS
     - @ref DISTRHO_PLUGIN_URI
+   
+   Additionally, @ref DISTRHO_PLUGIN_CLAP_ID is required if building CLAP plugins.
    @{
  */
 
@@ -813,6 +815,12 @@ START_NAMESPACE_DISTRHO
       - ambisonic
 */
 #define DISTRHO_PLUGIN_CLAP_FEATURES "audio-effect", "stereo"
+
+/**
+   The plugin id when exporting in CLAP format, in reverse URI form.
+   @note This macro is required when building CLAP plugins
+*/
+#define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.effect"
 
 /** @} */
 
