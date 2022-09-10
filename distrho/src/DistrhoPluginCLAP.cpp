@@ -31,15 +31,7 @@
 # include "../extra/RingBuffer.hpp"
 #endif
 
-#if (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# define DPF_CLAP_USING_HOST_TIMER 0
-#else
-# define DPF_CLAP_USING_HOST_TIMER 1
-#endif
-
-#ifndef DPF_CLAP_TIMER_INTERVAL
-# define DPF_CLAP_TIMER_INTERVAL 16 /* ~60 fps */
-#endif
+#include <map>
 
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
@@ -50,13 +42,25 @@
 #include "clap/ext/state.h"
 #include "clap/ext/timer-support.h"
 
+#if (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# define DPF_CLAP_USING_HOST_TIMER 0
+#else
+# define DPF_CLAP_USING_HOST_TIMER 1
+#endif
+
+#ifndef DPF_CLAP_TIMER_INTERVAL
+# define DPF_CLAP_TIMER_INTERVAL 16 /* ~60 fps */
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
+typedef std::map<const String, String> StringMap;
+
 struct ClapEventQueue
 {
-   #if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     enum EventType {
         kEventGestureBegin,
         kEventGestureEnd,
@@ -103,15 +107,22 @@ struct ClapEventQueue
             std::memcpy(&events[used++], &event, sizeof(Event));
         }
     } fEventQueue;
-   #endif
 
-   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     SmallStackBuffer fNotesBuffer;
    #endif
+  #endif
 
-   #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    uint32_t fCurrentProgram;
+   #endif
+
+  #if DISTRHO_PLUGIN_WANT_STATE
+    StringMap fStateMap;
+   #if DISTRHO_PLUGIN_HAS_UI
     virtual void setStateFromUI(const char* key, const char* value) = 0;
    #endif
+  #endif
 
     struct CachedParameters {
         uint numParams;
@@ -150,6 +161,9 @@ struct ClapEventQueue
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
         std::memset(&fNotesBuffer, 0, sizeof(fNotesBuffer));
        #endif
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        fCurrentProgram = 0;
+       #endif
     }
 
     virtual ~ClapEventQueue() {}
@@ -184,6 +198,12 @@ public:
           fPluinEventQueue(eventQueue),
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
+         #if DISTRHO_PLUGIN_WANT_PROGRAMS
+          fCurrentProgram(eventQueue->fCurrentProgram),
+         #endif
+         #if DISTRHO_PLUGIN_WANT_STATE
+          fStateMap(eventQueue->fStateMap),
+         #endif
           fHost(host),
           fHostGui(hostGui),
          #if DPF_CLAP_USING_HOST_TIMER
@@ -437,12 +457,42 @@ public:
 
     // ----------------------------------------------------------------------------------------------------------------
 
+    void setParameterValueFromPlugin(const uint index, const float value)
+    {
+        if (UIExporter* const ui = fUI.get())
+            ui->parameterChanged(index, value);
+    }
+
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    void setProgramFromPlugin(const uint index)
+    {
+        if (UIExporter* const ui = fUI.get())
+            ui->programLoaded(index);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    void setStateFromPlugin(const char* const key, const char* const value)
+    {
+        if (UIExporter* const ui = fUI.get())
+            ui->stateChanged(key, value);
+    }
+   #endif
+
+    // ----------------------------------------------------------------------------------------------------------------
+
 private:
     // Plugin and UI
     PluginExporter& fPlugin;
     ClapEventQueue* const fPluinEventQueue;
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    uint32_t& fCurrentProgram;
+   #endif
+   #if DISTRHO_PLUGIN_WANT_STATE
+    StringMap& fStateMap;
+   #endif
     const clap_host_t* const fHost;
     const clap_host_gui_t* const fHostGui;
    #if DPF_CLAP_USING_HOST_TIMER
@@ -483,7 +533,31 @@ private:
                              fPlugin.getInstancePointer(),
                              fScaleFactor);
 
-        // TODO fetch and set state too
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        fUI->programLoaded(fCurrentProgram);
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
+        // Update current state from plugin side
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key = cit->first;
+            fStateMap[key] = fPlugin.getStateValue(key);
+        }
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_STATE
+        // Set state
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key   = cit->first;
+            const String& value = cit->second;
+
+            // TODO skip DSP only states
+
+            fUI->stateChanged(key, value);
+        }
+       #endif
 
         for (uint32_t i=0; i<fCachedParameters.numParams; ++i)
         {
@@ -620,6 +694,13 @@ public:
         fCachedParameters.setup(fPlugin.getParameterCount());
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&fNotesBuffer, true);
+       #endif
+       #if DISTRHO_PLUGIN_WANT_STATE
+        for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
+        {
+            const String& dkey(fPlugin.getStateKey(i));
+            fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
+        }
        #endif
     }
 
@@ -1063,6 +1144,309 @@ public:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // state
+
+    bool stateSave(const clap_ostream_t* const stream)
+    {
+        const uint32_t paramCount = fPlugin.getParameterCount();
+       #if DISTRHO_PLUGIN_WANT_STATE
+        const uint32_t stateCount = fPlugin.getStateCount();
+       #else
+        const uint32_t stateCount = 0;
+       #endif
+
+        if (stateCount == 0 && paramCount == 0)
+        {
+            char buffer = '\0';
+            return stream->write(stream, &buffer, 1) == 1;
+        }
+
+       #if DISTRHO_PLUGIN_WANT_FULL_STATE
+        // Update current state
+        for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+        {
+            const String& key = cit->first;
+            fStateMap[key] = fPlugin.getStateValue(key);
+        }
+       #endif
+
+        String state;
+
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        {
+            String tmpStr("__dpf_program__\xff");
+            tmpStr += String(fCurrentProgram);
+            tmpStr += "\xff";
+
+            state += tmpStr;
+        }
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_STATE
+        if (stateCount != 0)
+        {
+            state += "__dpf_state_begin__\xff";
+
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key   = cit->first;
+                const String& value = cit->second;
+
+                // join key and value
+                String tmpStr;
+                tmpStr  = key;
+                tmpStr += "\xff";
+                tmpStr += value;
+                tmpStr += "\xff";
+
+                state += tmpStr;
+            }
+
+            state += "__dpf_state_end__\xff";
+        }
+       #endif
+
+        if (paramCount != 0)
+        {
+            state += "__dpf_parameters_begin__\xff";
+
+            for (uint32_t i=0; i<paramCount; ++i)
+            {
+                if (fPlugin.isParameterOutputOrTrigger(i))
+                    continue;
+
+                // join key and value
+                String tmpStr;
+                tmpStr  = fPlugin.getParameterSymbol(i);
+                tmpStr += "\xff";
+                if (fPlugin.getParameterHints(i) & kParameterIsInteger)
+                    tmpStr += String(static_cast<int>(std::round(fPlugin.getParameterValue(i))));
+                else
+                    tmpStr += String(fPlugin.getParameterValue(i));
+                tmpStr += "\xff";
+
+                state += tmpStr;
+            }
+
+            state += "__dpf_parameters_end__\xff";
+        }
+
+        // terminator
+        state += "\xfe";
+
+        state.replace('\xff', '\0');
+
+        // now saving state, carefully until host written bytes matches full state size
+        const char* buffer = state.buffer();
+        const int32_t size = static_cast<int32_t>(state.length())+1;
+
+        for (int32_t wrtntotal = 0, wrtn; wrtntotal < size; wrtntotal += wrtn)
+        {
+            wrtn = stream->write(stream, buffer, size - wrtntotal);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(wrtn > 0, wrtn, false);
+        }
+
+        return true;
+    }
+
+    bool stateLoad(const clap_istream_t* const stream)
+    {
+       #if DISTRHO_PLUGIN_HAS_UI
+        ClapUI* const ui = fUI.get();
+       #endif
+        String key, value;
+        bool hasValue = false;
+        bool fillingKey = true; // if filling key or value
+        char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
+
+        char buffer[512], orig;
+        buffer[sizeof(buffer)-1] = '\xff';
+
+        for (int32_t terminated = 0, read; terminated == 0;)
+        {
+            read = stream->read(stream, buffer, sizeof(buffer)-1);
+            DISTRHO_SAFE_ASSERT_INT_RETURN(read >= 0, read, false);
+
+            if (read == 0)
+                return true;
+
+            for (int32_t i = 0; i < read; ++i)
+            {
+                // found terminator, stop here
+                if (buffer[i] == '\xfe')
+                {
+                    terminated = 1;
+                    break;
+                }
+
+                // store character at read position
+                orig = buffer[read];
+
+                // place null character to create valid string
+                buffer[read] = '\0';
+
+                // append to temporary vars
+                if (fillingKey)
+                {
+                    key += buffer + i;
+                }
+                else
+                {
+                    value += buffer + i;
+                    hasValue = true;
+                }
+
+                // increase buffer offset by length of string
+                i += std::strlen(buffer + i);
+
+                // restore read character
+                buffer[read] = orig;
+
+                // if buffer offset points to null, we found the end of a string, lets check
+                if (buffer[i] == '\0')
+                {
+                    // special keys
+                    if (key == "__dpf_state_begin__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i' || queryingType == 'n',
+                                                       queryingType, false);
+                        queryingType = 's';
+                        key.clear();
+                        value.clear();
+                        hasValue = false;
+                        continue;
+                    }
+                    if (key == "__dpf_state_end__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 's', queryingType, false);
+                        queryingType = 'n';
+                        key.clear();
+                        value.clear();
+                        hasValue = false;
+                        continue;
+                    }
+                    if (key == "__dpf_parameters_begin__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i' || queryingType == 'n',
+                                                       queryingType, false);
+                        queryingType = 'p';
+                        key.clear();
+                        value.clear();
+                        hasValue = false;
+                        continue;
+                    }
+                    if (key == "__dpf_parameters_end__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'p', queryingType, false);
+                        queryingType = 'x';
+                        key.clear();
+                        value.clear();
+                        hasValue = false;
+                        continue;
+                    }
+
+                    // no special key, swap between reading real key and value
+                    fillingKey = !fillingKey;
+
+                    // if there is no value yet keep reading until we have one
+                    if (! hasValue)
+                        continue;
+
+                    if (key == "__dpf_program__")
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_RETURN(queryingType == 'i', queryingType, false);
+                        queryingType = 'n';
+
+                        d_debug("found program '%s'", value.buffer());
+
+                      #if DISTRHO_PLUGIN_WANT_PROGRAMS
+                        const int program = std::atoi(value.buffer());
+                        DISTRHO_SAFE_ASSERT_CONTINUE(program >= 0);
+
+                        fCurrentProgram = static_cast<uint32_t>(program);
+                        fPlugin.loadProgram(fCurrentProgram);
+
+                       #if DISTRHO_PLUGIN_HAS_UI
+                        if (ui != nullptr)
+                            ui->setProgramFromPlugin(fCurrentProgram);
+                       #endif
+                      #endif
+                    }
+                    else if (queryingType == 's')
+                    {
+                        d_debug("found state '%s' '%s'", key.buffer(), value.buffer());
+
+                       #if DISTRHO_PLUGIN_WANT_STATE
+                        if (fPlugin.wantStateKey(key))
+                        {
+                            fStateMap[key] = value;
+                            fPlugin.setState(key, value);
+
+                           #if DISTRHO_PLUGIN_HAS_UI
+                            if (ui != nullptr)
+                                ui->setStateFromPlugin(key, value);
+                           #endif
+                        }
+                       #endif
+                    }
+                    else if (queryingType == 'p')
+                    {
+                        d_debug("found parameter '%s' '%s'", key.buffer(), value.buffer());
+                        float fvalue;
+
+                        // find parameter with this symbol, and set its value
+                        for (uint32_t j=0; j<fCachedParameters.numParams; ++j)
+                        {
+                            if (fPlugin.isParameterOutputOrTrigger(j))
+                                continue;
+                            if (fPlugin.getParameterSymbol(j) != key)
+                                continue;
+
+                            if (fPlugin.getParameterHints(j) & kParameterIsInteger)
+                                fvalue = std::atoi(value.buffer());
+                            else
+                                fvalue = std::atof(value.buffer());
+
+                            fCachedParameters.values[j] = fvalue;
+                           #if DISTRHO_PLUGIN_HAS_UI
+                            if (ui != nullptr)
+                            {
+                                // UI parameter updates are handled outside the read loop (after host param restart)
+                                fCachedParameters.changed[j] = true;
+                            }
+                           #endif
+                            fPlugin.setParameterValue(j, fvalue);
+                            break;
+                        }
+                    }
+
+                    key.clear();
+                    value.clear();
+                    hasValue = false;
+                }
+            }
+        }
+
+        if (const clap_host_params_t* const hostParams = getHostExtension<clap_host_params_t>(CLAP_EXT_PARAMS))
+            hostParams->rescan(fHost, CLAP_PARAM_RESCAN_VALUES|CLAP_PARAM_RESCAN_TEXT);
+
+       #if DISTRHO_PLUGIN_HAS_UI
+        if (ui != nullptr)
+        {
+            for (uint32_t i=0; i<fCachedParameters.numParams; ++i)
+            {
+                if (fPlugin.isParameterOutputOrTrigger(i))
+                    continue;
+                fCachedParameters.changed[i] = false;
+                ui->setParameterValueFromPlugin(i, fCachedParameters.values[i]);
+            }
+        }
+       #endif
+
+        return true;
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
     // gui
 
    #if DISTRHO_PLUGIN_HAS_UI
@@ -1100,7 +1484,23 @@ public:
     {
         fPlugin.setState(key, value);
 
-        // TODO check if we want to save this key, and save it
+        // check if we want to save this key
+        if (! fPlugin.wantStateKey(key))
+            return;
+
+        // check if key already exists
+        for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
+        {
+            const String& dkey(it->first);
+
+            if (dkey == key)
+            {
+                it->second = value;
+                return;
+            }
+        }
+
+        d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
    #endif
 
@@ -1124,7 +1524,6 @@ private:
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
    #endif
   #endif
-
    #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
    #endif
@@ -1507,6 +1906,26 @@ static const clap_plugin_params_t clap_plugin_params = {
 };
 
 // --------------------------------------------------------------------------------------------------------------------
+// plugin state
+
+static bool clap_plugin_state_save(const clap_plugin_t* const plugin, const clap_ostream_t* const stream)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->stateSave(stream);
+}
+
+static bool clap_plugin_state_load(const clap_plugin_t* const plugin, const clap_istream_t* const stream)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->stateLoad(stream);
+}
+
+static const clap_plugin_state_t clap_plugin_state = {
+    clap_plugin_state_save,
+    clap_plugin_state_load
+};
+
+// --------------------------------------------------------------------------------------------------------------------
 // plugin
 
 static bool clap_plugin_init(const clap_plugin_t* const plugin)
@@ -1570,6 +1989,10 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
         return &clap_plugin_note_ports;
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
+   #if DISTRHO_PLUGIN_WANT_STATE
+    if (std::strcmp(id, CLAP_EXT_STATE) == 0)
+        return &clap_plugin_state;
+   #endif
   #if DISTRHO_PLUGIN_HAS_UI
     if (std::strcmp(id, CLAP_EXT_GUI) == 0)
         return &clap_plugin_gui;

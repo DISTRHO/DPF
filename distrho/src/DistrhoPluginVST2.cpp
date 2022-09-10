@@ -209,12 +209,12 @@ public:
     // -------------------------------------------------------------------
     // functions called from the plugin side, may block
 
-# if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     void setStateFromPlugin(const char* const key, const char* const value)
     {
         fUI.stateChanged(key, value);
     }
-# endif
+   #endif
 
 # if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     int handlePluginKeyEvent(const bool down, const int32_t index, const intptr_t value)
@@ -611,25 +611,28 @@ public:
 # endif
                 fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, fLastScaleFactor);
 
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+               #if DISTRHO_PLUGIN_WANT_FULL_STATE
                 // Update current state from plugin side
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const String& key = cit->first;
                     fStateMap[key] = fPlugin.getStateValue(key);
                 }
-# endif
+               #endif
 
-# if DISTRHO_PLUGIN_WANT_STATE
+               #if DISTRHO_PLUGIN_WANT_STATE
                 // Set state
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const String& key   = cit->first;
                     const String& value = cit->second;
 
+                    // TODO skip DSP only states
+
                     fVstUI->setStateFromPlugin(key, value);
                 }
-# endif
+               #endif
+
                 for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
                     setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
 
@@ -777,7 +780,10 @@ public:
 
 # if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
+                {
+                    // TODO skip DSP only states
                     fVstUI->setStateFromPlugin(key, value);
+                }
 # endif
 
                 // get next key
