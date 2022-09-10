@@ -7,7 +7,7 @@ DPF is designed to make development of new plugins an easy and enjoyable task.<b
 It allows developers to create plugins with custom UIs using a simple C++ API.<br/>
 The framework facilitates exporting various different plugin formats from the same code-base.<br/>
 
-DPF can build for LADSPA, DSSI, LV2, VST2 and VST3 formats.<br/>
+DPF can build for LADSPA, DSSI, LV2, VST2, VST3 and CLAP formats.<br/>
 All current plugin format implementations are complete.<br/>
 A JACK/Standalone mode is also available, allowing you to quickly test plugins.<br/>
 
@@ -44,6 +44,7 @@ Online help and discussion about DPF happens in the [kx.studio chat, DPF room](h
  - [DISTRHO ProM](https://github.com/DISTRHO/ProM)
  - [Dragonfly Reverb](https://michaelwillis.github.io/dragonfly-reverb)
  - [Fogpad-port](https://github.com/linuxmao-org/fogpad-port)
+ - [master_me](https://github.com/trummerschlunk/master_me)
  - [Ninjas2](https://github.com/rghvdberg/ninjas2)
  - [osamc-lv2-workshop](https://github.com/osamc-lv2-workshop/lv2-workshop) (simple plugins code examples)
  - [QuadraFuzz](https://github.com/jpcima/quadrafuzz)

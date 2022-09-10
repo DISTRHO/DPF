@@ -841,7 +841,7 @@ bool runSelfTests()
         plugin.setSampleRate(48000);
         plugin.activate();
 
-        float buffer[128];
+        float buffer[128] = {};
         const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS > 0 ? DISTRHO_PLUGIN_NUM_INPUTS : 1];
         float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS > 0 ? DISTRHO_PLUGIN_NUM_OUTPUTS : 1];
         for (int i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
