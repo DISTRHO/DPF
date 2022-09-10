@@ -15,12 +15,14 @@ SNAME="$(echo ${NAME} | tr -d ' ' | tr '/' '-')"
 rm -rf lv2
 rm -rf vst2
 rm -rf vst3
+rm -rf clap
 
-mkdir lv2 vst2 vst3
+mkdir lv2 vst2 vst3 clap
 cp -RL *.lv2 lv2/
 cp -RL *.vst vst2/
 cp -RL *.vst3 vst3/
-rm -rf *.lv2 *.vst *.vst3
+cp -RL *.clap clap/
+rm -rf *.lv2 *.vst *.vst3 *.clap
 
 pkgbuild \
   --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
@@ -40,6 +42,12 @@ pkgbuild \
   --root "${PWD}/vst3/" \
   ../dpf-${SNAME}-vst3bundles.pkg
 
+pkgbuild \
+  --identifier "studio.kx.distrho.plugins.${SNAME}.clapbundles" \
+  --install-location "/Library/Audio/Plug-Ins/CLAP/" \
+  --root "${PWD}/clap/" \
+  ../dpf-${SNAME}-clapbundles.pkg
+
 cd ..
 
 DPF_UTILS_DIR=$(dirname ${0})
@@ -52,6 +60,7 @@ sed -e "s|@builddir@|${PWD}/build|" \
     -e "s|@lv2bundleref@|dpf-${SNAME}-lv2bundles.pkg|" \
     -e "s|@vst2bundleref@|dpf-${SNAME}-vst2bundles.pkg|" \
     -e "s|@vst3bundleref@|dpf-${SNAME}-vst3bundles.pkg|" \
+    -e "s|@clapbundleref@|dpf-${SNAME}-clapbundles.pkg|" \
     -e "s|@name@|${NAME}|g" \
     -e "s|@sname@|${SNAME}|g" \
     ${DPF_UTILS_DIR}/plugin.pkg/package.xml.in > build/package.xml
