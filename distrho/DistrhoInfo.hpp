@@ -628,6 +628,8 @@ START_NAMESPACE_DISTRHO
    Setting this macro allows to skip a temporary UI from being created in certain VST2 and VST3 hosts.
    (which would normally be done for knowing the UI size before host creates a window for it)
 
+   Value must match 1x scale factor.
+
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_HEIGHT macro must be defined as well.
  */
 #define DISTRHO_UI_DEFAULT_WIDTH 300
@@ -636,6 +638,8 @@ START_NAMESPACE_DISTRHO
    Default UI height to use when creating initial and temporary windows.@n
    Setting this macro allows to skip a temporary UI from being created in certain VST2 and VST3 hosts.
    (which would normally be done for knowing the UI size before host creates a window for it)
+
+   Value must match 1x scale factor.
 
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_WIDTH macro must be defined as well.
  */
