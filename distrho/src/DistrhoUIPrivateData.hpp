@@ -38,10 +38,10 @@
 # define DISTRHO_UI_IS_STANDALONE 0
 #endif
 
-#ifdef DISTRHO_PLUGIN_TARGET_VST3
-# define DISTRHO_UI_IS_VST3 1
+#if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+# define DISTRHO_UI_USES_SIZE_REQUEST true
 #else
-# define DISTRHO_UI_IS_VST3 0
+# define DISTRHO_UI_USES_SIZE_REQUEST false
 #endif
 
 #ifdef DISTRHO_PLUGIN_TARGET_VST2
@@ -183,7 +183,7 @@ public:
                           const uint height,
                           const double scaleFactor)
         : Window(app, parentWindowHandle, width, height, scaleFactor,
-                 DISTRHO_UI_USER_RESIZABLE, DISTRHO_UI_IS_VST3, false),
+                 DISTRHO_UI_USER_RESIZABLE, DISTRHO_UI_USES_SIZE_REQUEST, false),
           ui(uiPtr),
           initializing(true),
           receivedReshapeDuringInit(false)

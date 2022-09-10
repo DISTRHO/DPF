@@ -541,7 +541,7 @@ private:
                     uint height,
                     double scaleFactor,
                     bool resizable,
-                    bool isVST3,
+                    bool usesSizeRequest,
                     bool doPostInit);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
