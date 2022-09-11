@@ -556,7 +556,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
 
     const intptr_t winId = (intptr_t)parentId;
     float sampleRate = 0.0f;
-    float scaleFactor = 1.0f;
+    float scaleFactor = 0.0f;
     uint32_t bgColor = 0;
     uint32_t fgColor = 0xffffffff;
 
@@ -567,7 +567,9 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
         const LV2_URID uridSampleRate  = uridMap->map(uridMap->handle, LV2_PARAMETERS__sampleRate);
         const LV2_URID uridBgColor     = uridMap->map(uridMap->handle, LV2_UI__backgroundColor);
         const LV2_URID uridFgColor     = uridMap->map(uridMap->handle, LV2_UI__foregroundColor);
+       #ifndef DISTRHO_OS_MAC
         const LV2_URID uridScaleFactor = uridMap->map(uridMap->handle, LV2_UI__scaleFactor);
+       #endif
 
         for (int i=0; options[i].key != 0; ++i)
         {
@@ -577,13 +579,6 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
                     sampleRate = *(const float*)options[i].value;
                 else
                     d_stderr("Host provides UI sample-rate but has wrong value type");
-            }
-            else if (options[i].key == uridScaleFactor)
-            {
-                if (options[i].type == uridAtomFloat)
-                    scaleFactor = *(const float*)options[i].value;
-                else
-                    d_stderr("Host provides UI scale factor but has wrong value type");
             }
             else if (options[i].key == uridBgColor)
             {
@@ -599,6 +594,15 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
                 else
                     d_stderr("Host provides UI foreground color but has wrong value type");
             }
+           #ifndef DISTRHO_OS_MAC
+            else if (options[i].key == uridScaleFactor)
+            {
+                if (options[i].type == uridAtomFloat)
+                    scaleFactor = *(const float*)options[i].value;
+                else
+                    d_stderr("Host provides UI scale factor but has wrong value type");
+            }
+           #endif
         }
     }
 
