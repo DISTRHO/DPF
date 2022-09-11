@@ -319,10 +319,9 @@ public:
 
    /**
       Constructor reusing a NanoVG context, used for subwidgets.
+      Context will not be deleted on class destructor.
     */
-   /*
-    NanoVG(NanoWidget* groupWidget);
-    */
+    explicit NanoVG(NVGcontext* context);
 
    /**
       Destructor.
@@ -917,7 +916,17 @@ public:
       Constructor for a NanoSubWidget.
       @see CreateFlags
     */
-    explicit NanoBaseWidget(Widget* parentGroupWidget, int flags = CREATE_ANTIALIAS);
+    explicit NanoBaseWidget(Widget* parentWidget, int flags = CREATE_ANTIALIAS);
+
+   /**
+      Constructor for a NanoSubWidget reusing a parent subwidget nanovg context.
+    */
+    explicit NanoBaseWidget(NanoBaseWidget<SubWidget>* parentWidget);
+
+   /**
+      Constructor for a NanoSubWidget reusing a parent top-level-widget nanovg context.
+    */
+    explicit NanoBaseWidget(NanoBaseWidget<TopLevelWidget>* parentWidget);
 
    /**
       Constructor for a NanoTopLevelWidget.
@@ -954,13 +963,7 @@ private:
       Widget display function.
       Implemented internally to wrap begin/endFrame() automatically.
     */
-    inline void onDisplay() override
-    {
-        // NOTE maybe should use BaseWidget::getWindow().getScaleFactor() as 3rd arg ?
-        NanoVG::beginFrame(BaseWidget::getWidth(), BaseWidget::getHeight());
-        onNanoDisplay();
-        NanoVG::endFrame();
-    }
+    void onDisplay() override;
 
     // these should not be used
     void beginFrame(uint,uint) {}
@@ -968,6 +971,12 @@ private:
     void beginFrame(Widget*) {}
     void cancelFrame() {}
     void endFrame() {}
+
+   /** @internal */
+    const bool fUsingParentContext;
+    void displayChildren();
+    friend class NanoBaseWidget<TopLevelWidget>;
+    friend class NanoBaseWidget<StandaloneWindow>;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(NanoBaseWidget)
 };

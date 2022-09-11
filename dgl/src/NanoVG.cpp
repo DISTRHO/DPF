@@ -327,6 +327,14 @@ NanoVG::NanoVG(int flags)
     DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
 }
 
+NanoVG::NanoVG(NVGcontext* const context)
+    : fContext(context),
+      fInFrame(false),
+      fIsSubWidget(true)
+{
+    DISTRHO_CUSTOM_SAFE_ASSERT("Failed to create NanoVG context, expect a black screen", fContext != nullptr);
+}
+
 NanoVG::~NanoVG()
 {
     DISTRHO_CUSTOM_SAFE_ASSERT("Destroying NanoVG context with still active frame", ! fInFrame);
@@ -1058,14 +1066,70 @@ bool NanoVG::loadSharedResources()
 #endif
 
 // -----------------------------------------------------------------------
+
+template <class BaseWidget>
+void NanoBaseWidget<BaseWidget>::displayChildren()
+{
+    std::list<SubWidget*> children(BaseWidget::getChildren());
+
+    for (std::list<SubWidget*>::iterator it = children.begin(); it != children.end(); ++it)
+    {
+        if (NanoSubWidget* const subwidget = dynamic_cast<NanoSubWidget*>(*it))
+        {
+            if (subwidget->fUsingParentContext && subwidget->isVisible())
+                subwidget->onDisplay();
+        }
+    }
+}
+
+// -----------------------------------------------------------------------
 // NanoSubWidget
 
 template <>
-NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parent, int flags)
-    : SubWidget(parent),
-      NanoVG(flags)
+NanoBaseWidget<SubWidget>::NanoBaseWidget(Widget* const parentWidget, int flags)
+    : SubWidget(parentWidget),
+      NanoVG(flags),
+      fUsingParentContext(false)
 {
     setNeedsViewportScaling();
+}
+
+template <>
+NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoSubWidget* const parentWidget)
+    : SubWidget(parentWidget),
+      NanoVG(parentWidget->getContext()),
+      fUsingParentContext(true)
+{
+    setSkipDrawing();
+}
+
+template <>
+NanoBaseWidget<SubWidget>::NanoBaseWidget(NanoTopLevelWidget* const parentWidget)
+    : SubWidget(parentWidget),
+      NanoVG(parentWidget->getContext()),
+      fUsingParentContext(true)
+{
+    setSkipDrawing();
+}
+
+template <>
+inline void NanoBaseWidget<SubWidget>::onDisplay()
+{
+    if (fUsingParentContext)
+    {
+        NanoVG::save();
+        translate(SubWidget::getAbsoluteX(), SubWidget::getAbsoluteY());
+        onNanoDisplay();
+        NanoVG::restore();
+        displayChildren();
+    }
+    else
+    {
+        NanoVG::beginFrame(SubWidget::getWidth(), SubWidget::getHeight());
+        onNanoDisplay();
+        displayChildren();
+        NanoVG::endFrame();
+    }
 }
 
 template class NanoBaseWidget<SubWidget>;
@@ -1076,7 +1140,17 @@ template class NanoBaseWidget<SubWidget>;
 template <>
 NanoBaseWidget<TopLevelWidget>::NanoBaseWidget(Window& windowToMapTo, int flags)
     : TopLevelWidget(windowToMapTo),
-      NanoVG(flags) {}
+      NanoVG(flags),
+      fUsingParentContext(false) {}
+
+template <>
+inline void NanoBaseWidget<TopLevelWidget>::onDisplay()
+{
+    NanoVG::beginFrame(TopLevelWidget::getWidth(), TopLevelWidget::getHeight());
+    onNanoDisplay();
+    displayChildren();
+    NanoVG::endFrame();
+}
 
 template class NanoBaseWidget<TopLevelWidget>;
 
@@ -1086,12 +1160,23 @@ template class NanoBaseWidget<TopLevelWidget>;
 template <>
 NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, int flags)
     : StandaloneWindow(app),
-      NanoVG(flags) {}
+      NanoVG(flags),
+      fUsingParentContext(false) {}
 
 template <>
 NanoBaseWidget<StandaloneWindow>::NanoBaseWidget(Application& app, Window& parentWindow, int flags)
     : StandaloneWindow(app, parentWindow),
-      NanoVG(flags) {}
+      NanoVG(flags),
+      fUsingParentContext(false) {}
+
+template <>
+inline void NanoBaseWidget<StandaloneWindow>::onDisplay()
+{
+    NanoVG::beginFrame(Window::getWidth(), Window::getHeight());
+    onNanoDisplay();
+    displayChildren();
+    NanoVG::endFrame();
+}
 
 template class NanoBaseWidget<StandaloneWindow>;
 
