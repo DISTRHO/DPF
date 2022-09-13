@@ -119,6 +119,9 @@ ifneq (,$(filter aarch64%,$(TARGET_PROCESSOR)))
 CPU_ARM64 = true
 CPU_ARM_OR_ARM64 = true
 endif
+ifneq (,$(filter riscv64%,$(TARGET_PROCESSOR)))
+CPU_RISCV64 = true
+endif
 
 ifeq ($(CPU_ARM),true)
 ifneq ($(CPU_ARM64),true)
