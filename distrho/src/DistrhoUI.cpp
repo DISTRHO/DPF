@@ -238,13 +238,17 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
 #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     if (width != 0 && height != 0)
     {
-       #ifndef DISTRHO_UI_DEFAULT_WIDTH
         Widget::setSize(width, height);
-       #endif
 
         if (automaticallyScaleAndSetAsMinimumSize)
             setGeometryConstraints(width, height, true, true, true);
     }
+   #ifdef DISTRHO_UI_DEFAULT_WIDTH
+    else
+    {
+        Widget::setSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT);
+    }
+   #endif
 #else
     // unused
     (void)automaticallyScaleAndSetAsMinimumSize;
