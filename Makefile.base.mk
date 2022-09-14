@@ -661,6 +661,7 @@ features:
 	$(call print_available,CPU_ARM_OR_ARM64)
 	$(call print_available,CPU_I386)
 	$(call print_available,CPU_I386_OR_X86_64)
+	$(call print_available,CPU_RISCV64)
 	@echo === Detected OS
 	$(call print_available,BSD)
 	$(call print_available,HAIKU)
@@ -680,6 +681,7 @@ features:
 	$(call print_available,HAVE_DBUS)
 	$(call print_available,HAVE_CAIRO)
 	$(call print_available,HAVE_DGL)
+	$(call print_available,HAVE_JACK)
 	$(call print_available,HAVE_LIBLO)
 	$(call print_available,HAVE_OPENGL)
 	$(call print_available,HAVE_PULSEAUDIO)
