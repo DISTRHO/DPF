@@ -256,6 +256,7 @@ jobs:
           name: ${{ github.event.repository.name }}-win32-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
           path: |
             bin/*
+            !bin/*.exe
             !bin/*-ladspa.dll
             !bin/*-dssi*
 
@@ -293,6 +294,7 @@ jobs:
           name: ${{ github.event.repository.name }}-win64-${{ github.event.pull_request.number || steps.slug.outputs.sha8 }}
           path: |
             bin/*
+            !bin/*.exe
             !bin/*-ladspa.dll
             !bin/*-dssi*
 
