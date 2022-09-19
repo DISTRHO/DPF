@@ -367,10 +367,11 @@ public:
 
         fParentWindow = window->uptr;
 
-        /*
-        if (fUI != nullptr)
+        if (fUI == nullptr)
+        {
             createUI();
-        */
+            fHostGui->resize_hints_changed(fHost);
+        }
 
         return true;
     }
