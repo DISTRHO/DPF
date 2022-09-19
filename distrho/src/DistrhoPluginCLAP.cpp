@@ -870,11 +870,20 @@ public:
                 {
                     const clap_event_header_t* const event = inputEvents->get(inputEvents, i);
 
-                    // event->time
                     switch (event->type)
                     {
                     case CLAP_EVENT_NOTE_ON:
+                       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                        // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
+                        addNoteEvent(static_cast<const clap_event_note_t*>(static_cast<const void*>(event)), true);
+                       #endif
+                        break;
                     case CLAP_EVENT_NOTE_OFF:
+                       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                        // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
+                        addNoteEvent(static_cast<const clap_event_note_t*>(static_cast<const void*>(event)), false);
+                       #endif
+                        break;
                     case CLAP_EVENT_NOTE_CHOKE:
                     case CLAP_EVENT_NOTE_END:
                     case CLAP_EVENT_NOTE_EXPRESSION:
@@ -1126,7 +1135,22 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void addMidiEvent(const clap_event_midi_t* const event)
+    void addNoteEvent(const clap_event_note_t* const event, const bool isOn) noexcept
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(event->port_index == 0, event->port_index,);
+
+        if (fMidiEventCount == kMaxMidiEvents)
+            return;
+
+        MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+        midiEvent.frame = event->header.time;
+        midiEvent.size  = 3;
+        midiEvent.data[0] = (isOn ? 0x90 : 0x80) | (event->channel & 0x0F);
+        midiEvent.data[1] = std::max(0, std::min(127, static_cast<int>(event->key)));
+        midiEvent.data[2] = std::max(0, std::min(127, static_cast<int>(event->velocity * 127 + 0.5)));
+    }
+
+    void addMidiEvent(const clap_event_midi_t* const event) noexcept
     {
         DISTRHO_SAFE_ASSERT_UINT_RETURN(event->port_index == 0, event->port_index,);
 
