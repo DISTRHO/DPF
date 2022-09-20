@@ -256,19 +256,33 @@ public:
         {
             *width = ui->getWidth();
             *height = ui->getHeight();
+           #ifdef DISTRHO_OS_MAC
+            const double scaleFactor = ui->getScaleFactor();
+            *width /= scaleFactor;
+            *height /= scaleFactor;
+           #endif
             return true;
         }
 
+        double scaleFactor = fScaleFactor;
        #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
         *width = DISTRHO_UI_DEFAULT_WIDTH;
         *height = DISTRHO_UI_DEFAULT_HEIGHT;
+        if (d_isZero(scaleFactor))
+            scaleFactor = 1.0;
        #else
         UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
                          fPlugin.getInstancePointer(), fScaleFactor);
         *width = tmpUI.getWidth();
         *height = tmpUI.getHeight();
+        scaleFactor = tmpUI.getScaleFactor();
         tmpUI.quit();
+       #endif
+
+       #ifdef DISTRHO_OS_MAC
+        *width /= scaleFactor;
+        *height /= scaleFactor;
        #endif
 
         return true;
@@ -290,6 +304,12 @@ public:
             uint minimumWidth, minimumHeight;
             bool keepAspectRatio;
             fUI->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+
+           #ifdef DISTRHO_OS_MAC
+            const double scaleFactor = fUI->getScaleFactor();
+            minimumWidth /= scaleFactor;
+            minimumHeight /= scaleFactor;
+           #endif
 
             hints->can_resize_horizontally = true;
             hints->can_resize_vertically = true;
@@ -316,6 +336,12 @@ public:
             uint minimumWidth, minimumHeight;
             bool keepAspectRatio;
             fUI->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
+
+           #ifdef DISTRHO_OS_MAC
+            const double scaleFactor = fUI->getScaleFactor();
+            minimumWidth /= scaleFactor;
+            minimumHeight /= scaleFactor;
+           #endif
 
             if (keepAspectRatio)
             {
@@ -349,10 +375,15 @@ public:
         return false;
     }
 
-    bool setSizeFromHost(const uint32_t width, const uint32_t height)
+    bool setSizeFromHost(uint32_t width, uint32_t height)
     {
         if (UIExporter* const ui = fUI.get())
         {
+           #ifdef DISTRHO_OS_MAC
+            const double scaleFactor = ui->getScaleFactor();
+            width *= scaleFactor;
+            height *= scaleFactor;
+           #endif
             ui->setWindowSizeFromHost(width, height);
             return true;
         }
@@ -614,7 +645,18 @@ private:
 
     void setSizeFromPlugin(const uint width, const uint height)
     {
-        if (fHostGui->request_resize(fHost, width, height) && fUI != nullptr)
+        DISTRHO_SAFE_ASSERT_RETURN(fUI != nullptr,);
+
+       #ifdef DISTRHO_OS_MAC
+        const double scaleFactor = fUI->getScaleFactor();
+        const uint hostWidth = width / scaleFactor;
+        const uint hostHeight = height / scaleFactor;
+       #else
+        const uint hostWidth = width;
+        const uint hostHeight = height;
+       #endif
+
+        if (fHostGui->request_resize(fHost, hostWidth, hostHeight))
             fUI->setWindowSizeFromHost(width, height);
     }
 
