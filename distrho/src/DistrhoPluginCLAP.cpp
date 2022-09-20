@@ -273,7 +273,7 @@ public:
        #else
         UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
-                         fPlugin.getInstancePointer(), fScaleFactor);
+                         fPlugin.getInstancePointer(), scaleFactor);
         *width = tmpUI.getWidth();
         *height = tmpUI.getHeight();
         scaleFactor = tmpUI.getScaleFactor();
