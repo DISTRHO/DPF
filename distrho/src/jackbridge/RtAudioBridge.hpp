@@ -29,6 +29,7 @@
 # define RTMIDI_API_TYPE MACOSX_CORE
 #elif defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
 # define __WINDOWS_DS__
+# define __WINDOWS_MM__
 # define RTAUDIO_API_TYPE WINDOWS_DS
 # define RTMIDI_API_TYPE WINDOWS_MM
 #else
@@ -36,10 +37,10 @@
 #  define __LINUX_PULSE__
 #  define RTAUDIO_API_TYPE LINUX_PULSE
 # elif defined(HAVE_ALSA)
-#  define __LINUX_ALSA__
- # define RTAUDIO_API_TYPE LINUX_ALSA
+#  define RTAUDIO_API_TYPE LINUX_ALSA
 # endif
 # ifdef HAVE_ALSA
+#  define __LINUX_ALSA__
 #  define RTMIDI_API_TYPE LINUX_ALSA
 # endif
 #endif
