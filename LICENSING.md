@@ -16,6 +16,7 @@ See the [LICENSE](LICENSE) file for copyright details.
 | LV2             | ISC                  | Copyright attribution | 2006-2020 Steve Harris, David Robillard;<br/> 2000-2002 Richard W.E. Furse, Paul Barton-Davis, Stefan Westerfeld |
 | VST2            | GPLv2+ or commercial | Must be GPLv2+ compatible or alternatively use Steinberg VST2 SDK (no longer available for new plugins) | GPLv2+ compatible license or custom agreement with Steinberg |
 | VST3            | ISC                  | Copyright attribution | (none, only DPF files used) |
+| CLAP            | MIT                  | Copyright attribution | 2014-2022 Alexandre Bique |
 
 ### LADSPA and DSSI special note
 
