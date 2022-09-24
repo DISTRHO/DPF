@@ -30,7 +30,13 @@
 #include <string>
 #include <vector>
 
-#ifndef __stdcall
+#if defined(DISTRHO_OS_WINDOWS)
+# ifndef NOMINMAX
+#  define NOMINMAX
+# endif
+# include <winsock2.h>
+# include <windows.h>
+#elif !defined(__stdcall)
 # define __stdcall
 #endif
 
