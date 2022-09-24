@@ -2,8 +2,7 @@
 
 Even though DPF is quite liberally licensed, not all plugin formats follow the same ideals.  
 This is usually due to plugin APIs/headers being tied to a specific license or having commercial restrictions.  
-This file describes the licensing that applies to each individual plugin format as a way to make it clear what is possible and compatible.  
-Note that if you are making GPLv2+ licensed plugins this does not apply to you, as so far everything is GPLv2+ compatible.
+This file describes the licensing that applies to each individual plugin format as a way to make it clear what is possible and compatible.
 
 Regardless of target format, DPF itself needs to be mentioned in attribution.
 See the [LICENSE](LICENSE) file for copyright details.
@@ -14,7 +13,7 @@ See the [LICENSE](LICENSE) file for copyright details.
 | LADSPA          | LGPLv2.1+            | ??? (*)               | 2000-2002 Richard W. E. Furse, Paul Barton-Davis, Stefan Westerfeld |
 | DSSI            | LGPLv2.1+            | ??? (*)               | **DSSI**: 2004, 2009 Chris Cannam, Steve Harris and Sean Bolton;<br/> **ALSA**: 1998-2001 Jaroslav Kysela, Abramo Bagnara, Takashi Iwai |
 | LV2             | ISC                  | Copyright attribution | 2006-2020 Steve Harris, David Robillard;<br/> 2000-2002 Richard W.E. Furse, Paul Barton-Davis, Stefan Westerfeld |
-| VST2            | GPLv2+ or commercial | Must be GPLv2+ compatible or alternatively use Steinberg VST2 SDK (no longer available for new plugins) | GPLv2+ compatible license or custom agreement with Steinberg |
+| VST2            | BSD-3                | Copyright attribution | 2020-2022 Michael Fabian 'Xaymar' Dirks |
 | VST3            | ISC                  | Copyright attribution | (none, only DPF files used) |
 | CLAP            | MIT                  | Copyright attribution | 2014-2022 Alexandre Bique |
 
@@ -33,12 +32,9 @@ These formats are very limited and not much used anymore anyway, feel free to sk
 
 ### VST2 special note
 
-By default DPF uses the free reverse-engineered [vestige header](distrho/src/vestige/vestige.h) file.  
-This file is GPLv2+ licensed, so that applies to plugins built with it as well.  
-You can alternatively build DPF-based VST2 plugins using the official Steinberg VST2 SDK,
-simply set the `VESTIGE_HEADER` compiler macro to `0` during build.  
-You will need to provide your own VST2 SDK files then, as DPF does not ship with them.  
-Note there are legal issues surrounding releasing new VST2 plugins using the official SDK, as that is no longer supported by Steinberg.
+The DPF's VST2 implementation uses https://github.com/Xaymar/vst2sdk which is a liberally-licensed "clean room" untainted reverse engineered "SDK" for the VST2 interface.  
+Previously "vestige" was used, but was problematic due to it being GPLv2 licensed.  
+With the Xaymar's work, both open-source and proprietary plugins can be created from the same source, which helps in maintenance on DPF side.
 
 ### VST3 special note
 

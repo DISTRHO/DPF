@@ -876,15 +876,6 @@ START_NAMESPACE_DISTRHO
  */
 #define DGL_USE_OPENGL3
 
-/**
-   Whether to use the GPLv2+ vestige header instead of the official Steinberg VST2 SDK.@n
-   This is a boolean, and enabled (set to 1) by default.@n
-   Set this to 0 in order to create non-GPL binaries.
-   (but then at your own discretion in regards to Steinberg licensing)@n
-   When set to 0, DPF will import the VST2 definitions from `"vst/aeffectx.h"` (not shipped with DPF).
- */
-#define VESTIGE_HEADER 1
-
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------
