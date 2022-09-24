@@ -30,14 +30,8 @@
 #include <string>
 #include <vector>
 
-#if defined(DISTRHO_OS_WINDOWS)
-# ifndef NOMINMAX
-#  define NOMINMAX
-# endif
-# include <winsock2.h>
-# include <windows.h>
-#elif !defined(__stdcall)
-# define __stdcall
+#ifndef __cdecl
+# define __cdecl
 #endif
 
 #include "xaymar-vst2/vst.h"
@@ -1359,7 +1353,12 @@ PluginVst* getEffectPlugin(vst_effect* const effect)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static intptr_t vst_dispatcherCallback(vst_effect* const effect, const VST_EFFECT_OPCODE opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt)
+static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const effect,
+                                                              const VST_EFFECT_OPCODE opcode,
+                                                              const int32_t index,
+                                                              const intptr_t value,
+                                                              void* const ptr,
+                                                              const float opt)
 {
     // handle base opcodes
     switch (opcode)
@@ -1559,26 +1558,35 @@ static intptr_t vst_dispatcherCallback(vst_effect* const effect, const VST_EFFEC
     return 0;
 }
 
-static float vst_getParameterCallback(vst_effect* const effect, const uint32_t index)
+static float VST_FUNCTION_INTERFACE vst_getParameterCallback(vst_effect* const effect,
+                                                             const uint32_t index)
 {
     if (PluginVst* const pluginPtr = getEffectPlugin(effect))
         return pluginPtr->vst_getParameter(index);
     return 0.0f;
 }
 
-static void vst_setParameterCallback(vst_effect* const effect, const uint32_t index, const float value)
+static void VST_FUNCTION_INTERFACE vst_setParameterCallback(vst_effect* const effect,
+                                                            const uint32_t index,
+                                                            const float value)
 {
     if (PluginVst* const pluginPtr = getEffectPlugin(effect))
         pluginPtr->vst_setParameter(index, value);
 }
 
-static void vst_processCallback(vst_effect* const effect, const float* const* const inputs, float** const outputs, const int32_t sampleFrames)
+static void VST_FUNCTION_INTERFACE vst_processCallback(vst_effect* const effect,
+                                                       const float* const* const inputs,
+                                                       float** const outputs,
+                                                       const int32_t sampleFrames)
 {
     if (PluginVst* const pluginPtr = getEffectPlugin(effect))
         pluginPtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
-static void vst_processReplacingCallback(vst_effect* const effect, const float* const* const inputs, float** const outputs, const int32_t sampleFrames)
+static void VST_FUNCTION_INTERFACE vst_processReplacingCallback(vst_effect* const effect,
+                                                                const float* const* const inputs,
+                                                                float** const outputs,
+                                                                const int32_t sampleFrames)
 {
     if (PluginVst* const pluginPtr = getEffectPlugin(effect))
         pluginPtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);

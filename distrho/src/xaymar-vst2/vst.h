@@ -18,7 +18,7 @@
 #ifndef VST2SDK_VST_H
 #define VST2SDK_VST_H
 
-#define VST_FUNCTION_INTERFACE __stdcall
+#define VST_FUNCTION_INTERFACE __cdecl
 #define VST_ALIGNMENT 8
 #define VST_MAGICNUMBER 'VstP'
 
