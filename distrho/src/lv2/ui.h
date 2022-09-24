@@ -198,7 +198,7 @@ typedef struct _LV2UI_Descriptor {
 
 	   By default, the host should only call this function for lv2:ControlPort
 	   inputs.  However, the UI can request updates for other ports statically
-	   with ui:portNotification or dynamicaly with ui:portSubscribe.
+	   with ui:portNotification or dynamically with ui:portSubscribe.
 
 	   The UI MUST NOT retain any reference to `buffer` after this function
 	   returns, it is only valid for the duration of the call.

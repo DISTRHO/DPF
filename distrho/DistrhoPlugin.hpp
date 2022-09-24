@@ -120,7 +120,7 @@ static const uint32_t kParameterIsLogarithmic = 0x08;
    The other exception is with parameter change requests, see Plugin::requestParameterValueChange().@n
    Outputs are changed by the plugin and never modified by the host.
 
-   If you are targetting VST2, make sure to order your parameters so that all inputs are before any outputs.
+   If you are targeting VST2, make sure to order your parameters so that all inputs are before any outputs.
  */
 static const uint32_t kParameterIsOutput = 0x10;
 

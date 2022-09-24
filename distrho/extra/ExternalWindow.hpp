@@ -95,7 +95,7 @@ public:
     }
 
    /* --------------------------------------------------------------------------------------------------------
-    * ExternalWindow specific calls - Host side calls that you can reimplement for fine-grained funtionality */
+    * ExternalWindow specific calls - Host side calls that you can reimplement for fine-grained functionality */
 
    /**
       Check if main-loop is running.
@@ -127,7 +127,7 @@ public:
 
    /**
       Get the "native" window handle.
-      This can be reimplemented in order to pass the native window to hosts that can use such informaton.
+      This can be reimplemented in order to pass the native window to hosts that can use such information.
 
       Returned value type depends on the platform:
        - HaikuOS: This is a pointer to a `BView`.

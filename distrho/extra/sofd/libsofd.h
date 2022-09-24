@@ -37,8 +37,8 @@ extern "C" {
 /** open a file select dialog
  * @param dpy X Display connection
  * @param parent (optional) if not NULL, become transient for given window
- * @param x if >0 set explict initial width of the window
- * @param y if >0 set explict initial height of the window
+ * @param x if >0 set explicit initial width of the window
+ * @param y if >0 set explicit initial height of the window
  * @return 0 on success
  */
 int x_fib_show (Display *dpy, Window parent, int x, int y, double scalefactor);

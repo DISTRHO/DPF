@@ -100,7 +100,7 @@ public:
       There are situations where an UI supports resizing but the plugin host does not, so this could return false.
 
       You might want to add a resize handle for such cases, so the user is still allowed to resize the window.
-      (programatically resizing a window is always possible, but the same is not true for the window manager)
+      (programmatically resizing a window is always possible, but the same is not true for the window manager)
     */
     bool isResizable() const noexcept;
 
@@ -354,14 +354,14 @@ protected:
 #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       External Window resize function, called when the window is resized.
-      This is overriden here so the host knows when the UI is resized by you.
+      This is overridden here so the host knows when the UI is resized by you.
       @see ExternalWindow::sizeChanged(uint,uint)
     */
     void sizeChanged(uint width, uint height) override;
 #else
    /**
       Widget resize function, called when the widget is resized.
-      This is overriden here so the host knows when the UI is resized by you.
+      This is overridden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
     void onResize(const ResizeEvent& ev) override;

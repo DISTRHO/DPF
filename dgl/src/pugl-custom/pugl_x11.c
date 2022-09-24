@@ -52,7 +52,7 @@
  */
 //#define PUGL_GRAB_FOCUS
 
-/* show messages during initalization
+/* show messages during initialization
  */
 //#define PUGL_VERBOSE
 

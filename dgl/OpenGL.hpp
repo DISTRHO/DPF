@@ -93,7 +93,7 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
    OpenGL Image class.
 
    This is an Image class that handles raw image data in pixels.
-   You can init the image data on the contructor or later on by calling loadFromMemory().
+   You can init the image data on the constructor or later on by calling loadFromMemory().
 
    To generate raw data useful for this class see the utils/png2rgba.py script.
    Be careful when using a PNG without alpha channel, for those the format is 'GL_BGR'

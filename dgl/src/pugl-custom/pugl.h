@@ -139,7 +139,7 @@ typedef void (*PuglDisplayFunc)(PuglView* view);
 
 /**
    A function called when a key is pressed or released.
-   @param view The view the event occured in.
+   @param view The view the event occurred in.
    @param press True if the key was pressed, false if released.
    @param key Unicode point of the key pressed.
    @return 0 if event was handled, otherwise send event to parent window.
@@ -148,7 +148,7 @@ typedef int (*PuglKeyboardFunc)(PuglView* view, bool press, uint32_t key);
 
 /**
    A function called when the pointer moves.
-   @param view The view the event occured in.
+   @param view The view the event occurred in.
    @param x The window-relative x coordinate of the pointer.
    @param y The window-relative y coordinate of the pointer.
 */
@@ -156,7 +156,7 @@ typedef void (*PuglMotionFunc)(PuglView* view, int x, int y);
 
 /**
    A function called when a mouse button is pressed or released.
-   @param view The view the event occured in.
+   @param view The view the event occurred in.
    @param button The button number (1 = left, 2 = middle, 3 = right).
    @param press True if the key was pressed, false if released.
    @param x The window-relative x coordinate of the pointer.
@@ -205,7 +205,7 @@ typedef void (*PuglScrollFunc)(PuglView* view, int x, int y, float dx, float dy)
    This callback allows the use of keys that do not have unicode points.
    Note that some are non-printable keys.
 
-   @param view The view the event occured in.
+   @param view The view the event occurred in.
    @param press True if the key was pressed, false if released.
    @param key The key pressed.
    @return 0 if event was handled, otherwise send event to parent window.
@@ -215,7 +215,7 @@ typedef int (*PuglSpecialFunc)(PuglView* view, bool press, PuglKey key);
 /**
    A function called when a filename is selected via file-browser.
 
-   @param view The view the event occured in.
+   @param view The view the event occurred in.
    @param filename The selected file name or NULL if the dialog was canceled.
 */
 typedef void (*PuglFileSelectedFunc)(PuglView* view, const char* filename);

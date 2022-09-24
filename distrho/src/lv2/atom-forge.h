@@ -287,7 +287,7 @@ lv2_atom_forge_set_sink(LV2_Atom_Forge*            forge,
 /**
    Write raw output.  This is used internally, but is also useful for writing
    atom types not explicitly supported by the forge API.  Note the caller is
-   responsible for ensuring the output is approriately padded.
+   responsible for ensuring the output is appropriately padded.
 */
 static inline LV2_Atom_Forge_Ref
 lv2_atom_forge_raw(LV2_Atom_Forge* forge, const void* data, uint32_t size)
