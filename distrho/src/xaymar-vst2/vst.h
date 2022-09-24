@@ -45,7 +45,11 @@
 #pragma pack(push, VST_ALIGNMENT)
 
 #ifdef __cplusplus
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
 #include <cinttypes>
+#else
+#include <inttypes.h>
+#endif
 extern "C" {
 #else
 #include <inttypes.h>
