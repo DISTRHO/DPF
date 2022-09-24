@@ -29,7 +29,6 @@ using DGL_NAMESPACE::Color;
 using DGL_NAMESPACE::GraphicsContext;
 using DGL_NAMESPACE::Rectangle;
 
-
 // -----------------------------------------------------------------------------------------------------------
 
 class SendNoteExampleUI : public UI
