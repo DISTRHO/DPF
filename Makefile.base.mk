@@ -253,8 +253,7 @@ else ifeq ($(WASM),true)
 LINK_OPTS += -O3
 LINK_OPTS += -Wl,--gc-sections
 else
-LINK_OPTS += -Wl,-O1,--gc-sections
-LINK_OPTS += -Wl,--as-needed
+LINK_OPTS += -Wl,-O1,--as-needed,--gc-sections
 endif
 
 ifneq ($(SKIP_STRIPPING),true)
