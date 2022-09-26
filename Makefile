@@ -17,7 +17,9 @@ CAN_GENERATE_TTL = true
 endif
 
 dgl:
+ifeq ($(HAVE_DGL),true)
 	$(MAKE) -C dgl
+endif
 
 examples: dgl
 	$(MAKE) all -C examples/CVPort
