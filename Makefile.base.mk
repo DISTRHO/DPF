@@ -665,6 +665,7 @@ features:
 	$(call print_available,CPU_I386)
 	$(call print_available,CPU_I386_OR_X86_64)
 	$(call print_available,CPU_RISCV64)
+	$(call print_available,CPU_X86_64)
 	@echo === Detected OS
 	$(call print_available,BSD)
 	$(call print_available,HAIKU)
