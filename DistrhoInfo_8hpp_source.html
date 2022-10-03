@@ -412,11 +412,11 @@ $(function() {
 <div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160; </div>
 <div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;          <span class="keywordflow">switch</span> (index)</div>
 <div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;          {</div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;          <span class="keywordflow">case</span> 0;</div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;          <span class="keywordflow">case</span> 0:</div>
 <div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;              parameter.<a class="code" href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">name</a>   = <span class="stringliteral">&quot;Gain Right&quot;</span>;</div>
 <div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;              parameter.<a class="code" href="structParameter.html#a3e546efd8dbd0d77351208b670719468">symbol</a> = <span class="stringliteral">&quot;gainR&quot;</span>;</div>
 <div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;              <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;          <span class="keywordflow">case</span> 1;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;          <span class="keywordflow">case</span> 1:</div>
 <div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;              parameter.<a class="code" href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">name</a>   = <span class="stringliteral">&quot;Gain Left&quot;</span>;</div>
 <div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;              parameter.<a class="code" href="structParameter.html#a3e546efd8dbd0d77351208b670719468">symbol</a> = <span class="stringliteral">&quot;gainL&quot;</span>;</div>
 <div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;              <span class="keywordflow">break</span>;</div>
@@ -444,12 +444,12 @@ $(function() {
 <div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="keyword">      </span>{</div>
 <div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;          <span class="keywordflow">switch</span> (index)</div>
 <div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;          {</div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;          <span class="keywordflow">case</span> 0;</div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;          <span class="keywordflow">case</span> 0:</div>
 <div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;              <span class="keywordflow">return</span> fGainL;</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;          <span class="keywordflow">case</span> 1;</div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;          <span class="keywordflow">case</span> 1:</div>
 <div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;              <span class="keywordflow">return</span> fGainR;</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;         <span class="keywordflow">default</span>:</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;               <span class="keywordflow">return</span> 0.f;</div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;          <span class="keywordflow">default</span>:</div>
+<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160;              <span class="keywordflow">return</span> 0.f;</div>
 <div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;          }</div>
 <div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;      }</div>
 <div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment"></span> </div>
@@ -460,10 +460,10 @@ $(function() {
 <div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="keyword">      </span>{</div>
 <div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;          <span class="keywordflow">switch</span> (index)</div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;          {</div>
-<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;          <span class="keywordflow">case</span> 0;</div>
+<div class="line"><a name="l00392"></a><span class="lineno">  392</span>&#160;          <span class="keywordflow">case</span> 0:</div>
 <div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;              fGainL = value;</div>
 <div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;              <span class="keywordflow">break</span>;</div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;          <span class="keywordflow">case</span> 1;</div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;          <span class="keywordflow">case</span> 1:</div>
 <div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;              fGainR = value;</div>
 <div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;              <span class="keywordflow">break</span>;</div>
 <div class="line"><a name="l00398"></a><span class="lineno">  398</span>&#160;          }</div>
@@ -1039,7 +1039,7 @@ $(function() {
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Mon Oct 3 2022 16:47:32 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>
