@@ -139,7 +139,7 @@ $(function() {
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment">      Create a new color based on this one but with a different alpha value.</span></div>
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">   71</a></span>&#160;    <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a>(<span class="keywordtype">float</span> alpha) noexcept;</div>
+<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">   71</a></span>&#160;    <a class="code" href="structColor.html">Color</a> <a class="code" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">withAlpha</a>(<span class="keywordtype">float</span> alpha) const noexcept;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">   /**</span></div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">      Create a color specified by hue, saturation and lightness.</span></div>
@@ -161,8 +161,8 @@ $(function() {
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">      Check if this color matches another.</span></div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">      @note Comparison is done within 8-bit color space.</span></div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">   93</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a>(const <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a> = true) noexcept;</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">bool</span> isNotEqual(const <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a664780dcd74f376837dc6c5a219ca566">withAlpha</a> = true) noexcept;</div>
+<div class="line"><a name="l00093"></a><span class="lineno"><a class="line" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">   93</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a>(const <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">withAlpha</a> = true) noexcept;</div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    <span class="keywordtype">bool</span> isNotEqual(const <a class="code" href="structColor.html">Color</a>&amp; color, <span class="keywordtype">bool</span> <a class="code" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">withAlpha</a> = true) noexcept;</div>
 <div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    <span class="keywordtype">bool</span> operator==(const <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
 <div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    <span class="keywordtype">bool</span> operator!=(const <a class="code" href="structColor.html">Color</a>&amp; color) noexcept;</div>
 <div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span> </div>
@@ -191,8 +191,8 @@ $(function() {
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DGL_COLOR_HPP_INCLUDED</span></div>
 <div class="ttc" id="astructColor_html"><div class="ttname"><a href="structColor.html">Color</a></div><div class="ttdef"><b>Definition:</b> Color.hpp:31</div></div>
 <div class="ttc" id="astructColor_html_a16880d42b2d52ed23eb307ed2980a9a3"><div class="ttname"><a href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">Color::isEqual</a></div><div class="ttdeci">bool isEqual(const Color &amp;color, bool withAlpha=true) noexcept</div></div>
+<div class="ttc" id="astructColor_html_a3f163d59e5a313f742acdd2bbd47441f"><div class="ttname"><a href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">Color::withAlpha</a></div><div class="ttdeci">Color withAlpha(float alpha) const noexcept</div></div>
 <div class="ttc" id="astructColor_html_a41820f7349e997489d53f98036e76a0c"><div class="ttname"><a href="structColor.html#a41820f7349e997489d53f98036e76a0c">Color::fromHSL</a></div><div class="ttdeci">static Color fromHSL(float hue, float saturation, float lightness, float alpha=1.0f)</div></div>
-<div class="ttc" id="astructColor_html_a664780dcd74f376837dc6c5a219ca566"><div class="ttname"><a href="structColor.html#a664780dcd74f376837dc6c5a219ca566">Color::withAlpha</a></div><div class="ttdeci">Color withAlpha(float alpha) noexcept</div></div>
 <div class="ttc" id="astructColor_html_a96283f5b9ad6f6465e40f69012aca00f"><div class="ttname"><a href="structColor.html#a96283f5b9ad6f6465e40f69012aca00f">Color::interpolate</a></div><div class="ttdeci">void interpolate(const Color &amp;other, float u) noexcept</div></div>
 <div class="ttc" id="astructColor_html_a9bd4efab0718f412babc62398875a80f"><div class="ttname"><a href="structColor.html#a9bd4efab0718f412babc62398875a80f">Color::setFor</a></div><div class="ttdeci">void setFor(const GraphicsContext &amp;context, bool includeAlpha=false)</div></div>
 <div class="ttc" id="astructColor_html_aad01f46af4cdb18b2bcbddd3f63d14d5"><div class="ttname"><a href="structColor.html#aad01f46af4cdb18b2bcbddd3f63d14d5">Color::fixBounds</a></div><div class="ttdeci">void fixBounds() noexcept</div></div>
@@ -202,7 +202,7 @@ $(function() {
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

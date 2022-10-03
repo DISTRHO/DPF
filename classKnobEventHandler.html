@@ -90,6 +90,7 @@ Classes</h2></td></tr>
 Public Types</h2></td></tr>
 <tr class="memitem:af36be885045fea73f06c0ffd94c8667b"><td class="memItemLeft" align="right" valign="top"><a id="af36be885045fea73f06c0ffd94c8667b"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>Orientation</b> { <b>Horizontal</b>
 , <b>Vertical</b>
+, <b>Both</b>
  }</td></tr>
 <tr class="separator:af36be885045fea73f06c0ffd94c8667b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59cb5b018c4e2bf768a526847dd8b03a"><td class="memItemLeft" align="right" valign="top"><a id="a59cb5b018c4e2bf768a526847dd8b03a"></a>enum &#160;</td><td class="memItemRight" valign="bottom"><b>State</b> { <b>kKnobStateDefault</b> = 0x0
@@ -110,6 +111,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:af1bdfef866690043c22bfc5e372b63fb"><td class="memItemLeft" align="right" valign="top"><a id="af1bdfef866690043c22bfc5e372b63fb"></a>
 <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><b>operator=</b> (const <a class="el" href="classKnobEventHandler.html">KnobEventHandler</a> &amp;other)</td></tr>
 <tr class="separator:af1bdfef866690043c22bfc5e372b63fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d05e274c5c00ace8f6eb3a4479244fd"><td class="memItemLeft" align="right" valign="top"><a id="a9d05e274c5c00ace8f6eb3a4479244fd"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>isInteger</b> () const noexcept</td></tr>
+<tr class="separator:a9d05e274c5c00ace8f6eb3a4479244fd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6893d9a9584697ff32478e30da88313d"><td class="memItemLeft" align="right" valign="top"><a id="a6893d9a9584697ff32478e30da88313d"></a>
 float&#160;</td><td class="memItemRight" valign="bottom"><b>getValue</b> () const noexcept</td></tr>
 <tr class="separator:a6893d9a9584697ff32478e30da88313d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -134,18 +138,21 @@ void&#160;</td><td class="memItemRight" valign="bottom"><b>setUsingLogScale</b> 
 <tr class="memitem:a76483d33ca5ca9c43487afd0c7ec75ae"><td class="memItemLeft" align="right" valign="top"><a id="a76483d33ca5ca9c43487afd0c7ec75ae"></a>
 Orientation&#160;</td><td class="memItemRight" valign="bottom"><b>getOrientation</b> () const noexcept</td></tr>
 <tr class="separator:a76483d33ca5ca9c43487afd0c7ec75ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abad11b1875a1377ce1d95e1dc6c9fce0"><td class="memItemLeft" align="right" valign="top"><a id="abad11b1875a1377ce1d95e1dc6c9fce0"></a>
-void&#160;</td><td class="memItemRight" valign="bottom"><b>setOrientation</b> (const Orientation orientation) noexcept</td></tr>
-<tr class="separator:abad11b1875a1377ce1d95e1dc6c9fce0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad73c424127debc58b11da34b0cf3e97d"><td class="memItemLeft" align="right" valign="top"><a id="ad73c424127debc58b11da34b0cf3e97d"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setOrientation</b> (Orientation orientation) noexcept</td></tr>
+<tr class="separator:ad73c424127debc58b11da34b0cf3e97d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad1f62081621e86bba31d67713a7b1ef3"><td class="memItemLeft" align="right" valign="top"><a id="ad1f62081621e86bba31d67713a7b1ef3"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>setCallback</b> (<a class="el" href="classKnobEventHandler_1_1Callback.html">Callback</a> *callback) noexcept</td></tr>
 <tr class="separator:ad1f62081621e86bba31d67713a7b1ef3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1b4e17013f8d776734e4810ad2ce8316"><td class="memItemLeft" align="right" valign="top"><a id="a1b4e17013f8d776734e4810ad2ce8316"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>mouseEvent</b> (const <a class="el" href="structWidget_1_1MouseEvent.html">Widget::MouseEvent</a> &amp;ev)</td></tr>
-<tr class="separator:a1b4e17013f8d776734e4810ad2ce8316"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa9506785779b69d937459265abcff122"><td class="memItemLeft" align="right" valign="top"><a id="aa9506785779b69d937459265abcff122"></a>
-bool&#160;</td><td class="memItemRight" valign="bottom"><b>motionEvent</b> (const <a class="el" href="structWidget_1_1MotionEvent.html">Widget::MotionEvent</a> &amp;ev)</td></tr>
-<tr class="separator:aa9506785779b69d937459265abcff122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a864c2ac2aa0900ad2c57436d56e633b3"><td class="memItemLeft" align="right" valign="top"><a id="a864c2ac2aa0900ad2c57436d56e633b3"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>setMouseDeceleration</b> (float accel) noexcept</td></tr>
+<tr class="separator:a864c2ac2aa0900ad2c57436d56e633b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b9e78243c3985cde7ee710dcc19a24b"><td class="memItemLeft" align="right" valign="top"><a id="a4b9e78243c3985cde7ee710dcc19a24b"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>mouseEvent</b> (const <a class="el" href="structWidget_1_1MouseEvent.html">Widget::MouseEvent</a> &amp;ev, double scaleFactor=1.0)</td></tr>
+<tr class="separator:a4b9e78243c3985cde7ee710dcc19a24b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac1ea07135937daa099b6a24cea5f1646"><td class="memItemLeft" align="right" valign="top"><a id="ac1ea07135937daa099b6a24cea5f1646"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>motionEvent</b> (const <a class="el" href="structWidget_1_1MotionEvent.html">Widget::MotionEvent</a> &amp;ev, double scaleFactor=1.0)</td></tr>
+<tr class="separator:ac1ea07135937daa099b6a24cea5f1646"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e13f425988eaf4b6691a734a253f44c"><td class="memItemLeft" align="right" valign="top"><a id="a3e13f425988eaf4b6691a734a253f44c"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>scrollEvent</b> (const <a class="el" href="structWidget_1_1ScrollEvent.html">Widget::ScrollEvent</a> &amp;ev)</td></tr>
 <tr class="separator:a3e13f425988eaf4b6691a734a253f44c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -162,7 +169,7 @@ Protected Member Functions</h2></td></tr>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

@@ -86,10 +86,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a983383b2b3ce5d049802a7f0a12cee0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad16ef939c1caa2f51e9a4041f769f86e"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#ad16ef939c1caa2f51e9a4041f769f86e">getNormalizedValue</a> (const float &amp;value) const noexcept</td></tr>
 <tr class="separator:ad16ef939c1caa2f51e9a4041f769f86e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acabe1b8a99a2859b5fe751de18ddcdd7"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#acabe1b8a99a2859b5fe751de18ddcdd7">getNormalizedValue</a> (const double &amp;value) const noexcept</td></tr>
+<tr class="separator:acabe1b8a99a2859b5fe751de18ddcdd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a82698a1e07b1b04ccb5df0de4db0d0be"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#a82698a1e07b1b04ccb5df0de4db0d0be">getFixedAndNormalizedValue</a> (const float &amp;value) const noexcept</td></tr>
 <tr class="separator:a82698a1e07b1b04ccb5df0de4db0d0be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad22b84137bc5896ff634ee5f5927207c"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#ad22b84137bc5896ff634ee5f5927207c">getFixedAndNormalizedValue</a> (const double &amp;value) const noexcept</td></tr>
+<tr class="separator:ad22b84137bc5896ff634ee5f5927207c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a992f75a925b3cd5e66544087708ea3c3"><td class="memItemLeft" align="right" valign="top">float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#a992f75a925b3cd5e66544087708ea3c3">getUnnormalizedValue</a> (const float &amp;value) const noexcept</td></tr>
 <tr class="separator:a992f75a925b3cd5e66544087708ea3c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf604eafd0f2b647b371735550c8d166"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterRanges.html#adf604eafd0f2b647b371735550c8d166">getUnnormalizedValue</a> (const double &amp;value) const noexcept</td></tr>
+<tr class="separator:adf604eafd0f2b647b371735550c8d166"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -257,7 +263,7 @@ When changing this struct values you must ensure maximum &gt; minimum and defaul
 </div>
 </div>
 <a id="ad16ef939c1caa2f51e9a4041f769f86e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad16ef939c1caa2f51e9a4041f769f86e">&#9670;&nbsp;</a></span>getNormalizedValue()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ad16ef939c1caa2f51e9a4041f769f86e">&#9670;&nbsp;</a></span>getNormalizedValue() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -283,8 +289,35 @@ When changing this struct values you must ensure maximum &gt; minimum and defaul
 
 </div>
 </div>
+<a id="acabe1b8a99a2859b5fe751de18ddcdd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acabe1b8a99a2859b5fe751de18ddcdd7">&#9670;&nbsp;</a></span>getNormalizedValue() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ParameterRanges::getNormalizedValue </td>
+          <td>(</td>
+          <td class="paramtype">const double &amp;&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get a value normalized to 0.0&lt;-&gt;1.0. Overloaded function using double precision values. </p>
+
+</div>
+</div>
 <a id="a82698a1e07b1b04ccb5df0de4db0d0be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82698a1e07b1b04ccb5df0de4db0d0be">&#9670;&nbsp;</a></span>getFixedAndNormalizedValue()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a82698a1e07b1b04ccb5df0de4db0d0be">&#9670;&nbsp;</a></span>getFixedAndNormalizedValue() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -310,8 +343,35 @@ When changing this struct values you must ensure maximum &gt; minimum and defaul
 
 </div>
 </div>
+<a id="ad22b84137bc5896ff634ee5f5927207c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad22b84137bc5896ff634ee5f5927207c">&#9670;&nbsp;</a></span>getFixedAndNormalizedValue() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ParameterRanges::getFixedAndNormalizedValue </td>
+          <td>(</td>
+          <td class="paramtype">const double &amp;&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get a value normalized to 0.0&lt;-&gt;1.0, fixed within range. Overloaded function using double precision values. </p>
+
+</div>
+</div>
 <a id="a992f75a925b3cd5e66544087708ea3c3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a992f75a925b3cd5e66544087708ea3c3">&#9670;&nbsp;</a></span>getUnnormalizedValue()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a992f75a925b3cd5e66544087708ea3c3">&#9670;&nbsp;</a></span>getUnnormalizedValue() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -334,6 +394,33 @@ When changing this struct values you must ensure maximum &gt; minimum and defaul
 </table>
 </div><div class="memdoc">
 <p>Get a proper value previously normalized to 0.0&lt;-&gt;1.0. </p>
+
+</div>
+</div>
+<a id="adf604eafd0f2b647b371735550c8d166"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf604eafd0f2b647b371735550c8d166">&#9670;&nbsp;</a></span>getUnnormalizedValue() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double ParameterRanges::getUnnormalizedValue </td>
+          <td>(</td>
+          <td class="paramtype">const double &amp;&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Get a proper value previously normalized to 0.0&lt;-&gt;1.0. Overloaded function using double precision values. </p>
 
 </div>
 </div>
@@ -389,7 +476,7 @@ When changing this struct values you must ensure maximum &gt; minimum and defaul
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

@@ -612,7 +612,7 @@ $(function() {
 <div class="line"><a name="l00541"></a><span class="lineno">  541</span>&#160;                    uint height,</div>
 <div class="line"><a name="l00542"></a><span class="lineno">  542</span>&#160;                    <span class="keywordtype">double</span> scaleFactor,</div>
 <div class="line"><a name="l00543"></a><span class="lineno">  543</span>&#160;                    <span class="keywordtype">bool</span> resizable,</div>
-<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;                    <span class="keywordtype">bool</span> isVST3,</div>
+<div class="line"><a name="l00544"></a><span class="lineno">  544</span>&#160;                    <span class="keywordtype">bool</span> usesSizeRequest,</div>
 <div class="line"><a name="l00545"></a><span class="lineno">  545</span>&#160;                    <span class="keywordtype">bool</span> doPostInit);</div>
 <div class="line"><a name="l00546"></a><span class="lineno">  546</span>&#160; </div>
 <div class="line"><a name="l00547"></a><span class="lineno">  547</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classWindow.html">Window</a>)</div>
@@ -644,8 +644,8 @@ $(function() {
 <div class="ttc" id="aclassWindow_html_a979cfd2bc52650f07b789217d6c6f570"><div class="ttname"><a href="classWindow.html#a979cfd2bc52650f07b789217d6c6f570">Window::onClose</a></div><div class="ttdeci">virtual bool onClose()</div></div>
 <div class="ttc" id="aclassWindow_html_ada557b4543c122a0de22c876c55504ae"><div class="ttname"><a href="classWindow.html#ada557b4543c122a0de22c876c55504ae">Window::Window</a></div><div class="ttdeci">Window(Application &amp;app, uintptr_t parentWindowHandle, uint width, uint height, double scaleFactor, bool resizable)</div></div>
 <div class="ttc" id="aclassWindow_html_afb840ed25c1fe17bed66d80adfc420ab"><div class="ttname"><a href="classWindow.html#afb840ed25c1fe17bed66d80adfc420ab">Window::isEmbed</a></div><div class="ttdeci">bool isEmbed() const noexcept</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:834</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_gac4cb97c393d20c28ba19365d844341cd"><div class="ttname"><a href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">START_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define START_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:828</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:920</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_gac4cb97c393d20c28ba19365d844341cd"><div class="ttname"><a href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">START_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define START_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:914</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html"><div class="ttname"><a href="structFileBrowserOptions.html">FileBrowserOptions</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:33</div></div>
 <div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:212</div></div>
 <div class="ttc" id="astructIdleCallback_html"><div class="ttname"><a href="structIdleCallback.html">IdleCallback</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:218</div></div>
@@ -657,7 +657,7 @@ $(function() {
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

@@ -86,7 +86,10 @@ You can use <a class="el" href="group__NamespaceMacros.html#gac4cb97c393d20c28ba
 <h1><a class="anchor" id="Examples"></a>
 Examples</h1>
 <p>Let's begin with some examples.<br  />
-Here is one of a stereo audio plugin that simply mutes the host output: </p><div class="fragment"><div class="line"><span class="comment">/* Make DPF related classes available for us to use without any extra namespace references */</span></div>
+Here is one of a stereo audio plugin that simply mutes the host output: </p><div class="fragment"><div class="line"><span class="comment">/* DPF plugin include */</span></div>
+<div class="line"><span class="preprocessor">#include &quot;DistrhoPlugin.hpp&quot;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">/* Make DPF related classes available for us to use without any extra namespace references */</span></div>
 <div class="line"><a class="code" href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">USE_NAMESPACE_DISTRHO</a>;</div>
 <div class="line"><span class="comment"></span> </div>
 <div class="line"><span class="comment">/**</span></div>
@@ -147,7 +150,7 @@ Here is one of a stereo audio plugin that simply mutes the host output: </p><div
 <div class="line"><span class="comment"></span> </div>
 <div class="line"><span class="comment">  /**</span></div>
 <div class="line"><span class="comment">     Get the plugin unique Id.</span></div>
-<div class="line"><span class="comment">     This value is used by LADSPA, DSSI and VST plugin formats.</span></div>
+<div class="line"><span class="comment">     This value is used by LADSPA, DSSI, VST2 and VST3 plugin formats.</span></div>
 <div class="line"><span class="comment">   */</span></div>
 <div class="line">   int64_t <a class="code" href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">getUniqueId</a>()<span class="keyword"> const override</span></div>
 <div class="line"><span class="keyword">   </span>{</div>
@@ -181,7 +184,7 @@ Here is one of a stereo audio plugin that simply mutes the host output: </p><div
 <div class="line">{</div>
 <div class="line">   <span class="keywordflow">return</span> <span class="keyword">new</span> MutePlugin();</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:906</div></div>
+<div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:966</div></div>
 <div class="ttc" id="aclassPlugin_html_a00f7945c16149db6845fbcc2af729f4f"><div class="ttname"><a href="classPlugin.html#a00f7945c16149db6845fbcc2af729f4f">Plugin::getLabel</a></div><div class="ttdeci">virtual const char * getLabel() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_a0a969c78f8455ac6ba65fa42e8c498f6"><div class="ttname"><a href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">Plugin::run</a></div><div class="ttdeci">virtual void run(const float **inputs, float **outputs, uint32_t frames, const MidiEvent *midiEvents, uint32_t midiEventCount)=0</div></div>
 <div class="ttc" id="aclassPlugin_html_a686a3c92a376a185d6fd97efd59125d1"><div class="ttname"><a href="classPlugin.html#a686a3c92a376a185d6fd97efd59125d1">Plugin::getLicense</a></div><div class="ttdeci">virtual const char * getLicense() const =0</div></div>
@@ -191,14 +194,14 @@ Here is one of a stereo audio plugin that simply mutes the host output: </p><div
 <div class="ttc" id="agroup__EntryPoints_html_ga87f1fa9084f2490ca04ea733292c6dee"><div class="ttname"><a href="group__EntryPoints.html#ga87f1fa9084f2490ca04ea733292c6dee">createPlugin</a></div><div class="ttdeci">Plugin * createPlugin()</div></div>
 <div class="ttc" id="agroup__MiscellaneousFunctions_html_ga6827e90feb9bdcb6f76175a245fbf12c"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a></div><div class="ttdeci">static constexpr int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:75</div></div>
 <div class="ttc" id="agroup__MiscellaneousFunctions_html_ga95d67ff74d46b2c80f15c7790a523154"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a></div><div class="ttdeci">static constexpr uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:84</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_gadcd7e7d900fbae0fa1a71d6fbab4d59c"><div class="ttname"><a href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">USE_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define USE_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:840</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_gadcd7e7d900fbae0fa1a71d6fbab4d59c"><div class="ttname"><a href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">USE_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define USE_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:926</div></div>
 </div><!-- fragment --><p>See the <a class="el" href="classPlugin.html">Plugin</a> class for more information.</p>
 <h1><a class="anchor" id="Parameters"></a>
 Parameters</h1>
 <p>A plugin is nothing without parameters.<br  />
 In DPF parameters can be inputs or outputs.<br  />
 They have hints to describe how they behave plus a name and a symbol identifying them.<br  />
-Parameters also have 'ranges' – a minimum, maximum and default value.</p>
+Parameters also have 'ranges' - a minimum, maximum and default value.</p>
 <p>Input parameters are by default "read-only": the plugin can read them but not change them. (there are exceptions and possibly a request to the host to change values, more on that below)<br  />
 It's the host responsibility to save, restore and set input parameters.</p>
 <p>Output parameters can be changed at anytime by the plugin.<br  />
@@ -311,11 +314,11 @@ The host will simply read their values and never change them.</p>
 <div class="ttc" id="astructParameterRanges_html_a175c78c905c598df929a4450e4d2a2a0"><div class="ttname"><a href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">ParameterRanges::max</a></div><div class="ttdeci">float max</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:311</div></div>
 <div class="ttc" id="astructParameterRanges_html_a63c40988463a8ace9d0e9e55a00f3c7b"><div class="ttname"><a href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">ParameterRanges::min</a></div><div class="ttdeci">float min</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:306</div></div>
 <div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:301</div></div>
-<div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:497</div></div>
-<div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:543</div></div>
-<div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:502</div></div>
-<div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:524</div></div>
-<div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:509</div></div>
+<div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:547</div></div>
+<div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:593</div></div>
+<div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:552</div></div>
+<div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:574</div></div>
+<div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:559</div></div>
 </div><!-- fragment --><p>See the <a class="el" href="structParameter.html">Parameter</a> struct for more information about parameters.</p>
 <h1><a class="anchor" id="Programs"></a>
 Programs</h1>
@@ -389,10 +392,10 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line">       }</div>
 <div class="line">   }</div>
 <div class="line"><span class="comment"></span> </div>
-<div class="line"><span class="comment">   /**</span></div>
-<div class="line"><span class="comment">       Set the name of the program @a index.</span></div>
-<div class="line"><span class="comment">       This function will be called once, shortly after the plugin is created.</span></div>
-<div class="line"><span class="comment">     */</span></div>
+<div class="line"><span class="comment">  /**</span></div>
+<div class="line"><span class="comment">     Set the name of the program @a index.</span></div>
+<div class="line"><span class="comment">     This function will be called once, shortly after the plugin is created.</span></div>
+<div class="line"><span class="comment">   */</span></div>
 <div class="line">   <span class="keywordtype">void</span> <a class="code" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName</a>(uint32_t index, <a class="code" href="classString.html">String</a>&amp; programName)</div>
 <div class="line">   {</div>
 <div class="line">       <span class="comment">// we only have one program so we can skip checking the index</span></div>
@@ -414,6 +417,8 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 <div class="line">           <span class="keywordflow">return</span> fGainL;</div>
 <div class="line">       <span class="keywordflow">case</span> 1;</div>
 <div class="line">           <span class="keywordflow">return</span> fGainR;</div>
+<div class="line">      <span class="keywordflow">default</span>:</div>
+<div class="line">            <span class="keywordflow">return</span> 0.f;</div>
 <div class="line">       }</div>
 <div class="line">   }</div>
 <div class="line"><span class="comment"></span> </div>
@@ -474,7 +479,7 @@ When enabled you'll need to override 2 new function in your plugin code, <a clas
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

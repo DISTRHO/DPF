@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['leakedobjectdetector_625',['LeakedObjectDetector',['../classLeakedObjectDetector.html',1,'']]],
-  ['line_626',['Line',['../classLine.html',1,'']]]
+  ['layout_638',['Layout',['../structLayout.html',1,'']]],
+  ['leakedobjectdetector_639',['LeakedObjectDetector',['../classLeakedObjectDetector.html',1,'']]],
+  ['line_640',['Line',['../classLine.html',1,'']]]
 ];

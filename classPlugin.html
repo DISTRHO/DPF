@@ -87,6 +87,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5fd60c82f5a50f12312c57729885fc2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2c6b7bc2e0cdcd589cf9d03be831042"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ab2c6b7bc2e0cdcd589cf9d03be831042">isDummyInstance</a> () const noexcept</td></tr>
 <tr class="separator:ab2c6b7bc2e0cdcd589cf9d03be831042"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d07561f935bf9918e8b395e6eaabfa0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a8d07561f935bf9918e8b395e6eaabfa0">isSelfTestInstance</a> () const noexcept</td></tr>
+<tr class="separator:a8d07561f935bf9918e8b395e6eaabfa0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae85d602c430b1a4361a88d714d3a42c1"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structTimePosition.html">TimePosition</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ae85d602c430b1a4361a88d714d3a42c1">getTimePosition</a> () const noexcept</td></tr>
 <tr class="separator:ae85d602c430b1a4361a88d714d3a42c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2a70c4ec55d74d9bc26862975d8df8a7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2a70c4ec55d74d9bc26862975d8df8a7">setLatency</a> (uint32_t frames) noexcept</td></tr>
@@ -352,6 +354,35 @@ This value will remain constant between activate and deactivate. </p><dl class="
 <p>Check if this plugin instance is a "dummy" one used for plugin meta-data/information export.<br  />
 When true no processing will be done, the plugin is created only to extract information.<br  />
 In DPF, LADSPA/DSSI, VST2 and VST3 formats create one global instance per plugin binary while LV2 creates one when generating turtle meta-data. </p>
+
+</div>
+</div>
+<a id="a8d07561f935bf9918e8b395e6eaabfa0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8d07561f935bf9918e8b395e6eaabfa0">&#9670;&nbsp;</a></span>isSelfTestInstance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool Plugin::isSelfTestInstance </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Check if this plugin instance is a "selftest" one used for automated plugin tests.<br  />
+To enable this mode build with <code>DPF_RUNTIME_TESTING</code> macro defined (i.e. set as compiler build flag), and run the JACK/Standalone executable with "selftest" as its only and single argument.</p>
+<p>A few basic DSP and <a class="el" href="classUI.html">UI</a> tests will run in self-test mode, with once instance having this function returning true.<br  />
+You can use this chance to do a few tests of your own as well. </p>
 
 </div>
 </div>
@@ -1291,7 +1322,7 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

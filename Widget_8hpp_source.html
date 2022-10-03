@@ -71,7 +71,7 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * DISTRHO Plugin Framework (DPF)</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2021 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2022 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * Permission to use, copy, modify, and/or distribute this software for any purpose with</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * or without fee is hereby granted, provided that the above copyright notice and this</span></div>
@@ -90,445 +90,469 @@ $(function() {
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
 <div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="preprocessor">#include &quot;Geometry.hpp&quot;</span></div>
 <div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160; </div>
-<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;START_NAMESPACE_DGL</div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">#include &lt;list&gt;</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
-<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment">// Forward class names</span></div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160; </div>
-<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="keyword">class </span><a class="code" href="classApplication.html">Application</a>;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">class </span><a class="code" href="classSubWidget.html">SubWidget</a>;</div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">class </span><a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>;</div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">class </span><a class="code" href="classWindow.html">Window</a>;</div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment">   Base DGL Widget class.</span></div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">   This is the base Widget class, from which all widgets are built.</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;START_NAMESPACE_DGL</div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160; </div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;<span class="comment">// Forward class names</span></div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160; </div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="keyword">class </span><a class="code" href="classApplication.html">Application</a>;</div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="keyword">class </span><a class="code" href="classSubWidget.html">SubWidget</a>;</div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="keyword">class </span><a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>;</div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">class </span><a class="code" href="classWindow.html">Window</a>;</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="comment">   Base DGL Widget class.</span></div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">   All widgets have a parent widget where they&#39;ll be drawn, this can be the top-level widget or a group widget.</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">   This parent is never changed during a widget&#39;s lifetime.</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">   Widgets receive events in relative coordinates. (0, 0) means its top-left position.</span></div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;<span class="comment">   This is the base Widget class, from which all widgets are built.</span></div>
+<div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment">   All widgets have a parent widget where they&#39;ll be drawn, this can be the top-level widget or a group widget.</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment">   This parent is never changed during a widget&#39;s lifetime.</span></div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">   The top-level widget will draw subwidgets in the order they are constructed.</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment">   Early subwidgets are drawn first, at the bottom, then newer ones on top.</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">   Events are sent in the inverse order so that the top-most widgets get</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">   a chance to catch the event and stop its propagation.</span></div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">   All widget event callbacks do nothing by default and onDisplay MUST be reimplemented by subclasses.</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="comment">   Widgets receive events in relative coordinates. (0, 0) means its top-left position.</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">   The top-level widget will draw subwidgets in the order they are constructed.</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment">   Early subwidgets are drawn first, at the bottom, then newer ones on top.</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">   Events are sent in the inverse order so that the top-most widgets get</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">   a chance to catch the event and stop its propagation.</span></div>
 <div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">   @note It is not possible to subclass this Widget class directly, you must use SubWidget or TopLevelWidget instead.</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="classWidget.html">   53</a></span>&#160;<span class="keyword">class </span><a class="code" href="classWidget.html">Widget</a></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;{</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="keyword">public</span>:<span class="comment"></span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">      Base event data.</span></div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">      These are the fields present on all Widget events.</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html">   60</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">        /** Currently active keyboard modifiers. @see Modifier */</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">   62</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">mod</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">        /** Event flags. @see EventFlag */</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">   64</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">flags</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">        /** Event timestamp (if any). */</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">   66</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">time</a>;</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">   69</a></span>&#160;        <a class="code" href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">BaseEvent</a>() noexcept : <a class="code" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">mod</a>(0x0), <a class="code" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">flags</a>(0x0), <a class="code" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">time</a>(0) {}<span class="comment"></span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">        /** Destuctor */</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">   71</a></span>&#160;        <span class="keyword">virtual</span> <a class="code" href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">~BaseEvent</a>() noexcept {}</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    };</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment">      Keyboard event.</span></div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">      This event represents low-level key presses and releases.</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment">      This can be used for &quot;direct&quot; keyboard handing like key bindings, but must not be interpreted as text input.</span></div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      Keys are represented portably as Unicode code points, using the &quot;natural&quot; code point for the key.</span></div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment">      The @a key field is the code for the pressed key, without any modifiers applied.</span></div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">      For example, a press or release of the &#39;A&#39; key will have `key` 97 (&#39;a&#39;)</span></div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">      regardless of whether shift or control are being held.</span></div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">      Alternatively, the raw @a keycode can be used to work directly with physical keys,</span></div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">      but note that this value is not portable and differs between platforms and hardware.</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">      @see onKeyboard</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html">   90</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">        /** True if the key was pressed, false if released. */</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">   92</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">press</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">        /** Unicode point of the key pressed. */</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">   94</a></span>&#160;        uint <a class="code" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">key</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">        /** Raw keycode. */</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">   96</a></span>&#160;        uint <a class="code" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">keycode</a>;</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00099"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">   99</a></span>&#160;        <a class="code" href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">KeyboardEvent</a>() noexcept</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">press</a>(false),</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">key</a>(0),</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">keycode</a>(0) {}</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    };</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">      Special keyboard event.</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">      DEPRECATED This used to be part of DPF due to pugl, but now deprecated and simply non-functional.</span></div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">      All events go through KeyboardEvent or CharacterInputEvent, use those instead.</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    <span class="keyword">struct </span>DISTRHO_DEPRECATED_BY(&quot;KeyboardEvent&quot;) SpecialEvent : BaseEvent {</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;        <span class="keywordtype">bool</span> press;</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;        Key key;</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;        SpecialEvent() noexcept</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;            : BaseEvent(),</div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;              press(false),</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;              key(Key(0)) {}</div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    };</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment">      Character input event.</span></div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment">      This event represents text input, usually as the result of a key press.</span></div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment">      The text is given both as a Unicode character code and a UTF-8 string.</span></div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment">      Note that this event is generated by the platform&#39;s input system,</span></div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment">      so there is not necessarily a direct correspondence between text events and physical key presses.</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment">      For example, with some input methods a sequence of several key presses will generate a single character.</span></div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment">      @see onCharacterInput</span></div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html">  135</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">        /** Raw key code. */</span></div>
-<div class="line"><a name="l00137"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">  137</a></span>&#160;        uint <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">keycode</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment">        /** Unicode character code. */</span></div>
-<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">  139</a></span>&#160;        uint <a class="code" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">character</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">        /** UTF-8 string. */</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">  141</a></span>&#160;        <span class="keywordtype">char</span> <span class="keywordtype">string</span>[8];</div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00144"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">  144</a></span>&#160;        <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">CharacterInputEvent</a>() noexcept</div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">keycode</a>(0),</div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">character</a>(0),</div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="preprocessor">#ifdef DISTRHO_PROPER_CPP11_SUPPORT</span></div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;              <span class="keywordtype">string</span>{<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>} {}</div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="preprocessor">#else</span></div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">string</a>() { std::memset(<span class="keywordtype">string</span>, 0, <span class="keyword">sizeof</span>(<span class="keywordtype">string</span>)); }</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    };</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">      Mouse press or release event.</span></div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">      @see onMouse</span></div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html">  159</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1MouseEvent.html">MouseEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">        /** The button number starting from 1. @see MouseButton */</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">  161</a></span>&#160;        uint <a class="code" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">button</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">        /** True if the button was pressed, false if released. */</span></div>
-<div class="line"><a name="l00163"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">  163</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">press</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00165"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">  165</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">pos</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00167"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">  167</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">absolutePos</a>;</div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00170"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">  170</a></span>&#160;        <a class="code" href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">MouseEvent</a>() noexcept</div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">button</a>(0),</div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">press</a>(false),</div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">pos</a>(0.0, 0.0),</div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">absolutePos</a>(0.0, 0.0) {}</div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;    };</div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">      Mouse motion event.</span></div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">      @see onMotion</span></div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00182"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html">  182</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1MotionEvent.html">MotionEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00184"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">  184</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">pos</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00186"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">  186</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">absolutePos</a>;</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">  189</a></span>&#160;        <a class="code" href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">MotionEvent</a>() noexcept</div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;              <a class="code" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">pos</a>(0.0, 0.0),</div>
-<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;              <a class="code" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">absolutePos</a>(0.0, 0.0) {}</div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;    };</div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment">      Mouse scroll event.</span></div>
-<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">      The scroll distance is expressed in &quot;lines&quot;,</span></div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">      an arbitrary unit that corresponds to a single tick of a detented mouse wheel.</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment">      For example, `delta.y` = 1.0 scrolls 1 line up.</span></div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">      Some systems and devices support finer resolution and/or higher values for fast scrolls,</span></div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">      so programs should handle any value gracefully.</span></div>
-<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment">      @see onScroll</span></div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00206"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html">  206</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00208"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">  208</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">pos</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
-<div class="line"><a name="l00210"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">  210</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">absolutePos</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment">        /** The scroll distance. */</span></div>
-<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">  212</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">delta</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">        /** The direction of the scroll or &quot;smooth&quot;. */</span></div>
-<div class="line"><a name="l00214"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">  214</a></span>&#160;        ScrollDirection <a class="code" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">direction</a>;</div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">  217</a></span>&#160;        <a class="code" href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">ScrollEvent</a>() noexcept</div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">pos</a>(0.0, 0.0),</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">absolutePos</a>(0.0, 0.0),</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">delta</a>(0.0, 0.0),</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">direction</a>(kScrollSmooth) {}</div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    };</div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment">      Resize event.</span></div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">      @see onResize</span></div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00229"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html">  229</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">        /** The new widget size. */</span></div>
-<div class="line"><a name="l00231"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">  231</a></span>&#160;        <a class="code" href="classSize.html">Size&lt;uint&gt;</a> <a class="code" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">size</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">        /** The previous size, can be null. */</span></div>
-<div class="line"><a name="l00233"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">  233</a></span>&#160;        <a class="code" href="classSize.html">Size&lt;uint&gt;</a> <a class="code" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">oldSize</a>;</div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00236"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">  236</a></span>&#160;        <a class="code" href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">ResizeEvent</a>() noexcept</div>
-<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;            : <a class="code" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">size</a>(0, 0),</div>
-<div class="line"><a name="l00238"></a><span class="lineno">  238</span>&#160;              <a class="code" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">oldSize</a>(0, 0) {}</div>
-<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;    };</div>
-<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment">      Widget position changed event.</span></div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment">      @see onPositionChanged</span></div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00245"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html">  245</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1PositionChangedEvent.html">PositionChangedEvent</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">        /** The new absolute position of the widget. */</span></div>
-<div class="line"><a name="l00247"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">  247</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;int&gt;</a> <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">pos</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment">        /** The previous absolute position of the widget. */</span></div>
-<div class="line"><a name="l00249"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">  249</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;int&gt;</a> <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">oldPos</a>;</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
-<div class="line"><a name="l00252"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">  252</a></span>&#160;        <a class="code" href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">PositionChangedEvent</a>() noexcept</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;            : <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">pos</a>(0, 0),</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;              <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">oldPos</a>(0, 0) {}</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;    };</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160; </div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="keyword">private</span>:<span class="comment"></span></div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="comment">      Private constructor, reserved for TopLevelWidget class.</span></div>
-<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classWidget.html">Widget</a>(<a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>* topLevelWidget);</div>
-<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment">      Private constructor, reserved for SubWidget class.</span></div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classWidget.html">Widget</a>(<a class="code" href="classWidget.html">Widget</a>* widgetToGroupTo);</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="keyword">public</span>:<span class="comment"></span></div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="comment">      Destructor.</span></div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00272"></a><span class="lineno"><a class="line" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">  272</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">~Widget</a>();</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment">      Check if this widget is visible within its parent window.</span></div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">      Invisible widgets do not receive events except resize.</span></div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00278"></a><span class="lineno"><a class="line" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">  278</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">isVisible</a>() const noexcept;</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment">      Set widget visible (or not) according to @a visible.</span></div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00283"></a><span class="lineno"><a class="line" href="classWidget.html#a66088a03691f9c643ff335fa826576ba">  283</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a66088a03691f9c643ff335fa826576ba">setVisible</a>(<span class="keywordtype">bool</span> visible);</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment">      Show widget.</span></div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">      This is the same as calling setVisible(true).</span></div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00289"></a><span class="lineno"><a class="line" href="classWidget.html#a25ff178539e226b5f30ef0335d060f2b">  289</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a25ff178539e226b5f30ef0335d060f2b">show</a>();</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment">      Hide widget.</span></div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">      This is the same as calling setVisible(false).</span></div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00295"></a><span class="lineno"><a class="line" href="classWidget.html#a4a2f8eebacdd20db505b838f1a118c6b">  295</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a4a2f8eebacdd20db505b838f1a118c6b">hide</a>();</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment">      Get width.</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00300"></a><span class="lineno"><a class="line" href="classWidget.html#a169c317caf734c6664494a573e427b40">  300</a></span>&#160;    uint <a class="code" href="classWidget.html#a169c317caf734c6664494a573e427b40">getWidth</a>() const noexcept;</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment">      Get height.</span></div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00305"></a><span class="lineno"><a class="line" href="classWidget.html#aa20f6dc096a8836706173f31324c4db8">  305</a></span>&#160;    uint <a class="code" href="classWidget.html#aa20f6dc096a8836706173f31324c4db8">getHeight</a>() const noexcept;</div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment">      Get size.</span></div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00310"></a><span class="lineno"><a class="line" href="classWidget.html#a9044d42c20ead27dba983b710c94f8d6">  310</a></span>&#160;    const <a class="code" href="classSize.html">Size</a>&lt;uint&gt; <a class="code" href="classWidget.html#a9044d42c20ead27dba983b710c94f8d6">getSize</a>() const noexcept;</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment">      Set width.</span></div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00315"></a><span class="lineno"><a class="line" href="classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea">  315</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea">setWidth</a>(uint width) noexcept;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment">      Set height.</span></div>
-<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00320"></a><span class="lineno"><a class="line" href="classWidget.html#ac6d2e6cbb2ff96f3645493d804af07f7">  320</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ac6d2e6cbb2ff96f3645493d804af07f7">setHeight</a>(uint height) noexcept;</div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment">      Set size using @a width and @a height values.</span></div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00325"></a><span class="lineno"><a class="line" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">  325</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">setSize</a>(uint width, uint height) noexcept;</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="comment">      Set size.</span></div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00330"></a><span class="lineno"><a class="line" href="classWidget.html#afce784b204902c0f11e9ed02bc692362">  330</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">setSize</a>(const <a class="code" href="classSize.html">Size</a>&lt;uint&gt;&amp; size) noexcept;</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="comment">      Get the Id associated with this widget.</span></div>
-<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">      @see setId</span></div>
-<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00336"></a><span class="lineno"><a class="line" href="classWidget.html#a3ee6b2824e3f3719c1c9b3d070385f49">  336</a></span>&#160;    uint <a class="code" href="classWidget.html#a3ee6b2824e3f3719c1c9b3d070385f49">getId</a>() const noexcept;</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;<span class="comment">      Set an Id to be associated with this widget.</span></div>
-<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment">      @see getId</span></div>
-<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00342"></a><span class="lineno"><a class="line" href="classWidget.html#abfba3652559de84ba1ae9ccbd3d35e31">  342</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#abfba3652559de84ba1ae9ccbd3d35e31">setId</a>(uint <span class="keywordtype">id</span>) noexcept;</div>
-<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment">      Get the application associated with this widget&#39;s window.</span></div>
-<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">      This is the same as calling `getTopLevelWidget()-&gt;getApp()`.</span></div>
-<div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00348"></a><span class="lineno"><a class="line" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">  348</a></span>&#160;    <a class="code" href="classApplication.html">Application</a>&amp; <a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>() const noexcept;</div>
-<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">      Get the window associated with this widget.</span></div>
-<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment">      This is the same as calling `getTopLevelWidget()-&gt;getWindow()`.</span></div>
-<div class="line"><a name="l00353"></a><span class="lineno">  353</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00354"></a><span class="lineno"><a class="line" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">  354</a></span>&#160;    <a class="code" href="classWindow.html">Window</a>&amp; <a class="code" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">getWindow</a>() const noexcept;</div>
-<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment">      Get the graphics context associated with this widget&#39;s window.</span></div>
-<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment">      GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,</span></div>
-<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment">      for example GraphicsContext.</span></div>
-<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment">      @see CairoSubWidget, CairoTopLevelWidget</span></div>
-<div class="line"><a name="l00361"></a><span class="lineno">  361</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00362"></a><span class="lineno"><a class="line" href="classWidget.html#ae23d09ec0e5f0397a3451b603b407182">  362</a></span>&#160;    const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; <a class="code" href="classWidget.html#ae23d09ec0e5f0397a3451b603b407182">getGraphicsContext</a>() const noexcept;</div>
-<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">      Get top-level widget, as passed directly in the constructor</span></div>
-<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment">      or going up the chain of group widgets until it finds the top-level one.</span></div>
-<div class="line"><a name="l00367"></a><span class="lineno">  367</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00368"></a><span class="lineno"><a class="line" href="classWidget.html#a607b153f7d3187ca60bf21004efc1314">  368</a></span>&#160;    <a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>* <a class="code" href="classWidget.html#a607b153f7d3187ca60bf21004efc1314">getTopLevelWidget</a>() const noexcept;</div>
-<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<span class="comment">      Request repaint of this widget&#39;s area to the window this widget belongs to.</span></div>
-<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="comment">      On the raw Widget class this function does nothing.</span></div>
-<div class="line"><a name="l00373"></a><span class="lineno">  373</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00374"></a><span class="lineno"><a class="line" href="classWidget.html#abe8cfe0aaae71dd011cf9a86e930fd12">  374</a></span>&#160;    virtual <span class="keywordtype">void</span> <a class="code" href="classWidget.html#abe8cfe0aaae71dd011cf9a86e930fd12">repaint</a>() noexcept;</div>
-<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160; </div>
-<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>()&quot;)</div>
-<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;    <a class="code" href="classApplication.html">Application</a>&amp; getParentApp() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>(); }</div>
-<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160; </div>
-<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;getWindow()&quot;</span>)</div>
-<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;    <a class="code" href="classWindow.html">Window</a>&amp; getParentWindow() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">getWindow</a>(); }</div>
-<div class="line"><a name="l00381"></a><span class="lineno">  381</span>&#160; </div>
-<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;<span class="keyword">protected</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">   All widget event callbacks do nothing by default and onDisplay MUST be reimplemented by subclasses.</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">   @note It is not possible to subclass this Widget class directly, you must use SubWidget or TopLevelWidget instead.</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="classWidget.html">   55</a></span>&#160;<span class="keyword">class </span><a class="code" href="classWidget.html">Widget</a></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;{</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">      Base event data.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">      These are the fields present on all Widget events.</span></div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html">   62</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">        /** Currently active keyboard modifiers. @see Modifier */</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">   64</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">mod</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">        /** Event flags. @see EventFlag */</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">   66</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">flags</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">        /** Event timestamp in milliseconds (if any). */</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">   68</a></span>&#160;        uint <a class="code" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">time</a>;</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">   71</a></span>&#160;        <a class="code" href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">BaseEvent</a>() noexcept : <a class="code" href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">mod</a>(0x0), <a class="code" href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">flags</a>(0x0), <a class="code" href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">time</a>(0) {}<span class="comment"></span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment">        /** Destuctor */</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno"><a class="line" href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">   73</a></span>&#160;        <span class="keyword">virtual</span> <a class="code" href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">~BaseEvent</a>() noexcept {}</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    };</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">      Keyboard event.</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment">      This event represents low-level key presses and releases.</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">      This can be used for &quot;direct&quot; keyboard handing like key bindings, but must not be interpreted as text input.</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;<span class="comment">      Keys are represented portably as Unicode code points, using the &quot;natural&quot; code point for the key.</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;<span class="comment">      The @a key field is the code for the pressed key, without any modifiers applied.</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;<span class="comment">      For example, a press or release of the &#39;A&#39; key will have `key` 97 (&#39;a&#39;)</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;<span class="comment">      regardless of whether shift or control are being held.</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment">      Alternatively, the raw @a keycode can be used to work directly with physical keys,</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">      but note that this value is not portable and differs between platforms and hardware.</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">      @see onKeyboard</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html">   92</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">        /** True if the key was pressed, false if released. */</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">   94</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">press</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">        /** Unicode point of the key pressed. */</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">   96</a></span>&#160;        uint <a class="code" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">key</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">        /** Raw keycode. */</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">   98</a></span>&#160;        uint <a class="code" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">keycode</a>;</div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno"><a class="line" href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">  101</a></span>&#160;        <a class="code" href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">KeyboardEvent</a>() noexcept</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">press</a>(false),</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">key</a>(0),</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;              <a class="code" href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">keycode</a>(0) {}</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    };</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">      Special keyboard event.</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">      DEPRECATED This used to be part of DPF due to pugl, but now deprecated and simply non-functional.</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment">      All events go through KeyboardEvent or CharacterInputEvent, use those instead.</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    <span class="keyword">struct </span>DISTRHO_DEPRECATED_BY(&quot;KeyboardEvent&quot;) SpecialEvent : BaseEvent {</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;        <span class="keywordtype">bool</span> press;</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;        Key key;</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;        SpecialEvent() noexcept</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;            : BaseEvent(),</div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;              press(false),</div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;              key(Key(0)) {}</div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    };</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment">      Character input event.</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="comment">      This event represents text input, usually as the result of a key press.</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;<span class="comment">      The text is given both as a Unicode character code and a UTF-8 string.</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;<span class="comment">      Note that this event is generated by the platform&#39;s input system,</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment">      so there is not necessarily a direct correspondence between text events and physical key presses.</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment">      For example, with some input methods a sequence of several key presses will generate a single character.</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment">      @see onCharacterInput</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html">  137</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment">        /** Raw key code. */</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">  139</a></span>&#160;        uint <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">keycode</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">        /** Unicode character code. */</span></div>
+<div class="line"><a name="l00141"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">  141</a></span>&#160;        uint <a class="code" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">character</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment">        /** UTF-8 string. */</span></div>
+<div class="line"><a name="l00143"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">  143</a></span>&#160;        <span class="keywordtype">char</span> <span class="keywordtype">string</span>[8];</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00146"></a><span class="lineno"><a class="line" href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">  146</a></span>&#160;        <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">CharacterInputEvent</a>() noexcept</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">keycode</a>(0),</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">character</a>(0),</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="preprocessor">#ifdef DISTRHO_PROPER_CPP11_SUPPORT</span></div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;              <span class="keywordtype">string</span>{<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>,<span class="charliteral">&#39;\0&#39;</span>} {}</div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="preprocessor">#else</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;              <a class="code" href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">string</a>() { std::memset(<span class="keywordtype">string</span>, 0, <span class="keyword">sizeof</span>(<span class="keywordtype">string</span>)); }</div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;    };</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment">      Mouse press or release event.</span></div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">      @see onMouse</span></div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html">  161</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1MouseEvent.html">MouseEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">        /** The button number starting from 1. @see MouseButton */</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">  163</a></span>&#160;        uint <a class="code" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">button</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;<span class="comment">        /** True if the button was pressed, false if released. */</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">  165</a></span>&#160;        <span class="keywordtype">bool</span> <a class="code" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">press</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">  167</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">pos</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00169"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">  169</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">absolutePos</a>;</div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00172"></a><span class="lineno"><a class="line" href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">  172</a></span>&#160;        <a class="code" href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">MouseEvent</a>() noexcept</div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">button</a>(0),</div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">press</a>(false),</div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">pos</a>(0.0, 0.0),</div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;              <a class="code" href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">absolutePos</a>(0.0, 0.0) {}</div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;    };</div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">      Mouse motion event.</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment">      @see onMotion</span></div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html">  184</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1MotionEvent.html">MotionEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">  186</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">pos</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00188"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">  188</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">absolutePos</a>;</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00191"></a><span class="lineno"><a class="line" href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">  191</a></span>&#160;        <a class="code" href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">MotionEvent</a>() noexcept</div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;              <a class="code" href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">pos</a>(0.0, 0.0),</div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;              <a class="code" href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">absolutePos</a>(0.0, 0.0) {}</div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;    };</div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment">      Mouse scroll event.</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment">      The scroll distance is expressed in &quot;lines&quot;,</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">      an arbitrary unit that corresponds to a single tick of a detented mouse wheel.</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">      For example, `delta.y` = 1.0 scrolls 1 line up.</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;<span class="comment">      Some systems and devices support finer resolution and/or higher values for fast scrolls,</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;<span class="comment">      so programs should handle any value gracefully.</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment">      @see onScroll</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html">  208</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a> : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">        /** The widget-relative coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">  210</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">pos</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment">        /** The absolute coordinates of the pointer. */</span></div>
+<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">  212</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">absolutePos</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment">        /** The scroll distance. */</span></div>
+<div class="line"><a name="l00214"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">  214</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;double&gt;</a> <a class="code" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">delta</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment">        /** The direction of the scroll or &quot;smooth&quot;. */</span></div>
+<div class="line"><a name="l00216"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">  216</a></span>&#160;        ScrollDirection <a class="code" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">direction</a>;</div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno"><a class="line" href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">  219</a></span>&#160;        <a class="code" href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">ScrollEvent</a>() noexcept</div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;            : <a class="code" href="structWidget_1_1BaseEvent.html">BaseEvent</a>(),</div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">pos</a>(0.0, 0.0),</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">absolutePos</a>(0.0, 0.0),</div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">delta</a>(0.0, 0.0),</div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;              <a class="code" href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">direction</a>(kScrollSmooth) {}</div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    };</div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment">      Resize event.</span></div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">      @see onResize</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html">  231</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">        /** The new widget size. */</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">  233</a></span>&#160;        <a class="code" href="classSize.html">Size&lt;uint&gt;</a> <a class="code" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">size</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment">        /** The previous size, can be null. */</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">  235</a></span>&#160;        <a class="code" href="classSize.html">Size&lt;uint&gt;</a> <a class="code" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">oldSize</a>;</div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno"><a class="line" href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">  238</a></span>&#160;        <a class="code" href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">ResizeEvent</a>() noexcept</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;            : <a class="code" href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">size</a>(0, 0),</div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;              <a class="code" href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">oldSize</a>(0, 0) {}</div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;    };</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;<span class="comment">      Widget position changed event.</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;<span class="comment">      @see onPositionChanged</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00247"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html">  247</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structWidget_1_1PositionChangedEvent.html">PositionChangedEvent</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment">        /** The new absolute position of the widget. */</span></div>
+<div class="line"><a name="l00249"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">  249</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;int&gt;</a> <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">pos</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">        /** The previous absolute position of the widget. */</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">  251</a></span>&#160;        <a class="code" href="classPoint.html">Point&lt;int&gt;</a> <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">oldPos</a>;</div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;<span class="comment">        /** Constructor for default/null values */</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno"><a class="line" href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">  254</a></span>&#160;        <a class="code" href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">PositionChangedEvent</a>() noexcept</div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            : <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">pos</a>(0, 0),</div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;              <a class="code" href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">oldPos</a>(0, 0) {}</div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;    };</div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160; </div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;<span class="keyword">private</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;<span class="comment">      Private constructor, reserved for TopLevelWidget class.</span></div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classWidget.html">Widget</a>(<a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>* topLevelWidget);</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;<span class="comment">      Private constructor, reserved for SubWidget class.</span></div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;    <span class="keyword">explicit</span> <a class="code" href="classWidget.html">Widget</a>(<a class="code" href="classWidget.html">Widget</a>* widgetToGroupTo);</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;<span class="keyword">public</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="comment">      Destructor.</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno"><a class="line" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">  274</a></span>&#160;    <span class="keyword">virtual</span> <a class="code" href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">~Widget</a>();</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;<span class="comment">      Check if this widget is visible within its parent window.</span></div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;<span class="comment">      Invisible widgets do not receive events except resize.</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00280"></a><span class="lineno"><a class="line" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">  280</a></span>&#160;    <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">isVisible</a>() const noexcept;</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;<span class="comment">      Set widget visible (or not) according to @a visible.</span></div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00285"></a><span class="lineno"><a class="line" href="classWidget.html#a66088a03691f9c643ff335fa826576ba">  285</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a66088a03691f9c643ff335fa826576ba">setVisible</a>(<span class="keywordtype">bool</span> visible);</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;<span class="comment">      Show widget.</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;<span class="comment">      This is the same as calling setVisible(true).</span></div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00291"></a><span class="lineno"><a class="line" href="classWidget.html#a25ff178539e226b5f30ef0335d060f2b">  291</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a25ff178539e226b5f30ef0335d060f2b">show</a>();</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;<span class="comment">      Hide widget.</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;<span class="comment">      This is the same as calling setVisible(false).</span></div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00297"></a><span class="lineno"><a class="line" href="classWidget.html#a4a2f8eebacdd20db505b838f1a118c6b">  297</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a4a2f8eebacdd20db505b838f1a118c6b">hide</a>();</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;<span class="comment">      Get width.</span></div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno"><a class="line" href="classWidget.html#a169c317caf734c6664494a573e427b40">  302</a></span>&#160;    uint <a class="code" href="classWidget.html#a169c317caf734c6664494a573e427b40">getWidth</a>() const noexcept;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160;<span class="comment">      Get height.</span></div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno"><a class="line" href="classWidget.html#aa20f6dc096a8836706173f31324c4db8">  307</a></span>&#160;    uint <a class="code" href="classWidget.html#aa20f6dc096a8836706173f31324c4db8">getHeight</a>() const noexcept;</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;<span class="comment">      Get size.</span></div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00312"></a><span class="lineno"><a class="line" href="classWidget.html#a9044d42c20ead27dba983b710c94f8d6">  312</a></span>&#160;    const <a class="code" href="classSize.html">Size</a>&lt;uint&gt; <a class="code" href="classWidget.html#a9044d42c20ead27dba983b710c94f8d6">getSize</a>() const noexcept;</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;<span class="comment">      Set width.</span></div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00317"></a><span class="lineno"><a class="line" href="classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea">  317</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea">setWidth</a>(uint width) noexcept;</div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;<span class="comment">      Set height.</span></div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="classWidget.html#ac6d2e6cbb2ff96f3645493d804af07f7">  322</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ac6d2e6cbb2ff96f3645493d804af07f7">setHeight</a>(uint height) noexcept;</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;<span class="comment">      Set size using @a width and @a height values.</span></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno"><a class="line" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">  327</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">setSize</a>(uint width, uint height) noexcept;</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;<span class="comment">      Set size.</span></div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00332"></a><span class="lineno"><a class="line" href="classWidget.html#afce784b204902c0f11e9ed02bc692362">  332</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ab4d9e0156e455db3ff23730f82544daa">setSize</a>(const <a class="code" href="classSize.html">Size</a>&lt;uint&gt;&amp; size) noexcept;</div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;<span class="comment">      Get the Id associated with this widget.</span></div>
+<div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="comment">      Returns 0 by default.</span></div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;<span class="comment">      @see setId</span></div>
+<div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00339"></a><span class="lineno"><a class="line" href="classWidget.html#a3ee6b2824e3f3719c1c9b3d070385f49">  339</a></span>&#160;    uint <a class="code" href="classWidget.html#a3ee6b2824e3f3719c1c9b3d070385f49">getId</a>() const noexcept;</div>
+<div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00341"></a><span class="lineno">  341</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00342"></a><span class="lineno">  342</span>&#160;<span class="comment">      Get the name associated with this widget.</span></div>
+<div class="line"><a name="l00343"></a><span class="lineno">  343</span>&#160;<span class="comment">      This is complately optional, mostly useful for debugging purposes.</span></div>
+<div class="line"><a name="l00344"></a><span class="lineno">  344</span>&#160;<span class="comment">      Returns an empty string by default.</span></div>
+<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;<span class="comment">      @see setName</span></div>
+<div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00347"></a><span class="lineno"><a class="line" href="classWidget.html#a70b07dbf748490e5a8c18fb9d5766c0e">  347</a></span>&#160;    const <span class="keywordtype">char</span>* <a class="code" href="classWidget.html#a70b07dbf748490e5a8c18fb9d5766c0e">getName</a>() const noexcept;</div>
+<div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00349"></a><span class="lineno">  349</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00350"></a><span class="lineno">  350</span>&#160;<span class="comment">      Set an Id to be associated with this widget.</span></div>
+<div class="line"><a name="l00351"></a><span class="lineno">  351</span>&#160;<span class="comment">      @see getId</span></div>
+<div class="line"><a name="l00352"></a><span class="lineno">  352</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00353"></a><span class="lineno"><a class="line" href="classWidget.html#abfba3652559de84ba1ae9ccbd3d35e31">  353</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#abfba3652559de84ba1ae9ccbd3d35e31">setId</a>(uint <span class="keywordtype">id</span>) noexcept;</div>
+<div class="line"><a name="l00354"></a><span class="lineno">  354</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00355"></a><span class="lineno">  355</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00356"></a><span class="lineno">  356</span>&#160;<span class="comment">      Set a name to be associated with this widget.</span></div>
+<div class="line"><a name="l00357"></a><span class="lineno">  357</span>&#160;<span class="comment">      This is complately optional, only useful for debugging purposes.</span></div>
+<div class="line"><a name="l00358"></a><span class="lineno">  358</span>&#160;<span class="comment">      @note name must not be null</span></div>
+<div class="line"><a name="l00359"></a><span class="lineno">  359</span>&#160;<span class="comment">      @see getName</span></div>
+<div class="line"><a name="l00360"></a><span class="lineno">  360</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00361"></a><span class="lineno"><a class="line" href="classWidget.html#a6303d0445f21a2a95148780b0a0afed6">  361</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="classWidget.html#a6303d0445f21a2a95148780b0a0afed6">setName</a>(const <span class="keywordtype">char</span>* name) noexcept;</div>
+<div class="line"><a name="l00362"></a><span class="lineno">  362</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00363"></a><span class="lineno">  363</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00364"></a><span class="lineno">  364</span>&#160;<span class="comment">      Get the application associated with this widget&#39;s window.</span></div>
+<div class="line"><a name="l00365"></a><span class="lineno">  365</span>&#160;<span class="comment">      This is the same as calling `getTopLevelWidget()-&gt;getApp()`.</span></div>
+<div class="line"><a name="l00366"></a><span class="lineno">  366</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00367"></a><span class="lineno"><a class="line" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">  367</a></span>&#160;    <a class="code" href="classApplication.html">Application</a>&amp; <a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>() const noexcept;</div>
+<div class="line"><a name="l00368"></a><span class="lineno">  368</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00369"></a><span class="lineno">  369</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00370"></a><span class="lineno">  370</span>&#160;<span class="comment">      Get the window associated with this widget.</span></div>
+<div class="line"><a name="l00371"></a><span class="lineno">  371</span>&#160;<span class="comment">      This is the same as calling `getTopLevelWidget()-&gt;getWindow()`.</span></div>
+<div class="line"><a name="l00372"></a><span class="lineno">  372</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00373"></a><span class="lineno"><a class="line" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">  373</a></span>&#160;    <a class="code" href="classWindow.html">Window</a>&amp; <a class="code" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">getWindow</a>() const noexcept;</div>
+<div class="line"><a name="l00374"></a><span class="lineno">  374</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00375"></a><span class="lineno">  375</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00376"></a><span class="lineno">  376</span>&#160;<span class="comment">      Get the graphics context associated with this widget&#39;s window.</span></div>
+<div class="line"><a name="l00377"></a><span class="lineno">  377</span>&#160;<span class="comment">      GraphicsContext is an empty struct and needs to be casted into a different type in order to be usable,</span></div>
+<div class="line"><a name="l00378"></a><span class="lineno">  378</span>&#160;<span class="comment">      for example GraphicsContext.</span></div>
+<div class="line"><a name="l00379"></a><span class="lineno">  379</span>&#160;<span class="comment">      @see CairoSubWidget, CairoTopLevelWidget</span></div>
+<div class="line"><a name="l00380"></a><span class="lineno">  380</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00381"></a><span class="lineno"><a class="line" href="classWidget.html#ae23d09ec0e5f0397a3451b603b407182">  381</a></span>&#160;    const <a class="code" href="structGraphicsContext.html">GraphicsContext</a>&amp; <a class="code" href="classWidget.html#ae23d09ec0e5f0397a3451b603b407182">getGraphicsContext</a>() const noexcept;</div>
+<div class="line"><a name="l00382"></a><span class="lineno">  382</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00383"></a><span class="lineno">  383</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment">      A function called to draw the widget contents.</span></div>
-<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00386"></a><span class="lineno"><a class="line" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">  386</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">onDisplay</a>() = 0;</div>
-<div class="line"><a name="l00387"></a><span class="lineno">  387</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">      A function called when a key is pressed or released.</span></div>
-<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00384"></a><span class="lineno">  384</span>&#160;<span class="comment">      Get top-level widget, as passed directly in the constructor</span></div>
+<div class="line"><a name="l00385"></a><span class="lineno">  385</span>&#160;<span class="comment">      or going up the chain of group widgets until it finds the top-level one.</span></div>
+<div class="line"><a name="l00386"></a><span class="lineno">  386</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00387"></a><span class="lineno"><a class="line" href="classWidget.html#a607b153f7d3187ca60bf21004efc1314">  387</a></span>&#160;    <a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>* <a class="code" href="classWidget.html#a607b153f7d3187ca60bf21004efc1314">getTopLevelWidget</a>() const noexcept;</div>
+<div class="line"><a name="l00388"></a><span class="lineno">  388</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00389"></a><span class="lineno">  389</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00390"></a><span class="lineno">  390</span>&#160;<span class="comment">      Get list of children (a subwidgets) that belong to this widget.</span></div>
 <div class="line"><a name="l00391"></a><span class="lineno">  391</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00392"></a><span class="lineno"><a class="line" href="classWidget.html#a9fa874aede538b41348f1029524aea11">  392</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a9fa874aede538b41348f1029524aea11">onKeyboard</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a>&amp;);</div>
+<div class="line"><a name="l00392"></a><span class="lineno"><a class="line" href="classWidget.html#a5381d5583ba6e55fe9fed87df95d9605">  392</a></span>&#160;    std::list&lt;<a class="code" href="classSubWidget.html">SubWidget</a>*&gt; <a class="code" href="classWidget.html#a5381d5583ba6e55fe9fed87df95d9605">getChildren</a>() const noexcept;</div>
 <div class="line"><a name="l00393"></a><span class="lineno">  393</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00394"></a><span class="lineno">  394</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment">      A function called when an UTF-8 character is received.</span></div>
-<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00395"></a><span class="lineno">  395</span>&#160;<span class="comment">      Request repaint of this widget&#39;s area to the window this widget belongs to.</span></div>
+<div class="line"><a name="l00396"></a><span class="lineno">  396</span>&#160;<span class="comment">      On the raw Widget class this function does nothing.</span></div>
 <div class="line"><a name="l00397"></a><span class="lineno">  397</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00398"></a><span class="lineno"><a class="line" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">  398</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">onCharacterInput</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a>&amp;);</div>
-<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;<span class="comment">      A function called when a mouse button is pressed or released.</span></div>
-<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
-<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00404"></a><span class="lineno"><a class="line" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">  404</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">onMouse</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1MouseEvent.html">MouseEvent</a>&amp;);</div>
-<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="comment">      A function called when the pointer moves.</span></div>
-<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00398"></a><span class="lineno"><a class="line" href="classWidget.html#abe8cfe0aaae71dd011cf9a86e930fd12">  398</a></span>&#160;    virtual <span class="keywordtype">void</span> <a class="code" href="classWidget.html#abe8cfe0aaae71dd011cf9a86e930fd12">repaint</a>() noexcept;</div>
+<div class="line"><a name="l00399"></a><span class="lineno">  399</span>&#160; </div>
+<div class="line"><a name="l00400"></a><span class="lineno">  400</span>&#160;    DISTRHO_DEPRECATED_BY(&quot;<a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>()&quot;)</div>
+<div class="line"><a name="l00401"></a><span class="lineno">  401</span>&#160;    <a class="code" href="classApplication.html">Application</a>&amp; getParentApp() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">getApp</a>(); }</div>
+<div class="line"><a name="l00402"></a><span class="lineno">  402</span>&#160; </div>
+<div class="line"><a name="l00403"></a><span class="lineno">  403</span>&#160;    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;getWindow()&quot;</span>)</div>
+<div class="line"><a name="l00404"></a><span class="lineno">  404</span>&#160;    <a class="code" href="classWindow.html">Window</a>&amp; getParentWindow() const noexcept { <span class="keywordflow">return</span> <a class="code" href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">getWindow</a>(); }</div>
+<div class="line"><a name="l00405"></a><span class="lineno">  405</span>&#160; </div>
+<div class="line"><a name="l00406"></a><span class="lineno">  406</span>&#160;<span class="keyword">protected</span>:<span class="comment"></span></div>
+<div class="line"><a name="l00407"></a><span class="lineno">  407</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00408"></a><span class="lineno">  408</span>&#160;<span class="comment">      A function called to draw the widget contents.</span></div>
 <div class="line"><a name="l00409"></a><span class="lineno">  409</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00410"></a><span class="lineno"><a class="line" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">  410</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">onMotion</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1MotionEvent.html">MotionEvent</a>&amp;);</div>
+<div class="line"><a name="l00410"></a><span class="lineno"><a class="line" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">  410</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classWidget.html#ae1554f348fe3b2f9d4c3c5c4f9ec55bd">onDisplay</a>() = 0;</div>
 <div class="line"><a name="l00411"></a><span class="lineno">  411</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00412"></a><span class="lineno">  412</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;<span class="comment">      A function called on scrolling (e.g. mouse wheel or track pad).</span></div>
+<div class="line"><a name="l00413"></a><span class="lineno">  413</span>&#160;<span class="comment">      A function called when a key is pressed or released.</span></div>
 <div class="line"><a name="l00414"></a><span class="lineno">  414</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
 <div class="line"><a name="l00415"></a><span class="lineno">  415</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00416"></a><span class="lineno"><a class="line" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">  416</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">onScroll</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a>&amp;);</div>
+<div class="line"><a name="l00416"></a><span class="lineno"><a class="line" href="classWidget.html#a9fa874aede538b41348f1029524aea11">  416</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a9fa874aede538b41348f1029524aea11">onKeyboard</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1KeyboardEvent.html">KeyboardEvent</a>&amp;);</div>
 <div class="line"><a name="l00417"></a><span class="lineno">  417</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00418"></a><span class="lineno">  418</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment">      A function called when the widget is resized.</span></div>
-<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00421"></a><span class="lineno"><a class="line" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">  421</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a>&amp;);</div>
-<div class="line"><a name="l00422"></a><span class="lineno">  422</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment">      A function called when a special key is pressed or released.</span></div>
-<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment">      DEPRECATED use onKeyboard or onCharacterInput</span></div>
-<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="preprocessor">#if defined(__clang__)</span></div>
-<div class="line"><a name="l00428"></a><span class="lineno">  428</span>&#160;<span class="preprocessor"># pragma clang diagnostic push</span></div>
-<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="preprocessor"># pragma clang diagnostic ignored &quot;-Wdeprecated-declarations&quot;</span></div>
-<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; (__GNUC__ * 100 + __GNUC_MINOR__) &gt;= 460</span></div>
-<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="preprocessor"># pragma GCC diagnostic push</span></div>
-<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="preprocessor"># pragma GCC diagnostic ignored &quot;-Wdeprecated-declarations&quot;</span></div>
-<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00434"></a><span class="lineno"><a class="line" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">  434</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a>(<span class="keyword">const</span> SpecialEvent&amp;) { <span class="keywordflow">return</span> <span class="keyword">false</span>; }</div>
-<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="preprocessor">#if defined(__clang__)</span></div>
-<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="preprocessor"># pragma clang diagnostic pop</span></div>
-<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; (__GNUC__ * 100 + __GNUC_MINOR__) &gt;= 460</span></div>
-<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;<span class="preprocessor"># pragma GCC diagnostic pop</span></div>
-<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00440"></a><span class="lineno">  440</span>&#160; </div>
-<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="keyword">private</span>:</div>
-<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;    <span class="keyword">struct </span>PrivateData;</div>
-<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;    PrivateData* <span class="keyword">const</span> pData;</div>
-<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classSubWidget.html">SubWidget</a>;</div>
-<div class="line"><a name="l00445"></a><span class="lineno">  445</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>;</div>
-<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160; </div>
-<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classWidget.html">Widget</a>)</div>
-<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;};</div>
-<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160; </div>
-<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160; </div>
-<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160; </div>
-<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DGL_WIDGET_HPP_INCLUDED</span></div>
+<div class="line"><a name="l00419"></a><span class="lineno">  419</span>&#160;<span class="comment">      A function called when an UTF-8 character is received.</span></div>
+<div class="line"><a name="l00420"></a><span class="lineno">  420</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00421"></a><span class="lineno">  421</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00422"></a><span class="lineno"><a class="line" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">  422</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#ad7fb24de24d8809305b04ff3750f0dea">onCharacterInput</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1CharacterInputEvent.html">CharacterInputEvent</a>&amp;);</div>
+<div class="line"><a name="l00423"></a><span class="lineno">  423</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00424"></a><span class="lineno">  424</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00425"></a><span class="lineno">  425</span>&#160;<span class="comment">      A function called when a mouse button is pressed or released.</span></div>
+<div class="line"><a name="l00426"></a><span class="lineno">  426</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00427"></a><span class="lineno">  427</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00428"></a><span class="lineno"><a class="line" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">  428</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">onMouse</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1MouseEvent.html">MouseEvent</a>&amp;);</div>
+<div class="line"><a name="l00429"></a><span class="lineno">  429</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00430"></a><span class="lineno">  430</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00431"></a><span class="lineno">  431</span>&#160;<span class="comment">      A function called when the pointer moves.</span></div>
+<div class="line"><a name="l00432"></a><span class="lineno">  432</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00433"></a><span class="lineno">  433</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00434"></a><span class="lineno"><a class="line" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">  434</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">onMotion</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1MotionEvent.html">MotionEvent</a>&amp;);</div>
+<div class="line"><a name="l00435"></a><span class="lineno">  435</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00436"></a><span class="lineno">  436</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00437"></a><span class="lineno">  437</span>&#160;<span class="comment">      A function called on scrolling (e.g. mouse wheel or track pad).</span></div>
+<div class="line"><a name="l00438"></a><span class="lineno">  438</span>&#160;<span class="comment">      @return True to stop event propagation, false otherwise.</span></div>
+<div class="line"><a name="l00439"></a><span class="lineno">  439</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00440"></a><span class="lineno"><a class="line" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">  440</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">onScroll</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1ScrollEvent.html">ScrollEvent</a>&amp;);</div>
+<div class="line"><a name="l00441"></a><span class="lineno">  441</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00442"></a><span class="lineno">  442</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00443"></a><span class="lineno">  443</span>&#160;<span class="comment">      A function called when the widget is resized.</span></div>
+<div class="line"><a name="l00444"></a><span class="lineno">  444</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00445"></a><span class="lineno"><a class="line" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">  445</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> <a class="code" href="classWidget.html#acc0365ec4b9245bdffb8d0285be55dea">onResize</a>(<span class="keyword">const</span> <a class="code" href="structWidget_1_1ResizeEvent.html">ResizeEvent</a>&amp;);</div>
+<div class="line"><a name="l00446"></a><span class="lineno">  446</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00447"></a><span class="lineno">  447</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00448"></a><span class="lineno">  448</span>&#160;<span class="comment">      A function called when a special key is pressed or released.</span></div>
+<div class="line"><a name="l00449"></a><span class="lineno">  449</span>&#160;<span class="comment">      DEPRECATED use onKeyboard or onCharacterInput</span></div>
+<div class="line"><a name="l00450"></a><span class="lineno">  450</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00451"></a><span class="lineno">  451</span>&#160;<span class="preprocessor">#if defined(__clang__)</span></div>
+<div class="line"><a name="l00452"></a><span class="lineno">  452</span>&#160;<span class="preprocessor"># pragma clang diagnostic push</span></div>
+<div class="line"><a name="l00453"></a><span class="lineno">  453</span>&#160;<span class="preprocessor"># pragma clang diagnostic ignored &quot;-Wdeprecated-declarations&quot;</span></div>
+<div class="line"><a name="l00454"></a><span class="lineno">  454</span>&#160;<span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; (__GNUC__ * 100 + __GNUC_MINOR__) &gt;= 460</span></div>
+<div class="line"><a name="l00455"></a><span class="lineno">  455</span>&#160;<span class="preprocessor"># pragma GCC diagnostic push</span></div>
+<div class="line"><a name="l00456"></a><span class="lineno">  456</span>&#160;<span class="preprocessor"># pragma GCC diagnostic ignored &quot;-Wdeprecated-declarations&quot;</span></div>
+<div class="line"><a name="l00457"></a><span class="lineno">  457</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00458"></a><span class="lineno"><a class="line" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">  458</a></span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">bool</span> <a class="code" href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">onSpecial</a>(<span class="keyword">const</span> SpecialEvent&amp;) { <span class="keywordflow">return</span> <span class="keyword">false</span>; }</div>
+<div class="line"><a name="l00459"></a><span class="lineno">  459</span>&#160;<span class="preprocessor">#if defined(__clang__)</span></div>
+<div class="line"><a name="l00460"></a><span class="lineno">  460</span>&#160;<span class="preprocessor"># pragma clang diagnostic pop</span></div>
+<div class="line"><a name="l00461"></a><span class="lineno">  461</span>&#160;<span class="preprocessor">#elif defined(__GNUC__) &amp;&amp; (__GNUC__ * 100 + __GNUC_MINOR__) &gt;= 460</span></div>
+<div class="line"><a name="l00462"></a><span class="lineno">  462</span>&#160;<span class="preprocessor"># pragma GCC diagnostic pop</span></div>
+<div class="line"><a name="l00463"></a><span class="lineno">  463</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00464"></a><span class="lineno">  464</span>&#160; </div>
+<div class="line"><a name="l00465"></a><span class="lineno">  465</span>&#160;<span class="keyword">private</span>:</div>
+<div class="line"><a name="l00466"></a><span class="lineno">  466</span>&#160;    <span class="keyword">struct </span>PrivateData;</div>
+<div class="line"><a name="l00467"></a><span class="lineno">  467</span>&#160;    PrivateData* <span class="keyword">const</span> pData;</div>
+<div class="line"><a name="l00468"></a><span class="lineno">  468</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classSubWidget.html">SubWidget</a>;</div>
+<div class="line"><a name="l00469"></a><span class="lineno">  469</span>&#160;    <span class="keyword">friend</span> <span class="keyword">class </span><a class="code" href="classTopLevelWidget.html">TopLevelWidget</a>;</div>
+<div class="line"><a name="l00470"></a><span class="lineno">  470</span>&#160; </div>
+<div class="line"><a name="l00471"></a><span class="lineno">  471</span>&#160;    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(<a class="code" href="classWidget.html">Widget</a>)</div>
+<div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;};</div>
+<div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160; </div>
+<div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160; </div>
+<div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160; </div>
+<div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DGL_WIDGET_HPP_INCLUDED</span></div>
 <div class="ttc" id="aclassApplication_html"><div class="ttname"><a href="classApplication.html">Application</a></div><div class="ttdef"><b>Definition:</b> Application.hpp:43</div></div>
 <div class="ttc" id="aclassPoint_html"><div class="ttname"><a href="classPoint.html">Point&lt; double &gt;</a></div></div>
 <div class="ttc" id="aclassSize_html"><div class="ttname"><a href="classSize.html">Size&lt; uint &gt;</a></div></div>
 <div class="ttc" id="aclassSubWidget_html"><div class="ttname"><a href="classSubWidget.html">SubWidget</a></div><div class="ttdef"><b>Definition:</b> SubWidget.hpp:40</div></div>
 <div class="ttc" id="aclassTopLevelWidget_html"><div class="ttname"><a href="classTopLevelWidget.html">TopLevelWidget</a></div><div class="ttdef"><b>Definition:</b> TopLevelWidget.hpp:47</div></div>
-<div class="ttc" id="aclassWidget_html"><div class="ttname"><a href="classWidget.html">Widget</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:54</div></div>
+<div class="ttc" id="aclassWidget_html"><div class="ttname"><a href="classWidget.html">Widget</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:56</div></div>
 <div class="ttc" id="aclassWidget_html_a097ec1d56a06bdc9e0a4e54880def378"><div class="ttname"><a href="classWidget.html#a097ec1d56a06bdc9e0a4e54880def378">Widget::onMouse</a></div><div class="ttdeci">virtual bool onMouse(const MouseEvent &amp;)</div></div>
 <div class="ttc" id="aclassWidget_html_a0d78d28bd4a98c3a016a38091b2d4185"><div class="ttname"><a href="classWidget.html#a0d78d28bd4a98c3a016a38091b2d4185">Widget::onScroll</a></div><div class="ttdeci">virtual bool onScroll(const ScrollEvent &amp;)</div></div>
 <div class="ttc" id="aclassWidget_html_a0ef05695aec704b0eb1eb91c2e8af07d"><div class="ttname"><a href="classWidget.html#a0ef05695aec704b0eb1eb91c2e8af07d">Widget::getWindow</a></div><div class="ttdeci">Window &amp; getWindow() const noexcept</div></div>
@@ -536,12 +560,15 @@ $(function() {
 <div class="ttc" id="aclassWidget_html_a234a8ee8a685dc211ad11f492f0dbc71"><div class="ttname"><a href="classWidget.html#a234a8ee8a685dc211ad11f492f0dbc71">Widget::isVisible</a></div><div class="ttdeci">bool isVisible() const noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a25ff178539e226b5f30ef0335d060f2b"><div class="ttname"><a href="classWidget.html#a25ff178539e226b5f30ef0335d060f2b">Widget::show</a></div><div class="ttdeci">void show()</div></div>
 <div class="ttc" id="aclassWidget_html_a373419bc6353abf50a502cdbebd736e7"><div class="ttname"><a href="classWidget.html#a373419bc6353abf50a502cdbebd736e7">Widget::getApp</a></div><div class="ttdeci">Application &amp; getApp() const noexcept</div></div>
-<div class="ttc" id="aclassWidget_html_a3b42652fcb2f95c6f86bdd43a1727507"><div class="ttname"><a href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">Widget::onSpecial</a></div><div class="ttdeci">virtual bool onSpecial(const SpecialEvent &amp;)</div><div class="ttdef"><b>Definition:</b> Widget.hpp:434</div></div>
+<div class="ttc" id="aclassWidget_html_a3b42652fcb2f95c6f86bdd43a1727507"><div class="ttname"><a href="classWidget.html#a3b42652fcb2f95c6f86bdd43a1727507">Widget::onSpecial</a></div><div class="ttdeci">virtual bool onSpecial(const SpecialEvent &amp;)</div><div class="ttdef"><b>Definition:</b> Widget.hpp:458</div></div>
 <div class="ttc" id="aclassWidget_html_a3ee6b2824e3f3719c1c9b3d070385f49"><div class="ttname"><a href="classWidget.html#a3ee6b2824e3f3719c1c9b3d070385f49">Widget::getId</a></div><div class="ttdeci">uint getId() const noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a4a2f8eebacdd20db505b838f1a118c6b"><div class="ttname"><a href="classWidget.html#a4a2f8eebacdd20db505b838f1a118c6b">Widget::hide</a></div><div class="ttdeci">void hide()</div></div>
+<div class="ttc" id="aclassWidget_html_a5381d5583ba6e55fe9fed87df95d9605"><div class="ttname"><a href="classWidget.html#a5381d5583ba6e55fe9fed87df95d9605">Widget::getChildren</a></div><div class="ttdeci">std::list&lt; SubWidget * &gt; getChildren() const noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a607b153f7d3187ca60bf21004efc1314"><div class="ttname"><a href="classWidget.html#a607b153f7d3187ca60bf21004efc1314">Widget::getTopLevelWidget</a></div><div class="ttdeci">TopLevelWidget * getTopLevelWidget() const noexcept</div></div>
+<div class="ttc" id="aclassWidget_html_a6303d0445f21a2a95148780b0a0afed6"><div class="ttname"><a href="classWidget.html#a6303d0445f21a2a95148780b0a0afed6">Widget::setName</a></div><div class="ttdeci">void setName(const char *name) noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a655569fb78a598652e9f24cefa1fe4a5"><div class="ttname"><a href="classWidget.html#a655569fb78a598652e9f24cefa1fe4a5">Widget::onMotion</a></div><div class="ttdeci">virtual bool onMotion(const MotionEvent &amp;)</div></div>
 <div class="ttc" id="aclassWidget_html_a66088a03691f9c643ff335fa826576ba"><div class="ttname"><a href="classWidget.html#a66088a03691f9c643ff335fa826576ba">Widget::setVisible</a></div><div class="ttdeci">void setVisible(bool visible)</div></div>
+<div class="ttc" id="aclassWidget_html_a70b07dbf748490e5a8c18fb9d5766c0e"><div class="ttname"><a href="classWidget.html#a70b07dbf748490e5a8c18fb9d5766c0e">Widget::getName</a></div><div class="ttdeci">const char * getName() const noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a714cf798aadb4d615f6f60a355382c02"><div class="ttname"><a href="classWidget.html#a714cf798aadb4d615f6f60a355382c02">Widget::~Widget</a></div><div class="ttdeci">virtual ~Widget()</div></div>
 <div class="ttc" id="aclassWidget_html_a9044d42c20ead27dba983b710c94f8d6"><div class="ttname"><a href="classWidget.html#a9044d42c20ead27dba983b710c94f8d6">Widget::getSize</a></div><div class="ttdeci">const Size&lt; uint &gt; getSize() const noexcept</div></div>
 <div class="ttc" id="aclassWidget_html_a9fa874aede538b41348f1029524aea11"><div class="ttname"><a href="classWidget.html#a9fa874aede538b41348f1029524aea11">Widget::onKeyboard</a></div><div class="ttdeci">virtual bool onKeyboard(const KeyboardEvent &amp;)</div></div>
@@ -557,50 +584,50 @@ $(function() {
 <div class="ttc" id="aclassWidget_html_aed80a9cbc4a13c01641f35dd3d8688ea"><div class="ttname"><a href="classWidget.html#aed80a9cbc4a13c01641f35dd3d8688ea">Widget::setWidth</a></div><div class="ttdeci">void setWidth(uint width) noexcept</div></div>
 <div class="ttc" id="aclassWindow_html"><div class="ttname"><a href="classWindow.html">Window</a></div><div class="ttdef"><b>Definition:</b> Window.hpp:63</div></div>
 <div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:212</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html"><div class="ttname"><a href="structWidget_1_1BaseEvent.html">Widget::BaseEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:60</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html_a18c1114caca474cadefd9a13e2d9c693"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">Widget::BaseEvent::BaseEvent</a></div><div class="ttdeci">BaseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:69</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html_a227a57d145561c7d07596a702f20d448"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">Widget::BaseEvent::mod</a></div><div class="ttdeci">uint mod</div><div class="ttdef"><b>Definition:</b> Widget.hpp:62</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html_a52bcdb90972ffb30a223d358e64f723f"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">Widget::BaseEvent::time</a></div><div class="ttdeci">uint time</div><div class="ttdef"><b>Definition:</b> Widget.hpp:66</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html_a58da172316b49f6d79b879b74ce5792a"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">Widget::BaseEvent::~BaseEvent</a></div><div class="ttdeci">virtual ~BaseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:71</div></div>
-<div class="ttc" id="astructWidget_1_1BaseEvent_html_ae134a6bdbd16a59218b5b4f0ee3a154c"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">Widget::BaseEvent::flags</a></div><div class="ttdeci">uint flags</div><div class="ttdef"><b>Definition:</b> Widget.hpp:64</div></div>
-<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html">Widget::CharacterInputEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:135</div></div>
-<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_a5bfefd8ce88c676f1dd4b990faf49cb0"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">Widget::CharacterInputEvent::string</a></div><div class="ttdeci">char string[8]</div><div class="ttdef"><b>Definition:</b> Widget.hpp:141</div></div>
-<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_a8426db4231baad1c1621e287817fde85"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">Widget::CharacterInputEvent::character</a></div><div class="ttdeci">uint character</div><div class="ttdef"><b>Definition:</b> Widget.hpp:139</div></div>
-<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_ab0e3407cf8693ba9f3be0be805c8af24"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">Widget::CharacterInputEvent::CharacterInputEvent</a></div><div class="ttdeci">CharacterInputEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:144</div></div>
-<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_ab1ee376543219ff4e4f2139b23701700"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">Widget::CharacterInputEvent::keycode</a></div><div class="ttdeci">uint keycode</div><div class="ttdef"><b>Definition:</b> Widget.hpp:137</div></div>
-<div class="ttc" id="astructWidget_1_1KeyboardEvent_html"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html">Widget::KeyboardEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:90</div></div>
-<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a0db51894bdbda766c9596b226d04d8c3"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">Widget::KeyboardEvent::keycode</a></div><div class="ttdeci">uint keycode</div><div class="ttdef"><b>Definition:</b> Widget.hpp:96</div></div>
-<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a46cdbf1f69912c93deb649f756ec24f4"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">Widget::KeyboardEvent::key</a></div><div class="ttdeci">uint key</div><div class="ttdef"><b>Definition:</b> Widget.hpp:94</div></div>
-<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a5a55a296264b9999a7915f2633eacb10"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">Widget::KeyboardEvent::KeyboardEvent</a></div><div class="ttdeci">KeyboardEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:99</div></div>
-<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a8169fe04d78fb7bb4052ec7bc820da43"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">Widget::KeyboardEvent::press</a></div><div class="ttdeci">bool press</div><div class="ttdef"><b>Definition:</b> Widget.hpp:92</div></div>
-<div class="ttc" id="astructWidget_1_1MotionEvent_html"><div class="ttname"><a href="structWidget_1_1MotionEvent.html">Widget::MotionEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:182</div></div>
-<div class="ttc" id="astructWidget_1_1MotionEvent_html_a0d2bf8f5c66002bb129968f10e0cc082"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">Widget::MotionEvent::MotionEvent</a></div><div class="ttdeci">MotionEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:189</div></div>
-<div class="ttc" id="astructWidget_1_1MotionEvent_html_a8024c6f2f0027bb046b152d003b2527a"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">Widget::MotionEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:184</div></div>
-<div class="ttc" id="astructWidget_1_1MotionEvent_html_add941e64b93be96b512b6023f1670d91"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">Widget::MotionEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:186</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html"><div class="ttname"><a href="structWidget_1_1MouseEvent.html">Widget::MouseEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:159</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html_a11c6d85adf87424c392d866579149770"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">Widget::MouseEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:165</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html_aa37fee8a593c62c53e4ca5c67ad9278f"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">Widget::MouseEvent::MouseEvent</a></div><div class="ttdeci">MouseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:170</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html_ab6471d00c229719e1dd821f78ed4bdef"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">Widget::MouseEvent::button</a></div><div class="ttdeci">uint button</div><div class="ttdef"><b>Definition:</b> Widget.hpp:161</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html_ab65f0309f44fab0bf329b4ade9b53fcb"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">Widget::MouseEvent::press</a></div><div class="ttdeci">bool press</div><div class="ttdef"><b>Definition:</b> Widget.hpp:163</div></div>
-<div class="ttc" id="astructWidget_1_1MouseEvent_html_ae80ebc0ab59ed2e06a63743d8c963651"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">Widget::MouseEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:167</div></div>
-<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html">Widget::PositionChangedEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:245</div></div>
-<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_aa6360f57c0314621b04d049708bea45c"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">Widget::PositionChangedEvent::PositionChangedEvent</a></div><div class="ttdeci">PositionChangedEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:252</div></div>
-<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_ab722a13acfc378f562a484c375a62d5d"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">Widget::PositionChangedEvent::oldPos</a></div><div class="ttdeci">Point&lt; int &gt; oldPos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:249</div></div>
-<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_ab7364cb80073ed1fc981d5685a8e9942"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">Widget::PositionChangedEvent::pos</a></div><div class="ttdeci">Point&lt; int &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:247</div></div>
-<div class="ttc" id="astructWidget_1_1ResizeEvent_html"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html">Widget::ResizeEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:229</div></div>
-<div class="ttc" id="astructWidget_1_1ResizeEvent_html_a79045426f6b38169fec44abbb19d92d9"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">Widget::ResizeEvent::size</a></div><div class="ttdeci">Size&lt; uint &gt; size</div><div class="ttdef"><b>Definition:</b> Widget.hpp:231</div></div>
-<div class="ttc" id="astructWidget_1_1ResizeEvent_html_a91546ab4b305f914b8ce144bd0f88960"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">Widget::ResizeEvent::oldSize</a></div><div class="ttdeci">Size&lt; uint &gt; oldSize</div><div class="ttdef"><b>Definition:</b> Widget.hpp:233</div></div>
-<div class="ttc" id="astructWidget_1_1ResizeEvent_html_ac92abcdb2820807cd3d020864b96b3bd"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">Widget::ResizeEvent::ResizeEvent</a></div><div class="ttdeci">ResizeEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:236</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html">Widget::ScrollEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:206</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html_a5081893281d91c5f615cc066fb5fc3dc"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">Widget::ScrollEvent::delta</a></div><div class="ttdeci">Point&lt; double &gt; delta</div><div class="ttdef"><b>Definition:</b> Widget.hpp:212</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aa30ba4c1bc3c8973c5a99f315c089497"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">Widget::ScrollEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:210</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aaf8500e819334defd632522858050e02"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">Widget::ScrollEvent::direction</a></div><div class="ttdeci">ScrollDirection direction</div><div class="ttdef"><b>Definition:</b> Widget.hpp:214</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html_abee88b10b7b031ddcca1454e064a3cc3"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">Widget::ScrollEvent::ScrollEvent</a></div><div class="ttdeci">ScrollEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:217</div></div>
-<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aea1e954d9e6aaee6b3f6131a1ca7aecf"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">Widget::ScrollEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:208</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html"><div class="ttname"><a href="structWidget_1_1BaseEvent.html">Widget::BaseEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:62</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html_a18c1114caca474cadefd9a13e2d9c693"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a18c1114caca474cadefd9a13e2d9c693">Widget::BaseEvent::BaseEvent</a></div><div class="ttdeci">BaseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:71</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html_a227a57d145561c7d07596a702f20d448"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a227a57d145561c7d07596a702f20d448">Widget::BaseEvent::mod</a></div><div class="ttdeci">uint mod</div><div class="ttdef"><b>Definition:</b> Widget.hpp:64</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html_a52bcdb90972ffb30a223d358e64f723f"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a52bcdb90972ffb30a223d358e64f723f">Widget::BaseEvent::time</a></div><div class="ttdeci">uint time</div><div class="ttdef"><b>Definition:</b> Widget.hpp:68</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html_a58da172316b49f6d79b879b74ce5792a"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#a58da172316b49f6d79b879b74ce5792a">Widget::BaseEvent::~BaseEvent</a></div><div class="ttdeci">virtual ~BaseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:73</div></div>
+<div class="ttc" id="astructWidget_1_1BaseEvent_html_ae134a6bdbd16a59218b5b4f0ee3a154c"><div class="ttname"><a href="structWidget_1_1BaseEvent.html#ae134a6bdbd16a59218b5b4f0ee3a154c">Widget::BaseEvent::flags</a></div><div class="ttdeci">uint flags</div><div class="ttdef"><b>Definition:</b> Widget.hpp:66</div></div>
+<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html">Widget::CharacterInputEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:137</div></div>
+<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_a5bfefd8ce88c676f1dd4b990faf49cb0"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#a5bfefd8ce88c676f1dd4b990faf49cb0">Widget::CharacterInputEvent::string</a></div><div class="ttdeci">char string[8]</div><div class="ttdef"><b>Definition:</b> Widget.hpp:143</div></div>
+<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_a8426db4231baad1c1621e287817fde85"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#a8426db4231baad1c1621e287817fde85">Widget::CharacterInputEvent::character</a></div><div class="ttdeci">uint character</div><div class="ttdef"><b>Definition:</b> Widget.hpp:141</div></div>
+<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_ab0e3407cf8693ba9f3be0be805c8af24"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#ab0e3407cf8693ba9f3be0be805c8af24">Widget::CharacterInputEvent::CharacterInputEvent</a></div><div class="ttdeci">CharacterInputEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:146</div></div>
+<div class="ttc" id="astructWidget_1_1CharacterInputEvent_html_ab1ee376543219ff4e4f2139b23701700"><div class="ttname"><a href="structWidget_1_1CharacterInputEvent.html#ab1ee376543219ff4e4f2139b23701700">Widget::CharacterInputEvent::keycode</a></div><div class="ttdeci">uint keycode</div><div class="ttdef"><b>Definition:</b> Widget.hpp:139</div></div>
+<div class="ttc" id="astructWidget_1_1KeyboardEvent_html"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html">Widget::KeyboardEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:92</div></div>
+<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a0db51894bdbda766c9596b226d04d8c3"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a0db51894bdbda766c9596b226d04d8c3">Widget::KeyboardEvent::keycode</a></div><div class="ttdeci">uint keycode</div><div class="ttdef"><b>Definition:</b> Widget.hpp:98</div></div>
+<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a46cdbf1f69912c93deb649f756ec24f4"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a46cdbf1f69912c93deb649f756ec24f4">Widget::KeyboardEvent::key</a></div><div class="ttdeci">uint key</div><div class="ttdef"><b>Definition:</b> Widget.hpp:96</div></div>
+<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a5a55a296264b9999a7915f2633eacb10"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a5a55a296264b9999a7915f2633eacb10">Widget::KeyboardEvent::KeyboardEvent</a></div><div class="ttdeci">KeyboardEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:101</div></div>
+<div class="ttc" id="astructWidget_1_1KeyboardEvent_html_a8169fe04d78fb7bb4052ec7bc820da43"><div class="ttname"><a href="structWidget_1_1KeyboardEvent.html#a8169fe04d78fb7bb4052ec7bc820da43">Widget::KeyboardEvent::press</a></div><div class="ttdeci">bool press</div><div class="ttdef"><b>Definition:</b> Widget.hpp:94</div></div>
+<div class="ttc" id="astructWidget_1_1MotionEvent_html"><div class="ttname"><a href="structWidget_1_1MotionEvent.html">Widget::MotionEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:184</div></div>
+<div class="ttc" id="astructWidget_1_1MotionEvent_html_a0d2bf8f5c66002bb129968f10e0cc082"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#a0d2bf8f5c66002bb129968f10e0cc082">Widget::MotionEvent::MotionEvent</a></div><div class="ttdeci">MotionEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:191</div></div>
+<div class="ttc" id="astructWidget_1_1MotionEvent_html_a8024c6f2f0027bb046b152d003b2527a"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#a8024c6f2f0027bb046b152d003b2527a">Widget::MotionEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:186</div></div>
+<div class="ttc" id="astructWidget_1_1MotionEvent_html_add941e64b93be96b512b6023f1670d91"><div class="ttname"><a href="structWidget_1_1MotionEvent.html#add941e64b93be96b512b6023f1670d91">Widget::MotionEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:188</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html"><div class="ttname"><a href="structWidget_1_1MouseEvent.html">Widget::MouseEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:161</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html_a11c6d85adf87424c392d866579149770"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#a11c6d85adf87424c392d866579149770">Widget::MouseEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:167</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html_aa37fee8a593c62c53e4ca5c67ad9278f"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#aa37fee8a593c62c53e4ca5c67ad9278f">Widget::MouseEvent::MouseEvent</a></div><div class="ttdeci">MouseEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:172</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html_ab6471d00c229719e1dd821f78ed4bdef"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ab6471d00c229719e1dd821f78ed4bdef">Widget::MouseEvent::button</a></div><div class="ttdeci">uint button</div><div class="ttdef"><b>Definition:</b> Widget.hpp:163</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html_ab65f0309f44fab0bf329b4ade9b53fcb"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ab65f0309f44fab0bf329b4ade9b53fcb">Widget::MouseEvent::press</a></div><div class="ttdeci">bool press</div><div class="ttdef"><b>Definition:</b> Widget.hpp:165</div></div>
+<div class="ttc" id="astructWidget_1_1MouseEvent_html_ae80ebc0ab59ed2e06a63743d8c963651"><div class="ttname"><a href="structWidget_1_1MouseEvent.html#ae80ebc0ab59ed2e06a63743d8c963651">Widget::MouseEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:169</div></div>
+<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html">Widget::PositionChangedEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:247</div></div>
+<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_aa6360f57c0314621b04d049708bea45c"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#aa6360f57c0314621b04d049708bea45c">Widget::PositionChangedEvent::PositionChangedEvent</a></div><div class="ttdeci">PositionChangedEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:254</div></div>
+<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_ab722a13acfc378f562a484c375a62d5d"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#ab722a13acfc378f562a484c375a62d5d">Widget::PositionChangedEvent::oldPos</a></div><div class="ttdeci">Point&lt; int &gt; oldPos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:251</div></div>
+<div class="ttc" id="astructWidget_1_1PositionChangedEvent_html_ab7364cb80073ed1fc981d5685a8e9942"><div class="ttname"><a href="structWidget_1_1PositionChangedEvent.html#ab7364cb80073ed1fc981d5685a8e9942">Widget::PositionChangedEvent::pos</a></div><div class="ttdeci">Point&lt; int &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:249</div></div>
+<div class="ttc" id="astructWidget_1_1ResizeEvent_html"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html">Widget::ResizeEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:231</div></div>
+<div class="ttc" id="astructWidget_1_1ResizeEvent_html_a79045426f6b38169fec44abbb19d92d9"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#a79045426f6b38169fec44abbb19d92d9">Widget::ResizeEvent::size</a></div><div class="ttdeci">Size&lt; uint &gt; size</div><div class="ttdef"><b>Definition:</b> Widget.hpp:233</div></div>
+<div class="ttc" id="astructWidget_1_1ResizeEvent_html_a91546ab4b305f914b8ce144bd0f88960"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#a91546ab4b305f914b8ce144bd0f88960">Widget::ResizeEvent::oldSize</a></div><div class="ttdeci">Size&lt; uint &gt; oldSize</div><div class="ttdef"><b>Definition:</b> Widget.hpp:235</div></div>
+<div class="ttc" id="astructWidget_1_1ResizeEvent_html_ac92abcdb2820807cd3d020864b96b3bd"><div class="ttname"><a href="structWidget_1_1ResizeEvent.html#ac92abcdb2820807cd3d020864b96b3bd">Widget::ResizeEvent::ResizeEvent</a></div><div class="ttdeci">ResizeEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:238</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html">Widget::ScrollEvent</a></div><div class="ttdef"><b>Definition:</b> Widget.hpp:208</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html_a5081893281d91c5f615cc066fb5fc3dc"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#a5081893281d91c5f615cc066fb5fc3dc">Widget::ScrollEvent::delta</a></div><div class="ttdeci">Point&lt; double &gt; delta</div><div class="ttdef"><b>Definition:</b> Widget.hpp:214</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aa30ba4c1bc3c8973c5a99f315c089497"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aa30ba4c1bc3c8973c5a99f315c089497">Widget::ScrollEvent::absolutePos</a></div><div class="ttdeci">Point&lt; double &gt; absolutePos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:212</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aaf8500e819334defd632522858050e02"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aaf8500e819334defd632522858050e02">Widget::ScrollEvent::direction</a></div><div class="ttdeci">ScrollDirection direction</div><div class="ttdef"><b>Definition:</b> Widget.hpp:216</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html_abee88b10b7b031ddcca1454e064a3cc3"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#abee88b10b7b031ddcca1454e064a3cc3">Widget::ScrollEvent::ScrollEvent</a></div><div class="ttdeci">ScrollEvent() noexcept</div><div class="ttdef"><b>Definition:</b> Widget.hpp:219</div></div>
+<div class="ttc" id="astructWidget_1_1ScrollEvent_html_aea1e954d9e6aaee6b3f6131a1ca7aecf"><div class="ttname"><a href="structWidget_1_1ScrollEvent.html#aea1e954d9e6aaee6b3f6131a1ca7aecf">Widget::ScrollEvent::pos</a></div><div class="ttdeci">Point&lt; double &gt; pos</div><div class="ttdef"><b>Definition:</b> Widget.hpp:210</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

@@ -112,6 +112,10 @@ Macros</h2></td></tr>
 <tr class="separator:gaf978778ddb34e3663a5c0bd128067e10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gaf6377f757b9796bd37f7be4e605ccd4a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gaf6377f757b9796bd37f7be4e605ccd4a">DISTRHO_UI_CUSTOM_WIDGET_TYPE</a></td></tr>
 <tr class="separator:gaf6377f757b9796bd37f7be4e605ccd4a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga93240ccad789419d3c26768d00f2e97f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga93240ccad789419d3c26768d00f2e97f">DISTRHO_UI_DEFAULT_WIDTH</a>&#160;&#160;&#160;300</td></tr>
+<tr class="separator:ga93240ccad789419d3c26768d00f2e97f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga69f68b766833a29671400808221f8f3c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga69f68b766833a29671400808221f8f3c">DISTRHO_UI_DEFAULT_HEIGHT</a>&#160;&#160;&#160;300</td></tr>
+<tr class="separator:ga69f68b766833a29671400808221f8f3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gad49e79936a2aa5afa089cbc051426ccd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gad49e79936a2aa5afa089cbc051426ccd">DISTRHO_UI_USE_NANOVG</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:gad49e79936a2aa5afa089cbc051426ccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabadb9d9ba7f479df39b3963ee60b7a4b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gabadb9d9ba7f479df39b3963ee60b7a4b">DISTRHO_UI_USER_RESIZABLE</a>&#160;&#160;&#160;1</td></tr>
@@ -120,8 +124,12 @@ Macros</h2></td></tr>
 <tr class="separator:ga420a88022da249b9f38a6046998dbd7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga97bd6556fb9fcfc181778edb4fceeeef">DISTRHO_PLUGIN_LV2_CATEGORY</a>&#160;&#160;&#160;&quot;lv2:Plugin&quot;</td></tr>
 <tr class="separator:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">DISTRHO_PLUGIN_VST3_CATEGORIES</a>&#160;&#160;&#160;&quot;Fx&quot;</td></tr>
+<tr class="memitem:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">DISTRHO_PLUGIN_VST3_CATEGORIES</a>&#160;&#160;&#160;&quot;Fx|Stereo&quot;</td></tr>
 <tr class="separator:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gadf0fb4c49c6a9019a63bc52fbc2592f2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gadf0fb4c49c6a9019a63bc52fbc2592f2">DISTRHO_PLUGIN_CLAP_FEATURES</a>&#160;&#160;&#160;&quot;audio-effect&quot;, &quot;stereo&quot;</td></tr>
+<tr class="separator:gadf0fb4c49c6a9019a63bc52fbc2592f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaae12b710ad877c03b2a369e4a5e05140"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gaae12b710ad877c03b2a369e4a5e05140">DISTRHO_PLUGIN_CLAP_ID</a>&#160;&#160;&#160;&quot;studio.kx.distrho.effect&quot;</td></tr>
+<tr class="separator:gaae12b710ad877c03b2a369e4a5e05140"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <p>C Macros that describe your plugin. (defined in the "DistrhoPluginInfo.h" file)</p>
@@ -135,8 +143,9 @@ All macros are disabled by default.</p>
 <li><a class="el" href="group__PluginMacros.html#ga888482a9f695c2ca2f433e5f3172dcc4">DISTRHO_PLUGIN_NAME</a></li>
 <li><a class="el" href="group__PluginMacros.html#ga5f4f3d9a5dc3c23882d158e636319998">DISTRHO_PLUGIN_NUM_INPUTS</a></li>
 <li><a class="el" href="group__PluginMacros.html#ga917195804ebcb2bb48c9fad52b20b3ca">DISTRHO_PLUGIN_NUM_OUTPUTS</a></li>
-<li><a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a> </li>
+<li><a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a></li>
 </ul>
+<p>Additionally, <a class="el" href="group__PluginMacros.html#gaae12b710ad877c03b2a369e4a5e05140">DISTRHO_PLUGIN_CLAP_ID</a> is required if building CLAP plugins. </p>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ga888482a9f695c2ca2f433e5f3172dcc4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ga888482a9f695c2ca2f433e5f3172dcc4">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_NAME</h2>
@@ -470,6 +479,42 @@ When enabled, the macros <a class="el" href="group__PluginMacros.html#gaf978778d
 
 </div>
 </div>
+<a id="ga93240ccad789419d3c26768d00f2e97f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga93240ccad789419d3c26768d00f2e97f">&#9670;&nbsp;</a></span>DISTRHO_UI_DEFAULT_WIDTH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_UI_DEFAULT_WIDTH&#160;&#160;&#160;300</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Default <a class="el" href="classUI.html">UI</a> width to use when creating initial and temporary windows.<br  />
+Setting this macro allows to skip a temporary <a class="el" href="classUI.html">UI</a> from being created in certain VST2 and VST3 hosts. (which would normally be done for knowing the <a class="el" href="classUI.html">UI</a> size before host creates a window for it)</p>
+<p>Value must match 1x scale factor.</p>
+<p>When this macro is defined, the companion DISTRHO_UI_DEFAULT_HEIGHT macro must be defined as well. </p>
+
+</div>
+</div>
+<a id="ga69f68b766833a29671400808221f8f3c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga69f68b766833a29671400808221f8f3c">&#9670;&nbsp;</a></span>DISTRHO_UI_DEFAULT_HEIGHT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_UI_DEFAULT_HEIGHT&#160;&#160;&#160;300</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Default <a class="el" href="classUI.html">UI</a> height to use when creating initial and temporary windows.<br  />
+Setting this macro allows to skip a temporary <a class="el" href="classUI.html">UI</a> from being created in certain VST2 and VST3 hosts. (which would normally be done for knowing the <a class="el" href="classUI.html">UI</a> size before host creates a window for it)</p>
+<p>Value must match 1x scale factor.</p>
+<p>When this macro is defined, the companion DISTRHO_UI_DEFAULT_WIDTH macro must be defined as well. </p>
+
+</div>
+</div>
 <a id="gad49e79936a2aa5afa089cbc051426ccd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#gad49e79936a2aa5afa089cbc051426ccd">&#9670;&nbsp;</a></span>DISTRHO_UI_USE_NANOVG</h2>
 
@@ -531,9 +576,8 @@ By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc1864
       </table>
 </div><div class="memdoc">
 <p>Custom LV2 category for the plugin.<br  />
-This can be one of the following values:</p>
+This is a single string, and can be one of the following values:</p>
 <ul>
-<li>lv2:<a class="el" href="classPlugin.html">Plugin</a></li>
 <li>lv2:AllpassPlugin</li>
 <li>lv2:AmplifierPlugin</li>
 <li>lv2:AnalyserPlugin</li>
@@ -584,12 +628,12 @@ This can be one of the following values:</p>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define DISTRHO_PLUGIN_VST3_CATEGORIES&#160;&#160;&#160;&quot;Fx&quot;</td>
+          <td class="memname">#define DISTRHO_PLUGIN_VST3_CATEGORIES&#160;&#160;&#160;&quot;Fx|Stereo&quot;</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p>Custom VST3 categories for the plugin.<br  />
-This is a list of categories, separated by a <code></code>|.</p>
+This is a single concatenated string of categories, separated by a <code></code>|.</p>
 <p>Each effect category can be one of the following values:</p>
 <ul>
 <li>Fx</li>
@@ -623,14 +667,94 @@ This is a list of categories, separated by a <code></code>|.</p>
 <li>Instrument|Synth</li>
 <li>Instrument|Synth|Sampler</li>
 </ul>
-<dl class="section note"><dt>Note</dt><dd>DPF will automatically set Mono and Stereo categories when appropriate. </dd></dl>
+<p>And extra categories possible for any plugin type:</p>
+<ul>
+<li>Mono</li>
+<li>Stereo </li>
+</ul>
+
+</div>
+</div>
+<a id="gadf0fb4c49c6a9019a63bc52fbc2592f2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gadf0fb4c49c6a9019a63bc52fbc2592f2">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_CLAP_FEATURES</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_CLAP_FEATURES&#160;&#160;&#160;&quot;audio-effect&quot;, &quot;stereo&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Custom CLAP features for the plugin.<br  />
+This is a list of features defined as a string array body, without the terminating <code></code>, or nullptr.</p>
+<p>A top-level category can be set as feature and be one of the following values:</p>
+<ul>
+<li>instrument</li>
+<li>audio-effect</li>
+<li>note-effect</li>
+<li>analyzer</li>
+</ul>
+<p>The following sub-categories can also be set:</p>
+<ul>
+<li>synthesizer</li>
+<li>sampler</li>
+<li>drum</li>
+<li>drum-machine</li>
+<li>filter</li>
+<li>phaser</li>
+<li>equalizer</li>
+<li>de-esser</li>
+<li>phase-vocoder</li>
+<li>granular</li>
+<li>frequency-shifter</li>
+<li>pitch-shifter</li>
+<li>distortion</li>
+<li>transient-shaper</li>
+<li>compressor</li>
+<li>limiter</li>
+<li>flanger</li>
+<li>chorus</li>
+<li>delay</li>
+<li>reverb</li>
+<li>tremolo</li>
+<li>glitch</li>
+<li>utility</li>
+<li>pitch-correction</li>
+<li>restoration</li>
+<li>multi-effects</li>
+<li>mixing</li>
+<li>mastering</li>
+</ul>
+<p>And finally the following audio capabilities can be set:</p>
+<ul>
+<li>mono</li>
+<li>stereo</li>
+<li>surround</li>
+<li>ambisonic </li>
+</ul>
+
+</div>
+</div>
+<a id="gaae12b710ad877c03b2a369e4a5e05140"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaae12b710ad877c03b2a369e4a5e05140">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_CLAP_ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_CLAP_ID&#160;&#160;&#160;&quot;studio.kx.distrho.effect&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The plugin id when exporting in CLAP format, in reverse URI form. </p><dl class="section note"><dt>Note</dt><dd>This macro is required when building CLAP plugins </dd></dl>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>

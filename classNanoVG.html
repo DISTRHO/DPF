@@ -147,6 +147,8 @@ typedef int&#160;</td><td class="memItemRight" valign="bottom"><b>FontId</b></td
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a79dfc0b6c38ec95cef030df2b7a663ef"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a79dfc0b6c38ec95cef030df2b7a663ef">NanoVG</a> (int flags=<a class="el" href="classNanoVG.html#a54ec9a68401121aab78976df6d3891a9a4fb2bb2ad2eccc922e6e5613ca1bf19e">CREATE_ANTIALIAS</a>)</td></tr>
 <tr class="separator:a79dfc0b6c38ec95cef030df2b7a663ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a318e768012e73c0291cf6d3b24f37819"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a318e768012e73c0291cf6d3b24f37819">NanoVG</a> (NVGcontext *context)</td></tr>
+<tr class="separator:a318e768012e73c0291cf6d3b24f37819"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e05169f4e66e811537adaea17e4bb3f"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a3e05169f4e66e811537adaea17e4bb3f">~NanoVG</a> ()</td></tr>
 <tr class="separator:a3e05169f4e66e811537adaea17e4bb3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b6f8caad8acb883fadc06a606ccade7"><td class="memItemLeft" align="right" valign="top">NVGcontext *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a8b6f8caad8acb883fadc06a606ccade7">getContext</a> () const noexcept</td></tr>
@@ -213,10 +215,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a2a6d7cc76cb4c7f35ef51a388f5818f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7555d49ba847a92fb2c56b2f9f68f366"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a7555d49ba847a92fb2c56b2f9f68f366">createImageFromFile</a> (const char *filename, int imageFlags)</td></tr>
 <tr class="separator:a7555d49ba847a92fb2c56b2f9f68f366"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a395cde178d473c548e3d92c48d430ca1"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a395cde178d473c548e3d92c48d430ca1">createImageFromMemory</a> (uchar *data, uint dataSize, ImageFlags imageFlags)</td></tr>
-<tr class="separator:a395cde178d473c548e3d92c48d430ca1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf7d2cac5deeb625a91c40448ed70b6a"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#acf7d2cac5deeb625a91c40448ed70b6a">createImageFromMemory</a> (uchar *data, uint dataSize, int imageFlags)</td></tr>
-<tr class="separator:acf7d2cac5deeb625a91c40448ed70b6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a82858e18090cbd5d787668d21f685b95"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a82858e18090cbd5d787668d21f685b95">createImageFromMemory</a> (const uchar *data, uint dataSize, ImageFlags imageFlags)</td></tr>
+<tr class="separator:a82858e18090cbd5d787668d21f685b95"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6cac272a24edf6a679944267a02131ad"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a6cac272a24edf6a679944267a02131ad">createImageFromMemory</a> (const uchar *data, uint dataSize, int imageFlags)</td></tr>
+<tr class="separator:a6cac272a24edf6a679944267a02131ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32fc9c8f1385dad33acf208167230ddb"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#a32fc9c8f1385dad33acf208167230ddb">createImageFromRawMemory</a> (uint w, uint h, const uchar *data, ImageFlags imageFlags, ImageFormat format)</td></tr>
 <tr class="separator:a32fc9c8f1385dad33acf208167230ddb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb3e8947a09a73b9662731f14aa2ca1f"><td class="memItemLeft" align="right" valign="top">NanoImage::Handle&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classNanoVG.html#adb3e8947a09a73b9662731f14aa2ca1f">createImageFromRawMemory</a> (uint w, uint h, const uchar *data, int imageFlags, ImageFormat format)</td></tr>
@@ -408,7 +410,7 @@ Text</h1>
 </div>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a79dfc0b6c38ec95cef030df2b7a663ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a79dfc0b6c38ec95cef030df2b7a663ef">&#9670;&nbsp;</a></span>NanoVG()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a79dfc0b6c38ec95cef030df2b7a663ef">&#9670;&nbsp;</a></span>NanoVG() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -423,6 +425,33 @@ Text</h1>
       </table>
 </div><div class="memdoc">
 <p>Constructor. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classNanoVG.html#a54ec9a68401121aab78976df6d3891a9">CreateFlags</a> </dd></dl>
+
+</div>
+</div>
+<a id="a318e768012e73c0291cf6d3b24f37819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a318e768012e73c0291cf6d3b24f37819">&#9670;&nbsp;</a></span>NanoVG() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">NanoVG::NanoVG </td>
+          <td>(</td>
+          <td class="paramtype">NVGcontext *&#160;</td>
+          <td class="paramname"><em>context</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">explicit</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Constructor reusing a <a class="el" href="classNanoVG.html">NanoVG</a> context, used for subwidgets. Context will not be deleted on class destructor. </p>
 
 </div>
 </div>
@@ -448,7 +477,7 @@ Text</h1>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Constructor reusing a <a class="el" href="classNanoVG.html">NanoVG</a> context, used for subwidgets. Destructor. </p>
+<p>Destructor. </p>
 
 </div>
 </div>
@@ -1684,8 +1713,8 @@ Text</h1>
 
 </div>
 </div>
-<a id="a395cde178d473c548e3d92c48d430ca1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a395cde178d473c548e3d92c48d430ca1">&#9670;&nbsp;</a></span>createImageFromMemory() <span class="overload">[1/2]</span></h2>
+<a id="a82858e18090cbd5d787668d21f685b95"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a82858e18090cbd5d787668d21f685b95">&#9670;&nbsp;</a></span>createImageFromMemory() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1693,7 +1722,7 @@ Text</h1>
         <tr>
           <td class="memname">NanoImage::Handle NanoVG::createImageFromMemory </td>
           <td>(</td>
-          <td class="paramtype">uchar *&#160;</td>
+          <td class="paramtype">const uchar *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
@@ -1719,8 +1748,8 @@ Text</h1>
 
 </div>
 </div>
-<a id="acf7d2cac5deeb625a91c40448ed70b6a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf7d2cac5deeb625a91c40448ed70b6a">&#9670;&nbsp;</a></span>createImageFromMemory() <span class="overload">[2/2]</span></h2>
+<a id="a6cac272a24edf6a679944267a02131ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6cac272a24edf6a679944267a02131ad">&#9670;&nbsp;</a></span>createImageFromMemory() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1728,7 +1757,7 @@ Text</h1>
         <tr>
           <td class="memname">NanoImage::Handle NanoVG::createImageFromMemory </td>
           <td>(</td>
-          <td class="paramtype">uchar *&#160;</td>
+          <td class="paramtype">const uchar *&#160;</td>
           <td class="paramname"><em>data</em>, </td>
         </tr>
         <tr>
@@ -3457,7 +3486,7 @@ Text</h1>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed Jul 27 2022 00:46:18 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
+Generated on Mon Oct 3 2022 16:45:56 for DISTRHO Plugin Framework by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1
 </small></address>
 </body>
 </html>
