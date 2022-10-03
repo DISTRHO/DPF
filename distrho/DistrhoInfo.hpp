@@ -31,7 +31,7 @@ START_NAMESPACE_DISTRHO
    It allows developers to create plugins with custom UIs using a simple C++ API.@n
    The framework facilitates exporting various different plugin formats from the same code-base.
 
-   DPF can build for LADSPA, DSSI, LV2, VST2 and VST3 formats.@n
+   DPF can build for LADSPA, DSSI, LV2, VST2, VST3 and CLAP formats.@n
    A JACK/Standalone mode is also available, allowing you to quickly test plugins.
 
    @section Macros
