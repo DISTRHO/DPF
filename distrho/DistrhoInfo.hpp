@@ -341,11 +341,11 @@ START_NAMESPACE_DISTRHO
 
           switch (index)
           {
-          case 0;
+          case 0:
               parameter.name   = "Gain Right";
               parameter.symbol = "gainR";
               break;
-          case 1;
+          case 1:
               parameter.name   = "Gain Left";
               parameter.symbol = "gainL";
               break;
@@ -373,12 +373,12 @@ START_NAMESPACE_DISTRHO
       {
           switch (index)
           {
-          case 0;
+          case 0:
               return fGainL;
-          case 1;
+          case 1:
               return fGainR;
-         default:
-               return 0.f;
+          default:
+              return 0.f;
           }
       }
 
@@ -389,10 +389,10 @@ START_NAMESPACE_DISTRHO
       {
           switch (index)
           {
-          case 0;
+          case 0:
               fGainL = value;
               break;
-          case 1;
+          case 1:
               fGainR = value;
               break;
           }
