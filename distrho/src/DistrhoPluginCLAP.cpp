@@ -237,6 +237,7 @@ public:
        #endif
     }
 
+   #ifndef DISTRHO_OS_MAC
     bool setScaleFactor(const double scaleFactor)
     {
         if (d_isEqual(fScaleFactor, scaleFactor))
@@ -249,6 +250,7 @@ public:
 
         return true;
     }
+   #endif
 
     bool getSize(uint32_t* const width, uint32_t* const height) const
     {
@@ -1714,7 +1716,13 @@ static bool clap_gui_set_scale(const clap_plugin_t* const plugin, const double s
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
     DISTRHO_SAFE_ASSERT_RETURN(gui != nullptr, false);
+   #ifndef DISTRHO_OS_MAC
     return gui->setScaleFactor(scale);
+   #else
+    return true;
+    // unused
+    (void)scale;
+   #endif
 }
 
 static bool clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
