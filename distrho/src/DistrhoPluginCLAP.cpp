@@ -134,7 +134,8 @@ struct ClapEventQueue
         float* values;
 
         CachedParameters()
-            : changed(nullptr),
+            : numParams(0),
+              changed(nullptr),
               values(nullptr) {}
 
         ~CachedParameters()
