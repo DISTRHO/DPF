@@ -36,6 +36,10 @@
 
 #include "xaymar-vst2/vst.h"
 
+START_NAMESPACE_DISTRHO
+
+// --------------------------------------------------------------------------------------------------------------------
+
 extern "C" {
 
 // define the midi stuff ourselves
@@ -84,8 +88,6 @@ typedef struct _VstTimeInfo {
 } VstTimeInfo;
 
 }
-
-START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
