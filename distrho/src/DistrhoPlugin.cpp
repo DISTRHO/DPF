@@ -125,7 +125,7 @@ const TimePosition& Plugin::getTimePosition() const noexcept
 #endif
 
 #if DISTRHO_PLUGIN_WANT_LATENCY
-void Plugin::setLatency(uint32_t frames) noexcept
+void Plugin::setLatency(const uint32_t frames) noexcept
 {
     pData->latency = frames;
 }

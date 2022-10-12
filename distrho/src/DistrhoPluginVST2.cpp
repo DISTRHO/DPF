@@ -1212,6 +1212,10 @@ private:
             const ParameterRanges& ranges(fPlugin.getParameterRanges(i));
             hostCallback(VST_HOST_OPCODE_00, i, 0, nullptr, ranges.getNormalizedValue(curValue));
         }
+
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        fEffect->delay = fPlugin.getLatency();
+       #endif
     }
 
 #if DISTRHO_PLUGIN_HAS_UI
