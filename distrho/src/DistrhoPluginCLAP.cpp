@@ -40,10 +40,12 @@
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
 #include "clap/ext/audio-ports.h"
-#include "clap/ext/note-ports.h"
+#include "clap/ext/latency.h"
 #include "clap/ext/gui.h"
+#include "clap/ext/note-ports.h"
 #include "clap/ext/params.h"
 #include "clap/ext/state.h"
+#include "clap/ext/thread-check.h"
 #include "clap/ext/timer-support.h"
 
 #if (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
@@ -621,7 +623,7 @@ private:
     void editParameter(const uint32_t rindex, const bool started) const
     {
         const ClapEventQueue::Event ev = {
-            started ? ClapEventQueue::kEventGestureBegin : ClapEventQueue::kEventGestureBegin,
+            started ? ClapEventQueue::kEventGestureBegin : ClapEventQueue::kEventGestureEnd,
             rindex, 0.f
         };
         fEventQueue.addEventFromUI(ev);
@@ -736,10 +738,15 @@ public:
                   requestParameterValueChangeCallback,
                   updateStateValueCallback),
           fHost(host),
-          fOutputEvents(nullptr)
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        , fMidiEventCount(0)
+          fOutputEvents(nullptr),
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+          fLatencyChanged(false),
+          fLastKnownLatency(0),
        #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+          fMidiEventCount(0),
+       #endif
+          fHostExtensions(host)
     {
         fCachedParameters.setup(fPlugin.getParameterCount());
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -768,8 +775,7 @@ public:
         if (!clap_version_is_compatible(fHost->clap_version))
             return false;
 
-        // TODO check host features
-        return true;
+        return fHostExtensions.init();
     }
 
     void activate(const double sampleRate, const uint32_t maxFramesCount)
@@ -782,6 +788,10 @@ public:
     void deactivate()
     {
         fPlugin.deactivate();
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        checkForLatencyChanges(false, true);
+        reportLatencyChangeIfNeeded();
+       #endif
     }
 
     bool process(const clap_process_t* const process)
@@ -1009,7 +1019,18 @@ public:
             fOutputEvents = nullptr;
         }
 
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        checkForLatencyChanges(true, false);
+       #endif
+
         return true;
+    }
+
+    void onMainThread()
+    {
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        reportLatencyChangeIfNeeded();
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1176,6 +1197,10 @@ public:
                 }
             }
         }
+
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        checkForLatencyChanges(fPlugin.isActive(), false);
+       #endif
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -1216,6 +1241,57 @@ public:
         fCachedParameters.changed[event->param_id] = true;
         fPlugin.setParameterValue(event->param_id, event->value);
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // latency
+
+   #if DISTRHO_PLUGIN_WANT_LATENCY
+    uint32_t getLatency() const noexcept
+    {
+        return fPlugin.getLatency();
+    }
+
+    void checkForLatencyChanges(const bool isActive, const bool fromMainThread)
+    {
+        const uint32_t latency = fPlugin.getLatency();
+
+        if (fLastKnownLatency == latency)
+            return;
+
+        fLastKnownLatency = latency;
+
+        if (isActive)
+        {
+            fLatencyChanged = true;
+            fHost->request_restart(fHost);
+        }
+        else
+        {
+            // if this is main-thread we can report latency change directly
+            if (fromMainThread || (fHostExtensions.threadCheck != nullptr && fHostExtensions.threadCheck->is_main_thread(fHost)))
+            {
+                fLatencyChanged = false;
+                fHostExtensions.latency->changed(fHost);
+            }
+            // otherwise we need to request a main-thread callback
+            else
+            {
+                fLatencyChanged = true;
+                fHost->request_callback(fHost);
+            }
+        }
+    }
+
+    // called from main thread
+    void reportLatencyChangeIfNeeded()
+    {
+        if (fLatencyChanged)
+        {
+            fLatencyChanged = false;
+            fHostExtensions.latency->changed(fHost);
+        }
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // state
@@ -1501,8 +1577,13 @@ public:
             }
         }
 
-        if (const clap_host_params_t* const hostParams = getHostExtension<clap_host_params_t>(CLAP_EXT_PARAMS))
-            hostParams->rescan(fHost, CLAP_PARAM_RESCAN_VALUES|CLAP_PARAM_RESCAN_TEXT);
+        if (fHostExtensions.params != nullptr)
+            fHostExtensions.params->rescan(fHost, CLAP_PARAM_RESCAN_VALUES|CLAP_PARAM_RESCAN_TEXT);
+
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        checkForLatencyChanges(fPlugin.isActive(), true);
+        reportLatencyChangeIfNeeded();
+       #endif
 
        #if DISTRHO_PLUGIN_HAS_UI
         if (ui != nullptr)
@@ -1591,6 +1672,10 @@ private:
     const clap_host_t* const fHost;
     const clap_output_events_t* fOutputEvents;
 
+   #if DISTRHO_PLUGIN_WANT_LATENCY
+    bool fLatencyChanged;
+    uint32_t fLastKnownLatency;
+   #endif
   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t fMidiEventCount;
     MidiEvent fMidiEvents[kMaxMidiEvents];
@@ -1601,6 +1686,36 @@ private:
    #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
    #endif
+
+    struct HostExtensions {
+        const clap_host_t* const host;
+        const clap_host_params_t* params;
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        const clap_host_latency_t* latency;
+        const clap_host_thread_check_t* threadCheck;
+       #endif
+
+        HostExtensions(const clap_host_t* const host)
+            : host(host),
+              params(nullptr)
+           #if DISTRHO_PLUGIN_WANT_LATENCY
+            , latency(nullptr)
+            , threadCheck(nullptr)
+           #endif
+        {}
+
+        bool init()
+        {
+            params = static_cast<const clap_host_params_t*>(host->get_extension(host, CLAP_EXT_PARAMS));
+           #if DISTRHO_PLUGIN_WANT_LATENCY
+            DISTRHO_SAFE_ASSERT_RETURN(host->request_restart != nullptr, false);
+            DISTRHO_SAFE_ASSERT_RETURN(host->request_callback != nullptr, false);
+            latency = static_cast<const clap_host_latency_t*>(host->get_extension(host, CLAP_EXT_LATENCY));
+            threadCheck = static_cast<const clap_host_thread_check_t*>(host->get_extension(host, CLAP_EXT_THREAD_CHECK));
+           #endif
+            return true;
+        }
+    } fHostExtensions;
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
@@ -1940,37 +2055,37 @@ static const clap_plugin_note_ports_t clap_plugin_note_ports = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin parameters
 
-static uint32_t clap_plugin_params_count(const clap_plugin_t* const plugin)
+static CLAP_ABI uint32_t clap_plugin_params_count(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterCount();
 }
 
-static bool clap_plugin_params_get_info(const clap_plugin_t* const plugin, const uint32_t index, clap_param_info_t* const info)
+static CLAP_ABI bool clap_plugin_params_get_info(const clap_plugin_t* const plugin, const uint32_t index, clap_param_info_t* const info)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterInfo(index, info);
 }
 
-static bool clap_plugin_params_get_value(const clap_plugin_t* const plugin, const clap_id param_id, double* const value)
+static CLAP_ABI bool clap_plugin_params_get_value(const clap_plugin_t* const plugin, const clap_id param_id, double* const value)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterValue(param_id, value);
 }
 
-static bool clap_plugin_params_value_to_text(const clap_plugin_t* plugin, const clap_id param_id, const double value, char* const display, const uint32_t size)
+static CLAP_ABI bool clap_plugin_params_value_to_text(const clap_plugin_t* plugin, const clap_id param_id, const double value, char* const display, const uint32_t size)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterStringForValue(param_id, value, display, size);
 }
 
-static bool clap_plugin_params_text_to_value(const clap_plugin_t* plugin, const clap_id param_id, const char* const display, double* const value)
+static CLAP_ABI bool clap_plugin_params_text_to_value(const clap_plugin_t* plugin, const clap_id param_id, const char* const display, double* const value)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterValueForString(param_id, display, value);
 }
 
-static void clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
+static CLAP_ABI void clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->flushParameters(in, out);
@@ -1985,16 +2100,32 @@ static const clap_plugin_params_t clap_plugin_params = {
     clap_plugin_params_flush
 };
 
+#if DISTRHO_PLUGIN_WANT_LATENCY
+// --------------------------------------------------------------------------------------------------------------------
+// plugin latency
+
+static CLAP_ABI uint32_t clap_plugin_latency_get(const clap_plugin_t* const plugin)
+{
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return instance->getLatency();
+}
+
+static const clap_plugin_latency_t clap_plugin_latency = {
+    clap_plugin_latency_get
+};
+#endif
+
+#if DISTRHO_PLUGIN_WANT_STATE
 // --------------------------------------------------------------------------------------------------------------------
 // plugin state
 
-static bool clap_plugin_state_save(const clap_plugin_t* const plugin, const clap_ostream_t* const stream)
+static CLAP_ABI bool clap_plugin_state_save(const clap_plugin_t* const plugin, const clap_ostream_t* const stream)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->stateSave(stream);
 }
 
-static bool clap_plugin_state_load(const clap_plugin_t* const plugin, const clap_istream_t* const stream)
+static CLAP_ABI bool clap_plugin_state_load(const clap_plugin_t* const plugin, const clap_istream_t* const stream)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->stateLoad(stream);
@@ -2004,26 +2135,27 @@ static const clap_plugin_state_t clap_plugin_state = {
     clap_plugin_state_save,
     clap_plugin_state_load
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // plugin
 
-static bool clap_plugin_init(const clap_plugin_t* const plugin)
+static CLAP_ABI bool clap_plugin_init(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->init();
 }
 
-static void clap_plugin_destroy(const clap_plugin_t* const plugin)
+static CLAP_ABI void clap_plugin_destroy(const clap_plugin_t* const plugin)
 {
     delete static_cast<PluginCLAP*>(plugin->plugin_data);
     std::free(const_cast<clap_plugin_t*>(plugin));
 }
 
-static bool clap_plugin_activate(const clap_plugin_t* const plugin,
-                                 const double sample_rate,
-                                 uint32_t,
-                                 const uint32_t max_frames_count)
+static CLAP_ABI bool clap_plugin_activate(const clap_plugin_t* const plugin,
+                                          const double sample_rate,
+                                          uint32_t,
+                                          const uint32_t max_frames_count)
 {
     d_nextBufferSize = max_frames_count;
     d_nextSampleRate = sample_rate;
@@ -2033,35 +2165,35 @@ static bool clap_plugin_activate(const clap_plugin_t* const plugin,
     return true;
 }
 
-static void clap_plugin_deactivate(const clap_plugin_t* const plugin)
+static CLAP_ABI void clap_plugin_deactivate(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     instance->deactivate();
 }
 
-static bool clap_plugin_start_processing(const clap_plugin_t*)
+static CLAP_ABI bool clap_plugin_start_processing(const clap_plugin_t*)
 {
     // nothing to do
     return true;
 }
 
-static void clap_plugin_stop_processing(const clap_plugin_t*)
+static CLAP_ABI void clap_plugin_stop_processing(const clap_plugin_t*)
 {
     // nothing to do
 }
 
-static void clap_plugin_reset(const clap_plugin_t*)
+static CLAP_ABI void clap_plugin_reset(const clap_plugin_t*)
 {
     // nothing to do
 }
 
-static clap_process_status clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)
+static CLAP_ABI clap_process_status clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->process(process) ? CLAP_PROCESS_CONTINUE : CLAP_PROCESS_ERROR;
 }
 
-static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* const id)
+static CLAP_ABI const void* clap_plugin_get_extension(const clap_plugin_t*, const char* const id)
 {
     if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
         return &clap_plugin_audio_ports;
@@ -2069,6 +2201,10 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
         return &clap_plugin_note_ports;
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
+   #if DISTRHO_PLUGIN_WANT_LATENCY
+    if (std::strcmp(id, CLAP_EXT_LATENCY) == 0)
+        return &clap_plugin_latency;
+   #endif
    #if DISTRHO_PLUGIN_WANT_STATE
     if (std::strcmp(id, CLAP_EXT_STATE) == 0)
         return &clap_plugin_state;
@@ -2084,9 +2220,10 @@ static const void* clap_plugin_get_extension(const clap_plugin_t*, const char* c
     return nullptr;
 }
 
-static void clap_plugin_on_main_thread(const clap_plugin_t*)
+static void clap_plugin_on_main_thread(const clap_plugin_t* const plugin)
 {
-    // nothing to do
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    instance->onMainThread();
 }
 
 // --------------------------------------------------------------------------------------------------------------------

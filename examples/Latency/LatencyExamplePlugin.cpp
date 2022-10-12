@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2015 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,7 +31,8 @@ public:
           fLatency(1.0f),
           fLatencyInFrames(0),
           fBuffer(nullptr),
-          fBufferPos(0)
+          fBufferPos(0),
+          fBufferSize(0)
     {
         // allocates buffer
         sampleRateChanged(getSampleRate());
@@ -114,7 +115,7 @@ protected:
     */
     void initAudioPort(bool input, uint32_t index, AudioPort& port) override
     {
-        // treat meter audio ports as stereo
+        // mark the (single) latency audio port as mono
         port.groupId = kPortGroupMono;
 
         // everything else is as default
@@ -167,12 +168,20 @@ protected:
 
         fLatency = value;
         fLatencyInFrames = value*getSampleRate();
-
         setLatency(fLatencyInFrames);
     }
 
    /* --------------------------------------------------------------------------------------------------------
     * Audio/MIDI Processing */
+
+   /**
+      Activate this plugin.
+    */
+    void activate()
+    {
+        fBufferPos = 0;
+        std::memset(fBuffer, 0, sizeof(float)*fBufferSize);
+    }
 
    /**
       Run/process function for plugins without MIDI input.
@@ -222,16 +231,14 @@ protected:
     */
     void sampleRateChanged(double newSampleRate) override
     {
-        if (fBuffer != nullptr)
-            delete[] fBuffer;
+        fBufferSize = newSampleRate*6; // 6 seconds
 
-        const uint32_t maxFrames = newSampleRate*6; // 6 seconds
-
-        fBuffer = new float[maxFrames];
-        std::memset(fBuffer, 0, sizeof(float)*maxFrames);
+        delete[] fBuffer;
+        fBuffer = new float[fBufferSize];
+        // buffer reset is done during activate()
 
         fLatencyInFrames = fLatency*newSampleRate;
-        fBufferPos       = 0;
+        setLatency(fLatencyInFrames);
     }
 
     // -------------------------------------------------------------------------------------------------------
@@ -243,7 +250,7 @@ private:
 
     // Buffer for previous audio, size depends on sample rate
     float* fBuffer;
-    uint32_t fBufferPos;
+    uint32_t fBufferPos, fBufferSize;
 
    /**
       Set our plugin class as non-copyable and add a leak detector just in case.
