@@ -1199,7 +1199,8 @@ public:
         }
 
        #if DISTRHO_PLUGIN_WANT_LATENCY
-        checkForLatencyChanges(fPlugin.isActive(), false);
+        const bool active = fPlugin.isActive();
+        checkForLatencyChanges(active, !active);
        #endif
     }
 
