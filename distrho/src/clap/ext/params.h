@@ -155,16 +155,43 @@ typedef struct clap_param_info {
 
    clap_param_info_flags flags;
 
-   // This value is optional and set by the plugin.
-   // Its purpose is to provide a fast access to the plugin parameter:
+   // This value is optional and set by the plugin. The host will
+   // set it on all subsequent events regarding this param_id 
+   // or set the cookie to nullptr if the host chooses to
+   // not implement cookies. 
    //
+   // The plugin must gracefully handle the case of a cookie 
+   // which is nullptr, but can safely assume any cookie 
+   // which is not nullptr is the value it issued.
+   // 
+   // It is very strongly recommended that the host implement 
+   // cookies. Some plugins may have noticably reduced
+   // performance when addressing params in hosts without cookies.
+   //
+   // The cookie's purpose is to provide a fast access to the 
+   // plugin parameter objects. For instance:
+   //
+   // in clap_plugin_params.get_info
    //    Parameter *p = findParameter(param_id);
    //    param_info->cookie = p;
    //
-   //    /* and later on */
-   //    Parameter *p = (Parameter *)cookie;
+   // later, in clap_plugin.process:
    //
-   // It is invalidated on clap_host_params->rescan(CLAP_PARAM_RESCAN_ALL) and when the plugin is
+   //    Parameter *p{nullptr};
+   //    if (evt->cookie) [[likely]]
+   //       p =  (Parameter *)evt->cookie;
+   //    else
+   //       p = -- alternate mechanism --
+   //
+   // where "alternate mechanism" is a mechanism the plugin implements
+   // to map parameter ids to internal objects. 
+   //
+   // The host should make no assumption about the
+   // value of the cookie other than passing it back to the plugin or
+   // replacing it with nullptr. 
+   //
+   // Once set, the cookie is valid until invalidated by a call to 
+   // clap_host_params->rescan(CLAP_PARAM_RESCAN_ALL) or when the plugin is
    // destroyed.
    void *cookie;
 
@@ -183,39 +210,44 @@ typedef struct clap_param_info {
 typedef struct clap_plugin_params {
    // Returns the number of parameters.
    // [main-thread]
-   uint32_t (*count)(const clap_plugin_t *plugin);
+   uint32_t(CLAP_ABI *count)(const clap_plugin_t *plugin);
 
    // Copies the parameter's info to param_info and returns true on success.
    // [main-thread]
-   bool (*get_info)(const clap_plugin_t *plugin,
-                    uint32_t             param_index,
-                    clap_param_info_t   *param_info);
+   bool(CLAP_ABI *get_info)(const clap_plugin_t *plugin,
+                            uint32_t             param_index,
+                            clap_param_info_t   *param_info);
 
    // Gets the parameter plain value.
    // [main-thread]
-   bool (*get_value)(const clap_plugin_t *plugin, clap_id param_id, double *value);
+   bool(CLAP_ABI *get_value)(const clap_plugin_t *plugin, clap_id param_id, double *value);
 
    // Formats the display text for the given parameter value.
    // The host should always format the parameter value to text using this function
    // before displaying it to the user.
    // [main-thread]
-   bool (*value_to_text)(
+   bool(CLAP_ABI *value_to_text)(
       const clap_plugin_t *plugin, clap_id param_id, double value, char *display, uint32_t size);
 
    // Converts the display text to a parameter value.
    // [main-thread]
-   bool (*text_to_value)(const clap_plugin_t *plugin,
-                         clap_id              param_id,
-                         const char          *display,
-                         double              *value);
+   bool(CLAP_ABI *text_to_value)(const clap_plugin_t *plugin,
+                                 clap_id              param_id,
+                                 const char          *display,
+                                 double              *value);
 
    // Flushes a set of parameter changes.
    // This method must not be called concurrently to clap_plugin->process().
    //
+   // Note: if the plugin is processing, then the process() call will already achieve the
+   // parameter update (bi-directionnal), so a call to flush isn't required, also be aware
+   // that the plugin may use the sample offset in process(), while this information would be
+   // lost within flush().
+   //
    // [active ? audio-thread : main-thread]
-   void (*flush)(const clap_plugin_t        *plugin,
-                 const clap_input_events_t  *in,
-                 const clap_output_events_t *out);
+   void(CLAP_ABI *flush)(const clap_plugin_t        *plugin,
+                         const clap_input_events_t  *in,
+                         const clap_output_events_t *out);
 } clap_plugin_params_t;
 
 enum {
@@ -272,23 +304,23 @@ typedef uint32_t clap_param_clear_flags;
 typedef struct clap_host_params {
    // Rescan the full list of parameters according to the flags.
    // [main-thread]
-   void (*rescan)(const clap_host_t *host, clap_param_rescan_flags flags);
+   void(CLAP_ABI *rescan)(const clap_host_t *host, clap_param_rescan_flags flags);
 
    // Clears references to a parameter.
    // [main-thread]
-   void (*clear)(const clap_host_t *host, clap_id param_id, clap_param_clear_flags flags);
+   void(CLAP_ABI *clear)(const clap_host_t *host, clap_id param_id, clap_param_clear_flags flags);
 
    // Request a parameter flush.
    //
    // The host will then schedule a call to either:
    // - clap_plugin.process()
-   // - clap_plugin_params->flush()
+   // - clap_plugin_params.flush()
    //
    // This function is always safe to use and should not be called from an [audio-thread] as the
    // plugin would already be within process() or flush().
    //
    // [thread-safe,!audio-thread]
-   void (*request_flush)(const clap_host_t *host);
+   void(CLAP_ABI *request_flush)(const clap_host_t *host);
 } clap_host_params_t;
 
 #ifdef __cplusplus
