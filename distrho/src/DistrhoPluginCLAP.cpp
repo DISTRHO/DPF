@@ -1990,7 +1990,8 @@ static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
 
     // TODO CV
     // info->port_type = audioPort.hints & kAudioPortIsCV ? CLAP_PORT_CV : nullptr;
-    info->port_type = nullptr;
+    // TODO port groups
+    info->port_type = maxPortCount == 2 ? CLAP_PORT_STEREO : maxPortCount == 1 ? CLAP_PORT_MONO : nullptr;
 
     info->in_place_pair = DISTRHO_PLUGIN_NUM_INPUTS == DISTRHO_PLUGIN_NUM_OUTPUTS ? index : CLAP_INVALID_ID;
 
