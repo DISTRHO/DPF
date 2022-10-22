@@ -1032,7 +1032,7 @@ public:
                                                  in, process->audio_inputs_count, false);
             }
            #else
-            constexpr const float* const audioInputs = nullptr;
+            constexpr const float** const audioInputs = nullptr;
            #endif
 
            #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
@@ -1059,7 +1059,7 @@ public:
                                                  out, DISTRHO_PLUGIN_NUM_OUTPUTS, false);
             }
            #else
-            constexpr float* audioOutputs = nullptr;
+            constexpr float** const audioOutputs = nullptr;
            #endif
 
             fOutputEvents = process->out_events;
