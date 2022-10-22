@@ -36,6 +36,7 @@
 #endif
 
 #include <map>
+#include <vector>
 
 #include "clap/entry.h"
 #include "clap/plugin-factory.h"
@@ -739,25 +740,40 @@ public:
                   updateStateValueCallback),
           fHost(host),
           fOutputEvents(nullptr),
-       #if DISTRHO_PLUGIN_WANT_LATENCY
+         #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+          fUsingCV(false),
+         #endif
+         #if DISTRHO_PLUGIN_WANT_LATENCY
           fLatencyChanged(false),
           fLastKnownLatency(0),
-       #endif
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+         #endif
+         #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
           fMidiEventCount(0),
-       #endif
+         #endif
           fHostExtensions(host)
     {
         fCachedParameters.setup(fPlugin.getParameterCount());
+
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&fNotesBuffer, true);
        #endif
+
        #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
         {
             const String& dkey(fPlugin.getStateKey(i));
             fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
+       #endif
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+        fillInBusInfoDetails<true>();
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        fillInBusInfoDetails<false>();
+       #endif
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        fillInBusInfoPairs();
        #endif
     }
 
@@ -992,25 +1008,66 @@ public:
 
         if (const uint32_t frames = process->frames_count)
         {
-            // TODO multi-port bus stuff
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(process->audio_inputs_count == 0 || process->audio_inputs_count == 1,
-                                            process->audio_inputs_count, false);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(process->audio_outputs_count == 0 || process->audio_outputs_count == 1,
-                                            process->audio_outputs_count, false);
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+            const float** const audioInputs = fAudioInputs;
 
-            const float** inputs = process->audio_inputs != nullptr
-                                 ? const_cast<const float**>(process->audio_inputs[0].data32)
-                                 : nullptr;
-            /**/ float** outputs = process->audio_outputs != nullptr
-                                 ? process->audio_outputs[0].data32
-                                 : nullptr;
+            uint32_t in=0;
+            for (uint32_t i=0; i<process->audio_inputs_count; ++i)
+            {
+                const clap_audio_buffer_t& inputs(process->audio_inputs[i]);
+                DISTRHO_SAFE_ASSERT_CONTINUE(inputs.channel_count != 0);
+
+                for (uint32_t j=0; j<inputs.channel_count; ++j, ++in)
+                    audioInputs[in] = const_cast<const float*>(inputs.data32[j]);
+            }
+
+            if (fUsingCV)
+            {
+                for (; in<DISTRHO_PLUGIN_NUM_INPUTS; ++in)
+                    audioInputs[in] = nullptr;
+            }
+            else
+            {
+                DISTRHO_SAFE_ASSERT_UINT2_RETURN(in == DISTRHO_PLUGIN_NUM_INPUTS,
+                                                 in, process->audio_inputs_count, false);
+            }
+           #else
+            constexpr const float* const audioInputs = nullptr;
+           #endif
+
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            float** const audioOutputs = fAudioOutputs;
+
+            uint32_t out=0;
+            for (uint32_t i=0; i<process->audio_outputs_count; ++i)
+            {
+                const clap_audio_buffer_t& outputs(process->audio_outputs[i]);
+                DISTRHO_SAFE_ASSERT_CONTINUE(outputs.channel_count != 0);
+
+                for (uint32_t j=0; j<outputs.channel_count; ++j, ++out)
+                    audioOutputs[out] = outputs.data32[j];
+            }
+
+            if (fUsingCV)
+            {
+                for (; out<DISTRHO_PLUGIN_NUM_OUTPUTS; ++out)
+                    audioOutputs[out] = nullptr;
+            }
+            else
+            {
+                DISTRHO_SAFE_ASSERT_UINT2_RETURN(out == DISTRHO_PLUGIN_NUM_OUTPUTS,
+                                                 out, DISTRHO_PLUGIN_NUM_OUTPUTS, false);
+            }
+           #else
+            constexpr float* audioOutputs = nullptr;
+           #endif
 
             fOutputEvents = process->out_events;
 
            #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-            fPlugin.run(inputs, outputs, frames, fMidiEvents, fMidiEventCount);
+            fPlugin.run(audioInputs, audioOutputs, frames, fMidiEvents, fMidiEventCount);
            #else
-            fPlugin.run(inputs, outputs, frames);
+            fPlugin.run(audioInputs, audioOutputs, frames);
            #endif
 
             // TODO set last frame
@@ -1242,6 +1299,48 @@ public:
         fCachedParameters.changed[event->param_id] = true;
         fPlugin.setParameterValue(event->param_id, event->value);
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // audio ports
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    template<bool isInput>
+    uint32_t getAudioPortCount() const noexcept
+    {
+        return (isInput ? fAudioInputBuses : fAudioOutputBuses).size();
+    }
+
+    template<bool isInput>
+    bool getAudioPortInfo(const uint32_t index, clap_audio_port_info_t* const info) const noexcept
+    {
+        const std::vector<BusInfo>& busInfos(isInput ? fAudioInputBuses : fAudioOutputBuses);
+        DISTRHO_SAFE_ASSERT_RETURN(index < busInfos.size(), false);
+
+        const BusInfo& busInfo(busInfos[index]);
+
+        info->id = busInfo.groupId;
+        DISTRHO_NAMESPACE::strncpy(info->name, busInfo.name, CLAP_NAME_SIZE);
+
+        info->flags = busInfo.isMain ? CLAP_AUDIO_PORT_IS_MAIN : 0x0;
+        info->channel_count = busInfo.numChannels;
+
+        switch (busInfo.groupId)
+        {
+        case kPortGroupMono:
+            info->port_type = CLAP_PORT_MONO;
+            break;
+        case kPortGroupStereo:
+            info->port_type = CLAP_PORT_STEREO;
+            break;
+        default:
+            info->port_type = nullptr;
+            break;
+        }
+
+        info->in_place_pair = busInfo.hasPair ? busInfo.groupId : CLAP_INVALID_ID;
+        return true;
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // latency
@@ -1673,6 +1772,15 @@ private:
     const clap_host_t* const fHost;
     const clap_output_events_t* fOutputEvents;
 
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+    const float* fAudioInputs[DISTRHO_PLUGIN_NUM_INPUTS];
+   #endif
+   #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    float* fAudioOutputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
+   #endif
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    bool fUsingCV;
+   #endif
    #if DISTRHO_PLUGIN_WANT_LATENCY
     bool fLatencyChanged;
     uint32_t fLastKnownLatency;
@@ -1717,6 +1825,170 @@ private:
             return true;
         }
     } fHostExtensions;
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // helper functions for dealing with buses
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    struct BusInfo {
+        char name[CLAP_NAME_SIZE];
+        uint32_t numChannels;
+        bool hasPair;
+        bool isCV;
+        bool isMain;
+        uint32_t groupId;
+    };
+    std::vector<BusInfo> fAudioInputBuses, fAudioOutputBuses;
+
+    template<bool isInput>
+    void fillInBusInfoDetails()
+    {
+        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+        std::vector<BusInfo>& busInfos(isInput ? fAudioInputBuses : fAudioOutputBuses);
+
+        enum {
+            kPortTypeNull,
+            kPortTypeAudio,
+            kPortTypeSidechain,
+            kPortTypeCV,
+            kPortTypeGroup
+        } lastSeenPortType = kPortTypeNull;
+        uint32_t lastSeenGroupId = kPortGroupNone;
+        uint32_t nonGroupAudioId = 0;
+        uint32_t nonGroupSidechainId = 0x20000000;
+
+        for (uint32_t i=0; i<numPorts; ++i)
+        {
+            const AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+            if (port.groupId != kPortGroupNone)
+            {
+                if (lastSeenPortType != kPortTypeGroup || lastSeenGroupId != port.groupId)
+                {
+                    lastSeenPortType = kPortTypeGroup;
+                    lastSeenGroupId = port.groupId;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // if this is the first port, set it as main
+                        busInfos.empty(),
+                        // user given group id with extra safety offset
+                        port.groupId + 0x80000000
+                    };
+
+                    const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
+
+                    switch (port.groupId)
+                    {
+                    case kPortGroupStereo:
+                    case kPortGroupMono:
+                        if (busInfo.isMain)
+                        {
+                            DISTRHO_NAMESPACE::strncpy(busInfo.name,
+                                                       isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
+                            break;
+                        }
+                    // fall-through
+                    default:
+                        if (group.name.isNotEmpty())
+                            DISTRHO_NAMESPACE::strncpy(busInfo.name, group.name, CLAP_NAME_SIZE);
+                        else
+                            DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+                        break;
+                    }
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+            else if (port.hints & kAudioPortIsCV)
+            {
+                // TODO
+                lastSeenPortType = kPortTypeCV;
+                lastSeenGroupId = kPortGroupNone;
+                fUsingCV = true;
+            }
+            else if (port.hints & kAudioPortIsSidechain)
+            {
+                if (lastSeenPortType != kPortTypeSidechain)
+                {
+                    lastSeenPortType = kPortTypeSidechain;
+                    lastSeenGroupId = kPortGroupNone;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // not main
+                        false,
+                        // give unique id
+                        nonGroupSidechainId++
+                    };
+
+                    DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+            else
+            {
+                if (lastSeenPortType != kPortTypeAudio)
+                {
+                    lastSeenPortType = kPortTypeAudio;
+                    lastSeenGroupId = kPortGroupNone;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // if this is the first port, set it as main
+                        busInfos.empty(),
+                        // give unique id
+                        nonGroupAudioId++
+                    };
+
+                    if (busInfo.isMain)
+                    {
+                        DISTRHO_NAMESPACE::strncpy(busInfo.name,
+                                                   isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
+                    }
+                    else
+                    {
+                        DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+                    }
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+        }
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    void fillInBusInfoPairs()
+    {
+        const size_t numChannels = std::min(fAudioInputBuses.size(), fAudioOutputBuses.size());
+
+        for (size_t i=0; i<numChannels; ++i)
+        {
+            if (fAudioInputBuses[i].groupId != fAudioOutputBuses[i].groupId)
+                break;
+            if (fAudioInputBuses[i].numChannels != fAudioOutputBuses[i].numChannels)
+                break;
+            if (fAudioInputBuses[i].isMain != fAudioOutputBuses[i].isMain)
+                break;
+
+            fAudioInputBuses[i].hasPair = fAudioOutputBuses[i].hasPair = true;
+        }
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
@@ -1962,61 +2234,41 @@ static const clap_plugin_timer_support_t clap_timer = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin audio ports
 
-static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t*, const bool is_input)
+#if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t* const plugin, const bool is_input)
 {
-    return (is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS) != 0 ? 1 : 0;
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return is_input ? instance->getAudioPortCount<true>()
+                    : instance->getAudioPortCount<false>();
 }
 
-static bool clap_plugin_audio_ports_get(const clap_plugin_t* /* const plugin */,
+static bool clap_plugin_audio_ports_get(const clap_plugin_t* const plugin,
                                         const uint32_t index,
                                         const bool is_input,
                                         clap_audio_port_info_t* const info)
 {
-    const uint32_t maxPortCount = is_input ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
-    DISTRHO_SAFE_ASSERT_UINT2_RETURN(index < maxPortCount, index, maxPortCount, false);
-
-   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-    // PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-
-    // TODO use groups
-    AudioPortWithBusId& audioPort(sPlugin->getAudioPort(is_input, index));
-
-    info->id = index;
-    DISTRHO_NAMESPACE::strncpy(info->name, audioPort.name, CLAP_NAME_SIZE);
-
-    // TODO bus stuff
-    info->flags = CLAP_AUDIO_PORT_IS_MAIN;
-    info->channel_count = maxPortCount;
-
-    // TODO CV
-    // info->port_type = audioPort.hints & kAudioPortIsCV ? CLAP_PORT_CV : nullptr;
-    // TODO port groups
-    info->port_type = maxPortCount == 2 ? CLAP_PORT_STEREO : maxPortCount == 1 ? CLAP_PORT_MONO : nullptr;
-
-    info->in_place_pair = DISTRHO_PLUGIN_NUM_INPUTS == DISTRHO_PLUGIN_NUM_OUTPUTS ? index : CLAP_INVALID_ID;
-
-    return true;
-   #else
-    return false;
-    // unused
-    (void)info;
-   #endif
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    return is_input ? instance->getAudioPortInfo<true>(index, info)
+                    : instance->getAudioPortInfo<false>(index, info);
 }
 
 static const clap_plugin_audio_ports_t clap_plugin_audio_ports = {
     clap_plugin_audio_ports_count,
     clap_plugin_audio_ports_get
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// plugin audio ports
+// plugin note ports
 
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT+DISTRHO_PLUGIN_WANT_MIDI_OUTPUT != 0
 static uint32_t clap_plugin_note_ports_count(const clap_plugin_t*, const bool is_input)
 {
     return (is_input ? DISTRHO_PLUGIN_WANT_MIDI_INPUT : DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) != 0 ? 1 : 0;
 }
 
-static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t, const bool is_input, clap_note_port_info_t* const info)
+static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
+                                       const bool is_input, clap_note_port_info_t* const info)
 {
     if (is_input)
     {
@@ -2026,8 +2278,6 @@ static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t, const boo
         info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
         std::strcpy(info->name, "Event/MIDI Input");
         return true;
-       #else
-        return false;
        #endif
     }
     else
@@ -2038,21 +2288,17 @@ static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t, const boo
         info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
         std::strcpy(info->name, "Event/MIDI Output");
         return true;
-       #else
-        return false;
        #endif
     }
 
-   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT+DISTRHO_PLUGIN_WANT_MIDI_OUTPUT == 0
-    // unused
-    (void)info;
-   #endif
+    return false;
 }
 
 static const clap_plugin_note_ports_t clap_plugin_note_ports = {
     clap_plugin_note_ports_count,
     clap_plugin_note_ports_get
 };
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // plugin parameters
@@ -2197,12 +2443,16 @@ static CLAP_ABI clap_process_status clap_plugin_process(const clap_plugin_t* con
 
 static CLAP_ABI const void* clap_plugin_get_extension(const clap_plugin_t*, const char* const id)
 {
-    if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
-        return &clap_plugin_audio_ports;
-    if (std::strcmp(id, CLAP_EXT_NOTE_PORTS) == 0)
-        return &clap_plugin_note_ports;
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
+        return &clap_plugin_audio_ports;
+   #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT+DISTRHO_PLUGIN_WANT_MIDI_OUTPUT != 0
+    if (std::strcmp(id, CLAP_EXT_NOTE_PORTS) == 0)
+        return &clap_plugin_note_ports;
+   #endif
    #if DISTRHO_PLUGIN_WANT_LATENCY
     if (std::strcmp(id, CLAP_EXT_LATENCY) == 0)
         return &clap_plugin_latency;
