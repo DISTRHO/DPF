@@ -532,6 +532,9 @@ void lv2_generate_ttl(const char* const basename)
                     }
                 }
 
+                if ((port.hints & (kAudioPortIsCV|kCVPortIsOptional)) == (kAudioPortIsCV|kCVPortIsOptional))
+                    pluginString += "        lv2:portProperty lv2:connectionOptional;\n";
+
                 if (i+1 == DISTRHO_PLUGIN_NUM_INPUTS)
                     pluginString += "    ] ;\n";
                 else

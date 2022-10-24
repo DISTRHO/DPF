@@ -72,6 +72,12 @@ static const uint32_t kCVPortHasPositiveUnipolarRange = 0x40;
  */
 static const uint32_t kCVPortHasScaledRange = 0x80;
 
+/**
+   CV port is optional, allowing hosts that do no CV ports to load the plugin.
+   When loaded in hosts that don't support CV, the float* buffer for this port will be null.
+ */
+static const uint32_t kCVPortIsOptional = 0x100;
+
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------
