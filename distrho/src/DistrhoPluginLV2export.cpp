@@ -820,11 +820,10 @@ void lv2_generate_ttl(const char* const basename)
                     // MIDI CC binding
                     if (const uint8_t midiCC = plugin.getParameterMidiCC(i))
                     {
-                        char midiCCBuf[7];
-                        snprintf(midiCCBuf, sizeof(midiCCBuf), "B0%02x00", midiCC);
-                        pluginString += "        midi:binding \"";
-                        pluginString += midiCCBuf;
-                        pluginString += "\"^^midi:MidiEvent ;\n";
+                        pluginString += "        midi:binding [\n";
+                        pluginString += "            a midi:Controller ;\n";
+                        pluginString += "            midi:controllerNumber " + String(midiCC) + " ;\n";
+                        pluginString += "        ] ;\n";
                     }
 
                     // unit
