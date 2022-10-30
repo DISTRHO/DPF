@@ -31,7 +31,7 @@ Bug reports happen on the [DPF github project](https://github.com/DISTRHO/DPF/is
 
 Online documentation is available at [https://distrho.github.io/DPF/](https://distrho.github.io/DPF/).
 
-Online help and discussion about DPF happens in the [kx.studio chat, DPF room](https://chat.kx.studio/).
+Online help and discussion about DPF happens in the [kx.studio chat, DPF room](https://chat.kx.studio/channel/dpf).
 
 
 ## List of plugins made with DPF:

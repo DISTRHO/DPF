@@ -2732,7 +2732,7 @@ private:
         }
 
         if (busId < busInfo.groups)
-            return portCountToSpeaker(fPlugin.getAudioPortCountWithGroupId(isInput, busId));
+            return portCountToSpeaker(fPlugin.getAudioPortCountWithGroupId(isInput, portGroupId));
 
         if (busInfo.audio != 0 && busId == busInfo.groups)
             return portCountToSpeaker(busInfo.audioPorts);
