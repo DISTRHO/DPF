@@ -27,7 +27,7 @@
 START_NAMESPACE_DISTRHO
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
-static const sendNoteFunc sendNoteCallback = nullptr;
+static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
 // -----------------------------------------------------------------------
