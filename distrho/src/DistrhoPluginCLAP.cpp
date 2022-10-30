@@ -14,6 +14,14 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* TODO items:
+ * CV: write a specification
+ * INFO: define url, manual url, support url and string version
+ * PARAMETERS: test parameter triggers
+ * States: skip DSP/UI only states as appropriate
+ * UI: expose external-only UIs
+ */
+
 #include "DistrhoPluginInternal.hpp"
 #include "extra/ScopedPointer.hpp"
 
@@ -1070,8 +1078,7 @@ public:
             fPlugin.run(audioInputs, audioOutputs, frames);
            #endif
 
-            // TODO set last frame
-            flushParameters(nullptr, process->out_events);
+            flushParameters(nullptr, process->out_events, frames - 1);
 
             fOutputEvents = nullptr;
         }
@@ -1210,7 +1217,9 @@ public:
         return true;
     }
 
-    void flushParameters(const clap_input_events_t* const in, const clap_output_events_t* const out)
+    void flushParameters(const clap_input_events_t* const in,
+                         const clap_output_events_t* const out,
+                         const uint32_t frameOffset)
     {
         if (const uint32_t len = in != nullptr ? in->size(in) : 0)
         {
@@ -1231,7 +1240,7 @@ public:
         if (out != nullptr)
         {
             clap_event_param_value_t clapEvent = {
-                { sizeof(clap_event_param_value_t), 0, 0, CLAP_EVENT_PARAM_VALUE, CLAP_EVENT_IS_LIVE },
+                { sizeof(clap_event_param_value_t), frameOffset, 0, CLAP_EVENT_PARAM_VALUE, CLAP_EVENT_IS_LIVE },
                 0, nullptr, 0, 0, 0, 0, 0.0
             };
 
@@ -2336,7 +2345,7 @@ static CLAP_ABI bool clap_plugin_params_text_to_value(const clap_plugin_t* plugi
 static CLAP_ABI void clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
-    return instance->flushParameters(in, out);
+    return instance->flushParameters(in, out, 0);
 }
 
 static const clap_plugin_params_t clap_plugin_params = {

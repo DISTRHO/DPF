@@ -14,6 +14,29 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+/* TODO items:
+ * == parameters
+ * - test parameter triggers
+ * - have parameter outputs host-provided UI working in at least 1 host
+ * - parameter groups via unit ids
+ * - test parameter changes from DSP (aka requestParameterValueChange)
+ * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
+ * - float to int safe casting
+ * - verify that latency changes works (with and without DPF_VST3_USES_SEPARATE_CONTROLLER)
+ * == MIDI
+ * - MIDI CC changes (need to store value to give to the host?)
+ * - MIDI program changes
+ * - MIDI sysex
+ * == BUSES
+ * - routing info, do we care?
+ * == CV
+ * - cv scaling to -1/+1
+ * - test in at least 1 host
+ * == INFO
+ * - set factory email (needs new DPF API, useful for LV2 as well)
+ * - do something with set_io_mode?
+ */
+
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 #include "../extra/ScopedPointer.hpp"
@@ -35,30 +58,6 @@
 #include <map>
 #include <string>
 #include <vector>
-
-/* TODO items:
- * == parameters
- * - test parameter triggers
- * - have parameter outputs host-provided UI working in at least 1 host
- * - parameter groups via unit ids
- * - test parameter changes from DSP (aka requestParameterValueChange)
- * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
- * - fully implemented parameter stuff and verify
- * - float to int safe casting
- * - verify that latency changes works (with and without DPF_VST3_USES_SEPARATE_CONTROLLER)
- * == MIDI
- * - MIDI CC changes (need to store value to give to the host?)
- * - MIDI program changes
- * - MIDI sysex
- * == BUSES
- * - routing info, do we care?
- * == CV
- * - cv scaling to -1/+1
- * - test in at least 1 host
- * == INFO
- * - set factory email (needs new DPF API, useful for LV2 as well)
- * - do something with set_io_mode?
- */
 
 START_NAMESPACE_DISTRHO
 
