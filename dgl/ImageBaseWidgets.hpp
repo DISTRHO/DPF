@@ -192,6 +192,7 @@ public:
     void setEndPos(const Point<int>& endPos) noexcept;
     void setEndPos(int x, int y) noexcept;
 
+    void setCheckable(bool checkable) noexcept;
     void setInverted(bool inverted) noexcept;
     void setRange(float min, float max) noexcept;
     void setStep(float step) noexcept;

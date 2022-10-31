@@ -28,9 +28,7 @@ Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win)
     : window(win),
       ppData(nullptr),
       active(puglBackendEnter(window.pData->view)),
-      reenter(false)
-{
-}
+      reenter(false) {}
 
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win, Window& transientWin)
     : window(win),
