@@ -44,9 +44,6 @@
 # ifdef DGL_CAIRO
 #  include <cairo-quartz.h>
 # endif
-# ifdef DGL_OPENGL
-#  include <OpenGL/gl.h>
-# endif
 # ifdef DGL_VULKAN
 #  import <QuartzCore/CAMetalLayer.h>
 #  include <vulkan/vulkan_macos.h>
@@ -406,12 +403,12 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
 
 void puglOnDisplayPrepare(PuglView*)
 {
-#ifdef DGL_OPENGL
+  #ifdef DGL_OPENGL
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-# ifndef DGL_USE_GLES
+   #ifndef DGL_USE_OPENGL3
     glLoadIdentity();
-# endif
-#endif
+   #endif
+  #endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -419,24 +416,24 @@ void puglOnDisplayPrepare(PuglView*)
 
 void puglFallbackOnResize(PuglView* const view)
 {
-#ifdef DGL_OPENGL
+  #ifdef DGL_OPENGL
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-# ifndef DGL_USE_GLES
+   #ifdef DGL_USE_OPENGL3
+    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
+   #else
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, static_cast<GLdouble>(view->frame.width), static_cast<GLdouble>(view->frame.height), 0.0, 0.0, 1.0);
     glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-# else
-    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
-# endif
-#else
+   #endif
+  #else
     return;
     // unused
     (void)view;
-#endif
+  #endif
 }
 
 // --------------------------------------------------------------------------------------------------------------------
