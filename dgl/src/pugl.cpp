@@ -201,17 +201,35 @@ bool puglBackendLeave(PuglView* const view)
 
 void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 {
-#ifdef DGL_CAIRO
+   #ifdef DGL_CAIRO
     puglSetBackend(view, puglCairoBackend());
-#endif
-#ifdef DGL_OPENGL
+   #endif
+   #ifdef DGL_OPENGL
     puglSetBackend(view, puglGlBackend());
-#endif
-#ifdef DGL_VULKAN
+   #endif
+   #ifdef DGL_VULKAN
     puglSetBackend(view, puglVulkanBackend());
-#endif
-    if (view->backend == nullptr)
+   #endif
+
+    if (view->backend != nullptr)
+    {
+      #ifdef DGL_OPENGL
+       #if defined(DGL_USE_OPENGL3) || defined(DGL_USE_GLES3)
+        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
+       #elif defined(DGL_USE_GLES2)
+        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+       #else
+        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_TRUE);
+        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+       #endif
+      #endif
+    }
+    else
+    {
         puglSetBackend(view, puglStubBackend());
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
