@@ -445,17 +445,17 @@ static void drawOpenGLImage(const OpenGLImage& image, const Point<int>& pos, con
 
 OpenGLImage::OpenGLImage()
     : ImageBase(),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(false),
+      textureId(0)
 {
-    glGenTextures(1, &textureId);
-    DISTRHO_SAFE_ASSERT(textureId != 0);
 }
 
 OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const ImageFormat fmt)
     : ImageBase(rdata, w, h, fmt),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(true),
+      textureId(0)
 {
     glGenTextures(1, &textureId);
     DISTRHO_SAFE_ASSERT(textureId != 0);
@@ -463,8 +463,9 @@ OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, co
 
 OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const ImageFormat fmt)
     : ImageBase(rdata, s, fmt),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(true),
+      textureId(0)
 {
     glGenTextures(1, &textureId);
     DISTRHO_SAFE_ASSERT(textureId != 0);
@@ -472,8 +473,9 @@ OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const Ima
 
 OpenGLImage::OpenGLImage(const OpenGLImage& image)
     : ImageBase(image),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(true),
+      textureId(0)
 {
     glGenTextures(1, &textureId);
     DISTRHO_SAFE_ASSERT(textureId != 0);
@@ -487,6 +489,12 @@ OpenGLImage::~OpenGLImage()
 
 void OpenGLImage::loadFromMemory(const char* const rdata, const Size<uint>& s, const ImageFormat fmt) noexcept
 {
+    if (!textureInit)
+    {
+        textureInit = true;
+        glGenTextures(1, &textureId);
+        DISTRHO_SAFE_ASSERT(textureId != 0);
+    }
     setupCalled = false;
     ImageBase::loadFromMemory(rdata, s, fmt);
 }
@@ -502,14 +510,23 @@ OpenGLImage& OpenGLImage::operator=(const OpenGLImage& image) noexcept
     size    = image.size;
     format  = image.format;
     setupCalled = false;
+
+    if (image.isValid() && !textureInit)
+    {
+        textureInit = true;
+        glGenTextures(1, &textureId);
+        DISTRHO_SAFE_ASSERT(textureId != 0);
+    }
+
     return *this;
 }
 
 // deprecated calls
 OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, const GLenum fmt)
     : ImageBase(rdata, w, h, asDISTRHOImageFormat(fmt)),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(true),
+      textureId(0)
 {
     glGenTextures(1, &textureId);
     DISTRHO_SAFE_ASSERT(textureId != 0);
@@ -517,8 +534,9 @@ OpenGLImage::OpenGLImage(const char* const rdata, const uint w, const uint h, co
 
 OpenGLImage::OpenGLImage(const char* const rdata, const Size<uint>& s, const GLenum fmt)
     : ImageBase(rdata, s, asDISTRHOImageFormat(fmt)),
-      textureId(0),
-      setupCalled(false)
+      setupCalled(false),
+      textureInit(true),
+      textureId(0)
 {
     glGenTextures(1, &textureId);
     DISTRHO_SAFE_ASSERT(textureId != 0);

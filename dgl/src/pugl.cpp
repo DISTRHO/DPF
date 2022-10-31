@@ -564,8 +564,7 @@ void puglWin32ShowCentered(PuglView* const view)
         mInfo.cbSize = sizeof(mInfo);
 
         if (GetMonitorInfo(MonitorFromWindow(impl->hwnd, MONITOR_DEFAULTTOPRIMARY), &mInfo))
-            SetWindowPos(impl->hwnd,
-                         HWND_TOP,
+            SetWindowPos(impl->hwnd, HWND_TOP,
                          mInfo.rcWork.left + (mInfo.rcWork.right - mInfo.rcWork.left - view->frame.width) / 2,
                          mInfo.rcWork.top + (mInfo.rcWork.bottom - mInfo.rcWork.top - view->frame.height) / 2,
                          0, 0, SWP_SHOWWINDOW|SWP_NOSIZE);
