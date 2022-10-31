@@ -27,12 +27,16 @@ START_NAMESPACE_DGL
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win)
     : window(win),
       ppData(nullptr),
-      active(puglBackendEnter(window.pData->view)) {}
+      active(puglBackendEnter(window.pData->view)),
+      reenter(false)
+{
+}
 
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win, Window& transientWin)
     : window(win),
       ppData(transientWin.pData),
-      active(false)
+      active(false),
+      reenter(true)
 {
     puglBackendLeave(ppData->view);
     active = puglBackendEnter(window.pData->view);
@@ -51,11 +55,24 @@ void Window::ScopedGraphicsContext::done()
         active = false;
     }
 
-    if (ppData != nullptr)
+    if (reenter)
     {
+        reenter = false;
+        DISTRHO_SAFE_ASSERT_RETURN(ppData != nullptr,);
+
         puglBackendEnter(ppData->view);
-        ppData = nullptr;
     }
+}
+
+void Window::ScopedGraphicsContext::reinit()
+{
+    DISTRHO_SAFE_ASSERT_RETURN(!active,);
+    DISTRHO_SAFE_ASSERT_RETURN(!reenter,);
+    DISTRHO_SAFE_ASSERT_RETURN(ppData != nullptr,);
+
+    reenter = true;
+    puglBackendLeave(ppData->view);
+    active = puglBackendEnter(window.pData->view);
 }
 
 // -----------------------------------------------------------------------

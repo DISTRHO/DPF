@@ -105,13 +105,17 @@ public:
         /** Early context clearing, useful for standalone windows not created by you. */
         void done();
 
+        /** Get a valid context back again. */
+        void reinit();
+
         DISTRHO_DECLARE_NON_COPYABLE(ScopedGraphicsContext)
         DISTRHO_PREVENT_HEAP_ALLOCATION
 
     private:
         Window& window;
-        Window::PrivateData* ppData;
+        Window::PrivateData* const ppData;
         bool active;
+        bool reenter;
     };
 
    /**
