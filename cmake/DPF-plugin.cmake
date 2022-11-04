@@ -22,7 +22,7 @@
 # add_subdirectory(DPF)
 #
 # dpf_add_plugin(MyPlugin
-#   TARGETS lv2 vst2 vst3
+#   TARGETS clap lv2 vst2 vst3
 #   UI_TYPE opengl
 #   FILES_DSP
 #       src/MyPlugin.cpp
@@ -71,7 +71,7 @@ include(CMakeParseArguments)
 #
 #   `TARGETS` <tgt1>...<tgtN>
 #       a list of one of more of the following target types:
-#       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`
+#       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`, `clap`
 #
 #   `UI_TYPE` <type>
 #       the user interface type: `opengl` (default), `cairo`
@@ -162,6 +162,8 @@ function(dpf_add_plugin NAME)
       dpf__build_vst2("${NAME}" "${_dgl_library}")
     elseif(_target STREQUAL "vst3")
       dpf__build_vst3("${NAME}" "${_dgl_library}")
+    elseif(_target STREQUAL "clap")
+      dpf__build_clap("${NAME}" "${_dgl_library}")
     else()
       message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
@@ -432,6 +434,39 @@ function(dpf__build_vst3 NAME DGL_LIBRARY)
   endif()
 endfunction()
 
+# dpf__build_clap
+# ------------------------------------------------------------------------------
+#
+# Add build rules for a VST2 plugin.
+#
+function(dpf__build_clap NAME DGL_LIBRARY)
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-clap" ${_no_srcs})
+  dpf__add_plugin_main("${NAME}-clap" "clap")
+  dpf__add_ui_main("${NAME}-clap" "clap" "${DGL_LIBRARY}")
+  dpf__set_module_export_list("${NAME}-clap" "clap")
+  target_link_libraries("${NAME}-clap" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  set_target_properties("${NAME}-clap" PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/clap/$<0:>"
+    OUTPUT_NAME "${NAME}"
+    PREFIX ""
+    SUFFIX ".clap")
+
+  if(APPLE)
+    set_target_properties("${NAME}-clap" PROPERTIES
+      LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.clap/Contents/MacOS/$<0:>"
+      OUTPUT_NAME "${NAME}"
+      SUFFIX "")
+    set(INFO_PLIST_PROJECT_NAME "${NAME}")
+    configure_file("${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/Info.plist"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.clap/Contents/Info.plist" @ONLY)
+    file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
+      DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.clap/Contents")
+  endif()
+endfunction()
+
 # dpf__add_dgl_cairo
 # ------------------------------------------------------------------------------
 #
@@ -690,6 +725,7 @@ function(dpf__set_target_defaults NAME)
     C_VISIBILITY_PRESET "hidden"
     CXX_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN TRUE)
+  target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
   if(WIN32)
     target_compile_definitions("${NAME}" PUBLIC "NOMINMAX")
   endif()
