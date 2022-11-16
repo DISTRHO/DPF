@@ -181,7 +181,7 @@ endfunction()
 # dpf__build_jack
 # ------------------------------------------------------------------------------
 #
-# Add build rules for a JACK program.
+# Add build rules for a JACK/Standalone program.
 #
 function(dpf__build_jack NAME DGL_LIBRARY)
   dpf__create_dummy_source_list(_no_srcs)
@@ -194,11 +194,48 @@ function(dpf__build_jack NAME DGL_LIBRARY)
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
 
+  target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
+
+  find_package(PkgConfig)
+  pkg_check_modules(SDL2 "sdl2")
+  if(SDL2_FOUND)
+    target_compile_definitions("${NAME}" PUBLIC "HAVE_SDL2")
+    target_include_directories("${NAME}-jack" PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_directories("${NAME}-jack" PUBLIC ${SDL2_LIBRARY_DIRS})
+    target_link_libraries("${NAME}-jack" PRIVATE ${SDL2_LIBRARIES})
+  endif()
+
+  if(APPLE OR WIN32)
+    target_compile_definitions("${NAME}" PUBLIC "HAVE_RTAUDIO")
+  else()
+    pkg_check_modules(ALSA "alsa")
+    pkg_check_modules(PULSEAUDIO "libpulse-simple")
+    if(ALSA_FOUND)
+      target_compile_definitions("${NAME}" PUBLIC "HAVE_ALSA")
+      target_include_directories("${NAME}-jack" PRIVATE ${ALSA_INCLUDE_DIRS})
+      target_link_directories("${NAME}-jack" PUBLIC ${ALSA_LIBRARY_DIRS})
+      target_link_libraries("${NAME}-jack" PRIVATE ${ALSA_LIBRARIES})
+    endif()
+    if(PULSEAUDIO_FOUND)
+      target_compile_definitions("${NAME}" PUBLIC "HAVE_PULSEAUDIO")
+      target_include_directories("${NAME}-jack" PRIVATE ${PULSEAUDIO_INCLUDE_DIRS})
+      target_link_directories("${NAME}-jack" PUBLIC ${PULSEAUDIO_LIBRARY_DIRS})
+      target_link_libraries("${NAME}-jack" PRIVATE ${PULSEAUDIO_LIBRARIES})
+    endif()
+    if(ALSA_FOUND OR PULSEAUDIO_FOUND)
+      target_compile_definitions("${NAME}" PUBLIC "HAVE_RTAUDIO")
+    endif()
+  endif()
+
   # for RtAudio native fallback
   if(APPLE)
     find_library(APPLE_COREAUDIO_FRAMEWORK "CoreAudio")
     find_library(APPLE_COREFOUNDATION_FRAMEWORK "CoreFoundation")
-    target_link_libraries("${NAME}-jack" PRIVATE "${APPLE_COREAUDIO_FRAMEWORK}" "${APPLE_COREFOUNDATION_FRAMEWORK}")
+    find_library(APPLE_COREMIDI_FRAMEWORK "CoreMIDI")
+    target_link_libraries("${NAME}-jack" PRIVATE
+      "${APPLE_COREAUDIO_FRAMEWORK}"
+      "${APPLE_COREFOUNDATION_FRAMEWORK}"
+      "${APPLE_COREMIDI_FRAMEWORK}")
   endif()
 endfunction()
 
@@ -235,8 +272,6 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     return()
   endif()
 
-  link_directories(${LIBLO_LIBRARY_DIRS})
-
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-dssi" ${_no_srcs})
@@ -257,7 +292,9 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
       RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}-dssi/$<0:>"
       OUTPUT_NAME "${NAME}_ui")
 
+    target_compile_definitions("${NAME}" PUBLIC "HAVE_LIBLO")
     target_include_directories("${NAME}-dssi-ui" PRIVATE ${LIBLO_INCLUDE_DIRS})
+    target_link_directories("${NAME}-dssi-ui" PUBLIC ${LIBLO_LIBRARY_DIRS})
     target_link_libraries("${NAME}-dssi-ui" PRIVATE ${LIBLO_LIBRARIES})
   endif()
 endfunction()
@@ -508,7 +545,7 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
   else()
-    target_sources(dgl-opengl PRIVATE
+    target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
   endif()
   target_include_directories(dgl-cairo PUBLIC
@@ -733,7 +770,6 @@ function(dpf__set_target_defaults NAME)
     C_VISIBILITY_PRESET "hidden"
     CXX_VISIBILITY_PRESET "hidden"
     VISIBILITY_INLINES_HIDDEN TRUE)
-  target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
   if(WIN32)
     target_compile_definitions("${NAME}" PUBLIC "NOMINMAX")
   endif()
