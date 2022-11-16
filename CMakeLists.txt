@@ -30,9 +30,9 @@ include(DPF-plugin)
 
 if(DPF_LIBRARIES)
   if(NOT (MSVC OR APPLE)) # TODO skip this one for now
-    dpf__add_dgl_cairo()
+    dpf__add_dgl_cairo(FALSE)
   endif()
-  dpf__add_dgl_opengl()
+  dpf__add_dgl_opengl(FALSE)
 endif()
 
 if(DPF_EXAMPLES)

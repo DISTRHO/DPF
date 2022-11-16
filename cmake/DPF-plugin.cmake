@@ -90,7 +90,7 @@ include(CMakeParseArguments)
 #       list of sources which are part of both DSP and UI
 #
 function(dpf_add_plugin NAME)
-  set(options MONOLITHIC)
+  set(options MONOLITHIC NO_SHARED_RESOURCES)
   set(oneValueArgs UI_TYPE)
   set(multiValueArgs TARGETS FILES_DSP FILES_UI FILES_COMMON)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -102,10 +102,10 @@ function(dpf_add_plugin NAME)
   set(_dgl_library)
   if(_dpf_plugin_FILES_UI)
     if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
-      dpf__add_dgl_cairo()
+      dpf__add_dgl_cairo("${_dpf_plugin_NO_SHARED_RESOURCES}")
       set(_dgl_library dgl-cairo)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
-      dpf__add_dgl_opengl()
+      dpf__add_dgl_opengl("${_dpf_plugin_NO_SHARED_RESOURCES}")
       set(_dgl_library dgl-opengl)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
@@ -472,7 +472,7 @@ endfunction()
 #
 # Add the Cairo variant of DGL, if not already available.
 #
-function(dpf__add_dgl_cairo)
+function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
   if(TARGET dgl-cairo)
     return()
   endif()
@@ -490,7 +490,6 @@ function(dpf__add_dgl_cairo)
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/Resources.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
@@ -500,6 +499,11 @@ function(dpf__add_dgl_cairo)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Cairo.cpp")
+  if(NO_SHARED_RESOURCES)
+    target_compile_definitions(dgl-cairo PUBLIC "DGL_NO_SHARED_RESOURCES")
+  else()
+    target_sources(dgl-cairo PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  endif()
   if(NOT APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
@@ -532,7 +536,7 @@ endfunction()
 #
 # Add the OpenGL variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl)
+function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
   if(TARGET dgl-opengl)
     return()
   endif()
@@ -551,7 +555,6 @@ function(dpf__add_dgl_opengl)
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
-    "${DPF_ROOT_DIR}/dgl/src/Resources.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
@@ -562,6 +565,11 @@ function(dpf__add_dgl_opengl)
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(NO_SHARED_RESOURCES)
+    target_compile_definitions(dgl-opengl PUBLIC "DGL_NO_SHARED_RESOURCES")
+  else()
+    target_sources(dgl-opengl PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  endif()
   if(NOT APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
