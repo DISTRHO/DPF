@@ -1,5 +1,6 @@
 # DISTRHO Plugin Framework (DPF)
 # Copyright (C) 2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
+# Copyright (C) 2022 Filipe Coelho <falktx@falktx.com>
 #
 # SPDX-License-Identifier: ISC
 
@@ -201,8 +202,8 @@ function(dpf__build_jack NAME DGL_LIBRARY)
   if(SDL2_FOUND)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_SDL2")
     target_include_directories("${NAME}-jack" PRIVATE ${SDL2_INCLUDE_DIRS})
-    target_link_directories("${NAME}-jack" PUBLIC ${SDL2_LIBRARY_DIRS})
     target_link_libraries("${NAME}-jack" PRIVATE ${SDL2_LIBRARIES})
+    dpf__target_link_directories("${NAME}-jack" ${SDL2_LIBRARY_DIRS})
   endif()
 
   if(APPLE OR WIN32)
@@ -213,14 +214,14 @@ function(dpf__build_jack NAME DGL_LIBRARY)
     if(ALSA_FOUND)
       target_compile_definitions("${NAME}" PUBLIC "HAVE_ALSA")
       target_include_directories("${NAME}-jack" PRIVATE ${ALSA_INCLUDE_DIRS})
-      target_link_directories("${NAME}-jack" PUBLIC ${ALSA_LIBRARY_DIRS})
       target_link_libraries("${NAME}-jack" PRIVATE ${ALSA_LIBRARIES})
+      dpf__target_link_directories("${NAME}-jack" ${ALSA_LIBRARY_DIRS})
     endif()
     if(PULSEAUDIO_FOUND)
       target_compile_definitions("${NAME}" PUBLIC "HAVE_PULSEAUDIO")
       target_include_directories("${NAME}-jack" PRIVATE ${PULSEAUDIO_INCLUDE_DIRS})
-      target_link_directories("${NAME}-jack" PUBLIC ${PULSEAUDIO_LIBRARY_DIRS})
       target_link_libraries("${NAME}-jack" PRIVATE ${PULSEAUDIO_LIBRARIES})
+      dpf__target_link_directories("${NAME}-jack" ${PULSEAUDIO_LIBRARY_DIRS})
     endif()
     if(ALSA_FOUND OR PULSEAUDIO_FOUND)
       target_compile_definitions("${NAME}" PUBLIC "HAVE_RTAUDIO")
@@ -294,8 +295,8 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
 
     target_compile_definitions("${NAME}" PUBLIC "HAVE_LIBLO")
     target_include_directories("${NAME}-dssi-ui" PRIVATE ${LIBLO_INCLUDE_DIRS})
-    target_link_directories("${NAME}-dssi-ui" PUBLIC ${LIBLO_LIBRARY_DIRS})
     target_link_libraries("${NAME}-dssi-ui" PRIVATE ${LIBLO_LIBRARIES})
+    dpf__target_link_directories("${NAME}-dssi-ui" ${LIBLO_LIBRARY_DIRS})
   endif()
 endfunction()
 
@@ -861,6 +862,20 @@ macro(dpf__create_dummy_source_list VAR)
   set("${VAR}")
   if(CMAKE_VERSION VERSION_LESS "3.11")
     dpf__ensure_sources_non_empty("${VAR}")
+  endif()
+endmacro()
+
+# dpf__target_link_directories
+# ------------------------------------------------------------------------------
+#
+# Call `target_link_directories` if cmake >= 3.13,
+# otherwise fallback to global `link_directories`.
+#
+macro(dpf__target_link_directories NAME DIRS)
+  if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.13")
+    target_link_directories("${NAME}" PUBLIC ${DIRS})
+  else()
+    link_directories(${DIRS})
   endif()
 endmacro()
 
