@@ -284,7 +284,10 @@ endif
 
 ifeq ($(WITH_LTO),true)
 BASE_FLAGS += -fno-strict-aliasing -flto
-LINK_OPTS  += -fno-strict-aliasing -flto -Werror=odr -Werror=lto-type-mismatch
+LINK_OPTS  += -fno-strict-aliasing -flto -Werror=odr
+ifeq ($(GCC),true)
+LINK_OPTS  += -Werror=lto-type-mismatch
+endif
 endif
 
 BUILD_C_FLAGS   = $(BASE_FLAGS) -std=gnu99 $(CFLAGS)
