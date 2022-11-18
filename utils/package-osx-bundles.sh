@@ -55,6 +55,7 @@ DPF_UTILS_DIR=$(dirname ${0})
 # can be overridden by environment variables
 WELCOME_TXT=${WELCOME_TXT:=${DPF_UTILS_DIR}/plugin.pkg/welcome.txt.in}
 
+mkdir -p build
 sed -e "s|@name@|${NAME}|" "${WELCOME_TXT}" > build/welcome.txt
 sed -e "s|@builddir@|${PWD}/build|" \
     -e "s|@lv2bundleref@|dpf-${SNAME}-lv2bundles.pkg|" \
