@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -27,6 +27,7 @@
 # include <windows.h>
 #endif
 
+// FIXME make Mutex stop relying on pthread
 #include <pthread.h>
 
 START_NAMESPACE_DISTRHO
@@ -45,12 +46,15 @@ public:
     Mutex(const bool inheritPriority = true) noexcept
         : fMutex()
     {
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         pthread_mutexattr_t attr;
         pthread_mutexattr_init(&attr);
         pthread_mutexattr_setprotocol(&attr, inheritPriority ? PTHREAD_PRIO_INHERIT : PTHREAD_PRIO_NONE);
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
         pthread_mutex_init(&fMutex, &attr);
         pthread_mutexattr_destroy(&attr);
+       #endif
     }
 
     /*
@@ -58,7 +62,10 @@ public:
      */
     ~Mutex() noexcept
     {
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         pthread_mutex_destroy(&fMutex);
+       #endif
     }
 
     /*
@@ -66,7 +73,10 @@ public:
      */
     bool lock() const noexcept
     {
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         return (pthread_mutex_lock(&fMutex) == 0);
+       #endif
     }
 
     /*
@@ -75,7 +85,10 @@ public:
      */
     bool tryLock() const noexcept
     {
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         return (pthread_mutex_trylock(&fMutex) == 0);
+       #endif
     }
 
     /*
@@ -83,11 +96,17 @@ public:
      */
     void unlock() const noexcept
     {
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         pthread_mutex_unlock(&fMutex);
+       #endif
     }
 
 private:
+   #ifdef DISTRHO_OS_WINDOWS__TODO
+   #else
     mutable pthread_mutex_t fMutex;
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE(Mutex)
 };
@@ -102,22 +121,22 @@ public:
      * Constructor.
      */
     RecursiveMutex() noexcept
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         : fSection()
-#else
+       #else
         : fMutex()
-#endif
+       #endif
     {
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         InitializeCriticalSection(&fSection);
-#else
+       #else
         pthread_mutexattr_t attr;
         pthread_mutexattr_init(&attr);
         pthread_mutexattr_setprotocol(&attr, PTHREAD_PRIO_INHERIT);
         pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
         pthread_mutex_init(&fMutex, &attr);
         pthread_mutexattr_destroy(&attr);
-#endif
+       #endif
     }
 
     /*
@@ -125,11 +144,11 @@ public:
      */
     ~RecursiveMutex() noexcept
     {
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         DeleteCriticalSection(&fSection);
-#else
+       #else
         pthread_mutex_destroy(&fMutex);
-#endif
+       #endif
     }
 
     /*
@@ -137,12 +156,12 @@ public:
      */
     bool lock() const noexcept
     {
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         EnterCriticalSection(&fSection);
         return true;
-#else
+       #else
         return (pthread_mutex_lock(&fMutex) == 0);
-#endif
+       #endif
     }
 
     /*
@@ -151,11 +170,11 @@ public:
      */
     bool tryLock() const noexcept
     {
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         return (TryEnterCriticalSection(&fSection) != FALSE);
-#else
+       #else
         return (pthread_mutex_trylock(&fMutex) == 0);
-#endif
+       #endif
     }
 
     /*
@@ -163,23 +182,24 @@ public:
      */
     void unlock() const noexcept
     {
-#ifdef DISTRHO_OS_WINDOWS
+       #ifdef DISTRHO_OS_WINDOWS
         LeaveCriticalSection(&fSection);
-#else
+       #else
         pthread_mutex_unlock(&fMutex);
-#endif
+       #endif
     }
 
 private:
-#ifdef DISTRHO_OS_WINDOWS
+   #ifdef DISTRHO_OS_WINDOWS
     mutable CRITICAL_SECTION fSection;
-#else
+   #else
     mutable pthread_mutex_t fMutex;
-#endif
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE(RecursiveMutex)
 };
 
+#ifndef DISTRHO_OS_WINDOWS
 // -----------------------------------------------------------------------
 // Signal class
 
@@ -260,6 +280,7 @@ private:
     DISTRHO_PREVENT_HEAP_ALLOCATION
     DISTRHO_DECLARE_NON_COPYABLE(Signal)
 };
+#endif // DISTRHO_OS_WINDOWS
 
 // -----------------------------------------------------------------------
 // Helper class to lock&unlock a mutex during a function scope.
