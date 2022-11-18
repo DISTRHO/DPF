@@ -89,7 +89,7 @@ struct ClapEventQueue
     };
 
     struct Queue {
-        Mutex lock;
+        RecursiveMutex lock;
         uint allocated;
         uint used;
         Event* events;
@@ -106,7 +106,7 @@ struct ClapEventQueue
 
         void addEventFromUI(const Event& event)
         {
-            const MutexLocker cml(lock);
+            const RecursiveMutexLocker crml(lock);
 
             if (events == nullptr)
             {
@@ -827,9 +827,9 @@ public:
        #if DISTRHO_PLUGIN_HAS_UI
         if (const clap_output_events_t* const outputEvents = process->out_events)
         {
-            const MutexTryLocker cmtl(fEventQueue.lock);
+            const RecursiveMutexTryLocker crmtl(fEventQueue.lock);
 
-            if (cmtl.wasLocked())
+            if (crmtl.wasLocked())
             {
                 // reuse the same struct for gesture and parameters, they are compatible up to where it matters
                 clap_event_param_value_t clapEvent = {
