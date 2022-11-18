@@ -238,6 +238,8 @@ function(dpf__build_jack NAME DGL_LIBRARY)
       "${APPLE_COREAUDIO_FRAMEWORK}"
       "${APPLE_COREFOUNDATION_FRAMEWORK}"
       "${APPLE_COREMIDI_FRAMEWORK}")
+  elseif(WIN32)
+    target_link_libraries("${NAME}-jack" PRIVATE "dsound" "ole32" "winmm")
   endif()
 endfunction()
 
