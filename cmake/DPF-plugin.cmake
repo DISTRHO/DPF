@@ -347,6 +347,7 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
 
   add_custom_command(TARGET "${NAME}-lv2" POST_BUILD
     COMMAND
+    ${CMAKE_CROSSCOMPILING_EMULATOR}
     "$<TARGET_FILE:lv2_ttl_generator>"
     "$<TARGET_FILE:${NAME}-lv2>"
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2"
