@@ -195,7 +195,10 @@ void Plugin::initState(const uint32_t index, State& state)
     uint hints = 0x0;
     String stateKey, defaultStateValue;
 
-   #if defined(__clang__)
+   #if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable:4996)
+   #elif defined(__clang__)
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wdeprecated-declarations"
    #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
@@ -205,7 +208,9 @@ void Plugin::initState(const uint32_t index, State& state)
     initState(index, stateKey, defaultStateValue);
     if (isStateFile(index))
         hints = kStateIsFilenamePath;
-   #if defined(__clang__)
+   #if defined(_MSC_VER)
+    #pragma warning(pop)
+   #elif defined(__clang__)
     #pragma clang diagnostic pop
    #elif defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
     #pragma GCC diagnostic pop

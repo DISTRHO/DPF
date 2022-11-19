@@ -448,19 +448,24 @@ protected:
       A function called when a special key is pressed or released.
       DEPRECATED use onKeyboard or onCharacterInput
     */
-#if defined(__clang__)
-# pragma clang diagnostic push
-# pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+   #if defined(_MSC_VER)
+    #pragma warning(push)
+    #pragma warning(disable:4996)
+   #elif defined(__clang__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+   #elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+   #endif
     virtual bool onSpecial(const SpecialEvent&) { return false; }
-#if defined(__clang__)
-# pragma clang diagnostic pop
-#elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
-# pragma GCC diagnostic pop
-#endif
+   #if defined(_MSC_VER)
+    #pragma warning(pop)
+   #elif defined(__clang__)
+    #pragma clang diagnostic pop
+   #elif defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__) >= 460
+    #pragma GCC diagnostic pop
+   #endif
 
 private:
     struct PrivateData;
