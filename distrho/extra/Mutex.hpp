@@ -28,7 +28,12 @@
 #endif
 
 // FIXME make Mutex stop relying on pthread
+#ifdef _MSC_VER
+#define DISTRHO_OS_WINDOWS__TODO
+#warning DPF Mutex implementation is TODO on MSVC
+#else
 #include <pthread.h>
+#endif
 
 START_NAMESPACE_DISTRHO
 
