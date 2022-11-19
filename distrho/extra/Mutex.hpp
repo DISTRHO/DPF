@@ -49,7 +49,10 @@ public:
      * Constructor.
      */
     Mutex(const bool inheritPriority = true) noexcept
+       #ifdef DISTRHO_OS_WINDOWS__TODO
+       #else
         : fMutex()
+       #endif
     {
        #ifdef DISTRHO_OS_WINDOWS__TODO
        #else

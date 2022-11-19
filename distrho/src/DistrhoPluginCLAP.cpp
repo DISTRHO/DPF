@@ -2312,37 +2312,37 @@ static const clap_plugin_note_ports_t clap_plugin_note_ports = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin parameters
 
-static CLAP_ABI uint32_t clap_plugin_params_count(const clap_plugin_t* const plugin)
+static uint32_t CLAP_ABI clap_plugin_params_count(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterCount();
 }
 
-static CLAP_ABI bool clap_plugin_params_get_info(const clap_plugin_t* const plugin, const uint32_t index, clap_param_info_t* const info)
+static bool CLAP_ABI clap_plugin_params_get_info(const clap_plugin_t* const plugin, const uint32_t index, clap_param_info_t* const info)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterInfo(index, info);
 }
 
-static CLAP_ABI bool clap_plugin_params_get_value(const clap_plugin_t* const plugin, const clap_id param_id, double* const value)
+static bool CLAP_ABI clap_plugin_params_get_value(const clap_plugin_t* const plugin, const clap_id param_id, double* const value)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterValue(param_id, value);
 }
 
-static CLAP_ABI bool clap_plugin_params_value_to_text(const clap_plugin_t* plugin, const clap_id param_id, const double value, char* const display, const uint32_t size)
+static bool CLAP_ABI clap_plugin_params_value_to_text(const clap_plugin_t* plugin, const clap_id param_id, const double value, char* const display, const uint32_t size)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterStringForValue(param_id, value, display, size);
 }
 
-static CLAP_ABI bool clap_plugin_params_text_to_value(const clap_plugin_t* plugin, const clap_id param_id, const char* const display, double* const value)
+static bool CLAP_ABI clap_plugin_params_text_to_value(const clap_plugin_t* plugin, const clap_id param_id, const char* const display, double* const value)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getParameterValueForString(param_id, display, value);
 }
 
-static CLAP_ABI void clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
+static void CLAP_ABI clap_plugin_params_flush(const clap_plugin_t* plugin, const clap_input_events_t* in, const clap_output_events_t* out)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->flushParameters(in, out, 0);
@@ -2361,7 +2361,7 @@ static const clap_plugin_params_t clap_plugin_params = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin latency
 
-static CLAP_ABI uint32_t clap_plugin_latency_get(const clap_plugin_t* const plugin)
+static uint32_t CLAP_ABI clap_plugin_latency_get(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->getLatency();
@@ -2376,13 +2376,13 @@ static const clap_plugin_latency_t clap_plugin_latency = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin state
 
-static CLAP_ABI bool clap_plugin_state_save(const clap_plugin_t* const plugin, const clap_ostream_t* const stream)
+static bool CLAP_ABI clap_plugin_state_save(const clap_plugin_t* const plugin, const clap_ostream_t* const stream)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->stateSave(stream);
 }
 
-static CLAP_ABI bool clap_plugin_state_load(const clap_plugin_t* const plugin, const clap_istream_t* const stream)
+static bool CLAP_ABI clap_plugin_state_load(const clap_plugin_t* const plugin, const clap_istream_t* const stream)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->stateLoad(stream);
@@ -2397,19 +2397,19 @@ static const clap_plugin_state_t clap_plugin_state = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin
 
-static CLAP_ABI bool clap_plugin_init(const clap_plugin_t* const plugin)
+static bool CLAP_ABI clap_plugin_init(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->init();
 }
 
-static CLAP_ABI void clap_plugin_destroy(const clap_plugin_t* const plugin)
+static void CLAP_ABI clap_plugin_destroy(const clap_plugin_t* const plugin)
 {
     delete static_cast<PluginCLAP*>(plugin->plugin_data);
     std::free(const_cast<clap_plugin_t*>(plugin));
 }
 
-static CLAP_ABI bool clap_plugin_activate(const clap_plugin_t* const plugin,
+static bool CLAP_ABI clap_plugin_activate(const clap_plugin_t* const plugin,
                                           const double sample_rate,
                                           uint32_t,
                                           const uint32_t max_frames_count)
@@ -2422,35 +2422,35 @@ static CLAP_ABI bool clap_plugin_activate(const clap_plugin_t* const plugin,
     return true;
 }
 
-static CLAP_ABI void clap_plugin_deactivate(const clap_plugin_t* const plugin)
+static void CLAP_ABI clap_plugin_deactivate(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     instance->deactivate();
 }
 
-static CLAP_ABI bool clap_plugin_start_processing(const clap_plugin_t*)
+static bool CLAP_ABI clap_plugin_start_processing(const clap_plugin_t*)
 {
     // nothing to do
     return true;
 }
 
-static CLAP_ABI void clap_plugin_stop_processing(const clap_plugin_t*)
+static void CLAP_ABI clap_plugin_stop_processing(const clap_plugin_t*)
 {
     // nothing to do
 }
 
-static CLAP_ABI void clap_plugin_reset(const clap_plugin_t*)
+static void CLAP_ABI clap_plugin_reset(const clap_plugin_t*)
 {
     // nothing to do
 }
 
-static CLAP_ABI clap_process_status clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)
+static clap_process_status CLAP_ABI clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return instance->process(process) ? CLAP_PROCESS_CONTINUE : CLAP_PROCESS_ERROR;
 }
 
-static CLAP_ABI const void* clap_plugin_get_extension(const clap_plugin_t*, const char* const id)
+static const void* CLAP_ABI clap_plugin_get_extension(const clap_plugin_t*, const char* const id)
 {
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
@@ -2481,7 +2481,7 @@ static CLAP_ABI const void* clap_plugin_get_extension(const clap_plugin_t*, cons
     return nullptr;
 }
 
-static void clap_plugin_on_main_thread(const clap_plugin_t* const plugin)
+static void CLAP_ABI clap_plugin_on_main_thread(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     instance->onMainThread();
@@ -2490,12 +2490,13 @@ static void clap_plugin_on_main_thread(const clap_plugin_t* const plugin)
 // --------------------------------------------------------------------------------------------------------------------
 // plugin factory
 
-static uint32_t clap_get_plugin_count(const clap_plugin_factory_t*)
+static uint32_t CLAP_ABI clap_get_plugin_count(const clap_plugin_factory_t*)
 {
     return 1;
 }
 
-static const clap_plugin_descriptor_t* clap_get_plugin_descriptor(const clap_plugin_factory_t*, const uint32_t index)
+static const clap_plugin_descriptor_t* CLAP_ABI clap_get_plugin_descriptor(const clap_plugin_factory_t*,
+                                                                           const uint32_t index)
 {
     DISTRHO_SAFE_ASSERT_UINT_RETURN(index == 0, index, nullptr);
 
@@ -2528,9 +2529,9 @@ static const clap_plugin_descriptor_t* clap_get_plugin_descriptor(const clap_plu
     return &descriptor;
 }
 
-static const clap_plugin_t* clap_create_plugin(const clap_plugin_factory_t* const factory,
-                                               const clap_host_t* const host,
-                                               const char*)
+static const clap_plugin_t* CLAP_ABI clap_create_plugin(const clap_plugin_factory_t* const factory,
+                                                        const clap_host_t* const host,
+                                                        const char*)
 {
     clap_plugin_t* const pluginptr = static_cast<clap_plugin_t*>(std::malloc(sizeof(clap_plugin_t)));
     DISTRHO_SAFE_ASSERT_RETURN(pluginptr != nullptr, nullptr);
@@ -2571,7 +2572,7 @@ static const clap_plugin_factory_t clap_plugin_factory = {
 // --------------------------------------------------------------------------------------------------------------------
 // plugin entry
 
-static bool clap_plugin_entry_init(const char* const plugin_path)
+static bool CLAP_ABI clap_plugin_entry_init(const char* const plugin_path)
 {
     static String bundlePath;
     bundlePath = plugin_path;
@@ -2599,12 +2600,12 @@ static bool clap_plugin_entry_init(const char* const plugin_path)
     return true;
 }
 
-static void clap_plugin_entry_deinit(void)
+static void CLAP_ABI clap_plugin_entry_deinit(void)
 {
     sPlugin = nullptr;
 }
 
-static const void* clap_plugin_entry_get_factory(const char* const factory_id)
+static const void* CLAP_ABI clap_plugin_entry_get_factory(const char* const factory_id)
 {
     if (std::strcmp(factory_id, CLAP_PLUGIN_FACTORY_ID) == 0)
         return &clap_plugin_factory;

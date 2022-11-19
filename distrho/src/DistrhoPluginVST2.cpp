@@ -58,13 +58,13 @@ typedef union _VstEvent {
 } VstEvent;
 
 typedef struct _HostVstEvents {
-    int numEvents;
+    int32_t numEvents;
     void* reserved;
     const VstEvent* events[];
 } HostVstEvents;
 
 typedef struct _PluginVstEvents {
-    int numEvents;
+    int32_t numEvents;
     void* reserved;
     VstEvent* events[1];
 } PluginVstEvents;
