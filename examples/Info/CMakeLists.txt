@@ -2,7 +2,7 @@
 # ------------------------------ #
 
 dpf_add_plugin(d_info
-  TARGETS jack lv2 vst2 vst3
+  TARGETS jack lv2 vst2 vst3 clap
   FILES_DSP
       InfoExamplePlugin.cpp
   FILES_UI
