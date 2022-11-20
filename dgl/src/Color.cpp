@@ -121,6 +121,48 @@ Color Color::withAlpha(const float alpha2) const noexcept
     return color;
 }
 
+Color Color::minus(const int value) const noexcept
+{
+    const float fvalue = static_cast<float>(value)/255.f;
+    Color color(*this);
+    color.red -= fvalue;
+    color.green -= fvalue;
+    color.blue -= fvalue;
+    color.fixBounds();
+    return color;
+}
+
+Color Color::minus(const float value) const noexcept
+{
+    Color color(*this);
+    color.red -= value;
+    color.green -= value;
+    color.blue -= value;
+    color.fixBounds();
+    return color;
+}
+
+Color Color::plus(const int value) const noexcept
+{
+    const float fvalue = static_cast<float>(value)/255.f;
+    Color color(*this);
+    color.red += fvalue;
+    color.green += fvalue;
+    color.blue += fvalue;
+    color.fixBounds();
+    return color;
+}
+
+Color Color::plus(const float value) const noexcept
+{
+    Color color(*this);
+    color.red += value;
+    color.green += value;
+    color.blue += value;
+    color.fixBounds();
+    return color;
+}
+
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
     float m1, m2;
