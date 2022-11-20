@@ -1645,6 +1645,7 @@ public:
         // TODO hash the parameter symbol
         info->param_id = rindex;
 
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1679,6 +1680,7 @@ public:
             return V3_OK;
        #endif
         }
+      #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
@@ -1747,6 +1749,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(normalized >= 0.0 && normalized <= 1.0, V3_INVALID_ARG);
 
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1769,6 +1772,7 @@ public:
             return V3_OK;
        #endif
         }
+      #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
@@ -1815,6 +1819,7 @@ public:
 
     v3_result getParameterValueForString(const v3_param_id rindex, int16_t* const input, double* const output)
     {
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1843,6 +1848,7 @@ public:
             return V3_INVALID_ARG;
        #endif
         }
+      #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
@@ -1883,6 +1889,7 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(normalized >= 0.0 && normalized <= 1.0, 0.0);
 
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1900,6 +1907,7 @@ public:
             return std::round(normalized * fProgramCountMinusOne);
        #endif
         }
+      #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
@@ -1928,6 +1936,7 @@ public:
 
     double plainParameterToNormalized(const v3_param_id rindex, const double plain)
     {
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -1945,6 +1954,7 @@ public:
             return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
        #endif
         }
+      #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
@@ -1969,7 +1979,7 @@ public:
             return 0.0;
        #endif
 
-      #if DPF_VST3_HAS_INTERNAL_PARAMETERS && !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
+      #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         switch (rindex)
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -2006,7 +2016,7 @@ public:
             return V3_INVALID_ARG;
        #endif
 
-       #if DPF_VST3_HAS_INTERNAL_PARAMETERS && !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
+       #if DPF_VST3_USES_SEPARATE_CONTROLLER || DISTRHO_PLUGIN_WANT_LATENCY || DISTRHO_PLUGIN_WANT_PROGRAMS
         if (rindex < kVst3InternalParameterBaseCount)
         {
             fCachedParameterValues[rindex] = normalizedParameterToPlain(rindex, normalized);
