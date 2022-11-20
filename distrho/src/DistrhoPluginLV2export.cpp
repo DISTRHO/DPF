@@ -393,9 +393,18 @@ void lv2_generate_ttl(const char* const basename)
             }
 
             if ((hints & kStateIsFilenamePath) == kStateIsFilenamePath)
+            {
+               #ifdef __MOD_DEVICES__
+                const String& fileTypes(plugin.getStateFileTypes(i));
+                if (fileTypes.isNotEmpty())
+                    pluginString += "    mod:fileTypes \"" + fileTypes + "\" ; \n";
+               #endif
                 pluginString += "    rdfs:range atom:Path .\n\n";
+            }
             else
+            {
                 pluginString += "    rdfs:range atom:String .\n\n";
+            }
 
             hasHostVisibleState = true;
         }

@@ -763,6 +763,27 @@ struct State {
     */
     String description;
 
+   #ifdef __MOD_DEVICES__
+   /**
+      The file types that a filename path state supports, written as a comma-separated string without whitespace.
+      Currently supported file types are:
+         - audioloop: Audio Loops, meant to be used for looper-style plugins
+         - audiorecording: Audio Recordings, triggered by plugins and stored in the unit
+         - audiosample: One-shot Audio Samples, meant to be used for sampler-style plugins
+         - audiotrack: Audio Tracks, meant to be used as full-performance/song or backtrack
+         - cabsim: Speaker Cabinets, meant as small IR audio files
+         - h2drumkit: Hydrogen Drumkits, must use h2drumkit file extension
+         - ir: Impulse Responses
+         - midiclip: MIDI Clips, to be used in sync with host tempo, must have mid or midi file extension
+         - midisong: MIDI Songs, meant to be used as full-performance/song or backtrack
+         - sf2: SF2 Instruments, must have sf2 or sf3 file extension
+         - sfz: SFZ Instruments, must have sfz file extension
+
+      @note This is a custom extension only valid in builds MOD Audio.
+    */
+    String fileTypes;
+   #endif
+
    /**
       Default constructor for a null state.
     */

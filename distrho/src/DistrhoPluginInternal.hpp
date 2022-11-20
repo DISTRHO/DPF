@@ -859,6 +859,15 @@ public:
         return fData->states[index].description;
     }
 
+   #ifdef __MOD_DEVICES__
+    const String& getStateFileTypes(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->stateCount, sFallbackString);
+
+        return fData->states[index].fileTypes;
+    }
+   #endif
+
 # if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getStateValue(const char* const key) const
     {
