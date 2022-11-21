@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -44,11 +44,11 @@ protected:
         : fLock(),
           fSignal(),
           fName(threadName),
-#ifdef PTW32_DLLPORT
+         #ifdef PTW32_DLLPORT
           fHandle({nullptr, 0}),
-#else
+         #else
           fHandle(0),
-#endif
+         #endif
           fShouldExit(false) {}
 
     /*
@@ -74,11 +74,11 @@ public:
      */
     bool isThreadRunning() const noexcept
     {
-#ifdef PTW32_DLLPORT
+       #ifdef PTW32_DLLPORT
         return (fHandle.p != nullptr);
-#else
+       #else
         return (fHandle != 0);
-#endif
+       #endif
     }
 
     /*
@@ -102,26 +102,32 @@ public:
         pthread_attr_t attr;
         pthread_attr_init(&attr);
 
-        struct sched_param sched_param;
-        std::memset(&sched_param, 0, sizeof(sched_param));
+        struct sched_param sched_param = {};
 
         if (withRealtimePriority)
         {
+           #ifdef __MOD_DEVICES__
+            int rtprio;
+            const char* const srtprio = std::getenv("MOD_PLUGIN_THREAD_PRIORITY");
+            if (srtprio != nullptr && (rtprio = std::atoi(srtprio)) > 0)
+                sched_param.sched_priority = rtprio - 1;
+            else
+           #endif
             sched_param.sched_priority = 80;
 
-#ifndef DISTRHO_OS_HAIKU
+           #ifndef DISTRHO_OS_HAIKU
             if (pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM)          == 0  &&
                 pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) == 0  &&
-# ifndef DISTRHO_OS_WINDOWS
+              #ifndef DISTRHO_OS_WINDOWS
                (pthread_attr_setschedpolicy(&attr, SCHED_FIFO)              == 0  ||
                 pthread_attr_setschedpolicy(&attr, SCHED_RR)                == 0) &&
-# endif
+              #endif
                 pthread_attr_setschedparam(&attr, &sched_param)             == 0)
             {
                 d_stdout("Thread setup with realtime priority successful");
             }
             else
-#endif
+           #endif
             {
                 d_stdout("Thread setup with realtime priority failed, going with normal priority instead");
                 pthread_attr_destroy(&attr);
@@ -145,11 +151,11 @@ public:
        }
 
         DISTRHO_SAFE_ASSERT_RETURN(ok, false);
-#ifdef PTW32_DLLPORT
+       #ifdef PTW32_DLLPORT
         DISTRHO_SAFE_ASSERT_RETURN(handle.p != nullptr, false);
-#else
+       #else
         DISTRHO_SAFE_ASSERT_RETURN(handle != 0, false);
-#endif
+       #endif
         pthread_detach(handle);
         _copyFrom(handle);
 
@@ -244,12 +250,12 @@ public:
     {
         DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
-#ifdef DISTRHO_OS_LINUX
+       #ifdef DISTRHO_OS_LINUX
         prctl(PR_SET_NAME, name, 0, 0, 0);
-#endif
-#if defined(__GLIBC__) && (__GLIBC__ * 1000 + __GLIBC_MINOR__) >= 2012 && !defined(DISTRHO_OS_GNU_HURD)
+       #endif
+       #if defined(__GLIBC__) && (__GLIBC__ * 1000 + __GLIBC_MINOR__) >= 2012 && !defined(DISTRHO_OS_GNU_HURD)
         pthread_setname_np(pthread_self(), name);
-#endif
+       #endif
     }
 
     // -------------------------------------------------------------------
@@ -266,12 +272,12 @@ private:
      */
     void _init() noexcept
     {
-#ifdef PTW32_DLLPORT
+       #ifdef PTW32_DLLPORT
         fHandle.p = nullptr;
         fHandle.x = 0;
-#else
+       #else
         fHandle = 0;
-#endif
+       #endif
     }
 
     /*
@@ -279,12 +285,12 @@ private:
      */
     void _copyFrom(const pthread_t& handle) noexcept
     {
-#ifdef PTW32_DLLPORT
+       #ifdef PTW32_DLLPORT
         fHandle.p = handle.p;
         fHandle.x = handle.x;
-#else
+       #else
         fHandle = handle;
-#endif
+       #endif
     }
 
     /*
@@ -292,12 +298,12 @@ private:
      */
     void _copyTo(volatile pthread_t& handle) const noexcept
     {
-#ifdef PTW32_DLLPORT
+       #ifdef PTW32_DLLPORT
         handle.p = fHandle.p;
         handle.x = fHandle.x;
-#else
+       #else
         handle = fHandle;
-#endif
+       #endif
     }
 
     /*
