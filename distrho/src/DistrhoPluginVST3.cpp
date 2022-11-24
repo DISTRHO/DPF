@@ -1446,13 +1446,17 @@ public:
            #if DISTRHO_PLUGIN_NUM_INPUTS > 0
             if (data->inputs != nullptr)
             {
-                for (int32_t j = 0; j < data->inputs->num_channels; ++j)
-                {
-                    while (!fEnabledInputs[i] && i < DISTRHO_PLUGIN_NUM_INPUTS)
-                        inputs[i++] = fDummyAudioBuffer;
+                for (int32_t b = 0; b < data->num_input_buses; ++b) {
+                    for (int32_t j = 0; j < data->inputs[b].num_channels; ++j)
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_INPUTS, i);
+                        if (!fEnabledInputs[i] && i < DISTRHO_PLUGIN_NUM_INPUTS) {
+                            inputs[i++] = fDummyAudioBuffer;
+                            continue;
+                        }
 
-                    DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_INPUTS, i);
-                    inputs[i++] = data->inputs->channel_buffers_32[j];
+                        inputs[i++] = data->inputs[b].channel_buffers_32[j];
+                    }
                 }
             }
            #endif
@@ -1465,13 +1469,17 @@ public:
            #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
             if (data->outputs != nullptr)
             {
-                for (int32_t j = 0; j < data->outputs->num_channels; ++j)
-                {
-                    while (!fEnabledOutputs[i] && i < DISTRHO_PLUGIN_NUM_OUTPUTS)
-                        outputs[i++] = fDummyAudioBuffer;
+                for (int32_t b = 0; b < data->num_output_buses; ++b) {
+                    for (int32_t j = 0; j < data->outputs[b].num_channels; ++j)
+                    {
+                        DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_OUTPUTS, i);
+                        if (!fEnabledOutputs[i] && i < DISTRHO_PLUGIN_NUM_OUTPUTS) {
+                            outputs[i++] = fDummyAudioBuffer;
+                            continue;
+                        }
 
-                    DISTRHO_SAFE_ASSERT_INT_BREAK(i < DISTRHO_PLUGIN_NUM_OUTPUTS, i);
-                    outputs[i++] = data->outputs->channel_buffers_32[j];
+                        outputs[i++] = data->outputs[b].channel_buffers_32[j];
+                    }
                 }
             }
            #endif
