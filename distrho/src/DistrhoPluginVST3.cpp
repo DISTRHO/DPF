@@ -2810,6 +2810,7 @@ private:
 
             // d_debug("setAudioBusArrangement %d %d | %d %lx", (int)isInput, numBuses, busId, arr);
 
+            size_t nth_speaker = 0;
             for (uint32_t i=0; i<numPorts; ++i)
             {
                 AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
@@ -2820,18 +2821,9 @@ private:
                     continue;
                 }
 
-                // get the only valid speaker arrangement for this bus, assuming enabled
-                const v3_speaker_arrangement earr = getSpeakerArrangementForAudioPort<isInput>(busInfo, port.groupId, busId);
-
-                // fail if host tries to map it to anything else
-                // FIXME should we allow to map speaker to zero as a way to disable it?
-                if (earr != arr /* && arr != 0 */)
-                {
-                    ok = false;
-                    continue;
-                }
-
-                enabledPorts[i] = arr != 0;
+                v3_speaker_arrangement earr = (uint64_t)1 << nth_speaker;
+                enabledPorts[i] = 0 != (arr & earr);
+                 ++nth_speaker;
             }
         }
 
