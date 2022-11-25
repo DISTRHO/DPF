@@ -785,6 +785,9 @@ function(dpf__set_target_defaults NAME)
     target_compile_options("${NAME}" PUBLIC "/UTF-8")
     target_compile_definitions("${NAME}" PUBLIC "_CRT_SECURE_NO_WARNINGS")
   endif()
+  if (CMAKE_COMPILER_IS_GNUCXX)
+    target_compile_options("${NAME}" PUBLIC "-fno-gnu-unique")
+  endif()
 endfunction()
 
 # dpf__add_plugin_main
