@@ -35,17 +35,7 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-#if defined(DGL_USE_GLES2)
-static void notImplemented(const char* const name)
-{
-//     d_stderr2("GLES2 function not implemented: %s", name);
-}
-#elif defined(DGL_USE_GLES3)
-static void notImplemented(const char* const name)
-{
-    d_stderr2("GLES3 function not implemented: %s", name);
-}
-#elif defined(DGL_USE_OPENGL3)
+#ifdef DGL_USE_OPENGL3
 static void notImplemented(const char* const name)
 {
     d_stderr2("OpenGL3 function not implemented: %s", name);

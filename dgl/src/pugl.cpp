@@ -214,12 +214,12 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
     if (view->backend != nullptr)
     {
       #ifdef DGL_OPENGL
-       #if defined(DGL_USE_OPENGL3) || defined(DGL_USE_GLES3)
-        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
-        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
-       #elif defined(DGL_USE_GLES2)
+       #if defined(DGL_USE_GLES2)
         puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+       #elif defined(DGL_USE_OPENGL3)
+        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
        #else
         puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_TRUE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
