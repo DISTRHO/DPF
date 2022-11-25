@@ -31,7 +31,10 @@
 # include <stdlib.h>
 #endif
 
-#if defined(DISTRHO_OS_WINDOWS) && !defined(STATIC_BUILD) && !DISTRHO_IS_STANDALONE
+#ifdef DISTRHO_OS_WINDOWS
+# if DISTRHO_IS_STANDALONE
+constexpr const HINSTANCE hInstance = nullptr;
+# else
 static HINSTANCE hInstance = nullptr;
 
 DISTRHO_PLUGIN_EXPORT
@@ -41,6 +44,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
         hInstance = hInst;
     return 1;
 }
+# endif
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -51,25 +55,22 @@ const char* getBinaryFilename()
 {
     static String filename;
 
-#ifndef STATIC_BUILD
+  #ifndef STATIC_BUILD
     if (filename.isNotEmpty())
         return filename;
 
-# ifdef DISTRHO_OS_WINDOWS
-   #if DISTRHO_IS_STANDALONE
-    constexpr const HINSTANCE hInstance = nullptr;
-   #endif
+   #ifdef DISTRHO_OS_WINDOWS
     CHAR filenameBuf[MAX_PATH];
     filenameBuf[0] = '\0';
     GetModuleFileNameA(hInstance, filenameBuf, sizeof(filenameBuf));
     filename = filenameBuf;
-# else
+   #else
     Dl_info info;
     dladdr((void*)getBinaryFilename, &info);
     char filenameBuf[PATH_MAX];
     filename = realpath(info.dli_fname, filenameBuf);
-# endif
-#endif
+   #endif
+  #endif
 
     return filename;
 }

@@ -251,11 +251,6 @@ struct RtAudioBridge : NativeBridge {
         return true;
     }
 
-    /* RtAudio in macOS uses a different than usual way to handle audio block size,
-     * where RTAUDIO_MINIMIZE_LATENCY makes CoreAudio use very low latencies (around 15 samples).
-     * As such, dynamic buffer sizes are meaningless there.
-     */
-   #ifndef DISTRHO_OS_MAC
     bool supportsBufferSizeChanges() const override
     {
         return true;
@@ -285,7 +280,6 @@ struct RtAudioBridge : NativeBridge {
         activate();
         return ok;
     }
-   #endif
 
     bool _open(const bool withInput)
     {
@@ -321,7 +315,15 @@ struct RtAudioBridge : NativeBridge {
        #endif
 
         RtAudio::StreamOptions opts;
-        opts.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_MINIMIZE_LATENCY | RTAUDIO_ALSA_USE_DEFAULT;
+        opts.flags = RTAUDIO_NONINTERLEAVED | RTAUDIO_ALSA_USE_DEFAULT;
+       #ifndef DISTRHO_OS_MAC
+       /* RtAudio in macOS uses a different than usual way to handle audio block size,
+        * where RTAUDIO_MINIMIZE_LATENCY makes CoreAudio use very low latencies (around 15 samples).
+        * That has serious performance drawbacks, so we skip that here.
+        */
+        opts.flags |= RTAUDIO_MINIMIZE_LATENCY;
+       #endif
+        opts.numberOfBuffers = 2;
         opts.streamName = name.buffer();
 
         try {
