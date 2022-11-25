@@ -719,6 +719,7 @@ MOD_ENVIRONMENT = \
 	CXXFLAGS="-I${1}/staging/usr/include $(EXTRA_MOD_FLAGS)" \
 	LDFLAGS="-L${1}/staging/usr/lib $(EXTRA_MOD_FLAGS)" \
 	EXE_WRAPPER="qemu-${3}-static -L ${1}/target" \
+	MOD_BUILD=true \
 	NOOPT=true
 
 modduo:
