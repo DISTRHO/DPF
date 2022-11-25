@@ -272,7 +272,7 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifeq ($(DEBUG),true)
-BASE_FLAGS += -DDEBUG -O0 -g
+BASE_FLAGS += -DDEBUG -O0 -g -fsanitize=address
 LINK_OPTS   =
 ifeq ($(WASM),true)
 LINK_OPTS  += -sASSERTIONS=1
