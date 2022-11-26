@@ -32,8 +32,8 @@
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
-# if DISTRHO_IS_STANDALONE
-constexpr const HINSTANCE hInstance = nullptr;
+# if DISTRHO_IS_STANDALONE || defined(STATIC_BUILD)
+static constexpr const HINSTANCE hInstance = nullptr;
 # else
 static HINSTANCE hInstance = nullptr;
 
