@@ -400,6 +400,7 @@ clean:
 	rm -rf $(TARGET_DIR)/$(NAME).lv2
 	rm -rf $(TARGET_DIR)/$(NAME).vst
 	rm -rf $(TARGET_DIR)/$(NAME).vst3
+	rm -rf $(TARGET_DIR)/$(NAME).clap
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DGL
