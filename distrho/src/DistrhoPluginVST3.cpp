@@ -4715,9 +4715,9 @@ struct dpf_factory : v3_plugin_factory_cpp {
         std::memset(info, 0, sizeof(*info));
 
         info->flags = 0x10; // unicode
-        DISTRHO_NAMESPACE::strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
-        DISTRHO_NAMESPACE::strncpy(info->url, sPlugin->getHomePage(), ARRAY_SIZE(info->url));
-        // DISTRHO_NAMESPACE::strncpy(info->email, "", ARRAY_SIZE(info->email)); // TODO
+        d_strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
+        d_strncpy(info->url, sPlugin->getHomePage(), ARRAY_SIZE(info->url));
+        // d_strncpy(info->email, "", ARRAY_SIZE(info->email)); // TODO
         return V3_OK;
     }
 
@@ -4738,17 +4738,17 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(idx <= 2, V3_INVALID_ARG);
 
         info->cardinality = 0x7FFFFFFF;
-        DISTRHO_NAMESPACE::strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
+        d_strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
 
         if (idx == 0)
         {
             std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         }
         else
         {
             std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
         }
 
         return V3_OK;
@@ -4806,21 +4806,21 @@ struct dpf_factory : v3_plugin_factory_cpp {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
        #endif
-        DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
-        DISTRHO_NAMESPACE::strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
-        DISTRHO_NAMESPACE::strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
-        DISTRHO_NAMESPACE::strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
-        DISTRHO_NAMESPACE::strncpy(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
+        d_strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
+        d_strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
+        d_strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
+        d_strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
+        d_strncpy(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
 
         if (idx == 0)
         {
             std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         }
         else
         {
             std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
         }
 
         return V3_OK;
@@ -4839,7 +4839,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER || !DISTRHO_PLUGIN_HAS_UI
         info->class_flags = V3_DISTRIBUTABLE;
        #endif
-        DISTRHO_NAMESPACE::strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
+        d_strncpy(info->sub_categories, getPluginCategories(), ARRAY_SIZE(info->sub_categories));
         DISTRHO_NAMESPACE::strncpy_utf16(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
         DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy_utf16(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
@@ -4848,12 +4848,12 @@ struct dpf_factory : v3_plugin_factory_cpp {
         if (idx == 0)
         {
             std::memcpy(info->class_id, dpf_tuid_class, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Audio Module Class", ARRAY_SIZE(info->category));
         }
         else
         {
             std::memcpy(info->class_id, dpf_tuid_controller, sizeof(v3_tuid));
-            DISTRHO_NAMESPACE::strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
+            d_strncpy(info->category, "Component Controller Class", ARRAY_SIZE(info->category));
         }
 
         return V3_OK;

@@ -1129,7 +1129,7 @@ public:
             if (hints & (kParameterIsBoolean|kParameterIsInteger))
                 info->flags |= CLAP_PARAM_IS_STEPPED;
 
-            DISTRHO_NAMESPACE::strncpy(info->name, fPlugin.getParameterName(index), CLAP_NAME_SIZE);
+            d_strncpy(info->name, fPlugin.getParameterName(index), CLAP_NAME_SIZE);
 
             uint wrtn;
             if (groupId != kPortGroupNone)
@@ -1145,7 +1145,7 @@ public:
                 wrtn = 0;
             }
 
-            DISTRHO_NAMESPACE::strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
+            d_strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
         }
 
         info->id = index;
@@ -1182,7 +1182,7 @@ public:
         {
             if (d_isEqual(static_cast<double>(enumValues.values[i].value), value))
             {
-                DISTRHO_NAMESPACE::strncpy(display, enumValues.values[i].label, size);
+                d_strncpy(display, enumValues.values[i].label, size);
                 return true;
             }
         }
@@ -1328,7 +1328,7 @@ public:
         const BusInfo& busInfo(busInfos[index]);
 
         info->id = busInfo.groupId;
-        DISTRHO_NAMESPACE::strncpy(info->name, busInfo.name, CLAP_NAME_SIZE);
+        d_strncpy(info->name, busInfo.name, CLAP_NAME_SIZE);
 
         info->flags = busInfo.isMain ? CLAP_AUDIO_PORT_IS_MAIN : 0x0;
         info->channel_count = busInfo.numChannels;
@@ -1893,16 +1893,15 @@ private:
                     case kPortGroupMono:
                         if (busInfo.isMain)
                         {
-                            DISTRHO_NAMESPACE::strncpy(busInfo.name,
-                                                       isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
+                            d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
                             break;
                         }
                     // fall-through
                     default:
                         if (group.name.isNotEmpty())
-                            DISTRHO_NAMESPACE::strncpy(busInfo.name, group.name, CLAP_NAME_SIZE);
+                            d_strncpy(busInfo.name, group.name, CLAP_NAME_SIZE);
                         else
-                            DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+                            d_strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
                         break;
                     }
 
@@ -1935,7 +1934,7 @@ private:
                         nonGroupSidechainId++
                     };
 
-                    DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+                    d_strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
 
                     busInfos.push_back(busInfo);
                 }
@@ -1961,12 +1960,11 @@ private:
 
                     if (busInfo.isMain)
                     {
-                        DISTRHO_NAMESPACE::strncpy(busInfo.name,
-                                                   isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
+                        d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", CLAP_NAME_SIZE);
                     }
                     else
                     {
-                        DISTRHO_NAMESPACE::strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
+                        d_strncpy(busInfo.name, port.name, CLAP_NAME_SIZE);
                     }
 
                     busInfos.push_back(busInfo);

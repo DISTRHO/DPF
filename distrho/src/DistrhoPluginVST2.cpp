@@ -484,7 +484,7 @@ public:
         case VST_EFFECT_OPCODE_04: // set program name
             if (char* const programName = (char*)ptr)
             {
-                strncpy(fProgramName, programName, 32);
+                d_strncpy(fProgramName, programName, 32);
                 return 1;
             }
             break;
@@ -492,7 +492,7 @@ public:
         case VST_EFFECT_OPCODE_05: // get program name
             if (char* const programName = (char*)ptr)
             {
-                strncpy(programName, fProgramName, 24);
+                d_strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -500,7 +500,7 @@ public:
         case VST_EFFECT_OPCODE_1D: // get program name indexed
             if (char* const programName = (char*)ptr)
             {
-                strncpy(programName, fProgramName, 24);
+                d_strncpy(programName, fProgramName, 24);
                 return 1;
             }
             break;
@@ -1421,7 +1421,7 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
     case VST_EFFECT_OPCODE_PARAM_GETLABEL:
         if (ptr != nullptr && index < static_cast<int32_t>(sPlugin->getParameterCount()))
         {
-            strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
+            d_strncpy((char*)ptr, sPlugin->getParameterUnit(index), 8);
             return 1;
         }
         return 0;
@@ -1431,9 +1431,9 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
         {
             const String& shortName(sPlugin->getParameterShortName(index));
             if (shortName.isNotEmpty())
-                strncpy((char*)ptr, shortName, 16);
+                d_strncpy((char*)ptr, shortName, 16);
             else
-                strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
+                d_strncpy((char*)ptr, sPlugin->getParameterName(index), 16);
             return 1;
         }
         return 0;
@@ -1446,17 +1446,17 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
                 memset(properties, 0, sizeof(vst_parameter_properties));
 
                 // full name
-                strncpy(properties->name,
-                        sPlugin->getParameterName(index),
-                        sizeof(properties->name));
+                d_strncpy(properties->name,
+                          sPlugin->getParameterName(index),
+                          sizeof(properties->name));
 
                 // short name
                 const String& shortName(sPlugin->getParameterShortName(index));
 
                 if (shortName.isNotEmpty())
-                    strncpy(properties->label,
-                            sPlugin->getParameterShortName(index),
-                            sizeof(properties->label));
+                    d_strncpy(properties->label,
+                              sPlugin->getParameterShortName(index),
+                              sizeof(properties->label));
 
                 // parameter hints
                 const uint32_t hints = sPlugin->getParameterHints(index);
@@ -1496,9 +1496,9 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
                         {
                             properties->flags |= VST_PARAMETER_FLAGS_CATEGORY;
                             properties->category = i + 1;
-                            strncpy(properties->category_label,
-                                    portGroup.name.buffer(),
-                                    sizeof(properties->category_label));
+                            d_strncpy(properties->category_label,
+                                      portGroup.name.buffer(),
+                                      sizeof(properties->category_label));
                             break;
                         }
                     }
@@ -1526,7 +1526,7 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
     case VST_EFFECT_OPCODE_EFFECT_NAME:
         if (char* const cptr = (char*)ptr)
         {
-            strncpy(cptr, sPlugin->getName(), 32);
+            d_strncpy(cptr, sPlugin->getName(), 32);
             return 1;
         }
         return 0;
@@ -1534,7 +1534,7 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
     case VST_EFFECT_OPCODE_VENDOR_NAME:
         if (char* const cptr = (char*)ptr)
         {
-            strncpy(cptr, sPlugin->getMaker(), 32);
+            d_strncpy(cptr, sPlugin->getMaker(), 32);
             return 1;
         }
         return 0;
@@ -1542,7 +1542,7 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
     case VST_EFFECT_OPCODE_PRODUCT_NAME:
         if (char* const cptr = (char*)ptr)
         {
-            strncpy(cptr, sPlugin->getLabel(), 32);
+            d_strncpy(cptr, sPlugin->getLabel(), 32);
             return 1;
         }
         return 0;
