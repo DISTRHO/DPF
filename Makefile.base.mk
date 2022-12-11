@@ -719,6 +719,8 @@ MOD_ENVIRONMENT = \
 	CXXFLAGS="-I${1}/staging/usr/include $(EXTRA_MOD_FLAGS)" \
 	LDFLAGS="-L${1}/staging/usr/lib $(EXTRA_MOD_FLAGS)" \
 	EXE_WRAPPER="qemu-${3}-static -L ${1}/target" \
+	HAVE_CAIRO=false \
+	HAVE_OPENGL=false \
 	MOD_BUILD=true \
 	NOOPT=true
 
