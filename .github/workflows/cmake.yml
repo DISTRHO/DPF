@@ -18,8 +18,8 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
-          dpf_path: .
           target: ${{ matrix.target }}
+          dpf_path: .
 
   ubuntu-22-04:
     strategy:
@@ -32,13 +32,13 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
-          dpf_path: .
           target: ${{ matrix.target }}
+          dpf_path: .
 
   macos-11:
     strategy:
       matrix:
-        target: [macos-intel, macos-universal]
+        target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-11
     steps:
       - uses: actions/checkout@v3
@@ -46,13 +46,13 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
-          dpf_path: .
           target: ${{ matrix.target }}
+          dpf_path: .
 
   macos-12:
     strategy:
       matrix:
-        target: [macos-intel, macos-universal]
+        target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-12
     steps:
       - uses: actions/checkout@v3
@@ -60,8 +60,8 @@ jobs:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
         with:
-          dpf_path: .
           target: ${{ matrix.target }}
+          dpf_path: .
 
   cmake_win32:
     runs-on: windows-2019
