@@ -67,3 +67,29 @@
    fun:start_thread
    fun:clone
 }
+{
+   leak in fftw plan
+   Memcheck:Leak
+   fun:malloc
+   fun:fftwf_malloc_plain
+   fun:fftwf_mkplanner
+   fun:fftwf_the_planner
+   fun:fftwf_mkapiplan
+   fun:fftwf_plan_many_dft_r2c
+   fun:fftwf_plan_dft_r2c
+   fun:fftwf_plan_dft_r2c_1d
+   ...
+}
+{
+   leak in fftw plan
+   Memcheck:Leak
+   fun:memalign
+   fun:fftwf_malloc_plain
+   fun:fftwf_mkplanner
+   fun:fftwf_the_planner
+   fun:fftwf_mkapiplan
+   fun:fftwf_plan_many_dft_r2c
+   fun:fftwf_plan_dft_r2c
+   fun:fftwf_plan_dft_r2c_1d
+   ...
+}
