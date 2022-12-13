@@ -20,6 +20,7 @@
 #define DISTRHO_PLUGIN_BRAND "DISTRHO"
 #define DISTRHO_PLUGIN_NAME  "EmbedExternalUI"
 #define DISTRHO_PLUGIN_URI   "http://distrho.sf.net/examples/EmbedExternalUI"
+#define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.embed-external-ui"
 
 #define DISTRHO_PLUGIN_HAS_UI          1
 #define DISTRHO_PLUGIN_HAS_EMBED_UI    1
