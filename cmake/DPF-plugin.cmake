@@ -75,7 +75,7 @@ include(CMakeParseArguments)
 #       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`, `clap`
 #
 #   `UI_TYPE` <type>
-#       the user interface type: `opengl` (default), `cairo`
+#       the user interface type: `opengl` (default), `cairo`, `external`
 #
 #   `MONOLITHIC`
 #       build LV2 as a single binary for UI and DSP
@@ -101,6 +101,7 @@ function(dpf_add_plugin NAME)
   endif()
 
   set(_dgl_library)
+  set(_dgl_external OFF)
   if(_dpf_plugin_FILES_UI)
     if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
       dpf__add_dgl_cairo("${_dpf_plugin_NO_SHARED_RESOURCES}")
@@ -108,6 +109,11 @@ function(dpf_add_plugin NAME)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
       dpf__add_dgl_opengl("${_dpf_plugin_NO_SHARED_RESOURCES}")
       set(_dgl_library dgl-opengl)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
+      # Even though external UI doesn't need DGL, we still need to assign _dgl_library.
+      # This can make sure that dpf__build_<plugin_type> can build UI properly.
+      set(_dgl_library dgl-external)
+      set(_dgl_external ON)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
     endif()
@@ -127,19 +133,30 @@ function(dpf_add_plugin NAME)
     target_link_libraries("${NAME}" PRIVATE "dl")
   endif()
 
-  if(_dgl_library)
+  if(_dgl_library AND NOT _dgl_external)
     # make sure that all code will see DGL_* definitions
     target_link_libraries("${NAME}" PUBLIC
       "${_dgl_library}-definitions"
+      dgl-system-libs-definitions)
+  elseif(_dgl_external)
+    target_link_libraries("${NAME}" PUBLIC
       dgl-system-libs-definitions)
   endif()
 
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
   target_link_libraries("${NAME}-dsp" PUBLIC "${NAME}")
 
-  if(_dgl_library)
+  if(_dgl_library AND NOT _dgl_external)
     dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})
     target_link_libraries("${NAME}-ui" PUBLIC "${NAME}" ${_dgl_library})
+    if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
+      target_link_libraries("${NAME}-ui" PRIVATE "dl")
+    endif()
+    # add the files containing Objective-C classes
+    dpf__add_plugin_specific_ui_sources("${NAME}-ui")
+  elseif(_dgl_external)
+    dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})
+    target_link_libraries("${NAME}-ui" PUBLIC "${NAME}")
     if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
       target_link_libraries("${NAME}-ui" PRIVATE "dl")
     endif()
