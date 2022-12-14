@@ -187,12 +187,24 @@ void ImageBaseButton<ImageType>::onDisplay()
 
     const State state = ButtonEventHandler::getState();
 
-    if (state & kButtonStateActive)
-        pData->imageDown.draw(context);
-    else if (state & kButtonStateHover)
-        pData->imageHover.draw(context);
+    if (ButtonEventHandler::isCheckable())
+    {
+        if (ButtonEventHandler::isChecked())
+            pData->imageDown.draw(context);
+        else if (state & kButtonStateHover)
+            pData->imageHover.draw(context);
+        else
+            pData->imageNormal.draw(context);
+    }
     else
-        pData->imageNormal.draw(context);
+    {
+        if (state & kButtonStateActive)
+            pData->imageDown.draw(context);
+        else if (state & kButtonStateHover)
+            pData->imageHover.draw(context);
+        else
+            pData->imageNormal.draw(context);
+    }
 }
 
 template <class ImageType>
