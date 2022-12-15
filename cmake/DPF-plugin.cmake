@@ -110,13 +110,15 @@ function(dpf_add_plugin NAME)
       dpf__add_dgl_opengl("${_dpf_plugin_NO_SHARED_RESOURCES}")
       set(_dgl_library dgl-opengl)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
-      # Even though external UI doesn't need DGL, we still need to assign _dgl_library.
-      # This can make sure that dpf__build_<plugin_type> can build UI properly.
-      set(_dgl_library dgl-external)
       set(_dgl_external ON)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
     endif()
+  endif()
+
+  set(_dgl_has_ui OFF)
+  if(_dgl_library OR _dgl_external)
+    set(_dgl_has_ui ON)
   endif()
 
   ###
@@ -169,19 +171,19 @@ function(dpf_add_plugin NAME)
   ###
   foreach(_target ${_dpf_plugin_TARGETS})
     if(_target STREQUAL "jack")
-      dpf__build_jack("${NAME}" "${_dgl_library}")
+      dpf__build_jack("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "ladspa")
       dpf__build_ladspa("${NAME}")
     elseif(_target STREQUAL "dssi")
-      dpf__build_dssi("${NAME}" "${_dgl_library}")
+      dpf__build_dssi("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "lv2")
-      dpf__build_lv2("${NAME}" "${_dgl_library}" "${_dpf_plugin_MONOLITHIC}")
+      dpf__build_lv2("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_MONOLITHIC}")
     elseif(_target STREQUAL "vst2")
-      dpf__build_vst2("${NAME}" "${_dgl_library}")
+      dpf__build_vst2("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "vst3")
-      dpf__build_vst3("${NAME}" "${_dgl_library}")
+      dpf__build_vst3("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "clap")
-      dpf__build_clap("${NAME}" "${_dgl_library}")
+      dpf__build_clap("${NAME}" "${_dgl_has_ui}")
     else()
       message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
@@ -201,12 +203,12 @@ endfunction()
 #
 # Add build rules for a JACK/Standalone program.
 #
-function(dpf__build_jack NAME DGL_LIBRARY)
+function(dpf__build_jack NAME HAS_UI)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-jack" "jack")
-  dpf__add_ui_main("${NAME}-jack" "jack" "${DGL_LIBRARY}")
+  dpf__add_ui_main("${NAME}-jack" "jack" "${HAS_UI}")
   target_link_libraries("${NAME}-jack" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-jack" PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
@@ -284,7 +286,7 @@ endfunction()
 #
 # Add build rules for a DSSI plugin.
 #
-function(dpf__build_dssi NAME DGL_LIBRARY)
+function(dpf__build_dssi NAME HAS_UI)
   find_package(PkgConfig)
   pkg_check_modules(LIBLO "liblo")
   if(NOT LIBLO_FOUND)
@@ -305,9 +307,9 @@ function(dpf__build_dssi NAME DGL_LIBRARY)
     OUTPUT_NAME "${NAME}-dssi"
     PREFIX "")
 
-  if(DGL_LIBRARY)
+  if(HAS_UI)
     dpf__add_executable("${NAME}-dssi-ui" ${_no_srcs})
-    dpf__add_ui_main("${NAME}-dssi-ui" "dssi" "${DGL_LIBRARY}")
+    dpf__add_ui_main("${NAME}-dssi-ui" "dssi" "${HAS_UI}")
     target_link_libraries("${NAME}-dssi-ui" PRIVATE "${NAME}-ui")
     set_target_properties("${NAME}-dssi-ui" PROPERTIES
       RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}-dssi/$<0:>"
@@ -325,12 +327,12 @@ endfunction()
 #
 # Add build rules for an LV2 plugin.
 #
-function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
+function(dpf__build_lv2 NAME HAS_UI MONOLITHIC)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-lv2" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-lv2" "lv2")
-  if(DGL_LIBRARY AND MONOLITHIC)
+  if(HAS_UI AND MONOLITHIC)
     dpf__set_module_export_list("${NAME}-lv2" "lv2")
   else()
     dpf__set_module_export_list("${NAME}-lv2" "lv2-dsp")
@@ -342,15 +344,15 @@ function(dpf__build_lv2 NAME DGL_LIBRARY MONOLITHIC)
     OUTPUT_NAME "${NAME}_dsp"
     PREFIX "")
 
-  if(DGL_LIBRARY)
+  if(HAS_UI)
     if(MONOLITHIC)
-      dpf__add_ui_main("${NAME}-lv2" "lv2" "${DGL_LIBRARY}")
+      dpf__add_ui_main("${NAME}-lv2" "lv2" "${HAS_UI}")
       target_link_libraries("${NAME}-lv2" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2" PROPERTIES
         OUTPUT_NAME "${NAME}")
     else()
       dpf__add_module("${NAME}-lv2-ui" ${_no_srcs})
-      dpf__add_ui_main("${NAME}-lv2-ui" "lv2" "${DGL_LIBRARY}")
+      dpf__add_ui_main("${NAME}-lv2-ui" "lv2" "${HAS_UI}")
       dpf__set_module_export_list("${NAME}-lv2-ui" "lv2-ui")
       target_link_libraries("${NAME}-lv2-ui" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2-ui" PROPERTIES
@@ -378,12 +380,12 @@ endfunction()
 #
 # Add build rules for a VST2 plugin.
 #
-function(dpf__build_vst2 NAME DGL_LIBRARY)
+function(dpf__build_vst2 NAME HAS_UI)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-vst2" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-vst2" "vst2")
-  dpf__add_ui_main("${NAME}-vst2" "vst2" "${DGL_LIBRARY}")
+  dpf__add_ui_main("${NAME}-vst2" "vst2" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-vst2" "vst2")
   target_link_libraries("${NAME}-vst2" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-vst2" PROPERTIES
@@ -456,14 +458,14 @@ endfunction()
 #
 # Add build rules for a VST3 plugin.
 #
-function(dpf__build_vst3 NAME DGL_LIBRARY)
+function(dpf__build_vst3 NAME HAS_UI)
   dpf__determine_vst3_package_architecture(vst3_arch)
 
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-vst3" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-vst3" "vst3")
-  dpf__add_ui_main("${NAME}-vst3" "vst3" "${DGL_LIBRARY}")
+  dpf__add_ui_main("${NAME}-vst3" "vst3" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-vst3" "vst3")
   target_link_libraries("${NAME}-vst3" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-vst3" PROPERTIES
@@ -498,12 +500,12 @@ endfunction()
 #
 # Add build rules for a VST2 plugin.
 #
-function(dpf__build_clap NAME DGL_LIBRARY)
+function(dpf__build_clap NAME HAS_UI)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-clap" ${_no_srcs})
   dpf__add_plugin_main("${NAME}-clap" "clap")
-  dpf__add_ui_main("${NAME}-clap" "clap" "${DGL_LIBRARY}")
+  dpf__add_ui_main("${NAME}-clap" "clap" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-clap" "clap")
   target_link_libraries("${NAME}-clap" PRIVATE "${NAME}-dsp" "${NAME}-ui")
   set_target_properties("${NAME}-clap" PROPERTIES
