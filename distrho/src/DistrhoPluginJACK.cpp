@@ -703,7 +703,7 @@ private:
                              "msr fpcr, %0          \n"
                              "isb                   \n"
                              : "=r"(c) :: "memory");
-       #elif defined(__arm__)
+       #elif defined(__arm__) && !defined(__SOFTFP__)
         uint32_t c;
         __asm__ __volatile__("vmrs %0, fpscr         \n"
                              "orr  %0, %0, #0x1000000\n"
