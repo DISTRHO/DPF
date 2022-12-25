@@ -16,6 +16,10 @@
 
 #include "src/DistrhoUI.cpp"
 
+#if ! DISTRHO_PLUGIN_HAS_UI
+# error Trying to build UI without DISTRHO_PLUGIN_HAS_UI set to 1
+#endif
+
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
 # define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT 1
 #elif defined(DISTRHO_PLUGIN_TARGET_CLAP)
