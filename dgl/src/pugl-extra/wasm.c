@@ -24,6 +24,8 @@
 #  define MOD_SCALE_FACTOR_MULT 1
 #endif
 
+// #define PUGL_WASM_AUTO_POINTER_LOCK
+
 PuglWorldInternals*
 puglInitWorldInternals(const PuglWorldType type, const PuglWorldFlags flags)
 {
