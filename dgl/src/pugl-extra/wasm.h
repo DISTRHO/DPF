@@ -26,6 +26,7 @@ struct LastMotionValues {
 
 struct PuglInternalsImpl {
   PuglSurface* surface;
+  bool isFullscreen;
   bool needsRepaint;
   bool pointerLocked;
   uint32_t numTimers;

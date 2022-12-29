@@ -263,12 +263,14 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
 
   double scaleFactor = view->world->impl->scaleFactor;
 #ifdef __MOD_DEVICES__
-  scaleFactor /= EM_ASM_DOUBLE({
-    return parseFloat(
-      RegExp('^scale\\\((.*)\\\)$')
-      .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
-    );
-  }) * MOD_SCALE_FACTOR_MULT;
+  if (!view->impl->isFullscreen) {
+    scaleFactor /= EM_ASM_DOUBLE({
+      return parseFloat(
+        RegExp('^scale\\\((.*)\\\)$')
+        .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
+      );
+    }) * MOD_SCALE_FACTOR_MULT;
+  }
 #endif
 
   // workaround missing pointer lock callback, see https://github.com/emscripten-core/emscripten/issues/9681
@@ -400,12 +402,14 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
 
   double scaleFactor = view->world->impl->scaleFactor;
 #ifdef __MOD_DEVICES__
-  scaleFactor /= EM_ASM_DOUBLE({
-    return parseFloat(
-      RegExp('^scale\\\((.*)\\\)$')
-      .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
-    );
-  }) * MOD_SCALE_FACTOR_MULT;
+  if (!view->impl->isFullscreen) {
+    scaleFactor /= EM_ASM_DOUBLE({
+      return parseFloat(
+        RegExp('^scale\\\((.*)\\\)$')
+        .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
+      );
+    }) * MOD_SCALE_FACTOR_MULT;
+  }
 #endif
 
   d_debug("touch %d|%s %d || %ld",
@@ -517,12 +521,14 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
 
   double scaleFactor = view->world->impl->scaleFactor;
 #ifdef __MOD_DEVICES__
-  scaleFactor /= EM_ASM_DOUBLE({
-    return parseFloat(
-      RegExp('^scale\\\((.*)\\\)$')
-      .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
-    );
-  }) * MOD_SCALE_FACTOR_MULT;
+  if (!view->impl->isFullscreen) {
+    scaleFactor /= EM_ASM_DOUBLE({
+      return parseFloat(
+        RegExp('^scale\\\((.*)\\\)$')
+        .exec(document.getElementById("pedalboard-dashboard").style.transform)[1]
+      );
+    }) * MOD_SCALE_FACTOR_MULT;
+  }
 #endif
 
   PuglEvent event = {{PUGL_SCROLL, 0}};
@@ -570,15 +576,51 @@ puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void
 #endif
   view->world->impl->scaleFactor = scaleFactor;
 
-  emscripten_set_canvas_element_size(view->world->className, width * scaleFactor, height * scaleFactor);
-
   PuglEvent event        = {{PUGL_CONFIGURE, 0}};
   event.configure.x      = view->frame.x;
   event.configure.y      = view->frame.y;
   event.configure.width  = width * scaleFactor;
   event.configure.height = height * scaleFactor;
   puglDispatchEvent(view, &event);
+
+  emscripten_set_canvas_element_size(view->world->className, width * scaleFactor, height * scaleFactor);
   return EM_TRUE;
+}
+
+static EM_BOOL
+puglFullscreenChangeCallback(const int eventType, const EmscriptenFullscreenChangeEvent* const fscEvent, void* const userData)
+{
+  PuglView* const view = (PuglView*)userData;
+
+  view->impl->isFullscreen = fscEvent->isFullscreen;
+
+  double scaleFactor = emscripten_get_device_pixel_ratio();
+#ifdef __MOD_DEVICES__
+  scaleFactor *= MOD_SCALE_FACTOR_MULT;
+#endif
+  view->world->impl->scaleFactor = scaleFactor;
+
+  if (fscEvent->isFullscreen) {
+    PuglEvent event        = {{PUGL_CONFIGURE, 0}};
+    event.configure.x      = 0;
+    event.configure.y      = 0;
+    event.configure.width  = fscEvent->elementWidth * scaleFactor;
+    event.configure.height = fscEvent->elementHeight * scaleFactor;
+    puglDispatchEvent(view, &event);
+
+    emscripten_set_canvas_element_size(view->world->className,
+                                       fscEvent->elementWidth * scaleFactor,
+                                       fscEvent->elementHeight * scaleFactor);
+
+#ifdef __MOD_DEVICES__
+    EM_ASM({
+      document.getElementById("pedalboard-dashboard").style.transform = "scale(1.0)";
+    });
+#endif
+    return EM_TRUE;
+  }
+
+  return puglUiCallback(0, NULL, userData);
 }
 
 static EM_BOOL
@@ -665,6 +707,7 @@ puglRealize(PuglView* const view)
   emscripten_set_wheel_callback(className, view, false, puglWheelCallback);
   emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglPointerLockChangeCallback);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglUiCallback);
+  emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglFullscreenChangeCallback);
   emscripten_set_visibilitychange_callback(view, false, puglVisibilityChangeCallback);
 
   printf("TODO: %s %d\n", __func__, __LINE__);
