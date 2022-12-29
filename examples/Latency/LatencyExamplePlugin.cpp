@@ -177,7 +177,7 @@ protected:
    /**
       Activate this plugin.
     */
-    void activate()
+    void activate() override
     {
         fBufferPos = 0;
         std::memset(fBuffer, 0, sizeof(float)*fBufferSize);
