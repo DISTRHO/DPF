@@ -4,9 +4,7 @@
 
 #include "pugl/stub.h"
 
-#include "stub.h"
-// #include "types.h"
-// #include "wasm.h"
+#include "../pugl-upstream/src/stub.h"
 
 #include "pugl/pugl.h"
 

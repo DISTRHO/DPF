@@ -146,10 +146,10 @@ START_NAMESPACE_DGL
 # endif
 # pragma clang diagnostic pop
 #elif defined(DISTRHO_OS_WASM)
-# include "pugl-upstream/src/wasm.c"
-# include "pugl-upstream/src/wasm_stub.c"
+# include "pugl-extra/wasm.c"
+# include "pugl-extra/wasm_stub.c"
 # ifdef DGL_OPENGL
-#  include "pugl-upstream/src/wasm_gl.c"
+#  include "pugl-extra/wasm_gl.c"
 # endif
 #elif defined(DISTRHO_OS_WINDOWS)
 # include "pugl-upstream/src/win.c"

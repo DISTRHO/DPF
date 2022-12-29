@@ -5,8 +5,7 @@
 #ifndef PUGL_SRC_WASM_H
 #define PUGL_SRC_WASM_H
 
-// #include "attributes.h"
-#include "types.h"
+#include "../pugl-upstream/src/types.h"
 
 #include "pugl/pugl.h"
 

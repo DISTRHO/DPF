@@ -2,7 +2,7 @@
 // Copyright 2021-2022 Filipe Coelho <falktx@falktx.com>
 // SPDX-License-Identifier: ISC
 
-#include "stub.h"
+#include "../pugl-upstream/src/stub.h"
 #include "wasm.h"
 
 #include "pugl/pugl.h"

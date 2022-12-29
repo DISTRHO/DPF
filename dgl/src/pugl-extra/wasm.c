@@ -4,7 +4,7 @@
 
 #include "wasm.h"
 
-#include "internal.h"
+#include "../pugl-upstream/src/internal.h"
 
 #include <stdio.h>
 
