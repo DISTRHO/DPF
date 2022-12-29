@@ -77,8 +77,8 @@ include(CMakeParseArguments)
 #   `UI_TYPE` <type>
 #       the user interface type: `opengl` (default), `cairo`, `external`
 #
-#   `MONOLITHIC`
-#       build LV2 as a single binary for UI and DSP
+#   `FILES_COMMON` <file1>...<fileN>
+#       list of sources which are part of both DSP and UI
 #
 #   `FILES_DSP` <file1>...<fileN>
 #       list of sources which are part of the DSP
@@ -87,13 +87,16 @@ include(CMakeParseArguments)
 #       list of sources which are part of the UI
 #       empty indicates the plugin does not have UI
 #
-#   `FILES_COMMON` <file1>...<fileN>
-#       list of sources which are part of both DSP and UI
+#   `MONOLITHIC`
+#       build LV2 as a single binary for UI and DSP
+#
+#   `NO_SHARED_RESOURCES`
+#       do not build DPF shared resources (fonts, etc)
 #
 function(dpf_add_plugin NAME)
   set(options MONOLITHIC NO_SHARED_RESOURCES)
   set(oneValueArgs UI_TYPE)
-  set(multiValueArgs TARGETS FILES_DSP FILES_UI FILES_COMMON)
+  set(multiValueArgs FILES_COMMON FILES_DSP FILES_UI TARGETS)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
   if("${_dpf_plugin_UI_TYPE}" STREQUAL "")
