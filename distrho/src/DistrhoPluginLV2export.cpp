@@ -69,6 +69,10 @@
 # define DISTRHO_PLUGIN_USES_MODGUI 0
 #endif
 
+#ifndef DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
+# define DISTRHO_PLUGIN_USES_CUSTOM_MODGUI 0
+#endif
+
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
 # if DISTRHO_OS_HAIKU
 #  define DISTRHO_LV2_UI_TYPE "BeUI"
@@ -1218,7 +1222,7 @@ void lv2_generate_ttl(const char* const basename)
         std::cout << " done!" << std::endl;
     }
 
-#if DISTRHO_PLUGIN_USES_MODGUI
+   #if DISTRHO_PLUGIN_USES_MODGUI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
     {
         std::cout << "Writing modgui.ttl..."; std::cout.flush();
         std::fstream modguiFile("modgui.ttl", std::ios::out);
@@ -1505,7 +1509,7 @@ void lv2_generate_ttl(const char* const basename)
         stylesheetFile.close();
         std::cout << " done!" << std::endl;
     }
-#endif
+   #endif // DISTRHO_PLUGIN_USES_MODGUI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
 
     // ---------------------------------------------
 
