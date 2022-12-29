@@ -78,7 +78,8 @@ public:
           const float sampleRate,
           const float scaleFactor,
           const uint32_t bgColor,
-          const uint32_t fgColor)
+          const uint32_t fgColor,
+          const char* const appClassName)
         : fUridMap(uridMap),
           fUridUnmap(getLv2Feature<LV2_URID_Unmap>(features, LV2_URID__unmap)),
           fUiPortMap(getLv2Feature<LV2UI_Port_Map>(features, LV2_UI__portMap)),
@@ -97,7 +98,7 @@ public:
               sendNoteCallback,
               nullptr, // resize is very messy, hosts can do it without extensions
               fileRequestCallback,
-              bundlePath, dspPtr, scaleFactor, bgColor, fgColor)
+              bundlePath, dspPtr, scaleFactor, bgColor, fgColor, appClassName)
     {
         if (widget != nullptr)
             *widget = (LV2UI_Widget)fUI.getNativeWindowHandle();
@@ -559,17 +560,20 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
     float scaleFactor = 0.0f;
     uint32_t bgColor = 0;
     uint32_t fgColor = 0xffffffff;
+    const char* appClassName = nullptr;
 
     if (options != nullptr)
     {
         const LV2_URID uridAtomInt     = uridMap->map(uridMap->handle, LV2_ATOM__Int);
         const LV2_URID uridAtomFloat   = uridMap->map(uridMap->handle, LV2_ATOM__Float);
+        const LV2_URID uridAtomString  = uridMap->map(uridMap->handle, LV2_ATOM__String);
         const LV2_URID uridSampleRate  = uridMap->map(uridMap->handle, LV2_PARAMETERS__sampleRate);
         const LV2_URID uridBgColor     = uridMap->map(uridMap->handle, LV2_UI__backgroundColor);
         const LV2_URID uridFgColor     = uridMap->map(uridMap->handle, LV2_UI__foregroundColor);
        #ifndef DISTRHO_OS_MAC
         const LV2_URID uridScaleFactor = uridMap->map(uridMap->handle, LV2_UI__scaleFactor);
        #endif
+        const LV2_URID uridClassName   = uridMap->map(uridMap->handle, "urn:distrho:className");
 
         for (int i=0; options[i].key != 0; ++i)
         {
@@ -603,6 +607,13 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
                     d_stderr("Host provides UI scale factor but has wrong value type");
             }
            #endif
+            else if (options[i].key == uridClassName)
+            {
+                if (options[i].type == uridAtomString)
+                    appClassName = (const char*)options[i].value;
+                else
+                    d_stderr("Host provides UI scale factor but has wrong value type");
+            }
         }
     }
 
@@ -614,7 +625,7 @@ static LV2UI_Handle lv2ui_instantiate(const LV2UI_Descriptor*,
 
     return new UiLv2(bundlePath, winId, options, uridMap, features,
                      controller, writeFunction, widget, instance,
-                     sampleRate, scaleFactor, bgColor, fgColor);
+                     sampleRate, scaleFactor, bgColor, fgColor, appClassName);
 }
 
 #define uiPtr ((UiLv2*)ui)
@@ -822,6 +833,14 @@ LV2UI_Handle modgui_init(const char* const className, _custom_param_set param_se
             sizeof(float),
             uridMap.map(uridMap.handle, LV2_ATOM__Float),
             &sampleRateValue
+        },
+        {
+            LV2_OPTIONS_INSTANCE,
+            0,
+            uridMap.map(uridMap.handle, "urn:distrho:className"),
+            std::strlen(className) + 1,
+            uridMap.map(uridMap.handle, LV2_ATOM__String),
+            className
         },
         {}
     };

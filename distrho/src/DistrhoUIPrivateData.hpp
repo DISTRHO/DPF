@@ -60,7 +60,7 @@ struct PluginApplication
     DGL_NAMESPACE::IdleCallback* idleCallback;
     UI* ui;
 
-    explicit PluginApplication()
+    explicit PluginApplication(const char*)
         : idleCallback(nullptr),
           ui(nullptr) {}
 
@@ -105,20 +105,26 @@ struct PluginApplication
 class PluginApplication : public DGL_NAMESPACE::Application
 {
 public:
-    explicit PluginApplication()
+    explicit PluginApplication(const char* className)
         : DGL_NAMESPACE::Application(DISTRHO_UI_IS_STANDALONE)
     {
-#ifndef DISTRHO_OS_WASM
-        const char* const className = (
-#ifdef DISTRHO_PLUGIN_BRAND
-            DISTRHO_PLUGIN_BRAND
-#else
-            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
-#endif
-            "-" DISTRHO_PLUGIN_NAME
-        );
+       #if defined(__MOD_DEVICES__) || !defined(__EMSCRIPTEN__)
+        if (className == nullptr)
+        {
+            className = (
+               #ifdef DISTRHO_PLUGIN_BRAND
+                DISTRHO_PLUGIN_BRAND
+               #else
+                DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
+               #endif
+                "-" DISTRHO_PLUGIN_NAME
+            );
+        }
         setClassName(className);
-#endif
+       #else
+        // unused
+        (void)className;
+       #endif
     }
 
     void triggerIdleCallbacks()
@@ -337,8 +343,8 @@ struct UI::PrivateData {
     setSizeFunc     setSizeCallbackFunc;
     fileRequestFunc fileRequestCallbackFunc;
 
-    PrivateData() noexcept
-        : app(),
+    PrivateData(const char* const appClassName) noexcept
+        : app(appClassName),
           window(nullptr),
           sampleRate(0),
           parameterOffset(0),
