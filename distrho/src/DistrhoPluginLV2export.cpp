@@ -42,7 +42,11 @@
 # include "mod-license.h"
 #endif
 
-#ifndef DISTRHO_OS_WINDOWS
+#ifdef DISTRHO_OS_WINDOWS
+# include <direct.h>
+#else
+# include <sys/stat.h>
+# include <sys/types.h>
 # include <unistd.h>
 #endif
 
@@ -944,11 +948,11 @@ void lv2_generate_ttl(const char* const basename)
             }
         }
 
-#ifdef DISTRHO_PLUGIN_BRAND
+       #ifdef DISTRHO_PLUGIN_BRAND
         // MOD
         pluginString += "    mod:brand \"" DISTRHO_PLUGIN_BRAND "\" ;\n";
         pluginString += "    mod:label \"" DISTRHO_PLUGIN_NAME "\" ;\n\n";
-#endif
+       #endif
 
         // name
         {
@@ -1213,6 +1217,295 @@ void lv2_generate_ttl(const char* const basename)
         pluginFile.close();
         std::cout << " done!" << std::endl;
     }
+
+#if DISTRHO_PLUGIN_USES_MODGUI
+    {
+        std::cout << "Writing modgui.ttl..."; std::cout.flush();
+        std::fstream modguiFile("modgui.ttl", std::ios::out);
+
+        String modguiString;
+        modguiString += "@prefix lv2:    <" LV2_CORE_PREFIX "> .\n";
+        modguiString += "@prefix modgui: <http://moddevices.com/ns/modgui#> .\n";
+        modguiString += "\n";
+
+        modguiString += "<" DISTRHO_PLUGIN_URI ">\n";
+        modguiString += "    modgui:gui [\n";
+       #ifdef DISTRHO_PLUGIN_BRAND
+        modguiString += "        modgui:brand \"" DISTRHO_PLUGIN_BRAND "\" ;\n";
+       #endif
+        modguiString += "        modgui:label \"" DISTRHO_PLUGIN_NAME "\" ;\n";
+        modguiString += "        modgui:resourcesDirectory <modgui> ;\n";
+        modguiString += "        modgui:iconTemplate <modgui/icon.html> ;\n";
+        modguiString += "        modgui:javascript <modgui/javascript.js> ;\n";
+        modguiString += "        modgui:stylesheet <modgui/stylesheet.css> ;\n";
+        modguiString += "        modgui:screenshot <modgui/screenshot.png> ;\n";
+        modguiString += "        modgui:thumbnail <modgui/thumbnail.png> ;\n";
+
+        uint32_t numParametersOutputs = 0;
+        for (uint32_t i=0, count=plugin.getParameterCount(); i < count; ++i)
+        {
+            if (plugin.isParameterOutput(i))
+                ++numParametersOutputs;
+        }
+        if (numParametersOutputs != 0)
+        {
+            modguiString += "        modgui:monitoredOutputs [\n";
+            for (uint32_t i=0, j=0, count=plugin.getParameterCount(); i < count; ++i)
+            {
+                if (!plugin.isParameterOutput(i))
+                    continue;
+                modguiString += "            lv2:symbol \"" + plugin.getParameterSymbol(i) + "\" ;\n";
+                if (++j != numParametersOutputs)
+                    modguiString += "        ] , [\n";
+            }
+            modguiString += "        ] ;\n";
+        }
+
+        modguiString += "    ] .\n";
+
+        modguiFile << modguiString;
+        modguiFile.close();
+        std::cout << " done!" << std::endl;
+    }
+
+   #ifdef DISTRHO_OS_WINDOWS
+    ::_mkdir("modgui");
+   #else
+    ::mkdir("modgui", 0755);
+   #endif
+
+    {
+        std::cout << "Writing modgui/javascript.js..."; std::cout.flush();
+        std::fstream jsFile("modgui/javascript.js", std::ios::out);
+
+        String jsString;
+        jsString += "function(e,f){\n";
+        jsString += "'use strict';\nvar ps=[";
+
+        for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            jsString += "'lv2_" + plugin.getAudioPort(false, i).symbol + "',";
+        for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            jsString += "'lv2_" + plugin.getAudioPort(true, i).symbol + "',";
+       #if DISTRHO_LV2_USE_EVENTS_IN
+        jsString += "'lv2_events_in',";
+       #endif
+       #if DISTRHO_LV2_USE_EVENTS_OUT
+        jsString += "'lv2_events_out',";
+       #endif
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        jsString += "'lv2_latency',";
+       #endif
+
+        int32_t enabledIndex = INT32_MAX;
+        for (uint32_t i=0, count=plugin.getParameterCount(); i < count; ++i)
+        {
+            jsString += "'" + plugin.getParameterSymbol(i) + "',";
+            if (plugin.getParameterDesignation(i) == kParameterDesignationBypass)
+                enabledIndex = i;
+        }
+        jsString += "];\n";
+        jsString += "var ei=" + String(enabledIndex != INT32_MAX ? enabledIndex : -1) + ";\n\n";
+        jsString += "if(e.type==='start'){\n";
+        jsString += "e.data.p={p:{},c:{},};\n\n";
+        jsString += "var err=[];\n";
+        jsString += "if(typeof(WebAssembly)==='undefined'){err.push('WebAssembly unsupported');}\n";
+        jsString += "else{\n";
+        jsString += "if(!WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,1,4,1,96,0,0,3,2,1,0,5,3,1,0,1,10,14,1,12,0,65,0,65,0,65,0,252,10,0,0,11])))";
+        jsString += "err.push('Bulk Memory Operations unsupported');\n";
+        jsString += "if(!WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,2,8,1,1,97,1,98,3,127,1,6,6,1,127,1,65,0,11,7,5,1,1,97,3,1])))";
+        jsString += "err.push('Importable/Exportable mutable globals unsupported');\n";
+        jsString += "}\n";
+        jsString += "if(err.length!==0){/* errors err.join('<br>')*/return;}\n\n";
+        jsString += "var s=document.createElement('script');\n";
+        jsString += "s.setAttribute('async',true);\n";
+        jsString += "s.setAttribute('src','/resources/module.js?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION/*f.get_custom_resource_filename('module.js')*/);\n";
+        jsString += "s.setAttribute('type','text/javascript');\n";
+        jsString += "s.onload=function(){\n";
+        jsString += " Module_" DISTRHO_PLUGIN_MODGUI_CLASS_NAME "({\n";
+        jsString += " locateFile: function(p,_){return '/resources/'+p+'?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION/*return f.get_custom_resource_filename(p);*/},\n";
+        jsString += " postRun:function(m){\n";
+        jsString += " var cn=e.icon.attr('mod-instance').replaceAll('/','_');\n";
+        jsString += " var cnl=m.lengthBytesUTF8(cn) + 1;\n";
+        jsString += " var cna=m._malloc(cnl);\n";
+        jsString += " m.stringToUTF8(cn, cna, cnl);\n";
+        jsString += " e.icon.find('canvas')[0].id=cn;\n";
+        jsString += " var a=m.addFunction(function(i,v){f.set_port_value(ps[i],v);},'vif');\n";
+        jsString += " var b=m.addFunction(function(u,v){f.patch_set(m.UTF8ToString(u),'s',m.UTF8ToString(v));},'vpp');\n";
+        jsString += " var h=m._modgui_init(cna,a,b);\n";
+        jsString += " m._free(cna);\n";
+        jsString += " e.data.h=h;\n";
+        jsString += " e.data.m=m;\n";
+        jsString += " for(var u in e.data.p.p){\n";
+        jsString += " var ul=m.lengthBytesUTF8(u)+1,ua=m._malloc(ul),v=e.data.p.p[u],vl=m.lengthBytesUTF8(v)+1,va=m._malloc(vl);\n";
+        jsString += " m.stringToUTF8(u,ua,ul);\n";
+        jsString += " m.stringToUTF8(v,va,vl);\n";
+        jsString += " m._modgui_patch_set(h, ua, va);\n";
+        jsString += " m._free(ua);\n";
+        jsString += " m._free(va);\n";
+        jsString += " }\n";
+        jsString += " for(var symbol in e.data.p.c){m._modgui_param_set(h,ps.indexOf(symbol),e.data.p.c[symbol]);}\n";
+        jsString += " delete e.data.p;\n";
+        jsString += " window.dispatchEvent(new Event('resize'));\n";
+        jsString += " },\n";
+        jsString += " canvas:(function(){var c=e.icon.find('canvas')[0];c.addEventListener('webglcontextlost',function(e2){alert('WebGL context lost. You will need to reload the page.');e2.preventDefault();},false);return c;})(),\n";
+        jsString += " });\n";
+        jsString += "};\n";
+        jsString += "document.head.appendChild(s);\n\n";
+        jsString += "}else if(e.type==='change'){\n\n";
+        jsString += "if(e.data.h && e.data.m){\n";
+        jsString += " var m=e.data.m;\n";
+        jsString += " if(e.uri){\n";
+        jsString += "  var ul=m.lengthBytesUTF8(e.uri)+1,ua=m._malloc(ul),vl=m.lengthBytesUTF8(e.value)+1,va=m._malloc(vl);\n";
+        jsString += "  m.stringToUTF8(e.uri,ua,ul);\n";
+        jsString += "  m.stringToUTF8(e.value,va,vl);\n";
+        jsString += "  m._modgui_patch_set(e.data.h,ua,va);\n";
+        jsString += "  m._free(ua);\n";
+        jsString += "  m._free(va);\n";
+        jsString += " }else if(e.symbol===':bypass'){return;\n";
+        jsString += " }else{m._modgui_param_set(e.data.h,ps.indexOf(e.symbol),e.value);}\n";
+        jsString += "}else{\n";
+        jsString += " if(e.symbol===':bypass')return;\n";
+        jsString += " if(e.uri){e.data.p.p[e.uri]=e.value;}else{e.data.p.c[e.symbol]=e.value;}\n";
+        jsString += "}\n\n";
+        jsString += "}\n}\n";
+        jsFile << jsString;
+        jsFile.close();
+        std::cout << " done!" << std::endl;
+    }
+
+    {
+        std::cout << "Writing modgui/icon.html..."; std::cout.flush();
+        std::fstream iconFile("modgui/icon.html", std::ios::out);
+
+        iconFile << "<div class='" DISTRHO_PLUGIN_MODGUI_CLASS_NAME " mod-pedal'>" << std::endl;
+        iconFile << "    <div mod-role='drag-handle' class='mod-drag-handle'></div>" << std::endl;
+        iconFile << "    <div class='mod-plugin-title'><h1>{{#brand}}{{brand}} | {{/brand}}{{label}}</h1></div>" << std::endl;
+        iconFile << "    <div class='mod-light on' mod-role='bypass-light'></div>" << std::endl;
+        iconFile << "    <div class='mod-control-group mod-switch'>" << std::endl;
+        iconFile << "        <div class='mod-control-group mod-switch-image mod-port transport' mod-role='bypass' mod-widget='film'></div>" << std::endl;
+        iconFile << "    </div>" << std::endl;
+        iconFile << "    <div class='canvas_wrapper'>" << std::endl;
+        iconFile << "        <canvas oncontextmenu='event.preventDefault()' tabindex=-1></canvas>" << std::endl;
+        iconFile << "    </div>" << std::endl;
+        iconFile << "    <div class='mod-pedal-input'>" << std::endl;
+        iconFile << "        {{#effect.ports.audio.input}}" << std::endl;
+        iconFile << "        <div class='mod-input mod-input-disconnected' title='{{name}}' mod-role='input-audio-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-input-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.audio.input}}" << std::endl;
+        iconFile << "        {{#effect.ports.midi.input}}" << std::endl;
+        iconFile << "        <div class='mod-input mod-input-disconnected' title='{{name}}' mod-role='input-midi-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-input-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.midi.input}}" << std::endl;
+        iconFile << "        {{#effect.ports.cv.input}}" << std::endl;
+        iconFile << "        <div class='mod-input mod-input-disconnected' title='{{name}}' mod-role='input-cv-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-input-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.cv.input}}" << std::endl;
+        iconFile << "    </div>" << std::endl;
+        iconFile << "    <div class='mod-pedal-output'>" << std::endl;
+        iconFile << "        {{#effect.ports.audio.output}}" << std::endl;
+        iconFile << "        <div class='mod-output mod-output-disconnected' title='{{name}}' mod-role='output-audio-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-output-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.audio.output}}" << std::endl;
+        iconFile << "        {{#effect.ports.midi.output}}" << std::endl;
+        iconFile << "        <div class='mod-output mod-output-disconnected' title='{{name}}' mod-role='output-midi-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-output-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.midi.output}}" << std::endl;
+        iconFile << "        {{#effect.ports.cv.output}}" << std::endl;
+        iconFile << "        <div class='mod-output mod-output-disconnected' title='{{name}}' mod-role='output-cv-port' mod-port-symbol='{{symbol}}'>" << std::endl;
+        iconFile << "            <div class='mod-pedal-output-image'></div>" << std::endl;
+        iconFile << "        </div>" << std::endl;
+        iconFile << "        {{/effect.ports.cv.output}}" << std::endl;
+        iconFile << "    </div>" << std::endl;
+        iconFile << "</div>" << std::endl;
+
+        iconFile.close();
+        std::cout << " done!" << std::endl;
+    }
+
+    {
+        std::cout << "Writing modgui/stylesheet.css..."; std::cout.flush();
+        std::fstream stylesheetFile("modgui/stylesheet.css", std::ios::out);
+
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal{" << std::endl;
+        stylesheetFile << " padding:0;" << std::endl;
+        stylesheetFile << " margin:0;" << std::endl;
+        stylesheetFile << " width:" + String(DISTRHO_UI_DEFAULT_WIDTH) + "px;" << std::endl;
+        stylesheetFile << " height:" + String(DISTRHO_UI_DEFAULT_HEIGHT + 50) + "px;" << std::endl;
+        stylesheetFile << " background:#2a2e32;" << std::endl;
+        stylesheetFile << " border-radius:20px 20px 0 0;" << std::endl;
+        stylesheetFile << " color:#fff;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .canvas_wrapper{" << std::endl;
+        stylesheetFile << " --device-pixel-ratio:1;" << std::endl;
+        stylesheetFile << " /*image-rendering:pixelated;*/" << std::endl;
+        stylesheetFile << " /*image-rendering:crisp-edges;*/" << std::endl;
+        stylesheetFile << " background:#000;" << std::endl;
+        stylesheetFile << " position:absolute;" << std::endl;
+        stylesheetFile << " top:50px;" << std::endl;
+        stylesheetFile << " transform-origin:0 0 0;" << std::endl;
+        stylesheetFile << " transform:scale(calc(1/var(--device-pixel-ratio)));" << std::endl;
+        stylesheetFile << " width:" + String(DISTRHO_UI_DEFAULT_WIDTH) + "px;" << std::endl;
+        stylesheetFile << " height:" + String(DISTRHO_UI_DEFAULT_HEIGHT) + "px;" << std::endl;
+        stylesheetFile << " z-index:21;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "/*" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .canvas_wrapper:focus-within{" << std::endl;
+        stylesheetFile << " z-index:21;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "*/" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-plugin-title{" << std::endl;
+        stylesheetFile << " position:absolute;" << std::endl;
+        stylesheetFile << " text-align:center;" << std::endl;
+        stylesheetFile << " width:100%;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal h1{" << std::endl;
+        stylesheetFile << " font-size:20px;" << std::endl;
+        stylesheetFile << " font-weight:bold;" << std::endl;
+        stylesheetFile << " line-height:50px;" << std::endl;
+        stylesheetFile << " margin:0;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-control-group{" << std::endl;
+        stylesheetFile << " position:absolute;" << std::endl;
+        stylesheetFile << " left:5px;" << std::endl;
+        stylesheetFile << " z-index:35;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-pedal-input," << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-pedal-output{" << std::endl;
+        stylesheetFile << " top:75px;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-audio-input," << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-audio-output{" << std::endl;
+        stylesheetFile << " margin-bottom:25px;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .jack-disconnected{" << std::endl;
+        stylesheetFile << " top:0px!important;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-switch-image{" << std::endl;
+        stylesheetFile << " background-image: url(/img/switch.png);" << std::endl;
+        stylesheetFile << " background-position: left center;" << std::endl;
+        stylesheetFile << " background-repeat: no-repeat;" << std::endl;
+        stylesheetFile << " background-size: auto 50px;" << std::endl;
+        stylesheetFile << " font-weight: bold;" << std::endl;
+        stylesheetFile << " width: 100px;" << std::endl;
+        stylesheetFile << " height: 50px;" << std::endl;
+        stylesheetFile << " cursor: pointer;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-switch-image.off{" << std::endl;
+        stylesheetFile << " background-position: right center !important;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+        stylesheetFile << "." DISTRHO_PLUGIN_MODGUI_CLASS_NAME ".mod-pedal .mod-switch-image.on{" << std::endl;
+        stylesheetFile << " background-position: left center !important;" << std::endl;
+        stylesheetFile << "}" << std::endl;
+
+        stylesheetFile.close();
+        std::cout << " done!" << std::endl;
+    }
+#endif
 
     // ---------------------------------------------
 

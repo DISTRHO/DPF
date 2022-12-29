@@ -18,6 +18,9 @@ FILES_DSP = \
 FILES_UI = \
 	InfoExampleUI.cpp
 
+# require for modgui builds
+MODGUI_CLASS_NAME = distrho_examples_info
+
 # --------------------------------------------------------------
 # Do some magic
 

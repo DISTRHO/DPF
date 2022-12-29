@@ -68,6 +68,10 @@ ifeq ($(HAVE_SDL2),true)
 BASE_FLAGS += -DHAVE_SDL2
 endif
 
+ifneq ($(MODGUI_CLASS_NAME),)
+BASE_FLAGS += -DDISTRHO_PLUGIN_MODGUI_CLASS_NAME='"$(MODGUI_CLASS_NAME)"'
+endif
+
 # always needed
 ifneq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 ifneq ($(STATIC_BUILD),true)
@@ -523,6 +527,100 @@ $(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin UI for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2UI) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+# LV2 modgui
+
+ifeq ($(MODGUI_BUILD),true)
+ifeq ($(MODGUI_CLASS_NAME),)
+$(error MODGUI_CLASS_NAME undefined)
+endif
+endif
+
+# clear all possible flags coming from DPF, while keeping any extra flags specified for this build
+MODGUI_IGNORED_FLAGS  = -fdata-sections
+MODGUI_IGNORED_FLAGS += -ffast-math
+MODGUI_IGNORED_FLAGS += -ffunction-sections
+MODGUI_IGNORED_FLAGS += -fno-gnu-unique
+MODGUI_IGNORED_FLAGS += -fprefetch-loop-arrays
+MODGUI_IGNORED_FLAGS += -fvisibility=hidden
+MODGUI_IGNORED_FLAGS += -fvisibility-inlines-hidden
+MODGUI_IGNORED_FLAGS += -fPIC
+MODGUI_IGNORED_FLAGS += -ldl
+MODGUI_IGNORED_FLAGS += -mfpmath=sse
+MODGUI_IGNORED_FLAGS += -msse
+MODGUI_IGNORED_FLAGS += -msse2
+MODGUI_IGNORED_FLAGS += -mtune=generic
+MODGUI_IGNORED_FLAGS += -pipe
+MODGUI_IGNORED_FLAGS += -std=gnu99
+MODGUI_IGNORED_FLAGS += -std=gnu++11
+MODGUI_IGNORED_FLAGS += -DDISTRHO_PLUGIN_MODGUI_CLASS_NAME='"$(MODGUI_CLASS_NAME)"'
+MODGUI_IGNORED_FLAGS += -DDGL_OPENGL
+MODGUI_IGNORED_FLAGS += -DGL_SILENCE_DEPRECATION=1
+MODGUI_IGNORED_FLAGS += -DHAVE_ALSA
+MODGUI_IGNORED_FLAGS += -DHAVE_DGL
+MODGUI_IGNORED_FLAGS += -DHAVE_JACK
+MODGUI_IGNORED_FLAGS += -DHAVE_LIBLO
+MODGUI_IGNORED_FLAGS += -DHAVE_OPENGL
+MODGUI_IGNORED_FLAGS += -DHAVE_PULSEAUDIO
+MODGUI_IGNORED_FLAGS += -DHAVE_RTAUDIO
+MODGUI_IGNORED_FLAGS += -DHAVE_SDL2
+MODGUI_IGNORED_FLAGS += -DNDEBUG
+MODGUI_IGNORED_FLAGS += -DPIC
+MODGUI_IGNORED_FLAGS += -I.
+MODGUI_IGNORED_FLAGS += -I$(DPF_PATH)/distrho
+MODGUI_IGNORED_FLAGS += -I$(DPF_PATH)/dgl
+MODGUI_IGNORED_FLAGS += -I$(MOD_WORKDIR)/modduo-static/staging/usr/include
+MODGUI_IGNORED_FLAGS += -I$(MOD_WORKDIR)/modduox-static/staging/usr/include
+MODGUI_IGNORED_FLAGS += -I$(MOD_WORKDIR)/moddwarf/staging/usr/include
+MODGUI_IGNORED_FLAGS += -L$(MOD_WORKDIR)/modduo-static/staging/usr/lib
+MODGUI_IGNORED_FLAGS += -L$(MOD_WORKDIR)/modduox-static/staging/usr/lib
+MODGUI_IGNORED_FLAGS += -L$(MOD_WORKDIR)/moddwarf/staging/usr/lib
+MODGUI_IGNORED_FLAGS += -MD
+MODGUI_IGNORED_FLAGS += -MP
+MODGUI_IGNORED_FLAGS += -O2
+MODGUI_IGNORED_FLAGS += -O3
+MODGUI_IGNORED_FLAGS += -Wall
+MODGUI_IGNORED_FLAGS += -Wextra
+MODGUI_IGNORED_FLAGS += -Wl,-O1,--as-needed,--gc-sections
+MODGUI_IGNORED_FLAGS += -Wl,-dead_strip,-dead_strip_dylibs
+MODGUI_IGNORED_FLAGS += -Wl,-x
+MODGUI_IGNORED_FLAGS += -Wl,--gc-sections
+MODGUI_IGNORED_FLAGS += -Wl,--no-undefined
+MODGUI_IGNORED_FLAGS += -Wl,--strip-all
+MODGUI_IGNORED_FLAGS += -Wno-deprecated-declarations
+MODGUI_IGNORED_FLAGS += $(DGL_FLAGS)
+MODGUI_CFLAGS = $(filter-out $(MODGUI_IGNORED_FLAGS),$(BUILD_C_FLAGS)) -D__MOD_DEVICES__
+MODGUI_CXXFLAGS = $(filter-out $(MODGUI_IGNORED_FLAGS),$(BUILD_CXX_FLAGS)) -D__MOD_DEVICES__
+MODGUI_LDFLAGS = $(filter-out $(MODGUI_IGNORED_FLAGS),$(LINK_FLAGS))
+
+$(TARGET_DIR)/$(NAME).lv2/modgui/module.js: $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating LV2 plugin modgui for $(NAME)"
+	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) \
+		-sALLOW_TABLE_GROWTH -sMODULARIZE=1 -sMAIN_MODULE=2 -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 \
+		-sEXPORTED_FUNCTIONS="['_malloc','_free','_modgui_init','_modgui_param_set','_modgui_patch_set','_modgui_cleanup']" \
+		-sEXPORTED_RUNTIME_METHODS=['addFunction','lengthBytesUTF8','stringToUTF8','UTF8ToString'] \
+		-sEXPORT_NAME="Module_$(MODGUI_CLASS_NAME)" \
+		-o $@
+
+modgui:
+	$(MAKE) $(TARGET_DIR)/$(NAME).lv2/modgui/module.js \
+		EXE_WRAPPER= \
+		FILE_BROWSER_DISABLED=true \
+		HAVE_OPENGL=true \
+		MODGUI_BUILD=true \
+		NOOPT=true \
+		PKG_CONFIG=false \
+		USE_GLES2=true \
+		AR=emar \
+		CC=emcc \
+		CXX=em++ \
+		CFLAGS="$(MODGUI_CFLAGS)" \
+		CXXFLAGS="$(MODGUI_CXXFLAGS)" \
+		LDFLAGS="$(MODGUI_LDFLAGS)"
+
+.PHONY: modgui
 
 # ---------------------------------------------------------------------------------------------------------------------
 # VST2
