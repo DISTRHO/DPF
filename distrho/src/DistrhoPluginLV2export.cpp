@@ -331,7 +331,7 @@ void lv2_generate_ttl(const char* const basename)
         }
 #endif
 
-        manifestFile << manifestString << std::endl;
+        manifestFile << manifestString;
         manifestFile.close();
         std::cout << " done!" << std::endl;
     }
@@ -1209,7 +1209,7 @@ void lv2_generate_ttl(const char* const basename)
             }
         }
 
-        pluginFile << pluginString << std::endl;
+        pluginFile << pluginString;
         pluginFile.close();
         std::cout << " done!" << std::endl;
     }
@@ -1234,7 +1234,7 @@ void lv2_generate_ttl(const char* const basename)
         addAttribute(uiString, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures, 4);
         addAttribute(uiString, "opts:supportedOption", lv2ManifestUiSupportedOptions, 4, true);
 
-        uiFile << uiString << std::endl;
+        uiFile << uiString;
         uiFile.close();
         std::cout << " done!" << std::endl;
     }
@@ -1371,7 +1371,7 @@ void lv2_generate_ttl(const char* const basename)
             presetsString += presetString;
         }
 
-        presetsFile << presetsString << std::endl;
+        presetsFile << presetsString;
         presetsFile.close();
         std::cout << " done!" << std::endl;
     }
