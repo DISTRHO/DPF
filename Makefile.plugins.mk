@@ -27,10 +27,14 @@ include $(DPF_PATH)/Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 # Basic setup
 
+ifeq ($(MODGUI_BUILD),true)
+BUILD_DIR_SUFFIX = -modgui
+endif
+
 ifneq ($(DPF_BUILD_DIR),)
-BUILD_DIR = $(DPF_BUILD_DIR)
+BUILD_DIR = $(DPF_BUILD_DIR)$(BUILD_DIR_SUFFIX)
 else
-BUILD_DIR = $(BASE_PATH)/build/$(NAME)
+BUILD_DIR = $(BASE_PATH)/build$(BUILD_DIR_SUFFIX)/$(NAME)
 endif
 
 ifneq ($(DPF_TARGET_DIR),)
@@ -39,7 +43,7 @@ else
 TARGET_DIR = $(BASE_PATH)/bin
 endif
 
-DGL_BUILD_DIR = $(DPF_PATH)/build
+DGL_BUILD_DIR = $(DPF_PATH)/build$(BUILD_DIR_SUFFIX)
 
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
@@ -409,6 +413,10 @@ $(BUILD_DIR)/%.mm.o: %.mm
 
 clean:
 	rm -rf $(BUILD_DIR)
+ifeq ($(DPF_BUILD_DIR),)
+	rm -rf $(BASE_PATH)/build-modgui/$(NAME)
+	rm -rf $(DPF_PATH)/build-modgui
+endif
 	rm -rf $(TARGET_DIR)/$(NAME)
 	rm -rf $(TARGET_DIR)/$(NAME)-*
 	rm -rf $(TARGET_DIR)/$(NAME).lv2
