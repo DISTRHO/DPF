@@ -1070,6 +1070,7 @@ public:
 
             setState(key, filename);
 
+            /* FIXME host should be responsible for updating UI side, not us
             for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
             {
                 if (fPlugin.getStateKey(i) == key)
@@ -1079,6 +1080,7 @@ public:
                     break;
                 }
             }
+            */
 
             return LV2_WORKER_SUCCESS;
         }
