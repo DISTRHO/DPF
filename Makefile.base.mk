@@ -738,12 +738,12 @@ modpush:
 
 ifneq (,$(findstring modduo-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo,arm-mod-linux-gnueabihf,arm) $(subst modduo-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm) $(subst modduo-,,$(MAKECMDGOALS))
 endif
 
 ifneq (,$(findstring modduox-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox,aarch64-mod-linux-gnueabi,aarch64) $(subst modduox-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64) $(subst modduox-,,$(MAKECMDGOALS))
 endif
 
 ifneq (,$(findstring moddwarf-,$(MAKECMDGOALS)))
