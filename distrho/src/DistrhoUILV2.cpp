@@ -114,10 +114,11 @@ public:
         // if winId == 0 then options must not be null
         DISTRHO_SAFE_ASSERT_RETURN(options != nullptr,);
 
+       #ifndef __EMSCRIPTEN__
         const LV2_URID uridWindowTitle    = uridMap->map(uridMap->handle, LV2_UI__windowTitle);
         const LV2_URID uridTransientWinId = uridMap->map(uridMap->handle, LV2_KXSTUDIO_PROPERTIES__TransientWindowId);
 
-        bool hasTitle = false;
+        const char* windowTitle = nullptr;
 
         for (int i=0; options[i].key != 0; ++i)
         {
@@ -135,19 +136,18 @@ public:
             {
                 if (options[i].type == fURIDs.atomString)
                 {
-                    if (const char* const windowTitle = (const char*)options[i].value)
-                    {
-                        hasTitle = true;
-                        fUI.setWindowTitle(windowTitle);
-                    }
+                    windowTitle = (const char*)options[i].value;
                 }
                 else
                     d_stderr("Host provides windowTitle but has wrong value type");
             }
         }
 
-        if (! hasTitle)
-            fUI.setWindowTitle(DISTRHO_PLUGIN_NAME);
+        if (windowTitle == nullptr)
+            windowTitle = DISTRHO_PLUGIN_NAME;
+
+        fUI.setWindowTitle(windowTitle);
+       #endif
     }
 
     // -------------------------------------------------------------------
