@@ -24,7 +24,7 @@ FILES_UI  = \
 UI_TYPE = external
 include ../../Makefile.plugins.mk
 
-ifneq ($(HAIKU),true)
+ifneq ($(MACOS)$(HAIKU),true)
 LINK_FLAGS += -ldl
 endif
 

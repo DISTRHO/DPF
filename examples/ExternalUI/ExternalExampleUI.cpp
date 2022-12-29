@@ -73,13 +73,13 @@ class ExternalExampleUI : public UI
 public:
     ExternalExampleUI()
         : UI(405, 256),
-#ifdef KDE_FIFO_TEST
+         #ifdef KDE_FIFO_TEST
           fFifo(-1),
           fExternalScript(getNextBundlePath()),
-#endif
+         #endif
           fValue(0.0f)
     {
-#ifdef KDE_FIFO_TEST
+       #ifdef KDE_FIFO_TEST
         if (fExternalScript.isEmpty())
         {
             fExternalScript = getCurrentPluginFilename();
@@ -88,7 +88,8 @@ public:
 
         fExternalScript += "/ExternalLauncher.sh";
         d_stdout("External script = %s", fExternalScript.buffer());
-#endif
+       #endif
+
         if (isVisible() || isEmbed())
             visibilityChanged(true);
     }
@@ -114,7 +115,7 @@ protected:
 
         fValue = value;
 
-#ifdef KDE_FIFO_TEST
+       #ifdef KDE_FIFO_TEST
         if (fFifo == -1)
             return;
 
@@ -124,7 +125,7 @@ protected:
         std::snprintf(valueStr, 23, "%i\n", static_cast<int>(value + 0.5f));
 
         DISTRHO_SAFE_ASSERT(writeRetry(fFifo, valueStr, 24) == sizeof(valueStr));
-#endif
+       #endif
     }
 
    /* --------------------------------------------------------------------------------------------------------
@@ -135,12 +136,12 @@ protected:
     */
     void uiIdle() override
     {
-#ifdef KDE_FIFO_TEST
+       #ifdef KDE_FIFO_TEST
         if (fFifo == -1)
             return;
 
         writeRetry(fFifo, "idle\n", 5);
-#endif
+       #endif
     }
 
    /**
@@ -148,7 +149,7 @@ protected:
     */
     void visibilityChanged(const bool visible) override
     {
-#ifdef KDE_FIFO_TEST
+       #ifdef KDE_FIFO_TEST
         if (visible)
         {
             DISTRHO_SAFE_ASSERT_RETURN(fileExists(fExternalScript),);
@@ -191,8 +192,8 @@ protected:
             unlink(kFifoFilename);
             terminateAndWaitForExternalProcess();
         }
-#endif
-#ifdef MPV_TEST
+       #endif
+       #ifdef MPV_TEST
         if (visible)
         {
             const char* const file = "/home/falktx/Videos/HD/"; // TODO make this a state file?
@@ -226,19 +227,19 @@ protected:
         {
             terminateAndWaitForExternalProcess();
         }
-#endif
+       #endif
     }
 
     // -------------------------------------------------------------------------------------------------------
 
 private:
-#ifdef KDE_FIFO_TEST
+   #ifdef KDE_FIFO_TEST
     // IPC Stuff
     int fFifo;
 
     // Path to external ui script
     String fExternalScript;
-#endif
+   #endif
 
     // Current value, cached for when UI becomes visible
     float fValue;
