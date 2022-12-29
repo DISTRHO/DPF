@@ -233,7 +233,7 @@ private:
     HWND fTimerWindow;
     String fTimerWindowClassName;
 
-    WINAPI static void platformIdleTimerCallback(const HWND hwnd, UINT, UINT_PTR, DWORD)
+    static void WINAPI platformIdleTimerCallback(const HWND hwnd, UINT, UINT_PTR, DWORD)
     {
         reinterpret_cast<NativeIdleHelper*>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->fCallback->idleCallback();
     }

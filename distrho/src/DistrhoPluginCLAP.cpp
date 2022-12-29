@@ -2068,7 +2068,7 @@ static const char* const kSupportedAPIs[] = {
 };
 
 // TODO DPF external UI
-static bool clap_gui_is_api_supported(const clap_plugin_t*, const char* const api, bool)
+static bool CLAP_ABI clap_gui_is_api_supported(const clap_plugin_t*, const char* const api, bool)
 {
     for (size_t i=0; i<ARRAY_SIZE(kSupportedAPIs); ++i)
     {
@@ -2080,14 +2080,14 @@ static bool clap_gui_is_api_supported(const clap_plugin_t*, const char* const ap
 }
 
 // TODO DPF external UI
-static bool clap_gui_get_preferred_api(const clap_plugin_t*, const char** const api, bool* const is_floating)
+static bool CLAP_ABI clap_gui_get_preferred_api(const clap_plugin_t*, const char** const api, bool* const is_floating)
 {
     *api = kSupportedAPIs[0];
     *is_floating = false;
     return true;
 }
 
-static bool clap_gui_create(const clap_plugin_t* const plugin, const char* const api, const bool is_floating)
+static bool CLAP_ABI clap_gui_create(const clap_plugin_t* const plugin, const char* const api, const bool is_floating)
 {
     for (size_t i=0; i<ARRAY_SIZE(kSupportedAPIs); ++i)
     {
@@ -2101,13 +2101,13 @@ static bool clap_gui_create(const clap_plugin_t* const plugin, const char* const
     return false;
 }
 
-static void clap_gui_destroy(const clap_plugin_t* const plugin)
+static void CLAP_ABI clap_gui_destroy(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     instance->destroyUI();
 }
 
-static bool clap_gui_set_scale(const clap_plugin_t* const plugin, const double scale)
+static bool CLAP_ABI clap_gui_set_scale(const clap_plugin_t* const plugin, const double scale)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2121,7 +2121,7 @@ static bool clap_gui_set_scale(const clap_plugin_t* const plugin, const double s
    #endif
 }
 
-static bool clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
+static bool CLAP_ABI clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2129,7 +2129,7 @@ static bool clap_gui_get_size(const clap_plugin_t* const plugin, uint32_t* const
     return gui->getSize(width, height);
 }
 
-static bool clap_gui_can_resize(const clap_plugin_t* const plugin)
+static bool CLAP_ABI clap_gui_can_resize(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2137,7 +2137,7 @@ static bool clap_gui_can_resize(const clap_plugin_t* const plugin)
     return gui->canResize();
 }
 
-static bool clap_gui_get_resize_hints(const clap_plugin_t* const plugin, clap_gui_resize_hints_t* const hints)
+static bool CLAP_ABI clap_gui_get_resize_hints(const clap_plugin_t* const plugin, clap_gui_resize_hints_t* const hints)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2145,7 +2145,7 @@ static bool clap_gui_get_resize_hints(const clap_plugin_t* const plugin, clap_gu
     return gui->getResizeHints(hints);
 }
 
-static bool clap_gui_adjust_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
+static bool CLAP_ABI clap_gui_adjust_size(const clap_plugin_t* const plugin, uint32_t* const width, uint32_t* const height)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2153,7 +2153,7 @@ static bool clap_gui_adjust_size(const clap_plugin_t* const plugin, uint32_t* co
     return gui->adjustSize(width, height);
 }
 
-static bool clap_gui_set_size(const clap_plugin_t* const plugin, const uint32_t width, const uint32_t height)
+static bool CLAP_ABI clap_gui_set_size(const clap_plugin_t* const plugin, const uint32_t width, const uint32_t height)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2161,7 +2161,7 @@ static bool clap_gui_set_size(const clap_plugin_t* const plugin, const uint32_t 
     return gui->setSizeFromHost(width, height);
 }
 
-static bool clap_gui_set_parent(const clap_plugin_t* const plugin, const clap_window_t* const window)
+static bool CLAP_ABI clap_gui_set_parent(const clap_plugin_t* const plugin, const clap_window_t* const window)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2169,7 +2169,7 @@ static bool clap_gui_set_parent(const clap_plugin_t* const plugin, const clap_wi
     return gui->setParent(window);
 }
 
-static bool clap_gui_set_transient(const clap_plugin_t* const plugin, const clap_window_t* const window)
+static bool CLAP_ABI clap_gui_set_transient(const clap_plugin_t* const plugin, const clap_window_t* const window)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2177,7 +2177,7 @@ static bool clap_gui_set_transient(const clap_plugin_t* const plugin, const clap
     return gui->setTransient(window);
 }
 
-static void clap_gui_suggest_title(const clap_plugin_t* const plugin, const char* const title)
+static void CLAP_ABI clap_gui_suggest_title(const clap_plugin_t* const plugin, const char* const title)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2185,7 +2185,7 @@ static void clap_gui_suggest_title(const clap_plugin_t* const plugin, const char
     return gui->suggestTitle(title);
 }
 
-static bool clap_gui_show(const clap_plugin_t* const plugin)
+static bool CLAP_ABI clap_gui_show(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2193,7 +2193,7 @@ static bool clap_gui_show(const clap_plugin_t* const plugin)
     return gui->show();
 }
 
-static bool clap_gui_hide(const clap_plugin_t* const plugin)
+static bool CLAP_ABI clap_gui_hide(const clap_plugin_t* const plugin)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2223,7 +2223,7 @@ static const clap_plugin_gui_t clap_plugin_gui = {
 // plugin timer
 
 #if DPF_CLAP_USING_HOST_TIMER
-static void clap_plugin_on_timer(const clap_plugin_t* const plugin, clap_id)
+static void CLAP_ABI clap_plugin_on_timer(const clap_plugin_t* const plugin, clap_id)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     ClapUI* const gui = instance->getUI();
@@ -2242,14 +2242,14 @@ static const clap_plugin_timer_support_t clap_timer = {
 // plugin audio ports
 
 #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-static uint32_t clap_plugin_audio_ports_count(const clap_plugin_t* const plugin, const bool is_input)
+static uint32_t CLAP_ABI clap_plugin_audio_ports_count(const clap_plugin_t* const plugin, const bool is_input)
 {
     PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
     return is_input ? instance->getAudioPortCount<true>()
                     : instance->getAudioPortCount<false>();
 }
 
-static bool clap_plugin_audio_ports_get(const clap_plugin_t* const plugin,
+static bool CLAP_ABI clap_plugin_audio_ports_get(const clap_plugin_t* const plugin,
                                         const uint32_t index,
                                         const bool is_input,
                                         clap_audio_port_info_t* const info)
@@ -2269,13 +2269,13 @@ static const clap_plugin_audio_ports_t clap_plugin_audio_ports = {
 // plugin note ports
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT+DISTRHO_PLUGIN_WANT_MIDI_OUTPUT != 0
-static uint32_t clap_plugin_note_ports_count(const clap_plugin_t*, const bool is_input)
+static uint32_t CLAP_ABI clap_plugin_note_ports_count(const clap_plugin_t*, const bool is_input)
 {
     return (is_input ? DISTRHO_PLUGIN_WANT_MIDI_INPUT : DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) != 0 ? 1 : 0;
 }
 
-static bool clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
-                                       const bool is_input, clap_note_port_info_t* const info)
+static bool CLAP_ABI clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
+                                                const bool is_input, clap_note_port_info_t* const info)
 {
     if (is_input)
     {
