@@ -26,12 +26,9 @@ using DGL_NAMESPACE::ResizeHandle;
 
 class InfoExampleUI : public UI
 {
-    static const uint kInitialWidth = 405;
-    static const uint kInitialHeight = 256;
-
 public:
     InfoExampleUI()
-        : UI(kInitialWidth, kInitialHeight),
+        : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT),
           fSampleRate(getSampleRate()),
           fResizable(isResizable()),
           fScale(1.0f),
@@ -47,7 +44,7 @@ public:
         loadSharedResources();
 #endif
 
-        setGeometryConstraints(kInitialWidth, kInitialHeight, true);
+        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
 
         // no need to show resize handle if window is user-resizable
         if (fResizable)
@@ -192,7 +189,7 @@ protected:
 
     void onResize(const ResizeEvent& ev) override
     {
-        fScale = static_cast<float>(ev.size.getHeight())/static_cast<float>(kInitialHeight);
+        fScale = static_cast<float>(ev.size.getHeight())/static_cast<float>(DISTRHO_UI_DEFAULT_HEIGHT);
 
         UI::onResize(ev);
     }
