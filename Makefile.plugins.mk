@@ -615,7 +615,6 @@ $(TARGET_DIR)/$(NAME).lv2/modgui/module.js: $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMai
 modgui:
 	$(MAKE) $(TARGET_DIR)/$(NAME).lv2/modgui/module.js \
 		EXE_WRAPPER= \
-		FILE_BROWSER_DISABLED=true \
 		HAVE_OPENGL=true \
 		MODGUI_BUILD=true \
 		NOOPT=true \
