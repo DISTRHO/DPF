@@ -6,11 +6,18 @@
 
 # NOTE: NAME, FILES_DSP and FILES_UI must have been defined before including this file!
 
-
 ifeq ($(DPF_PATH),)
-ifeq (,$(wildcard ../../Makefile.base.mk))
+ifneq (,$(wildcard dpf/Makefile.base.mk))
+BASE_PATH=.
+DPF_PATH=dpf
+else ifneq (,$(wildcard ../dpf/Makefile.base.mk))
+BASE_PATH=..
+DPF_PATH=../dpf
+else ifneq (,$(wildcard ../../dpf/Makefile.base.mk))
+BASE_PATH=../..
 DPF_PATH=../../dpf
 else
+BASE_PATH=../..
 DPF_PATH=../..
 endif
 endif
@@ -20,16 +27,19 @@ include $(DPF_PATH)/Makefile.base.mk
 # ---------------------------------------------------------------------------------------------------------------------
 # Basic setup
 
-ifeq ($(DPF_TARGET_DIR),)
-TARGET_DIR = ../../bin
-else
-TARGET_DIR = $(DPF_TARGET_DIR)
-endif
-ifeq ($(DPF_BUILD_DIR),)
-BUILD_DIR = ../../build/$(NAME)
-else
+ifneq ($(DPF_BUILD_DIR),)
 BUILD_DIR = $(DPF_BUILD_DIR)
+else
+BUILD_DIR = $(BASE_PATH)/build/$(NAME)
 endif
+
+ifneq ($(DPF_TARGET_DIR),)
+TARGET_DIR = $(DPF_TARGET_DIR)
+else
+TARGET_DIR = $(BASE_PATH)/bin
+endif
+
+DGL_BUILD_DIR = $(DPF_PATH)/build
 
 BUILD_C_FLAGS   += -I.
 BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
@@ -147,7 +157,7 @@ ifeq ($(HAVE_CAIRO),true)
 DGL_FLAGS += -DDGL_CAIRO -DHAVE_DGL
 DGL_FLAGS += $(CAIRO_FLAGS)
 DGL_LIBS  += $(CAIRO_LIBS)
-DGL_LIB    = $(DPF_PATH)/build/libdgl-cairo.a
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-cairo.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
@@ -159,7 +169,7 @@ ifeq ($(HAVE_OPENGL),true)
 DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
-DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl.a
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-opengl.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
@@ -171,7 +181,7 @@ ifeq ($(HAVE_OPENGL),true)
 DGL_FLAGS += -DDGL_OPENGL -DDGL_USE_OPENGL3 -DHAVE_DGL
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
-DGL_LIB    = $(DPF_PATH)/build/libdgl-opengl3.a
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-opengl3.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
@@ -183,7 +193,7 @@ ifeq ($(HAVE_VULKAN),true)
 DGL_FLAGS += -DDGL_VULKAN -DHAVE_DGL
 DGL_FLAGS += $(VULKAN_FLAGS)
 DGL_LIBS  += $(VULKAN_LIBS)
-DGL_LIB    = $(DPF_PATH)/build/libdgl-vulkan.a
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-vulkan.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
@@ -197,7 +207,7 @@ endif
 
 ifeq ($(UI_TYPE),stub)
 ifeq ($(HAVE_STUB),true)
-DGL_LIB    = $(DPF_PATH)/build/libdgl-stub.a
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-stub.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
@@ -364,32 +374,32 @@ all:
 # Common
 
 $(BUILD_DIR)/%.S.o: %.S
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	@$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.c.o: %.c
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.cc.o: %.cc
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.cpp.o: %.cpp
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -c -o $@
 
 $(BUILD_DIR)/%.m.o: %.m
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_C_FLAGS) -ObjC -c -o $@
 
 $(BUILD_DIR)/%.mm.o: %.mm
-	-@mkdir -p "$(shell dirname $(BUILD_DIR)/$<)"
+	-@mkdir -p "$(shell dirname $@)"
 	@echo "Compiling $<"
 	$(SILENT)$(CC) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 
@@ -405,19 +415,19 @@ clean:
 # ---------------------------------------------------------------------------------------------------------------------
 # DGL
 
-$(DPF_PATH)/build/libdgl-cairo.a:
+$(DGL_BUILD_DIR)/libdgl-cairo.a:
 	$(MAKE) -C $(DPF_PATH)/dgl cairo
 
-$(DPF_PATH)/build/libdgl-opengl.a:
+$(DGL_BUILD_DIR)/libdgl-opengl.a:
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
 
-$(DPF_PATH)/build/libdgl-opengl3.a:
+$(DGL_BUILD_DIR)/libdgl-opengl3.a:
 	$(MAKE) -C $(DPF_PATH)/dgl opengl3
 
-$(DPF_PATH)/build/libdgl-stub.a:
+$(DGL_BUILD_DIR)/libdgl-stub.a:
 	$(MAKE) -C $(DPF_PATH)/dgl stub
 
-$(DPF_PATH)/build/libdgl-vulkan.a:
+$(DGL_BUILD_DIR)/libdgl-vulkan.a:
 	$(MAKE) -C $(DPF_PATH)/dgl vulkan
 
 # ---------------------------------------------------------------------------------------------------------------------
