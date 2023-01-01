@@ -41,7 +41,7 @@ puglWasmGlGetAttrib(const EGLDisplay display,
 static PuglStatus
 puglWasmGlConfigure(PuglView* view)
 {
-  PuglInternals* const impl    = view->impl;
+  PuglInternals* const impl = view->impl;
 
   const EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
 

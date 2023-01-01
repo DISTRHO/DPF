@@ -37,7 +37,14 @@
 #include <cstring>
 #include <ctime>
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+# include <Application.h>
+# include <Window.h>
+# ifdef DGL_OPENGL
+#  include <GL/gl.h>
+#  include <opengl/GLView.h>
+# endif
+#elif defined(DISTRHO_OS_MAC)
 # import <Cocoa/Cocoa.h>
 # include <dlfcn.h>
 # include <mach/mach_time.h>
@@ -119,7 +126,13 @@ START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+# include "pugl-extra/haiku.cpp"
+# include "pugl-extra/haiku_stub.cpp"
+# ifdef DGL_OPENGL
+#  include "pugl-extra/haiku_gl.cpp"
+# endif
+#elif defined(DISTRHO_OS_MAC)
 # ifndef DISTRHO_MACOS_NAMESPACE_MACRO
 #  define DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, SEP, INTERFACE) NS ## SEP ## INTERFACE
 #  define DISTRHO_MACOS_NAMESPACE_MACRO(NS, INTERFACE) DISTRHO_MACOS_NAMESPACE_MACRO_HELPER(NS, _, INTERFACE)
@@ -237,7 +250,8 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
 
 void puglRaiseWindow(PuglView* const view)
 {
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
     if (NSWindow* const window = view->impl->window ? view->impl->window
                                                     : [view->impl->wrapperView window])
         [window orderFrontRegardless];
@@ -257,7 +271,10 @@ void puglRaiseWindow(PuglView* const view)
 double puglGetScaleFactorFromParent(const PuglView* const view)
 {
     const PuglNativeView parent = view->parent ? view->parent : view->transientParent ? view->transientParent : 0;
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+    // TODO
+    return 1.0;
+#elif defined(DISTRHO_OS_MAC)
     // some of these can return 0 as backingScaleFactor, pick the most relevant valid one
     const NSWindow* possibleWindows[] = {
         parent != 0 ? [(NSView*)parent window] : nullptr,
@@ -296,7 +313,8 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
         view->sizeHints[PUGL_FIXED_ASPECT].height = height;
     }
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
     if (view->impl->window)
     {
         PuglStatus status;
@@ -328,7 +346,8 @@ void puglSetResizable(PuglView* const view, const bool resizable)
 {
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
     if (PuglWindow* const window = view->impl->window)
     {
         const uint style = (NSClosableWindowMask | NSTitledWindowMask | NSMiniaturizableWindowMask)
@@ -361,7 +380,8 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
     view->sizeHints[PUGL_DEFAULT_SIZE].width = view->frame.width = static_cast<PuglSpan>(width);
     view->sizeHints[PUGL_DEFAULT_SIZE].height = view->frame.height = static_cast<PuglSpan>(height);
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+#elif defined(DISTRHO_OS_MAC)
     // mostly matches upstream pugl, simplified
     PuglInternals* const impl = view->impl;
 
@@ -456,7 +476,11 @@ void puglFallbackOnResize(PuglView* const view)
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#elif defined(DISTRHO_OS_MAC)
 
 // --------------------------------------------------------------------------------------------------------------------
 // macOS specific, add another view's window as child

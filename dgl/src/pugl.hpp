@@ -73,7 +73,11 @@ void puglOnDisplayPrepare(PuglView* view);
 // DGL specific, build-specific fallback resize
 void puglFallbackOnResize(PuglView* view);
 
-#if defined(DISTRHO_OS_MAC)
+#if defined(DISTRHO_OS_HAIKU)
+
+// nothing here yet
+
+#elif defined(DISTRHO_OS_MAC)
 
 // macOS specific, add another view's window as child
 PuglStatus puglMacOSAddChildWindow(PuglView* view, PuglView* child);

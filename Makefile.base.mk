@@ -272,7 +272,10 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifeq ($(DEBUG),true)
-BASE_FLAGS += -DDEBUG -O0 -g -fsanitize=address
+BASE_FLAGS += -DDEBUG -O0 -g
+ifneq ($(HAIKU),true)
+BASE_FLAGS += -fsanitize=address
+endif
 LINK_OPTS   =
 ifeq ($(WASM),true)
 LINK_OPTS  += -sASSERTIONS=1
@@ -347,9 +350,11 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for required libraries
 
-HAVE_CAIRO  = $(shell $(PKG_CONFIG) --exists cairo && echo true)
+ifneq ($(HAIKU),true)
+HAVE_CAIRO = $(shell $(PKG_CONFIG) --exists cairo && echo true)
+endif
 
-ifeq ($(MACOS_OR_WASM_OR_WINDOWS),true)
+ifeq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 HAVE_OPENGL = true
 else
 HAVE_OPENGL  = $(shell $(PKG_CONFIG) --exists gl && echo true)
@@ -454,8 +459,8 @@ ifeq ($(HAVE_OPENGL),true)
 DGL_FLAGS   += -DHAVE_OPENGL
 
 ifeq ($(HAIKU),true)
-OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl)
-OPENGL_LIBS  = $(shell $(PKG_CONFIG) --libs gl)
+OPENGL_FLAGS =
+OPENGL_LIBS  = -lGL
 else ifeq ($(MACOS),true)
 OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1 -Wno-deprecated-declarations
 OPENGL_LIBS  = -framework OpenGL
@@ -481,7 +486,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Stub specific stuff
 
-ifeq ($(MACOS_OR_WASM_OR_WINDOWS),true)
+ifeq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 HAVE_STUB = true
 else
 HAVE_STUB = $(HAVE_X11)
@@ -540,7 +545,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Backwards-compatible HAVE_DGL
 
-ifeq ($(MACOS_OR_WASM_OR_WINDOWS),true)
+ifeq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 HAVE_DGL = true
 else ifeq ($(HAVE_OPENGL),true)
 HAVE_DGL = $(HAVE_X11)
