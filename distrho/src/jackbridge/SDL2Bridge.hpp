@@ -75,11 +75,12 @@ struct SDL2Bridge : NativeBridge {
                                               SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_SAMPLES_CHANGE);
         if (captureDeviceId == 0)
         {
-            d_stderr2("Failed to open SDL playback device, error was: %s", SDL_GetError());
+            d_stderr2("Failed to open SDL capture device, error was: %s", SDL_GetError());
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
             return false;
+           #endif
         }
-
-        if (receivedCapture.channels != DISTRHO_PLUGIN_NUM_INPUTS)
+        else if (receivedCapture.channels != DISTRHO_PLUGIN_NUM_INPUTS)
         {
             SDL_CloseAudioDevice(captureDeviceId);
             captureDeviceId = 0;
@@ -113,30 +114,39 @@ struct SDL2Bridge : NativeBridge {
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0 && DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         // if using both input and output, make sure they match
-        if (receivedCapture.samples != receivedPlayback.samples)
+        if (receivedCapture.samples != receivedPlayback.samples && captureDeviceId != 0)
         {
             SDL_CloseAudioDevice(captureDeviceId);
             SDL_CloseAudioDevice(playbackDeviceId);
             captureDeviceId = playbackDeviceId = 0;
-            d_stderr2("Mismatch buffer size %u vs %u", receivedCapture.samples, receivedCapture.samples);
+            d_stderr2("Mismatch buffer size %u vs %u", receivedCapture.samples, receivedPlayback.samples);
             return false;
         }
-        if (receivedCapture.freq != receivedPlayback.freq)
+        if (receivedCapture.freq != receivedPlayback.freq && captureDeviceId != 0)
         {
             SDL_CloseAudioDevice(captureDeviceId);
             SDL_CloseAudioDevice(playbackDeviceId);
             captureDeviceId = playbackDeviceId = 0;
-            d_stderr2("Mismatch sample rate %u vs %u", receivedCapture.freq, receivedCapture.freq);
+            d_stderr2("Mismatch sample rate %u vs %u", receivedCapture.freq, receivedPlayback.freq);
             return false;
         }
        #endif
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        bufferSize = receivedCapture.samples;
-        sampleRate = receivedCapture.freq;
-       #else
-        bufferSize = receivedPlayback.samples;
-        sampleRate = receivedPlayback.freq;
+        if (captureDeviceId != 0)
+        {
+            bufferSize = receivedCapture.samples;
+            sampleRate = receivedCapture.freq;
+        }
+       #endif
+       #if DISTRHO_PLUGIN_NUM_INPUTS > 0 && DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        else
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+        {
+            bufferSize = receivedPlayback.samples;
+            sampleRate = receivedPlayback.freq;
+        }
        #endif
 
         allocBuffers(true, false);
@@ -146,9 +156,11 @@ struct SDL2Bridge : NativeBridge {
     bool close() override
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
-        SDL_CloseAudioDevice(captureDeviceId);
-        captureDeviceId = 0;
+        if (captureDeviceId != 0)
+        {
+            SDL_CloseAudioDevice(captureDeviceId);
+            captureDeviceId = 0;
+        }
        #endif
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
@@ -163,8 +175,8 @@ struct SDL2Bridge : NativeBridge {
     bool activate() override
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
-        SDL_PauseAudioDevice(captureDeviceId, 0);
+        if (captureDeviceId != 0)
+            SDL_PauseAudioDevice(captureDeviceId, 0);
        #endif
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
@@ -176,8 +188,8 @@ struct SDL2Bridge : NativeBridge {
     bool deactivate() override
     {
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        DISTRHO_SAFE_ASSERT_RETURN(captureDeviceId != 0, false);
-        SDL_PauseAudioDevice(captureDeviceId, 1);
+        if (captureDeviceId != 0)
+            SDL_PauseAudioDevice(captureDeviceId, 1);
        #endif
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         DISTRHO_SAFE_ASSERT_RETURN(playbackDeviceId != 0, false);
