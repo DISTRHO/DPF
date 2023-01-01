@@ -35,12 +35,10 @@ DPF_MAKEFILE_BASE_INCLUDED = true
 # ---------------------------------------------------------------------------------------------------------------------
 # Auto-detect target compiler if not defined
 
-TARGET_COMPILER = $(shell printf '#ifdef __clang__\nclang\n#else\ngcc\n#endif' | $(CC) -E -P -x c - 2>/dev/null)
-
 ifneq ($(CLANG),true)
 ifneq ($(GCC),true)
 
-ifneq (,$(findstring clang,$(TARGET_COMPILER)))
+ifneq (,$(findstring clang,$(CC)))
 CLANG = true
 else
 GCC = true
