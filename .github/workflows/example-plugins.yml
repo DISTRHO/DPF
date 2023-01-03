@@ -2,6 +2,11 @@ name: example-plugins
 
 on:
   push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
 
 jobs:
   ubuntu-20-04:
