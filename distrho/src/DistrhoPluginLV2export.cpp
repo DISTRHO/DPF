@@ -756,6 +756,8 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (! designated)
                 {
+                    const uint32_t hints = plugin.getParameterHints(i);
+
                     // name and symbol
                     const String& paramName(plugin.getParameterName(i));
 
@@ -780,12 +782,34 @@ void lv2_generate_ttl(const char* const basename)
                     // ranges
                     const ParameterRanges& ranges(plugin.getParameterRanges(i));
 
-                    if (plugin.getParameterHints(i) & kParameterIsInteger)
+                    if (hints & kParameterIsInteger)
                     {
                         if (plugin.isParameterInput(i))
                             pluginString += "        lv2:default " + String(int(ranges.def)) + " ;\n";
                         pluginString += "        lv2:minimum " + String(int(ranges.min)) + " ;\n";
                         pluginString += "        lv2:maximum " + String(int(ranges.max)) + " ;\n";
+                    }
+                    else if (hints & kParameterIsLogarithmic)
+                    {
+                        if (plugin.isParameterInput(i))
+                        {
+                            if (d_isNotZero(ranges.def))
+                                pluginString += "        lv2:default " + String(ranges.def) + " ;\n";
+                            else if (d_isEqual(ranges.def, ranges.max))
+                                pluginString += "        lv2:default -0.0001 ;\n";
+                            else
+                                pluginString += "        lv2:default 0.0001 ;\n";
+                        }
+
+                        if (d_isNotZero(ranges.min))
+                            pluginString += "        lv2:minimum " + String(ranges.min) + " ;\n";
+                        else
+                            pluginString += "        lv2:minimum 0.0001 ;\n";
+
+                        if (d_isNotZero(ranges.max))
+                            pluginString += "        lv2:maximum " + String(ranges.max) + " ;\n";
+                        else
+                            pluginString += "        lv2:maximum -0.0001 ;\n";
                     }
                     else
                     {
@@ -817,7 +841,7 @@ void lv2_generate_ttl(const char* const basename)
                             else
                                 pluginString += "            rdfs:label  \"" + enumValue.label + "\" ;\n";
 
-                            if (plugin.getParameterHints(i) & kParameterIsInteger)
+                            if (hints & kParameterIsInteger)
                             {
                                 const int rounded = (int)(enumValue.value + (enumValue.value < 0.0f ? -0.5f : 0.5f));
                                 pluginString += "            rdf:value " + String(rounded) + " ;\n";
@@ -885,7 +909,7 @@ void lv2_generate_ttl(const char* const basename)
                             pluginString += "            a unit:Unit ;\n";
                             pluginString += "            rdfs:label  \"" + unit + "\" ;\n";
                             pluginString += "            unit:symbol \"" + unit + "\" ;\n";
-                            if (plugin.getParameterHints(i) & kParameterIsInteger)
+                            if (hints & kParameterIsInteger)
                                 pluginString += "            unit:render \"%d " + unit + "\" ;\n";
                             else
                                 pluginString += "            unit:render \"%f " + unit + "\" ;\n";
@@ -905,8 +929,6 @@ void lv2_generate_ttl(const char* const basename)
                     }
 
                     // hints
-                    const uint32_t hints = plugin.getParameterHints(i);
-
                     if (hints & kParameterIsBoolean)
                     {
                         if ((hints & kParameterIsTrigger) == kParameterIsTrigger)
