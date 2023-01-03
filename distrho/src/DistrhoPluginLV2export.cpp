@@ -1341,7 +1341,7 @@ void lv2_generate_ttl(const char* const basename)
         jsString += "if(!WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,0,0,2,8,1,1,97,1,98,3,127,1,6,6,1,127,1,65,0,11,7,5,1,1,97,3,1])))";
         jsString += "err.push('Importable/Exportable mutable globals unsupported');\n";
         jsString += "}\n";
-        jsString += "if(err.length!==0){/* errors err.join('<br>')*/return;}\n\n";
+        jsString += "if(err.length!==0){e.icon.find('.canvas_wrapper').html('<h2>'+err.join('<br>')+'</h2>');return;}\n\n";
         jsString += "var s=document.createElement('script');\n";
         jsString += "s.setAttribute('async',true);\n";
         jsString += "s.setAttribute('src','/resources/module.js?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION/*f.get_custom_resource_filename('module.js')*/);\n";
@@ -1477,6 +1477,7 @@ void lv2_generate_ttl(const char* const basename)
         stylesheetFile << " transform:scale(calc(1/var(--device-pixel-ratio)));" << std::endl;
         stylesheetFile << " width:" + String(DISTRHO_UI_DEFAULT_WIDTH) + "px;" << std::endl;
         stylesheetFile << " height:" + String(DISTRHO_UI_DEFAULT_HEIGHT) + "px;" << std::endl;
+        stylesheetFile << " text-align:center;" << std::endl;
         stylesheetFile << " z-index:21;" << std::endl;
         stylesheetFile << "}" << std::endl;
         stylesheetFile << "/*" << std::endl;
