@@ -718,6 +718,7 @@ MOD_ENVIRONMENT = \
 	CXX=${1}/host/usr/bin/${2}-g++ \
 	LD=${1}/host/usr/bin/${2}-ld \
 	PKG_CONFIG=${1}/host/usr/bin/pkg-config \
+	PKG_CONFIG_PATH="${1}/staging/usr/lib/pkgconfig" \
 	STRIP=${1}/host/usr/bin/${2}-strip \
 	CFLAGS="-I${1}/staging/usr/include $(EXTRA_MOD_FLAGS)" \
 	CPPFLAGS= \
