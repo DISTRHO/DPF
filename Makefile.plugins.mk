@@ -606,7 +606,8 @@ $(TARGET_DIR)/$(NAME).lv2/modgui/module.js: $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMai
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin modgui for $(NAME)"
 	$(SILENT)$(CXX) $^ $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) \
-		-sALLOW_TABLE_GROWTH -sMODULARIZE=1 -sMAIN_MODULE=2 -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 \
+		-sALLOW_MEMORY_GROWTH -sALLOW_TABLE_GROWTH -sDISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0 -sLZ4=1 \
+		-sMODULARIZE=1 -sMAIN_MODULE=2 \
 		-sEXPORTED_FUNCTIONS="['_malloc','_free','_modgui_init','_modgui_param_set','_modgui_patch_set','_modgui_cleanup']" \
 		-sEXPORTED_RUNTIME_METHODS=['addFunction','lengthBytesUTF8','stringToUTF8','UTF8ToString'] \
 		-sEXPORT_NAME="Module_$(MODGUI_CLASS_NAME)" \
@@ -623,9 +624,9 @@ modgui:
 		AR=emar \
 		CC=emcc \
 		CXX=em++ \
-		CFLAGS="$(MODGUI_CFLAGS)" \
-		CXXFLAGS="$(MODGUI_CXXFLAGS)" \
-		LDFLAGS="$(MODGUI_LDFLAGS)"
+		CFLAGS="-O3 $(MODGUI_CFLAGS)" \
+		CXXFLAGS="-O3 $(MODGUI_CXXFLAGS)" \
+		LDFLAGS="-O3 $(MODGUI_LDFLAGS)"
 
 .PHONY: modgui
 
