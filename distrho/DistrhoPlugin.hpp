@@ -139,6 +139,13 @@ static const uint32_t kParameterIsOutput = 0x10;
 */
 static const uint32_t kParameterIsTrigger = 0x20 | kParameterIsBoolean;
 
+/**
+   Parameter should be hidden from the host and user-visible GUIs.@n
+   It is still saved and handled as any regular parameter, just not visible to the user
+   (for example in a host generated GUI)
+ */
+static const uint32_t kParameterIsHidden = 0x40;
+
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------
