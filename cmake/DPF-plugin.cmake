@@ -150,9 +150,6 @@ function(dpf_add_plugin NAME)
     target_link_libraries("${NAME}" PUBLIC
       "${_dgl_library}-definitions"
       dgl-system-libs-definitions)
-  elseif(_dgl_external)
-    target_link_libraries("${NAME}" PUBLIC
-      dgl-system-libs-definitions)
   endif()
 
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
