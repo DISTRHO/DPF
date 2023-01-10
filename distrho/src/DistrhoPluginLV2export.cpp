@@ -1632,7 +1632,7 @@ void lv2_generate_ttl(const char* const basename)
 
                 presetString += "        <";
 
-                if (plugin.getStateHints(i) & kStateIsHostReadable)
+                if (plugin.getStateHints(j) & kStateIsHostReadable)
                     presetString += DISTRHO_PLUGIN_URI "#";
                 else
                     presetString += DISTRHO_PLUGIN_LV2_STATE_PREFIX;
