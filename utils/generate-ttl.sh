@@ -33,7 +33,9 @@ FOLDERS=`find . -type d -name \*.lv2`
 
 for i in ${FOLDERS}; do
   cd ${i}
-  FILE="$(ls *.${EXT} | sort | head -n 1)"
-  ${EXE_WRAPPER} "${GEN}" "./${FILE}"
+  FILE="$(ls *.${EXT} 2>/dev/null | sort | head -n 1)"
+  if [ -n "${FILE}" ]; then
+    ${EXE_WRAPPER} "${GEN}" "./${FILE}"
+  fi
   cd ..
 done
