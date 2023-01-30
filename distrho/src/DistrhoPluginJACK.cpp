@@ -807,7 +807,7 @@ public:
 protected:
     void run() override
     {
-        plugin.setBufferSize(256);
+        plugin.setBufferSize(256, true);
         plugin.activate();
 
         float buffer[256];
@@ -862,8 +862,8 @@ bool runSelfTests()
 
         plugin.activate();
         plugin.deactivate();
-        plugin.setBufferSize(128);
-        plugin.setSampleRate(48000);
+        plugin.setBufferSize(128, true);
+        plugin.setSampleRate(48000, true);
         plugin.activate();
 
         float buffer[128] = {};

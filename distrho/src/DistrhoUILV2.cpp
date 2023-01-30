@@ -259,7 +259,7 @@ public:
                 if (options[i].type == fURIDs.atomFloat)
                 {
                     const float sampleRate = *(const float*)options[i].value;
-                    fUI.setSampleRate(sampleRate);
+                    fUI.setSampleRate(sampleRate, true);
                     continue;
                 }
                 else

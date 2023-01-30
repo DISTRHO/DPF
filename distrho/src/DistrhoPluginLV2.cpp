@@ -821,7 +821,7 @@ public:
                 if (options[i].type == fURIDs.atomInt)
                 {
                     const int32_t bufferSize(*(const int32_t*)options[i].value);
-                    fPlugin.setBufferSize(bufferSize);
+                    fPlugin.setBufferSize(bufferSize, true);
                 }
                 else
                 {
@@ -833,7 +833,7 @@ public:
                 if (options[i].type == fURIDs.atomInt)
                 {
                     const int32_t bufferSize(*(const int32_t*)options[i].value);
-                    fPlugin.setBufferSize(bufferSize);
+                    fPlugin.setBufferSize(bufferSize, true);
                 }
                 else
                 {
@@ -846,7 +846,7 @@ public:
                 {
                     const float sampleRate(*(const float*)options[i].value);
                     fSampleRate = sampleRate;
-                    fPlugin.setSampleRate(sampleRate);
+                    fPlugin.setSampleRate(sampleRate, true);
                 }
                 else
                 {
