@@ -735,6 +735,7 @@ typedef void (*_custom_patch_set)(const char* uri, const char* value);
 
 struct ModguiHandle {
     LV2UI_Handle handle;
+    long loop_id;
     _custom_param_set param_set;
     _custom_patch_set patch_set;
 };
@@ -858,6 +859,7 @@ LV2UI_Handle modgui_init(const char* const className, _custom_param_set param_se
 
     ModguiHandle* const mhandle = new ModguiHandle;
     mhandle->handle = nullptr;
+    mhandle->loop_id = 0;
     mhandle->param_set = param_set;
     mhandle->patch_set = patch_set;
 
@@ -872,7 +874,7 @@ LV2UI_Handle modgui_init(const char* const className, _custom_param_set param_se
     mhandle->handle = handle;
 
     static_cast<UiLv2*>(handle)->lv2ui_show();
-    emscripten_set_interval(app_idle, 1000.0/60, handle);
+    mhandle->loop_id = emscripten_set_interval(app_idle, 1000.0/60, handle);
 
     return mhandle;
 }
@@ -911,8 +913,11 @@ DISTRHO_PLUGIN_EXPORT
 void modgui_cleanup(const LV2UI_Handle handle)
 {
     d_stdout("cleanup");
-    lv2ui_cleanup(static_cast<ModguiHandle*>(handle)->handle);
-    delete static_cast<ModguiHandle*>(handle);
+    ModguiHandle* const mhandle = static_cast<ModguiHandle*>(handle);
+    if (mhandle->loop_id != 0)
+        emscripten_clear_interval(mhandle->loop_id);
+    lv2ui_cleanup(mhandle->handle);
+    delete mhandle;
 }
 #endif
 

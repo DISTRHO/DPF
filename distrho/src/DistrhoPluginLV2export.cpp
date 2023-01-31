@@ -1346,11 +1346,11 @@ void lv2_generate_ttl(const char* const basename)
         jsString += "if(err.length!==0){e.icon.find('.canvas_wrapper').html('<h2>'+err.join('<br>')+'</h2>');return;}\n\n";
         jsString += "var s=document.createElement('script');\n";
         jsString += "s.setAttribute('async',true);\n";
-        jsString += "s.setAttribute('src','/resources/module.js?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION/*f.get_custom_resource_filename('module.js')*/);\n";
+        jsString += "s.setAttribute('src',e.api_version>=3?f.get_custom_resource_filename('module.js'):('/resources/module.js?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION));\n";
         jsString += "s.setAttribute('type','text/javascript');\n";
         jsString += "s.onload=function(){\n";
         jsString += " Module_" DISTRHO_PLUGIN_MODGUI_CLASS_NAME "({\n";
-        jsString += " locateFile: function(p,_){return '/resources/'+p+'?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION/*return f.get_custom_resource_filename(p);*/},\n";
+        jsString += " locateFile: function(p,_){return e.api_version>=3?f.get_custom_resource_filename(p):('/resources/'+p+'?uri='+escape(\"" DISTRHO_PLUGIN_URI "\")+'&r='+VERSION)},\n";
         jsString += " postRun:function(m){\n";
         jsString += " var cn=e.icon.attr('mod-instance').replaceAll('/','_');\n";
         jsString += " var cnl=m.lengthBytesUTF8(cn) + 1;\n";
@@ -1394,6 +1394,13 @@ void lv2_generate_ttl(const char* const basename)
         jsString += "}else{\n";
         jsString += " if(e.symbol===':bypass')return;\n";
         jsString += " if(e.uri){e.data.p.p[e.uri]=e.value;}else{e.data.p.c[e.symbol]=e.value;}\n";
+        jsString += "}\n\n";
+        jsString += "}else if(e.type==='end'){\n";
+        jsString += " if(e.data.h && e.data.m){\n";
+        jsString += "  var h = e.data.h;\n";
+        jsString += "  var m = e.data.m;\n";
+        jsString += "  e.data.h = e.data.m = null;\n";
+        jsString += "  m._modgui_cleanup(h);\n";
         jsString += "}\n\n";
         jsString += "}\n}\n";
         jsFile << jsString;
