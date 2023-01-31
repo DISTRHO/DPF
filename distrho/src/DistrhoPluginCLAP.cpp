@@ -977,6 +977,7 @@ public:
                     case CLAP_EVENT_PARAM_GESTURE_BEGIN:
                     case CLAP_EVENT_PARAM_GESTURE_END:
                     case CLAP_EVENT_TRANSPORT:
+                        break;
                     case CLAP_EVENT_MIDI:
                         DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_midi_t),
                                                         event->size, sizeof(clap_event_midi_t));
