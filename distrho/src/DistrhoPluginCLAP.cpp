@@ -211,7 +211,7 @@ public:
           #endif
            const bool isFloating)
         : fPlugin(plugin),
-          fPluinEventQueue(eventQueue),
+          fPluginEventQueue(eventQueue),
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
          #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -382,7 +382,7 @@ public:
                 *width = minimumWidth;
             if (minimumHeight > *height)
                 *height = minimumHeight;
-            
+
             return true;
         }
 
@@ -534,7 +534,7 @@ public:
 private:
     // Plugin and UI
     PluginExporter& fPlugin;
-    ClapEventQueue* const fPluinEventQueue;
+    ClapEventQueue* const fPluginEventQueue;
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
    #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -682,7 +682,7 @@ private:
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
-        fPluinEventQueue->setStateFromUI(key, value);
+        fPluginEventQueue->setStateFromUI(key, value);
     }
 
     static void setStateCallback(void* const ptr, const char* key, const char* value)
@@ -1232,7 +1232,7 @@ public:
 
                 DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
                                                 event->size, sizeof(clap_event_param_value));
-                
+
                 setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
             }
         }
