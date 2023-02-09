@@ -1,6 +1,6 @@
 /*
  * SDL Bridge for DPF
- * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,6 +18,7 @@
 #define SDL_BRIDGE_HPP_INCLUDED
 
 #include "NativeBridge.hpp"
+#include "../../extra/ScopedDenormalDisable.hpp"
 
 #include <SDL.h>
 
@@ -246,6 +247,7 @@ struct SDL2Bridge : NativeBridge {
         const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
+        const ScopedDenormalDisable sdd;
         self->jackProcessCallback(numFrames, self->jackProcessArg);
 
         float* const fstream = (float*)stream;

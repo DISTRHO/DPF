@@ -50,6 +50,7 @@
 # include "rtmidi/RtMidi.h"
 # include "../../extra/ScopedPointer.hpp"
 # include "../../extra/String.hpp"
+# include "../../extra/ScopedDenormalDisable.hpp"
 
 using DISTRHO_NAMESPACE::ScopedPointer;
 using DISTRHO_NAMESPACE::String;
@@ -377,6 +378,7 @@ struct RtAudioBridge : NativeBridge {
         }
        #endif
 
+        const ScopedDenormalDisable sdd;
         self->jackProcessCallback(numFrames, self->jackProcessArg);
 
         return 0;
