@@ -224,6 +224,7 @@ struct SDL2Bridge : NativeBridge {
 
        #if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
         // if there are no outputs, run process callback now
+        const ScopedDenormalDisable sdd;
         self->jackProcessCallback(numFrames, self->jackProcessArg);
        #endif
     }

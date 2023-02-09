@@ -52,6 +52,7 @@
 # include "../../extra/String.hpp"
 # include "../../extra/ScopedDenormalDisable.hpp"
 
+using DISTRHO_NAMESPACE::ScopedDenormalDisable;
 using DISTRHO_NAMESPACE::ScopedPointer;
 using DISTRHO_NAMESPACE::String;
 
