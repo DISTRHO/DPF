@@ -735,6 +735,11 @@ puglFreeViewInternals(PuglView* const view)
   printf("DONE: %s %d\n", __func__, __LINE__);
   if (view && view->impl) {
     if (view->backend) {
+      // unregister the window events, to make sure no callbacks to old views are triggered
+      emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_visibilitychange_callback(NULL, false, NULL);
       view->backend->destroy(view);
     }
     free(view->impl->clipboardData);
