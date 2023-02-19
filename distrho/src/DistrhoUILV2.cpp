@@ -214,9 +214,14 @@ public:
                     fUI.stateChanged(key, value);
                 }
             }
+            else if (atom->type == fURIDs.midiEvent)
+            {
+                // ignore
+            }
             else
             {
-                d_stdout("DPF :: received atom not handled");
+                d_stdout("DPF :: received atom not handled :: %s",
+                         fUridUnmap != nullptr ? fUridUnmap->unmap(fUridUnmap->handle, atom->type) : "(null)");
             }
         }
        #endif
