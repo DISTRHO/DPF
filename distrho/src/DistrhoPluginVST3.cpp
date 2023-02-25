@@ -4810,7 +4810,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         d_strncpy(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
         d_strncpy(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
         d_strncpy(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
-        d_strncpy(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
+        d_strncpy(info->sdk_version, "VST 3.7.4", ARRAY_SIZE(info->sdk_version));
 
         if (idx == 0)
         {
