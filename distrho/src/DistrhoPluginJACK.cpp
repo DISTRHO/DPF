@@ -152,23 +152,25 @@ public:
           fClient(client)
     {
 #if DISTRHO_PLUGIN_NUM_INPUTS > 0 || DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        char strBuf[0xff+1];
-        strBuf[0xff] = '\0';
-
 # if DISTRHO_PLUGIN_NUM_INPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_INPUTS; ++i)
         {
             const AudioPort& port(fPlugin.getAudioPort(true, i));
-            fPortAudioIns[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput, 0);
+            ulong hints = JackPortIsInput;
+            if (port.hints & kAudioPortIsCV)
+                hints |= JackPortIsControlVoltage;
+            fPortAudioIns[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, hints, 0);
             setAudioPortMetadata(port, fPortAudioIns[i], i);
         }
 # endif
 # if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         for (uint32_t i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
         {
-            std::snprintf(strBuf, 0xff, "out%i", i+1);
             const AudioPort& port(fPlugin.getAudioPort(false, i));
-            fPortAudioOuts[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput, 0);
+            ulong hints = JackPortIsOutput;
+            if (port.hints & kAudioPortIsCV)
+                hints |= JackPortIsControlVoltage;
+            fPortAudioOuts[i] = jackbridge_port_register(fClient, port.symbol, JACK_DEFAULT_AUDIO_TYPE, hints, 0);
             setAudioPortMetadata(port, fPortAudioOuts[i], DISTRHO_PLUGIN_NUM_INPUTS+i);
         }
 # endif
@@ -623,7 +625,8 @@ private:
 
         {
             char strBuf[0xff];
-            snprintf(strBuf, sizeof(0xff)-1, "%u", index);
+            snprintf(strBuf, 0xff - 2, "%u", index);
+            strBuf[0xff - 1] = '\0';
             jackbridge_set_property(fClient, uuid, JACK_METADATA_ORDER, strBuf, "http://www.w3.org/2001/XMLSchema#integer");
         }
 

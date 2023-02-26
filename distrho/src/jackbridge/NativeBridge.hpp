@@ -1,6 +1,6 @@
 /*
  * Native Bridge for DPF
- * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,6 +31,8 @@ struct NativeBridge {
     // Port caching information
     uint numAudioIns;
     uint numAudioOuts;
+    uint numCvIns;
+    uint numCvOuts;
     uint numMidiIns;
     uint numMidiOuts;
 
@@ -43,9 +45,10 @@ struct NativeBridge {
     // Runtime buffers
     enum PortMask {
         kPortMaskAudio = 0x1000,
-        kPortMaskMIDI = 0x2000,
-        kPortMaskInput = 0x4000,
-        kPortMaskOutput = 0x8000,
+        kPortMaskCV = 0x2000,
+        kPortMaskMIDI = 0x4000,
+        kPortMaskInput = 0x10000,
+        kPortMaskOutput = 0x20000,
         kPortMaskInputMIDI = kPortMaskInput|kPortMaskMIDI,
         kPortMaskOutputMIDI = kPortMaskOutput|kPortMaskMIDI,
     };
@@ -71,6 +74,8 @@ struct NativeBridge {
           sampleRate(0),
           numAudioIns(0),
           numAudioOuts(0),
+          numCvIns(0),
+          numCvOuts(0),
           numMidiIns(0),
           numMidiOuts(0),
           jackProcessCallback(nullptr),
@@ -211,27 +216,27 @@ struct NativeBridge {
 
         if (audio)
         {
-       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
+           #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            audioBufferStorage = new float[bufferSize*(DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS)];
 
-        for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
-            audioBuffers[i] = audioBufferStorage + (bufferSize * i);
-       #endif
+            for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                audioBuffers[i] = audioBufferStorage + (bufferSize * i);
+           #endif
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS > 0
-        std::memset(audioBufferStorage, 0, sizeof(float)*bufferSize*DISTRHO_PLUGIN_NUM_INPUTS);
-       #endif
+           #if DISTRHO_PLUGIN_NUM_INPUTS > 0
+            std::memset(audioBufferStorage, 0, sizeof(float)*bufferSize*DISTRHO_PLUGIN_NUM_INPUTS);
+           #endif
         }
 
         if (midi)
         {
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        midiInBufferCurrent.createBuffer(kMaxMIDIInputMessageSize * 512);
-        midiInBufferPending.createBuffer(kMaxMIDIInputMessageSize * 512);
-       #endif
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        midiOutBuffer.createBuffer(2048);
-       #endif
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            midiInBufferCurrent.createBuffer(kMaxMIDIInputMessageSize * 512);
+            midiInBufferPending.createBuffer(kMaxMIDIInputMessageSize * 512);
+           #endif
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            midiOutBuffer.createBuffer(2048);
+           #endif
         }
     }
 
@@ -252,27 +257,39 @@ struct NativeBridge {
 
     jack_port_t* registerPort(const char* const type, const ulong flags)
     {
-        bool isAudio, isInput;
-
-        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
-            isAudio = true;
-        else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
-            isAudio = false;
-        else
-            return nullptr;
+        uintptr_t ret = 0;
 
         /**/ if (flags & JackPortIsInput)
-            isInput = true;
+            ret |= kPortMaskInput;
         else if (flags & JackPortIsOutput)
-            isInput = false;
+            ret |= kPortMaskOutput;
         else
             return nullptr;
 
-        const uintptr_t ret = (isAudio ? kPortMaskAudio : kPortMaskMIDI)
-                            | (isInput ? kPortMaskInput : kPortMaskOutput);
+        /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
+        {
+            if (flags & kAudioPortIsCV)
+            {
+                ret |= kPortMaskAudio;
+                ret += flags & JackPortIsInput ? numAudioIns++ : numAudioOuts++;
+            }
+            else
+            {
+                ret |= kPortMaskCV;
+                ret += flags & JackPortIsInput ? numCvIns++ : numCvOuts++;
+            }
+        }
+        else if (std::strcmp(type, JACK_DEFAULT_MIDI_TYPE) == 0)
+        {
+            ret |= kPortMaskMIDI;
+            ret += flags & JackPortIsInput ? numMidiIns++ : numMidiOuts++;
+        }
+        else
+        {
+            return nullptr;
+        }
 
-        return (jack_port_t*)(ret + (isAudio ? (isInput ? numAudioIns++ : numAudioOuts++)
-                                             : (isInput ? numMidiIns++ : numMidiOuts++)));
+        return (jack_port_t*)ret;
     }
 
     void* getPortBuffer(jack_port_t* const port)
@@ -281,7 +298,7 @@ struct NativeBridge {
         DISTRHO_SAFE_ASSERT_RETURN(portMask != 0x0, nullptr);
 
        #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
-        if (portMask & kPortMaskAudio)
+        if (portMask & (kPortMaskAudio|kPortMaskCV))
             return audioBuffers[(portMask & kPortMaskInput ? 0 : DISTRHO_PLUGIN_NUM_INPUTS) + (portMask & 0x0fff)];
        #endif
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
