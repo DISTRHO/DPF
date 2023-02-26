@@ -280,7 +280,7 @@ struct NativeBridge {
 
         /**/ if (std::strcmp(type, JACK_DEFAULT_AUDIO_TYPE) == 0)
         {
-            if (flags & kAudioPortIsCV)
+            if (flags & JackPortIsControlVoltage)
             {
                 ret |= kPortMaskAudio;
                 ret += flags & JackPortIsInput ? numAudioIns++ : numAudioOuts++;
