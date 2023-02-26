@@ -68,7 +68,7 @@ struct SDL2Bridge : NativeBridge {
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, "Capure");
-        requested.channels = DISTRHO_PLUGIN_NUM_INPUTS;
+        requested.channels = DISTRHO_PLUGIN_NUM_INPUTS_2;
         requested.callback = AudioInputCallback;
 
         SDL_AudioSpec receivedCapture;
@@ -81,7 +81,7 @@ struct SDL2Bridge : NativeBridge {
             return false;
            #endif
         }
-        else if (receivedCapture.channels != DISTRHO_PLUGIN_NUM_INPUTS)
+        else if (receivedCapture.channels != DISTRHO_PLUGIN_NUM_INPUTS_2)
         {
             SDL_CloseAudioDevice(captureDeviceId);
             captureDeviceId = 0;
@@ -93,7 +93,7 @@ struct SDL2Bridge : NativeBridge {
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         SDL_AudioSpec receivedPlayback;
         SDL_SetHint(SDL_HINT_AUDIO_DEVICE_STREAM_NAME, "Playback");
-        requested.channels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+        requested.channels = DISTRHO_PLUGIN_NUM_OUTPUTS_2;
         requested.callback = AudioOutputCallback;
 
         playbackDeviceId = SDL_OpenAudioDevice(nullptr, 0, &requested, &receivedPlayback,
@@ -104,7 +104,7 @@ struct SDL2Bridge : NativeBridge {
             return false;
         }
 
-        if (receivedPlayback.channels != DISTRHO_PLUGIN_NUM_OUTPUTS)
+        if (receivedPlayback.channels != DISTRHO_PLUGIN_NUM_OUTPUTS_2)
         {
             SDL_CloseAudioDevice(playbackDeviceId);
             playbackDeviceId = 0;
@@ -211,15 +211,15 @@ struct SDL2Bridge : NativeBridge {
         if (self->jackProcessCallback == nullptr)
             return;
 
-        const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_INPUTS);
+        const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_INPUTS_2);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
         const float* const fstream = (const float*)stream;
 
-        for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+        for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS_2; ++i)
         {
             for (uint j=0; j<numFrames; ++j)
-                self->audioBuffers[i][j] = fstream[j * DISTRHO_PLUGIN_NUM_INPUTS + i];
+                self->audioBuffers[i][j] = fstream[j * DISTRHO_PLUGIN_NUM_INPUTS_2 + i];
         }
 
        #if DISTRHO_PLUGIN_NUM_OUTPUTS == 0
@@ -245,7 +245,7 @@ struct SDL2Bridge : NativeBridge {
             return;
         }
 
-        const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS);
+        const uint numFrames = static_cast<uint>(len / sizeof(float) / DISTRHO_PLUGIN_NUM_OUTPUTS_2);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(numFrames == self->bufferSize, numFrames, self->bufferSize,);
 
         const ScopedDenormalDisable sdd;
@@ -253,10 +253,10 @@ struct SDL2Bridge : NativeBridge {
 
         float* const fstream = (float*)stream;
 
-        for (uint i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+        for (uint i=0; i < DISTRHO_PLUGIN_NUM_OUTPUTS_2; ++i)
         {
             for (uint j=0; j < numFrames; ++j)
-                fstream[j * DISTRHO_PLUGIN_NUM_OUTPUTS + i] = self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + i][j];
+                fstream[j * DISTRHO_PLUGIN_NUM_OUTPUTS_2 + i] = self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + i][j];
         }
     }
    #endif

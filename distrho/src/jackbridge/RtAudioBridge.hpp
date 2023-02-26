@@ -302,7 +302,7 @@ struct RtAudioBridge : NativeBridge {
         if (withInput)
         {
             inParams.deviceId = rtAudio->getDefaultInputDevice();
-            inParams.nChannels = DISTRHO_PLUGIN_NUM_INPUTS;
+            inParams.nChannels = DISTRHO_PLUGIN_NUM_INPUTS_2;
             inParamsPtr = &inParams;
         }
        #endif
@@ -310,7 +310,7 @@ struct RtAudioBridge : NativeBridge {
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         RtAudio::StreamParameters outParams;
         outParams.deviceId = rtAudio->getDefaultOutputDevice();
-        outParams.nChannels = DISTRHO_PLUGIN_NUM_OUTPUTS;
+        outParams.nChannels = DISTRHO_PLUGIN_NUM_OUTPUTS_2;
         RtAudio::StreamParameters* const outParamsPtr = &outParams;
        #else
         RtAudio::StreamParameters* const outParamsPtr = nullptr;
@@ -359,14 +359,14 @@ struct RtAudioBridge : NativeBridge {
         if (self->jackProcessCallback == nullptr)
         {
             if (outputBuffer != nullptr)
-                std::memset((float*)outputBuffer, 0, sizeof(float)*numFrames*DISTRHO_PLUGIN_NUM_OUTPUTS);
+                std::memset((float*)outputBuffer, 0, sizeof(float)*numFrames*DISTRHO_PLUGIN_NUM_OUTPUTS_2);
             return 0;
         }
 
        #if DISTRHO_PLUGIN_NUM_INPUTS > 0
         if (float* const insPtr = static_cast<float*>(inputBuffer))
         {
-            for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            for (uint i=0; i<DISTRHO_PLUGIN_NUM_INPUTS_2; ++i)
                 self->audioBuffers[i] = insPtr + (i * numFrames);
         }
        #endif
@@ -374,7 +374,7 @@ struct RtAudioBridge : NativeBridge {
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         if (float* const outsPtr = static_cast<float*>(outputBuffer))
         {
-            for (uint i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            for (uint i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS_2; ++i)
                 self->audioBuffers[DISTRHO_PLUGIN_NUM_INPUTS + i] = outsPtr + (i * numFrames);
         }
        #endif

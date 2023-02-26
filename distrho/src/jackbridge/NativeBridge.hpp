@@ -21,6 +21,18 @@
 
 #include "../../extra/RingBuffer.hpp"
 
+#if DISTRHO_PLUGIN_NUM_INPUTS > 2
+# define DISTRHO_PLUGIN_NUM_INPUTS_2 2
+#else
+# define DISTRHO_PLUGIN_NUM_INPUTS_2 DISTRHO_PLUGIN_NUM_INPUTS
+#endif
+
+#if DISTRHO_PLUGIN_NUM_OUTPUTS > 2
+# define DISTRHO_PLUGIN_NUM_OUTPUTS_2 2
+#else
+# define DISTRHO_PLUGIN_NUM_OUTPUTS_2 DISTRHO_PLUGIN_NUM_OUTPUTS
+#endif
+
 using DISTRHO_NAMESPACE::HeapRingBuffer;
 
 struct NativeBridge {
