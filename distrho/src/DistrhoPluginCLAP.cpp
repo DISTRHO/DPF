@@ -2371,7 +2371,6 @@ static const clap_plugin_latency_t clap_plugin_latency = {
 };
 #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
 // --------------------------------------------------------------------------------------------------------------------
 // plugin state
 
@@ -2391,7 +2390,6 @@ static const clap_plugin_state_t clap_plugin_state = {
     clap_plugin_state_save,
     clap_plugin_state_load
 };
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // plugin
@@ -2453,6 +2451,8 @@ static const void* CLAP_ABI clap_plugin_get_extension(const clap_plugin_t*, cons
 {
     if (std::strcmp(id, CLAP_EXT_PARAMS) == 0)
         return &clap_plugin_params;
+    if (std::strcmp(id, CLAP_EXT_STATE) == 0)
+        return &clap_plugin_state;
    #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     if (std::strcmp(id, CLAP_EXT_AUDIO_PORTS) == 0)
         return &clap_plugin_audio_ports;
@@ -2464,10 +2464,6 @@ static const void* CLAP_ABI clap_plugin_get_extension(const clap_plugin_t*, cons
    #if DISTRHO_PLUGIN_WANT_LATENCY
     if (std::strcmp(id, CLAP_EXT_LATENCY) == 0)
         return &clap_plugin_latency;
-   #endif
-   #if DISTRHO_PLUGIN_WANT_STATE
-    if (std::strcmp(id, CLAP_EXT_STATE) == 0)
-        return &clap_plugin_state;
    #endif
   #if DISTRHO_PLUGIN_HAS_UI
     if (std::strcmp(id, CLAP_EXT_GUI) == 0)
