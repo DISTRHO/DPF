@@ -228,11 +228,21 @@ DGL_LIBS += $(DGL_SYSTEM_LIBS) -lm
 BASE_FLAGS += $(DGL_FLAGS)
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set CLAP filename, either single binary or inside a bundle
+
+ifeq ($(MACOS),true)
+CLAP_FILENAME = $(NAME).clap/$(CLAP_BINARY_DIR)/$(NAME)
+else ifeq ($(USE_CLAP_BUNDLE),true)
+CLAP_FILENAME = $(NAME).clap/$(NAME).clap
+else
+CLAP_FILENAME = $(NAME).clap
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set VST2 filename, either single binary or inside a bundle
 
 ifeq ($(MACOS),true)
-VST2_CONTENTS = $(NAME).vst/Contents
-VST2_FILENAME = $(NAME).vst/Contents/MacOS/$(NAME)
+VST2_FILENAME = $(NAME).vst/$(VST2_BINARY_DIR)/$(NAME)
 else ifeq ($(USE_VST2_BUNDLE),true)
 VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
 else
@@ -245,31 +255,16 @@ endif
 ifeq ($(LINUX),true)
 VST3_FILENAME = $(NAME).vst3/$(VST3_BINARY_DIR)/$(NAME)$(LIB_EXT)
 else ifeq ($(MACOS),true)
-VST3_CONTENTS = $(NAME).vst3/Contents
-VST3_FILENAME = $(NAME).vst3/Contents/MacOS/$(NAME)
+VST3_FILENAME = $(NAME).vst3/$(VST3_BINARY_DIR)/$(NAME)
 else ifneq ($(VST3_BINARY_DIR),)
 VST3_FILENAME = $(NAME).vst3/$(VST3_BINARY_DIR)/$(NAME).vst3
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Set CLAP filename, either single binary or inside a bundle
-
-ifeq ($(MACOS),true)
-CLAP_CONTENTS = $(NAME).clap/Contents
-CLAP_FILENAME = $(CLAP_CONTENTS)/MacOS/$(NAME)
-else ifeq ($(USE_CLAP_BUNDLE),true)
-CLAP_FILENAME = $(NAME).clap/$(NAME).clap
-else
-CLAP_FILENAME = $(NAME).clap
-endif
-
-# ---------------------------------------------------------------------------------------------------------------------
 # Set plugin binary file targets
 
-ifeq ($(MACOS),true)
-ifeq ($(HAVE_DGL),true)
+ifeq ($(MACOS)$(HAVE_DGL),truetrue)
 MACOS_APP_BUNDLE = true
-endif
 endif
 
 ifeq ($(MACOS_APP_BUNDLE),true)
@@ -278,6 +273,7 @@ jackfiles  = $(TARGET_DIR)/$(NAME).app/Contents/Info.plist
 else
 jack       = $(TARGET_DIR)/$(NAME)$(APP_EXT)
 endif
+
 ladspa_dsp = $(TARGET_DIR)/$(NAME)-ladspa$(LIB_EXT)
 dssi_dsp   = $(TARGET_DIR)/$(NAME)-dssi$(LIB_EXT)
 dssi_ui    = $(TARGET_DIR)/$(NAME)-dssi/$(NAME)_ui$(APP_EXT)
@@ -293,15 +289,10 @@ shared     = $(TARGET_DIR)/$(NAME)$(LIB_EXT)
 static     = $(TARGET_DIR)/$(NAME).a
 
 ifeq ($(MACOS),true)
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Info.plist
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/PkgInfo
-vst2files += $(TARGET_DIR)/$(VST2_CONTENTS)/Resources/empty.lproj
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Info.plist
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/PkgInfo
-vst3files += $(TARGET_DIR)/$(VST3_CONTENTS)/Resources/empty.lproj
-clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/Info.plist
-clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/PkgInfo
-clapfiles += $(TARGET_DIR)/$(CLAP_CONTENTS)/Resources/empty.lproj
+BUNDLE_RESOURCES = Info.plist PkgInfo Resources/empty.lproj
+vst2files += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).vst/Contents/%)
+vst3files += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).vst3/Contents/%)
+clapfiles += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).clap/Contents/%)
 endif
 
 ifneq ($(HAVE_DGL),true)
@@ -710,15 +701,7 @@ $(TARGET_DIR)/%.app/Contents/Info.plist: $(DPF_PATH)/utils/plugin.app/Contents/I
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 
-$(TARGET_DIR)/%.vst/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
-	-@mkdir -p $(shell dirname $@)
-	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
-
-$(TARGET_DIR)/%.vst3/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
-	-@mkdir -p $(shell dirname $@)
-	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
-
-$(TARGET_DIR)/%.clap/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
+$(TARGET_DIR)/%/Contents/Info.plist: $(DPF_PATH)/utils/plugin.bundle/Contents/Info.plist
 	-@mkdir -p $(shell dirname $@)
 	$(SILENT)sed -e "s/@INFO_PLIST_PROJECT_NAME@/$(NAME)/" $< > $@
 

@@ -639,6 +639,15 @@ SHARED = -shared
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set CLAP binary directory
+
+ifeq ($(MACOS),true)
+CLAP_BINARY_DIR = Contents/MacOS
+else
+CLAP_BINARY_DIR =
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Set VST2 binary directory
 
 ifeq ($(MACOS),true)
