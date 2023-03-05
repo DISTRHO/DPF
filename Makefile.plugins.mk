@@ -232,7 +232,7 @@ BASE_FLAGS += $(DGL_FLAGS)
 
 ifeq ($(MACOS),true)
 VST2_CONTENTS = $(NAME).vst/Contents
-VST2_FILENAME = $(VST2_CONTENTS)/MacOS/$(NAME)
+VST2_FILENAME = $(NAME).vst/Contents/MacOS/$(NAME)
 else ifeq ($(USE_VST2_BUNDLE),true)
 VST2_FILENAME = $(NAME).vst/$(NAME)$(LIB_EXT)
 else
@@ -243,18 +243,12 @@ endif
 # Set VST3 filename, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
 
 ifeq ($(LINUX),true)
-VST3_FILENAME = $(NAME).vst3/Contents/$(TARGET_PROCESSOR)-linux/$(NAME).so
+VST3_FILENAME = $(NAME).vst3/$(VST3_BINARY_DIR)/$(NAME)$(LIB_EXT)
 else ifeq ($(MACOS),true)
 VST3_CONTENTS = $(NAME).vst3/Contents
-VST3_FILENAME = $(VST3_CONTENTS)/MacOS/$(NAME)
-else ifeq ($(WASM),true)
-VST3_FILENAME = $(NAME).vst3/Contents/wasm/$(NAME).vst3
-else ifeq ($(WINDOWS),true)
-ifeq ($(CPU_I386),true)
-VST3_FILENAME = $(NAME).vst3/Contents/x86-win/$(NAME).vst3
-else ifeq ($(CPU_X86_64),true)
-VST3_FILENAME = $(NAME).vst3/Contents/x86_64-win/$(NAME).vst3
-endif
+VST3_FILENAME = $(NAME).vst3/Contents/MacOS/$(NAME)
+else ifneq ($(VST3_BINARY_DIR),)
+VST3_FILENAME = $(NAME).vst3/$(VST3_BINARY_DIR)/$(NAME).vst3
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

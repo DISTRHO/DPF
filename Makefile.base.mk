@@ -639,6 +639,32 @@ SHARED = -shared
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Set VST2 binary directory
+
+ifeq ($(MACOS),true)
+VST2_BINARY_DIR = Contents/MacOS
+else
+VST2_BINARY_DIR =
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set VST3 binary directory, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
+
+ifeq ($(LINUX),true)
+VST3_BINARY_DIR = Contents/$(TARGET_PROCESSOR)-linux
+else ifeq ($(MACOS),true)
+VST3_BINARY_DIR = Contents/MacOS
+else ifeq ($(WASM),true)
+VST3_BINARY_DIR = Contents/wasm
+else ifeq ($(WINDOWS)$(CPU_I386),truetrue)
+VST3_BINARY_DIR = Contents/x86-win
+else ifeq ($(WINDOWS)$(CPU_X86_64),truetrue)
+VST3_BINARY_DIR = Contents/x86_64-win
+else
+VST3_BINARY_DIR =
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Handle the verbosity switch
 
 SILENT =
