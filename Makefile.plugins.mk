@@ -412,19 +412,27 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # DGL
 
-$(DGL_BUILD_DIR)/libdgl-cairo.a:
+DGL_POSSIBLE_DEPS = \
+	$(DPF_PATH)/dgl/*.* \
+	$(DPF_PATH)/dgl/src/*.* \
+	$(DPF_PATH)/dgl/src/nanovg/*.* \
+	$(DPF_PATH)/dgl/src/pugl-extra/*.* \
+	$(DPF_PATH)/dgl/src/pugl-upstream/include/pugl/*.* \
+	$(DPF_PATH)/dgl/src/pugl-upstream/src/*.*
+
+$(DGL_BUILD_DIR)/libdgl-cairo.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl cairo
 
-$(DGL_BUILD_DIR)/libdgl-opengl.a:
+$(DGL_BUILD_DIR)/libdgl-opengl.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
 
-$(DGL_BUILD_DIR)/libdgl-opengl3.a:
+$(DGL_BUILD_DIR)/libdgl-opengl3.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl opengl3
 
-$(DGL_BUILD_DIR)/libdgl-stub.a:
+$(DGL_BUILD_DIR)/libdgl-stub.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl stub
 
-$(DGL_BUILD_DIR)/libdgl-vulkan.a:
+$(DGL_BUILD_DIR)/libdgl-vulkan.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl vulkan
 
 # ---------------------------------------------------------------------------------------------------------------------
