@@ -25,6 +25,7 @@
 #endif
 
 // #define PUGL_WASM_AUTO_POINTER_LOCK
+// #define PUGL_WASM_NO_KEYBOARD_INPUT
 
 PuglWorldInternals*
 puglInitWorldInternals(const PuglWorldType type, const PuglWorldFlags flags)
@@ -94,6 +95,19 @@ puglDispatchEventWithContext(PuglView* const view, const PuglEvent* event)
   return st0 ? st0 : st1;
 }
 
+static PuglMods
+translateModifiers(const EM_BOOL ctrlKey,
+                   const EM_BOOL shiftKey,
+                   const EM_BOOL altKey,
+                   const EM_BOOL metaKey)
+{
+  return (ctrlKey  ? PUGL_MOD_CTRL  : 0u) |
+         (shiftKey ? PUGL_MOD_SHIFT : 0u) |
+         (altKey   ? PUGL_MOD_ALT   : 0u) |
+         (metaKey  ? PUGL_MOD_SUPER : 0u);
+}
+
+#ifndef PUGL_WASM_NO_KEYBOARD_INPUT
 static PuglKey
 keyCodeToSpecial(const unsigned long code, const unsigned long location)
 {
@@ -137,18 +151,6 @@ keyCodeToSpecial(const unsigned long code, const unsigned long location)
   }
 
   return (PuglKey)0;
-}
-
-static PuglMods
-translateModifiers(const EM_BOOL ctrlKey,
-                   const EM_BOOL shiftKey,
-                   const EM_BOOL altKey,
-                   const EM_BOOL metaKey)
-{
-  return (ctrlKey  ? PUGL_MOD_CTRL  : 0u) |
-         (shiftKey ? PUGL_MOD_SHIFT : 0u) |
-         (altKey   ? PUGL_MOD_ALT   : 0u) |
-         (metaKey  ? PUGL_MOD_SUPER : 0u);
 }
 
 static bool
@@ -243,6 +245,7 @@ puglKeyCallback(const int eventType, const EmscriptenKeyboardEvent* const keyEve
 
   return (st0 ? st0 : st1) == PUGL_SUCCESS ? EM_TRUE : EM_FALSE;
 }
+#endif
 
 static EM_BOOL
 puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEvent, void* const userData)
@@ -283,8 +286,8 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   case EMSCRIPTEN_EVENT_MOUSEUP:
     event.button.type  = eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? PUGL_BUTTON_PRESS : PUGL_BUTTON_RELEASE;
     event.button.time  = time;
-    event.button.x     = mouseEvent->targetX * scaleFactor;
-    event.button.y     = mouseEvent->targetY * scaleFactor;
+    event.button.x     = mouseEvent->canvasX * scaleFactor;
+    event.button.y     = mouseEvent->canvasY * scaleFactor;
     event.button.xRoot = mouseEvent->screenX * scaleFactor;
     event.button.yRoot = mouseEvent->screenY * scaleFactor;
     event.button.state = state;
@@ -318,8 +321,8 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
       event.motion.yRoot = view->impl->lastMotion.yRoot;
     } else {
       // cache values for possible pointer lock movement later
-      view->impl->lastMotion.x = event.motion.x = mouseEvent->targetX * scaleFactor;
-      view->impl->lastMotion.y = event.motion.y = mouseEvent->targetY * scaleFactor;
+      view->impl->lastMotion.x = event.motion.x = mouseEvent->canvasX * scaleFactor;
+      view->impl->lastMotion.y = event.motion.y = mouseEvent->canvasY * scaleFactor;
       view->impl->lastMotion.xRoot = event.motion.xRoot = mouseEvent->screenX * scaleFactor;
       view->impl->lastMotion.yRoot = event.motion.yRoot = mouseEvent->screenY * scaleFactor;
     }
@@ -329,8 +332,8 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   case EMSCRIPTEN_EVENT_MOUSELEAVE:
     event.crossing.type  = eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? PUGL_POINTER_IN : PUGL_POINTER_OUT;
     event.crossing.time  = time;
-    event.crossing.x     = mouseEvent->targetX * scaleFactor;
-    event.crossing.y     = mouseEvent->targetY * scaleFactor;
+    event.crossing.x     = mouseEvent->canvasX * scaleFactor;
+    event.crossing.y     = mouseEvent->canvasY * scaleFactor;
     event.crossing.xRoot = mouseEvent->screenX * scaleFactor;
     event.crossing.yRoot = mouseEvent->screenY * scaleFactor;
     event.crossing.state = state;
@@ -440,8 +443,8 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     event.button.type   = PUGL_BUTTON_RELEASE;
     event.button.time   = time;
     event.button.button = eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL ? 1 : 0;
-    event.button.x      = point->targetX * scaleFactor;
-    event.button.y      = point->targetY * scaleFactor;
+    event.button.x      = point->canvasX * scaleFactor;
+    event.button.y      = point->canvasY * scaleFactor;
     event.button.xRoot  = point->screenX * scaleFactor;
     event.button.yRoot  = point->screenY * scaleFactor;
     event.button.state  = state;
@@ -452,8 +455,8 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     event.button.type   = PUGL_BUTTON_PRESS;
     event.button.time   = time;
     event.button.button = 1; // if no other event occurs soon, treat it as right-click
-    event.button.x      = point->targetX * scaleFactor;
-    event.button.y      = point->targetY * scaleFactor;
+    event.button.x      = point->canvasX * scaleFactor;
+    event.button.y      = point->canvasY * scaleFactor;
     event.button.xRoot  = point->screenX * scaleFactor;
     event.button.yRoot  = point->screenY * scaleFactor;
     event.button.state  = state;
@@ -464,8 +467,8 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
   case EMSCRIPTEN_EVENT_TOUCHMOVE:
     event.motion.type  = PUGL_MOTION;
     event.motion.time  = time;
-    event.motion.x     = point->targetX * scaleFactor;
-    event.motion.y     = point->targetY * scaleFactor;
+    event.motion.x     = point->canvasX * scaleFactor;
+    event.motion.y     = point->canvasY * scaleFactor;
     event.motion.xRoot = point->screenX * scaleFactor;
     event.motion.yRoot = point->screenY * scaleFactor;
     event.motion.state = state;
@@ -533,8 +536,8 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
 
   PuglEvent event = {{PUGL_SCROLL, 0}};
   event.scroll.time  = wheelEvent->mouse.timestamp / 1e3;
-  event.scroll.x     = wheelEvent->mouse.targetX;
-  event.scroll.y     = wheelEvent->mouse.targetY;
+  event.scroll.x     = wheelEvent->mouse.canvasX;
+  event.scroll.y     = wheelEvent->mouse.canvasY;
   event.scroll.xRoot = wheelEvent->mouse.screenX;
   event.scroll.yRoot = wheelEvent->mouse.screenY;
   event.scroll.state = translateModifiers(wheelEvent->mouse.ctrlKey,
@@ -690,16 +693,18 @@ puglRealize(PuglView* const view)
   }, className);
 
   emscripten_set_canvas_element_size(className, view->frame.width, view->frame.height);
+#ifndef PUGL_WASM_NO_KEYBOARD_INPUT
 //   emscripten_set_keypress_callback(className, view, false, puglKeyCallback);
   emscripten_set_keydown_callback(className, view, false, puglKeyCallback);
   emscripten_set_keyup_callback(className, view, false, puglKeyCallback);
+#endif
   emscripten_set_touchstart_callback(className, view, false, puglTouchCallback);
-  emscripten_set_touchend_callback(className, view, false, puglTouchCallback);
-  emscripten_set_touchmove_callback(className, view, false, puglTouchCallback);
-  emscripten_set_touchcancel_callback(className, view, false, puglTouchCallback);
+  emscripten_set_touchend_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglTouchCallback);
+  emscripten_set_touchmove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglTouchCallback);
+  emscripten_set_touchcancel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglTouchCallback);
   emscripten_set_mousedown_callback(className, view, false, puglMouseCallback);
-  emscripten_set_mouseup_callback(className, view, false, puglMouseCallback);
-  emscripten_set_mousemove_callback(className, view, false, puglMouseCallback);
+  emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglMouseCallback);
+  emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglMouseCallback);
   emscripten_set_mouseenter_callback(className, view, false, puglMouseCallback);
   emscripten_set_mouseleave_callback(className, view, false, puglMouseCallback);
   emscripten_set_focusin_callback(className, view, false, puglFocusCallback);
@@ -736,6 +741,11 @@ puglFreeViewInternals(PuglView* const view)
   if (view && view->impl) {
     if (view->backend) {
       // unregister the window events, to make sure no callbacks to old views are triggered
+      emscripten_set_touchend_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_touchmove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_touchcancel_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
+      emscripten_set_mousemove_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
       emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
       emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
       emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, false, NULL);
