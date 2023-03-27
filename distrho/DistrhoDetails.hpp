@@ -517,8 +517,8 @@ struct ParameterEnumerationValues {
 
     constexpr ParameterEnumerationValues() noexcept
         : count(0),
-          ptr(nullptr),
-          deleteLater(false) {}
+          deleteLater(false),
+          ptr(nullptr) {}
 
     constexpr ParameterEnumerationValues(uint32_t c, const ParameterEnumerationValue* v) noexcept
         : count(c),
