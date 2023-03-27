@@ -149,7 +149,8 @@ function(dpf_add_plugin NAME)
     # make sure that all code will see DGL_* definitions
     target_link_libraries("${NAME}" PUBLIC
       "${_dgl_library}-definitions"
-      dgl-system-libs-definitions)
+      dgl-system-libs-definitions
+      dgl-system-libs)
   endif()
 
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
@@ -558,6 +559,7 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
@@ -623,6 +625,7 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
     "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
     "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
     "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
@@ -696,25 +699,32 @@ function(dpf__add_dgl_system_libs)
     find_library(APPLE_COREVIDEO_FRAMEWORK "CoreVideo")
     target_link_libraries(dgl-system-libs INTERFACE "${APPLE_COCOA_FRAMEWORK}" "${APPLE_COREVIDEO_FRAMEWORK}")
   else()
+    find_package(PkgConfig)
+    pkg_check_modules(DBUS "dbus-1")
+    if(DBUS_FOUND)
+      target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_DBUS")
+      target_include_directories(dgl-system-libs INTERFACE "${DBUS_INCLUDE_DIRS}")
+      target_link_libraries(dgl-system-libs INTERFACE "${DBUS_LIBRARIES}")
+    endif()
     find_package(X11 REQUIRED)
+    target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_X11")
     target_include_directories(dgl-system-libs INTERFACE "${X11_INCLUDE_DIR}")
     target_link_libraries(dgl-system-libs INTERFACE "${X11_X11_LIB}")
-    target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_X11")
     if(X11_Xcursor_FOUND)
-      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xcursor_LIB}")
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_XCURSOR")
+      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xcursor_LIB}")
     endif()
     if(X11_Xext_FOUND)
-      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xext_LIB}")
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_XEXT")
+      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xext_LIB}")
     endif()
     if(X11_Xrandr_FOUND)
-      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xrandr_LIB}")
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_XRANDR")
+      target_link_libraries(dgl-system-libs INTERFACE "${X11_Xrandr_LIB}")
     endif()
     if(X11_XSync_FOUND)
-      target_link_libraries(dgl-system-libs INTERFACE "${X11_XSync_LIB}")
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_XSYNC")
+      target_link_libraries(dgl-system-libs INTERFACE "${X11_XSync_LIB}")
     endif()
    endif()
 
