@@ -92,7 +92,7 @@ struct FileBrowserOptions {
   @p windowId:    The native window id to attach this dialog to as transient parent (X11 Window, HWND or NSView*)
   @p scaleFactor: Scale factor to use (only used on X11)
   @p options:     Extra options, optional
-  By default the file browser dialog will be work as "open file" in the current working directory.
+  By default the file browser dialog will work as "open file" in the current working directory.
 */
 FileBrowserHandle fileBrowserCreate(bool isEmbed,
                                     uintptr_t windowId,
@@ -102,13 +102,13 @@ FileBrowserHandle fileBrowserCreate(bool isEmbed,
 /**
   Idle the file browser dialog handle.@n
   Returns true if dialog was closed (with or without a file selection),
-  in which case the handle must not be used afterwards.
+  in which case this idle function must not be called anymore for this handle.
   You can then call fileBrowserGetPath to know the selected file (or null if cancelled).
 */
 bool fileBrowserIdle(const FileBrowserHandle handle);
 
 /**
-  Close the file browser dialog, handle must not be used afterwards.
+  Close and free the file browser dialog, handle must not be used afterwards.
 */
 void fileBrowserClose(const FileBrowserHandle handle);
 
