@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -1181,9 +1181,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (d_isEqual(static_cast<double>(enumValues.values[i].value), value))
+            if (d_isEqual(static_cast<double>(enumValues.ptr[i].value), value))
             {
-                d_strncpy(display, enumValues.values[i].label, size);
+                d_strncpy(display, enumValues.ptr[i].label, size);
                 return true;
             }
         }
@@ -1203,9 +1203,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (std::strcmp(display, enumValues.values[i].label) == 0)
+            if (std::strcmp(display, enumValues.ptr[i].label) == 0)
             {
-                *value = enumValues.values[i].value;
+                *value = enumValues.ptr[i].value;
                 return true;
             }
         }

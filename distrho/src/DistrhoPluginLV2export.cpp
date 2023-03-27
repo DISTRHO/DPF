@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -820,16 +820,16 @@ void lv2_generate_ttl(const char* const basename)
                     }
 
                     // enumeration
-                    const ParameterEnumerationValues& enumValues(plugin.getParameterEnumValues(i));
+                    const ParameterEnumerationDetails& enumDetails(plugin.getParameterEnumDetails(i));
 
-                    if (enumValues.count > 0)
+                    if (enumDetails.count > 0)
                     {
-                        if (enumValues.count >= 2 && enumValues.restrictedMode)
+                        if (enumDetails.count >= 2 && enumDetails.restrictedMode)
                             pluginString += "        lv2:portProperty lv2:enumeration ;\n";
 
-                        for (uint8_t j=0; j < enumValues.count; ++j)
+                        for (uint8_t j=0; j < enumDetails.count; ++j)
                         {
-                            const ParameterEnumerationValue& enumValue(enumValues.values[j]);
+                            const ParameterEnumerationValue& enumValue(enumDetails.values[j]);
 
                             if (j == 0)
                                 pluginString += "        lv2:scalePoint [\n";
@@ -851,7 +851,7 @@ void lv2_generate_ttl(const char* const basename)
                                 pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
                             }
 
-                            if (j+1 == enumValues.count)
+                            if (j+1 == enumDetails.count)
                                 pluginString += "        ] ;\n";
                             else
                                 pluginString += "        ] ,\n";

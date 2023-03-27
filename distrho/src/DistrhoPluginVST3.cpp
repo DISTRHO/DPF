@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -1711,7 +1711,7 @@ public:
         // set up flags
         int32_t flags = 0;
 
-        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(index));
+        const ParameterEnumerationDetails& enumDetails(fPlugin.getParameterEnumDetails(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
         const uint32_t hints = fPlugin.getParameterHints(index);
 
@@ -1737,10 +1737,10 @@ public:
         else if (hints & kParameterIsInteger)
             step_count = ranges.max - ranges.min;
 
-        if (enumValues.count >= 2 && enumValues.restrictedMode)
+        if (enumDetails.count >= 2 && enumDetails.restrictedMode)
         {
             flags |= V3_PARAM_IS_LIST;
-            step_count = enumValues.count - 1;
+            step_count = enumDetails.count - 1;
         }
 
         info->flags = flags;
@@ -1810,9 +1810,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (d_isEqual(enumValues.values[i].value, value))
+            if (d_isEqual(enumValues.ptr[i].value, value))
             {
-                strncpy_utf16(output, enumValues.values[i].label, 128);
+                strncpy_utf16(output, enumValues.ptr[i].label, 128);
                 return V3_OK;
             }
         }
@@ -1874,9 +1874,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (strcmp_utf16(input, enumValues.values[i].label))
+            if (strcmp_utf16(input, enumValues.ptr[i].label))
             {
-                *output = ranges.getNormalizedValue(enumValues.values[i].value);
+                *output = ranges.getNormalizedValue(enumValues.ptr[i].value);
                 return V3_OK;
             }
         }

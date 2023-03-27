@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -704,11 +704,18 @@ public:
         return fData->parameters[index].description;
     }
 
+    const ParameterEnumerationDetails& getParameterEnumDetails(const uint32_t index) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackEnumDetails);
+
+        return fData->parameters[index].enumValues;
+    }
+
     const ParameterEnumerationValues& getParameterEnumValues(const uint32_t index) const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr && index < fData->parameterCount, sFallbackEnumValues);
 
-        return fData->parameters[index].enumValues;
+        return fData->parameters[index].enumValues.values;
     }
 
     const ParameterRanges& getParameterRanges(const uint32_t index) const noexcept
@@ -1045,11 +1052,12 @@ private:
     // -------------------------------------------------------------------
     // Static fallback data, see DistrhoPlugin.cpp
 
-    static const String                     sFallbackString;
-    static /* */ AudioPortWithBusId         sFallbackAudioPort;
-    static const ParameterRanges            sFallbackRanges;
-    static const ParameterEnumerationValues sFallbackEnumValues;
-    static const PortGroupWithId            sFallbackPortGroup;
+    static const String                      sFallbackString;
+    static /* */ AudioPortWithBusId          sFallbackAudioPort;
+    static const ParameterRanges             sFallbackRanges;
+    static const ParameterEnumerationDetails sFallbackEnumDetails;
+    static const ParameterEnumerationValues  sFallbackEnumValues;
+    static const PortGroupWithId             sFallbackPortGroup;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginExporter)
 };

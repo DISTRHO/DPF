@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -58,7 +58,7 @@ inline float round(float __x)
 #define DISTRHO_MACRO_AS_STRING_VALUE(MACRO) #MACRO
 #define DISTRHO_MACRO_AS_STRING(MACRO) DISTRHO_MACRO_AS_STRING_VALUE(MACRO)
 
-/* ------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
  * misc functions */
 
 /**
@@ -94,7 +94,7 @@ void d_pass() noexcept {}
 
 /** @} */
 
-/* ------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
  * string print functions */
 
 /**
@@ -240,7 +240,7 @@ void d_safe_exception(const char* const exception, const char* const file, const
 
 /** @} */
 
-/* ------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
  * math functions */
 
 /**
@@ -254,7 +254,7 @@ void d_safe_exception(const char* const exception, const char* const file, const
    Returns true if they match.
  */
 template<typename T>
-static inline
+static inline constexpr
 bool d_isEqual(const T& v1, const T& v2)
 {
     return std::abs(v1-v2) < std::numeric_limits<T>::epsilon();
@@ -265,7 +265,7 @@ bool d_isEqual(const T& v1, const T& v2)
    Returns true if they don't match.
  */
 template<typename T>
-static inline
+static inline constexpr
 bool d_isNotEqual(const T& v1, const T& v2)
 {
     return std::abs(v1-v2) >= std::numeric_limits<T>::epsilon();
@@ -275,7 +275,7 @@ bool d_isNotEqual(const T& v1, const T& v2)
    Safely check if a floating point number is zero.
  */
 template<typename T>
-static inline
+static inline constexpr
 bool d_isZero(const T& value)
 {
     return std::abs(value) < std::numeric_limits<T>::epsilon();
@@ -285,7 +285,7 @@ bool d_isZero(const T& value)
    Safely check if a floating point number is not zero.
  */
 template<typename T>
-static inline
+static inline constexpr
 bool d_isNotZero(const T& value)
 {
     return std::abs(value) >= std::numeric_limits<T>::epsilon();
@@ -311,7 +311,8 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
 
 /** @} */
 
-// -----------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * math functions */
 
 #ifndef DONT_SET_USING_DISTRHO_NAMESPACE
   // If your code uses a lot of DISTRHO classes, then this will obviously save you
@@ -319,7 +320,5 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
   namespace DISTRHO_NAMESPACE {}
   using namespace DISTRHO_NAMESPACE;
 #endif
-
-// -----------------------------------------------------------------------
 
 #endif // DISTRHO_UTILS_HPP_INCLUDED
