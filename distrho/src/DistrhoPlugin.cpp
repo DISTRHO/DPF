@@ -31,12 +31,11 @@ bool        d_nextCanRequestParameterValueChanges = false;
 /* ------------------------------------------------------------------------------------------------------------
  * Static fallback data, see DistrhoPluginInternal.hpp */
 
-const String                      PluginExporter::sFallbackString;
-/* */ AudioPortWithBusId          PluginExporter::sFallbackAudioPort;
-const ParameterRanges             PluginExporter::sFallbackRanges;
-const ParameterEnumerationDetails PluginExporter::sFallbackEnumDetails;
-const ParameterEnumerationValues  PluginExporter::sFallbackEnumValues;
-const PortGroupWithId             PluginExporter::sFallbackPortGroup;
+const String                     PluginExporter::sFallbackString;
+/* */ AudioPortWithBusId         PluginExporter::sFallbackAudioPort;
+const ParameterRanges            PluginExporter::sFallbackRanges;
+const ParameterEnumerationValues PluginExporter::sFallbackEnumValues;
+const PortGroupWithId            PluginExporter::sFallbackPortGroup;
 
 /* ------------------------------------------------------------------------------------------------------------
  * Plugin */

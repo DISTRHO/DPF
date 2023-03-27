@@ -1711,7 +1711,7 @@ public:
         // set up flags
         int32_t flags = 0;
 
-        const ParameterEnumerationDetails& enumDetails(fPlugin.getParameterEnumDetails(index));
+        const ParameterEnumerationValues& enumValues(fPlugin.getParameterEnumValues(index));
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
         const uint32_t hints = fPlugin.getParameterHints(index);
 
@@ -1737,10 +1737,10 @@ public:
         else if (hints & kParameterIsInteger)
             step_count = ranges.max - ranges.min;
 
-        if (enumDetails.count >= 2 && enumDetails.restrictedMode)
+        if (enumValues.count >= 2 && enumValues.restrictedMode)
         {
             flags |= V3_PARAM_IS_LIST;
-            step_count = enumDetails.count - 1;
+            step_count = enumValues.count - 1;
         }
 
         info->flags = flags;
@@ -1810,9 +1810,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (d_isEqual(enumValues.ptr[i].value, value))
+            if (d_isEqual(enumValues.values[i].value, value))
             {
-                strncpy_utf16(output, enumValues.ptr[i].label, 128);
+                strncpy_utf16(output, enumValues.values[i].label, 128);
                 return V3_OK;
             }
         }
@@ -1874,9 +1874,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (strcmp_utf16(input, enumValues.ptr[i].label))
+            if (strcmp_utf16(input, enumValues.values[i].label))
             {
-                *output = ranges.getNormalizedValue(enumValues.ptr[i].value);
+                *output = ranges.getNormalizedValue(enumValues.values[i].value);
                 return V3_OK;
             }
         }

@@ -527,10 +527,10 @@ public:
 
                 for (uint8_t i = 0; i < enumValues.count; ++i)
                 {
-                    if (d_isNotEqual(value, enumValues.ptr[i].value))
+                    if (d_isNotEqual(value, enumValues.values[i].value))
                         continue;
 
-                    strncpy((char*)ptr, enumValues.ptr[i].label.buffer(), 24);
+                    strncpy((char*)ptr, enumValues.values[i].label.buffer(), 24);
                     return 1;
                 }
 

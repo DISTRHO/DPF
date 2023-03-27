@@ -820,16 +820,16 @@ void lv2_generate_ttl(const char* const basename)
                     }
 
                     // enumeration
-                    const ParameterEnumerationDetails& enumDetails(plugin.getParameterEnumDetails(i));
+                    const ParameterEnumerationValues& enumValues(plugin.getParameterEnumValues(i));
 
-                    if (enumDetails.count > 0)
+                    if (enumValues.count > 0)
                     {
-                        if (enumDetails.count >= 2 && enumDetails.restrictedMode)
+                        if (enumValues.count >= 2 && enumValues.restrictedMode)
                             pluginString += "        lv2:portProperty lv2:enumeration ;\n";
 
-                        for (uint8_t j=0; j < enumDetails.count; ++j)
+                        for (uint8_t j=0; j < enumValues.count; ++j)
                         {
-                            const ParameterEnumerationValue& enumValue(enumDetails.values[j]);
+                            const ParameterEnumerationValue& enumValue(enumValues.values[j]);
 
                             if (j == 0)
                                 pluginString += "        lv2:scalePoint [\n";
@@ -851,7 +851,7 @@ void lv2_generate_ttl(const char* const basename)
                                 pluginString += "            rdf:value " + String(enumValue.value) + " ;\n";
                             }
 
-                            if (j+1 == enumDetails.count)
+                            if (j+1 == enumValues.count)
                                 pluginString += "        ] ;\n";
                             else
                                 pluginString += "        ] ,\n";

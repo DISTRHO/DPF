@@ -507,92 +507,10 @@ struct ParameterEnumerationValue {
 };
 
 /**
-   Collection of parameter enumeration values.@n
-   Handy class to handle the lifetime and count of all enumeration values.
- */
-struct ParameterEnumerationValues {
-    uint8_t count;
-    bool deleteLater;
-    const ParameterEnumerationValue* ptr;
-
-    constexpr ParameterEnumerationValues() noexcept
-        : count(0),
-          deleteLater(false),
-          ptr(nullptr) {}
-
-    constexpr ParameterEnumerationValues(uint32_t c, const ParameterEnumerationValue* v) noexcept
-        : count(c),
-          deleteLater(false),
-          ptr(v) {}
-
-    // constexpr
-    ~ParameterEnumerationValues() noexcept
-    {
-        if (deleteLater)
-            delete[] ptr;
-    }
-
-    const ParameterEnumerationValue& operator[](const uint8_t index) const noexcept
-    {
-        return ptr[index];
-    }
-
-    template<uint8_t numValues>
-    ParameterEnumerationValues& operator=(const ParameterEnumerationValue values[numValues]) noexcept
-    {
-        if (deleteLater)
-            delete[] ptr;
-
-        count = numValues;
-        ptr = values;
-        deleteLater = true;
-        return *this;
-    }
-
-    ParameterEnumerationValues& operator=(const ParameterEnumerationValues& other) noexcept
-    {
-        if (deleteLater)
-            delete[] ptr;
-
-        count = 0;
-        ptr = nullptr;
-        deleteLater = false;
-
-        if (other.ptr != nullptr && other.count != 0)
-        {
-            ParameterEnumerationValue* ptr2;
-
-            try {
-                ptr2 = new ParameterEnumerationValue[other.count];
-            } DISTRHO_SAFE_EXCEPTION_RETURN("ParameterEnumerationValues::recreate", *this);
-
-            for (uint8_t i=0; i<other.count; ++i)
-            {
-                ptr2[i].value = other.ptr[i].value;
-                ptr2[i].label = other.ptr[i].label;
-            }
-
-            count = other.count;
-            ptr = ptr2;
-            deleteLater = true;
-        }
-
-        return *this;
-    }
-
-private:
-   #ifdef DISTRHO_PROPER_CPP11_SUPPORT
-    ParameterEnumerationValues(const ParameterEnumerationValues&) = delete;
-   #else
-    ParameterEnumerationValues(const ParameterEnumerationValues&);
-   #endif
-};
-
-/**
    Details around parameter enumeration values.@n
    Wraps ParameterEnumerationValues and provides a few extra details to the host about these values.
  */
-struct ParameterEnumerationDetails {
+struct ParameterEnumerationValues {
    /**
       Number of elements allocated in @values.
     */
@@ -609,24 +527,36 @@ struct ParameterEnumerationDetails {
       Array of @ParameterEnumerationValue items.@n
       This pointer must be null or have been allocated on the heap with `new ParameterEnumerationValue[count]`.
     */
-    ParameterEnumerationValues values;
+    const ParameterEnumerationValue* values;
 
    /**
       Default constructor, for zero enumeration values.
     */
-    constexpr ParameterEnumerationDetails() noexcept
+    constexpr ParameterEnumerationValues() noexcept
         : count(0),
           restrictedMode(false),
-          values() {}
+          values(nullptr),
+          deleteLater(true) {}
 
    /**
       Constructor using custom values.@n
       The pointer to @values must have been allocated on the heap with `new`.
     */
-    constexpr ParameterEnumerationDetails(uint32_t c, bool r, const ParameterEnumerationValue* v) noexcept
+    constexpr ParameterEnumerationValues(uint32_t c, bool r, const ParameterEnumerationValue* v) noexcept
         : count(c),
           restrictedMode(r),
-          values(c, v) {}
+          values(v),
+          deleteLater(false) {}
+
+    // constexpr
+    ~ParameterEnumerationValues() noexcept
+    {
+        if (deleteLater)
+            delete[] values;
+    }
+
+private:
+    bool deleteLater;
 };
 
 /**
@@ -683,9 +613,8 @@ struct Parameter {
    /**
       Enumeration details.@n
       Can be used to give meaning to parameter values, working as an enumeration.
-      @todo rename to enumDetails
     */
-    ParameterEnumerationDetails enumValues;
+    ParameterEnumerationValues enumValues;
 
    /**
       Designation for this parameter.

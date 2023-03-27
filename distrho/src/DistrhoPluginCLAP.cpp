@@ -1181,9 +1181,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (d_isEqual(static_cast<double>(enumValues.ptr[i].value), value))
+            if (d_isEqual(static_cast<double>(enumValues.values[i].value), value))
             {
-                d_strncpy(display, enumValues.ptr[i].label, size);
+                d_strncpy(display, enumValues.values[i].label, size);
                 return true;
             }
         }
@@ -1203,9 +1203,9 @@ public:
 
         for (uint32_t i=0; i < enumValues.count; ++i)
         {
-            if (std::strcmp(display, enumValues.ptr[i].label) == 0)
+            if (std::strcmp(display, enumValues.values[i].label) == 0)
             {
-                *value = enumValues.ptr[i].value;
+                *value = enumValues.values[i].value;
                 return true;
             }
         }
