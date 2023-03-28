@@ -281,13 +281,21 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   if (emscripten_get_pointerlock_status(&e) == EMSCRIPTEN_RESULT_SUCCESS)
       view->impl->pointerLocked = e.isActive;
 
+#ifdef __MOD_DEVICES__
+  const long canvasX = mouseEvent->canvasX;
+  const long canvasY = mouseEvent->canvasY;
+#else
+  const long canvasX = mouseEvent->clientX;
+  const long canvasY = mouseEvent->clientY;
+#endif
+
   switch (eventType) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
   case EMSCRIPTEN_EVENT_MOUSEUP:
     event.button.type  = eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? PUGL_BUTTON_PRESS : PUGL_BUTTON_RELEASE;
     event.button.time  = time;
-    event.button.x     = mouseEvent->canvasX * scaleFactor;
-    event.button.y     = mouseEvent->canvasY * scaleFactor;
+    event.button.x     = canvasX * scaleFactor;
+    event.button.y     = canvasY * scaleFactor;
     event.button.xRoot = mouseEvent->screenX * scaleFactor;
     event.button.yRoot = mouseEvent->screenY * scaleFactor;
     event.button.state = state;
@@ -321,8 +329,8 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
       event.motion.yRoot = view->impl->lastMotion.yRoot;
     } else {
       // cache values for possible pointer lock movement later
-      view->impl->lastMotion.x = event.motion.x = mouseEvent->canvasX * scaleFactor;
-      view->impl->lastMotion.y = event.motion.y = mouseEvent->canvasY * scaleFactor;
+      view->impl->lastMotion.x = event.motion.x = canvasX * scaleFactor;
+      view->impl->lastMotion.y = event.motion.y = canvasY * scaleFactor;
       view->impl->lastMotion.xRoot = event.motion.xRoot = mouseEvent->screenX * scaleFactor;
       view->impl->lastMotion.yRoot = event.motion.yRoot = mouseEvent->screenY * scaleFactor;
     }
@@ -332,8 +340,8 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   case EMSCRIPTEN_EVENT_MOUSELEAVE:
     event.crossing.type  = eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? PUGL_POINTER_IN : PUGL_POINTER_OUT;
     event.crossing.time  = time;
-    event.crossing.x     = mouseEvent->canvasX * scaleFactor;
-    event.crossing.y     = mouseEvent->canvasY * scaleFactor;
+    event.crossing.x     = canvasX * scaleFactor;
+    event.crossing.y     = canvasY * scaleFactor;
     event.crossing.xRoot = mouseEvent->screenX * scaleFactor;
     event.crossing.yRoot = mouseEvent->screenY * scaleFactor;
     event.crossing.state = state;
