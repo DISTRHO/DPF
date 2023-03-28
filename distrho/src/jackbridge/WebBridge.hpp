@@ -217,11 +217,11 @@ struct WebBridge : NativeBridge {
             constraints['audio'] = true;
             constraints['video'] = false;
             constraints['autoGainControl'] = {};
-            constraints['autoGainControl']['exact'] = false;
+            constraints['autoGainControl']['ideal'] = false;
             constraints['echoCancellation'] = {};
-            constraints['echoCancellation']['exact'] = false;
+            constraints['echoCancellation']['ideal'] = false;
             constraints['noiseSuppression'] = {};
-            constraints['noiseSuppression']['exact'] = false;
+            constraints['noiseSuppression']['ideal'] = false;
             constraints['channelCount'] = {};
             constraints['channelCount']['min'] = 0;
             constraints['channelCount']['ideal'] = numInputs;
@@ -236,6 +236,25 @@ struct WebBridge : NativeBridge {
             constraints['googAutoGainControl'] = false;
 
             var success = function(stream) {
+                var track = stream.getAudioTracks()[0];
+
+                // try to force as much as we can
+                track.applyConstraints({'autoGainControl': { 'exact': false } })
+                .then(function(){console.log("Mic/Input auto-gain control has been disabled")})
+                .catch(function(){console.log("Cannot disable Mic/Input auto-gain")});
+
+                track.applyConstraints({'echoCancellation': { 'exact': false } })
+                .then(function(){console.log("Mic/Input echo-cancellation has been disabled")})
+                .catch(function(){console.log("Cannot disable Mic/Input echo-cancellation")});
+
+                track.applyConstraints({'noiseSuppression': { 'exact': false } })
+                .then(function(){console.log("Mic/Input noise-suppression has been disabled")})
+                .catch(function(){console.log("Cannot disable Mic/Input noise-suppression")});
+
+                track.applyConstraints({'googAutoGainControl': { 'exact': false } })
+                .then(function(){})
+                .catch(function(){});
+
                 WAB.captureStreamNode = WAB.audioContext['createMediaStreamSource'](stream);
                 WAB.captureStreamNode.connect(WAB.processor);
             };
