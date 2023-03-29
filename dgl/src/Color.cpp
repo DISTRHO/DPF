@@ -163,6 +163,15 @@ Color Color::plus(const float value) const noexcept
     return color;
 }
 
+Color Color::invert() const noexcept
+{
+    Color color(*this);
+    color.red = 1.f - color.red;
+    color.green = 1.f - color.green;
+    color.blue = 1.f - color.blue;
+    return color;
+}
+
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
     float m1, m2;

@@ -95,6 +95,11 @@ struct Color {
     Color plus(float value) const noexcept;
 
    /**
+      Create a new color based on this one but colors inverted.
+    */
+    Color invert() const noexcept;
+
+   /**
       Create a color specified by hue, saturation and lightness.
       Values must in [0..1] range.
     */
