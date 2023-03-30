@@ -32,6 +32,11 @@
 # include "../../dgl/src/pugl.hpp"
 #endif
 
+#if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# include <map>
+# include <string>
+#endif
+
 #if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_DSSI)
 # define DISTRHO_UI_IS_STANDALONE 1
 #else
@@ -326,9 +331,10 @@ struct UI::PrivateData {
     uint fgColor;
     double scaleFactor;
     uintptr_t winId;
-#if DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     char* uiStateFileKeyRequest;
-#endif
+    std::map<std::string,std::string> lastUsedDirnames;
+   #endif
     char* bundlePath;
 
     // Ignore initial resize events while initializing
@@ -353,9 +359,9 @@ struct UI::PrivateData {
           fgColor(0xffffffff),
           scaleFactor(1.0),
           winId(0),
-#if DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+         #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
           uiStateFileKeyRequest(nullptr),
-#endif
+         #endif
           bundlePath(nullptr),
           initializing(true),
           callbacksPtr(nullptr),
@@ -366,32 +372,32 @@ struct UI::PrivateData {
           setSizeCallbackFunc(nullptr),
           fileRequestCallbackFunc(nullptr)
     {
-#if defined(DISTRHO_PLUGIN_TARGET_DSSI) || defined(DISTRHO_PLUGIN_TARGET_LV2)
+      #if defined(DISTRHO_PLUGIN_TARGET_DSSI) || defined(DISTRHO_PLUGIN_TARGET_LV2)
         parameterOffset += DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS;
-# if DISTRHO_PLUGIN_WANT_LATENCY
+       #if DISTRHO_PLUGIN_WANT_LATENCY
         parameterOffset += 1;
-# endif
-#endif
+       #endif
+      #endif
 
-#ifdef DISTRHO_PLUGIN_TARGET_LV2
-# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
+      #ifdef DISTRHO_PLUGIN_TARGET_LV2
+       #if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_TIMEPOS || DISTRHO_PLUGIN_WANT_STATE)
         parameterOffset += 1;
-# endif
-# if (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
+       #endif
+       #if (DISTRHO_PLUGIN_WANT_MIDI_OUTPUT || DISTRHO_PLUGIN_WANT_STATE)
         parameterOffset += 1;
-# endif
-#endif
+       #endif
+      #endif
 
-#ifdef DISTRHO_PLUGIN_TARGET_VST3
+       #ifdef DISTRHO_PLUGIN_TARGET_VST3
         parameterOffset += kVst3InternalParameterCount;
-#endif
+       #endif
     }
 
     ~PrivateData() noexcept
     {
-#if DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         std::free(uiStateFileKeyRequest);
-#endif
+       #endif
         std::free(bundlePath);
     }
 
@@ -444,7 +450,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     if (fileRequestCallbackFunc != nullptr)
         return fileRequestCallbackFunc(callbacksPtr, key);
 
-#if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     std::free(uiStateFileKeyRequest);
     uiStateFileKeyRequest = strdup(key);
     DISTRHO_SAFE_ASSERT_RETURN(uiStateFileKeyRequest != nullptr, false);
@@ -455,8 +461,10 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
 
     DGL_NAMESPACE::FileBrowserOptions opts;
     opts.title = title;
+    if  (lastUsedDirnames.count(key))
+        opts.startDir = lastUsedDirnames[key].c_str();
     return window->openFileBrowser(opts);
-#endif
+   #endif
 
     return false;
 }
@@ -472,7 +480,7 @@ inline void PluginWindow::onFileSelected(const char* const filename)
     if (initializing)
         return;
 
-   #if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     if (char* const key = ui->uiData->uiStateFileKeyRequest)
     {
         ui->uiData->uiStateFileKeyRequest = nullptr;
@@ -480,8 +488,13 @@ inline void PluginWindow::onFileSelected(const char* const filename)
         {
             // notify DSP
             ui->setState(key, filename);
+
             // notify UI
             ui->stateChanged(key, filename);
+
+            // save dirname for next time
+            if (const char* const lastsep = std::strrchr(filename, DISTRHO_OS_SEP))
+                ui->uiData->lastUsedDirnames[key] = std::string(filename, lastsep-filename);
         }
         std::free(key);
         return;
