@@ -283,13 +283,20 @@ struct RtAudioBridge : NativeBridge {
         return ok;
     }
 
-    bool _open(const bool withInput)
+    bool _open(const bool withInput, RtAudio* tryingAgain = nullptr)
     {
         ScopedPointer<RtAudio> rtAudio;
 
-        try {
-            rtAudio = new RtAudio(RtAudio::RTAUDIO_API_TYPE);
-        } DISTRHO_SAFE_EXCEPTION_RETURN("new RtAudio()", false);
+        if (tryingAgain == nullptr)
+        {
+            try {
+                rtAudio = new RtAudio(RtAudio::RTAUDIO_API_TYPE);
+            } DISTRHO_SAFE_EXCEPTION_RETURN("new RtAudio()", false);
+        }
+        else
+        {
+            rtAudio = tryingAgain;
+        }
 
         uint rtAudioBufferFrames = nextBufferSize;
 
@@ -309,7 +316,7 @@ struct RtAudioBridge : NativeBridge {
 
        #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
         RtAudio::StreamParameters outParams;
-        outParams.deviceId = rtAudio->getDefaultOutputDevice();
+        outParams.deviceId = tryingAgain != nullptr ? 1 : rtAudio->getDefaultOutputDevice();
         outParams.nChannels = DISTRHO_PLUGIN_NUM_OUTPUTS_2;
         RtAudio::StreamParameters* const outParamsPtr = &outParams;
        #else
@@ -332,6 +339,10 @@ struct RtAudioBridge : NativeBridge {
             rtAudio->openStream(outParamsPtr, inParamsPtr, RTAUDIO_FLOAT32, 48000, &rtAudioBufferFrames,
                                 RtAudioCallback, this, &opts, nullptr);
         } catch (const RtAudioError& err) {
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+            if (outParams.deviceId == 0 && rtAudio->getDeviceCount() > 1)
+                return _open(withInput, rtAudio.release());
+           #endif
             d_safe_exception(err.getMessage().c_str(), __FILE__, __LINE__);
             return false;
         } DISTRHO_SAFE_EXCEPTION_RETURN("rtAudio->openStream()", false);
