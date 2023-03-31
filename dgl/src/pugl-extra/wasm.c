@@ -287,11 +287,11 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   const long canvasY = mouseEvent->canvasY;
 #else
   const char* const className = view->world->className;
-  const double canvasX = mouseEvent->clientX - EM_ASM_INT({
+  const double canvasX = mouseEvent->clientX - EM_ASM_DOUBLE({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().x;
   }, className);
-  const double canvasY = mouseEvent->clientY - EM_ASM_INT({
+  const double canvasY = mouseEvent->clientY - EM_ASM_DOUBLE({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().y;
   }, className);
@@ -457,11 +457,11 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
   const long canvasX = point->canvasX;
   const long canvasY = point->canvasY;
 #else
-  const double canvasX = point->clientX - EM_ASM_INT({
+  const double canvasX = point->clientX - EM_ASM_DOUBLE({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().x;
   }, className);
-  const double canvasY = point->clientY - EM_ASM_INT({
+  const double canvasY = point->clientY - EM_ASM_DOUBLE({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().y;
   }, className);
