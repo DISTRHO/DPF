@@ -26,6 +26,7 @@
 
 // #define PUGL_WASM_AUTO_POINTER_LOCK
 // #define PUGL_WASM_NO_KEYBOARD_INPUT
+// #define PUGL_WASM_NO_MOUSEWHEEL_INPUT
 
 PuglWorldInternals*
 puglInitWorldInternals(const PuglWorldType type, const PuglWorldFlags flags)
@@ -285,8 +286,15 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   const long canvasX = mouseEvent->canvasX;
   const long canvasY = mouseEvent->canvasY;
 #else
-  const long canvasX = mouseEvent->clientX;
-  const long canvasY = mouseEvent->clientY;
+  const char* const className = view->world->className;
+  const double canvasX = mouseEvent->clientX - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().x;
+  }, className);
+  const double canvasY = mouseEvent->clientY - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().y;
+  }, className);
 #endif
 
   switch (eventType) {
@@ -387,14 +395,14 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     return EM_FALSE;
   }
 
-  PuglView*      const view = (PuglView*)userData;
-  PuglInternals* const impl  = view->impl;
+  PuglView*      const view   = (PuglView*)userData;
+  PuglInternals* const impl   = view->impl;
+  const char* const className = view->world->className;
 
   if (impl->supportsTouch == PUGL_DONT_CARE) {
     impl->supportsTouch = PUGL_TRUE;
 
     // stop using mouse press events which conflict with touch
-    const char* const className = view->world->className;
     emscripten_set_mousedown_callback(className, view, false, NULL);
     emscripten_set_mouseup_callback(className, view, false, NULL);
   }
@@ -445,14 +453,28 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     puglDispatchEventWithContext(view, &impl->nextButtonEvent);
   }
 
+#ifdef __MOD_DEVICES__
+  const long canvasX = point->canvasX;
+  const long canvasY = point->canvasY;
+#else
+  const double canvasX = point->clientX - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().x;
+  }, className);
+  const double canvasY = point->clientY - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().y;
+  }, className);
+#endif
+
   switch (eventType) {
   case EMSCRIPTEN_EVENT_TOUCHEND:
   case EMSCRIPTEN_EVENT_TOUCHCANCEL:
     event.button.type   = PUGL_BUTTON_RELEASE;
     event.button.time   = time;
     event.button.button = eventType == EMSCRIPTEN_EVENT_TOUCHCANCEL ? 1 : 0;
-    event.button.x      = point->canvasX * scaleFactor;
-    event.button.y      = point->canvasY * scaleFactor;
+    event.button.x      = canvasX * scaleFactor;
+    event.button.y      = canvasY * scaleFactor;
     event.button.xRoot  = point->screenX * scaleFactor;
     event.button.yRoot  = point->screenY * scaleFactor;
     event.button.state  = state;
@@ -463,8 +485,8 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     event.button.type   = PUGL_BUTTON_PRESS;
     event.button.time   = time;
     event.button.button = 1; // if no other event occurs soon, treat it as right-click
-    event.button.x      = point->canvasX * scaleFactor;
-    event.button.y      = point->canvasY * scaleFactor;
+    event.button.x      = canvasX * scaleFactor;
+    event.button.y      = canvasY * scaleFactor;
     event.button.xRoot  = point->screenX * scaleFactor;
     event.button.yRoot  = point->screenY * scaleFactor;
     event.button.state  = state;
@@ -475,8 +497,8 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
   case EMSCRIPTEN_EVENT_TOUCHMOVE:
     event.motion.type  = PUGL_MOTION;
     event.motion.time  = time;
-    event.motion.x     = point->canvasX * scaleFactor;
-    event.motion.y     = point->canvasY * scaleFactor;
+    event.motion.x     = canvasX * scaleFactor;
+    event.motion.y     = canvasY * scaleFactor;
     event.motion.xRoot = point->screenX * scaleFactor;
     event.motion.yRoot = point->screenY * scaleFactor;
     event.motion.state = state;
@@ -521,6 +543,7 @@ puglPointerLockChangeCallback(const int eventType, const EmscriptenPointerlockCh
   return EM_TRUE;
 }
 
+#ifndef PUGL_WASM_NO_MOUSEWHEEL_INPUT
 static EM_BOOL
 puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEvent, void* const userData)
 {
@@ -542,10 +565,25 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
   }
 #endif
 
+#ifdef __MOD_DEVICES__
+  const long canvasX = wheelEvent->mouse.canvasX;
+  const long canvasY = wheelEvent->mouse.canvasY;
+#else
+  const char* const className = view->world->className;
+  const double canvasX = wheelEvent->mouse.canvasX - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().x;
+  }, className);
+  const double canvasY = wheelEvent->mouse.canvasY - EM_ASM_INT({
+    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+    return canvasWrapper.getBoundingClientRect().y;
+  }, className);
+#endif
+
   PuglEvent event = {{PUGL_SCROLL, 0}};
   event.scroll.time  = wheelEvent->mouse.timestamp / 1e3;
-  event.scroll.x     = wheelEvent->mouse.canvasX;
-  event.scroll.y     = wheelEvent->mouse.canvasY;
+  event.scroll.x     = canvasX;
+  event.scroll.y     = canvasY;
   event.scroll.xRoot = wheelEvent->mouse.screenX;
   event.scroll.yRoot = wheelEvent->mouse.screenY;
   event.scroll.state = translateModifiers(wheelEvent->mouse.ctrlKey,
@@ -559,6 +597,7 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
 
   return puglDispatchEventWithContext(view, &event) == PUGL_SUCCESS ? EM_TRUE : EM_FALSE;
 }
+#endif
 
 static EM_BOOL
 puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void* const userData)
@@ -717,7 +756,9 @@ puglRealize(PuglView* const view)
   emscripten_set_mouseleave_callback(className, view, false, puglMouseCallback);
   emscripten_set_focusin_callback(className, view, false, puglFocusCallback);
   emscripten_set_focusout_callback(className, view, false, puglFocusCallback);
+#ifndef PUGL_WASM_NO_MOUSEWHEEL_INPUT
   emscripten_set_wheel_callback(className, view, false, puglWheelCallback);
+#endif
   emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglPointerLockChangeCallback);
   emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglUiCallback);
   emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, view, false, puglFullscreenChangeCallback);
