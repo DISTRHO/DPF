@@ -578,7 +578,7 @@ private:
                              setStateCallback,
                              sendNoteCallback,
                              setSizeCallback,
-                             fileRequestCallback,
+                             nullptr, // TODO fileRequestCallback,
                              d_nextBundlePath,
                              fPlugin.getInstancePointer(),
                              fScaleFactor);
@@ -708,6 +708,7 @@ private:
     }
    #endif
 
+    /* TODO
     bool fileRequest(const char*)
     {
         return true;
@@ -717,6 +718,7 @@ private:
     {
         return static_cast<ClapUI*>(ptr)->fileRequest(key);
     }
+    */
 };
 
 // --------------------------------------------------------------------------------------------------------------------
