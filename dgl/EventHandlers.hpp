@@ -156,7 +156,7 @@ public:
     bool scrollEvent(const Widget::ScrollEvent& ev);
 
 protected:
-     State getState() const noexcept;
+    State getState() const noexcept;
 
 private:
     struct PrivateData;
