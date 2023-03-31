@@ -441,7 +441,7 @@ struct KnobEventHandler::PrivateData {
         }
 
         if (d_isZero(movDiff))
-            return false;
+            return true;
 
         const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
         valueTmp += (maximum - minimum) / divisor * movDiff;
