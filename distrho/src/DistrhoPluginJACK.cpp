@@ -1033,6 +1033,12 @@ int main(int argc, char* argv[])
     jack_status_t  status = jack_status_t(0x0);
     jack_client_t* client = jackbridge_client_open(DISTRHO_PLUGIN_NAME, JackNoStartServer, &status);
 
+   #ifdef HAVE_JACK
+    #define STANDALONE_NAME "JACK client"
+   #else
+    #define STANDALONE_NAME "Native audio driver"
+   #endif
+
     if (client == nullptr)
     {
         String errorString;
@@ -1063,20 +1069,22 @@ int main(int argc, char* argv[])
             errorString += "Backend Error;\n";
         if (status & JackClientZombie)
             errorString += "Client is being shutdown against its will;\n";
+        if (status & JackBridgeNativeFailed)
+            errorString += "Native audio driver was unable to start;\n";
 
         if (errorString.isNotEmpty())
         {
             errorString[errorString.length()-2] = '.';
-            d_stderr("Failed to create the JACK client, reason was:\n%s", errorString.buffer());
+            d_stderr("Failed to create the " STANDALONE_NAME ", reason was:\n%s", errorString.buffer());
         }
         else
-            d_stderr("Failed to create the JACK client, cannot continue!");
+            d_stderr("Failed to create the " STANDALONE_NAME ", cannot continue!");
 
        #if defined(DISTRHO_OS_MAC)
         CFStringRef errorTitleRef = CFStringCreateWithCString(nullptr,
            DISTRHO_PLUGIN_NAME ": Error", kCFStringEncodingUTF8);
         CFStringRef errorStringRef = CFStringCreateWithCString(nullptr,
-           String("Failed to create JACK client, reason was:\n" + errorString).buffer(), kCFStringEncodingUTF8);
+           String("Failed to create " STANDALONE_NAME ", reason was:\n" + errorString).buffer(), kCFStringEncodingUTF8);
 
         CFUserNotificationDisplayAlert(0, kCFUserNotificationCautionAlertLevel,
            nullptr, nullptr, nullptr,
@@ -1100,7 +1108,7 @@ int main(int argc, char* argv[])
             FreeLibrary(user32);
         }
 
-        const String win32error = "Failed to create JACK client, reason was:\n" + errorString;
+        const String win32error = "Failed to create " STANDALONE_NAME ", reason was:\n" + errorString;
         MessageBoxA(nullptr, win32error.buffer(), "", MB_ICONERROR);
        #endif
 
