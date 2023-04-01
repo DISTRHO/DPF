@@ -232,22 +232,22 @@ enum ParameterDesignation {
 
    @see PortGroup
  */
-enum PredefinedPortGroupsIds : uint32_t {
+enum PredefinedPortGroupsIds {
    /**
      Null or unset port group.
     */
-    kPortGroupNone = UINT32_MAX - 1,
+    kPortGroupNone = (uint32_t)-1,
 
    /**
      A single channel audio group.
     */
-    kPortGroupMono = UINT32_MAX - 2,
+    kPortGroupMono = (uint32_t)-2,
 
    /**
      A 2-channel discrete stereo audio group,
      where the 1st audio port is the left channel and the 2nd port is the right channel.
     */
-    kPortGroupStereo = UINT32_MAX - 3
+    kPortGroupStereo = (uint32_t)-3
 };
 
 /**
