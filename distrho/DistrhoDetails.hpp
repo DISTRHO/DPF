@@ -232,7 +232,7 @@ enum ParameterDesignation {
 
    @see PortGroup
  */
-enum PredefinedPortGroupsIds {
+enum PredefinedPortGroupsIds : uint32_t {
    /**
      Null or unset port group.
     */
