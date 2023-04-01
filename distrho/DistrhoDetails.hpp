@@ -236,18 +236,18 @@ enum PredefinedPortGroupsIds {
    /**
      Null or unset port group.
     */
-    kPortGroupNone = static_cast<uint32_t>(-1),
+    kPortGroupNone = UINT32_MAX - 1,
 
    /**
      A single channel audio group.
     */
-    kPortGroupMono = static_cast<uint32_t>(-2),
+    kPortGroupMono = UINT32_MAX - 2,
 
    /**
      A 2-channel discrete stereo audio group,
      where the 1st audio port is the left channel and the 2nd port is the right channel.
     */
-    kPortGroupStereo = static_cast<uint32_t>(-3)
+    kPortGroupStereo = UINT32_MAX - 3
 };
 
 /**
