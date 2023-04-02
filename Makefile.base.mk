@@ -407,18 +407,34 @@ endif
 # Set Generic DGL stuff
 
 ifeq ($(HAIKU),true)
+
 DGL_SYSTEM_LIBS += -lbe
+
 else ifeq ($(MACOS),true)
-DGL_SYSTEM_LIBS += -framework Cocoa -framework CoreVideo
+
+DGL_SYSTEM_LIBS += -framework Cocoa
+DGL_SYSTEM_LIBS += -framework CoreVideo
+
 else ifeq ($(WASM),true)
+
+# wasm builds cannot work using regular desktop OpenGL
+ifeq (,$(USE_GLES2)$(USE_GLES3))
+USE_GLES2 = true
+endif
+
 else ifeq ($(WINDOWS),true)
-DGL_SYSTEM_LIBS += -lgdi32 -lcomdlg32
-# -lole32
+
+DGL_SYSTEM_LIBS += -lcomdlg32
+DGL_SYSTEM_LIBS += -lgdi32
+# DGL_SYSTEM_LIBS += -lole32
+
 else
+
 ifeq ($(HAVE_DBUS),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
 endif
+
 ifeq ($(HAVE_X11),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags x11) -DHAVE_X11
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs x11)
@@ -434,7 +450,8 @@ ifeq ($(HAVE_XRANDR),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xrandr) -DHAVE_XRANDR
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xrandr)
 endif
-endif
+endif # HAVE_X11
+
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -449,7 +466,7 @@ CAIRO_LIBS   = $(shell $(PKG_CONFIG) --libs cairo)
 
 HAVE_CAIRO_OR_OPENGL = true
 
-endif
+endif # HAVE_CAIRO
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set OpenGL specific stuff
@@ -481,7 +498,7 @@ endif
 
 HAVE_CAIRO_OR_OPENGL = true
 
-endif
+endif # HAVE_OPENGL
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set Stub specific stuff
