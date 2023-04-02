@@ -223,6 +223,7 @@ function(dpf__build_jack NAME HAS_UI)
     OUTPUT_NAME "${NAME}")
 
   target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
+  target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
 
   find_package(PkgConfig)
   pkg_check_modules(SDL2 "sdl2")
@@ -266,7 +267,7 @@ function(dpf__build_jack NAME HAS_UI)
       "${APPLE_COREFOUNDATION_FRAMEWORK}"
       "${APPLE_COREMIDI_FRAMEWORK}")
   elseif(WIN32)
-    target_link_libraries("${NAME}-jack" PRIVATE "dsound" "ole32" "winmm")
+    target_link_libraries("${NAME}-jack" PRIVATE "ksuser" "mfplat" "mfuuid" "ole32" "winmm" "wmcodecdspuuid")
     if(HAS_UI AND MINGW)
       set_target_properties("${NAME}-jack" PROPERTIES WIN32_EXECUTABLE TRUE)
     endif()

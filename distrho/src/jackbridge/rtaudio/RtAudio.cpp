@@ -4640,12 +4640,9 @@ void RtApiWasapi::stopStream( void )
   stream_.state = STREAM_STOPPING;
 
   // wait until stream thread is stopped
-  while( stream_.state != STREAM_STOPPED ) {
-    Sleep( 1 );
+  for (int i=0; i < 2 && stream_.state != STREAM_STOPPED; ++i ) {
+    Sleep( 1000 * stream_.bufferSize / stream_.sampleRate );
   }
-
-  // Wait for the last buffer to play before stopping.
-  Sleep( 1000 * stream_.bufferSize / stream_.sampleRate );
 
   // close thread handle
   if ( stream_.callbackInfo.thread && !CloseHandle( ( void* ) stream_.callbackInfo.thread ) ) {

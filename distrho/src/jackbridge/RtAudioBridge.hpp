@@ -28,9 +28,9 @@
 # define RTAUDIO_API_TYPE MACOSX_CORE
 # define RTMIDI_API_TYPE MACOSX_CORE
 #elif defined(DISTRHO_OS_WINDOWS) && !defined(_MSC_VER)
-# define __WINDOWS_DS__
+# define __WINDOWS_WASAPI__
 # define __WINDOWS_MM__
-# define RTAUDIO_API_TYPE WINDOWS_DS
+# define RTAUDIO_API_TYPE WINDOWS_WASAPI
 # define RTMIDI_API_TYPE WINDOWS_MM
 #else
 # if defined(HAVE_PULSEAUDIO)

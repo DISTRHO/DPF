@@ -98,14 +98,16 @@ endif
 
 else ifneq ($(SKIP_RTAUDIO_FALLBACK),true)
 
+JACK_FLAGS += -DHAVE_GETTIMEOFDAY
+
 ifeq ($(MACOS),true)
 JACK_LIBS  += -framework CoreAudio -framework CoreFoundation -framework CoreMIDI
 else ifeq ($(WINDOWS),true)
 JACK_LIBS  += -lole32 -lwinmm
 # DirectSound
-JACK_LIBS  += -ldsound
+# JACK_LIBS  += -ldsound
 # WASAPI
-# JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
+JACK_LIBS  += -lksuser -lmfplat -lmfuuid -lwmcodecdspuuid
 else
 ifeq ($(HAVE_PULSEAUDIO),true)
 JACK_FLAGS += $(PULSEAUDIO_FLAGS)
