@@ -267,6 +267,10 @@ ifeq ($(MACOS)$(HAVE_DGL),truetrue)
 MACOS_APP_BUNDLE = true
 endif
 
+ifeq ($(WINDOWS)$(HAVE_DGL),truetrue)
+JACK_LIBS += -Wl,-subsystem,windows
+endif
+
 ifeq ($(MACOS_APP_BUNDLE),true)
 jack       = $(TARGET_DIR)/$(NAME).app/Contents/MacOS/$(NAME)
 jackfiles  = $(TARGET_DIR)/$(NAME).app/Contents/Info.plist
