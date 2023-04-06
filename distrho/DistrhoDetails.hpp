@@ -500,7 +500,7 @@ struct ParameterEnumerationValue {
    /**
       Constructor using custom values, constexpr compatible variant.
     */
-    contexpr ParameterEnumerationValue(float v, const std::string_view& l) noexcept
+    constexpr ParameterEnumerationValue(float v, const std::string_view& l) noexcept
         : value(v),
           label(l) {}
 #endif
