@@ -500,7 +500,7 @@ struct ParameterEnumerationValue {
    /**
       Constructor using custom values, constexpr compatible variant.
     */
-    ParameterEnumerationValue(float v, const std::string_view& l) noexcept
+    contexpr ParameterEnumerationValue(float v, const std::string_view& l) noexcept
         : value(v),
           label(l) {}
 #endif
@@ -525,9 +525,10 @@ struct ParameterEnumerationValues {
 
    /**
       Array of @ParameterEnumerationValue items.@n
-      This pointer must be null or have been allocated on the heap with `new ParameterEnumerationValue[count]`.
+      When assining this pointer manually, it must be allocated on the heap with `new ParameterEnumerationValue[count]`.@n
+      The array pointer will be automatically deleted later.
     */
-    const ParameterEnumerationValue* values;
+    ParameterEnumerationValue* values;
 
    /**
       Default constructor, for zero enumeration values.
@@ -540,9 +541,10 @@ struct ParameterEnumerationValues {
 
    /**
       Constructor using custom values.@n
-      The pointer to @values must have been allocated on the heap with `new`.
+      When using this constructor the pointer to @values MUST have been statically declared.@n
+      It will not be automatically deleted later.
     */
-    constexpr ParameterEnumerationValues(uint32_t c, bool r, const ParameterEnumerationValue* v) noexcept
+    constexpr ParameterEnumerationValues(uint32_t c, bool r, ParameterEnumerationValue* v) noexcept
         : count(c),
           restrictedMode(r),
           values(v),
@@ -675,14 +677,14 @@ struct Parameter {
       Assumes enumeration details should have `restrictedMode` on.
     */
     Parameter(uint32_t h, const char* n, const char* s, const char* u, float def, float min, float max,
-              uint8_t evcount, const ParameterEnumerationValue ev[]) noexcept
+              uint8_t evcount, ParameterEnumerationValue ev[]) noexcept
         : hints(h),
           name(n),
           shortName(),
           symbol(s),
           unit(u),
           ranges(def, min, max),
-          enumValues{ evcount, true, ev },
+          enumValues(evcount, true, ev),
           designation(kParameterDesignationNull),
           midiCC(0),
           groupId(kPortGroupNone) {}
