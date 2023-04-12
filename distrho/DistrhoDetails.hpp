@@ -517,7 +517,7 @@ struct ParameterEnumerationValues {
     uint8_t count;
 
    /**
-      Wherever the host is to be restricted to only use enumeration values.
+      Whether the host is to be restricted to only use enumeration values.
 
       @note This mode is only a hint! Not all hosts and plugin formats support this mode.
     */
@@ -526,9 +526,15 @@ struct ParameterEnumerationValues {
    /**
       Array of @ParameterEnumerationValue items.@n
       When assining this pointer manually, it must be allocated on the heap with `new ParameterEnumerationValue[count]`.@n
-      The array pointer will be automatically deleted later.
+      The array pointer will be automatically deleted later unless @p deleteLater is set to false.
     */
     ParameterEnumerationValue* values;
+
+   /**
+      Whether to take ownership of the @p values pointer.@n
+      Defaults to true unless stated otherwise.
+    */
+    bool deleteLater;
 
    /**
       Default constructor, for zero enumeration values.
@@ -556,9 +562,6 @@ struct ParameterEnumerationValues {
         if (deleteLater)
             delete[] values;
     }
-
-private:
-    bool deleteLater;
 };
 
 /**
