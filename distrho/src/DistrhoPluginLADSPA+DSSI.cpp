@@ -618,13 +618,19 @@ static const struct DescriptorInitializer
             else
                 portDescriptors[port] |= LADSPA_PORT_INPUT;
 
+            const uint32_t hints = plugin.getParameterHints(i);
+
             {
                 const ParameterRanges& ranges(plugin.getParameterRanges(i));
                 const float defValue = ranges.def;
 
-                portRangeHints[port].HintDescriptor = LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
-                portRangeHints[port].LowerBound     = ranges.min;
-                portRangeHints[port].UpperBound     = ranges.max;
+                // LADSPA doesn't allow bounded hints on toggles
+                portRangeHints[port].HintDescriptor = hints & kParameterIsBoolean
+                                                    ? 0
+                                                    : LADSPA_HINT_BOUNDED_BELOW | LADSPA_HINT_BOUNDED_ABOVE;
+
+                portRangeHints[port].LowerBound = ranges.min;
+                portRangeHints[port].UpperBound = ranges.max;
 
                 /**/ if (d_isZero(defValue))
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_DEFAULT_0;
@@ -654,8 +660,6 @@ static const struct DescriptorInitializer
             }
 
             {
-                const uint32_t hints = plugin.getParameterHints(i);
-
                 if (hints & kParameterIsBoolean)
                 {
                     portRangeHints[port].HintDescriptor |= LADSPA_HINT_TOGGLED;
