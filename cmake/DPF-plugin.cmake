@@ -192,6 +192,8 @@ function(dpf_add_plugin NAME)
       dpf__build_vst3("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "clap")
       dpf__build_clap("${NAME}" "${_dgl_has_ui}")
+    elseif(_target STREQUAL "static")
+      dpf__build_static("${NAME}" "${_dgl_has_ui}")
     else()
       message(FATAL_ERROR "Unrecognized target type for plugin: ${_target}")
     endif()
@@ -510,7 +512,7 @@ endfunction()
 # dpf__build_clap
 # ------------------------------------------------------------------------------
 #
-# Add build rules for a VST2 plugin.
+# Add build rules for a CLAP plugin.
 #
 function(dpf__build_clap NAME HAS_UI)
   dpf__create_dummy_source_list(_no_srcs)
@@ -538,6 +540,34 @@ function(dpf__build_clap NAME HAS_UI)
     file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
       DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.clap/Contents")
   endif()
+endfunction()
+
+# dpf__build_static
+# ------------------------------------------------------------------------------
+#
+# Add build rules for a static library.
+#
+function(dpf__build_static NAME HAS_UI)
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-static" ${_no_srcs} STATIC)
+  dpf__add_plugin_main("${NAME}-static" "static")
+  dpf__add_ui_main("${NAME}-static" "static" "${HAS_UI}")
+  target_link_libraries("${NAME}-static" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+
+  get_target_property(dsp_srcs "${NAME}-dsp" SOURCES)
+  get_target_property(ui_srcs "${NAME}-ui" SOURCES)
+  foreach(src ${dsp_srcs})
+    target_sources("${NAME}-static" PRIVATE ${src})
+  endforeach()
+  foreach(src ${ui_srcs})
+    target_sources("${NAME}-static" PRIVATE ${src})
+  endforeach()
+
+  set_target_properties("${NAME}-static" PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    OUTPUT_NAME "${NAME}"
+    PREFIX "")
 endfunction()
 
 # dpf__add_dgl_cairo
