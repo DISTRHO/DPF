@@ -99,6 +99,8 @@ const char* getPluginFormatName() noexcept
     return "VST3";
 #elif defined(DISTRHO_PLUGIN_TARGET_CLAP)
     return "CLAP";
+#elif defined(DISTRHO_PLUGIN_TARGET_STATIC) && defined(DISTRHO_PLUGIN_TARGET_STATIC_NAME)
+    return DISTRHO_PLUGIN_TARGET_STATIC_NAME;
 #else
     return "Unknown";
 #endif
