@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,9 +16,12 @@
 
 #include "src/DistrhoUI.cpp"
 
-#if ! DISTRHO_PLUGIN_HAS_UI
+// we might be building a plugin with external UI, which works on most formats except VST2/3
+#if ! DISTRHO_PLUGIN_HAS_UI && ! defined(DISTRHO_PLUGIN_VST_HPP_INCLUDED)
 # error Trying to build UI without DISTRHO_PLUGIN_HAS_UI set to 1
 #endif
+
+#if DISTRHO_PLUGIN_HAS_UI
 
 #if defined(DISTRHO_PLUGIN_TARGET_CARLA)
 # define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT 1
@@ -50,4 +53,6 @@
 #  define DISTRHO_IS_STANDALONE 0
 # endif
 # include "src/DistrhoUtils.cpp"
+#endif
+
 #endif
