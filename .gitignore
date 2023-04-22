@@ -11,7 +11,9 @@
 .kdev4/
 .DS_Store
 .vs/
+CMakeFiles
 CMakeSettings.json
+cmake_install.cmake
 
 bin/
 build/
