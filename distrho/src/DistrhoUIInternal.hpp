@@ -261,6 +261,13 @@ public:
         uiData->app.quit();
     }
 
+   #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+    void repaint()
+    {
+        uiData->window->repaint();
+    }
+   #endif
+
     // -------------------------------------------------------------------
 
   #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
