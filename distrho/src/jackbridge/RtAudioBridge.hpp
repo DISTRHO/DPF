@@ -1,6 +1,6 @@
 /*
  * RtAudio Bridge for DPF
- * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -162,7 +162,6 @@ struct RtAudioBridge : NativeBridge {
 
     bool isMIDIEnabled() const override
     {
-        d_stdout("%s %d", __PRETTY_FUNCTION__, __LINE__);
        #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (!midiIns.empty())
             return true;
