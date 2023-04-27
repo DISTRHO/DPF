@@ -101,6 +101,7 @@ typedef int  (JACKSYM_API *JackSymSyncCallback)(jack_transport_state_t, jack_pos
 typedef void (JACKSYM_API *JackSymTimebaseCallback)(jack_transport_state_t, jack_nframes_t, jack_position_t*, int, void*);
 typedef void (JACKSYM_API *JackSymSessionCallback)(jack_session_event_t*, void*);
 typedef void (JACKSYM_API *JackSymPropertyChangeCallback)(jack_uuid_t, const char*, jack_property_change_t, void*);
+typedef void* (JACKSYM_API *JackSymThreadCallback)(void*);
 
 typedef void        (JACKSYM_API *jacksym_get_version)(int*, int*, int*, int*);
 typedef const char* (JACKSYM_API *jacksym_get_version_string)(void);
@@ -216,6 +217,10 @@ typedef int  (JACKSYM_API *jacksym_remove_property)(jack_client_t*, jack_uuid_t,
 typedef int  (JACKSYM_API *jacksym_remove_properties)(jack_client_t*, jack_uuid_t);
 typedef int  (JACKSYM_API *jacksym_remove_all_properties)(jack_client_t*);
 typedef int  (JACKSYM_API *jacksym_set_property_change_callback)(jack_client_t*, JackSymPropertyChangeCallback, void*);
+
+typedef bool           (JACKSYM_API *jacksym_set_process_thread)(jack_client_t*, JackSymThreadCallback callback, void*);
+typedef jack_nframes_t (JACKSYM_API *jacksym_cycle_wait)(jack_client_t*);
+typedef void           (JACKSYM_API *jacksym_cycle_signal)(jack_client_t*, int);
 
 #ifdef __WINE__
 typedef int  (JACKSYM_API *jacksym_thread_creator_t)(pthread_t*, const pthread_attr_t*, void *(*)(void*), void*);
@@ -344,6 +349,10 @@ struct JackBridge {
     jacksym_remove_all_properties remove_all_properties_ptr;
     jacksym_set_property_change_callback set_property_change_callback_ptr;
 
+    jacksym_set_process_thread set_process_thread_ptr;
+    jacksym_cycle_wait cycle_wait_ptr;
+    jacksym_cycle_signal cycle_signal_ptr;
+
    #ifdef __WINE__
     jacksym_set_thread_creator set_thread_creator_ptr;
    #endif
@@ -441,7 +450,10 @@ struct JackBridge {
           remove_property_ptr(nullptr),
           remove_properties_ptr(nullptr),
           remove_all_properties_ptr(nullptr),
-          set_property_change_callback_ptr(nullptr)
+          set_property_change_callback_ptr(nullptr),
+          set_process_thread_ptr(nullptr),
+          cycle_wait_ptr(nullptr),
+          cycle_signal_ptr(nullptr)
          #ifdef __WINE__
         , set_thread_creator_ptr(nullptr)
          #endif
@@ -587,6 +599,10 @@ struct JackBridge {
         LIB_SYMBOL(remove_all_properties)
         LIB_SYMBOL(set_property_change_callback)
 
+        LIB_SYMBOL(set_process_thread)
+        LIB_SYMBOL(cycle_wait)
+        LIB_SYMBOL(cycle_signal)
+
        #ifdef __WINE__
         LIB_SYMBOL(set_thread_creator)
        #endif
@@ -650,6 +666,7 @@ struct WineBridge {
     JackTimebaseCallback timebase_cb;
     JackSessionCallback session_cb;
     JackPropertyChangeCallback prop_change_cb;
+    JackThreadCallback proc_thread_cb;
 
     void* (*creator_func)(void*);
     void* creator_arg;
@@ -676,6 +693,7 @@ struct WineBridge {
           timebase_cb(nullptr),
           session_cb(nullptr),
           prop_change_cb(nullptr),
+          proc_thread_cb(nullptr),
           creator_func(nullptr),
           creator_arg(nullptr),
           creator_handle(nullptr),
@@ -687,24 +705,25 @@ struct WineBridge {
         return bridge;
     }
 
-    void set_latency      (JackLatencyCallback            cb) noexcept { latency_cb       = cb; }
-    void set_process      (JackProcessCallback            cb) noexcept { process_cb       = cb; }
-    void set_thread_init  (JackThreadInitCallback         cb) noexcept { thread_init_cb   = cb; }
-    void set_graph_order  (JackGraphOrderCallback         cb) noexcept { graph_order_cb   = cb; }
-    void set_xrun         (JackXRunCallback               cb) noexcept { xrun_cb          = cb; }
-    void set_bufsize      (JackBufferSizeCallback         cb) noexcept { bufsize_cb       = cb; }
-    void set_srate        (JackSampleRateCallback         cb) noexcept { srate_cb         = cb; }
-    void set_port_reg     (JackPortRegistrationCallback   cb) noexcept { port_reg_cb      = cb; }
-    void set_client_reg   (JackClientRegistrationCallback cb) noexcept { client_reg_cb    = cb; }
-    void set_port_conn    (JackPortConnectCallback        cb) noexcept { port_conn_cb     = cb; }
-    void set_port_rename  (JackPortRenameCallback         cb) noexcept { port_rename_cb   = cb; }
-    void set_freewheel    (JackFreewheelCallback          cb) noexcept { freewheel_cb     = cb; }
-    void set_shutdown     (JackShutdownCallback           cb) noexcept { shutdown_cb      = cb; }
-    void set_info_shutdown(JackInfoShutdownCallback       cb) noexcept { info_shutdown_cb = cb; }
-    void set_sync         (JackSyncCallback               cb) noexcept { sync_cb          = cb; }
-    void set_timebase     (JackTimebaseCallback           cb) noexcept { timebase_cb      = cb; }
-    void set_session      (JackSessionCallback            cb) noexcept { session_cb       = cb; }
-    void set_prop_change  (JackPropertyChangeCallback     cb) noexcept { prop_change_cb   = cb; }
+    void set_latency       (JackLatencyCallback            cb) noexcept { latency_cb       = cb; }
+    void set_process       (JackProcessCallback            cb) noexcept { process_cb       = cb; }
+    void set_thread_init   (JackThreadInitCallback         cb) noexcept { thread_init_cb   = cb; }
+    void set_graph_order   (JackGraphOrderCallback         cb) noexcept { graph_order_cb   = cb; }
+    void set_xrun          (JackXRunCallback               cb) noexcept { xrun_cb          = cb; }
+    void set_bufsize       (JackBufferSizeCallback         cb) noexcept { bufsize_cb       = cb; }
+    void set_srate         (JackSampleRateCallback         cb) noexcept { srate_cb         = cb; }
+    void set_port_reg      (JackPortRegistrationCallback   cb) noexcept { port_reg_cb      = cb; }
+    void set_client_reg    (JackClientRegistrationCallback cb) noexcept { client_reg_cb    = cb; }
+    void set_port_conn     (JackPortConnectCallback        cb) noexcept { port_conn_cb     = cb; }
+    void set_port_rename   (JackPortRenameCallback         cb) noexcept { port_rename_cb   = cb; }
+    void set_freewheel     (JackFreewheelCallback          cb) noexcept { freewheel_cb     = cb; }
+    void set_shutdown      (JackShutdownCallback           cb) noexcept { shutdown_cb      = cb; }
+    void set_info_shutdown (JackInfoShutdownCallback       cb) noexcept { info_shutdown_cb = cb; }
+    void set_sync          (JackSyncCallback               cb) noexcept { sync_cb          = cb; }
+    void set_timebase      (JackTimebaseCallback           cb) noexcept { timebase_cb      = cb; }
+    void set_session       (JackSessionCallback            cb) noexcept { session_cb       = cb; }
+    void set_prop_change   (JackPropertyChangeCallback     cb) noexcept { prop_change_cb   = cb; }
+    void set_process_thread(JackThreadCallback             cb) noexcept { proc_thread_cb   = cb; }
 
     static DWORD WINAPI thread_creator_helper(LPVOID)
     {
@@ -830,6 +849,11 @@ struct WineBridge {
     static void prop_change(jack_uuid_t subject, const char* key, jack_property_change_t change, void* arg)
     {
         return getInstance().prop_change_cb(subject, key, change, arg);
+    }
+
+    static void* process_thread(void* arg)
+    {
+        return getInstance().proc_thread_cb(arg);
     }
 
     DISTRHO_DECLARE_NON_COPYABLE(WineBridge);
@@ -2292,7 +2316,53 @@ bool jackbridge_set_property_change_callback(jack_client_t* client, JackProperty
     return false;
 }
 
+bool jackbridge_set_process_thread(jack_client_t* client, JackThreadCallback callback, void* arg)
+{
+#if defined(JACKBRIDGE_DUMMY)
+#elif defined(JACKBRIDGE_DIRECT)
+    return (jack_set_process_thread(client, callback, arg) == 0);
+#else
+    if (usingRealJACK && getBridgeInstance().set_process_thread_ptr != nullptr)
+    {
+# ifdef __WINE__
+        WineBridge::getInstance().set_process_thread(callback);
+        return (getBridgeInstance().set_process_thread_ptr(client, WineBridge::process_thread, arg) == 0);
+# else
+        return (getBridgeInstance().set_process_thread_ptr(client, callback, arg) == 0);
+# endif
+    }
+#endif
+    return false;
+}
+
+jack_nframes_t jackbridge_cycle_wait(jack_client_t* client)
+{
+#if defined(JACKBRIDGE_DUMMY)
+#elif defined(JACKBRIDGE_DIRECT)
+    return jack_cycle_wait(client);
+#else
+    if (usingRealJACK)
+        if (getBridgeInstance().cycle_wait_ptr != nullptr)
+            return getBridgeInstance().cycle_wait_ptr(client);
+#endif
+    return 0;
+}
+
+void jackbridge_cycle_signal(jack_client_t* client, int status)
+{
+#if defined(JACKBRIDGE_DUMMY)
+#elif defined(JACKBRIDGE_DIRECT)
+    jack_cycle_signal(client, status);
+#else
+    if (usingRealJACK)
+        if (getBridgeInstance().cycle_signal_ptr != nullptr)
+            getBridgeInstance().cycle_signal_ptr(client, status);
+#endif
+}
+
 // -----------------------------------------------------------------------------
+
+#ifndef JACKBRIDGE_SKIP_NATIVE_UTILS
 
 START_NAMESPACE_DISTRHO
 
@@ -2387,5 +2457,7 @@ bool requestMIDI()
 }
 
 END_NAMESPACE_DISTRHO
+
+#endif // JACKBRIDGE_SKIP_NATIVE_UTILS
 
 // -----------------------------------------------------------------------------

@@ -287,6 +287,7 @@ typedef int  (JACKBRIDGE_API *JackSyncCallback)(jack_transport_state_t state, ja
 typedef void (JACKBRIDGE_API *JackTimebaseCallback)(jack_transport_state_t state, jack_nframes_t nframes, jack_position_t* pos, int new_pos, void* arg);
 typedef void (JACKBRIDGE_API *JackSessionCallback)(jack_session_event_t* event, void* arg);
 typedef void (JACKBRIDGE_API *JackPropertyChangeCallback)(jack_uuid_t subject, const char* key, jack_property_change_t change, void* arg);
+typedef void *(JACKBRIDGE_API *JackThreadCallback)(void* arg);
 
 } // extern "C"
 
@@ -408,5 +409,9 @@ JACKBRIDGE_API bool jackbridge_remove_property(jack_client_t* client, jack_uuid_
 JACKBRIDGE_API int  jackbridge_remove_properties(jack_client_t* client, jack_uuid_t subject);
 JACKBRIDGE_API bool jackbridge_remove_all_properties(jack_client_t* client);
 JACKBRIDGE_API bool jackbridge_set_property_change_callback(jack_client_t* client, JackPropertyChangeCallback callback, void* arg);
+
+JACKBRIDGE_API bool jackbridge_set_process_thread(jack_client_t* client, JackThreadCallback callback, void* arg);
+JACKBRIDGE_API jack_nframes_t jackbridge_cycle_wait(jack_client_t* client);
+JACKBRIDGE_API void jackbridge_cycle_signal(jack_client_t* client, int status);
 
 #endif // JACKBRIDGE_HPP_INCLUDED
