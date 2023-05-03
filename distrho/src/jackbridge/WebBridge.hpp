@@ -1,6 +1,6 @@
 /*
  * Web Audio + MIDI Bridge for DPF
- * Copyright (C) 2021-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2021-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -113,7 +113,7 @@ struct WebBridge : NativeBridge {
 
         bufferSize = EM_ASM_INT({
             var WAB = Module['WebAudioBridge'];
-            return WAB['minimizeBufferSize'] ? 256 : 2048;
+            return WAB['fakeSmallBufferSize'] ? 256 : 2048;
         });
         sampleRate = EM_ASM_INT_V({
             var WAB = Module['WebAudioBridge'];
@@ -128,18 +128,27 @@ struct WebBridge : NativeBridge {
             var bufferSize = $2;
             var WAB = Module['WebAudioBridge'];
 
-            var realBufferSize = WAB['minimizeBufferSize'] ? 2048 : bufferSize;
+            var realBufferSize = WAB['fakeSmallBufferSize'] ? 2048 : bufferSize;
             var divider = realBufferSize / bufferSize;
 
             // main processor
             WAB.processor = WAB.audioContext['createScriptProcessor'](realBufferSize, numInputs, numOutputs);
             WAB.processor['onaudioprocess'] = function (e) {
                 // var timestamp = performance.now();
+                if (e['inputBuffer'].length != e['outputBuffer'].length || e['inputBuffer'].length != bufferSize) {
+                    console.log("invalid buffer size!", e['inputBuffer'].length, e['inputBuffer'].length, bufferSize);
+                }
+                if (e['inputBuffer'].numberOfChannels != numInputs) {
+                    console.log("invalid number of input channels!", e['inputBuffer'].numberOfChannels, numInputs);
+                }
+                if (e['outputBuffer'].numberOfChannels != numOutputs) {
+                    console.log("invalid number of output channels!", e['outputBuffer'].numberOfChannels, numOutputs);
+                }
                 for (var k = 0; k < divider; ++k) {
                     for (var i = 0; i < numInputs; ++i) {
                         var buffer = e['inputBuffer']['getChannelData'](i);
                         for (var j = 0; j < bufferSize; ++j) {
-                            // setValue($3 + ((bufferSize * i) + j) * 4, buffer[j], 'float');
+                            // setValue($3 + ((bufferSize * i) + j) * 4, buffer[bufferSize * k + j], 'float');
                             HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[bufferSize * k + j];
                         }
                     }
@@ -236,24 +245,28 @@ struct WebBridge : NativeBridge {
             constraints['googAutoGainControl'] = false;
 
             var success = function(stream) {
-                var track = stream.getAudioTracks()[0];
+                var tracks = stream.getAudioTracks();
 
                 // try to force as much as we can
-                track.applyConstraints({'autoGainControl': { 'exact': false } })
-                .then(function(){console.log("Mic/Input auto-gain control has been disabled")})
-                .catch(function(){console.log("Cannot disable Mic/Input auto-gain")});
+                for (var i in tracks) {
+                    var track = tracks[i];
 
-                track.applyConstraints({'echoCancellation': { 'exact': false } })
-                .then(function(){console.log("Mic/Input echo-cancellation has been disabled")})
-                .catch(function(){console.log("Cannot disable Mic/Input echo-cancellation")});
+                    track.applyConstraints({'autoGainControl': { 'exact': false } })
+                    .then(function(){console.log("Mic/Input auto-gain control has been disabled")})
+                    .catch(function(){console.log("Cannot disable Mic/Input auto-gain")});
 
-                track.applyConstraints({'noiseSuppression': { 'exact': false } })
-                .then(function(){console.log("Mic/Input noise-suppression has been disabled")})
-                .catch(function(){console.log("Cannot disable Mic/Input noise-suppression")});
+                    track.applyConstraints({'echoCancellation': { 'exact': false } })
+                    .then(function(){console.log("Mic/Input echo-cancellation has been disabled")})
+                    .catch(function(){console.log("Cannot disable Mic/Input echo-cancellation")});
 
-                track.applyConstraints({'googAutoGainControl': { 'exact': false } })
-                .then(function(){})
-                .catch(function(){});
+                    track.applyConstraints({'noiseSuppression': { 'exact': false } })
+                    .then(function(){console.log("Mic/Input noise-suppression has been disabled")})
+                    .catch(function(){console.log("Cannot disable Mic/Input noise-suppression")});
+
+                    track.applyConstraints({'googAutoGainControl': { 'exact': false } })
+                    .then(function(){})
+                    .catch(function(){});
+                }
 
                 WAB.captureStreamNode = WAB.audioContext['createMediaStreamSource'](stream);
                 WAB.captureStreamNode.connect(WAB.processor);
