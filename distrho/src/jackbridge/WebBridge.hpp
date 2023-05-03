@@ -123,9 +123,10 @@ struct WebBridge : NativeBridge {
         allocBuffers(true, true);
 
         EM_ASM({
-            var numInputs = $0;
-            var numOutputs = $1;
-            var bufferSize = $2;
+            var numInputsR = $0;
+            var numInputs = $1;
+            var numOutputs = $2;
+            var bufferSize = $3;
             var WAB = Module['WebAudioBridge'];
 
             var realBufferSize = WAB['fakeSmallBufferSize'] ? 2048 : bufferSize;
@@ -148,16 +149,16 @@ struct WebBridge : NativeBridge {
                     for (var i = 0; i < numInputs; ++i) {
                         var buffer = e['inputBuffer']['getChannelData'](i);
                         for (var j = 0; j < bufferSize; ++j) {
-                            // setValue($3 + ((bufferSize * i) + j) * 4, buffer[bufferSize * k + j], 'float');
-                            HEAPF32[$3 + (((bufferSize * i) + j) << 2) >> 2] = buffer[bufferSize * k + j];
+                            // setValue($4 + ((bufferSize * i) + j) * 4, buffer[bufferSize * k + j], 'float');
+                            HEAPF32[$4 + (((bufferSize * i) + j) << 2) >> 2] = buffer[bufferSize * k + j];
                         }
                     }
-                    dynCall('vi', $4, [$5]);
+                    dynCall('vi', $5, [$6]);
                     for (var i = 0; i < numOutputs; ++i) {
                         var buffer = e['outputBuffer']['getChannelData'](i);
-                        var offset = bufferSize * (numInputs + i);
+                        var offset = bufferSize * (numInputsR + i);
                         for (var j = 0; j < bufferSize; ++j) {
-                            buffer[bufferSize * k + j] = HEAPF32[$3 + ((offset + j) << 2) >> 2];
+                            buffer[bufferSize * k + j] = HEAPF32[$4 + ((offset + j) << 2) >> 2];
                         }
                     }
                 }
@@ -172,7 +173,7 @@ struct WebBridge : NativeBridge {
                 if (WAB.audioContext.state === 'suspended')
                     WAB.audioContext.resume();
             });
-        }, DISTRHO_PLUGIN_NUM_INPUTS_2, DISTRHO_PLUGIN_NUM_OUTPUTS_2, bufferSize, audioBufferStorage, WebAudioCallback, this);
+        }, DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_INPUTS_2, DISTRHO_PLUGIN_NUM_OUTPUTS_2, bufferSize, audioBufferStorage, WebAudioCallback, this);
 
         return true;
     }
@@ -335,22 +336,36 @@ struct WebBridge : NativeBridge {
             WAB.processor = WAB.newProcessor;
             delete WAB.newProcessor;
 
+            var realBufferSize = WAB['fakeSmallBufferSize'] ? 2048 : bufferSize;
+            var divider = realBufferSize / bufferSize;
+
             // setup new processor the same way as old one
             WAB.processor['onaudioprocess'] = function (e) {
                 // var timestamp = performance.now();
-                for (var i = 0; i < numInputs; ++i) {
-                    var buffer = e['inputBuffer']['getChannelData'](i);
-                    for (var j = 0; j < bufferSize; ++j) {
-                        // setValue($3 + ((bufferSize * i) + j) * 4, buffer[j], 'float');
-                        HEAPF32[$4 + (((bufferSize * i) + j) << 2) >> 2] = buffer[j];
-                    }
+                if (e['inputBuffer'].length != e['outputBuffer'].length || e['inputBuffer'].length != bufferSize) {
+                    console.log("invalid buffer size!", e['inputBuffer'].length, e['inputBuffer'].length, bufferSize);
                 }
-                dynCall('vi', $5, [$6]);
-                for (var i = 0; i < numOutputs; ++i) {
-                    var buffer = e['outputBuffer']['getChannelData'](i);
-                    var offset = bufferSize * (numInputsR + i);
-                    for (var j = 0; j < bufferSize; ++j) {
-                        buffer[j] = HEAPF32[$3 + ((offset + j) << 2) >> 2];
+                if (e['inputBuffer'].numberOfChannels != numInputs) {
+                    console.log("invalid number of input channels!", e['inputBuffer'].numberOfChannels, numInputs);
+                }
+                if (e['outputBuffer'].numberOfChannels != numOutputs) {
+                    console.log("invalid number of output channels!", e['outputBuffer'].numberOfChannels, numOutputs);
+                }
+                for (var k = 0; k < divider; ++k) {
+                    for (var i = 0; i < numInputs; ++i) {
+                        var buffer = e['inputBuffer']['getChannelData'](i);
+                        for (var j = 0; j < bufferSize; ++j) {
+                            // setValue($4 + ((bufferSize * i) + j) * 4, buffer[bufferSize * k + j], 'float');
+                            HEAPF32[$4 + (((bufferSize * i) + j) << 2) >> 2] = buffer[bufferSize * k + j];
+                        }
+                    }
+                    dynCall('vi', $5, [$6]);
+                    for (var i = 0; i < numOutputs; ++i) {
+                        var buffer = e['outputBuffer']['getChannelData'](i);
+                        var offset = bufferSize * (numInputsR + i);
+                        for (var j = 0; j < bufferSize; ++j) {
+                            buffer[bufferSize * k + j] = HEAPF32[$4 + ((offset + j) << 2) >> 2];
+                        }
                     }
                 }
             };
