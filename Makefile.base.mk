@@ -352,7 +352,7 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Check for required libraries
 
-ifneq ($(HAIKU),true)
+ifneq ($(HAIKU)$(WASM),true)
 HAVE_CAIRO = $(shell $(PKG_CONFIG) --exists cairo && echo true)
 endif
 
