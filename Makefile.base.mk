@@ -275,9 +275,9 @@ endif
 
 ifeq ($(DEBUG),true)
 BASE_FLAGS += -DDEBUG -O0 -g
-ifneq ($(HAIKU),true)
-BASE_FLAGS += -fsanitize=address
-endif
+# ifneq ($(HAIKU),true)
+# BASE_FLAGS += -fsanitize=address
+# endif
 LINK_OPTS   =
 ifeq ($(WASM),true)
 LINK_OPTS  += -sASSERTIONS=1
