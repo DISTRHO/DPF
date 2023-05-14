@@ -2934,7 +2934,7 @@ private:
     }
 
     bool addParameterDataToHostOutputEvents(v3_param_changes** const outparamsptr,
-                                            v3_param_id paramId,
+                                            const v3_param_id paramId,
                                             const double normalized,
                                             const int32_t offset = 0)
     {
