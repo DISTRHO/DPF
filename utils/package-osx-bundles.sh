@@ -40,7 +40,7 @@ if [ -n "${ENABLE_CLAP}" ]; then
     --identifier "studio.kx.distrho.plugins.${SNAME}.clapbundles" \
     --install-location "/Library/Audio/Plug-Ins/CLAP/" \
     --root "${PWD}/pkg/clap/" \
-    ../dpf-${SNAME}-clapbundles.pkgpkg
+    ../dpf-${SNAME}-clapbundles.pkg
 else
   SKIP_CLAP_START="${SKIP_START}"
   SKIP_CLAP_END="${SKIP_END}"
@@ -54,7 +54,7 @@ if [ -n "${ENABLE_LV2}" ]; then
     --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
     --install-location "/Library/Audio/Plug-Ins/LV2/" \
     --root "${PWD}/pkg/lv2/" \
-    ../dpf-${SNAME}-lv2bundles.pkgpkg
+    ../dpf-${SNAME}-lv2bundles.pkg
 else
   SKIP_LV2_START="${SKIP_START}"
   SKIP_LV2_END="${SKIP_END}"
@@ -68,7 +68,7 @@ if [ -n "${ENABLE_VST2}" ]; then
     --identifier "studio.kx.distrho.plugins.${SNAME}.vst2bundles" \
     --install-location "/Library/Audio/Plug-Ins/VST/" \
     --root "${PWD}/pkg/vst2/" \
-    ../dpf-${SNAME}-vst2bundles.pkgpkg
+    ../dpf-${SNAME}-vst2bundles.pkg
 else
   SKIP_VST2_START="${SKIP_START}"
   SKIP_VST2_END="${SKIP_END}"
@@ -82,7 +82,7 @@ if [ -n "${ENABLE_VST3}" ]; then
     --identifier "studio.kx.distrho.plugins.${SNAME}.vst3bundles" \
     --install-location "/Library/Audio/Plug-Ins/VST3/" \
     --root "${PWD}/pkg/vst3/" \
-    ../dpf-${SNAME}-vst3bundles.pkgpkg
+    ../dpf-${SNAME}-vst3bundles.pkg
 else
   SKIP_VST3_START="${SKIP_START}"
   SKIP_VST3_END="${SKIP_END}"
