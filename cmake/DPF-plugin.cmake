@@ -380,6 +380,8 @@ function(dpf__build_lv2 NAME HAS_UI MONOLITHIC)
   dpf__add_lv2_ttl_generator()
   add_dependencies("${NAME}-lv2" lv2_ttl_generator)
 
+  separate_arguments(CMAKE_CROSSCOMPILING_EMULATOR)
+
   add_custom_command(TARGET "${NAME}-lv2" POST_BUILD
     COMMAND
     ${CMAKE_CROSSCOMPILING_EMULATOR}
