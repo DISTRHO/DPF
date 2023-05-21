@@ -296,9 +296,9 @@ static     = $(TARGET_DIR)/$(NAME).a
 
 ifeq ($(MACOS),true)
 BUNDLE_RESOURCES = Info.plist PkgInfo Resources/empty.lproj
-vst2files += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).vst/Contents/%)
-vst3files += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).vst3/Contents/%)
-clapfiles += $(BUNDLE_RESOURCES=%:$(TARGET_DIR)/$(NAME).clap/Contents/%)
+vst2files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst/Contents/%)
+vst3files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst3/Contents/%)
+clapfiles += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).clap/Contents/%)
 endif
 
 ifneq ($(HAVE_DGL),true)
