@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,6 +29,7 @@
 #endif
 #ifdef DISTRHO_OS_WASM
 # include <emscripten/emscripten.h>
+# include <sys/stat.h>
 #endif
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
@@ -112,8 +113,13 @@ static bool openWebBrowserFileDialog(const char* const funcname, void* const han
                 return;
             }
 
+            // store uploaded files inside a specific dir
+            try {
+                Module.FS.mkdir('/userfiles');
+            } catch (e) {}
+
             var file = canvasFileOpenElem.files[0];
-            var filename = '/' + file.name;
+            var filename = '/userfiles/' + file.name;
             var reader = new FileReader();
 
             reader.onloadend = function(e) {
@@ -151,7 +157,7 @@ static bool downloadWebBrowserFile(const char* const filename)
         canvasFileSaveElem.style.display = 'none';
         document.body.appendChild(canvasFileSaveElem);
 
-        var content = Module.FS.readFile('/' + jsfilename);
+        var content = Module.FS.readFile('/userfiles/' + jsfilename);
         canvasFileSaveElem.href = URL.createObjectURL(new Blob([content]));
         canvasFileSaveElem.click();
 
@@ -499,9 +505,12 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
         const size_t len = options.defaultName != nullptr ? strlen(options.defaultName) : 0;
         DISTRHO_SAFE_ASSERT_RETURN(len != 0, nullptr);
 
-        char* const filename = static_cast<char*>(malloc(len + 2));
-        filename[0] = '/';
-        std::memcpy(filename + 1, options.defaultName, len + 1);
+        // store uploaded files inside a specific dir
+        mkdir("/userfiles", 0777);
+
+        char* const filename = static_cast<char*>(malloc(len + 12));
+        std::strncpy(filename, "/userfiles/", 12);
+        std::memcpy(filename + 11, options.defaultName, len + 1);
 
         handle->defaultName = strdup(options.defaultName);
         handle->selectedFile = filename;
