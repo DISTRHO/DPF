@@ -701,6 +701,14 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
+  
+  if(USE_NANOVG_FREETYPE)
+    find_package(Freetype REQUIRED)
+    target_include_directories(dgl-opengl PUBLIC "${FREETYPE_INCLUDE_DIRS}")
+    target_link_libraries(dgl-opengl PUBLIC "${FREETYPE_LIBRARIES}")
+    add_definitions(-DFONS_USE_FREETYPE)
+  endif()
+  
 endfunction()
 
 # dpf__add_plugin_specific_ui_sources
