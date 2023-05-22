@@ -274,7 +274,7 @@ BASE_OPTS  = -O2 -ffast-math -fdata-sections -ffunction-sections
 endif
 
 ifeq ($(DEBUG),true)
-BASE_FLAGS += -DDEBUG -O0 -g
+BASE_FLAGS += -DDEBUG -DDPF_DEBUG -O0 -g
 # ifneq ($(HAIKU),true)
 # BASE_FLAGS += -fsanitize=address
 # endif
