@@ -604,18 +604,27 @@ puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void
 {
   PuglView* const view = (PuglView*)userData;
   const char* const className = view->world->className;
+  const bool isFullscreen = view->impl->isFullscreen;
 
   // FIXME
   const int width = EM_ASM_INT({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
-    return canvasWrapper.clientWidth;
-  }, className);
+    if ($1) {
+      return window.innerWidth;
+    } else {
+      return canvasWrapper.clientWidth;
+    }
+  }, className, isFullscreen);
 
   const int height = EM_ASM_INT({
-    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
-    return canvasWrapper.clientHeight;
-  }, className);
+    if ($1) {
+      return window.innerHeight;
+    } else {
+      var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
+      return canvasWrapper.clientHeight;
+    }
+  }, className, isFullscreen);
 
   if (!width || !height)
     return EM_FALSE;
@@ -634,6 +643,15 @@ puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void
   puglDispatchEvent(view, &event);
 
   emscripten_set_canvas_element_size(view->world->className, width * scaleFactor, height * scaleFactor);
+
+#ifdef __MOD_DEVICES__
+  if (isFullscreen) {
+    EM_ASM({
+      document.getElementById("pedalboard-dashboard").style.transform = "scale(1.0)";
+    });
+  }
+#endif
+
   return EM_TRUE;
 }
 
@@ -641,6 +659,7 @@ static EM_BOOL
 puglFullscreenChangeCallback(const int eventType, const EmscriptenFullscreenChangeEvent* const fscEvent, void* const userData)
 {
   PuglView* const view = (PuglView*)userData;
+  const char* const className = view->world->className;
 
   view->impl->isFullscreen = fscEvent->isFullscreen;
 
@@ -648,29 +667,36 @@ puglFullscreenChangeCallback(const int eventType, const EmscriptenFullscreenChan
 #ifdef __MOD_DEVICES__
   scaleFactor *= MOD_SCALE_FACTOR_MULT;
 #endif
+
   view->world->impl->scaleFactor = scaleFactor;
 
-  if (fscEvent->isFullscreen) {
-    PuglEvent event        = {{PUGL_CONFIGURE, 0}};
-    event.configure.x      = 0;
-    event.configure.y      = 0;
-    event.configure.width  = fscEvent->elementWidth * scaleFactor;
-    event.configure.height = fscEvent->elementHeight * scaleFactor;
-    puglDispatchEvent(view, &event);
+  if (!fscEvent->isFullscreen)
+    return puglUiCallback(0, NULL, userData);
 
-    emscripten_set_canvas_element_size(view->world->className,
-                                       fscEvent->elementWidth * scaleFactor,
-                                       fscEvent->elementHeight * scaleFactor);
+  const int width = EM_ASM_INT({
+    return window.innerWidth;
+  });
+
+  const int height = EM_ASM_INT({
+    return window.innerHeight;
+  });
+
+  PuglEvent event        = {{PUGL_CONFIGURE, 0}};
+  event.configure.x      = 0;
+  event.configure.y      = 0;
+  event.configure.width  = width;
+  event.configure.height = height;
+  puglDispatchEvent(view, &event);
+
+  emscripten_set_canvas_element_size(view->world->className, width, height);
 
 #ifdef __MOD_DEVICES__
-    EM_ASM({
-      document.getElementById("pedalboard-dashboard").style.transform = "scale(1.0)";
-    });
+  EM_ASM({
+    document.getElementById("pedalboard-dashboard").style.transform = "scale(1.0)";
+  });
 #endif
-    return EM_TRUE;
-  }
 
-  return puglUiCallback(0, NULL, userData);
+  return EM_TRUE;
 }
 
 static EM_BOOL
