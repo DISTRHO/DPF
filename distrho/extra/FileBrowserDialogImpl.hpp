@@ -43,6 +43,9 @@ struct FileBrowserOptions {
     /** File browser dialog window title, uses "FileBrowser" if null */
     const char* title;
 
+    /** Class name of the matching Application instance that controls this dialog */
+    const char* className;
+
     // TODO file filter
 
    /**
@@ -80,6 +83,7 @@ struct FileBrowserOptions {
         defaultName(nullptr),
         startDir(nullptr),
         title(nullptr),
+        className(nullptr),
         buttons() {}
 };
 
