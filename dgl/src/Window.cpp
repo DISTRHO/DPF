@@ -27,17 +27,20 @@ START_NAMESPACE_DGL
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win)
     : window(win),
       ppData(nullptr),
-      active(puglBackendEnter(window.pData->view)),
+      active(window.pData->view != nullptr && puglBackendEnter(window.pData->view)),
       reenter(false) {}
 
 Window::ScopedGraphicsContext::ScopedGraphicsContext(Window& win, Window& transientWin)
     : window(win),
       ppData(transientWin.pData),
       active(false),
-      reenter(true)
+      reenter(window.pData->view != nullptr)
 {
-    puglBackendLeave(ppData->view);
-    active = puglBackendEnter(window.pData->view);
+    if (reenter)
+    {
+        puglBackendLeave(ppData->view);
+        active = puglBackendEnter(window.pData->view);
+    }
 }
 
 Window::ScopedGraphicsContext::~ScopedGraphicsContext()
@@ -162,7 +165,8 @@ void Window::close()
 
 bool Window::isResizable() const noexcept
 {
-    return puglGetViewHint(pData->view, PUGL_RESIZABLE) == PUGL_TRUE;
+    return pData->view != nullptr
+        && puglGetViewHint(pData->view, PUGL_RESIZABLE) == PUGL_TRUE;
 }
 
 void Window::setResizable(const bool resizable)
@@ -204,7 +208,8 @@ void Window::setOffsetY(const int y)
 
 void Window::setOffset(const int x, const int y)
 {
-    puglSetPosition(pData->view, x, y);
+    if (pData->view != nullptr)
+        puglSetPosition(pData->view, x, y);
 }
 
 void Window::setOffset(const Point<int>& offset)
@@ -302,7 +307,7 @@ void Window::setSize(uint width, uint height)
 
         topLevelWidget->requestSizeChange(width, height);
     }
-    else
+    else if (pData->view != nullptr)
     {
         puglSetSizeAndDefault(pData->view, width, height);
     }
@@ -315,7 +320,7 @@ void Window::setSize(const Size<uint>& size)
 
 const char* Window::getTitle() const noexcept
 {
-    return puglGetWindowTitle(pData->view);
+    return pData->view != nullptr ? puglGetWindowTitle(pData->view) : "";
 }
 
 void Window::setTitle(const char* const title)
@@ -326,12 +331,14 @@ void Window::setTitle(const char* const title)
 
 bool Window::isIgnoringKeyRepeat() const noexcept
 {
-    return puglGetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT) == PUGL_TRUE;
+    return pData->view != nullptr
+        && puglGetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT) == PUGL_TRUE;
 }
 
 void Window::setIgnoringKeyRepeat(const bool ignore) noexcept
 {
-    puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
+    if (pData->view != nullptr)
+        puglSetViewHint(pData->view, PUGL_IGNORE_KEY_REPEAT, ignore);
 }
 
 const void* Window::getClipboard(size_t& dataSize)
@@ -341,12 +348,14 @@ const void* Window::getClipboard(size_t& dataSize)
 
 bool Window::setClipboard(const char* const mimeType, const void* const data, const size_t dataSize)
 {
-    return puglSetClipboard(pData->view, mimeType != nullptr ? mimeType : "text/plain", data, dataSize) == PUGL_SUCCESS;
+    return pData->view != nullptr
+        && puglSetClipboard(pData->view, mimeType != nullptr ? mimeType : "text/plain", data, dataSize) == PUGL_SUCCESS;
 }
 
 bool Window::setCursor(const MouseCursor cursor)
 {
-    return puglSetCursor(pData->view, static_cast<PuglCursor>(cursor)) == PUGL_SUCCESS;
+    return pData->view != nullptr
+        && puglSetCursor(pData->view, static_cast<PuglCursor>(cursor)) == PUGL_SUCCESS;
 }
 
 bool Window::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
@@ -377,7 +386,7 @@ const GraphicsContext& Window::getGraphicsContext() const noexcept
 
 uintptr_t Window::getNativeWindowHandle() const noexcept
 {
-    return puglGetNativeView(pData->view);
+    return pData->view != nullptr ? puglGetNativeView(pData->view) : 0;
 }
 
 double Window::getScaleFactor() const noexcept
@@ -399,10 +408,8 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 
 void Window::repaint() noexcept
 {
-    if (pData->view == nullptr)
-        return;
-
-    puglPostRedisplay(pData->view);
+    if (pData->view != nullptr)
+        puglPostRedisplay(pData->view);
 }
 
 void Window::repaint(const Rectangle<uint>& rect) noexcept
@@ -482,12 +489,16 @@ void Window::setGeometryConstraints(uint minimumWidth,
 
 void Window::setTransientParent(const uintptr_t transientParentWindowHandle)
 {
-    puglSetTransientParent(pData->view, transientParentWindowHandle);
+    if (pData->view != nullptr)
+        puglSetTransientParent(pData->view, transientParentWindowHandle);
 }
 
 std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
 {
     std::vector<ClipboardDataOffer> offerTypes;
+
+    if (pData->view != nullptr)
+        return offerTypes;
 
     if (const uint32_t numTypes = puglGetNumClipboardTypes(pData->view))
     {
@@ -528,7 +539,8 @@ void Window::onFocus(bool, CrossingMode)
 
 void Window::onReshape(uint, uint)
 {
-    puglFallbackOnResize(pData->view);
+    if (pData->view != nullptr)
+        puglFallbackOnResize(pData->view);
 }
 
 void Window::onScaleFactorChanged(double)
