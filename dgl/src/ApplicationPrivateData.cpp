@@ -160,17 +160,15 @@ void Application::PrivateData::quit()
 
 double Application::PrivateData::getTime() const
 {
-    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, 0.0);
-
-    return puglGetTime(world);
+    return world != nullptr ? puglGetTime(world) : 0.0;
 }
 
 void Application::PrivateData::setClassName(const char* const name)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr,);
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
-    puglSetClassName(world, name);
+    if (world != nullptr)
+        puglSetClassName(world, name);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

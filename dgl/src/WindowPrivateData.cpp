@@ -66,7 +66,8 @@ static double getScaleFactorFromParent(const PuglView* const view)
 
 static PuglView* puglNewViewWithTransientParent(PuglWorld* const world, PuglView* const transientParentView)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, nullptr);
+    if (world == nullptr)
+        return nullptr;
 
     if (PuglView* const view = puglNewView(world))
     {
@@ -79,7 +80,8 @@ static PuglView* puglNewViewWithTransientParent(PuglWorld* const world, PuglView
 
 static PuglView* puglNewViewWithParentWindow(PuglWorld* const world, const uintptr_t parentWindowHandle)
 {
-    DISTRHO_SAFE_ASSERT_RETURN(world != nullptr, nullptr);
+    if (world == nullptr)
+        return nullptr;
 
     if (PuglView* const view = puglNewView(world))
     {
@@ -433,7 +435,7 @@ void Window::PrivateData::idleCallback()
 
 bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const uint timerFrequencyInMs)
 {
-    if (ignoreIdleCallbacks)
+    if (ignoreIdleCallbacks || view == nullptr)
         return false;
 
     if (timerFrequencyInMs == 0)
@@ -447,7 +449,7 @@ bool Window::PrivateData::addIdleCallback(IdleCallback* const callback, const ui
 
 bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 {
-    if (ignoreIdleCallbacks)
+    if (ignoreIdleCallbacks || view == nullptr)
         return false;
 
     if (std::find(appData->idleCallbacks.begin(),
