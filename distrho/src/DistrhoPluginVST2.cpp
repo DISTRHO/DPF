@@ -402,6 +402,11 @@ public:
         std::memset(fProgramName, 0, sizeof(fProgramName));
         std::strcpy(fProgramName, "Default");
 
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        fProgramIndex = 0;
+        fUserPresetLoaded = false;
+#endif
+
         const uint32_t parameterCount = fPlugin.getParameterCount();
 
         if (parameterCount != 0)
@@ -478,8 +483,31 @@ public:
 
         switch (opcode)
         {
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+        case VST_EFFECT_OPCODE_02: // set program
+            // Some hosts cannot distinguish between user presets (states) and built-in programs.
+            // They will invoke VST_EFFECT_OPCODE_02 (set program) regardless of the preset type.
+            // We need to set a switch when calling VST_EFFECT_OPCODE_18 (set chunk), and check it here,
+            // so that programs will not be loaded unexpectedly when loading a user preset.
+            if (fUserPresetLoaded)
+            {
+                fProgramIndex = 0;
+                fUserPresetLoaded = false;
+                return 1;
+            }
+
+            fPlugin.loadProgram(value);
+            fProgramIndex = value;
+            return 1;
+            break;
+#endif
+
         case VST_EFFECT_OPCODE_03: // get program
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+            return fProgramIndex;
+#else
             return 0;
+#endif
 
         case VST_EFFECT_OPCODE_04: // set program name
             if (char* const programName = (char*)ptr)
@@ -500,7 +528,11 @@ public:
         case VST_EFFECT_OPCODE_1D: // get program name indexed
             if (char* const programName = (char*)ptr)
             {
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+                d_strncpy(programName, fPlugin.getProgramName(index), 24);
+#else
                 d_strncpy(programName, fProgramName, 24);
+#endif
                 return 1;
             }
             break;
@@ -862,6 +894,11 @@ public:
                 }
             }
 
+# if DISTRHO_PLUGIN_WANT_PROGRAMS
+            // mark that we have loaded user preset from host
+            fUserPresetLoaded = true;
+# endif
+
             return 1;
         }
 #endif // DISTRHO_PLUGIN_WANT_STATE
@@ -1123,6 +1160,11 @@ private:
 
     // Temporary data
     char fProgramName[32];
+
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    int fProgramIndex;
+    bool fUserPresetLoaded;
+#endif
 
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t  fMidiEventCount;
@@ -1697,7 +1739,11 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
 
     // plugin fields
     effect->num_params   = numParams;
+#if DISTRHO_PLUGIN_WANT_PROGRAMS
+    effect->num_programs = sPlugin->getProgramCount();
+#else
     effect->num_programs = 1;
+#endif
     effect->num_inputs   = DISTRHO_PLUGIN_NUM_INPUTS;
     effect->num_outputs  = DISTRHO_PLUGIN_NUM_OUTPUTS;
 
