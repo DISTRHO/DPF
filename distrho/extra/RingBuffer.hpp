@@ -557,14 +557,14 @@ protected:
     bool tryRead(void* const buf, const uint32_t size) noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, false);
-        #if defined(__clang__)
-        # pragma clang diagnostic push
-        # pragma clang diagnostic ignored "-Wtautological-pointer-compare"
-        #endif
+       #if defined(__clang__)
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+       #endif
         DISTRHO_SAFE_ASSERT_RETURN(buffer->buf != nullptr, false);
-        #if defined(__clang__)
-        # pragma clang diagnostic pop
-        #endif
+       #if defined(__clang__)
+        #pragma clang diagnostic pop
+       #endif
         DISTRHO_SAFE_ASSERT_RETURN(buf != nullptr, false);
         DISTRHO_SAFE_ASSERT_RETURN(size > 0, false);
         DISTRHO_SAFE_ASSERT_RETURN(size < buffer->size, false);
@@ -573,11 +573,11 @@ protected:
         if (buffer->head == buffer->tail)
             return false;
 
-        uint8_t* const bytebuf(static_cast<uint8_t*>(buf));
+        uint8_t* const bytebuf = static_cast<uint8_t*>(buf);
 
-        const uint32_t head(buffer->head);
-        const uint32_t tail(buffer->tail);
-        const uint32_t wrap((head > tail) ? 0 : buffer->size);
+        const uint32_t head = buffer->head;
+        const uint32_t tail = buffer->tail;
+        const uint32_t wrap = head > tail ? 0 : buffer->size;
 
         if (size > wrap + head - tail)
         {
@@ -589,7 +589,7 @@ protected:
             return false;
         }
 
-        uint32_t readto(tail + size);
+        uint32_t readto = tail + size;
 
         if (readto > buffer->size)
         {
@@ -627,13 +627,13 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(size > 0, false);
         DISTRHO_SAFE_ASSERT_UINT2_RETURN(size < buffer->size, size, buffer->size, false);
 
-        const uint8_t* const bytebuf(static_cast<const uint8_t*>(buf));
+        const uint8_t* const bytebuf = static_cast<const uint8_t*>(buf);
 
-        const uint32_t tail(buffer->tail);
-        const uint32_t wrtn(buffer->wrtn);
-        const uint32_t wrap((tail > wrtn) ? 0 : buffer->size);
+        const uint32_t tail = buffer->tail;
+        const uint32_t wrtn = buffer->wrtn;
+        const uint32_t wrap = tail > wrtn ? 0 : buffer->size;
 
-        if (size >= wrap + tail - wrtn)
+        if (size > wrap + tail - wrtn)
         {
             if (! errorWriting)
             {
@@ -644,7 +644,7 @@ protected:
             return false;
         }
 
-        uint32_t writeto(wrtn + size);
+        uint32_t writeto = wrtn + size;
 
         if (writeto > buffer->size)
         {
