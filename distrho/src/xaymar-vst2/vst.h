@@ -975,7 +975,7 @@ struct vst_speaker_arrangement {
  * @return ?
  */
 typedef intptr_t (*vst_host_callback)(vst_effect* plugin, VST_HOST_OPCODE opcode, int32_t p_int1, int64_t p_int2,
-									  void* p_str, int32_t p_int3);
+									  void* p_str, float p_float);
 
 /* Entry point for VST2.x plugins.
  *

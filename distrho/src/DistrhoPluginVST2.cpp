@@ -87,7 +87,7 @@ typedef struct _VstTimeInfo {
     int32_t flags;
 } VstTimeInfo;
 
-}
+} // extern "C"
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -105,25 +105,25 @@ static const requestParameterValueChangeFunc requestParameterValueChangeCallback
 struct ParameterAndNotesHelper
 {
     float* parameterValues;
-#if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     bool* parameterChecks;
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     SmallStackBuffer notesRingBuffer;
-# endif
-#endif
+   #endif
+  #endif
 
     ParameterAndNotesHelper()
         : parameterValues(nullptr)
-#if DISTRHO_PLUGIN_HAS_UI
+      #if DISTRHO_PLUGIN_HAS_UI
         , parameterChecks(nullptr)
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , notesRingBuffer(StackBuffer_INIT)
-# endif
-#endif
+       #endif
+      #endif
     {
-#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
         std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
-#endif
+       #endif
     }
 
     virtual ~ParameterAndNotesHelper()
@@ -133,18 +133,18 @@ struct ParameterAndNotesHelper
             delete[] parameterValues;
             parameterValues = nullptr;
         }
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         if (parameterChecks != nullptr)
         {
             delete[] parameterChecks;
             parameterChecks = nullptr;
         }
-#endif
+       #endif
     }
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     virtual void setStateFromUI(const char* key, const char* value) = 0;
-#endif
+   #endif
 };
 
 #if DISTRHO_PLUGIN_HAS_UI
@@ -179,19 +179,19 @@ public:
               d_nextBundlePath,
               plugin->getInstancePointer(),
               scaleFactor)
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         , fKeyboardModifiers(0)
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fNotesRingBuffer()
-# endif
+       #endif
     {
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&uiHelper->notesRingBuffer, false);
-# endif
+       #endif
     }
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
 
     void idle()
     {
@@ -232,7 +232,7 @@ public:
         fUI.notifyScaleFactorChanged(scaleFactor);
     }
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
     // functions called from the plugin side, may block
 
    #if DISTRHO_PLUGIN_WANT_STATE
@@ -242,7 +242,7 @@ public:
     }
    #endif
 
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     int handlePluginKeyEvent(const bool down, const int32_t index, const intptr_t value)
     {
         d_stdout("handlePluginKeyEvent %i %i %li\n", down, index, (long int)value);
@@ -278,9 +278,9 @@ public:
                                            value >= 0 ? static_cast<uint>(value) : 0,
                                            fKeyboardModifiers) ? 1 : 0;
     }
-# endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
 
 protected:
     inline intptr_t hostCallback(const VST_HOST_OPCODE opcode,
@@ -300,7 +300,7 @@ protected:
     void setParameterValue(const uint32_t index, const float realValue)
     {
         const ParameterRanges& ranges(fPlugin->getParameterRanges(index));
-        const float perValue(ranges.getNormalizedValue(realValue));
+        const float perValue = ranges.getNormalizedValue(realValue);
 
         fPlugin->setParameterValue(index, realValue);
         hostCallback(VST_HOST_OPCODE_00, index, 0, nullptr, perValue);
@@ -308,15 +308,15 @@ protected:
 
     void setSize(uint width, uint height)
     {
-# ifdef DISTRHO_OS_MAC
+       #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
         width /= scaleFactor;
         height /= scaleFactor;
-# endif
+       #endif
         hostCallback(VST_HOST_OPCODE_0F, width, height);
     }
 
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
         uint8_t midiData[3];
@@ -326,14 +326,14 @@ protected:
         fNotesRingBuffer.writeCustomData(midiData, 3);
         fNotesRingBuffer.commitWrite();
     }
-# endif
+   #endif
 
-# if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
         fUiHelper->setStateFromUI(key, value);
     }
-# endif
+   #endif
 
 private:
     // Vst stuff
@@ -344,48 +344,44 @@ private:
 
     // Plugin UI
     UIExporter fUI;
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     uint16_t fKeyboardModifiers;
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
-# endif
+   #endif
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
     // Callbacks
 
-    #define handlePtr ((UIVst*)ptr)
-
-    static void editParameterCallback(void* ptr, uint32_t index, bool started)
+    static void editParameterCallback(void* const ptr, const uint32_t index, const bool started)
     {
-        handlePtr->editParameter(index, started);
+        static_cast<UIVst*>(ptr)->editParameter(index, started);
     }
 
-    static void setParameterCallback(void* ptr, uint32_t rindex, float value)
+    static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
     {
-        handlePtr->setParameterValue(rindex, value);
+        static_cast<UIVst*>(ptr)->setParameterValue(rindex, value);
     }
 
-    static void setSizeCallback(void* ptr, uint width, uint height)
+    static void setSizeCallback(void* const ptr, const uint width, const uint height)
     {
-        handlePtr->setSize(width, height);
+        static_cast<UIVst*>(ptr)->setSize(width, height);
     }
 
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void sendNoteCallback(void* ptr, uint8_t channel, uint8_t note, uint8_t velocity)
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
-        handlePtr->sendNote(channel, note, velocity);
+        static_cast<UIVst*>(ptr)->sendNote(channel, note, velocity);
     }
-# endif
+   #endif
 
-# if DISTRHO_PLUGIN_WANT_STATE
-    static void setStateCallback(void* ptr, const char* key, const char* value)
+   #if DISTRHO_PLUGIN_WANT_STATE
+    static void setStateCallback(void* const ptr, const char* const key, const char* const value)
     {
-        handlePtr->setState(key, value);
+        static_cast<UIVst*>(ptr)->setState(key, value);
     }
-# endif
-
-    #undef handlePtr
+   #endif
 };
 #endif // DISTRHO_PLUGIN_HAS_UI
 
@@ -412,11 +408,11 @@ public:
                 parameterValues[i] = NAN;
         }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fMidiEventCount = 0;
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_HAS_UI
+      #if DISTRHO_PLUGIN_HAS_UI
         fVstUI           = nullptr;
         fVstRect.top     = 0;
         fVstRect.left    = 0;
@@ -430,23 +426,23 @@ public:
             memset(parameterChecks, 0, sizeof(bool)*parameterCount);
         }
 
-# if DISTRHO_OS_MAC
-#  ifdef __LP64__
+      #if DISTRHO_OS_MAC
+       #ifdef __LP64__
         fUsingNsView = true;
-#  else
-#   ifndef DISTRHO_NO_WARNINGS
-#    warning 32bit VST UIs on OSX only work if the host supports "hasCockosViewAsConfig"
-#   endif
+       #else
+        #ifndef DISTRHO_NO_WARNINGS
+         #warning 32bit VST UIs on macOS only work if the host supports "hasCockosViewAsConfig"
+        #endif
         fUsingNsView = false;
-#  endif
-# endif // DISTRHO_OS_MAC
+       #endif
+      #endif // DISTRHO_OS_MAC
 
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&notesRingBuffer, true);
-# endif
-#endif // DISTRHO_PLUGIN_HAS_UI
+       #endif
+      #endif // DISTRHO_PLUGIN_HAS_UI
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         fStateChunk = nullptr;
 
         for (uint32_t i=0, count=fPlugin.getStateCount(); i<count; ++i)
@@ -454,12 +450,12 @@ public:
             const String& dkey(fPlugin.getStateKey(i));
             fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
-#endif
+       #endif
     }
 
     ~PluginVst()
     {
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         if (fStateChunk != nullptr)
         {
             delete[] fStateChunk;
@@ -467,14 +463,14 @@ public:
         }
 
         fStateMap.clear();
-#endif
+       #endif
     }
 
     intptr_t vst_dispatcher(const int32_t opcode, const int32_t index, const intptr_t value, void* const ptr, const float opt)
     {
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         intptr_t ret = 0;
-#endif
+       #endif
 
         switch (opcode)
         {
@@ -546,10 +542,10 @@ public:
         case VST_EFFECT_OPCODE_SET_SAMPLE_RATE:
             fPlugin.setSampleRate(opt, true);
 
-#if DISTRHO_PLUGIN_HAS_UI
+           #if DISTRHO_PLUGIN_HAS_UI
             if (fVstUI != nullptr)
                 fVstUI->setSampleRate(opt);
-#endif
+           #endif
             break;
 
         case VST_EFFECT_OPCODE_SET_BLOCK_SIZE:
@@ -559,12 +555,12 @@ public:
         case VST_EFFECT_OPCODE_SUSPEND:
             if (value != 0)
             {
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+               #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                 fMidiEventCount = 0;
 
                 // tell host we want MIDI events
                 hostCallback(VST_HOST_OPCODE_06);
-#endif
+               #endif
 
                 // deactivate for possible changes
                 fPlugin.deactivateIfNeeded();
@@ -587,17 +583,17 @@ public:
             }
             break;
 
-#if DISTRHO_PLUGIN_HAS_UI
+      #if DISTRHO_PLUGIN_HAS_UI
         case VST_EFFECT_OPCODE_WINDOW_GETRECT:
             if (fVstUI != nullptr)
             {
                 fVstRect.right  = fVstUI->getWidth();
                 fVstRect.bottom = fVstUI->getHeight();
-# ifdef DISTRHO_OS_MAC
+               #ifdef DISTRHO_OS_MAC
                 const double scaleFactor = fVstUI->getScaleFactor();
                 fVstRect.right /= scaleFactor;
                 fVstRect.bottom /= scaleFactor;
-# endif
+               #endif
             }
             else
             {
@@ -628,45 +624,42 @@ public:
             delete fVstUI; // for hosts which don't pair create/destroy calls (Minihost Modular)
             fVstUI = nullptr;
 
+           #if DISTRHO_OS_MAC
+            if (! fUsingNsView)
             {
-# if DISTRHO_OS_MAC
-                if (! fUsingNsView)
-                {
-                    d_stderr("Host doesn't support hasCockosViewAsConfig, cannot use UI");
-                    return 0;
-                }
-# endif
-                fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, fLastScaleFactor);
-
-               #if DISTRHO_PLUGIN_WANT_FULL_STATE
-                // Update current state from plugin side
-                for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
-                {
-                    const String& key = cit->first;
-                    fStateMap[key] = fPlugin.getStateValue(key);
-                }
-               #endif
-
-               #if DISTRHO_PLUGIN_WANT_STATE
-                // Set state
-                for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
-                {
-                    const String& key   = cit->first;
-                    const String& value = cit->second;
-
-                    // TODO skip DSP only states
-
-                    fVstUI->setStateFromPlugin(key, value);
-                }
-               #endif
-
-                for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
-                    setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
-
-                fVstUI->idle();
-                return 1;
+                d_stderr("Host doesn't support hasCockosViewAsConfig, cannot use UI");
+                return 0;
             }
-            break;
+           #endif
+            fVstUI = new UIVst(fAudioMaster, fEffect, this, &fPlugin, (intptr_t)ptr, fLastScaleFactor);
+
+           #if DISTRHO_PLUGIN_WANT_FULL_STATE
+            // Update current state from plugin side
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key = cit->first;
+                fStateMap[key] = fPlugin.getStateValue(key);
+            }
+           #endif
+
+           #if DISTRHO_PLUGIN_WANT_STATE
+            // Set state
+            for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
+            {
+                const String& key(cit->first);
+                const String& value(cit->second);
+
+                // TODO skip DSP only states
+
+                fVstUI->setStateFromPlugin(key, value);
+            }
+           #endif
+
+            for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
+                setParameterValueFromPlugin(i, fPlugin.getParameterValue(i));
+
+            fVstUI->idle();
+            return 1;
 
         case VST_EFFECT_OPCODE_WINDOW_DESTROY:
             if (fVstUI != nullptr)
@@ -682,7 +675,7 @@ public:
                 fVstUI->idle();
             break;
 
-# if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         case VST_EFFECT_OPCODE_3B: // key down
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(true, index, value);
@@ -692,10 +685,10 @@ public:
             if (fVstUI != nullptr)
                 return fVstUI->handlePluginKeyEvent(false, index, value);
             break;
-# endif
-#endif // DISTRHO_PLUGIN_HAS_UI
+       #endif
+      #endif // DISTRHO_PLUGIN_HAS_UI
 
-#if DISTRHO_PLUGIN_WANT_STATE
+       #if DISTRHO_PLUGIN_WANT_STATE
         case VST_EFFECT_OPCODE_17: // get chunk
         {
             if (ptr == nullptr)
@@ -717,14 +710,14 @@ public:
             }
             else
             {
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+               #if DISTRHO_PLUGIN_WANT_FULL_STATE
                 // Update current state
                 for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
                 {
                     const String& key = cit->first;
                     fStateMap[key] = fPlugin.getStateValue(key);
                 }
-# endif
+               #endif
 
                 String chunkStr;
 
@@ -805,13 +798,13 @@ public:
 
                 setStateFromUI(key, value);
 
-# if DISTRHO_PLUGIN_HAS_UI
+               #if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
                 {
                     // TODO skip DSP only states
                     fVstUI->setStateFromPlugin(key, value);
                 }
-# endif
+               #endif
 
                 // get next key
                 size = std::strlen(value)+1;
@@ -848,10 +841,10 @@ public:
 
                         fvalue = std::atof(value);
                         fPlugin.setParameterValue(i, fvalue);
-# if DISTRHO_PLUGIN_HAS_UI
+                       #if DISTRHO_PLUGIN_HAS_UI
                         if (fVstUI != nullptr)
                             setParameterValueFromPlugin(i, fvalue);
-# endif
+                       #endif
                         break;
                     }
 
@@ -864,9 +857,9 @@ public:
 
             return 1;
         }
-#endif // DISTRHO_PLUGIN_WANT_STATE
+       #endif // DISTRHO_PLUGIN_WANT_STATE
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         case VST_EFFECT_OPCODE_19: // process events
             if (! fPlugin.isActive())
             {
@@ -899,7 +892,7 @@ public:
                 }
             }
             break;
-#endif
+       #endif
 
         case VST_EFFECT_OPCODE_PARAM_ISAUTOMATABLE:
             if (index < static_cast<int32_t>(fPlugin.getParameterCount()))
@@ -915,44 +908,44 @@ public:
         case VST_EFFECT_OPCODE_SUPPORTS:
             if (const char* const canDo = (const char*)ptr)
             {
-#if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
+               #if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
                 if (std::strcmp(canDo, "hasCockosViewAsConfig") == 0)
                 {
                     fUsingNsView = true;
                     return 0xbeef0000;
                 }
-#endif
-#ifndef DISTRHO_OS_MAC
+               #endif
+               #ifndef DISTRHO_OS_MAC
                 if (std::strcmp(canDo, "supportsViewDpiScaling") == 0)
                     return 1;
-#endif
+               #endif
                 if (std::strcmp(canDo, "receiveVstEvents") == 0 ||
                     std::strcmp(canDo, "receiveVstMidiEvent") == 0)
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+                   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                     return 1;
-#else
+                   #else
                     return -1;
-#endif
+                   #endif
                 if (std::strcmp(canDo, "sendVstEvents") == 0 ||
                     std::strcmp(canDo, "sendVstMidiEvent") == 0)
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+                   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
                     return 1;
-#else
+                   #else
                     return -1;
-#endif
+                   #endif
                 if (std::strcmp(canDo, "receiveVstTimeInfo") == 0)
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+                   #if DISTRHO_PLUGIN_WANT_TIMEPOS
                     return 1;
-#else
+                   #else
                     return -1;
-#endif
+                   #endif
                 if (std::strcmp(canDo, "offline") == 0)
                     return -1;
             }
             break;
 
         case VST_EFFECT_OPCODE_CUSTOM:
-#if DISTRHO_PLUGIN_HAS_UI && !defined(DISTRHO_OS_MAC)
+           #if DISTRHO_PLUGIN_HAS_UI && !defined(DISTRHO_OS_MAC)
             if (index == d_cconst('P', 'r', 'e', 'S') && value == d_cconst('A', 'e', 'C', 's'))
             {
                 if (d_isEqual(fLastScaleFactor, opt))
@@ -963,7 +956,7 @@ public:
                 if (fVstUI != nullptr)
                     fVstUI->notifyScaleFactorChanged(opt);
             }
-#endif
+           #endif
             break;
 
         //case effStartProcess:
@@ -1002,10 +995,10 @@ public:
 
         fPlugin.setParameterValue(index, realValue);
 
-#if DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_HAS_UI
         if (fVstUI != nullptr)
             setParameterValueFromPlugin(index, realValue);
-#endif
+       #endif
     }
 
     void vst_processReplacing(const float** const inputs, float** const outputs, const int32_t sampleFrames)
@@ -1022,7 +1015,7 @@ public:
             return;
         }
 
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
         static constexpr const int kWantVstTimeFlags = 0x2602;
 
         if (const VstTimeInfo* const vstTimeInfo = (const VstTimeInfo*)hostCallback(VST_HOST_OPCODE_07, 0, kWantVstTimeFlags))
@@ -1075,10 +1068,10 @@ public:
 
             fPlugin.setTimePosition(fTimePosition);
         }
-#endif
+       #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-# if DISTRHO_PLUGIN_HAS_UI
+      #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_HAS_UI
         if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
         {
             uint8_t midiData[3];
@@ -1098,18 +1091,18 @@ public:
                     break;
             }
         }
-# endif
+       #endif
 
         fPlugin.run(inputs, outputs, sampleFrames, fMidiEvents, fMidiEventCount);
         fMidiEventCount = 0;
-#else
+      #else
         fPlugin.run(inputs, outputs, sampleFrames);
-#endif
+      #endif
 
         updateParameterOutputsAndTriggers();
     }
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
 
     friend class UIVst;
 
@@ -1124,34 +1117,34 @@ private:
     // Temporary data
     char fProgramName[32];
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t  fMidiEventCount;
     MidiEvent fMidiEvents[kMaxMidiEvents];
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_TIMEPOS
+   #if DISTRHO_PLUGIN_WANT_TIMEPOS
     TimePosition fTimePosition;
-#endif
+   #endif
 
     // UI stuff
-#if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     UIVst*   fVstUI;
     vst_rect fVstRect;
     float    fLastScaleFactor;
-# if DISTRHO_OS_MAC
+   #if DISTRHO_OS_MAC
     bool fUsingNsView;
-# endif
-# if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #endif
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     RingBufferControl<SmallStackBuffer> fNotesRingBuffer;
-# endif
-#endif
+   #endif
+  #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE
     char*     fStateChunk;
     StringMap fStateMap;
-#endif
+   #endif
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
     // host callback
 
     intptr_t hostCallback(const VST_HOST_OPCODE opcode,
@@ -1163,7 +1156,7 @@ private:
         return fAudioMaster(fEffect, opcode, index, value, ptr, opt);
     }
 
-    // -------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------
     // functions called from the plugin side, RT no block
 
     void updateParameterOutputsAndTriggers()
@@ -1180,17 +1173,17 @@ private:
                 if (d_isEqual(curValue, parameterValues[i]))
                     continue;
 
-#if DISTRHO_PLUGIN_HAS_UI
+               #if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
                     setParameterValueFromPlugin(i, curValue);
                 else
-#endif
+               #endif
                 parameterValues[i] = curValue;
 
-#ifndef DPF_VST_SHOW_PARAMETER_OUTPUTS
+               #ifndef DPF_VST_SHOW_PARAMETER_OUTPUTS
                 // skip automating parameter outputs from plugin if we disable them on VST
                 continue;
-#endif
+               #endif
             }
             else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
             {
@@ -1200,10 +1193,10 @@ private:
                 if (d_isEqual(curValue, fPlugin.getParameterRanges(i).def))
                     continue;
 
-#if DISTRHO_PLUGIN_HAS_UI
+               #if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
                     setParameterValueFromPlugin(i, curValue);
-#endif
+               #endif
                 fPlugin.setParameterValue(i, curValue);
             }
             else
@@ -1220,18 +1213,19 @@ private:
        #endif
     }
 
-#if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     void setParameterValueFromPlugin(const uint32_t index, const float realValue)
     {
         parameterValues[index] = realValue;
         parameterChecks[index] = true;
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(const uint32_t index, const float value)
     {
-        hostCallback(VST_HOST_OPCODE_00, index, 0, nullptr, value);
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+        hostCallback(VST_HOST_OPCODE_00, index, 0, nullptr, ranges.getNormalizedValue(value));
         return true;
     }
 
@@ -1239,9 +1233,9 @@ private:
     {
         return ((PluginVst*)ptr)->requestParameterValueChange(index, value);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent& midiEvent)
     {
         if (midiEvent.size > 4)
@@ -1254,7 +1248,7 @@ private:
         vstEvents.events[0] = (VstEvent*)&vstMidiEvent;
 
         vstMidiEvent.type = 1;
-        vstMidiEvent.byteSize    = static_cast<int32_t>(sizeof(VstMidiEvent));;
+        vstMidiEvent.byteSize    = static_cast<int32_t>(sizeof(VstMidiEvent));
         vstMidiEvent.deltaFrames = midiEvent.frame;
 
         for (uint8_t i=0; i<midiEvent.size; ++i)
@@ -1265,19 +1259,19 @@ private:
 
     static bool writeMidiCallback(void* ptr, const MidiEvent& midiEvent)
     {
-        return ((PluginVst*)ptr)->writeMidi(midiEvent);
+        return static_cast<PluginVst*>(ptr)->writeMidi(midiEvent);
     }
-#endif
+   #endif
 
-#if DISTRHO_PLUGIN_WANT_STATE
-    // -------------------------------------------------------------------
+  #if DISTRHO_PLUGIN_WANT_STATE
+    // ----------------------------------------------------------------------------------------------------------------
     // functions called from the UI side, may block
 
-# if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_HAS_UI
     void setStateFromUI(const char* const key, const char* const value) override
-# else
+   #else
     void setStateFromUI(const char* const key, const char* const value)
-# endif
+   #endif
     {
         fPlugin.setState(key, value);
 
@@ -1299,7 +1293,7 @@ private:
 
         d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
-#endif
+  #endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1598,7 +1592,7 @@ static void VST_FUNCTION_INTERFACE vst_processReplacingCallback(vst_effect* cons
         pluginPtr->vst_processReplacing(const_cast<const float**>(inputs), outputs, sampleFrames);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
 
@@ -1676,9 +1670,9 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
     effect->version      = sPlugin->getVersion();
 
     // VST doesn't support parameter outputs. we can fake them, but it is a hack. Disabled by default.
-#ifdef DPF_VST_SHOW_PARAMETER_OUTPUTS
+   #ifdef DPF_VST_SHOW_PARAMETER_OUTPUTS
     const int numParams = sPlugin->getParameterCount();
-#else
+   #else
     int numParams = 0;
     bool outputsReached = false;
 
@@ -1693,7 +1687,7 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
         }
         outputsReached = true;
     }
-#endif
+   #endif
 
     // plugin fields
     effect->num_params   = numParams;
@@ -1731,4 +1725,4 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
     return effect;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
