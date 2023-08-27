@@ -73,6 +73,7 @@ struct NativeBridge {
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     static constexpr const uint32_t kMaxMIDIInputMessageSize = 3;
+    static constexpr const uint32_t kRingBufferMessageSize = 1u /*+ sizeof(double)*/ + kMaxMIDIInputMessageSize;
     uint8_t midiDataStorage[kMaxMIDIInputMessageSize];
     HeapRingBuffer midiInBufferCurrent;
     HeapRingBuffer midiInBufferPending;
@@ -158,7 +159,7 @@ struct NativeBridge {
         {
             // NOTE: this function is only called once per run
             midiInBufferCurrent.copyFromAndClearOther(midiInBufferPending);
-            return midiInBufferCurrent.getReadableDataSize() / (kMaxMIDIInputMessageSize + 1u);
+            return midiInBufferCurrent.getReadableDataSize() / kRingBufferMessageSize;
         }
        #endif
 
@@ -169,10 +170,12 @@ struct NativeBridge {
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         // NOTE: this function is called for all events in index succession
-        if (midiAvailable && midiInBufferCurrent.getReadableDataSize() >= (kMaxMIDIInputMessageSize + 1u))
+        if (midiAvailable && midiInBufferCurrent.getReadableDataSize() >= kRingBufferMessageSize)
         {
-            event->time   = 0; // TODO
-            event->size   = midiInBufferCurrent.readByte();
+            event->size = midiInBufferCurrent.readByte();
+            // TODO timestamp
+            // const double timestamp = midiInBufferCurrent.readDouble();
+            event->time = 0;
             event->buffer = midiDataStorage;
             return midiInBufferCurrent.readCustomData(midiDataStorage, kMaxMIDIInputMessageSize);
         }
@@ -186,7 +189,7 @@ struct NativeBridge {
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         if (midiAvailable)
-            midiOutBuffer.clearData();
+            midiOutBuffer.flush();
        #endif
     }
     

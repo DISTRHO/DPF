@@ -506,15 +506,18 @@ struct WebBridge : NativeBridge {
     }
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void WebMIDICallback(void* const userData, uint8_t* const data, const int len, const double timestamp)
+    static void WebMIDICallback(void* const userData, uint8_t* const data, const int len, double /*timestamp*/)
     {
         DISTRHO_SAFE_ASSERT_RETURN(len > 0 && len <= (int)kMaxMIDIInputMessageSize,);
 
         WebBridge* const self = static_cast<WebBridge*>(userData);
 
-        // TODO timestamp handling
         self->midiInBufferPending.writeByte(static_cast<uint8_t>(len));
-        self->midiInBufferPending.writeCustomData(data, kMaxMIDIInputMessageSize);
+        // TODO timestamp
+        // self->midiInBufferPending.writeDouble(timestamp);
+        self->midiInBufferPending.writeCustomData(data, len);
+        for (uint8_t i=len; i<kMaxMIDIInputMessageSize; ++i)
+            self->midiInBufferPending.writeByte(0);
         self->midiInBufferPending.commitWrite();
     }
    #endif

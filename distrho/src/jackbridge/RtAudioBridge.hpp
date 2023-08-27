@@ -396,17 +396,18 @@ struct RtAudioBridge : NativeBridge {
     }
 
    #if defined(RTMIDI_API_TYPE) && DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    static void RtMidiCallback(double /*timeStamp*/, std::vector<uchar>* message, void* userData)
+    static void RtMidiCallback(double /*timestamp*/, std::vector<uchar>* const message, void* const userData)
     {
         const size_t len = message->size();
         DISTRHO_SAFE_ASSERT_RETURN(len > 0 && len <= kMaxMIDIInputMessageSize,);
 
         RtAudioBridge* const self = static_cast<RtAudioBridge*>(userData);
 
-        // TODO timestamp handling
         self->midiInBufferPending.writeByte(static_cast<uint8_t>(len));
+        // TODO timestamp
+        // self->midiInBufferPending.writeDouble(timestamp);
         self->midiInBufferPending.writeCustomData(message->data(), len);
-        for (uint8_t i=0; i<len; ++i)
+        for (uint8_t i=len; i<kMaxMIDIInputMessageSize; ++i)
             self->midiInBufferPending.writeByte(0);
         self->midiInBufferPending.commitWrite();
     }
