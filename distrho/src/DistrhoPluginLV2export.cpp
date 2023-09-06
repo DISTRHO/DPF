@@ -115,6 +115,10 @@ static const char* const lv2ManifestPluginOptionalFeatures[] =
     LV2_CORE__hardRTCapable,
 #endif
     LV2_BUF_SIZE__boundedBlockLength,
+#if DISTRHO_PLUGIN_WANT_STATE
+    LV2_STATE__mapPath,
+    LV2_STATE__freePath,
+#endif
     nullptr
 };
 

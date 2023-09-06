@@ -909,7 +909,9 @@ public:
     // -------------------------------------------------------------------
 
    #if DISTRHO_PLUGIN_WANT_STATE
-    LV2_State_Status lv2_save(const LV2_State_Store_Function store, const LV2_State_Handle handle)
+    LV2_State_Status lv2_save(const LV2_State_Store_Function store,
+                              const LV2_State_Handle handle,
+                              const LV2_Feature* const* const features)
     {
        #if DISTRHO_PLUGIN_WANT_FULL_STATE
         // Update current state
@@ -959,6 +961,41 @@ public:
 
                 const String& value(cit->second);
 
+                if (urid == fURIDs.atomPath)
+                {
+                    const LV2_State_Map_Path* mapPath = nullptr;
+                    const LV2_State_Free_Path* freePath = nullptr;
+                    for (int i=0; features[i] != nullptr; ++i)
+                    {
+                        if (std::strcmp(features[i]->URI, LV2_STATE__mapPath) == 0)
+                            mapPath = (const LV2_State_Map_Path*)features[i]->data;
+                        else if (std::strcmp(features[i]->URI, LV2_STATE__freePath) == 0)
+                            freePath = (const LV2_State_Free_Path*)features[i]->data;
+                    }
+
+                    if (char* const abstractPath = mapPath != nullptr
+                                                 ? mapPath->abstract_path(mapPath->handle, value.buffer())
+                                                 : nullptr)
+                    {
+                        // some hosts need +1 for the null terminator, even though the type is string/path
+                        store(handle,
+                              fUridMap->map(fUridMap->handle, lv2key.buffer()),
+                              abstractPath,
+                              std::strlen(abstractPath)+1,
+                              urid,
+                              LV2_STATE_IS_POD|LV2_STATE_IS_PORTABLE);
+
+                        if (freePath != nullptr)
+                            freePath->free_path(freePath->handle, abstractPath);
+                       #ifndef DISTRHO_OS_WINDOWS
+                        else
+                            std::free(abstractPath);
+                       #endif
+
+                        break;
+                    }
+                }
+
                 // some hosts need +1 for the null terminator, even though the type is string
                 store(handle,
                       fUridMap->map(fUridMap->handle, lv2key.buffer()),
@@ -974,9 +1011,11 @@ public:
         return LV2_STATE_SUCCESS;
     }
 
-    LV2_State_Status lv2_restore(const LV2_State_Retrieve_Function retrieve, const LV2_State_Handle handle)
+    LV2_State_Status lv2_restore(const LV2_State_Retrieve_Function retrieve,
+                                 const LV2_State_Handle handle,
+                                 const LV2_Feature* const* const features)
     {
-        size_t   size;
+        size_t size;
         uint32_t type, flags;
 
         String lv2key;
@@ -1018,6 +1057,35 @@ public:
             const char* const value  = (const char*)data;
             const std::size_t length = std::strlen(value);
             DISTRHO_SAFE_ASSERT_CONTINUE(length == size || length+1 == size);
+
+            if (urid == fURIDs.atomPath)
+            {
+                const LV2_State_Map_Path* mapPath = nullptr;
+                const LV2_State_Free_Path* freePath = nullptr;
+                for (int i=0; features[i] != nullptr; ++i)
+                {
+                    if (std::strcmp(features[i]->URI, LV2_STATE__mapPath) == 0)
+                        mapPath = (const LV2_State_Map_Path*)features[i]->data;
+                    else if (std::strcmp(features[i]->URI, LV2_STATE__freePath) == 0)
+                        freePath = (const LV2_State_Free_Path*)features[i]->data;
+                }
+
+                if (char* const absolutePath = mapPath != nullptr
+                                             ? mapPath->absolute_path(mapPath->handle, value)
+                                             : nullptr)
+                {
+                    setState(key, absolutePath);
+
+                    if (freePath != nullptr)
+                        freePath->free_path(freePath->handle, absolutePath);
+                   #ifndef DISTRHO_OS_WINDOWS
+                    else
+                        std::free(absolutePath);
+                   #endif
+
+                    continue;
+                }
+            }
 
             setState(key, value);
 
@@ -1550,14 +1618,14 @@ static void lv2_select_program(LV2_Handle instance, uint32_t bank, uint32_t prog
 // -----------------------------------------------------------------------
 
 #if DISTRHO_PLUGIN_WANT_STATE
-static LV2_State_Status lv2_save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t, const LV2_Feature* const*)
+static LV2_State_Status lv2_save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t, const LV2_Feature* const* const features)
 {
-    return instancePtr->lv2_save(store, handle);
+    return instancePtr->lv2_save(store, handle, features);
 }
 
-static LV2_State_Status lv2_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t, const LV2_Feature* const*)
+static LV2_State_Status lv2_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t, const LV2_Feature* const* const features)
 {
-    return instancePtr->lv2_restore(retrieve, handle);
+    return instancePtr->lv2_restore(retrieve, handle, features);
 }
 
 LV2_Worker_Status lv2_work(LV2_Handle instance, LV2_Worker_Respond_Function, LV2_Worker_Respond_Handle, uint32_t, const void* data)
