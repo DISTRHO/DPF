@@ -1058,6 +1058,7 @@ public:
             const std::size_t length = std::strlen(value);
             DISTRHO_SAFE_ASSERT_CONTINUE(length == size || length+1 == size);
 
+           #if DISTRHO_PLUGIN_WANT_STATE
             if (urid == fURIDs.atomPath)
             {
                 const LV2_State_Map_Path* mapPath = nullptr;
@@ -1083,9 +1084,12 @@ public:
                         std::free(absolutePath);
                    #endif
 
+                    // signal msg needed for UI
+                    fNeededUiSends[i] = true;
                     continue;
                 }
             }
+           #endif
 
             setState(key, value);
 
