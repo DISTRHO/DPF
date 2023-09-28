@@ -114,7 +114,7 @@ public:
     }
 
     /*
-     * Start the thread.
+     * Start the runner.
      */
     bool startRunner(const uint timeIntervalMilliseconds = 0) noexcept
     {

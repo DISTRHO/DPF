@@ -1097,9 +1097,14 @@ public:
                                 continue;
 
                             if (fPlugin.getParameterHints(j) & kParameterIsInteger)
+                            {
                                 fvalue = std::atoi(value.buffer());
+                            }
                             else
+                            {
+                                const ScopedSafeLocale ssl;
                                 fvalue = std::atof(value.buffer());
+                            }
 
                             fCachedParameterValues[kVst3InternalParameterBaseCount + j] = fvalue;
                            #if DISTRHO_PLUGIN_HAS_UI
@@ -1835,12 +1840,18 @@ public:
             *output = static_cast<double>(std::atoi(ScopedUTF8String(input))) / DPF_VST3_MAX_BUFFER_SIZE;
             return V3_OK;
         case kVst3InternalParameterSampleRate:
-            *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_SAMPLE_RATE;
+            {
+                const ScopedSafeLocale ssl;
+                *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_SAMPLE_RATE;
+            }
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
-            *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_LATENCY;
+            {
+                const ScopedSafeLocale ssl;
+                *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_LATENCY;
+            }
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -1885,9 +1896,14 @@ public:
 
         float value;
         if (fPlugin.getParameterHints(index) & kParameterIsInteger)
+        {
             value = std::atoi(input8);
+        }
         else
+        {
+            const ScopedSafeLocale ssl;
             value = std::atof(input8);
+        }
 
         *output = ranges.getNormalizedValue(value);
         return V3_OK;
