@@ -1832,6 +1832,7 @@ private:
             DISTRHO_SAFE_ASSERT_RETURN(host->request_restart != nullptr, false);
             DISTRHO_SAFE_ASSERT_RETURN(host->request_callback != nullptr, false);
             latency = static_cast<const clap_host_latency_t*>(host->get_extension(host, CLAP_EXT_LATENCY));
+            DISTRHO_SAFE_ASSERT_RETURN(latency != nullptr, false);
             threadCheck = static_cast<const clap_host_thread_check_t*>(host->get_extension(host, CLAP_EXT_THREAD_CHECK));
            #endif
             return true;
