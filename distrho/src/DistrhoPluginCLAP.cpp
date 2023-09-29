@@ -1375,6 +1375,9 @@ public:
 
         fLastKnownLatency = latency;
 
+        if (fHostExtensions.latency == nullptr)
+            return;
+
         if (isActive)
         {
             fLatencyChanged = true;
