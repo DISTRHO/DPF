@@ -757,7 +757,7 @@ public:
                     }
                 }
 
-                const std::size_t chunkSize(chunkStr.length()+1);
+                const std::size_t chunkSize = chunkStr.length()+1;
 
                 fStateChunk = new char[chunkSize];
                 std::memcpy(fStateChunk, chunkStr.buffer(), chunkStr.length());
@@ -819,9 +819,6 @@ public:
                 ++key;
                 float fvalue;
 
-                // temporarily set locale to "C" while converting floats
-                const ScopedSafeLocale ssl;
-
                 while (bytesRead < chunkSize)
                 {
                     if (key[0] == '\0')
@@ -839,7 +836,16 @@ public:
                         if (fPlugin.getParameterSymbol(i) != key)
                             continue;
 
-                        fvalue = std::atof(value);
+                        if (fPlugin.getParameterHints(i) & kParameterIsInteger)
+                        {
+                            fvalue = std::atoi(value);
+                        }
+                        else
+                        {
+                            const ScopedSafeLocale ssl;
+                            fvalue = std::atof(value);
+                        }
+
                         fPlugin.setParameterValue(i, fvalue);
                        #if DISTRHO_PLUGIN_HAS_UI
                         if (fVstUI != nullptr)
