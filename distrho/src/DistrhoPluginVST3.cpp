@@ -1842,18 +1842,12 @@ public:
             *output = static_cast<double>(std::atoi(ScopedUTF8String(input))) / DPF_VST3_MAX_BUFFER_SIZE;
             return V3_OK;
         case kVst3InternalParameterSampleRate:
-            {
-                const ScopedSafeLocale ssl;
-                *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_SAMPLE_RATE;
-            }
+            *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_SAMPLE_RATE;
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
-            {
-                const ScopedSafeLocale ssl;
-                *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_LATENCY;
-            }
+            *output = std::atof(ScopedUTF8String(input)) / DPF_VST3_MAX_LATENCY;
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -1898,14 +1892,9 @@ public:
 
         float value;
         if (fPlugin.getParameterHints(index) & kParameterIsInteger)
-        {
             value = std::atoi(input8);
-        }
         else
-        {
-            const ScopedSafeLocale ssl;
             value = std::atof(input8);
-        }
 
         *output = ranges.getNormalizedValue(value);
         return V3_OK;

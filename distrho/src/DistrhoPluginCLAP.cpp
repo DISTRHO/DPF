@@ -1214,14 +1214,9 @@ public:
         }
 
         if (isInteger)
-        {
             *value = std::atoi(display);
-        }
         else
-        {
-            const ScopedSafeLocale ssl;
             *value = std::atof(display);
-        }
 
         return true;
     }
