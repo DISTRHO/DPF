@@ -962,6 +962,7 @@ public:
             if (read == 0)
                 return empty ? V3_INVALID_ARG : V3_OK;
 
+            empty = false;
             for (int32_t i = 0; i < read; ++i)
             {
                 // found terminator, stop here

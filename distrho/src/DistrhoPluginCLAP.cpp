@@ -1214,9 +1214,14 @@ public:
         }
 
         if (isInteger)
+        {
             *value = std::atoi(display);
+        }
         else
+        {
+            const ScopedSafeLocale ssl;
             *value = std::atof(display);
+        }
 
         return true;
     }
@@ -1673,9 +1678,14 @@ public:
                                 continue;
 
                             if (fPlugin.getParameterHints(j) & kParameterIsInteger)
+                            {
                                 fvalue = std::atoi(value.buffer());
+                            }
                             else
+                            {
+                                const ScopedSafeLocale ssl;
                                 fvalue = std::atof(value.buffer());
+                            }
 
                             fCachedParameters.values[j] = fvalue;
                            #if DISTRHO_PLUGIN_HAS_UI
