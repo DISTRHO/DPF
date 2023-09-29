@@ -29,21 +29,11 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(HAVE_CAIRO),true)
-
-TARGETS += jack
-
-ifneq ($(MACOS_OR_WINDOWS),true)
-ifeq ($(HAVE_LIBLO),true)
+TARGETS += clap
 TARGETS += dssi
-endif # HAVE_LIBLO
-endif # MACOS_OR_WINDOWS
-
+TARGETS += jack
 TARGETS += lv2_sep
 TARGETS += vst2
-TARGETS += vst3
-
-endif # HAVE_CAIRO
 
 all: $(TARGETS)
 

@@ -957,13 +957,13 @@ public:
                     case CLAP_EVENT_NOTE_ON:
                        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                         // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
-                        addNoteEvent(static_cast<const clap_event_note_t*>(static_cast<const void*>(event)), true);
+                        addNoteEvent(reinterpret_cast<const clap_event_note_t*>(event), true);
                        #endif
                         break;
                     case CLAP_EVENT_NOTE_OFF:
                        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                         // BUG: even though we only report CLAP_NOTE_DIALECT_MIDI as supported, Bitwig sends us this anyway
-                        addNoteEvent(static_cast<const clap_event_note_t*>(static_cast<const void*>(event)), false);
+                        addNoteEvent(reinterpret_cast<const clap_event_note_t*>(event), false);
                        #endif
                         break;
                     case CLAP_EVENT_NOTE_CHOKE:
@@ -971,9 +971,10 @@ public:
                     case CLAP_EVENT_NOTE_EXPRESSION:
                         break;
                     case CLAP_EVENT_PARAM_VALUE:
-                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
-                                                        event->size, sizeof(clap_event_param_value));
-                        setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
+                        DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
+                                                        event->size, sizeof(clap_event_param_value_t));
+                        if (event->space_id == 0)
+                            setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
                         break;
                     case CLAP_EVENT_PARAM_MOD:
                     case CLAP_EVENT_PARAM_GESTURE_BEGIN:
@@ -984,7 +985,7 @@ public:
                         DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_midi_t),
                                                         event->size, sizeof(clap_event_midi_t));
                        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-                        addMidiEvent(static_cast<const clap_event_midi_t*>(static_cast<const void*>(event)));
+                        addMidiEvent(reinterpret_cast<const clap_event_midi_t*>(event));
                        #endif
                         break;
                     case CLAP_EVENT_MIDI_SYSEX:
@@ -1232,11 +1233,13 @@ public:
 
                 if (event->type != CLAP_EVENT_PARAM_VALUE)
                     continue;
+                if (event->space_id != 0)
+                    continue;
 
                 DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
                                                 event->size, sizeof(clap_event_param_value));
 
-                setParameterValueFromEvent(static_cast<const clap_event_param_value*>(static_cast<const void*>(event)));
+                setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
             }
         }
 
@@ -1504,7 +1507,7 @@ public:
 
         for (int32_t wrtntotal = 0, wrtn; wrtntotal < size; wrtntotal += wrtn)
         {
-            wrtn = stream->write(stream, buffer, size - wrtntotal);
+            wrtn = stream->write(stream, buffer + wrtntotal, size - wrtntotal);
             DISTRHO_SAFE_ASSERT_INT_RETURN(wrtn > 0, wrtn, false);
         }
 
@@ -1517,6 +1520,7 @@ public:
         ClapUI* const ui = fUI.get();
        #endif
         String key, value;
+        bool empty = true;
         bool hasValue = false;
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
@@ -1524,14 +1528,15 @@ public:
         char buffer[512], orig;
         buffer[sizeof(buffer)-1] = '\xff';
 
-        for (int32_t terminated = 0, read; terminated == 0;)
+        for (int32_t terminated = 0; terminated == 0;)
         {
-            read = stream->read(stream, buffer, sizeof(buffer)-1);
+            const int32_t read = stream->read(stream, buffer, sizeof(buffer)-1);
             DISTRHO_SAFE_ASSERT_INT_RETURN(read >= 0, read, false);
 
             if (read == 0)
-                return true;
+                return !empty;
 
+            empty = false;
             for (int32_t i = 0; i < read; ++i)
             {
                 // found terminator, stop here
@@ -2502,6 +2507,8 @@ static const clap_plugin_descriptor_t* CLAP_ABI clap_get_plugin_descriptor(const
         DISTRHO_PLUGIN_CLAP_FEATURES,
        #elif DISTRHO_PLUGIN_IS_SYNTH
         "instrument",
+       #else
+        "audio-effect",
        #endif
         nullptr
     };
@@ -2528,8 +2535,11 @@ static const clap_plugin_descriptor_t* CLAP_ABI clap_get_plugin_descriptor(const
 
 static const clap_plugin_t* CLAP_ABI clap_create_plugin(const clap_plugin_factory_t* const factory,
                                                         const clap_host_t* const host,
-                                                        const char*)
+                                                        const char* const plugin_id)
 {
+    if (plugin_id == nullptr || std::strcmp(plugin_id, DISTRHO_PLUGIN_CLAP_ID) != 0)
+        return nullptr;
+
     clap_plugin_t* const pluginptr = static_cast<clap_plugin_t*>(std::malloc(sizeof(clap_plugin_t)));
     DISTRHO_SAFE_ASSERT_RETURN(pluginptr != nullptr, nullptr);
 

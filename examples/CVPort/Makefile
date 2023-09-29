@@ -23,7 +23,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-TARGETS = jack lv2_dsp
+TARGETS = jack lv2_sep
 
 all: $(TARGETS)
 

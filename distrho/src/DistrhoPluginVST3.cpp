@@ -943,6 +943,7 @@ public:
         const bool connectedToUI = fConnectionFromCtrlToView != nullptr && fConnectedToUI;
        #endif
         String key, value;
+        bool empty = true;
         bool hasValue = false;
         bool fillingKey = true; // if filling key or value
         char queryingType = 'i'; // can be 'n', 's' or 'p' (none, states, parameters)
@@ -959,7 +960,7 @@ public:
             DISTRHO_SAFE_ASSERT_INT_RETURN(read > 0, read, V3_INTERNAL_ERR);
 
             if (read == 0)
-                return V3_OK;
+                return empty ? V3_INVALID_ARG : V3_OK;
 
             for (int32_t i = 0; i < read; ++i)
             {
@@ -1245,7 +1246,7 @@ public:
         for (int32_t wrtntotal = 0, wrtn; wrtntotal < size; wrtntotal += wrtn)
         {
             wrtn = 0;
-            res = v3_cpp_obj(stream)->write(stream, const_cast<char*>(buffer), size - wrtntotal, &wrtn);
+            res = v3_cpp_obj(stream)->write(stream, const_cast<char*>(buffer) + wrtntotal, size - wrtntotal, &wrtn);
 
             DISTRHO_SAFE_ASSERT_INT_RETURN(res == V3_OK, res, res);
             DISTRHO_SAFE_ASSERT_INT_RETURN(wrtn > 0, wrtn, V3_INTERNAL_ERR);
