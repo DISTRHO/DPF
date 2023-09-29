@@ -1236,8 +1236,8 @@ public:
                 if (event->space_id != 0)
                     continue;
 
-                DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value),
-                                                event->size, sizeof(clap_event_param_value));
+                DISTRHO_SAFE_ASSERT_UINT2_BREAK(event->size == sizeof(clap_event_param_value_t),
+                                                event->size, sizeof(clap_event_param_value_t));
 
                 setParameterValueFromEvent(reinterpret_cast<const clap_event_param_value_t*>(event));
             }
@@ -1308,7 +1308,7 @@ public:
     }
    #endif
 
-    void setParameterValueFromEvent(const clap_event_param_value* const event)
+    void setParameterValueFromEvent(const clap_event_param_value_t* const event)
     {
         fCachedParameters.values[event->param_id] = event->value;
         fCachedParameters.changed[event->param_id] = true;
