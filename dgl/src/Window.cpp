@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -537,10 +537,10 @@ void Window::onFocus(bool, CrossingMode)
 {
 }
 
-void Window::onReshape(uint, uint)
+void Window::onReshape(const uint width, const uint height)
 {
     if (pData->view != nullptr)
-        puglFallbackOnResize(pData->view);
+        puglFallbackOnResize(pData->view, width, height);
 }
 
 void Window::onScaleFactorChanged(double)

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,7 +19,7 @@
 
 #include "../Base.hpp"
 
-/* we will include all header files used in pugl.h in their C++ friendly form, then pugl stuff in custom namespace */
+// we will include all header files used in pugl.h in their C++ friendly form, then pugl stuff in custom namespace
 #include <cstddef>
 #ifdef DISTRHO_PROPER_CPP11_SUPPORT
 # include <cstdbool>
@@ -71,7 +71,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height);
 void puglOnDisplayPrepare(PuglView* view);
 
 // DGL specific, build-specific fallback resize
-void puglFallbackOnResize(PuglView* view);
+void puglFallbackOnResize(PuglView* view, uint width, uint height);
 
 #if defined(DISTRHO_OS_HAIKU)
 
@@ -104,7 +104,7 @@ void puglWin32ShowCentered(PuglView* view);
 
 #define DGL_USING_X11
 
-// X11 specific, update world without triggering exposure evente
+// X11 specific, update world without triggering exposure events
 PuglStatus puglX11UpdateWithoutExposures(PuglWorld* world);
 
 // X11 specific, set dialog window type and pid hints

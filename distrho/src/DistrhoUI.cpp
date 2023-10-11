@@ -404,10 +404,10 @@ void UI::uiFocus(bool, DGL_NAMESPACE::CrossingMode)
 {
 }
 
-void UI::uiReshape(uint, uint)
+void UI::uiReshape(const uint width, const uint height)
 {
     // NOTE this must be the same as Window::onReshape
-    pData->fallbackOnResize();
+    pData->fallbackOnResize(width, height);
 }
 #endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
