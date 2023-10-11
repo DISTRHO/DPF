@@ -2870,7 +2870,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(outparamsptr != nullptr,);
 
-        float curValue;
+        float curValue, defValue;
         double normalized;
 
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
@@ -2897,12 +2897,14 @@ private:
             }
             else if (fPlugin.isParameterTrigger(i))
             {
-                // NOTE: no trigger support in VST3 parameters, simulate it here
+                // NOTE: no trigger parameter support in VST3, simulate it here
+                defValue = fPlugin.getParameterDefault(i);
                 curValue = fPlugin.getParameterValue(i);
 
-                if (d_isEqual(curValue, fPlugin.getParameterDefault(i)))
+                if (d_isEqual(curValue, defValue))
                     continue;
 
+                curValue = defValue;
                 fPlugin.setParameterValue(i, curValue);
             }
             else if (fParameterValuesChangedDuringProcessing[kVst3InternalParameterBaseCount + i])

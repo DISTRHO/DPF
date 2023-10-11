@@ -1167,7 +1167,7 @@ private:
 
     void updateParameterOutputsAndTriggers()
     {
-        float curValue;
+        float curValue, defValue;
 
         for (uint32_t i=0, count=fPlugin.getParameterCount(); i < count; ++i)
         {
@@ -1193,17 +1193,18 @@ private:
             }
             else if ((fPlugin.getParameterHints(i) & kParameterIsTrigger) == kParameterIsTrigger)
             {
-                // NOTE: no trigger support in VST parameters, simulate it here
+                // NOTE: no trigger parameter support in VST2, simulate it here
+                defValue = fPlugin.getParameterDefault(i);
                 curValue = fPlugin.getParameterValue(i);
 
-                if (d_isEqual(curValue, fPlugin.getParameterRanges(i).def))
+                if (d_isEqual(curValue, defValue))
                     continue;
 
                #if DISTRHO_PLUGIN_HAS_UI
                 if (fVstUI != nullptr)
-                    setParameterValueFromPlugin(i, curValue);
+                    setParameterValueFromPlugin(i, defValue);
                #endif
-                fPlugin.setParameterValue(i, curValue);
+                fPlugin.setParameterValue(i, defValue);
             }
             else
             {
