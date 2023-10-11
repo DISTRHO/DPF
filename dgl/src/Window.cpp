@@ -208,6 +208,9 @@ void Window::setOffsetY(const int y)
 
 void Window::setOffset(const int x, const int y)
 {
+    // do not call this for embed windows!
+    DISTRHO_SAFE_ASSERT_RETURN(!pData->isEmbed,);
+
     if (pData->view != nullptr)
         puglSetPosition(pData->view, x, y);
 }

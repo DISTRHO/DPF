@@ -86,6 +86,10 @@ static PuglView* puglNewViewWithParentWindow(PuglWorld* const world, const uintp
     if (PuglView* const view = puglNewView(world))
     {
         puglSetParentWindow(view, parentWindowHandle);
+
+        if (parentWindowHandle != 0)
+            puglSetPosition(view, 0, 0);
+
         return view;
     }
 
@@ -212,9 +216,6 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
 #endif
       modal()
 {
-    if (isEmbed)
-        puglSetParentWindow(view, parentWindowHandle);
-
     initPre(width != 0 ? width : DEFAULT_WIDTH, height != 0 ? height : DEFAULT_HEIGHT, resizable);
 }
 
