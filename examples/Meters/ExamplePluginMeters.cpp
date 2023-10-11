@@ -90,8 +90,8 @@ protected:
     }
 
    /**
-      Get the plugin unique Id.
-      This value is used by LADSPA, DSSI and VST plugin formats.
+      Get the plugin unique Id.@n
+      This value is used by LADSPA, DSSI, VST2 and VST3 plugin formats.
     */
     int64_t getUniqueId() const override
     {
@@ -115,7 +115,7 @@ protected:
     }
 
    /**
-      Initialize the parameter @a index.
+      Initialize the parameter @a index.@n
       This function will be called once, shortly after the plugin is created.
     */
     void initParameter(uint32_t index, Parameter& parameter) override
