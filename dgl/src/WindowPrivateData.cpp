@@ -577,9 +577,13 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
         const double scaleVertical   = height / static_cast<double>(minHeight);
         autoScaleFactor = scaleHorizontal < scaleVertical ? scaleHorizontal : scaleVertical;
     }
+    else
+    {
+        autoScaleFactor = 1.0;
+    }
 
-    const uint uwidth = static_cast<uint>(width + 0.5);
-    const uint uheight = static_cast<uint>(height + 0.5);
+    const uint uwidth = static_cast<uint>(width / autoScaleFactor + 0.5);
+    const uint uheight = static_cast<uint>(height / autoScaleFactor + 0.5);
 
     self->onReshape(uwidth, uheight);
 

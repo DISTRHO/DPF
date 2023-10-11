@@ -784,18 +784,13 @@ void TopLevelWidget::PrivateData::display()
 
     cairo_matrix_t matrix;
     cairo_get_matrix(handle, &matrix);
+    cairo_translate(handle, 0, 0);
 
     // full viewport size
     if (window.pData->autoScaling)
-    {
-        cairo_translate(handle, 0, 0);
         cairo_scale(handle, autoScaleFactor, autoScaleFactor);
-    }
     else
-    {
-        cairo_translate(handle, 0, 0);
         cairo_scale(handle, 1.0, 1.0);
-    }
 
     // main widget drawing
     self->onDisplay();
