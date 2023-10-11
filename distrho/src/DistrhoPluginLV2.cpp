@@ -1426,7 +1426,9 @@ private:
     {
         if (fCtrlInPortChangeReq == nullptr)
             return false;
-        return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle, index, value);
+        return fCtrlInPortChangeReq->request_change(fCtrlInPortChangeReq->handle,
+                                                    index + fPlugin.getParameterOffset(),
+                                                    value);
     }
 
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
