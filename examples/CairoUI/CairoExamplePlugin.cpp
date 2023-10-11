@@ -23,33 +23,62 @@ START_NAMESPACE_DISTRHO
 
 class CairoExamplePlugin : public Plugin
 {
+    float fParameters[kParameterCount];
+
 public:
     CairoExamplePlugin()
-        : Plugin(0, 0, 0)
+        : Plugin(kParameterCount, 0, 0)
     {
+        std::memset(fParameters, 0, sizeof(fParameters));
     }
 
-    const char* getLabel() const
+   /**
+      Get the plugin label.@n
+      This label is a short restricted name consisting of only _, a-z, A-Z and 0-9 characters.
+    */
+    const char* getLabel() const override
+    {
+        return "cairo_ui";
+    }
+
+   /**
+      Get an extensive comment/description about the plugin.
+    */
+    const char* getDescription() const override
     {
         return "Cairo DPF Example";
     }
 
-    const char* getMaker() const
+   /**
+      Get the plugin author/maker.
+    */
+    const char* getMaker() const override
     {
-        return "Jean Pierre Cimalando";
+        return "DISTRHO";
     }
 
-    const char* getLicense() const
+   /**
+      Get the plugin license (a single line of text or a URL).@n
+      For commercial plugins this should return some short copyright information.
+    */
+    const char* getLicense() const override
     {
         return "ISC";
     }
 
-    uint32_t getVersion() const
+   /**
+      Get the plugin version, in hexadecimal.
+    */
+    uint32_t getVersion() const override
     {
         return d_version(1, 0, 0);
     }
 
-    int64_t getUniqueId() const
+   /**
+      Get the plugin unique Id.@n
+      This value is used by LADSPA, DSSI, VST2 and VST3 plugin formats.
+    */
+    int64_t getUniqueId() const override
     {
         return d_cconst('d', 'C', 'a', 'i');
     }
@@ -58,7 +87,7 @@ public:
       Initialize the audio port @a index.@n
       This function will be called once, shortly after the plugin is created.
     */
-    void initAudioPort(bool input, uint32_t index, AudioPort& port) override
+    void initAudioPort(const bool input, const uint32_t index, AudioPort& port) override
     {
         // treat meter audio ports as stereo
         port.groupId = kPortGroupMono;
@@ -67,29 +96,91 @@ public:
         Plugin::initAudioPort(input, index, port);
     }
 
-    void initParameter(uint32_t index, Parameter& parameter)
+   /**
+      Initialize the parameter @a index.@n
+      This function will be called once, shortly after the plugin is created.
+    */
+    void initParameter(const uint32_t index, Parameter& parameter) override
     {
-        // unused
-        (void)index;
-        (void)parameter;
+       /**
+          All parameters in this plugin have the same ranges.
+        */
+        switch (index)
+        {
+        case kParameterKnob:
+            parameter.hints  = kParameterIsAutomatable;
+            parameter.name   = "Knob";
+            parameter.symbol = "knob";
+            parameter.ranges.min = 0.0f;
+            parameter.ranges.max = 1.0f;
+            parameter.ranges.def = 0.0f;
+            break;
+        case kParameterTriState:
+            parameter.hints  = kParameterIsAutomatable|kParameterIsInteger;
+            parameter.name   = "Color";
+            parameter.symbol = "color";
+            parameter.ranges.min = 0.0f;
+            parameter.ranges.max = 2.0f;
+            parameter.ranges.def = 0.0f;
+            parameter.enumValues.count = 3;
+            parameter.enumValues.restrictedMode = true;
+            {
+                ParameterEnumerationValue* const values = new ParameterEnumerationValue[3];
+                parameter.enumValues.values = values;
+                values[0].label = "Red";
+                values[0].value = 0;
+                values[1].label = "Green";
+                values[1].value = 1;
+                values[2].label = "Blue";
+                values[2].value = 2;
+            }
+            break;
+        case kParameterButton:
+            parameter.hints  = kParameterIsAutomatable|kParameterIsBoolean;
+            parameter.name   = "Button";
+            parameter.symbol = "button";
+            parameter.ranges.min = 0.0f;
+            parameter.ranges.max = 1.0f;
+            parameter.ranges.def = 0.0f;
+            parameter.enumValues.count = 2;
+            parameter.enumValues.restrictedMode = true;
+            {
+                ParameterEnumerationValue* const values = new ParameterEnumerationValue[2];
+                parameter.enumValues.values = values;
+                values[0].label = "Off";
+                values[0].value = 0;
+                values[1].label = "On";
+                values[1].value = 1;
+            }
+            break;
+        }
     }
 
-    float getParameterValue(uint32_t index) const
+   /**
+      Get the current value of a parameter.@n
+      The host may call this function from any context, including realtime processing.
+    */
+    float getParameterValue(const uint32_t index) const override
     {
-        return 0;
-
-        // unused
-        (void)index;
+        return fParameters[index];
     }
 
-    void setParameterValue(uint32_t index, float value)
+   /**
+      Change a parameter value.@n
+      The host may call this function from any context, including realtime processing.@n
+      When a parameter is marked as automatable, you must ensure no non-realtime operations are performed.
+      @note This function will only be called for parameter inputs.
+    */
+    void setParameterValue(const uint32_t index, const float value) override
     {
-        // unused
-        (void)index;
-        (void)value;
+        fParameters[index] = value;
     }
 
-    void run(const float** inputs, float** outputs, uint32_t frames)
+   /**
+      Run/process function for plugins without MIDI input.
+      @note Some parameters might be null if there are no audio inputs or outputs.
+    */
+    void run(const float** const inputs, float** const outputs, const uint32_t frames) override
     {
        /**
           This plugin does nothing, it just demonstrates cairo UI usage.

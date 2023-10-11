@@ -118,10 +118,36 @@
 #define DISTRHO_UI_USE_NANOVG 0
 
 /**
-   The %UI URI when exporting in LV2 format.@n
-   By default this is set to @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
- */
-#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+   Default UI width to use when creating initial and temporary windows.@n
+   Setting this macro allows to skip a temporary UI from being created in certain VST2 and VST3 hosts.
+   (which would normally be done for knowing the UI size before host creates a window for it)
 
-#define DISTRHO_UI_FILE_BROWSER 0
+   Value must match 1x scale factor.
+
+   When this macro is defined, the companion DISTRHO_UI_DEFAULT_HEIGHT macro must be defined as well.
+ */
+#define DISTRHO_UI_DEFAULT_WIDTH 200
+
+/**
+   Default UI height to use when creating initial and temporary windows.@n
+   Setting this macro allows to skip a temporary UI from being created in certain VST2 and VST3 hosts.
+   (which would normally be done for knowing the UI size before host creates a window for it)
+
+   Value must match 1x scale factor.
+
+   When this macro is defined, the companion DISTRHO_UI_DEFAULT_WIDTH macro must be defined as well.
+ */
+#define DISTRHO_UI_DEFAULT_HEIGHT 200
+
+// TODO document this
 #define DISTRHO_UI_USE_CAIRO 1
+
+// TODO document this
+#define DISTRHO_UI_FILE_BROWSER 0
+
+enum Parameters {
+   kParameterKnob,
+   kParameterTriState,
+   kParameterButton,
+   kParameterCount
+};

@@ -17,7 +17,6 @@ FILES_DSP = \
 
 FILES_UI  = \
 	Artwork.cpp \
-	DemoWidgetBanner.cpp \
 	CairoExampleUI.cpp
 
 # --------------------------------------------------------------
@@ -29,11 +28,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-TARGETS += clap
-TARGETS += dssi
-TARGETS += jack
-TARGETS += lv2_sep
-TARGETS += vst2
+TARGETS = clap dssi jack lv2_sep vst2 vst3
 
 all: $(TARGETS)
 

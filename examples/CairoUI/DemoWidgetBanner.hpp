@@ -1,7 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -23,17 +23,84 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
+static constexpr const char banner[] =
+"                                                                        "
+"  *     *               *                                 *     *       "
+"  **   **               *                           *     *     *       "
+"  * * * *               *                                 *     *       "
+"  *  *  *   ****    *** *   ****         *     *   **    ****   * ***   "
+"  *     *       *  *   **  *    *        *     *    *     *     **   *  "
+"  *     *   *****  *    *  ******        *  *  *    *     *     *    *  "
+"  *     *  *    *  *    *  *             *  *  *    *     *     *    *  "
+"  *     *  *   **  *   **  *    *        *  *  *    *     *  *  *    *  "
+"  *     *   *** *   *** *   ****          ** **   *****    **   *    *  "
+"                                                                        "
+"                                                                        "
+"                                                                        "
+"                          *****   ****   *****                          "
+"                           *   *  *   *  *                              "
+"                           *   *  *   *  *                              "
+"                           *   *  *   *  *                              "
+"                           *   *  ****   ****                           "
+"                           *   *  *      *                              "
+"                           *   *  *      *                              "
+"                           *   *  *      *                              "
+"                          *****   *      *                              "
+"                                                                        ";
+
+enum {
+    rows = 23,
+    columns = 72,
+};
+
 class DemoWidgetBanner : public CairoSubWidget
 {
 public:
-    explicit DemoWidgetBanner(SubWidget* parent);
-    explicit DemoWidgetBanner(TopLevelWidget* parent);
+    explicit DemoWidgetBanner(SubWidget* const parent)
+        : CairoSubWidget(parent) {}
+
+    explicit DemoWidgetBanner(TopLevelWidget* const parent)
+        : CairoSubWidget(parent) {}
+
 protected:
-    void onCairoDisplay(const CairoGraphicsContext& context) override;
+    void onCairoDisplay(const CairoGraphicsContext& context) override
+    {
+        cairo_t* const cr = context.handle;
+
+        Size<uint> sz = getSize();
+        int w = sz.getWidth();
+        int h = sz.getHeight();
+
+        const double diameter = (double)w / columns;
+        const double radius = 0.5 * diameter;
+        const double xoff = 0;
+        const double yoff = 0.5 * (h - rows * diameter);
+
+        for (int r = 0; r < rows; ++r)
+        {
+            for (int c = 0; c < columns; ++c)
+            {
+                double cx = xoff + radius + c * diameter;
+                double cy = yoff + radius + r * diameter;
+
+                char ch = banner[c + r * columns];
+                if (ch != ' ')
+                    cairo_set_source_rgb(cr, 0.5, 0.9, 0.2);
+                else
+                    cairo_set_source_rgb(cr, 0.5, 0.5, 0.5);
+
+                cairo_save(cr);
+                cairo_translate(cr, cx, cy);
+                cairo_scale(cr, radius, radius);
+                cairo_arc(cr, 0.0, 0.0, 1.0, 0.0, 2 * M_PI);
+                cairo_restore(cr);
+
+                cairo_fill(cr);
+            }
+        }
+    }
 };
 
 // -----------------------------------------------------------------------
 
 END_NAMESPACE_DGL
-
-using DGL_NAMESPACE::DemoWidgetBanner;

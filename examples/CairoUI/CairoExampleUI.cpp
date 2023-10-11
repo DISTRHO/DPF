@@ -23,42 +23,56 @@
 
 START_NAMESPACE_DISTRHO
 
-/**
-  We need a few classes from DGL.
- */
+// We need a few classes from DGL.
 using DGL_NAMESPACE::CairoGraphicsContext;
 using DGL_NAMESPACE::CairoImage;
-using DGL_NAMESPACE::CairoImageButton;
 using DGL_NAMESPACE::CairoImageKnob;
+using DGL_NAMESPACE::CairoImageSwitch;
 
-class CairoExampleUI : public UI
+// And from ourselves
+using DGL_NAMESPACE::DemoWidgetBanner;
+
+class CairoExampleUI : public UI,
+                       public CairoImageKnob::Callback,
+                       public CairoImageSwitch::Callback,
+                       public DemoWidgetClickable::Callback
 {
+    ScopedPointer<CairoImageKnob> fKnob;
+    ScopedPointer<CairoImageSwitch> fButton;
+    ScopedPointer<DemoWidgetBanner> fWidgetBanner;
+    ScopedPointer<DemoWidgetClickable> fWidgetClickable;
+
 public:
     CairoExampleUI()
-        : UI(200, 200)
     {
-        fWidgetClickable = new DemoWidgetClickable(this);
-        fWidgetClickable->setSize(50, 50);
-        fWidgetClickable->setAbsolutePos(100, 100);
-
-        fWidgetBanner = new DemoWidgetBanner(this);
-        fWidgetBanner->setSize(180, 80);
-        fWidgetBanner->setAbsolutePos(10, 10);
-
         CairoImage knobSkin;
         knobSkin.loadFromPNG(Artwork::knobData, Artwork::knobDataSize);
 
+        fWidgetBanner = new DemoWidgetBanner(this);
+        fWidgetBanner->setAbsolutePos(10, 10);
+        fWidgetBanner->setSize(180, 80);
+
+        fWidgetClickable = new DemoWidgetClickable(this);
+        fWidgetClickable->setAbsolutePos(100, 100);
+        fWidgetClickable->setSize(50, 50);
+        fWidgetClickable->setCallback(this);
+        fWidgetClickable->setId(kParameterTriState);
+
         fKnob = new CairoImageKnob(this, knobSkin);
-        fKnob->setSize(80, 80);
         fKnob->setAbsolutePos(10, 100);
+        fKnob->setSize(80, 80);
+        fKnob->setCallback(this);
+        fKnob->setId(kParameterKnob);
 
         CairoImage buttonOn, buttonOff;
         buttonOn.loadFromPNG(Artwork::buttonOnData, Artwork::buttonOnDataSize);
         buttonOff.loadFromPNG(Artwork::buttonOffData, Artwork::buttonOffDataSize);
 
-        fButton = new CairoImageButton(this, buttonOff, buttonOn);
-        fButton->setSize(60, 35);
+        fButton = new CairoImageSwitch(this, buttonOff, buttonOn);
         fButton->setAbsolutePos(100, 160);
+        fButton->setSize(60, 35);
+        fButton->setCallback(this);
+        fButton->setId(kParameterButton);
 
 #if 0
         // we can use this if/when our resources are scalable, for now they are PNGs
@@ -67,7 +81,7 @@ public:
             setSize(200 * scaleFactor, 200 * scaleFactor);
 #else
         // without scalable resources, let DPF handle the scaling internally
-        setGeometryConstraints(200, 200, true, true);
+        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true, true);
 #endif
     }
 
@@ -101,18 +115,46 @@ protected:
     }
 #endif
 
-    void parameterChanged(uint32_t index, float value) override
+    void parameterChanged(const uint32_t index, const float value) override
     {
-        // unused
-        (void)index;
-        (void)value;
+        switch (index)
+        {
+        case kParameterKnob:
+            fKnob->setValue(value);
+            break;
+        case kParameterTriState:
+            fWidgetClickable->setColorId(static_cast<int>(value + 0.5f));
+            break;
+        case kParameterButton:
+            fButton->setDown(value > 0.5f);
+            break;
+        }
     }
 
-private:
-    ScopedPointer<DemoWidgetClickable> fWidgetClickable;
-    ScopedPointer<DemoWidgetBanner> fWidgetBanner;
-    ScopedPointer<CairoImageKnob> fKnob;
-    ScopedPointer<CairoImageButton> fButton;
+    void demoWidgetClicked(DemoWidgetClickable*, const uint8_t colorId) override
+    {
+        setParameterValue(kParameterTriState, colorId);
+    }
+
+    void imageKnobDragStarted(CairoImageKnob*) override
+    {
+        editParameter(kParameterKnob, true);
+    }
+
+    void imageKnobDragFinished(CairoImageKnob*) override
+    {
+        editParameter(kParameterKnob, false);
+    }
+
+    void imageKnobValueChanged(CairoImageKnob*, const float value) override
+    {
+        setParameterValue(kParameterKnob, value);
+    }
+
+    void imageSwitchClicked(CairoImageSwitch*, bool down) override
+    {
+        setParameterValue(kParameterButton, down ? 1.f : 0.f);
+    }
 };
 
 UI* createUI()
