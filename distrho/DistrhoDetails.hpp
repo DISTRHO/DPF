@@ -224,6 +224,22 @@ enum ParameterDesignation {
 };
 
 /**
+   Parameter designation symbols.@n
+   These are static, hard-coded definitions to ensure consistency across DPF and plugins.
+*/
+namespace ParameterDesignationSymbols {
+   /**
+     Bypass designation symbol.
+    */
+   static constexpr const char bypass[] = "dpf_bypass";
+
+   /**
+     Bypass designation symbol, inverted for LV2 so it becomes "enabled".
+    */
+   static constexpr const char bypass_lv2[] = "lv2_enabled";
+};
+
+/**
    Predefined Port Groups Ids.
 
    This enumeration provides a few commonly used groups for convenient use in plugins.
@@ -731,7 +747,7 @@ struct Parameter {
             hints      = kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger;
             name       = "Bypass";
             shortName  = "Bypass";
-            symbol     = "dpf_bypass";
+            symbol     = ParameterDesignationSymbols::bypass;
             unit       = "";
             midiCC     = 0;
             groupId    = kPortGroupNone;
@@ -749,7 +765,7 @@ struct Parameter {
  */
 static constexpr const Parameter kParameterBypass = {
     kParameterIsAutomatable|kParameterIsBoolean|kParameterIsInteger,
-    "Bypass", "Bypass", "dpf_bypass", "", "", {}, {}, 0, kPortGroupNone,
+    "Bypass", "Bypass", ParameterDesignationSymbols::bypass, "", "", {}, {}, 0, kPortGroupNone,
 };
 #endif
 

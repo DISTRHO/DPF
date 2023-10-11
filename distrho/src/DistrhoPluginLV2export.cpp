@@ -748,7 +748,7 @@ void lv2_generate_ttl(const char* const basename)
                     case kParameterDesignationBypass:
                         designated = true;
                         pluginString += "        lv2:name \"Enabled\" ;\n";
-                        pluginString += "        lv2:symbol \"" DISTRHO_BYPASS_PARAMETER_NAME "\" ;\n";
+                        pluginString += "        lv2:symbol \"" + String(ParameterDesignationSymbols::bypass_lv2) + "\" ;\n";
                         pluginString += "        lv2:default 1 ;\n";
                         pluginString += "        lv2:minimum 0 ;\n";
                         pluginString += "        lv2:maximum 1 ;\n";
@@ -1684,7 +1684,7 @@ void lv2_generate_ttl(const char* const basename)
 
                 if (plugin.getParameterDesignation(j) == kParameterDesignationBypass)
                 {
-                    parameterSymbol = DISTRHO_BYPASS_PARAMETER_NAME;
+                    parameterSymbol = ParameterDesignationSymbols::bypass_lv2;
                     parameterValue = 1.0f - parameterValue;
                 }
 

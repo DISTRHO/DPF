@@ -88,7 +88,7 @@ public:
           fController(controller),
           fWriteFunction(writeFunc),
           fURIDs(uridMap),
-          fBypassParameterIndex(fUiPortMap != nullptr ? fUiPortMap->port_index(fUiPortMap->handle, "lv2_enabled")
+          fBypassParameterIndex(fUiPortMap != nullptr ? fUiPortMap->port_index(fUiPortMap->handle, ParameterDesignationSymbols::bypass_lv2)
                                                       : LV2UI_INVALID_PORT_INDEX),
           fWinIdWasNull(winId == 0),
           fUI(this, winId, sampleRate,
