@@ -167,7 +167,7 @@ private:
             return;
 
         hasCursor = shouldHaveCursor;
-        setCursor(shouldHaveCursor ? kMouseCursorDiagonal : kMouseCursorArrow);
+        setCursor(shouldHaveCursor ? kMouseCursorUpLeftDownRight : kMouseCursorArrow);
     }
 
     void resetArea()

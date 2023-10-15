@@ -427,6 +427,7 @@ endif
 else ifeq ($(WINDOWS),true)
 
 DGL_SYSTEM_LIBS += -lcomdlg32
+DGL_SYSTEM_LIBS += -ldwmapi
 DGL_SYSTEM_LIBS += -lgdi32
 # DGL_SYSTEM_LIBS += -lole32
 

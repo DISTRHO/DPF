@@ -254,19 +254,22 @@ public:
 
         switch (key)
         {
-        case kKeyShift:
+        case kKeyShiftL:
+        case kKeyShiftR:
             if (down)
                 fKeyboardModifiers |= kModifierShift;
             else
                 fKeyboardModifiers &= ~kModifierShift;
             break;
-        case kKeyControl:
+        case kKeyControlL:
+        case kKeyControlR:
             if (down)
                 fKeyboardModifiers |= kModifierControl;
             else
                 fKeyboardModifiers &= ~kModifierControl;
             break;
-        case kKeyAlt:
+        case kKeyAltL:
+        case kKeyAltR:
             if (down)
                 fKeyboardModifiers |= kModifierAlt;
             else

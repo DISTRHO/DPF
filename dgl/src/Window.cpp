@@ -323,13 +323,13 @@ void Window::setSize(const Size<uint>& size)
 
 const char* Window::getTitle() const noexcept
 {
-    return pData->view != nullptr ? puglGetWindowTitle(pData->view) : "";
+    return pData->view != nullptr ? puglGetViewString(pData->view, PUGL_WINDOW_TITLE) : "";
 }
 
 void Window::setTitle(const char* const title)
 {
     if (pData->view != nullptr)
-        puglSetWindowTitle(pData->view, title);
+        puglSetViewString(pData->view, PUGL_WINDOW_TITLE, title);
 }
 
 bool Window::isIgnoringKeyRepeat() const noexcept
@@ -458,10 +458,14 @@ void Window::setGeometryConstraints(uint minimumWidth,
                                     uint minimumHeight,
                                     const bool keepAspectRatio,
                                     const bool automaticallyScale,
-                                    const bool resizeNowIfAutoScaling)
+                                    bool resizeNowIfAutoScaling)
 {
     DISTRHO_SAFE_ASSERT_RETURN(minimumWidth > 0,);
     DISTRHO_SAFE_ASSERT_RETURN(minimumHeight > 0,);
+
+    // prevent auto-scaling up 2x
+    if (resizeNowIfAutoScaling && automaticallyScale && pData->autoScaling == automaticallyScale)
+        resizeNowIfAutoScaling = false;
 
     pData->minWidth = minimumWidth;
     pData->minHeight = minimumHeight;

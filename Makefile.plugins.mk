@@ -46,7 +46,7 @@ endif
 DGL_BUILD_DIR = $(DPF_PATH)/build$(BUILD_DIR_SUFFIX)
 
 BUILD_C_FLAGS   += -I.
-BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl
+BUILD_CXX_FLAGS += -I. -I$(DPF_PATH)/distrho -I$(DPF_PATH)/dgl -I$(DPF_PATH)/dgl/src/pugl-upstream/include
 
 ifeq ($(HAVE_ALSA),true)
 BASE_FLAGS += -DHAVE_ALSA

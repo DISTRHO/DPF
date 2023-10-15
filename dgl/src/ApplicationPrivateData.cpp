@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -47,7 +47,7 @@ static bool isThisTheMainThread(const d_ThreadHandle mainThreadHandle) noexcept
 
 const char* Application::getClassName() const noexcept
 {
-    return puglGetClassName(pData->world);
+    return puglGetWorldString(pData->world, PUGL_CLASS_NAME);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -68,9 +68,9 @@ Application::PrivateData::PrivateData(const bool standalone)
 
     puglSetWorldHandle(world, this);
    #ifdef __EMSCRIPTEN__
-    puglSetClassName(world, "canvas");
+    puglSetWorldString(world, PUGL_CLASS_NAME, "canvas");
    #else
-    puglSetClassName(world, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
+    puglSetWorldString(world, PUGL_CLASS_NAME, DISTRHO_MACRO_AS_STRING(DGL_NAMESPACE));
    #endif
 }
 
@@ -168,7 +168,7 @@ void Application::PrivateData::setClassName(const char* const name)
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
     if (world != nullptr)
-        puglSetClassName(world, name);
+        puglSetWorldString(world, PUGL_CLASS_NAME, "canvas");
 }
 
 // --------------------------------------------------------------------------------------------------------------------

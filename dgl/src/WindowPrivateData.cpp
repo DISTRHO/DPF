@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,7 +29,15 @@
 # endif
 #endif
 
+#ifdef DISTRHO_OS_WINDOWS
+# include <windows.h>
+#endif
+
 START_NAMESPACE_DGL
+
+#ifdef DISTRHO_OS_WINDOWS
+# include "pugl-upstream/src/win.h"
+#endif
 
 #ifdef DGL_DEBUG_EVENTS
 # define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
@@ -52,14 +60,14 @@ START_NAMESPACE_DGL
 
 // -----------------------------------------------------------------------
 
-static double getScaleFactorFromParent(const PuglView* const view)
+static double getScaleFactor(const PuglView* const view)
 {
     // allow custom scale for testing
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
     if (view != nullptr)
-        return puglGetScaleFactorFromParent(view);
+        return puglGetScaleFactor(view);
 
     return 1.0;
 }
@@ -108,7 +116,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       isVisible(false),
       isEmbed(false),
       usesSizeRequest(false),
-      scaleFactor(getScaleFactorFromParent(view)),
+      scaleFactor(DGL_NAMESPACE::getScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -119,9 +127,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-#ifndef DGL_FILE_BROWSER_DISABLED
+     #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
-#endif
+     #endif
       modal()
 {
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -148,9 +156,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-#ifndef DGL_FILE_BROWSER_DISABLED
+     #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
-#endif
+     #endif
       modal(ppData)
 {
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -168,7 +176,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isVisible(parentWindowHandle != 0),
       isEmbed(parentWindowHandle != 0),
       usesSizeRequest(false),
-      scaleFactor(scale != 0.0 ? scale : getScaleFactorFromParent(view)),
+      scaleFactor(scale != 0.0 ? scale : DGL_NAMESPACE::getScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -179,9 +187,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-#ifndef DGL_FILE_BROWSER_DISABLED
+     #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
-#endif
+     #endif
       modal()
 {
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, resizable);
@@ -200,7 +208,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       isVisible(parentWindowHandle != 0 && view != nullptr),
       isEmbed(parentWindowHandle != 0),
       usesSizeRequest(usesSizeRequest_),
-      scaleFactor(scale != 0.0 ? scale : getScaleFactorFromParent(view)),
+      scaleFactor(scale != 0.0 ? scale : DGL_NAMESPACE::getScaleFactor(view)),
       autoScaling(false),
       autoScaleFactor(1.0),
       minWidth(0),
@@ -211,9 +219,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-#ifndef DGL_FILE_BROWSER_DISABLED
+     #ifndef DGL_FILE_BROWSER_DISABLED
       fileBrowserHandle(nullptr),
-#endif
+     #endif
       modal()
 {
     initPre(width != 0 ? width : DEFAULT_WIDTH, height != 0 ? height : DEFAULT_HEIGHT, resizable);
@@ -230,10 +238,10 @@ Window::PrivateData::~PrivateData()
 
     if (isEmbed)
     {
-#ifndef DGL_FILE_BROWSER_DISABLED
+       #ifndef DGL_FILE_BROWSER_DISABLED
         if (fileBrowserHandle != nullptr)
             fileBrowserClose(fileBrowserHandle);
-#endif
+       #endif
         puglHide(view);
         appData->oneWindowClosed();
         isClosed = true;
@@ -292,7 +300,7 @@ bool Window::PrivateData::initPost()
     if (isEmbed)
     {
         appData->oneWindowShown();
-        puglShow(view);
+        puglShow(view, PUGL_SHOW_PASSIVE);
     }
 
     return true;
@@ -347,7 +355,7 @@ void Window::PrivateData::show()
 #elif defined(DISTRHO_OS_MAC)
         puglMacOSShowCentered(view);
 #else
-        puglShow(view);
+        puglShow(view, PUGL_SHOW_RAISE);
 #endif
     }
     else
@@ -355,7 +363,7 @@ void Window::PrivateData::show()
 #ifdef DISTRHO_OS_WINDOWS
         puglWin32RestoreWindow(view);
 #else
-        puglShow(view);
+        puglShow(view, PUGL_SHOW_RAISE);
 #endif
     }
 
@@ -475,7 +483,7 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
     FileBrowserOptions options2 = options;
 
     if (options2.title == nullptr)
-        options2.title = puglGetWindowTitle(view);
+        options2.title = puglGetViewString(view, PUGL_WINDOW_TITLE);
 
     fileBrowserHandle = fileBrowserCreate(isEmbed,
                                           puglGetNativeView(view),
@@ -887,58 +895,61 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
     case PUGL_NOTHING:
         break;
 
-    ///< View created, a #PuglEventCreate
-    case PUGL_CREATE:
-       #ifdef DGL_USING_X11
-        if (! pData->isEmbed)
+    ///< View realized, a #PuglRealizeEvent
+    case PUGL_REALIZE:
+        if (! pData->isEmbed && ! puglGetTransientParent(view))
+        {
+           #if defined(DISTRHO_OS_WINDOWS) && defined(DGL_WINDOWS_ICON_ID)
+            WNDCLASSEX wClass = {};
+            const HINSTANCE hInstance = GetModuleHandle(nullptr);
+
+            if (GetClassInfoEx(hInstance, view->world->strings[PUGL_CLASS_NAME], &wClass))
+                wClass.hIcon = LoadIcon(nullptr, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID));
+
+            SetClassLongPtr(view->impl->hwnd, GCLP_HICON, (LONG_PTR) LoadIcon(hInstance, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID)));
+           #endif
+           #ifdef DGL_USING_X11
             puglX11SetWindowTypeAndPID(view, pData->appData->isStandalone);
-       #endif
+           #endif
+        }
         break;
 
-    ///< View destroyed, a #PuglEventDestroy
-    case PUGL_DESTROY:
+    ///< View unrealizeed, a #PuglUnrealizeEvent
+    case PUGL_UNREALIZE:
         break;
 
-    ///< View moved/resized, a #PuglEventConfigure
+    ///< View configured, a #PuglConfigureEvent
     case PUGL_CONFIGURE:
         // unused x, y (double)
         pData->onPuglConfigure(event->configure.width, event->configure.height);
         break;
 
-    ///< View made visible, a #PuglEventMap
-    case PUGL_MAP:
-        break;
-
-    ///< View made invisible, a #PuglEventUnmap
-    case PUGL_UNMAP:
-        break;
-
-    ///< View ready to draw, a #PuglEventUpdate
+    ///< View ready to draw, a #PuglUpdateEvent
     case PUGL_UPDATE:
         break;
 
-    ///< View must be drawn, a #PuglEventExpose
+    ///< View must be drawn, a #PuglExposeEvent
     case PUGL_EXPOSE:
         // unused x, y, width, height (double)
         pData->onPuglExpose();
         break;
 
-    ///< View will be closed, a #PuglEventClose
+    ///< View will be closed, a #PuglCloseEvent
     case PUGL_CLOSE:
         pData->onPuglClose();
         break;
 
-    ///< Keyboard focus entered view, a #PuglEventFocus
+    ///< Keyboard focus entered view, a #PuglFocusEvent
     case PUGL_FOCUS_IN:
-    ///< Keyboard focus left view, a #PuglEventFocus
+    ///< Keyboard focus left view, a #PuglFocusEvent
     case PUGL_FOCUS_OUT:
         pData->onPuglFocus(event->type == PUGL_FOCUS_IN,
                            static_cast<CrossingMode>(event->focus.mode));
         break;
 
-    ///< Key pressed, a #PuglEventKey
+    ///< Key pressed, a #PuglKeyEvent
     case PUGL_KEY_PRESS:
-    ///< Key released, a #PuglEventKey
+    ///< Key released, a #PuglKeyEvent
     case PUGL_KEY_RELEASE:
     {
         // unused x, y, xRoot, yRoot (double)
@@ -961,7 +972,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         break;
     }
 
-    ///< Character entered, a #PuglEventText
+    ///< Character entered, a #PuglTextEvent
     case PUGL_TEXT:
     {
         // unused x, y, xRoot, yRoot (double)
@@ -976,16 +987,16 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         break;
     }
 
-    ///< Pointer entered view, a #PuglEventCrossing
+    ///< Pointer entered view, a #PuglCrossingEvent
     case PUGL_POINTER_IN:
         break;
-    ///< Pointer left view, a #PuglEventCrossing
+    ///< Pointer left view, a #PuglCrossingEvent
     case PUGL_POINTER_OUT:
         break;
 
-    ///< Mouse button pressed, a #PuglEventButton
+    ///< Mouse button pressed, a #PuglButtonEvent
     case PUGL_BUTTON_PRESS:
-    ///< Mouse button released, a #PuglEventButton
+    ///< Mouse button released, a #PuglButtonEvent
     case PUGL_BUTTON_RELEASE:
     {
         Widget::MouseEvent ev;
@@ -994,51 +1005,76 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
         ev.button = event->button.button + 1;
         ev.press  = event->type == PUGL_BUTTON_PRESS;
-        ev.pos    = Point<double>(event->button.x, event->button.y);
+        if (pData->autoScaling && 0)
+        {
+            const double scaleFactor = pData->autoScaleFactor;
+            ev.pos = Point<double>(event->button.x / scaleFactor, event->button.y / scaleFactor);
+        }
+        else
+        {
+            ev.pos = Point<double>(event->button.x, event->button.y);
+        }
         ev.absolutePos = ev.pos;
         pData->onPuglMouse(ev);
         break;
     }
 
-    ///< Pointer moved, a #PuglEventMotion
+    ///< Pointer moved, a #PuglMotionEvent
     case PUGL_MOTION:
     {
         Widget::MotionEvent ev;
         ev.mod   = event->motion.state;
         ev.flags = event->motion.flags;
         ev.time  = static_cast<uint>(event->motion.time * 1000.0 + 0.5);
-        ev.pos   = Point<double>(event->motion.x, event->motion.y);
+        if (pData->autoScaling && 0)
+        {
+            const double scaleFactor = pData->autoScaleFactor;
+            ev.pos = Point<double>(event->motion.x / scaleFactor, event->motion.y / scaleFactor);
+        }
+        else
+        {
+            ev.pos = Point<double>(event->motion.x, event->motion.y);
+        }
         ev.absolutePos = ev.pos;
         pData->onPuglMotion(ev);
         break;
     }
 
-    ///< Scrolled, a #PuglEventScroll
+    ///< Scrolled, a #PuglScrollEvent
     case PUGL_SCROLL:
     {
         Widget::ScrollEvent ev;
         ev.mod       = event->scroll.state;
         ev.flags     = event->scroll.flags;
         ev.time      = static_cast<uint>(event->scroll.time * 1000.0 + 0.5);
-        ev.pos       = Point<double>(event->scroll.x, event->scroll.y);
-        ev.delta     = Point<double>(event->scroll.dx, event->scroll.dy);
+        if (pData->autoScaling && 0)
+        {
+            const double scaleFactor = pData->autoScaleFactor;
+            ev.pos   = Point<double>(event->scroll.x / scaleFactor, event->scroll.y / scaleFactor);
+            ev.delta = Point<double>(event->scroll.dx / scaleFactor, event->scroll.dy / scaleFactor);
+        }
+        else
+        {
+            ev.pos   = Point<double>(event->scroll.x, event->scroll.y);
+            ev.delta = Point<double>(event->scroll.dx, event->scroll.dy);
+        }
         ev.direction = static_cast<ScrollDirection>(event->scroll.direction);
         ev.absolutePos = ev.pos;
         pData->onPuglScroll(ev);
         break;
     }
 
-    ///< Custom client message, a #PuglEventClient
+    ///< Custom client message, a #PuglClientEvent
     case PUGL_CLIENT:
         break;
 
-    ///< Timer triggered, a #PuglEventTimer
+    ///< Timer triggered, a #PuglTimerEvent
     case PUGL_TIMER:
         if (IdleCallback* const idleCallback = reinterpret_cast<IdleCallback*>(event->timer.id))
             idleCallback->idleCallback();
         break;
 
-    ///< Recursive loop entered, a #PuglEventLoopEnter
+    ///< Recursive loop left, a #PuglLoopLeaveEvent
     case PUGL_LOOP_ENTER:
         break;
 

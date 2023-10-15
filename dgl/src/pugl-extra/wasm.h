@@ -29,6 +29,8 @@ struct PuglInternalsImpl {
   bool isFullscreen;
   bool needsRepaint;
   bool pointerLocked;
+  bool created;
+  bool visible;
   uint32_t numTimers;
   LastMotionValues lastMotion;
   long buttonPressTimeout;

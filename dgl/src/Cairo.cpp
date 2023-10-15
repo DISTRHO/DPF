@@ -801,9 +801,10 @@ void TopLevelWidget::PrivateData::display()
 
     cairo_matrix_t matrix;
     cairo_get_matrix(handle, &matrix);
-    cairo_translate(handle, 0, 0);
 
     // full viewport size
+    cairo_translate(handle, 0, 0);
+
     if (window.pData->autoScaling)
         cairo_scale(handle, autoScaleFactor, autoScaleFactor);
     else

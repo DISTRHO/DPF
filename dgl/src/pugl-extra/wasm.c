@@ -173,7 +173,7 @@ puglKeyCallback(const int eventType, const EmscriptenKeyboardEvent* const keyEve
 {
   PuglView* const view = (PuglView*)userData;
 
-  if (!view->visible) {
+  if (!view->impl->visible) {
     return EM_FALSE;
   }
 
@@ -253,7 +253,7 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
 {
   PuglView* const view = (PuglView*)userData;
 
-  if (!view->visible) {
+  if (!view->impl->visible) {
     return EM_FALSE;
   }
 
@@ -286,7 +286,7 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
   const long canvasX = mouseEvent->canvasX;
   const long canvasY = mouseEvent->canvasY;
 #else
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
   const double canvasX = mouseEvent->clientX - EM_ASM_DOUBLE({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().x;
@@ -365,7 +365,7 @@ puglMouseCallback(const int eventType, const EmscriptenMouseEvent* const mouseEv
 #ifdef PUGL_WASM_AUTO_POINTER_LOCK
   switch (eventType) {
   case EMSCRIPTEN_EVENT_MOUSEDOWN:
-    emscripten_request_pointerlock(view->world->className, false);
+    emscripten_request_pointerlock(view->world->strings[PUGL_CLASS_NAME], false);
     break;
   case EMSCRIPTEN_EVENT_MOUSEUP:
     emscripten_exit_pointerlock();
@@ -397,7 +397,7 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
 
   PuglView*      const view   = (PuglView*)userData;
   PuglInternals* const impl   = view->impl;
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
 
   if (impl->supportsTouch == PUGL_DONT_CARE) {
     impl->supportsTouch = PUGL_TRUE;
@@ -407,7 +407,7 @@ puglTouchCallback(const int eventType, const EmscriptenTouchEvent* const touchEv
     emscripten_set_mouseup_callback(className, view, false, NULL);
   }
 
-  if (!view->visible) {
+  if (!view->impl->visible) {
     return EM_FALSE;
   }
 
@@ -519,7 +519,7 @@ puglFocusCallback(const int eventType, const EmscriptenFocusEvent* /*const focus
 {
   PuglView* const view = (PuglView*)userData;
 
-  if (!view->visible) {
+  if (!view->impl->visible) {
     return EM_FALSE;
   }
 
@@ -549,7 +549,7 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
 {
   PuglView* const view = (PuglView*)userData;
 
-  if (!view->visible) {
+  if (!view->impl->visible) {
     return EM_FALSE;
   }
 
@@ -569,7 +569,7 @@ puglWheelCallback(const int eventType, const EmscriptenWheelEvent* const wheelEv
   const long canvasX = wheelEvent->mouse.canvasX;
   const long canvasY = wheelEvent->mouse.canvasY;
 #else
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
   const double canvasX = wheelEvent->mouse.canvasX - EM_ASM_INT({
     var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
     return canvasWrapper.getBoundingClientRect().x;
@@ -603,7 +603,7 @@ static EM_BOOL
 puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void* const userData)
 {
   PuglView* const view = (PuglView*)userData;
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
   const bool isFullscreen = view->impl->isFullscreen;
 
   // FIXME
@@ -636,13 +636,15 @@ puglUiCallback(const int eventType, const EmscriptenUiEvent* const uiEvent, void
   view->world->impl->scaleFactor = scaleFactor;
 
   PuglEvent event        = {{PUGL_CONFIGURE, 0}};
-  event.configure.x      = view->frame.x;
-  event.configure.y      = view->frame.y;
+  event.configure.x      = view->lastConfigure.x;
+  event.configure.y      = view->lastConfigure.y;
   event.configure.width  = width * scaleFactor;
   event.configure.height = height * scaleFactor;
   puglDispatchEvent(view, &event);
 
-  emscripten_set_canvas_element_size(view->world->className, width * scaleFactor, height * scaleFactor);
+  emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME],
+                                     width * scaleFactor,
+                                     height * scaleFactor);
 
 #ifdef __MOD_DEVICES__
   if (isFullscreen) {
@@ -659,7 +661,6 @@ static EM_BOOL
 puglFullscreenChangeCallback(const int eventType, const EmscriptenFullscreenChangeEvent* const fscEvent, void* const userData)
 {
   PuglView* const view = (PuglView*)userData;
-  const char* const className = view->world->className;
 
   view->impl->isFullscreen = fscEvent->isFullscreen;
 
@@ -688,7 +689,7 @@ puglFullscreenChangeCallback(const int eventType, const EmscriptenFullscreenChan
   event.configure.height = height;
   puglDispatchEvent(view, &event);
 
-  emscripten_set_canvas_element_size(view->world->className, width, height);
+  emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME], width, height);
 
 #ifdef __MOD_DEVICES__
   EM_ASM({
@@ -704,9 +705,7 @@ puglVisibilityChangeCallback(const int eventType, const EmscriptenVisibilityChan
 {
   PuglView* const view = (PuglView*)userData;
 
-  view->visible = visibilityChangeEvent->hidden == EM_FALSE;
-  PuglEvent event = {{ view->visible ? PUGL_MAP : PUGL_UNMAP, 0}};
-  puglDispatchEvent(view, &event);
+  view->impl->visible = visibilityChangeEvent->hidden == EM_FALSE;
   return EM_FALSE;
 }
 
@@ -727,18 +726,12 @@ puglRealize(PuglView* const view)
     return PUGL_BAD_BACKEND;
   }
 
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
   d_stdout("className is %s", className);
 
-  // Set the size to the default if it has not already been set
-  if (view->frame.width <= 0.0 && view->frame.height <= 0.0) {
-    PuglViewSize defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
-    if (!defaultSize.width || !defaultSize.height) {
-      return PUGL_BAD_CONFIGURATION;
-    }
-
-    view->frame.width  = defaultSize.width;
-    view->frame.height = defaultSize.height;
+  PuglViewSize defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
+  if (!defaultSize.width || !defaultSize.height) {
+    return PUGL_BAD_CONFIGURATION;
   }
 
   // Configure and create the backend
@@ -747,25 +740,27 @@ puglRealize(PuglView* const view)
     return st;
   }
 
-  if (view->title) {
-    puglSetWindowTitle(view, view->title);
+  if (view->strings[PUGL_WINDOW_TITLE]) {
+    emscripten_set_window_title(view->strings[PUGL_WINDOW_TITLE]);
   }
 
-  puglDispatchSimpleEvent(view, PUGL_CREATE);
+  puglDispatchSimpleEvent(view, PUGL_REALIZE);
 
   PuglEvent event        = {{PUGL_CONFIGURE, 0}};
-  event.configure.x      = view->frame.x;
-  event.configure.y      = view->frame.y;
-  event.configure.width  = view->frame.width;
-  event.configure.height = view->frame.height;
+  event.configure.x      = view->defaultX;
+  event.configure.y      = view->defaultY;
+  event.configure.width  = defaultSize.width;
+  event.configure.height = defaultSize.height;
   puglDispatchEvent(view, &event);
+
+  view->impl->created = true;
 
   EM_ASM({
    var canvasWrapper = document.getElementById(UTF8ToString($0)).parentElement;
    canvasWrapper.style.setProperty("--device-pixel-ratio", window.devicePixelRatio);
   }, className);
 
-  emscripten_set_canvas_element_size(className, view->frame.width, view->frame.height);
+  emscripten_set_canvas_element_size(className, defaultSize.width, defaultSize.height);
 #ifndef PUGL_WASM_NO_KEYBOARD_INPUT
 //   emscripten_set_keypress_callback(className, view, false, puglKeyCallback);
   emscripten_set_keydown_callback(className, view, false, puglKeyCallback);
@@ -795,9 +790,9 @@ puglRealize(PuglView* const view)
 }
 
 PuglStatus
-puglShow(PuglView* const view)
+puglShow(PuglView* const view, PuglShowCommand)
 {
-  view->visible = true;
+  view->impl->visible = true;
   view->impl->needsRepaint = true;
   return puglPostRedisplay(view);
 }
@@ -805,7 +800,7 @@ puglShow(PuglView* const view)
 PuglStatus
 puglHide(PuglView* const view)
 {
-  view->visible = false;
+  view->impl->visible = false;
   return PUGL_FAILURE;
 }
 
@@ -865,7 +860,7 @@ puglUpdate(PuglWorld* const world, const double timeout)
   for (size_t i = 0; i < world->numViews; ++i) {
     PuglView* const view = world->views[i];
 
-    if (!view->visible) {
+    if (!view->impl->visible) {
       continue;
     }
 
@@ -878,10 +873,10 @@ puglUpdate(PuglWorld* const world, const double timeout)
     view->impl->needsRepaint = false;
 
     PuglEvent event     = {{PUGL_EXPOSE, 0}};
-    event.expose.x      = view->frame.x;
-    event.expose.y      = view->frame.y;
-    event.expose.width  = view->frame.width;
-    event.expose.height = view->frame.height;
+    event.expose.x      = view->lastConfigure.x;
+    event.expose.y      = view->lastConfigure.y;
+    event.expose.width  = view->lastConfigure.width;
+    event.expose.height = view->lastConfigure.height;
     puglDispatchEvent(view, &event);
   }
 
@@ -909,10 +904,16 @@ puglGetNativeView(PuglView* const view)
 }
 
 PuglStatus
-puglSetWindowTitle(PuglView* const view, const char* const title)
+puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const value)
 {
-  puglSetString(&view->title, title);
-  emscripten_set_window_title(title);
+  switch (key) {
+  case PUGL_CLASS_NAME:
+    break;
+  case PUGL_WINDOW_TITLE:
+    emscripten_set_window_title(value);
+    break;
+  }
+
   return PUGL_SUCCESS;
 }
 
@@ -1098,7 +1099,7 @@ puglSetClipboard(PuglView* const   view,
     return PUGL_UNSUPPORTED;
   }
 
-  const char* const className = view->world->className;
+  const char* const className = view->world->strings[PUGL_CLASS_NAME];
   const char* const text      = (const char*)data;
 
 #ifdef PUGL_WASM_ASYNC_CLIPBOARD
@@ -1161,7 +1162,14 @@ puglSetPosition(PuglView* const view, const int x, const int y)
     return PUGL_BAD_PARAMETER;
   }
 
-  view->frame.x = (PuglCoord)x;
-  view->frame.y = (PuglCoord)y;
-  return PUGL_FAILURE;
+  if (!view->impl->created) {
+    // Set defaults to be used when realized
+    view->defaultX = x;
+    view->defaultY = y;
+    return PUGL_SUCCESS;
+  }
+
+  view->lastConfigure.x = (PuglCoord)x;
+  view->lastConfigure.y = (PuglCoord)y;
+  return puglPostRedisplay(view);
 }

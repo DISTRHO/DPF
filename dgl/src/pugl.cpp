@@ -228,13 +228,16 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
     {
       #ifdef DGL_OPENGL
        #if defined(DGL_USE_GLES2)
-        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+        puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_ES_API);
+        puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_CORE_PROFILE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
        #elif defined(DGL_USE_OPENGL3)
-        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_FALSE);
+        puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_API);
+        puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_CORE_PROFILE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
        #else
-        puglSetViewHint(view, PUGL_USE_COMPAT_PROFILE, PUGL_TRUE);
+        puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_API);
+        puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_COMPATIBILITY_PROFILE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
        #endif
       #endif
@@ -266,40 +269,6 @@ void puglRaiseWindow(PuglView* const view)
 }
 
 // --------------------------------------------------------------------------------------------------------------------
-// get scale factor from parent window if possible, fallback to puglGetScaleFactor
-
-double puglGetScaleFactorFromParent(const PuglView* const view)
-{
-    const PuglNativeView parent = view->parent ? view->parent : view->transientParent ? view->transientParent : 0;
-#if defined(DISTRHO_OS_HAIKU)
-    // TODO
-    return 1.0;
-#elif defined(DISTRHO_OS_MAC)
-    // some of these can return 0 as backingScaleFactor, pick the most relevant valid one
-    const NSWindow* possibleWindows[] = {
-        parent != 0 ? [(NSView*)parent window] : nullptr,
-        view->impl->window,
-        [view->impl->wrapperView window]
-    };
-    for (size_t i=0; i<ARRAY_SIZE(possibleWindows); ++i)
-    {
-        if (possibleWindows[i] == nullptr)
-            continue;
-        if (const double scaleFactor = [[possibleWindows[i] screen] backingScaleFactor])
-            return scaleFactor;
-    }
-    return [[NSScreen mainScreen] backingScaleFactor];
-#elif defined(DISTRHO_OS_WINDOWS)
-    const HWND hwnd = parent != 0 ? (HWND)parent : view->impl->hwnd;
-    return puglWinGetViewScaleFactor(hwnd);
-#else
-    return puglGetScaleFactor(view);
-    // unused
-    (void)parent;
-#endif
-}
-
-// --------------------------------------------------------------------------------------------------------------------
 // Combined puglSetSizeHint using PUGL_MIN_SIZE and PUGL_FIXED_ASPECT
 
 PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, const uint height, const bool aspect)
@@ -317,12 +286,10 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 #elif defined(DISTRHO_OS_MAC)
     if (view->impl->window)
     {
-        PuglStatus status;
-
-        if ((status = updateSizeHint(view, PUGL_MIN_SIZE)) != PUGL_SUCCESS)
+        if (const PuglStatus status = updateSizeHint(view, PUGL_MIN_SIZE))
             return status;
 
-        if (aspect && (status = updateSizeHint(view, PUGL_FIXED_ASPECT)) != PUGL_SUCCESS)
+        if (const PuglStatus status = updateSizeHint(view, PUGL_FIXED_ASPECT))
             return status;
     }
 #elif defined(DISTRHO_OS_WASM)
@@ -330,10 +297,13 @@ PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, co
 #elif defined(DISTRHO_OS_WINDOWS)
     // nothing
 #elif defined(HAVE_X11)
-    if (const PuglStatus status = updateSizeHints(view))
-        return status;
+    if (view->impl->win)
+    {
+        if (const PuglStatus status = updateSizeHints(view))
+            return status;
 
-    XFlush(view->world->impl->display);
+        XFlush(view->world->impl->display);
+    }
 #endif
 
     return PUGL_SUCCESS;
@@ -377,59 +347,48 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
     if (width > INT16_MAX || height > INT16_MAX)
         return PUGL_BAD_PARAMETER;
 
-    view->sizeHints[PUGL_DEFAULT_SIZE].width = view->frame.width = static_cast<PuglSpan>(width);
-    view->sizeHints[PUGL_DEFAULT_SIZE].height = view->frame.height = static_cast<PuglSpan>(height);
+    // set default size first
+    view->sizeHints[PUGL_DEFAULT_SIZE].width = static_cast<PuglSpan>(width);
+    view->sizeHints[PUGL_DEFAULT_SIZE].height = static_cast<PuglSpan>(height);
 
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
-    // mostly matches upstream pugl, simplified
-    PuglInternals* const impl = view->impl;
-
-    const PuglRect frame = view->frame;
-    const NSRect framePx = rectToNsRect(frame);
-    const NSRect framePt = nsRectToPoints(view, framePx);
-
-    if (PuglWindow* const window = view->impl->window)
+    // matches upstream pugl
+    if (view->impl->wrapperView)
     {
-        const NSRect screenPt = rectToScreen(viewScreen(view), framePt);
-        const NSRect winFrame = [window frameRectForContentRect:screenPt];
-        [window setFrame:winFrame display:NO];
-    }
+        if (const PuglStatus status = puglSetSize(view, width, height))
+            return status;
 
-    const NSSize sizePx = NSMakeSize(frame.width, frame.height);
-    const NSSize sizePt = [impl->drawView convertSizeFromBacking:sizePx];
-    [impl->wrapperView setFrameSize:sizePt];
-    [impl->drawView setFrameSize:sizePt];
+        // nothing to do for PUGL_DEFAULT_SIZE hint
+    }
 #elif defined(DISTRHO_OS_WASM)
-    d_stdout("className is %s", view->world->className);
-    emscripten_set_canvas_element_size(view->world->className, width, height);
+    d_stdout("className is %s", view->world->strings[PUGL_CLASS_NAME]);
+    emscripten_set_canvas_element_size(view->world->strings[PUGL_CLASS_NAME], width, height);
 #elif defined(DISTRHO_OS_WINDOWS)
     // matches upstream pugl, except we re-enter context after resize
-    if (const HWND hwnd = view->impl->hwnd)
+    if (view->impl->hwnd)
     {
-        const RECT rect = adjustedWindowRect(view, view->frame.x, view->frame.y,
-                                             static_cast<long>(width), static_cast<long>(height));
+        if (const PuglStatus status = puglSetSize(view, width, height))
+            return status;
 
-        if (!SetWindowPos(hwnd, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top,
-                          SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_NOMOVE))
-            return PUGL_UNKNOWN_ERROR;
+        // nothing to do for PUGL_DEFAULT_SIZE hint
 
         // make sure to return context back to ourselves
         puglBackendEnter(view);
     }
 #elif defined(HAVE_X11)
-    // matches upstream pugl, all in one
-    if (const Window window = view->impl->win)
+    // matches upstream pugl, adds flush at the end
+    if (view->impl->win)
     {
-        Display* const display = view->world->impl->display;
+        if (const PuglStatus status = puglSetSize(view, width, height))
+            return status;
 
-        if (! XResizeWindow(display, window, width, height))
-            return PUGL_UNKNOWN_ERROR;
-
+        // handle new PUGL_DEFAULT_SIZE hint
         if (const PuglStatus status = updateSizeHints(view))
             return status;
 
-        XFlush(display);
+        // flush size changes
+        XFlush(view->world->impl->display);
     }
 #endif
 
@@ -452,18 +411,18 @@ void puglOnDisplayPrepare(PuglView*)
 // --------------------------------------------------------------------------------------------------------------------
 // DGL specific, build-specific fallback resize
 
-void puglFallbackOnResize(PuglView* const view, uint, uint)
+void puglFallbackOnResize(PuglView* const view, const uint width, const uint height)
 {
   #ifdef DGL_OPENGL
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
    #ifdef DGL_USE_OPENGL3
-    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
+    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
    #else
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(0.0, static_cast<GLdouble>(view->frame.width), static_cast<GLdouble>(view->frame.height), 0.0, 0.0, 1.0);
-    glViewport(0, 0, static_cast<GLsizei>(view->frame.width), static_cast<GLsizei>(view->frame.height));
+    glOrtho(0.0, static_cast<GLdouble>(width), static_cast<GLdouble>(height), 0.0, 0.0, 1.0);
+    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
    #endif
@@ -527,7 +486,7 @@ puglMacOSRemoveChildWindow(PuglView* const view, PuglView* const child)
 
 void puglMacOSShowCentered(PuglView* const view)
 {
-    if (puglShow(view) != PUGL_SUCCESS)
+    if (puglShow(view, PUGL_SHOW_RAISE) != PUGL_SUCCESS)
         return;
 
     if (view->transientParent != 0)
@@ -586,26 +545,14 @@ void puglWin32ShowCentered(PuglView* const view)
     }
     else
     {
-#ifdef DGL_WINDOWS_ICON_ID
-        WNDCLASSEX wClass;
-        std::memset(&wClass, 0, sizeof(wClass));
-
-        const HINSTANCE hInstance = GetModuleHandle(nullptr);
-
-        if (GetClassInfoEx(hInstance, view->world->className, &wClass))
-            wClass.hIcon = LoadIcon(nullptr, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID));
-
-        SetClassLongPtr(impl->hwnd, GCLP_HICON, (LONG_PTR) LoadIcon(hInstance, MAKEINTRESOURCE(DGL_WINDOWS_ICON_ID)));
-#endif
-
         MONITORINFO mInfo;
         std::memset(&mInfo, 0, sizeof(mInfo));
         mInfo.cbSize = sizeof(mInfo);
 
         if (GetMonitorInfo(MonitorFromWindow(impl->hwnd, MONITOR_DEFAULTTOPRIMARY), &mInfo))
             SetWindowPos(impl->hwnd, HWND_TOP,
-                         mInfo.rcWork.left + (mInfo.rcWork.right - mInfo.rcWork.left - view->frame.width) / 2,
-                         mInfo.rcWork.top + (mInfo.rcWork.bottom - mInfo.rcWork.top - view->frame.height) / 2,
+                         mInfo.rcWork.left + (mInfo.rcWork.right - mInfo.rcWork.left - view->lastConfigure.width) / 2,
+                         mInfo.rcWork.top + (mInfo.rcWork.bottom - mInfo.rcWork.top - view->lastConfigure.height) / 2,
                          0, 0, SWP_SHOWWINDOW|SWP_NOSIZE);
         else
             ShowWindow(impl->hwnd, SW_NORMAL);

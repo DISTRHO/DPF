@@ -29,9 +29,26 @@
 # include <stdint.h>
 #endif
 
-// hidden api
+// custom attributes
+#define PUGL_ATTRIBUTES_H
+#define PUGL_BEGIN_DECLS
+#define PUGL_END_DECLS
 #define PUGL_API
 #define PUGL_DISABLE_DEPRECATED
+
+// GCC function attributes
+#if defined(__GNUC__) && !defined(__clang__)
+ #define PUGL_CONST_FUNC __attribute__((const))
+ #define PUGL_MALLOC_FUNC __attribute__((malloc))
+#else
+ #define PUGL_CONST_FUNC
+ #define PUGL_MALLOC_FUNC
+#endif
+
+#define PUGL_CONST_API PUGL_CONST_FUNC
+#define PUGL_MALLOC_API PUGL_MALLOC_FUNC
+
+// we do our own OpenGL inclusion
 #define PUGL_NO_INCLUDE_GL_H
 #define PUGL_NO_INCLUDE_GLU_H
 
@@ -39,7 +56,7 @@
 START_NAMESPACE_DGL
 #endif
 
-#include "pugl-upstream/include/pugl/pugl.h"
+#include "pugl/pugl.h"
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -54,9 +71,6 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* view);
 
 // bring view window into the foreground, aka "raise" window
 void puglRaiseWindow(PuglView* view);
-
-// get scale factor from parent window if possible, fallback to puglGetScaleFactor
-double puglGetScaleFactorFromParent(const PuglView* view);
 
 // combined puglSetSizeHint using PUGL_MIN_SIZE, PUGL_MIN_ASPECT and PUGL_MAX_ASPECT
 PuglStatus puglSetGeometryConstraints(PuglView* view, uint width, uint height, bool aspect);
