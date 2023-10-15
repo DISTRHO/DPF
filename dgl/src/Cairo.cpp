@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -290,7 +290,6 @@ static cairo_format_t asCairoImageFormat(const ImageFormat format) noexcept
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
-        return CAIRO_FORMAT_A8;
     case kImageFormatBGR:
     case kImageFormatRGB:
         return CAIRO_FORMAT_RGB24;
@@ -407,8 +406,17 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
-        // Grayscale to A8
-        // TODO
+        // Grayscale to CAIRO_FORMAT_RGB24
+        for (int h = 0; h < height; ++h)
+        {
+            for (int w = 0; w < width; ++w)
+            {
+                newdata[h*width*4+w*4+0] = urdata[h*width+w];
+                newdata[h*width*4+w*4+1] = urdata[h*width+w];
+                newdata[h*width*4+w*4+2] = urdata[h*width+w];
+                newdata[h*width*4+w*4+3] = 0;
+            }
+        }
         break;
     case kImageFormatBGR:
         // BGR8 to CAIRO_FORMAT_RGB24
@@ -521,8 +529,7 @@ void CairoImage::loadFromPNG(const char* const pngData, const uint pngSize) noex
 
 void CairoImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
 {
-    if (surface == nullptr)
-        return;
+    DISTRHO_SAFE_ASSERT_RETURN(surface != nullptr,);
 
     cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
 
@@ -630,14 +637,9 @@ static int getBytesPerPixel(const cairo_format_t format) noexcept
     {
     case CAIRO_FORMAT_ARGB32:
     case CAIRO_FORMAT_RGB24:
-    case CAIRO_FORMAT_RGB30:
         return 4;
-    case CAIRO_FORMAT_RGB16_565:
-        return 2;
     case CAIRO_FORMAT_A8:
         return 1;
-    case CAIRO_FORMAT_A1:
-        return 0;
     default:
         DISTRHO_SAFE_ASSERT(false);
         return 0;
@@ -647,10 +649,10 @@ static int getBytesPerPixel(const cairo_format_t format) noexcept
 static cairo_surface_t* getRegion(cairo_surface_t* origsurface, int x, int y, int width, int height) noexcept
 {
     const cairo_format_t format = cairo_image_surface_get_format(origsurface);
-    const int bpp = getBytesPerPixel(format);
+    DISTRHO_SAFE_ASSERT_RETURN(format != CAIRO_FORMAT_INVALID, nullptr);
 
-    if (bpp == 0)
-        return nullptr;
+    const int bpp = getBytesPerPixel(format);
+    DISTRHO_SAFE_ASSERT_RETURN(bpp != 0, nullptr);
 
     const int fullWidth   = cairo_image_surface_get_width(origsurface);
     const int fullHeight  = cairo_image_surface_get_height(origsurface);
