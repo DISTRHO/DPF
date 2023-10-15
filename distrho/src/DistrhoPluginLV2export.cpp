@@ -328,10 +328,17 @@ void lv2_generate_ttl(const char* const basename)
         {
             std::snprintf(strBuf, 0xff, "%03i", i+1);
 
+            const String& programName(plugin.getProgramName(i));
+
             presetString  = "<" DISTRHO_PLUGIN_URI + presetSeparator + "preset" + strBuf + ">\n";
             presetString += "    a pset:Preset ;\n";
             presetString += "    lv2:appliesTo <" DISTRHO_PLUGIN_URI "> ;\n";
-            presetString += "    rdfs:label \"" + plugin.getProgramName(i) + "\" ;\n";
+
+            if (programName.contains('"'))
+                presetString += "    rdfs:label\"\"\"" + programName + "\"\"\" ;\n";
+            else
+                presetString += "    rdfs:label \"" + programName + "\" ;\n";
+
             presetString += "    rdfs:seeAlso <presets.ttl> .\n";
             presetString += "\n";
 
