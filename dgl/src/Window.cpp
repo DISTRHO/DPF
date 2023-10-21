@@ -504,7 +504,7 @@ std::vector<ClipboardDataOffer> Window::getClipboardDataOfferTypes()
 {
     std::vector<ClipboardDataOffer> offerTypes;
 
-    if (pData->view != nullptr)
+    if (pData->view == nullptr)
         return offerTypes;
 
     if (const uint32_t numTypes = puglGetNumClipboardTypes(pData->view))
