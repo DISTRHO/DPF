@@ -120,6 +120,10 @@ END_NAMESPACE_DGL
 # include "../../distrho/extra/FileBrowserDialogImpl.cpp"
 #endif
 
+#if defined(DGL_USING_X11) && defined(DGL_X11_WINDOW_ICON_NAME)
+extern const ulong* DGL_X11_WINDOW_ICON_NAME;
+#endif
+
 #ifndef DISTRHO_OS_MAC
 START_NAMESPACE_DGL
 #endif
@@ -604,6 +608,15 @@ void puglX11SetWindowTypeAndPID(const PuglView* const view, const bool isStandal
     const pid_t pid = getpid();
     const Atom _nwp = XInternAtom(display, "_NET_WM_PID", False);
     XChangeProperty(display, impl->win, _nwp, XA_CARDINAL, 32, PropModeReplace, (const uchar*)&pid, 1);
+
+   #if defined(DGL_X11_WINDOW_ICON_NAME) && defined(DGL_X11_WINDOW_ICON_SIZE)
+    if (isStandalone)
+    {
+        const Atom _nwi = XInternAtom(display, "_NET_WM_ICON", False);
+        XChangeProperty(display, impl->win, _nwi, XA_CARDINAL, 32, PropModeReplace,
+                        (const uchar*)DGL_X11_WINDOW_ICON_NAME, DGL_X11_WINDOW_ICON_SIZE);
+    }
+   #endif
 
     const Atom _wt = XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
 
