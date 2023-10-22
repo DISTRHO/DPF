@@ -351,9 +351,19 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
     if (width > INT16_MAX || height > INT16_MAX)
         return PUGL_BAD_PARAMETER;
 
+#ifdef DGL_USING_X11
+    // workaround issues in fluxbox, see https://github.com/lv2/pugl/issues/118
+    if (view->impl->win)
+    {
+        view->sizeHints[PUGL_DEFAULT_SIZE].width = view->sizeHints[PUGL_DEFAULT_SIZE].height = 0;
+    }
+    else
+#endif
     // set default size first
-    view->sizeHints[PUGL_DEFAULT_SIZE].width = static_cast<PuglSpan>(width);
-    view->sizeHints[PUGL_DEFAULT_SIZE].height = static_cast<PuglSpan>(height);
+    {
+        view->sizeHints[PUGL_DEFAULT_SIZE].width = static_cast<PuglSpan>(width);
+        view->sizeHints[PUGL_DEFAULT_SIZE].height = static_cast<PuglSpan>(height);
+    }
 
 #if defined(DISTRHO_OS_HAIKU)
 #elif defined(DISTRHO_OS_MAC)
