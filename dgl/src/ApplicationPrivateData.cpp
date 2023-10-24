@@ -168,7 +168,7 @@ void Application::PrivateData::setClassName(const char* const name)
     DISTRHO_SAFE_ASSERT_RETURN(name != nullptr && name[0] != '\0',);
 
     if (world != nullptr)
-        puglSetWorldString(world, PUGL_CLASS_NAME, "canvas");
+        puglSetWorldString(world, PUGL_CLASS_NAME, name);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
