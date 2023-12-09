@@ -822,6 +822,11 @@ START_NAMESPACE_DISTRHO
 */
 #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.effect"
 
+/**
+   Whether the plugin supports and prefers the MIDI MPE dialect for MIDI input and MIDI output in the CLAP format.
+*/
+#define DISTRHO_PLUGIN_CLAP_DIALECT_MIDI_MPE 0
+
 /** @} */
 
 /* ------------------------------------------------------------------------------------------------------------

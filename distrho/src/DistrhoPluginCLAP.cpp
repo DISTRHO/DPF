@@ -67,6 +67,12 @@
 # define DPF_CLAP_TIMER_INTERVAL 16 /* ~60 fps */
 #endif
 
+#if defined(DISTRHO_PLUGIN_CLAP_DIALECT_MIDI_MPE) && DISTRHO_PLUGIN_CLAP_DIALECT_MIDI_MPE
+# define DPF_CLAP_NOTE_DIALECT CLAP_NOTE_DIALECT_MIDI_MPE
+#else
+# define DPF_CLAP_NOTE_DIALECT CLAP_NOTE_DIALECT_MIDI
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -2297,8 +2303,8 @@ static bool CLAP_ABI clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         info->id = 0;
-        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
-        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+        info->supported_dialects = DPF_CLAP_NOTE_DIALECT;
+        info->preferred_dialect = DPF_CLAP_NOTE_DIALECT;
         std::strcpy(info->name, "Event/MIDI Input");
         return true;
        #endif
@@ -2307,8 +2313,8 @@ static bool CLAP_ABI clap_plugin_note_ports_get(const clap_plugin_t*, uint32_t,
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         info->id = 0;
-        info->supported_dialects = CLAP_NOTE_DIALECT_MIDI;
-        info->preferred_dialect = CLAP_NOTE_DIALECT_MIDI;
+        info->supported_dialects = DPF_CLAP_NOTE_DIALECT;
+        info->preferred_dialect = DPF_CLAP_NOTE_DIALECT;
         std::strcpy(info->name, "Event/MIDI Output");
         return true;
        #endif
