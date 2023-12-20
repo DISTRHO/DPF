@@ -1253,7 +1253,7 @@ void lv2_generate_ttl(const char* const basename)
         std::cout << " done!" << std::endl;
     }
 
-   #if DISTRHO_PLUGIN_USES_MODGUI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
+   #if DISTRHO_PLUGIN_USES_MODGUI && DISTRHO_PLUGIN_HAS_EMBED_UI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
     {
         std::cout << "Writing modgui.ttl..."; std::cout.flush();
         std::fstream modguiFile("modgui.ttl", std::ios::out);
@@ -1548,7 +1548,7 @@ void lv2_generate_ttl(const char* const basename)
         stylesheetFile.close();
         std::cout << " done!" << std::endl;
     }
-   #endif // DISTRHO_PLUGIN_USES_MODGUI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
+   #endif // DISTRHO_PLUGIN_USES_MODGUI && DISTRHO_PLUGIN_HAS_EMBED_UI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
 
     // ---------------------------------------------
 
