@@ -81,7 +81,7 @@ enum Vst3InternalParameters {
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     kVst3InternalParameterMidiCC_start = kVst3InternalParameterBaseCount,
     kVst3InternalParameterMidiCC_end = kVst3InternalParameterMidiCC_start + 130*16,
-    kVst3InternalParameterCount = kVst3InternalParameterMidiCC_end
+    kVst3InternalParameterCount
    #else
     kVst3InternalParameterCount = kVst3InternalParameterBaseCount
    #endif

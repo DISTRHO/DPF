@@ -942,6 +942,7 @@ public:
        #if DISTRHO_PLUGIN_HAS_UI
         const bool connectedToUI = fConnectionFromCtrlToView != nullptr && fConnectedToUI;
        #endif
+        bool componentValuesChanged = false;
         String key, value;
         bool empty = true;
         bool hasValue = false;
@@ -1109,6 +1110,18 @@ public:
                             }
 
                             fCachedParameterValues[kVst3InternalParameterBaseCount + j] = fvalue;
+
+                           #if DPF_VST3_USES_SEPARATE_CONTROLLER
+                            // If this is the component make sure the controller also knows about the state change
+                            if (fIsComponent)
+                            {
+                                componentValuesChanged = true;
+                                fParameterValuesChangedDuringProcessing[kVst3InternalParameterBaseCount + j] = true;
+                            }
+                           #else
+                            componentValuesChanged = true;
+                           #endif
+
                            #if DISTRHO_PLUGIN_HAS_UI
                             if (connectedToUI)
                             {
@@ -1128,7 +1141,7 @@ public:
             }
         }
 
-        if (fComponentHandler != nullptr)
+        if (fComponentHandler != nullptr && componentValuesChanged)
             v3_cpp_obj(fComponentHandler)->restart_component(fComponentHandler, V3_RESTART_PARAM_VALUES_CHANGED);
 
        #if DISTRHO_PLUGIN_HAS_UI
@@ -1154,7 +1167,7 @@ public:
        #if DISTRHO_PLUGIN_WANT_STATE
         const uint32_t stateCount = fPlugin.getStateCount();
        #else
-        const uint32_t stateCount = 0;
+        constexpr const uint32_t stateCount = 0;
        #endif
 
         if (stateCount == 0 && paramCount == 0)
@@ -3044,7 +3057,7 @@ private:
 
     static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
     {
-        return ((PluginVst3*)ptr)->requestParameterValueChange(index, value);
+        return static_cast<PluginVst3*>(ptr)->requestParameterValueChange(index, value);
     }
    #endif
 
@@ -3119,7 +3132,7 @@ private:
 
     static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
     {
-        return ((PluginVst3*)ptr)->writeMidi(midiEvent);
+        return static_cast<PluginVst3*>(ptr)->writeMidi(midiEvent);
     }
    #endif
 };
