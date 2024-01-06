@@ -94,10 +94,10 @@ typedef struct _VstTimeInfo {
 typedef std::map<const String, String> StringMap;
 
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-static const writeMidiFunc writeMidiCallback = nullptr;
+static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+static constexpr const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

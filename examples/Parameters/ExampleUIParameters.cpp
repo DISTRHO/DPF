@@ -212,7 +212,9 @@ protected:
                 fParamGrid[index] = !fParamGrid[index];
 
                 // report change to host (and thus plugin)
+                editParameter(index, true);
                 setParameterValue(index, fParamGrid[index] ? 1.0f : 0.0f);
+                editParameter(index, false);
 
                 // trigger repaint
                 repaint();
@@ -227,7 +229,9 @@ protected:
                 // same as before
                 const uint32_t index = 3+i;
                 fParamGrid[index] = !fParamGrid[index];
+                editParameter(index, true);
                 setParameterValue(index, fParamGrid[index] ? 1.0f : 0.0f);
+                editParameter(index, false);
                 repaint();
                 break;
             }
@@ -240,7 +244,9 @@ protected:
                 // same as before
                 const uint32_t index = 6+i;
                 fParamGrid[index] = !fParamGrid[index];
+                editParameter(index, true);
                 setParameterValue(index, fParamGrid[index] ? 1.0f : 0.0f);
+                editParameter(index, false);
                 repaint();
                 break;
             }
