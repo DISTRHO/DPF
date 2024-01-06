@@ -1744,10 +1744,10 @@ public:
             break;
         }
 
-        if (hints & kParameterIsAutomatable)
-            flags |= V3_PARAM_CAN_AUTOMATE;
         if (hints & kParameterIsOutput)
             flags |= V3_PARAM_READ_ONLY;
+        else if (hints & kParameterIsAutomatable)
+            flags |= V3_PARAM_CAN_AUTOMATE;
 
         // set up step_count
         int32_t step_count = 0;
