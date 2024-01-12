@@ -309,6 +309,39 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
     return ++size;
 }
 
+/**
+   Round a floating point number to integer.
+   Fast operation for values known to be 0 or positive.
+ */
+template<typename T>
+static inline constexpr
+int32_t d_roundToIntPositive(const T& value)
+{
+    return static_cast<int32_t>(value + static_cast<T>(0.5));
+}
+
+/**
+   Round a floating point number to integer.
+   Fast operation for values known to be 0 or negative.
+ */
+template<typename T>
+static inline constexpr
+int32_t d_roundToIntNegative(const T& value)
+{
+    return static_cast<int32_t>(value - static_cast<T>(0.5));
+}
+
+/**
+   Round a floating point number to integer.
+ */
+template<typename T>
+static inline constexpr
+int32_t d_roundToInt(const T& value)
+{
+    return value >= 0 ? static_cast<int32_t>(value + static_cast<T>(0.5))
+                      : static_cast<int32_t>(value - static_cast<T>(0.5));
+}
+
 /** @} */
 
 /* --------------------------------------------------------------------------------------------------------------------

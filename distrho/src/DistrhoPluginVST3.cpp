@@ -21,7 +21,6 @@
  * - parameter groups via unit ids
  * - test parameter changes from DSP (aka requestParameterValueChange)
  * - implement getParameterNormalized/setParameterNormalized for MIDI CC params ?
- * - float to int safe casting
  * - verify that latency changes works (with and without DPF_VST3_USES_SEPARATE_CONTROLLER)
  * == MIDI
  * - MIDI CC changes (need to store value to give to the host?)
@@ -721,9 +720,9 @@ public:
         }
         else if (hints & kParameterIsInteger)
         {
-            const int ivalue = static_cast<int>(std::round(value));
+            const int ivalue = d_roundToInt(value);
 
-            if (static_cast<int>(fCachedParameterValues[kVst3InternalParameterBaseCount + index]) == ivalue)
+            if (d_roundToInt(fCachedParameterValues[kVst3InternalParameterBaseCount + index]) == ivalue)
                 return;
 
             value = ivalue;
@@ -1236,7 +1235,7 @@ public:
                 tmpStr  = fPlugin.getParameterSymbol(i);
                 tmpStr += "\xff";
                 if (fPlugin.getParameterHints(i) & kParameterIsInteger)
-                    tmpStr += String(static_cast<int>(std::round(fPlugin.getParameterValue(i))));
+                    tmpStr += String(d_roundToInt(fPlugin.getParameterValue(i)));
                 else
                     tmpStr += String(fPlugin.getParameterValue(i));
                 tmpStr += "\xff";
@@ -1420,7 +1419,7 @@ public:
 
                 fTimePosition.bbt.valid       = true;
                 fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
-                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest + 0.5) + 1;
+                fTimePosition.bbt.beat        = d_roundToIntPositive<int32_t>(barBeats - rest) + 1;
                 fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
                 fTimePosition.bbt.beatsPerBar = ctx->time_sig_numerator;
                 fTimePosition.bbt.beatType    = ctx->time_sig_denom;
@@ -1782,20 +1781,20 @@ public:
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
-            snprintf_i32_utf16(output, static_cast<int>(normalized * DPF_VST3_MAX_BUFFER_SIZE + 0.5), 128);
+            snprintf_i32_utf16(output, d_roundToIntPositive(normalized * DPF_VST3_MAX_BUFFER_SIZE), 128);
             return V3_OK;
         case kVst3InternalParameterSampleRate:
-            snprintf_f32_utf16(output, std::round(normalized * DPF_VST3_MAX_SAMPLE_RATE), 128);
+            snprintf_i32_utf16(output, d_roundToIntPositive(normalized * DPF_VST3_MAX_SAMPLE_RATE), 128);
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
-            snprintf_f32_utf16(output, std::round(normalized * DPF_VST3_MAX_LATENCY), 128);
+            snprintf_i32_utf16(output, d_roundToIntPositive(normalized * DPF_VST3_MAX_LATENCY), 128);
             return V3_OK;
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case kVst3InternalParameterProgram:
-            const uint32_t program = std::round(normalized * fProgramCountMinusOne);
+            const uint32_t program = d_roundToIntPositive(normalized * fProgramCountMinusOne);
             strncpy_utf16(output, fPlugin.getProgramName(program), 128);
             return V3_OK;
        #endif
@@ -1805,7 +1804,7 @@ public:
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
         {
-            snprintf_f32_utf16(output, std::round(normalized * 127), 128);
+            snprintf_i32_utf16(output, d_roundToIntPositive(normalized * 127), 128);
             return V3_OK;
         }
        #endif
