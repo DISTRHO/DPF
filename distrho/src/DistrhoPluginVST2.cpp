@@ -429,7 +429,7 @@ public:
             memset(parameterChecks, 0, sizeof(bool)*parameterCount);
         }
 
-      #if DISTRHO_OS_MAC
+      #ifdef DISTRHO_OS_MAC
        #ifdef __LP64__
         fUsingNsView = true;
        #else
@@ -627,7 +627,7 @@ public:
             delete fVstUI; // for hosts which don't pair create/destroy calls (Minihost Modular)
             fVstUI = nullptr;
 
-           #if DISTRHO_OS_MAC
+           #ifdef DISTRHO_OS_MAC
             if (! fUsingNsView)
             {
                 d_stderr("Host doesn't support hasCockosViewAsConfig, cannot use UI");
@@ -917,7 +917,7 @@ public:
         case VST_EFFECT_OPCODE_SUPPORTS:
             if (const char* const canDo = (const char*)ptr)
             {
-               #if DISTRHO_OS_MAC && DISTRHO_PLUGIN_HAS_UI
+               #if defined(DISTRHO_OS_MAC) && DISTRHO_PLUGIN_HAS_UI
                 if (std::strcmp(canDo, "hasCockosViewAsConfig") == 0)
                 {
                     fUsingNsView = true;
@@ -1140,7 +1140,7 @@ private:
     UIVst*   fVstUI;
     vst_rect fVstRect;
     float    fLastScaleFactor;
-   #if DISTRHO_OS_MAC
+   #ifdef DISTRHO_OS_MAC
     bool fUsingNsView;
    #endif
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT

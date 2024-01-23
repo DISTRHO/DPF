@@ -75,11 +75,11 @@
 #endif
 
 #if DISTRHO_PLUGIN_HAS_EMBED_UI
-# if DISTRHO_OS_HAIKU
+# if defined(DISTRHO_OS_HAIKU)
 #  define DISTRHO_LV2_UI_TYPE "BeUI"
-# elif DISTRHO_OS_MAC
+# elif defined(DISTRHO_OS_MAC)
 #  define DISTRHO_LV2_UI_TYPE "CocoaUI"
-# elif DISTRHO_OS_WINDOWS
+# elif defined(DISTRHO_OS_WINDOWS)
 #  define DISTRHO_LV2_UI_TYPE "WindowsUI"
 # else
 #  define DISTRHO_LV2_UI_TYPE "X11UI"

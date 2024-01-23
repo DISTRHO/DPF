@@ -199,6 +199,17 @@
 #endif
 
 // -----------------------------------------------------------------------
+// Other UI defaults
+
+#ifndef DISTRHO_UI_USE_CAIRO
+# define DISTRHO_UI_USE_CAIRO 0
+#endif
+
+#ifndef DISTRHO_UI_USE_CUSTOM
+# define DISTRHO_UI_USE_CUSTOM 0
+#endif
+
+// -----------------------------------------------------------------------
 // Prevent users from messing about with DPF internals
 
 #ifdef DISTRHO_UI_IS_STANDALONE
