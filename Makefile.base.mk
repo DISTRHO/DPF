@@ -688,7 +688,9 @@ endif
 # Set VST3 binary directory, see https://vst3sdk-doc.diatonic.jp/doc/vstinterfaces/vst3loc.html
 
 ifeq ($(LINUX),true)
-VST3_BINARY_DIR = Contents/$(TARGET_PROCESSOR)-linux
+# This must match `uname -m`, which differs from `gcc -dumpmachine` on PowerPC.
+VST3_ARCHITECTURE := $(patsubst powerpc%,ppc%,$(TARGET_PROCESSOR))
+VST3_BINARY_DIR = Contents/$(VST3_ARCHITECTURE)-linux
 else ifeq ($(MACOS),true)
 VST3_BINARY_DIR = Contents/MacOS
 else ifeq ($(WASM),true)
