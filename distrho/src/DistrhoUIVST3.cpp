@@ -889,6 +889,7 @@ private:
     {
         DISTRHO_SAFE_ASSERT_RETURN(fView != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(fFrame != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(width != 0 && height != 0,);
 
        #ifdef DISTRHO_OS_MAC
         const double scaleFactor = fUI.getScaleFactor();
