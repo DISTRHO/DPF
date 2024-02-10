@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -87,10 +87,10 @@ struct Window::PrivateData : IdleCallback {
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+   #ifndef DGL_FILE_BROWSER_DISABLED
     /** Handle for file browser dialog operations. */
     DGL_NAMESPACE::FileBrowserHandle fileBrowserHandle;
-#endif
+   #endif
 
     /** Modal window setup. */
     struct Modal {
@@ -164,10 +164,10 @@ struct Window::PrivateData : IdleCallback {
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs);
     bool removeIdleCallback(IdleCallback* callback);
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+   #ifndef DGL_FILE_BROWSER_DISABLED
     // file handling
     bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options);
-#endif
+   #endif
 
     static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);
 
