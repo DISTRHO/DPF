@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -40,10 +40,13 @@ START_NAMESPACE_DGL
    Keyboard modifier flags.
  */
 enum Modifier {
-    kModifierShift   = 1u << 0u, ///< Shift key
-    kModifierControl = 1u << 1u, ///< Control key
-    kModifierAlt     = 1u << 2u, ///< Alt/Option key
-    kModifierSuper   = 1u << 3u  ///< Mod4/Command/Windows key
+    kModifierShift      = 1U << 0U, ///< Shift key
+    kModifierControl    = 1U << 1U, ///< Control key
+    kModifierAlt        = 1U << 2U, ///< Alt/Option key
+    kModifierSuper      = 1U << 3U, ///< Mod4/Command/Windows key
+    kModifierNumLock    = 1U << 4U, ///< Num lock enabled
+    kModifierScrollLock = 1U << 5U, ///< Scroll lock enabled
+    kModifierCapsLock   = 1U << 6U, ///< Caps lock enabled
 };
 
 /**
@@ -63,6 +66,7 @@ enum Modifier {
 enum Key {
     // Convenience symbols for ASCII control characters
     kKeyBackspace = 0x00000008U, ///< Backspace
+    kKeyTab       = 0x00000009U, ///< Tab
     kKeyEnter     = 0x0000000DU, ///< Enter
     kKeyEscape    = 0x0000001BU, ///< Escape
     kKeyDelete    = 0x0000007FU, ///< Delete
@@ -150,7 +154,7 @@ enum Key {
  */
 enum EventFlag {
     kFlagSendEvent = 1, ///< Event is synthetic
-    kFlagIsHint    = 2  ///< Event is a hint (not direct user input)
+    kFlagIsHint    = 2, ///< Event is a hint (not direct user input)
 };
 
 /**
@@ -159,7 +163,7 @@ enum EventFlag {
 enum CrossingMode {
     kCrossingNormal, ///< Crossing due to pointer motion
     kCrossingGrab,   ///< Crossing due to a grab
-    kCrossingUngrab  ///< Crossing due to a grab release
+    kCrossingUngrab, ///< Crossing due to a grab release
 };
 
 /**
@@ -204,7 +208,7 @@ enum MouseCursor {
 
     // Backwards compatibility with old DPF
     kMouseCursorDiagonal     DISTRHO_DEPRECATED_BY("kMouseCursorUpLeftDownRight") = kMouseCursorUpLeftDownRight,
-    kMouseCursorAntiDiagonal DISTRHO_DEPRECATED_BY("kMouseCursorUpRightDownLeft") = kMouseCursorUpRightDownLeft
+    kMouseCursorAntiDiagonal DISTRHO_DEPRECATED_BY("kMouseCursorUpRightDownLeft") = kMouseCursorUpRightDownLeft,
 };
 
 /**
@@ -215,11 +219,11 @@ enum MouseCursor {
    while a smooth scroll is for those with arbitrary scroll direction freedom, like some touchpads.
 */
 enum ScrollDirection {
-    kScrollUp,    ///< Scroll up
-    kScrollDown,  ///< Scroll down
-    kScrollLeft,  ///< Scroll left
-    kScrollRight, ///< Scroll right
-    kScrollSmooth ///< Smooth scroll in any direction
+    kScrollUp,     ///< Scroll up
+    kScrollDown,   ///< Scroll down
+    kScrollLeft,   ///< Scroll left
+    kScrollRight,  ///< Scroll right
+    kScrollSmooth, ///< Smooth scroll in any direction
 };
 
 /**
