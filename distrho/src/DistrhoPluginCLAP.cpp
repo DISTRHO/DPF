@@ -280,10 +280,10 @@ public:
 
         double scaleFactor = fScaleFactor;
        #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
-        *width = DISTRHO_UI_DEFAULT_WIDTH;
-        *height = DISTRHO_UI_DEFAULT_HEIGHT;
         if (d_isZero(scaleFactor))
             scaleFactor = 1.0;
+        *width = DISTRHO_UI_DEFAULT_WIDTH * scaleFactor;
+        *height = DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor;
        #else
         UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
@@ -371,10 +371,10 @@ public:
                 {
                     // fix width
                     if (reqRatio > ratio)
-                        *width = static_cast<int32_t>(*height * ratio + 0.5);
+                        *width = d_roundToIntPositive(*height * ratio);
                     // fix height
                     else
-                        *height = static_cast<int32_t>(static_cast<double>(*width) / ratio + 0.5);
+                        *height = d_roundToIntPositive(static_cast<double>(*width) / ratio);
                 }
             }
 

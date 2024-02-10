@@ -602,10 +602,10 @@ public:
             {
                 double scaleFactor = fLastScaleFactor;
                #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
-                fVstRect.right = DISTRHO_UI_DEFAULT_WIDTH;
-                fVstRect.bottom = DISTRHO_UI_DEFAULT_HEIGHT;
                 if (d_isZero(scaleFactor))
                     scaleFactor = 1.0;
+                fVstRect.right = DISTRHO_UI_DEFAULT_WIDTH * scaleFactor;
+                fVstRect.bottom = DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor;
                #else
                 UIExporter tmpUI(nullptr, 0, fPlugin.getSampleRate(),
                                  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,

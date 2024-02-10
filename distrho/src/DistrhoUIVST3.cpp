@@ -92,10 +92,10 @@ static void applyGeometryConstraints(const uint minimumWidth,
         {
             // fix width
             if (reqRatio > ratio)
-                rect->right = static_cast<int32_t>(rect->bottom * ratio + 0.5);
+                rect->right = d_roundToIntPositive(rect->bottom * ratio);
             // fix height
             else
-                rect->bottom = static_cast<int32_t>(static_cast<double>(rect->right) / ratio + 0.5);
+                rect->bottom = d_roundToIntPositive(static_cast<double>(rect->right) / ratio);
         }
     }
 
@@ -1527,10 +1527,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
         double scaleFactor = view->scale != nullptr ? view->scale->scaleFactor : 0.0;
        #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
-        rect->right = DISTRHO_UI_DEFAULT_WIDTH;
-        rect->bottom = DISTRHO_UI_DEFAULT_HEIGHT;
         if (d_isZero(scaleFactor))
             scaleFactor = 1.0;
+        rect->right = DISTRHO_UI_DEFAULT_WIDTH * scaleFactor;
+        rect->bottom = DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor;
        #else
         UIExporter tmpUI(nullptr, 0, view->sampleRate,
                          nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, d_nextBundlePath,
@@ -1540,6 +1540,7 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         scaleFactor = tmpUI.getScaleFactor();
         tmpUI.quit();
        #endif
+
         rect->left = rect->top = 0;
        #ifdef DISTRHO_OS_MAC
         rect->right /= scaleFactor;
