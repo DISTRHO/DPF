@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -1607,11 +1607,7 @@ static void VST_FUNCTION_INTERFACE vst_processReplacingCallback(vst_effect* cons
 END_NAMESPACE_DISTRHO
 
 DISTRHO_PLUGIN_EXPORT
-#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS)
-const vst_effect* VSTPluginMain(vst_host_callback audioMaster);
-#else
-const vst_effect* VSTPluginMain(vst_host_callback audioMaster) asm ("main");
-#endif
+const vst_effect* VSTPluginMain(vst_host_callback);
 
 DISTRHO_PLUGIN_EXPORT
 const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
@@ -1734,5 +1730,16 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
 
     return effect;
 }
+
+#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS))
+DISTRHO_PLUGIN_EXPORT
+const vst_effect* VSTPluginMainCompat(vst_host_callback) asm ("main");
+
+DISTRHO_PLUGIN_EXPORT
+const vst_effect* VSTPluginMainCompat(const vst_host_callback audioMaster)
+{
+    return VSTPluginMain(audioMaster);
+}
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------

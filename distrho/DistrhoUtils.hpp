@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -310,7 +310,7 @@ uint32_t d_nextPowerOf2(uint32_t size) noexcept
 }
 
 /**
-   Round a floating point number to integer.
+   Round a floating point number to an integer.
    Fast operation for values known to be 0 or positive.
  */
 template<typename T>
@@ -321,7 +321,18 @@ int32_t d_roundToIntPositive(const T& value)
 }
 
 /**
-   Round a floating point number to integer.
+   Round a floating point number to an unsigned integer.
+   Fast operation for values known to be 0 or positive.
+ */
+template<typename T>
+static inline constexpr
+uint32_t d_roundToUnsignedInt(const T& value)
+{
+    return static_cast<uint32_t>(value + static_cast<T>(0.5));
+}
+
+/**
+   Round a floating point number to an integer.
    Fast operation for values known to be 0 or negative.
  */
 template<typename T>

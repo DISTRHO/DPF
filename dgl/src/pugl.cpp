@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -181,7 +181,14 @@ START_NAMESPACE_DGL
 #  include "pugl-upstream/src/win_vulkan.c"
 # endif
 #elif defined(HAVE_X11)
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+# endif
 # include "pugl-upstream/src/x11.c"
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+# endif
 # include "pugl-upstream/src/x11_stub.c"
 # ifdef DGL_CAIRO
 #  include "pugl-upstream/src/x11_cairo.c"
@@ -277,13 +284,13 @@ void puglRaiseWindow(PuglView* const view)
 
 PuglStatus puglSetGeometryConstraints(PuglView* const view, const uint width, const uint height, const bool aspect)
 {
-    view->sizeHints[PUGL_MIN_SIZE].width = width;
-    view->sizeHints[PUGL_MIN_SIZE].height = height;
+    view->sizeHints[PUGL_MIN_SIZE].width = static_cast<PuglSpan>(width);
+    view->sizeHints[PUGL_MIN_SIZE].height = static_cast<PuglSpan>(height);
 
     if (aspect)
     {
-        view->sizeHints[PUGL_FIXED_ASPECT].width = width;
-        view->sizeHints[PUGL_FIXED_ASPECT].height = height;
+        view->sizeHints[PUGL_FIXED_ASPECT].width = static_cast<PuglSpan>(width);
+        view->sizeHints[PUGL_FIXED_ASPECT].height = static_cast<PuglSpan>(height);
     }
 
 #if defined(DISTRHO_OS_HAIKU)

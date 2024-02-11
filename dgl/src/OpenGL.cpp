@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -691,12 +691,12 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
         const int w = static_cast<int>(self->getWidth());
         const int h = static_cast<int>(self->getHeight());
 
-        if (viewportScaleFactor != 0.0 && viewportScaleFactor != 1.0)
+        if (d_isNotZero(viewportScaleFactor) && d_isNotEqual(viewportScaleFactor, 1.0))
         {
             glViewport(x,
-                       -static_cast<int>(height * viewportScaleFactor - height + absolutePos.getY() + 0.5),
-                       static_cast<int>(width * viewportScaleFactor + 0.5),
-                       static_cast<int>(height * viewportScaleFactor + 0.5));
+                       -d_roundToIntPositive(height * viewportScaleFactor - height + absolutePos.getY()),
+                       d_roundToIntPositive(width * viewportScaleFactor),
+                       d_roundToIntPositive(height * viewportScaleFactor));
         }
         else
         {
@@ -712,16 +712,16 @@ void SubWidget::PrivateData::display(const uint width, const uint height, const 
     else
     {
         // set viewport pos
-        glViewport(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
-                   -static_cast<int>(absolutePos.getY() * autoScaleFactor + 0.5),
+        glViewport(d_roundToIntPositive(absolutePos.getX() * autoScaleFactor),
+                   -d_roundToIntPositive(absolutePos.getY() * autoScaleFactor),
                    static_cast<int>(width),
                    static_cast<int>(height));
 
         // then cut the outer bounds
-        glScissor(static_cast<int>(absolutePos.getX() * autoScaleFactor + 0.5),
-                  static_cast<int>(height - (self->getHeight() + absolutePos.getY()) * autoScaleFactor + 0.5),
-                  static_cast<int>(self->getWidth() * autoScaleFactor + 0.5),
-                  static_cast<int>(self->getHeight() * autoScaleFactor + 0.5));
+        glScissor(d_roundToIntPositive(absolutePos.getX() * autoScaleFactor),
+                  d_roundToIntPositive(height - (static_cast<int>(self->getHeight()) + absolutePos.getY()) * autoScaleFactor),
+                  d_roundToIntPositive(self->getWidth() * autoScaleFactor),
+                  d_roundToIntPositive(self->getHeight() * autoScaleFactor));
 
         glEnable(GL_SCISSOR_TEST);
         needsDisableScissor = true;

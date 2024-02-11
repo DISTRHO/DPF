@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -35,8 +35,8 @@ uint Layout<true>::setAbsolutePos(int x, const int y, const uint padding)
         SubWidgetWithSizeHint& s(*it);
         maxHeight = std::max(maxHeight, s.widget->getHeight());
         s.widget->setAbsolutePos(x, y);
-        x += s.widget->getWidth();
-        x += padding;
+        x += static_cast<int>(s.widget->getWidth());
+        x += static_cast<int>(padding);
     }
 
     return maxHeight;
@@ -52,8 +52,8 @@ uint Layout<false>::setAbsolutePos(const int x, int y, const uint padding)
         SubWidgetWithSizeHint& s(*it);
         maxWidth = std::max(maxWidth, s.widget->getWidth());
         s.widget->setAbsolutePos(x, y);
-        y += s.widget->getHeight();
-        y += padding;
+        y += static_cast<int>(s.widget->getHeight());
+        y += static_cast<int>(padding);
     }
 
     return maxWidth;
@@ -78,7 +78,7 @@ void Layout<true>::setSize(const uint width, const uint padding)
     }
 
     if (const size_t numWidgets = widgets.size())
-        nonFixedWidth -= padding * (numWidgets - 1);
+        nonFixedWidth -= padding * static_cast<uint>(numWidgets - 1);
 
     const uint widthPerWidget = numDynamiclySizedWidgets != 0 ? nonFixedWidth / numDynamiclySizedWidgets : 0;
 
@@ -111,7 +111,7 @@ void Layout<false>::setSize(const uint height, const uint padding)
     }
 
     if (const size_t numWidgets = widgets.size())
-        nonFixedHeight -= padding * (numWidgets - 1);
+        nonFixedHeight -= padding * static_cast<uint>(numWidgets - 1);
 
     const uint heightPerWidget = numDynamiclySizedWidgets != 0 ? nonFixedHeight / numDynamiclySizedWidgets : 0;
 
@@ -138,8 +138,8 @@ void HorizontallyStackedVerticalLayout::setAbsolutePos(int x, const int y, const
     for (VerticalLayoutIterator it=items.begin(), end=items.end(); it != end; ++it)
     {
         VerticalLayout* l(*it);
-        x += l->setAbsolutePos(x, y, padding);
-        x += padding;
+        x += static_cast<int>(l->setAbsolutePos(x, y, padding));
+        x += static_cast<int>(padding);
     }
 }
 
@@ -157,9 +157,9 @@ Size<uint> VerticallyStackedHorizontalLayout::adjustSize(const uint padding)
         uint width = 0;
         uint height = 0;
 
-        for (SubWidgetWithSizeHintIterator it=l->widgets.begin(), end=l->widgets.end(); it != end; ++it)
+        for (SubWidgetWithSizeHintIterator it2=l->widgets.begin(), end2=l->widgets.end(); it2 != end2; ++it2)
         {
-            SubWidgetWithSizeHint& s(*it);
+            SubWidgetWithSizeHint& s(*it2);
 
             if (width != 0)
                 width += padding;
@@ -191,8 +191,8 @@ void VerticallyStackedHorizontalLayout::setAbsolutePos(const int x, int y, const
     for (HorizontalLayoutIterator it=items.begin(), end=items.end(); it != end; ++it)
     {
         HorizontalLayout* l(*it);
-        y += l->setAbsolutePos(x, y, padding);
-        y += padding;
+        y += static_cast<int>(l->setAbsolutePos(x, y, padding));
+        y += static_cast<int>(padding);
     }
 }
 

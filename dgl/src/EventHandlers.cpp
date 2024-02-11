@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -419,7 +419,7 @@ struct KnobEventHandler::PrivateData {
         if ((state & kKnobStateDragging) == 0x0)
             return false;
 
-        float movDiff;
+        double movDiff;
 
         switch (orientation)
         {
@@ -431,8 +431,8 @@ struct KnobEventHandler::PrivateData {
             break;
         case Both:
             {
-                const float movDiffX = ev.pos.getX() / scaleFactor - lastX;
-                const float movDiffY = lastY - ev.pos.getY() / scaleFactor;
+                const double movDiffX = ev.pos.getX() / scaleFactor - lastX;
+                const double movDiffY = lastY - ev.pos.getY() / scaleFactor;
                 movDiff = std::abs(movDiffX) > std::abs(movDiffY) ? movDiffX : movDiffY;
             }
             break;
@@ -444,7 +444,7 @@ struct KnobEventHandler::PrivateData {
             return true;
 
         const float divisor = (ev.mod & kModifierControl) ? accel * 10.f : accel;
-        valueTmp += (maximum - minimum) / divisor * movDiff;
+        valueTmp += (maximum - minimum) / divisor * static_cast<float>(movDiff);
 
         if (usingLog)
             valueTmp = logscale(valueTmp);

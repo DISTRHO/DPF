@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -47,7 +47,22 @@
 #ifdef HAVE_X11
 # define DBLCLKTME 400
 # include "sofd/libsofd.h"
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-qual"
+#  pragma GCC diagnostic ignored "-Wconversion"
+#  pragma GCC diagnostic ignored "-Wfloat-conversion"
+#  pragma GCC diagnostic ignored "-Wshadow"
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+#  pragma GCC diagnostic ignored "-Wstrict-overflow"
+# endif
 # include "sofd/libsofd.c"
+# if defined(__GNUC__) && (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6))
+#  pragma GCC diagnostic pop
+# endif
+# undef HAVE_MNTENT
+# undef MAX
+# undef MIN
 #endif
 
 #ifdef FILE_BROWSER_DIALOG_DGL_NAMESPACE
@@ -329,6 +344,16 @@ struct FileBrowserData {
 #else // DISTRHO_OS_WINDOWS
     FileBrowserData(const bool save)
         : selectedFile(nullptr)
+       #ifdef DISTRHO_OS_MAC
+        , nsBasePanel(nullptr)
+        , nsOpenPanel(nullptr)
+       #endif
+       #ifdef HAVE_DBUS
+        , dbuscon(nullptr)
+       #endif
+       #ifdef HAVE_X11
+        , x11display(nullptr)
+       #endif
     {
 #ifdef DISTRHO_OS_MAC
         if (save)
@@ -393,6 +418,8 @@ struct FileBrowserData {
         std::free(const_cast<char*>(selectedFile));
         selectedFile = nullptr;
     }
+
+    DISTRHO_DECLARE_NON_COPYABLE(FileBrowserData)
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -590,7 +617,8 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
                     dbus_message_iter_open_container(&dict, DBUS_TYPE_VARIANT, "ay", &variant);
                     dbus_message_iter_open_container(&variant, DBUS_TYPE_ARRAY, "y", &variantArray);
                     dbus_message_iter_append_fixed_array(&variantArray, DBUS_TYPE_BYTE,
-                                                         &current_folder_val, startDir.length()+1);
+                                                         &current_folder_val,
+                                                         static_cast<int>(startDir.length() + 1));
                     dbus_message_iter_close_container(&variant, &variantArray);
                     dbus_message_iter_close_container(&dict, &variant);
                     dbus_message_iter_close_container(&array, &dict);

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -270,18 +270,18 @@ void Window::PrivateData::initPre(const uint width, const uint height, const boo
 
     puglSetViewHint(view, PUGL_RESIZABLE, resizable ? PUGL_TRUE : PUGL_FALSE);
     puglSetViewHint(view, PUGL_IGNORE_KEY_REPEAT, PUGL_FALSE);
-#if DGL_USE_RGBA
+   #if defined(DGL_USE_RGBA) && DGL_USE_RGBA
     puglSetViewHint(view, PUGL_DEPTH_BITS, 24);
-#else
+   #else
     puglSetViewHint(view, PUGL_DEPTH_BITS, 16);
-#endif
+   #endif
     puglSetViewHint(view, PUGL_STENCIL_BITS, 8);
 
     // PUGL_SAMPLES ??
     puglSetEventFunc(view, puglEventCallback);
 
     // setting default size triggers system-level calls, do it last
-    puglSetSizeHint(view, PUGL_DEFAULT_SIZE, width, height);
+    puglSetSizeHint(view, PUGL_DEFAULT_SIZE, static_cast<PuglSpan>(width), static_cast<PuglSpan>(height));
 }
 
 bool Window::PrivateData::initPost()

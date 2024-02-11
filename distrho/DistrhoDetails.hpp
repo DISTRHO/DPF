@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -566,7 +566,7 @@ struct ParameterEnumerationValues {
       When using this constructor the pointer to @values MUST have been statically declared.@n
       It will not be automatically deleted later.
     */
-    constexpr ParameterEnumerationValues(uint32_t c, bool r, ParameterEnumerationValue* v) noexcept
+    constexpr ParameterEnumerationValues(uint8_t c, bool r, ParameterEnumerationValue* v) noexcept
         : count(c),
           restrictedMode(r),
           values(v),
@@ -578,6 +578,8 @@ struct ParameterEnumerationValues {
         if (deleteLater)
             delete[] values;
     }
+
+    DISTRHO_DECLARE_NON_COPYABLE(ParameterEnumerationValues)
 };
 
 /**
@@ -669,6 +671,7 @@ struct Parameter {
           shortName(),
           symbol(),
           unit(),
+          description(),
           ranges(),
           enumValues(),
           designation(kParameterDesignationNull),
@@ -684,6 +687,7 @@ struct Parameter {
           shortName(),
           symbol(s),
           unit(u),
+          description(),
           ranges(def, min, max),
           enumValues(),
           designation(kParameterDesignationNull),
@@ -702,6 +706,7 @@ struct Parameter {
           shortName(),
           symbol(s),
           unit(u),
+          description(),
           ranges(def, min, max),
           enumValues(evcount, true, ev),
           designation(kParameterDesignationNull),

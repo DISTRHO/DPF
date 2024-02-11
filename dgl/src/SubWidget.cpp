@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -71,7 +71,7 @@ Rectangle<uint> SubWidget::getConstrainedAbsoluteArea() const noexcept
     const int y = getAbsoluteY();
 
     if (x >= 0 && y >= 0)
-        return Rectangle<uint>(x, y, getSize());
+        return Rectangle<uint>(static_cast<uint>(x), static_cast<uint>(y), getSize());
 
     const int xOffset = std::min(0, x);
     const int yOffset = std::min(0, y);

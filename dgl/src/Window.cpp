@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -269,10 +269,10 @@ void Window::setSize(uint width, uint height)
         uint minWidth = pData->minWidth;
         uint minHeight = pData->minHeight;
 
-        if (pData->autoScaling && scaleFactor != 1.0)
+        if (pData->autoScaling && d_isNotEqual(scaleFactor, 1.0))
         {
-            minWidth *= scaleFactor;
-            minHeight *= scaleFactor;
+            minWidth = d_roundToUnsignedInt(minWidth * scaleFactor);
+            minHeight = d_roundToUnsignedInt(minHeight * scaleFactor);
         }
 
         // handle geometry constraints here
@@ -293,10 +293,10 @@ void Window::setSize(uint width, uint height)
             {
                 // fix width
                 if (reqRatio > ratio)
-                    width = static_cast<uint>(height * ratio + 0.5);
+                    width = d_roundToUnsignedInt(height * ratio);
                 // fix height
                 else
-                    height = static_cast<uint>(static_cast<double>(width) / ratio + 0.5);
+                    height = d_roundToUnsignedInt(static_cast<double>(width) / ratio);
             }
         }
     }
@@ -430,10 +430,10 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
     {
         const double autoScaleFactor = pData->autoScaleFactor;
 
-        prect.x *= autoScaleFactor;
-        prect.y *= autoScaleFactor;
-        prect.width *= autoScaleFactor;
-        prect.height *= autoScaleFactor;
+        prect.x = static_cast<PuglCoord>(prect.x * autoScaleFactor);
+        prect.y = static_cast<PuglCoord>(prect.y * autoScaleFactor);
+        prect.width = static_cast<PuglSpan>(prect.width * autoScaleFactor + 0.5);
+        prect.height = static_cast<PuglSpan>(prect.height * autoScaleFactor + 0.5);
     }
     puglPostRedisplayRect(pData->view, prect);
 }
@@ -479,8 +479,8 @@ void Window::setGeometryConstraints(uint minimumWidth,
 
     if (automaticallyScale && scaleFactor != 1.0)
     {
-        minimumWidth *= scaleFactor;
-        minimumHeight *= scaleFactor;
+        minimumWidth = d_roundToUnsignedInt(minimumWidth * scaleFactor);
+        minimumHeight = d_roundToUnsignedInt(minimumHeight * scaleFactor);
     }
 
     puglSetGeometryConstraints(pData->view, minimumWidth, minimumHeight, keepAspectRatio);

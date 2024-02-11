@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -438,9 +438,9 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
             for (int w = 0; w < width; ++w)
             {
                 const uchar a = urdata[h*width*4+w*4+3];
-                newdata[h*width*4+w*4+0] = (urdata[h*width*4+w*4+0] * a) >> 8;
-                newdata[h*width*4+w*4+1] = (urdata[h*width*4+w*4+1] * a) >> 8;
-                newdata[h*width*4+w*4+2] = (urdata[h*width*4+w*4+2] * a) >> 8;
+                newdata[h*width*4+w*4+0] = static_cast<uchar>((urdata[h*width*4+w*4+0] * a) >> 8);
+                newdata[h*width*4+w*4+1] = static_cast<uchar>((urdata[h*width*4+w*4+1] * a) >> 8);
+                newdata[h*width*4+w*4+2] = static_cast<uchar>((urdata[h*width*4+w*4+2] * a) >> 8);
                 newdata[h*width*4+w*4+3] = a;
             }
         }
@@ -465,9 +465,9 @@ void CairoImage::loadFromMemory(const char* const rdata, const Size<uint>& s, co
             for (int w = 0; w < width; ++w)
             {
                 const uchar a = urdata[h*width*4+w*4+3];
-                newdata[h*width*4+w*4+0] = (urdata[h*width*4+w*4+2] * a) >> 8;
-                newdata[h*width*4+w*4+1] = (urdata[h*width*4+w*4+1] * a) >> 8;
-                newdata[h*width*4+w*4+2] = (urdata[h*width*4+w*4+0] * a) >> 8;
+                newdata[h*width*4+w*4+0] = static_cast<uchar>((urdata[h*width*4+w*4+2] * a) >> 8);
+                newdata[h*width*4+w*4+1] = static_cast<uchar>((urdata[h*width*4+w*4+1] * a) >> 8);
+                newdata[h*width*4+w*4+2] = static_cast<uchar>((urdata[h*width*4+w*4+0] * a) >> 8);
                 newdata[h*width*4+w*4+3] = a;
             }
         }
