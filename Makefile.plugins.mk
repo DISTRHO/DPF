@@ -296,6 +296,9 @@ static     = $(TARGET_DIR)/$(NAME).a
 
 ifeq ($(MACOS),true)
 BUNDLE_RESOURCES = Info.plist PkgInfo Resources/empty.lproj
+au         = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/$(NAME)
+# aufiles   += $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(NAME).rsrc
+aufiles   += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).component/Contents/%)
 vst2files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst/Contents/%)
 vst3files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst3/Contents/%)
 clapfiles += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).clap/Contents/%)
@@ -316,6 +319,7 @@ endif
 # Set plugin symbols to export
 
 ifeq ($(MACOS),true)
+SYMBOLS_AU     = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/au.exp
 SYMBOLS_LADSPA = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/ladspa.exp
 SYMBOLS_DSSI   = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/dssi.exp
 SYMBOLS_LV2DSP = -Wl,-exported_symbols_list,$(DPF_PATH)/utils/symbols/lv2-dsp.exp
@@ -410,10 +414,11 @@ ifeq ($(DPF_BUILD_DIR),)
 endif
 	rm -rf $(TARGET_DIR)/$(NAME)
 	rm -rf $(TARGET_DIR)/$(NAME)-*
+	rm -rf $(TARGET_DIR)/$(NAME).clap
+	rm -rf $(TARGET_DIR)/$(NAME).component
 	rm -rf $(TARGET_DIR)/$(NAME).lv2
 	rm -rf $(TARGET_DIR)/$(NAME).vst
 	rm -rf $(TARGET_DIR)/$(NAME).vst3
-	rm -rf $(TARGET_DIR)/$(NAME).clap
 
 # ---------------------------------------------------------------------------------------------------------------------
 # DGL
@@ -680,6 +685,20 @@ endif
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(CLAP_LIBS) $(SHARED) $(SYMBOLS_CLAP) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# AU
+
+au: $(au) $(aufiles)
+
+ifeq ($(HAVE_DGL),true)
+$(au): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o $(DGL_LIB)
+else
+$(au): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
+endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating AU component for $(NAME)"
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioUnit $(SHARED) $(SYMBOLS_AU) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Shared
 
 shared: $(shared)
@@ -741,6 +760,7 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 
@@ -750,6 +770,7 @@ endif
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_AU.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_STATIC.cpp.d
 

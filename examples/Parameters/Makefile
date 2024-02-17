@@ -39,6 +39,7 @@ TARGETS += lv2_sep
 TARGETS += vst
 TARGETS += vst3
 TARGETS += clap
+TARGETS += au
 
 all: $(TARGETS)
 

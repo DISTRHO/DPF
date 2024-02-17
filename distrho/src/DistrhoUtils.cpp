@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -77,7 +77,9 @@ const char* getBinaryFilename()
 
 const char* getPluginFormatName() noexcept
 {
-#if defined(DISTRHO_PLUGIN_TARGET_CARLA)
+#if defined(DISTRHO_PLUGIN_TARGET_AU)
+    return "AudioUnit";
+#elif defined(DISTRHO_PLUGIN_TARGET_CARLA)
     return "Carla";
 #elif defined(DISTRHO_PLUGIN_TARGET_JACK)
    #if defined(DISTRHO_OS_WASM)
@@ -110,7 +112,7 @@ const char* getResourcePath(const char* const bundlePath) noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(bundlePath != nullptr, nullptr);
 
-   #if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_VST2) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+   #if defined(DISTRHO_PLUGIN_TARGET_AU) || defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_VST2) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
     static String resourcePath;
 
     if (resourcePath.isEmpty())
