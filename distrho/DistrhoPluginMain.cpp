@@ -33,6 +33,8 @@
 # include "src/DistrhoPluginVST2.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_VST3)
 # include "src/DistrhoPluginVST3.cpp"
+#elif defined(DISTRHO_PLUGIN_TARGET_EXPORT)
+# include "src/DistrhoPluginExport.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_SHARED)
 DISTRHO_PLUGIN_EXPORT DISTRHO_NAMESPACE::Plugin* createSharedPlugin();
 DISTRHO_PLUGIN_EXPORT DISTRHO_NAMESPACE::Plugin* createSharedPlugin() { return DISTRHO_NAMESPACE::createPlugin(); }

@@ -297,7 +297,6 @@ static     = $(TARGET_DIR)/$(NAME).a
 ifeq ($(MACOS),true)
 BUNDLE_RESOURCES = Info.plist PkgInfo Resources/empty.lproj
 au         = $(TARGET_DIR)/$(NAME).component/Contents/MacOS/$(NAME)
-# aufiles   += $(TARGET_DIR)/$(NAME).component/Contents/Resources/$(NAME).rsrc
 aufiles   += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).component/Contents/%)
 vst2files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst/Contents/%)
 vst3files += $(BUNDLE_RESOURCES:%=$(TARGET_DIR)/$(NAME).vst3/Contents/%)
@@ -696,7 +695,19 @@ $(au): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU component for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioUnit $(SHARED) $(SYMBOLS_AU) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioToolbox -framework AudioUnit $(SHARED) $(SYMBOLS_AU) -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Export
+
+# ifeq ($(HAVE_DGL),true)
+# $(BUILD_DIR)/export$(APP_EXT): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_EXPORT.cpp.o $(BUILD_DIR)/DistrhoUIMain_EXPORT.cpp.o $(DGL_LIB)
+# else
+$(BUILD_DIR)/export$(APP_EXT): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_EXPORT.cpp.o
+# endif
+	-@mkdir -p $(shell dirname $@)
+	@echo "Creating export tool for $(NAME)"
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Shared
@@ -747,6 +758,13 @@ $(TARGET_DIR)/%/Resources/empty.lproj: $(DPF_PATH)/utils/plugin.bundle/Contents/
 	$(SILENT)cp $< $@
 
 # ---------------------------------------------------------------------------------------------------------------------
+# format-specific files
+
+$(TARGET_DIR)/$(NAME).component/Contents/Info.plist: $(BUILD_DIR)/export$(APP_EXT)
+	-@mkdir -p $(shell dirname $@)
+	cd $(TARGET_DIR)/$(NAME).component/Contents && $(abspath $<) "$(NAME)"
+
+# ---------------------------------------------------------------------------------------------------------------------
 
 -include $(OBJS_DSP:%.o=%.d)
 ifneq ($(UI_TYPE),)
@@ -761,6 +779,7 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_Export.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_STATIC.cpp.d
 
