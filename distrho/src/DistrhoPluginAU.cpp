@@ -16,7 +16,12 @@
 
 #include "DistrhoPluginInternal.hpp"
 
-// #define CA_NO_AU_UI_FEATURES
+// #define CA_BASIC_AU_FEATURES 1
+#define CA_NO_AU_UI_FEATURES 1
+#define CA_USE_AUDIO_PLUGIN_ONLY 1
+#define TARGET_OS_MAC 1
+
+#include <AudioUnit/AudioUnit.h>
 
 #define TRACE d_stderr("////////--------------------------------------------------------------- %s %d", __PRETTY_FUNCTION__, __LINE__);
 
@@ -60,22 +65,208 @@ class PluginHolder
 public:
     PluginExporter fPlugin;
 
-    PluginHolder()
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback) {}
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    struct BusInfo {
+        char name[32];
+        uint32_t numChannels;
+        bool hasPair;
+        bool isCV;
+        bool isMain;
+        uint32_t groupId;
+    };
+    std::vector<BusInfo> fAudioInputBuses, fAudioOutputBuses;
+    bool fUsingCV;
+   #endif
 
-    virtual ~PluginHolder() {}
+    PluginHolder()
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback)
+       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        , fAudioInputBuses()
+        , fAudioOutputBuses()
+        , fUsingCV(false)
+       #endif
+    {
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+        fillInBusInfoDetails<true>();
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        fillInBusInfoDetails<false>();
+       #endif
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        fillInBusInfoPairs();
+       #endif
+    }
+
+    // virtual ~PluginHolder() {}
 
 protected:
     uint32_t getPluginBusCount(const bool isInput) noexcept
     {
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+        if (isInput)
+            return fAudioInputBuses.size();
+       #endif
+       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        if (!isInput)
+            return fAudioOutputBuses.size();
+       #endif
         return 0;
     }
 
 private:
+   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    template<bool isInput>
+    void fillInBusInfoDetails()
+    {
+        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
+        std::vector<BusInfo>& busInfos(isInput ? fAudioInputBuses : fAudioOutputBuses);
+
+        enum {
+            kPortTypeNull,
+            kPortTypeAudio,
+            kPortTypeSidechain,
+            kPortTypeCV,
+            kPortTypeGroup
+        } lastSeenPortType = kPortTypeNull;
+        uint32_t lastSeenGroupId = kPortGroupNone;
+        uint32_t nonGroupAudioId = 0;
+        uint32_t nonGroupSidechainId = 0x20000000;
+
+        for (uint32_t i=0; i<numPorts; ++i)
+        {
+            const AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
+
+            if (port.groupId != kPortGroupNone)
+            {
+                if (lastSeenPortType != kPortTypeGroup || lastSeenGroupId != port.groupId)
+                {
+                    lastSeenPortType = kPortTypeGroup;
+                    lastSeenGroupId = port.groupId;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // if this is the first port, set it as main
+                        busInfos.empty(),
+                        // user given group id with extra safety offset
+                        port.groupId + 0x80000000
+                    };
+
+                    const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
+
+                    switch (port.groupId)
+                    {
+                    case kPortGroupStereo:
+                    case kPortGroupMono:
+                        if (busInfo.isMain)
+                        {
+                            d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", 32);
+                            break;
+                        }
+                    // fall-through
+                    default:
+                        if (group.name.isNotEmpty())
+                            d_strncpy(busInfo.name, group.name, 32);
+                        else
+                            d_strncpy(busInfo.name, port.name, 32);
+                        break;
+                    }
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+            else if (port.hints & kAudioPortIsCV)
+            {
+                // TODO
+                lastSeenPortType = kPortTypeCV;
+                lastSeenGroupId = kPortGroupNone;
+                fUsingCV = true;
+            }
+            else if (port.hints & kAudioPortIsSidechain)
+            {
+                if (lastSeenPortType != kPortTypeSidechain)
+                {
+                    lastSeenPortType = kPortTypeSidechain;
+                    lastSeenGroupId = kPortGroupNone;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // not main
+                        false,
+                        // give unique id
+                        nonGroupSidechainId++
+                    };
+
+                    d_strncpy(busInfo.name, port.name, 32);
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+            else
+            {
+                if (lastSeenPortType != kPortTypeAudio)
+                {
+                    lastSeenPortType = kPortTypeAudio;
+                    lastSeenGroupId = kPortGroupNone;
+
+                    BusInfo busInfo = {
+                        {}, 1, false, false,
+                        // if this is the first port, set it as main
+                        busInfos.empty(),
+                        // give unique id
+                        nonGroupAudioId++
+                    };
+
+                    if (busInfo.isMain)
+                    {
+                        d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", 32);
+                    }
+                    else
+                    {
+                        d_strncpy(busInfo.name, port.name, 32);
+                    }
+
+                    busInfos.push_back(busInfo);
+                }
+                else
+                {
+                    ++busInfos.back().numChannels;
+                }
+            }
+        }
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    void fillInBusInfoPairs()
+    {
+        const size_t numSharedBuses = std::min(fAudioInputBuses.size(), fAudioOutputBuses.size());
+
+        for (size_t i=0; i<numSharedBuses; ++i)
+        {
+            if (fAudioInputBuses[i].groupId != fAudioOutputBuses[i].groupId)
+                break;
+            if (fAudioInputBuses[i].numChannels != fAudioOutputBuses[i].numChannels)
+                break;
+            if (fAudioInputBuses[i].isMain != fAudioOutputBuses[i].isMain)
+                break;
+
+            fAudioInputBuses[i].hasPair = fAudioOutputBuses[i].hasPair = true;
+        }
+    }
+   #endif
+
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT && 0
     bool writeMidi(const MidiEvent&)
     {
         return true;
@@ -88,7 +279,7 @@ private:
    #endif
 
 
-   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST && 0
     bool requestParameterValueChange(uint32_t, float)
     {
         return true;
@@ -100,7 +291,7 @@ private:
     }
    #endif
 
-   #if DISTRHO_PLUGIN_WANT_STATE
+   #if DISTRHO_PLUGIN_WANT_STATE && 0
     bool updateState(const char*, const char*)
     {
         return true;
@@ -130,7 +321,8 @@ public:
     }
 
 protected:
-    ComponentResult Initialize() override
+#if 0
+    OSStatus Initialize() override
     {
         TRACE
         ComponentResult res;
@@ -145,17 +337,18 @@ protected:
     void Cleanup() override
     {
         TRACE
-        PluginBase::Cleanup();
         fPlugin.deactivate();
+        PluginBase::Cleanup();
     }
+#endif
 
-    ComponentResult Reset(AudioUnitScope inScope, AudioUnitElement inElement) override
+    OSStatus Reset(AudioUnitScope inScope, AudioUnitElement inElement) override
     {
         TRACE
         fPlugin.deactivateIfNeeded();
         setBufferSizeAndSampleRate();
 
-        const ComponentResult res = PluginBase::Reset(inScope, inElement);
+        const OSStatus res = PluginBase::Reset(inScope, inElement);
 
         if (res == noErr)
             fPlugin.activate();
@@ -163,17 +356,18 @@ protected:
         return res;
     }
 
-    ComponentResult GetPropertyInfo(AudioUnitPropertyID inID,
-                                    AudioUnitScope inScope,
-                                    AudioUnitElement inElement,
-                                    UInt32& outDataSize,
-                                    Boolean& outWritable) override
+#if 0
+    OSStatus GetPropertyInfo(AudioUnitPropertyID inID,
+                             AudioUnitScope inScope,
+                             AudioUnitElement inElement,
+                             UInt32& outDataSize,
+                             Boolean& outWritable) override
     {
         TRACE
         return PluginBase::GetPropertyInfo(inID, inScope, inElement, outDataSize, outWritable);
     }
 
-    ComponentResult GetProperty(AudioUnitPropertyID inID,
+    OSStatus GetProperty(AudioUnitPropertyID inID,
                                 AudioUnitScope inScope,
                                 AudioUnitElement inElement,
                                 void* outData) override
@@ -182,7 +376,7 @@ protected:
         return PluginBase::GetProperty(inID, inScope, inElement, outData);
     }
 
-    ComponentResult SetProperty(AudioUnitPropertyID inID,
+    OSStatus SetProperty(AudioUnitPropertyID inID,
                                 AudioUnitScope inScope,
                                 AudioUnitElement inElement,
                                 const void* inData,
@@ -192,7 +386,7 @@ protected:
         return PluginBase::SetProperty(inID, inScope, inElement, inData, inDataSize);
     }
 
-    ComponentResult GetParameter(AudioUnitParameterID inID,
+    OSStatus GetParameter(AudioUnitParameterID inID,
                                  AudioUnitScope inScope,
                                  AudioUnitElement inElement,
                                  Float32& outValue) override
@@ -202,7 +396,7 @@ protected:
         // return PluginBase::GetParameter(inID, inScope, inElement, outValue);
     }
 
-    ComponentResult SetParameter(AudioUnitParameterID inID,
+    OSStatus SetParameter(AudioUnitParameterID inID,
                                  AudioUnitScope inScope,
                                  AudioUnitElement inElement,
                                  Float32 inValue,
@@ -212,6 +406,7 @@ protected:
         return kAudioUnitErr_InvalidProperty;
         // return PluginBase::SetParameter(inID, inScope, inElement, inValue, inBufferOffsetInFrames);
     }
+#endif
 
     bool CanScheduleParameters() const override
     {
@@ -219,14 +414,15 @@ protected:
         return false;
     }
 
-    ComponentResult Render(AudioUnitRenderActionFlags& ioActionFlags,
-                           const AudioTimeStamp& inTimeStamp,
-                           const UInt32 nFrames) override
+    OSStatus Render(AudioUnitRenderActionFlags& ioActionFlags,
+                    const AudioTimeStamp& inTimeStamp,
+                    const UInt32 nFrames) override
     {
         TRACE
         return noErr;
     }
 
+#if 0
     bool BusCountWritable(AudioUnitScope scope) override
     {
         TRACE
@@ -239,7 +435,7 @@ protected:
         return noErr;
     }
 
-    ComponentResult GetParameterInfo(AudioUnitScope inScope,
+    OSStatus GetParameterInfo(AudioUnitScope inScope,
                                      AudioUnitParameterID inParameterID,
                                      AudioUnitParameterInfo& outParameterInfo) override
     {
@@ -247,19 +443,19 @@ protected:
         return kAudioUnitErr_InvalidProperty;
     }
 
-    ComponentResult SaveState(CFPropertyListRef* outData) override
+    OSStatus SaveState(CFPropertyListRef* outData) override
     {
         TRACE
         return PluginBase::SaveState(outData);
     }
 
-    ComponentResult RestoreState(CFPropertyListRef inData) override
+    OSStatus RestoreState(CFPropertyListRef inData) override
     {
         TRACE
         return noErr;
     }
 
-    ComponentResult GetParameterValueStrings(AudioUnitScope inScope,
+    OSStatus GetParameterValueStrings(AudioUnitScope inScope,
                                              AudioUnitParameterID inParameterID,
                                              CFArrayRef *outStrings) override
     {
@@ -267,7 +463,7 @@ protected:
         return kAudioUnitErr_InvalidProperty;
     }
 
-    ComponentResult GetPresets(CFArrayRef* outData) const override
+    OSStatus GetPresets(CFArrayRef* outData) const override
     {
         TRACE
         return noErr;
@@ -278,6 +474,7 @@ protected:
         TRACE
         return noErr;
     }
+#endif
 
    #if DISTRHO_PLUGIN_WANT_LATENCY
     Float64 GetLatency() override
@@ -293,12 +490,18 @@ protected:
         return false;
     }
 
-    UInt32 SupportedNumChannels(const AUChannelInfo** outInfo) override
+    UInt32 SupportedNumChannels(const AUChannelInfo** const outInfo) override
     {
         TRACE
-        return 0;
+        static const AUChannelInfo sChannels[1] = {{ DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
+
+        if (outInfo != nullptr)
+            *outInfo = sChannels;
+
+        return 1;
     }
 
+#if 0
     bool ValidFormat(AudioUnitScope scope, AudioUnitElement element, const CAStreamBasicDescription& format) override
     {
         TRACE
@@ -311,19 +514,21 @@ protected:
         return noErr;
     }
 
-    ComponentResult StartNote(MusicDeviceInstrumentID, MusicDeviceGroupID, NoteInstanceID*, UInt32, const MusicDeviceNoteParams&) override
+    OSStatus StartNote(MusicDeviceInstrumentID, MusicDeviceGroupID, NoteInstanceID*, UInt32, const MusicDeviceNoteParams&) override
     {
         TRACE
         return noErr;
     }
 
-    ComponentResult StopNote(MusicDeviceGroupID, NoteInstanceID, UInt32) override
+    OSStatus StopNote(MusicDeviceGroupID, NoteInstanceID, UInt32) override
     {
         TRACE
         return noErr;    
     }
 
-    UInt32 GetChannelLayoutTags(AudioUnitScope scope, AudioUnitElement element, AudioChannelLayoutTag* outLayoutTags) override
+    UInt32 GetChannelLayoutTags(const AudioUnitScope scope,
+                                const AudioUnitElement element,
+                                AudioChannelLayoutTag* const outLayoutTags) override
     {
         TRACE
         return 0;
@@ -341,6 +546,7 @@ protected:
         TRACE
         return noErr;
     }
+#endif
 
 private:
     double getSampleRate()
@@ -390,7 +596,9 @@ END_NAMESPACE_DISTRHO
 
 #include "au/AUBase.cpp"
 #include "au/AUBuffer.cpp"
+#if !CA_USE_AUDIO_PLUGIN_ONLY
 #include "au/AUDispatch.cpp"
+#endif
 #include "au/AUInputElement.cpp"
 #include "au/AUMIDIBase.cpp"
 #include "au/AUOutputBase.cpp"
@@ -438,9 +646,9 @@ void* PluginAUFactory(const AudioComponentDescription* const inDesc)
 {
     TRACE
     if (d_nextBufferSize == 0)
-        d_nextBufferSize = 512;
-    if (d_nextSampleRate == 0)
-        d_nextSampleRate = 44100;
+        d_nextBufferSize = kAUDefaultMaxFramesPerSlice;
+    if (d_isZero(d_nextSampleRate))
+        d_nextSampleRate = kAUDefaultSampleRate;
 
     return PluginBaseFactory<PluginAU>::Factory(inDesc);
 }
