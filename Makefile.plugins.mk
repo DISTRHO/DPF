@@ -467,6 +467,16 @@ $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain
 	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK $(JACK_FLAGS) -c -o $@
 
+$(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_DSP_DEPENDENCIES)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginMain.cpp (AU)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_AU -ObjC++ -c -o $@
+
+$(BUILD_DIR)/DistrhoUIMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUIMain.cpp (AU)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_AU -ObjC++ -c -o $@
+
 $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUIMain.cpp (DSSI)"

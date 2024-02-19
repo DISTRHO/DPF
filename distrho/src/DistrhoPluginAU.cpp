@@ -15,6 +15,7 @@
  */
 
 #include "DistrhoPluginInternal.hpp"
+#include "../DistrhoPluginUtils.hpp"
 
 // #define CA_BASIC_AU_FEATURES 1
 #define CA_NO_AU_UI_FEATURES 1
@@ -22,6 +23,7 @@
 #define TARGET_OS_MAC 1
 
 #include <AudioUnit/AudioUnit.h>
+#include <AudioUnit/AUCocoaUIView.h>
 
 #define TRACE d_stderr("////////--------------------------------------------------------------- %s %d", __PRETTY_FUNCTION__, __LINE__);
 
@@ -356,26 +358,66 @@ protected:
         return res;
     }
 
-#if 0
-    OSStatus GetPropertyInfo(AudioUnitPropertyID inID,
-                             AudioUnitScope inScope,
-                             AudioUnitElement inElement,
+    OSStatus GetPropertyInfo(const AudioUnitPropertyID inID,
+                             const AudioUnitScope inScope,
+                             const AudioUnitElement inElement,
                              UInt32& outDataSize,
                              Boolean& outWritable) override
     {
         TRACE
+        if (inScope == kAudioUnitScope_Global)
+        {
+            switch (inID)
+            {
+           #if DISTRHO_PLUGIN_HAS_UI
+            case kAudioUnitProperty_CocoaUI:
+                outDataSize = sizeof(AudioUnitCocoaViewInfo);
+                outWritable = true;
+                return noErr;
+           #endif
+            default:
+                break;
+            }
+        }
+
         return PluginBase::GetPropertyInfo(inID, inScope, inElement, outDataSize, outWritable);
     }
 
-    OSStatus GetProperty(AudioUnitPropertyID inID,
-                                AudioUnitScope inScope,
-                                AudioUnitElement inElement,
-                                void* outData) override
+    OSStatus GetProperty(const AudioUnitPropertyID inID,
+                         const AudioUnitScope inScope,
+                         const AudioUnitElement inElement,
+                         void* const outData) override
     {
         TRACE
+        if (inScope == kAudioUnitScope_Global)
+        {
+            switch (inID)
+            {
+           #if DISTRHO_PLUGIN_HAS_UI
+            case kAudioUnitProperty_CocoaUI:
+                if (AudioUnitCocoaViewInfo* const info = static_cast<AudioUnitCocoaViewInfo*>(outData))
+                {
+                    NSString* const bundlePathString = [[NSString alloc]
+                        initWithBytes:d_nextBundlePath
+                               length:strlen(d_nextBundlePath)
+                             encoding:NSUTF8StringEncoding];
+
+                    info->mCocoaAUViewBundleLocation = static_cast<CFURLRef>([[NSURL fileURLWithPath: bundlePathString] retain]);
+                    info->mCocoaAUViewClass[0] = CFSTR("DPF_UI_ViewFactory");
+
+                    [bundlePathString release];
+                }
+                return noErr;
+           #endif
+            default:
+                break;
+            }
+        }
+
         return PluginBase::GetProperty(inID, inScope, inElement, outData);
     }
 
+#if 0
     OSStatus SetProperty(AudioUnitPropertyID inID,
                                 AudioUnitScope inScope,
                                 AudioUnitElement inElement,
@@ -526,6 +568,14 @@ protected:
         return noErr;    
     }
 
+	void SetMaxFramesPerSlice(const UInt32 nFrames) override
+    {
+        PluginBase::SetMaxFramesPerSlice(nFrames);
+
+        DISTRHO_SAFE_ASSERT_RETURN(!fPlugin.isActive(),);
+        fPlugin.setBufferSize(nFrames, true);
+    }
+
     UInt32 GetChannelLayoutTags(const AudioUnitScope scope,
                                 const AudioUnitElement element,
                                 AudioChannelLayoutTag* const outLayoutTags) override
@@ -647,8 +697,32 @@ void* PluginAUFactory(const AudioComponentDescription* const inDesc)
     TRACE
     if (d_nextBufferSize == 0)
         d_nextBufferSize = kAUDefaultMaxFramesPerSlice;
+
     if (d_isZero(d_nextSampleRate))
         d_nextSampleRate = kAUDefaultSampleRate;
+
+    if (d_nextBundlePath == nullptr)
+    {
+        static String bundlePath;
+
+        String tmpPath(getBinaryFilename());
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+        tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+
+        if (tmpPath.endsWith(DISTRHO_OS_SEP_STR "Contents"))
+        {
+            tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
+            bundlePath = tmpPath;
+        }
+        else
+        {
+            bundlePath = "error";
+        }
+
+        d_nextBundlePath = bundlePath.buffer();
+    }
+
+    // d_nextCanRequestParameterValueChanges = true;
 
     return PluginBaseFactory<PluginAU>::Factory(inDesc);
 }

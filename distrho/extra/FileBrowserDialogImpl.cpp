@@ -490,7 +490,11 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
         [nsOpenPanel setCanChooseFiles:YES];
     }
 
-    [nsBasePanel setDirectoryURL:[NSURL fileURLWithPath:[NSString stringWithUTF8String:startDir]]];
+    NSString* const startDirString = [[NSString alloc]
+        initWithBytes:startDir
+               length:strlen(startDir)
+             encoding:NSUTF8StringEncoding];
+    [nsBasePanel setDirectoryURL:[NSURL fileURLWithPath:startDirString]];
 
     // TODO file filter using allowedContentTypes: [UTType]
 
@@ -523,6 +527,9 @@ FileBrowserHandle fileBrowserCreate(const bool isEmbed,
             }
         }];
     });
+
+    [startDirString release];
+    [titleString release];
 # endif
 #endif
 
