@@ -14,6 +14,10 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+// TODO
+// - g_nextBundlePath vs d_nextBundlePath cleanup
+// - scale points to kAudioUnitParameterFlag_ValuesHaveStrings
+
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
@@ -268,7 +272,7 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT && 0
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     bool writeMidi(const MidiEvent&)
     {
         return true;
@@ -280,8 +284,7 @@ private:
     }
    #endif
 
-
-   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST && 0
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
     bool requestParameterValueChange(uint32_t, float)
     {
         return true;
@@ -293,7 +296,7 @@ private:
     }
    #endif
 
-   #if DISTRHO_PLUGIN_WANT_STATE && 0
+   #if DISTRHO_PLUGIN_WANT_STATE
     bool updateState(const char*, const char*)
     {
         return true;
@@ -310,20 +313,47 @@ class PluginAU : public PluginHolder,
                  public PluginBase
 {
 public:
-    PluginAU(AudioUnit component)
+    PluginAU(const AudioUnit component)
         : PluginHolder(),
-          PluginBase(component, getPluginBusCount(true), getPluginBusCount(false))
+          PluginBase(component, getPluginBusCount(true), getPluginBusCount(false)),
+          fParameterCount(fPlugin.getParameterCount()),
+          fCachedParameterValues(nullptr)
     {
         TRACE
+
+	    if (fParameterCount != 0)
+        {
+            CreateElements();
+
+            fCachedParameterValues = new float[fParameterCount];
+            std::memset(fCachedParameterValues, 0, sizeof(float) * fParameterCount);
+
+            AUElement* const globals = GlobalScope().GetElement(0);
+            DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
+
+            globals->UseIndexedParameters(fParameterCount);
+
+            for (uint32_t i=0; i<fParameterCount; ++i)
+            {
+                fCachedParameterValues[i] = fPlugin.getParameterValue(i);
+                globals->SetParameter(i, fCachedParameterValues[i]);
+            }
+        }
+
+        // static
+        SupportedNumChannels(nullptr);
     }
 
     ~PluginAU() override
     {
         TRACE
+        delete[] fCachedParameterValues;
     }
 
 protected:
-#if 0
+    // ----------------------------------------------------------------------------------------------------------------
+    // ComponentBase AU dispatch
+
     OSStatus Initialize() override
     {
         TRACE
@@ -333,6 +363,8 @@ protected:
         DISTRHO_SAFE_ASSERT_INT_RETURN(res == noErr, res, res);
 
         setBufferSizeAndSampleRate();
+        fPlugin.activate();
+
         return noErr;
     }
 
@@ -342,18 +374,19 @@ protected:
         fPlugin.deactivate();
         PluginBase::Cleanup();
     }
-#endif
 
     OSStatus Reset(AudioUnitScope inScope, AudioUnitElement inElement) override
     {
         TRACE
         fPlugin.deactivateIfNeeded();
-        setBufferSizeAndSampleRate();
 
         const OSStatus res = PluginBase::Reset(inScope, inElement);
 
         if (res == noErr)
+        {
+            setBufferSizeAndSampleRate();
             fPlugin.activate();
+        }
 
         return res;
     }
@@ -418,37 +451,31 @@ protected:
     }
 
 #if 0
-    OSStatus SetProperty(AudioUnitPropertyID inID,
-                                AudioUnitScope inScope,
-                                AudioUnitElement inElement,
-                                const void* inData,
-                                UInt32 inDataSize) override
+	OSStatus GetParameter(const AudioUnitParameterID inParameterID,
+                          const AudioUnitScope inScope,
+                          const AudioUnitElement inElement,
+                          AudioUnitParameterValue& outValue) override
     {
-        TRACE
-        return PluginBase::SetProperty(inID, inScope, inElement, inData, inDataSize);
-    }
+	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
 
-    OSStatus GetParameter(AudioUnitParameterID inID,
-                                 AudioUnitScope inScope,
-                                 AudioUnitElement inElement,
-                                 Float32& outValue) override
-    {
-        TRACE
-        return kAudioUnitErr_InvalidProperty;
-        // return PluginBase::GetParameter(inID, inScope, inElement, outValue);
-    }
-
-    OSStatus SetParameter(AudioUnitParameterID inID,
-                                 AudioUnitScope inScope,
-                                 AudioUnitElement inElement,
-                                 Float32 inValue,
-                                 UInt32 inBufferOffsetInFrames) override
-    {
-        TRACE
-        return kAudioUnitErr_InvalidProperty;
-        // return PluginBase::SetParameter(inID, inScope, inElement, inValue, inBufferOffsetInFrames);
+        return fPlugin.getParameterValue(inParameterID);
     }
 #endif
+
+	OSStatus SetParameter(AudioUnitParameterID inParameterID,
+                          const AudioUnitScope inScope,
+                          const AudioUnitElement inElement,
+                          const AudioUnitParameterValue inValue,
+                          const UInt32 inBufferOffsetInFrames) override
+    {
+	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
+
+        PluginBase::SetParameter(inParameterID, inScope, inElement, inValue, inBufferOffsetInFrames);
+        fPlugin.setParameterValue(inParameterID, inValue);
+        return noErr;
+    }
 
     bool CanScheduleParameters() const override
     {
@@ -460,63 +487,90 @@ protected:
                     const AudioTimeStamp& inTimeStamp,
                     const UInt32 nFrames) override
     {
-        TRACE
+        float value;
+        for (uint32_t i=0; i<fParameterCount; ++i)
+        {
+            if (fPlugin.isParameterOutputOrTrigger(i))
+            {
+                value = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(fCachedParameterValues[i], value))
+                    continue;
+
+                fCachedParameterValues[i] = value;
+
+                if (AUElement* const elem = GlobalScope().GetElement(0))
+                    elem->SetParameter(i, value);
+            }
+        }
+
         return noErr;
     }
 
-#if 0
-    bool BusCountWritable(AudioUnitScope scope) override
-    {
-        TRACE
-        return false;
-    }
+    // ----------------------------------------------------------------------------------------------------------------
+    // ComponentBase Property Dispatch
 
-    OSStatus SetBusCount(AudioUnitScope scope, UInt32 count) override
+    OSStatus GetParameterInfo(const AudioUnitScope inScope,
+                              const AudioUnitParameterID inParameterID,
+                              AudioUnitParameterInfo& outParameterInfo) override
     {
         TRACE
+	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
+
+        const uint32_t index = inParameterID;
+        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
+
+        outParameterInfo.flags = kAudioUnitParameterFlag_IsHighResolution
+                               | kAudioUnitParameterFlag_IsReadable
+                               | kAudioUnitParameterFlag_HasCFNameString;
+
+        if (fPlugin.getParameterDesignation(index) == kParameterDesignationBypass)
+        {
+            outParameterInfo.flags |= kAudioUnitParameterFlag_IsWritable|kAudioUnitParameterFlag_NonRealTime;
+            outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
+
+            d_strncpy(outParameterInfo.name, "Bypass", sizeof(outParameterInfo.name));
+            outParameterInfo.cfNameString = CFSTR("Bypass");
+        }
+        else
+        {
+            const uint32_t hints = fPlugin.getParameterHints(index);
+
+            outParameterInfo.flags |= kAudioUnitParameterFlag_CFNameRelease;
+
+            if (hints & kParameterIsOutput)
+            {
+                outParameterInfo.flags |= kAudioUnitParameterFlag_MeterReadOnly;
+            }
+            else
+            {
+                outParameterInfo.flags |= kAudioUnitParameterFlag_IsWritable;
+
+                if ((hints & kParameterIsAutomatable) == 0x0)
+                    outParameterInfo.flags |= kAudioUnitParameterFlag_NonRealTime;
+            }
+
+            if (hints & kParameterIsBoolean)
+                outParameterInfo.unit = kAudioUnitParameterUnit_Boolean;
+            else if (hints & kParameterIsInteger)
+                outParameterInfo.unit = kAudioUnitParameterUnit_Indexed;
+            else
+                outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
+
+            // | kAudioUnitParameterFlag_ValuesHaveStrings;
+
+            const String& name(fPlugin.getParameterName(index));
+            d_strncpy(outParameterInfo.name, name, sizeof(outParameterInfo.name));
+            outParameterInfo.cfNameString = static_cast<CFStringRef>([[NSString stringWithUTF8String:name] retain]);
+        }
+
+        outParameterInfo.minValue = ranges.min;
+        outParameterInfo.maxValue = ranges.max;
+        outParameterInfo.defaultValue = ranges.def;
+
         return noErr;
     }
-
-    OSStatus GetParameterInfo(AudioUnitScope inScope,
-                                     AudioUnitParameterID inParameterID,
-                                     AudioUnitParameterInfo& outParameterInfo) override
-    {
-        TRACE
-        return kAudioUnitErr_InvalidProperty;
-    }
-
-    OSStatus SaveState(CFPropertyListRef* outData) override
-    {
-        TRACE
-        return PluginBase::SaveState(outData);
-    }
-
-    OSStatus RestoreState(CFPropertyListRef inData) override
-    {
-        TRACE
-        return noErr;
-    }
-
-    OSStatus GetParameterValueStrings(AudioUnitScope inScope,
-                                             AudioUnitParameterID inParameterID,
-                                             CFArrayRef *outStrings) override
-    {
-        TRACE
-        return kAudioUnitErr_InvalidProperty;
-    }
-
-    OSStatus GetPresets(CFArrayRef* outData) const override
-    {
-        TRACE
-        return noErr;
-    }
-
-    OSStatus NewFactoryPresetSet(const AUPreset& inNewFactoryPreset) override
-    {
-        TRACE
-        return noErr;
-    }
-#endif
 
    #if DISTRHO_PLUGIN_WANT_LATENCY
     Float64 GetLatency() override
@@ -565,8 +619,9 @@ protected:
     OSStatus StopNote(MusicDeviceGroupID, NoteInstanceID, UInt32) override
     {
         TRACE
-        return noErr;    
+        return noErr;
     }
+#endif
 
 	void SetMaxFramesPerSlice(const UInt32 nFrames) override
     {
@@ -576,6 +631,7 @@ protected:
         fPlugin.setBufferSize(nFrames, true);
     }
 
+#if 0
     UInt32 GetChannelLayoutTags(const AudioUnitScope scope,
                                 const AudioUnitElement element,
                                 AudioChannelLayoutTag* const outLayoutTags) override
@@ -625,6 +681,10 @@ private:
         fPlugin.setSampleRate(getSampleRate(), true);
         fPlugin.setBufferSize(GetMaxFramesPerSlice(), true);
     }
+
+private:
+    const uint32_t fParameterCount;
+    float* fCachedParameterValues;
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
 };

@@ -462,25 +462,13 @@ $(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm $(EX
 	@echo "Compiling DistrhoUI_macOS.mm ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
 
-$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_DSP_DEPENDENCIES)
-	-@mkdir -p $(BUILD_DIR)
-	@echo "Compiling DistrhoPluginMain.cpp (JACK)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_JACK $(JACK_FLAGS) -c -o $@
+$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: BUILD_CXX_FLAGS += $(JACK_FLAGS)
 
-$(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_DSP_DEPENDENCIES)
-	-@mkdir -p $(BUILD_DIR)
-	@echo "Compiling DistrhoPluginMain.cpp (AU)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_AU -ObjC++ -c -o $@
+$(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o: BUILD_CXX_FLAGS += -ObjC++
 
-$(BUILD_DIR)/DistrhoUIMain_AU.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
-	-@mkdir -p $(BUILD_DIR)
-	@echo "Compiling DistrhoUIMain.cpp (AU)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_AU -ObjC++ -c -o $@
+$(BUILD_DIR)/DistrhoUIMain_AU.cpp.o: BUILD_CXX_FLAGS += -ObjC++
 
-$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
-	-@mkdir -p $(BUILD_DIR)
-	@echo "Compiling DistrhoUIMain.cpp (DSSI)"
-	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_DSSI $(LIBLO_FLAGS) -c -o $@
+$(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.o: BUILD_CXX_FLAGS += $(LIBLO_FLAGS)
 
 # ---------------------------------------------------------------------------------------------------------------------
 # JACK
@@ -705,7 +693,7 @@ $(au): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating AU component for $(NAME)"
-	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioToolbox -framework AudioUnit $(SHARED) $(SYMBOLS_AU) -o $@
+	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -framework AudioToolbox -framework AudioUnit -framework Foundation $(SHARED) $(SYMBOLS_AU) -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Export

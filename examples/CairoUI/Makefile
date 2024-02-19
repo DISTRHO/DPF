@@ -28,7 +28,7 @@ include ../../Makefile.plugins.mk
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-TARGETS = clap dssi jack lv2_sep vst2 vst3
+TARGETS = clap dssi jack lv2_sep vst2 vst3 au
 
 all: $(TARGETS)
 

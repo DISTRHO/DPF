@@ -89,7 +89,7 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "        <string>aufx</string>\n"; // kAudioUnitType_Effect
    #endif
     outputFile << "        <key>subtype</key>\n";
-    outputFile << "        <string>ParM</string>\n";
+    outputFile << "        <string>Cair</string>\n";
     outputFile << "        <key>version</key>\n";
     outputFile << "        <integer>" << version << "</integer>\n";
     outputFile << "        <key>resourceUsage</key>\n";

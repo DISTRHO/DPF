@@ -14,9 +14,6 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-// TODO
-// - g_nextBundlePath vs d_nextBundlePath cleanup
-
 #include "DistrhoUIInternal.hpp"
 
 #define Point AudioUnitPoint
@@ -179,7 +176,7 @@ END_NAMESPACE_DISTRHO
 
 - (NSString*) description
 {
-    return [NSString stringWithUTF8String:DISTRHO_PLUGIN_NAME];
+    return @DISTRHO_PLUGIN_NAME;
 }
 
 - (unsigned) interfaceVersion
