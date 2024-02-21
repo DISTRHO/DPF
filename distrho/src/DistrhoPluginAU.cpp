@@ -39,6 +39,10 @@ static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexc
     PROP(kAudioUnitProperty_SampleRate)
     PROP(kAudioUnitProperty_ParameterList)
     PROP(kAudioUnitProperty_ParameterInfo)
+   #if !TARGET_OS_IPHONE
+    PROP(kAudioUnitProperty_FastDispatch)
+   #endif
+    PROP(kAudioUnitProperty_CPULoad)
     PROP(kAudioUnitProperty_StreamFormat)
     PROP(kAudioUnitProperty_ElementCount)
     PROP(kAudioUnitProperty_Latency)
@@ -77,7 +81,6 @@ static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexc
     PROP(kAudioUnitProperty_LastRenderSampleTime)
     PROP(kAudioUnitProperty_LoadedOutOfProcess)
    #if !TARGET_OS_IPHONE
-    PROP(kAudioUnitProperty_FastDispatch)
     PROP(kAudioUnitProperty_SetExternalBuffer)
     PROP(kAudioUnitProperty_GetUIComponentList)
     PROP(kAudioUnitProperty_CocoaUI)
@@ -172,29 +175,14 @@ public:
     {
         TRACE
 
-#if 0
 	    if (fParameterCount != 0)
         {
-            CreateElements();
-
             fCachedParameterValues = new float[fParameterCount];
             std::memset(fCachedParameterValues, 0, sizeof(float) * fParameterCount);
 
-            AUElement* const globals = GlobalScope().GetElement(0);
-            DISTRHO_SAFE_ASSERT_RETURN(globals != nullptr,);
-
-            globals->UseIndexedParameters(fParameterCount);
-
             for (uint32_t i=0; i<fParameterCount; ++i)
-            {
                 fCachedParameterValues[i] = fPlugin.getParameterValue(i);
-                globals->SetParameter(i, fCachedParameterValues[i]);
-            }
         }
-
-        // static
-        SupportedNumChannels(nullptr);
-            #endif
     }
 
     ~PluginAU()
@@ -213,13 +201,13 @@ public:
         return noErr;
     }
 
-    OSStatus auGetPropertyInfo(const AudioUnitPropertyID inID,
+    OSStatus auGetPropertyInfo(const AudioUnitPropertyID prop,
                                const AudioUnitScope inScope,
                                const AudioUnitElement inElement,
                                UInt32& outDataSize,
                                Boolean& outWritable)
     {
-        switch (inID)
+        switch (prop)
         {
         case kAudioUnitProperty_ClassInfo:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -228,6 +216,22 @@ public:
             outWritable = true;
             */
             break;
+        case kAudioUnitProperty_SampleRate:
+            break;
+        case kAudioUnitProperty_ParameterList:
+            outDataSize = inScope == kAudioUnitScope_Global ? sizeof(AudioUnitParameterID) * fParameterCount : 0;
+            outWritable = false;
+            return noErr;
+        case kAudioUnitProperty_ParameterInfo:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(AudioUnitParameterInfo);
+            outWritable = false;
+            return noErr;
+        case kAudioUnitProperty_StreamFormat:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(AudioStreamBasicDescription);
+            outWritable = true;
+            return noErr;
         case kAudioUnitProperty_ElementCount:
             outDataSize = sizeof(UInt32);
             outWritable = false;
@@ -260,18 +264,126 @@ public:
         return kAudioUnitErr_InvalidProperty;
     }
 
-    OSStatus auGetProperty(const AudioUnitPropertyID inID,
+    OSStatus auGetProperty(const AudioUnitPropertyID prop,
                            const AudioUnitScope inScope,
                            const AudioUnitElement inElement,
                            void* const outData)
     {
-        switch (inID)
+        switch (prop)
         {
         case kAudioUnitProperty_ClassInfo:
             /* TODO used for storing plugin state
             *static_cast<CFPropertyListRef*>(outData) = nullptr;
             */
             break;
+        case kAudioUnitProperty_SampleRate:
+            break;
+        case kAudioUnitProperty_ParameterList:
+            {
+                AudioUnitParameterID* const paramList = static_cast<AudioUnitParameterID*>(outData);
+
+                for (uint32_t i=0; i<fParameterCount; ++i)
+                    paramList[i] = i;
+            }
+            return noErr;
+        case kAudioUnitProperty_ParameterInfo:
+	        DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
+            {
+                AudioUnitParameterInfo* const info = static_cast<AudioUnitParameterInfo*>(outData);
+                std::memset(info, 0, sizeof(*info));
+
+                const ParameterRanges& ranges(fPlugin.getParameterRanges(inElement));
+
+                info->flags = kAudioUnitParameterFlag_IsHighResolution
+                                    | kAudioUnitParameterFlag_IsReadable
+                                    | kAudioUnitParameterFlag_HasCFNameString;
+
+                if (fPlugin.getParameterDesignation(inElement) == kParameterDesignationBypass)
+                {
+                    info->flags |= kAudioUnitParameterFlag_IsWritable|kAudioUnitParameterFlag_NonRealTime;
+                    info->unit = kAudioUnitParameterUnit_Generic;
+
+                    d_strncpy(info->name, "Bypass", sizeof(info->name));
+                    info->cfNameString = CFSTR("Bypass");
+                }
+                else
+                {
+                    const uint32_t hints = fPlugin.getParameterHints(inElement);
+
+                    info->flags |= kAudioUnitParameterFlag_CFNameRelease;
+
+                    if (hints & kParameterIsOutput)
+                    {
+                        info->flags |= kAudioUnitParameterFlag_MeterReadOnly;
+                    }
+                    else
+                    {
+                        info->flags |= kAudioUnitParameterFlag_IsWritable;
+
+                        if ((hints & kParameterIsAutomatable) == 0x0)
+                            info->flags |= kAudioUnitParameterFlag_NonRealTime;
+                    }
+
+                    if (hints & kParameterIsBoolean)
+                        info->unit = kAudioUnitParameterUnit_Boolean;
+                    else if (hints & kParameterIsInteger)
+                        info->unit = kAudioUnitParameterUnit_Indexed;
+                    else
+                        info->unit = kAudioUnitParameterUnit_Generic;
+
+                    // | kAudioUnitParameterFlag_ValuesHaveStrings;
+
+                    const String& name(fPlugin.getParameterName(inElement));
+                    d_strncpy(info->name, name, sizeof(info->name));
+                    info->cfNameString = static_cast<CFStringRef>([[NSString stringWithUTF8String:name] retain]);
+                }
+
+                info->minValue = ranges.min;
+                info->maxValue = ranges.max;
+                info->defaultValue = ranges.def;
+            }
+            return noErr;
+        case kAudioUnitProperty_StreamFormat:
+            {
+                AudioStreamBasicDescription* const desc = static_cast<AudioStreamBasicDescription*>(outData);
+                std::memset(desc, 0, sizeof(*desc));
+
+                if (inElement != 0)
+                    return kAudioUnitErr_InvalidElement;
+
+                if (inScope == kAudioUnitScope_Input)
+                    desc->mChannelsPerFrame = DISTRHO_PLUGIN_NUM_INPUTS;
+                else if (inScope == kAudioUnitScope_Output)
+                    desc->mChannelsPerFrame = DISTRHO_PLUGIN_NUM_OUTPUTS;
+                else
+                    return kAudioUnitErr_InvalidScope;
+
+                desc->mFormatID         = kAudioFormatLinearPCM;
+                desc->mFormatFlags      = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+                desc->mSampleRate       = fPlugin.getSampleRate();
+                desc->mBitsPerChannel   = 32;
+                desc->mBytesPerFrame    = sizeof(float);
+                desc->mBytesPerPacket   = sizeof(float);
+                desc->mFramesPerPacket  = 1;
+            }
+            return noErr;
+        case kAudioUnitProperty_ElementCount:
+            switch (inScope)
+            {
+            case kAudioUnitScope_Global:
+                *static_cast<UInt32*>(outData) = 1;
+                break;
+            case kAudioUnitScope_Input:
+                *static_cast<UInt32*>(outData) = DISTRHO_PLUGIN_NUM_INPUTS != 0 ? 1 : 0;
+                break;
+            case kAudioUnitScope_Output:
+                *static_cast<UInt32*>(outData) = DISTRHO_PLUGIN_NUM_OUTPUTS != 0 ? 1 : 0;
+                break;
+            default:
+                *static_cast<UInt32*>(outData) = 0;
+                break;
+            }
+            return noErr;
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kAudioUnitProperty_Latency:
             *static_cast<Float64*>(outData) = static_cast<double>(fPlugin.getLatency()) / fPlugin.getSampleRate();
@@ -287,6 +399,7 @@ public:
         case kAudioUnitProperty_CocoaUI:
             {
                 AudioUnitCocoaViewInfo* const info = static_cast<AudioUnitCocoaViewInfo*>(outData);
+                std::memset(info, 0, sizeof(*info));
 
                 NSString* const bundlePathString = [[NSString alloc]
                     initWithBytes:d_nextBundlePath
@@ -305,13 +418,13 @@ public:
         return kAudioUnitErr_InvalidProperty;
     }
 
-    OSStatus auSetProperty(const AudioUnitPropertyID inID,
+    OSStatus auSetProperty(const AudioUnitPropertyID prop,
                            const AudioUnitScope inScope,
                            const AudioUnitElement inElement,
                            const void* const inData,
                            const UInt32 inDataSize)
     {
-        switch (inID)
+        switch (prop)
         {
         case kAudioUnitProperty_ClassInfo:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -320,6 +433,31 @@ public:
             *static_cast<CFPropertyListRef*>(inData);
             */
             break;
+        case kAudioUnitProperty_StreamFormat:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AudioStreamBasicDescription), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            {
+                const AudioStreamBasicDescription* const desc = static_cast<const AudioStreamBasicDescription*>(inData);
+
+                const uint flags = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mFormatID == kAudioFormatLinearPCM, desc->mFormatID, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_UINT_RETURN((desc->mFormatFlags & flags) == flags, desc->mFormatFlags, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mBitsPerChannel == 32, desc->mBitsPerChannel, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mBytesPerFrame == sizeof(float), desc->mBytesPerFrame, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mBytesPerPacket == sizeof(float), desc->mBytesPerPacket, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mFramesPerPacket == 1, desc->mFramesPerPacket, kAudioUnitErr_FormatNotSupported);
+
+                if (inScope == kAudioUnitScope_Input) {
+                    DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mChannelsPerFrame == DISTRHO_PLUGIN_NUM_INPUTS, desc->mChannelsPerFrame, kAudioUnitErr_FormatNotSupported);
+                }
+                else {
+                    DISTRHO_SAFE_ASSERT_UINT_RETURN(desc->mChannelsPerFrame == DISTRHO_PLUGIN_NUM_OUTPUTS, desc->mChannelsPerFrame, kAudioUnitErr_FormatNotSupported);
+                }
+
+                fPlugin.setSampleRate(desc->mSampleRate, true);
+            }
+            return noErr;
         case kAudioUnitProperty_MaximumFramesPerSlice:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(UInt32), inDataSize, kAudioUnitErr_InvalidPropertyValue);
@@ -328,6 +466,72 @@ public:
         }
 
         return kAudioUnitErr_InvalidProperty;
+    }
+
+    OSStatus auAddPropertyListener(const AudioUnitPropertyID prop,
+                                   const AudioUnitPropertyListenerProc proc,
+                                   void* const userData)
+    {
+        return noErr;
+    }
+
+    OSStatus auRemovePropertyListener(const AudioUnitPropertyID prop, const AudioUnitPropertyListenerProc proc)
+    {
+        return noErr;
+    }
+
+    OSStatus auRemovePropertyListenerWithUserData(const AudioUnitPropertyID prop,
+                                                  const AudioUnitPropertyListenerProc proc,
+                                                  void* const userData)
+    {
+        return noErr;
+    }
+
+    OSStatus auAddRenderNotify(const AURenderCallback proc, void* const userData)
+    {
+        return noErr;
+    }
+
+    OSStatus auRemoveRenderNotify(const AURenderCallback proc, void* const userData)
+    {
+        return noErr;
+    }
+
+    OSStatus auGetParameter(const AudioUnitParameterID param,
+                            const AudioUnitScope scope,
+                            const AudioUnitElement elem,
+                            AudioUnitParameterValue* const value)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope, kAudioUnitErr_InvalidScope);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(param < fParameterCount, param, kAudioUnitErr_InvalidElement);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
+
+        *value = fPlugin.getParameterValue(param);
+        return noErr;
+    }
+
+    OSStatus auSetParameter(const AudioUnitParameterID param,
+                            const AudioUnitScope scope,
+                            const AudioUnitElement elem,
+                            const AudioUnitParameterValue value,
+                            const UInt32 bufferOffset)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope, kAudioUnitErr_InvalidScope);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(param < fParameterCount, param, kAudioUnitErr_InvalidElement);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
+
+        fPlugin.setParameterValue(param, value);
+        return noErr;
+    }
+
+    OSStatus auScheduleParameters(const AudioUnitParameterEvent* const events, const UInt32 numEvents)
+    {
+        return noErr;
+    }
+
+    OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
+    {
+        return noErr;
     }
 
 #if 0
@@ -383,100 +587,9 @@ protected:
 
         return noErr;
     }
+#endif
 
     // ----------------------------------------------------------------------------------------------------------------
-    // ComponentBase Property Dispatch
-
-    OSStatus GetParameterInfo(const AudioUnitScope inScope,
-                              const AudioUnitParameterID inParameterID,
-                              AudioUnitParameterInfo& outParameterInfo) override
-    {
-        TRACE
-	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
-
-        const uint32_t index = inParameterID;
-        const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
-
-        outParameterInfo.flags = kAudioUnitParameterFlag_IsHighResolution
-                               | kAudioUnitParameterFlag_IsReadable
-                               | kAudioUnitParameterFlag_HasCFNameString;
-
-        if (fPlugin.getParameterDesignation(index) == kParameterDesignationBypass)
-        {
-            outParameterInfo.flags |= kAudioUnitParameterFlag_IsWritable|kAudioUnitParameterFlag_NonRealTime;
-            outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
-
-            d_strncpy(outParameterInfo.name, "Bypass", sizeof(outParameterInfo.name));
-            outParameterInfo.cfNameString = CFSTR("Bypass");
-        }
-        else
-        {
-            const uint32_t hints = fPlugin.getParameterHints(index);
-
-            outParameterInfo.flags |= kAudioUnitParameterFlag_CFNameRelease;
-
-            if (hints & kParameterIsOutput)
-            {
-                outParameterInfo.flags |= kAudioUnitParameterFlag_MeterReadOnly;
-            }
-            else
-            {
-                outParameterInfo.flags |= kAudioUnitParameterFlag_IsWritable;
-
-                if ((hints & kParameterIsAutomatable) == 0x0)
-                    outParameterInfo.flags |= kAudioUnitParameterFlag_NonRealTime;
-            }
-
-            if (hints & kParameterIsBoolean)
-                outParameterInfo.unit = kAudioUnitParameterUnit_Boolean;
-            else if (hints & kParameterIsInteger)
-                outParameterInfo.unit = kAudioUnitParameterUnit_Indexed;
-            else
-                outParameterInfo.unit = kAudioUnitParameterUnit_Generic;
-
-            // | kAudioUnitParameterFlag_ValuesHaveStrings;
-
-            const String& name(fPlugin.getParameterName(index));
-            d_strncpy(outParameterInfo.name, name, sizeof(outParameterInfo.name));
-            outParameterInfo.cfNameString = static_cast<CFStringRef>([[NSString stringWithUTF8String:name] retain]);
-        }
-
-        outParameterInfo.minValue = ranges.min;
-        outParameterInfo.maxValue = ranges.max;
-        outParameterInfo.defaultValue = ranges.def;
-
-        return noErr;
-    }
-
-private:
-    double getSampleRate()
-    {
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0 && 0
-        if (AUOutputElement* const output = GetOutput(0))
-        {
-            const double sampleRate = d_nextSampleRate = output->GetStreamFormat().mSampleRate;
-            return sampleRate;
-        }
-       #endif
-
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && 0
-        if (AUInputElement* const input = GetInput(0))
-        {
-            const double sampleRate = d_nextSampleRate = input->GetStreamFormat().mSampleRate;
-            return sampleRate;
-        }
-       #endif
-
-        return d_nextSampleRate;
-    }
-
-    void setBufferSizeAndSampleRate()
-    {
-        fPlugin.setSampleRate(getSampleRate(), true);
-        fPlugin.setBufferSize(GetMaxFramesPerSlice(), true);
-    }
-#endif
 
 private:
     PluginExporter fPlugin;
@@ -576,34 +689,36 @@ struct AudioComponentPlugInInstance {
             return reinterpret_cast<AudioComponentMethod>(GetProperty);
         case kAudioUnitSetPropertySelect:
             return reinterpret_cast<AudioComponentMethod>(SetProperty);
-        #if 0
         case kAudioUnitAddPropertyListenerSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(AddPropertyListener);
         case kAudioUnitRemovePropertyListenerSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(RemovePropertyListener);
         case kAudioUnitRemovePropertyListenerWithUserDataSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(RemovePropertyListenerWithUserData);
         case kAudioUnitAddRenderNotifySelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(AddRenderNotify);
         case kAudioUnitRemoveRenderNotifySelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(RemoveRenderNotify);
         case kAudioUnitGetParameterSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(GetParameter);
         case kAudioUnitSetParameterSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(SetParameter);
         case kAudioUnitScheduleParametersSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(ScheduleParameters);
+        /*
         case kAudioUnitRenderSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
-        case kAudioUnitResetSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(Render);
         case kAudioUnitComplexRenderSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(ComplexRender);
+        */
+        case kAudioUnitResetSelect:
+            return reinterpret_cast<AudioComponentMethod>(Reset);
+        /*
         case kAudioUnitProcessSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+            return reinterpret_cast<AudioComponentMethod>(Process);
         case kAudioUnitProcessMultipleSelect:
-            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
-        #endif
+            return reinterpret_cast<AudioComponentMethod>(ProcessMultiple);
+        */
         }
 
         return nullptr;
@@ -622,18 +737,18 @@ struct AudioComponentPlugInInstance {
     }
 
     static OSStatus GetPropertyInfo(AudioComponentPlugInInstance* const self,
-                                    const AudioUnitPropertyID inID,
+                                    const AudioUnitPropertyID prop,
                                     const AudioUnitScope inScope,
                                     const AudioUnitElement inElement,
                                     UInt32* const outDataSize,
                                     Boolean* const outWritable)
     {
-        d_stdout("AudioComponentPlugInInstance::GetPropertyInfo(%p, %2d:%s, %d:%s, %d, %p, ...)",
-                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_stdout("AudioComponentPlugInInstance::GetPropertyInfo(%p, %2d:%s, %d:%s, %d, 0x%x, ...)",
+                 self, prop, AudioUnitPropertyID2Str(prop), inScope, AudioUnitScope2Str(inScope), inElement);
 
 		UInt32 dataSize = 0;
 		Boolean writable = false;
-        const OSStatus res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, dataSize, writable);
+        const OSStatus res = self->plugin->auGetPropertyInfo(prop, inScope, inElement, dataSize, writable);
 
 		if (outDataSize != nullptr)
 			*outDataSize = dataSize;
@@ -645,14 +760,14 @@ struct AudioComponentPlugInInstance {
     }
 
     static OSStatus GetProperty(AudioComponentPlugInInstance* const self,
-                                const AudioUnitPropertyID inID,
+                                const AudioUnitPropertyID prop,
                                 const AudioUnitScope inScope,
                                 const AudioUnitElement inElement,
                                 void* const outData,
                                 UInt32* const ioDataSize)
     {
-        d_stdout("AudioComponentPlugInInstance::GetProperty    (%p, %2d:%s, %d:%s, %d, %p, ...)",
-                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_stdout("AudioComponentPlugInInstance::GetProperty    (%p, %2d:%s, %d:%s, %d, 0x%x, ...)",
+                 self, prop, AudioUnitPropertyID2Str(prop), inScope, AudioUnitScope2Str(inScope), inElement);
         DISTRHO_SAFE_ASSERT_RETURN(ioDataSize != nullptr, kAudio_ParamError);
 
         Boolean writable;
@@ -661,15 +776,16 @@ struct AudioComponentPlugInInstance {
 
         if (outData == nullptr)
         {
-            res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, outDataSize, writable);
+            res = self->plugin->auGetPropertyInfo(prop, inScope, inElement, outDataSize, writable);
             *ioDataSize = outDataSize;
             return res;
         }
 
         const UInt32 inDataSize = *ioDataSize;
-        DISTRHO_SAFE_ASSERT_RETURN(inDataSize != 0, kAudio_ParamError);
+        if (inDataSize == 0)
+            return kAudio_ParamError;
 
-        res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, outDataSize, writable);
+        res = self->plugin->auGetPropertyInfo(prop, inScope, inElement, outDataSize, writable);
 
         if (res != noErr)
             return res;
@@ -687,7 +803,7 @@ struct AudioComponentPlugInInstance {
 			outBuffer = outData;
 		}
 
-        res = self->plugin->auGetProperty(inID, inScope, inElement, outBuffer);
+        res = self->plugin->auGetProperty(prop, inScope, inElement, outBuffer);
 
 		if (res != noErr)
         {
@@ -709,16 +825,106 @@ struct AudioComponentPlugInInstance {
     }
 
     static OSStatus SetProperty(AudioComponentPlugInInstance* const self,
-                                const AudioUnitPropertyID inID,
+                                const AudioUnitPropertyID prop,
                                 const AudioUnitScope inScope,
                                 const AudioUnitElement inElement,
                                 const void* const inData,
                                 const UInt32 inDataSize)
     {
-        d_stdout("AudioComponentPlugInInstance::SetProperty(%p, %d:%s, %d:%s, %d, %d, %p, %u)",
-                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
-        return self->plugin->auSetProperty(inID, inScope, inElement, inData, inDataSize);
+        d_stdout("AudioComponentPlugInInstance::SetProperty(%p, %d:%s, %d:%s, %d, 0x%x, %p, %u)",
+                 self, prop, AudioUnitPropertyID2Str(prop), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+        return self->plugin->auSetProperty(prop, inScope, inElement, inData, inDataSize);
     }
+
+    static OSStatus AddPropertyListener(AudioComponentPlugInInstance* const self,
+                                        const AudioUnitPropertyID prop,
+                                        const AudioUnitPropertyListenerProc proc,
+                                        void* const userData)
+    {
+        d_stdout("AudioComponentPlugInInstance::AddPropertyListener(%p, %d:%s, %p, %p)",
+                 self, prop, AudioUnitPropertyID2Str(prop), proc, userData);
+        return self->plugin->auAddPropertyListener(prop, proc, userData);
+    }
+
+    static OSStatus RemovePropertyListener(AudioComponentPlugInInstance* const self,
+                                           const AudioUnitPropertyID prop,
+                                           const AudioUnitPropertyListenerProc proc)
+    {
+        d_stdout("AudioComponentPlugInInstance::RemovePropertyListener(%p, %d:%s, %p)",
+                 self, prop, AudioUnitPropertyID2Str(prop), proc);
+        return self->plugin->auRemovePropertyListener(prop, proc);
+    }
+
+    static OSStatus RemovePropertyListenerWithUserData(AudioComponentPlugInInstance* const self,
+                                                       const AudioUnitPropertyID prop,
+                                                       const AudioUnitPropertyListenerProc proc,
+                                                       void* const userData)
+    {
+        d_stdout("AudioComponentPlugInInstance::RemovePropertyListenerWithUserData(%p, %d:%s, %p, %p)",
+                 self, prop, AudioUnitPropertyID2Str(prop), proc, userData);
+        return self->plugin->auRemovePropertyListenerWithUserData(prop, proc, userData);
+    }
+
+    static OSStatus AddRenderNotify(AudioComponentPlugInInstance* const self,
+                                    const AURenderCallback proc,
+                                    void* const userData)
+    {
+        d_stdout("AudioComponentPlugInInstance::AddRenderNotify(%p, %p, %p)",
+                 self, proc, userData);
+        return self->plugin->auAddRenderNotify(proc, userData);
+    }
+
+    static OSStatus RemoveRenderNotify(AudioComponentPlugInInstance* const self,
+                                       const AURenderCallback proc,
+                                       void* const userData)
+    {
+        d_stdout("AudioComponentPlugInInstance::RemoveRenderNotify(%p, %p, %p)",
+                 self, proc, userData);
+        return self->plugin->auRemoveRenderNotify(proc, userData);
+    }
+
+    static OSStatus GetParameter(AudioComponentPlugInInstance* const self,
+                                 const AudioUnitParameterID param,
+                                 const AudioUnitScope scope,
+                                 const AudioUnitElement elem,
+                                 AudioUnitParameterValue* const value)
+    {
+        d_stdout("AudioComponentPlugInInstance::GetParameter(%p, %d, %d:%s, 0x%x, %p)",
+                 self, param, scope, AudioUnitScope2Str(scope), elem, value);
+        return self->plugin->auGetParameter(param, scope, elem, value);
+    }
+
+    static OSStatus SetParameter(AudioComponentPlugInInstance* const self,
+                                 const AudioUnitParameterID param,
+                                 const AudioUnitScope scope,
+                                 const AudioUnitElement elem,
+                                 const AudioUnitParameterValue value,
+                                 const UInt32 bufferOffset)
+    {
+        d_stdout("AudioComponentPlugInInstance::SetParameter(%p, %d %d:%s, 0x%x, %f, %u)",
+                 self, param, scope, AudioUnitScope2Str(scope), elem, value, bufferOffset);
+        return self->plugin->auSetParameter(param, scope, elem, value, bufferOffset);
+    }
+
+    static OSStatus ScheduleParameters(AudioComponentPlugInInstance* const self,
+                                       const AudioUnitParameterEvent* const events,
+                                       const UInt32 numEvents)
+    {
+        d_stdout("AudioComponentPlugInInstance::ScheduleParameters(%p, %p, %u)",
+                 self, events, numEvents);
+        return self->plugin->auScheduleParameters(events, numEvents);
+    }
+
+    static OSStatus Reset(AudioComponentPlugInInstance* const self,
+                          const AudioUnitScope scope,
+                          const AudioUnitElement elem)
+    {
+        d_stdout("AudioComponentPlugInInstance::Reset(%p, %d:%s, 0x%x)",
+                 self, scope, AudioUnitScope2Str(scope), elem);
+        return self->plugin->auReset(scope, elem);
+    }
+
+    DISTRHO_DECLARE_NON_COPYABLE(AudioComponentPlugInInstance)
 };
 
 // --------------------------------------------------------------------------------------------------------------------
