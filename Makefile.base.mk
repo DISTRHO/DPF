@@ -798,26 +798,44 @@ MOD_ENVIRONMENT = \
 modduo:
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm)
 
+modduo-new:
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm)
+
 modduox:
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64)
+
+modduox-new:
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64)
 
 moddwarf:
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64)
 
+moddwarf-new:
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64)
+
 modpush:
 	tar -C bin -cz $(subst bin/,,$(wildcard bin/*.lv2)) | base64 | curl -F 'package=@-' http://192.168.51.1/sdk/install && echo
 
-ifneq (,$(findstring modduo-,$(MAKECMDGOALS)))
+ifneq (,$(findstring modduo-new-,$(MAKECMDGOALS)))
+$(MAKECMDGOALS):
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm) $(subst modduo-new-,,$(MAKECMDGOALS))
+else ifneq (,$(findstring modduo-,$(filter-out modduo-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm) $(subst modduo-,,$(MAKECMDGOALS))
 endif
 
-ifneq (,$(findstring modduox-,$(MAKECMDGOALS)))
+ifneq (,$(findstring modduox-new-,$(MAKECMDGOALS)))
+$(MAKECMDGOALS):
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64) $(subst modduox-new-,,$(MAKECMDGOALS))
+else ifneq (,$(findstring modduox-,$(filter-out modduox-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64) $(subst modduox-,,$(MAKECMDGOALS))
 endif
 
-ifneq (,$(findstring moddwarf-,$(MAKECMDGOALS)))
+ifneq (,$(findstring moddwarf-new-,$(MAKECMDGOALS)))
+$(MAKECMDGOALS):
+	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64) $(subst moddwarf-new-,,$(MAKECMDGOALS))
+else ifneq (,$(findstring moddwarf-,$(filter-out moddwarf-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64) $(subst moddwarf-,,$(MAKECMDGOALS))
 endif
