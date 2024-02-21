@@ -21,38 +21,134 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
-// #define CA_BASIC_AU_FEATURES 1
-#define CA_NO_AU_UI_FEATURES 1
-#define CA_USE_AUDIO_PLUGIN_ONLY 1
-#define TARGET_OS_MAC 1
-
 #include <AudioUnit/AudioUnit.h>
-#include <AudioUnit/AUCocoaUIView.h>
 
 #define TRACE d_stderr("////////--------------------------------------------------------------- %s %d", __PRETTY_FUNCTION__, __LINE__);
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-
-#include "au/MusicDeviceBase.h"
-
-#pragma clang diagnostic pop
-
-#ifndef TARGET_OS_MAC
-#error TARGET_OS_MAC missing
-#endif
 
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-typedef MusicDeviceBase PluginBase;
-#define PluginBaseFactory AUMIDIEffectFactory
-#else
-typedef AUBase PluginBase;
-#define PluginBaseFactory AUBaseFactory
-#endif
+static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexcept
+{
+    switch (prop)
+    {
+    #define PROP(s) case s: return #s;
+    PROP(kAudioUnitProperty_ClassInfo)
+    PROP(kAudioUnitProperty_MakeConnection)
+    PROP(kAudioUnitProperty_SampleRate)
+    PROP(kAudioUnitProperty_ParameterList)
+    PROP(kAudioUnitProperty_ParameterInfo)
+    PROP(kAudioUnitProperty_StreamFormat)
+    PROP(kAudioUnitProperty_ElementCount)
+    PROP(kAudioUnitProperty_Latency)
+    PROP(kAudioUnitProperty_SupportedNumChannels)
+    PROP(kAudioUnitProperty_MaximumFramesPerSlice)
+    PROP(kAudioUnitProperty_ParameterValueStrings)
+    PROP(kAudioUnitProperty_AudioChannelLayout)
+    PROP(kAudioUnitProperty_TailTime)
+    PROP(kAudioUnitProperty_BypassEffect)
+    PROP(kAudioUnitProperty_LastRenderError)
+    PROP(kAudioUnitProperty_SetRenderCallback)
+    PROP(kAudioUnitProperty_FactoryPresets)
+    PROP(kAudioUnitProperty_RenderQuality)
+    PROP(kAudioUnitProperty_HostCallbacks)
+    PROP(kAudioUnitProperty_InPlaceProcessing)
+    PROP(kAudioUnitProperty_ElementName)
+    PROP(kAudioUnitProperty_SupportedChannelLayoutTags)
+    PROP(kAudioUnitProperty_PresentPreset)
+    PROP(kAudioUnitProperty_DependentParameters)
+    PROP(kAudioUnitProperty_InputSamplesInOutput)
+    PROP(kAudioUnitProperty_ShouldAllocateBuffer)
+    PROP(kAudioUnitProperty_FrequencyResponse)
+    PROP(kAudioUnitProperty_ParameterHistoryInfo)
+    PROP(kAudioUnitProperty_NickName)
+    PROP(kAudioUnitProperty_OfflineRender)
+    PROP(kAudioUnitProperty_ParameterIDName)
+    PROP(kAudioUnitProperty_ParameterStringFromValue)
+    PROP(kAudioUnitProperty_ParameterClumpName)
+    PROP(kAudioUnitProperty_ParameterValueFromString)
+    PROP(kAudioUnitProperty_PresentationLatency)
+    PROP(kAudioUnitProperty_ClassInfoFromDocument)
+    PROP(kAudioUnitProperty_RequestViewController)
+    PROP(kAudioUnitProperty_ParametersForOverview)
+    PROP(kAudioUnitProperty_SupportsMPE)
+    PROP(kAudioUnitProperty_RenderContextObserver)
+    PROP(kAudioUnitProperty_LastRenderSampleTime)
+    PROP(kAudioUnitProperty_LoadedOutOfProcess)
+   #if !TARGET_OS_IPHONE
+    PROP(kAudioUnitProperty_FastDispatch)
+    PROP(kAudioUnitProperty_SetExternalBuffer)
+    PROP(kAudioUnitProperty_GetUIComponentList)
+    PROP(kAudioUnitProperty_CocoaUI)
+    PROP(kAudioUnitProperty_IconLocation)
+    PROP(kAudioUnitProperty_AUHostIdentifier)
+   #endif
+    PROP(kAudioUnitProperty_MIDIOutputCallbackInfo)
+    PROP(kAudioUnitProperty_MIDIOutputCallback)
+    PROP(kAudioUnitProperty_MIDIOutputEventListCallback)
+    PROP(kAudioUnitProperty_AudioUnitMIDIProtocol)
+    PROP(kAudioUnitProperty_HostMIDIProtocol)
+    PROP(kAudioUnitProperty_MIDIOutputBufferSizeHint)
+    #undef PROP
+    }
+    return "[unknown]";
+}
+
+static const char* AudioUnitScope2Str(const AudioUnitScope scope) noexcept
+{
+    switch (scope)
+    {
+    #define SCOPE(s) case s: return #s;
+    SCOPE(kAudioUnitScope_Global)
+    SCOPE(kAudioUnitScope_Input)
+    SCOPE(kAudioUnitScope_Output)
+    SCOPE(kAudioUnitScope_Group)
+    SCOPE(kAudioUnitScope_Part)
+    SCOPE(kAudioUnitScope_Note)
+    SCOPE(kAudioUnitScope_Layer)
+    SCOPE(kAudioUnitScope_LayerItem)
+    #undef SCOPE
+    }
+    return "[unknown]";
+}
+
+static const char* AudioUnitSelector2Str(const SInt16 selector) noexcept
+{
+    switch (selector)
+    {
+    #define SEL(s) case s: return #s;
+    SEL(kAudioUnitInitializeSelect)
+    SEL(kAudioUnitUninitializeSelect)
+    SEL(kAudioUnitGetPropertyInfoSelect)
+    SEL(kAudioUnitGetPropertySelect)
+    SEL(kAudioUnitSetPropertySelect)
+    SEL(kAudioUnitAddPropertyListenerSelect)
+    SEL(kAudioUnitRemovePropertyListenerSelect)
+    SEL(kAudioUnitRemovePropertyListenerWithUserDataSelect)
+    SEL(kAudioUnitAddRenderNotifySelect)
+    SEL(kAudioUnitRemoveRenderNotifySelect)
+    SEL(kAudioUnitGetParameterSelect)
+    SEL(kAudioUnitSetParameterSelect)
+    SEL(kAudioUnitScheduleParametersSelect)
+    SEL(kAudioUnitRenderSelect)
+    SEL(kAudioUnitResetSelect)
+    SEL(kAudioUnitComplexRenderSelect)
+    SEL(kAudioUnitProcessSelect)
+    SEL(kAudioUnitProcessMultipleSelect)
+    SEL(kMusicDeviceMIDIEventSelect)
+    SEL(kMusicDeviceSysExSelect)
+    SEL(kMusicDevicePrepareInstrumentSelect)
+    SEL(kMusicDeviceReleaseInstrumentSelect)
+    SEL(kMusicDeviceStartNoteSelect)
+    SEL(kMusicDeviceStopNoteSelect)
+    SEL(kMusicDeviceMIDIEventListSelect)
+    SEL(kAudioOutputUnitStartSelect)
+    SEL(kAudioOutputUnitStopSelect)
+    #undef SEL
+    }
+    return "[unknown]";
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -66,261 +162,17 @@ static constexpr const requestParameterValueChangeFunc requestParameterValueChan
 static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
 #endif
 
-class PluginHolder
-{
-public:
-    PluginExporter fPlugin;
-
-   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    struct BusInfo {
-        char name[32];
-        uint32_t numChannels;
-        bool hasPair;
-        bool isCV;
-        bool isMain;
-        uint32_t groupId;
-    };
-    std::vector<BusInfo> fAudioInputBuses, fAudioOutputBuses;
-    bool fUsingCV;
-   #endif
-
-    PluginHolder()
-        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback)
-       #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-        , fAudioInputBuses()
-        , fAudioOutputBuses()
-        , fUsingCV(false)
-       #endif
-    {
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-        fillInBusInfoDetails<true>();
-       #endif
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-        fillInBusInfoDetails<false>();
-       #endif
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-        fillInBusInfoPairs();
-       #endif
-    }
-
-    // virtual ~PluginHolder() {}
-
-protected:
-    uint32_t getPluginBusCount(const bool isInput) noexcept
-    {
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-        if (isInput)
-            return fAudioInputBuses.size();
-       #endif
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-        if (!isInput)
-            return fAudioOutputBuses.size();
-       #endif
-        return 0;
-    }
-
-private:
-   #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    template<bool isInput>
-    void fillInBusInfoDetails()
-    {
-        constexpr const uint32_t numPorts = isInput ? DISTRHO_PLUGIN_NUM_INPUTS : DISTRHO_PLUGIN_NUM_OUTPUTS;
-        std::vector<BusInfo>& busInfos(isInput ? fAudioInputBuses : fAudioOutputBuses);
-
-        enum {
-            kPortTypeNull,
-            kPortTypeAudio,
-            kPortTypeSidechain,
-            kPortTypeCV,
-            kPortTypeGroup
-        } lastSeenPortType = kPortTypeNull;
-        uint32_t lastSeenGroupId = kPortGroupNone;
-        uint32_t nonGroupAudioId = 0;
-        uint32_t nonGroupSidechainId = 0x20000000;
-
-        for (uint32_t i=0; i<numPorts; ++i)
-        {
-            const AudioPortWithBusId& port(fPlugin.getAudioPort(isInput, i));
-
-            if (port.groupId != kPortGroupNone)
-            {
-                if (lastSeenPortType != kPortTypeGroup || lastSeenGroupId != port.groupId)
-                {
-                    lastSeenPortType = kPortTypeGroup;
-                    lastSeenGroupId = port.groupId;
-
-                    BusInfo busInfo = {
-                        {}, 1, false, false,
-                        // if this is the first port, set it as main
-                        busInfos.empty(),
-                        // user given group id with extra safety offset
-                        port.groupId + 0x80000000
-                    };
-
-                    const PortGroupWithId& group(fPlugin.getPortGroupById(port.groupId));
-
-                    switch (port.groupId)
-                    {
-                    case kPortGroupStereo:
-                    case kPortGroupMono:
-                        if (busInfo.isMain)
-                        {
-                            d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", 32);
-                            break;
-                        }
-                    // fall-through
-                    default:
-                        if (group.name.isNotEmpty())
-                            d_strncpy(busInfo.name, group.name, 32);
-                        else
-                            d_strncpy(busInfo.name, port.name, 32);
-                        break;
-                    }
-
-                    busInfos.push_back(busInfo);
-                }
-                else
-                {
-                    ++busInfos.back().numChannels;
-                }
-            }
-            else if (port.hints & kAudioPortIsCV)
-            {
-                // TODO
-                lastSeenPortType = kPortTypeCV;
-                lastSeenGroupId = kPortGroupNone;
-                fUsingCV = true;
-            }
-            else if (port.hints & kAudioPortIsSidechain)
-            {
-                if (lastSeenPortType != kPortTypeSidechain)
-                {
-                    lastSeenPortType = kPortTypeSidechain;
-                    lastSeenGroupId = kPortGroupNone;
-
-                    BusInfo busInfo = {
-                        {}, 1, false, false,
-                        // not main
-                        false,
-                        // give unique id
-                        nonGroupSidechainId++
-                    };
-
-                    d_strncpy(busInfo.name, port.name, 32);
-
-                    busInfos.push_back(busInfo);
-                }
-                else
-                {
-                    ++busInfos.back().numChannels;
-                }
-            }
-            else
-            {
-                if (lastSeenPortType != kPortTypeAudio)
-                {
-                    lastSeenPortType = kPortTypeAudio;
-                    lastSeenGroupId = kPortGroupNone;
-
-                    BusInfo busInfo = {
-                        {}, 1, false, false,
-                        // if this is the first port, set it as main
-                        busInfos.empty(),
-                        // give unique id
-                        nonGroupAudioId++
-                    };
-
-                    if (busInfo.isMain)
-                    {
-                        d_strncpy(busInfo.name, isInput ? "Audio Input" : "Audio Output", 32);
-                    }
-                    else
-                    {
-                        d_strncpy(busInfo.name, port.name, 32);
-                    }
-
-                    busInfos.push_back(busInfo);
-                }
-                else
-                {
-                    ++busInfos.back().numChannels;
-                }
-            }
-        }
-    }
-   #endif
-
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    void fillInBusInfoPairs()
-    {
-        const size_t numSharedBuses = std::min(fAudioInputBuses.size(), fAudioOutputBuses.size());
-
-        for (size_t i=0; i<numSharedBuses; ++i)
-        {
-            if (fAudioInputBuses[i].groupId != fAudioOutputBuses[i].groupId)
-                break;
-            if (fAudioInputBuses[i].numChannels != fAudioOutputBuses[i].numChannels)
-                break;
-            if (fAudioInputBuses[i].isMain != fAudioOutputBuses[i].isMain)
-                break;
-
-            fAudioInputBuses[i].hasPair = fAudioOutputBuses[i].hasPair = true;
-        }
-    }
-   #endif
-
-    // ----------------------------------------------------------------------------------------------------------------
-    // DPF callbacks
-
-   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    bool writeMidi(const MidiEvent&)
-    {
-        return true;
-    }
-
-    static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
-    {
-        return static_cast<PluginHolder*>(ptr)->writeMidi(midiEvent);
-    }
-   #endif
-
-   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-    bool requestParameterValueChange(uint32_t, float)
-    {
-        return true;
-    }
-
-    static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
-    {
-        return static_cast<PluginHolder*>(ptr)->requestParameterValueChange(index, value);
-    }
-   #endif
-
-   #if DISTRHO_PLUGIN_WANT_STATE
-    bool updateState(const char*, const char*)
-    {
-        return true;
-    }
-
-    static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
-    {
-        return static_cast<PluginHolder*>(ptr)->updateState(key, value);
-    }
-   #endif
-};
-
-class PluginAU : public PluginHolder,
-                 public PluginBase
+class PluginAU
 {
 public:
     PluginAU(const AudioUnit component)
-        : PluginHolder(),
-          PluginBase(component, getPluginBusCount(true), getPluginBusCount(false)),
+        : fPlugin(this, writeMidiCallback, requestParameterValueChangeCallback, updateStateValueCallback),
           fParameterCount(fPlugin.getParameterCount()),
           fCachedParameterValues(nullptr)
     {
         TRACE
 
+#if 0
 	    if (fParameterCount != 0)
         {
             CreateElements();
@@ -342,115 +194,147 @@ public:
 
         // static
         SupportedNumChannels(nullptr);
+            #endif
     }
 
-    ~PluginAU() override
+    ~PluginAU()
     {
         TRACE
         delete[] fCachedParameterValues;
     }
 
+    OSStatus auInitialize()
+    {
+        return noErr;
+    }
+
+    OSStatus auUninitialize()
+    {
+        return noErr;
+    }
+
+    OSStatus auGetPropertyInfo(const AudioUnitPropertyID inID,
+                               const AudioUnitScope inScope,
+                               const AudioUnitElement inElement,
+                               UInt32& outDataSize,
+                               Boolean& outWritable)
+    {
+        switch (inID)
+        {
+        case kAudioUnitProperty_ClassInfo:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            /* TODO used for storing plugin state
+            outDataSize = sizeof(CFPropertyListRef);
+            outWritable = true;
+            */
+            break;
+        case kAudioUnitProperty_ElementCount:
+            outDataSize = sizeof(UInt32);
+            outWritable = false;
+            return noErr;
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        case kAudioUnitProperty_Latency:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(Float64);
+            outWritable = false;
+            return noErr;
+       #endif
+        case kAudioUnitProperty_SupportedNumChannels:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(AUChannelInfo);
+            outWritable = false;
+            return noErr;
+        case kAudioUnitProperty_MaximumFramesPerSlice:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(UInt32);
+            outWritable = true;
+            return noErr;
+       #if DISTRHO_PLUGIN_HAS_UI
+        case kAudioUnitProperty_CocoaUI:
+            outDataSize = sizeof(AudioUnitCocoaViewInfo);
+            outWritable = false;
+            return noErr;
+       #endif
+        }
+
+        return kAudioUnitErr_InvalidProperty;
+    }
+
+    OSStatus auGetProperty(const AudioUnitPropertyID inID,
+                           const AudioUnitScope inScope,
+                           const AudioUnitElement inElement,
+                           void* const outData)
+    {
+        switch (inID)
+        {
+        case kAudioUnitProperty_ClassInfo:
+            /* TODO used for storing plugin state
+            *static_cast<CFPropertyListRef*>(outData) = nullptr;
+            */
+            break;
+       #if DISTRHO_PLUGIN_WANT_LATENCY
+        case kAudioUnitProperty_Latency:
+            *static_cast<Float64*>(outData) = static_cast<double>(fPlugin.getLatency()) / fPlugin.getSampleRate();
+            return noErr;
+       #endif
+        case kAudioUnitProperty_SupportedNumChannels:
+            *static_cast<AUChannelInfo*>(outData) = { DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS };
+            return noErr;
+        case kAudioUnitProperty_MaximumFramesPerSlice:
+            *static_cast<UInt32*>(outData) = fPlugin.getBufferSize();
+            return noErr;
+       #if DISTRHO_PLUGIN_HAS_UI
+        case kAudioUnitProperty_CocoaUI:
+            {
+                AudioUnitCocoaViewInfo* const info = static_cast<AudioUnitCocoaViewInfo*>(outData);
+
+                NSString* const bundlePathString = [[NSString alloc]
+                    initWithBytes:d_nextBundlePath
+                           length:strlen(d_nextBundlePath)
+                         encoding:NSUTF8StringEncoding];
+
+                info->mCocoaAUViewBundleLocation = static_cast<CFURLRef>([[NSURL fileURLWithPath: bundlePathString] retain]);
+                info->mCocoaAUViewClass[0] = CFSTR("DPF_UI_ViewFactory");
+
+                [bundlePathString release];
+            }
+            return noErr;
+       #endif
+        }
+
+        return kAudioUnitErr_InvalidProperty;
+    }
+
+    OSStatus auSetProperty(const AudioUnitPropertyID inID,
+                           const AudioUnitScope inScope,
+                           const AudioUnitElement inElement,
+                           const void* const inData,
+                           const UInt32 inDataSize)
+    {
+        switch (inID)
+        {
+        case kAudioUnitProperty_ClassInfo:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(CFPropertyListRef*), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            /* TODO used for restoring plugin state
+            *static_cast<CFPropertyListRef*>(inData);
+            */
+            break;
+        case kAudioUnitProperty_MaximumFramesPerSlice:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(UInt32), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            fPlugin.setBufferSize(*static_cast<const UInt32*>(inData));
+            return noErr;
+        }
+
+        return kAudioUnitErr_InvalidProperty;
+    }
+
+#if 0
 protected:
     // ----------------------------------------------------------------------------------------------------------------
     // ComponentBase AU dispatch
 
-    OSStatus Initialize() override
-    {
-        TRACE
-        ComponentResult res;
-
-        res = PluginBase::Initialize();
-        DISTRHO_SAFE_ASSERT_INT_RETURN(res == noErr, res, res);
-
-        setBufferSizeAndSampleRate();
-        fPlugin.activate();
-
-        return noErr;
-    }
-
-    void Cleanup() override
-    {
-        TRACE
-        fPlugin.deactivate();
-        PluginBase::Cleanup();
-    }
-
-    OSStatus Reset(AudioUnitScope inScope, AudioUnitElement inElement) override
-    {
-        TRACE
-        fPlugin.deactivateIfNeeded();
-
-        const OSStatus res = PluginBase::Reset(inScope, inElement);
-
-        if (res == noErr)
-        {
-            setBufferSizeAndSampleRate();
-            fPlugin.activate();
-        }
-
-        return res;
-    }
-
-    OSStatus GetPropertyInfo(const AudioUnitPropertyID inID,
-                             const AudioUnitScope inScope,
-                             const AudioUnitElement inElement,
-                             UInt32& outDataSize,
-                             Boolean& outWritable) override
-    {
-        TRACE
-        if (inScope == kAudioUnitScope_Global)
-        {
-            switch (inID)
-            {
-           #if DISTRHO_PLUGIN_HAS_UI
-            case kAudioUnitProperty_CocoaUI:
-                outDataSize = sizeof(AudioUnitCocoaViewInfo);
-                outWritable = true;
-                return noErr;
-           #endif
-            default:
-                break;
-            }
-        }
-
-        return PluginBase::GetPropertyInfo(inID, inScope, inElement, outDataSize, outWritable);
-    }
-
-    OSStatus GetProperty(const AudioUnitPropertyID inID,
-                         const AudioUnitScope inScope,
-                         const AudioUnitElement inElement,
-                         void* const outData) override
-    {
-        TRACE
-        if (inScope == kAudioUnitScope_Global)
-        {
-            switch (inID)
-            {
-           #if DISTRHO_PLUGIN_HAS_UI
-            case kAudioUnitProperty_CocoaUI:
-                if (AudioUnitCocoaViewInfo* const info = static_cast<AudioUnitCocoaViewInfo*>(outData))
-                {
-                    NSString* const bundlePathString = [[NSString alloc]
-                        initWithBytes:d_nextBundlePath
-                               length:strlen(d_nextBundlePath)
-                             encoding:NSUTF8StringEncoding];
-
-                    info->mCocoaAUViewBundleLocation = static_cast<CFURLRef>([[NSURL fileURLWithPath: bundlePathString] retain]);
-                    info->mCocoaAUViewClass[0] = CFSTR("DPF_UI_ViewFactory");
-
-                    [bundlePathString release];
-                }
-                return noErr;
-           #endif
-            default:
-                break;
-            }
-        }
-
-        return PluginBase::GetProperty(inID, inScope, inElement, outData);
-    }
-
-#if 0
 	OSStatus GetParameter(const AudioUnitParameterID inParameterID,
                           const AudioUnitScope inScope,
                           const AudioUnitElement inElement,
@@ -461,7 +345,6 @@ protected:
 
         return fPlugin.getParameterValue(inParameterID);
     }
-#endif
 
 	OSStatus SetParameter(AudioUnitParameterID inParameterID,
                           const AudioUnitScope inScope,
@@ -475,12 +358,6 @@ protected:
         PluginBase::SetParameter(inParameterID, inScope, inElement, inValue, inBufferOffsetInFrames);
         fPlugin.setParameterValue(inParameterID, inValue);
         return noErr;
-    }
-
-    bool CanScheduleParameters() const override
-    {
-        TRACE
-        return false;
     }
 
     OSStatus Render(AudioUnitRenderActionFlags& ioActionFlags,
@@ -572,88 +449,6 @@ protected:
         return noErr;
     }
 
-   #if DISTRHO_PLUGIN_WANT_LATENCY
-    Float64 GetLatency() override
-    {
-        TRACE
-        return static_cast<double>(fPlugin.getLatency()) / fPlugin.getSampleRate();
-    }
-   #endif
-
-    bool StreamFormatWritable(AudioUnitScope, AudioUnitElement) override
-    {
-        TRACE
-        return false;
-    }
-
-    UInt32 SupportedNumChannels(const AUChannelInfo** const outInfo) override
-    {
-        TRACE
-        static const AUChannelInfo sChannels[1] = {{ DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS }};
-
-        if (outInfo != nullptr)
-            *outInfo = sChannels;
-
-        return 1;
-    }
-
-#if 0
-    bool ValidFormat(AudioUnitScope scope, AudioUnitElement element, const CAStreamBasicDescription& format) override
-    {
-        TRACE
-        return false;
-    }
-
-    OSStatus ChangeStreamFormat(AudioUnitScope scope, AudioUnitElement element, const CAStreamBasicDescription& old, const CAStreamBasicDescription& format) override
-    {
-        TRACE
-        return noErr;
-    }
-
-    OSStatus StartNote(MusicDeviceInstrumentID, MusicDeviceGroupID, NoteInstanceID*, UInt32, const MusicDeviceNoteParams&) override
-    {
-        TRACE
-        return noErr;
-    }
-
-    OSStatus StopNote(MusicDeviceGroupID, NoteInstanceID, UInt32) override
-    {
-        TRACE
-        return noErr;
-    }
-#endif
-
-	void SetMaxFramesPerSlice(const UInt32 nFrames) override
-    {
-        PluginBase::SetMaxFramesPerSlice(nFrames);
-
-        DISTRHO_SAFE_ASSERT_RETURN(!fPlugin.isActive(),);
-        fPlugin.setBufferSize(nFrames, true);
-    }
-
-#if 0
-    UInt32 GetChannelLayoutTags(const AudioUnitScope scope,
-                                const AudioUnitElement element,
-                                AudioChannelLayoutTag* const outLayoutTags) override
-    {
-        TRACE
-        return 0;
-    }
-
-    UInt32 GetAudioChannelLayout(AudioUnitScope scope, AudioUnitElement element,
-                                 AudioChannelLayout* outLayoutPtr, Boolean& outWritable) override
-    {
-        TRACE
-        return 0;
-    }
-
-    OSStatus SetAudioChannelLayout(AudioUnitScope scope, AudioUnitElement element, const AudioChannelLayout* inLayout) override
-    {
-        TRACE
-        return noErr;
-    }
-#endif
-
 private:
     double getSampleRate()
     {
@@ -681,85 +476,266 @@ private:
         fPlugin.setSampleRate(getSampleRate(), true);
         fPlugin.setBufferSize(GetMaxFramesPerSlice(), true);
     }
+#endif
 
 private:
+    PluginExporter fPlugin;
+
     const uint32_t fParameterCount;
     float* fCachedParameterValues;
+
+    // ----------------------------------------------------------------------------------------------------------------
+    // DPF callbacks
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    bool writeMidi(const MidiEvent&)
+    {
+        return true;
+    }
+
+    static bool writeMidiCallback(void* const ptr, const MidiEvent& midiEvent)
+    {
+        return static_cast<PluginHolder*>(ptr)->writeMidi(midiEvent);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
+    bool requestParameterValueChange(uint32_t, float)
+    {
+        return true;
+    }
+
+    static bool requestParameterValueChangeCallback(void* const ptr, const uint32_t index, const float value)
+    {
+        return static_cast<PluginHolder*>(ptr)->requestParameterValueChange(index, value);
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    bool updateState(const char*, const char*)
+    {
+        return true;
+    }
+
+    static bool updateStateValueCallback(void* const ptr, const char* const key, const char* const value)
+    {
+        return static_cast<PluginHolder*>(ptr)->updateState(key, value);
+    }
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginAU)
 };
 
+// --------------------------------------------------------------------------------------------------------------------
+
+struct AudioComponentPlugInInstance {
+	AudioComponentPlugInInterface acpi;
+    PluginAU* plugin;
+
+    AudioComponentPlugInInstance() noexcept
+        : acpi(),
+          plugin(nullptr)
+    {
+        std::memset(&acpi, 0, sizeof(acpi));
+        acpi.Open = Open;
+		acpi.Close = Close;
+		acpi.Lookup = Lookup;
+		acpi.reserved = NULL;
+    }
+
+    ~AudioComponentPlugInInstance()
+    {
+        delete plugin;
+    }
+
+	static OSStatus Open(void* const self, const AudioUnit component)
+    {
+        static_cast<AudioComponentPlugInInstance*>(self)->plugin = new PluginAU(component);
+        return noErr;
+    }
+
+	static OSStatus Close(void* const self)
+    {
+        delete static_cast<AudioComponentPlugInInstance*>(self);
+        return noErr;
+    }
+
+    static AudioComponentMethod Lookup(const SInt16 selector)
+    {
+        d_stdout("AudioComponentPlugInInstance::Lookup(%3d:%s)", selector, AudioUnitSelector2Str(selector));
+
+        switch (selector)
+        {
+        case kAudioUnitInitializeSelect:
+            return reinterpret_cast<AudioComponentMethod>(Initialize);
+        case kAudioUnitUninitializeSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitGetPropertyInfoSelect:
+            return reinterpret_cast<AudioComponentMethod>(GetPropertyInfo);
+        case kAudioUnitGetPropertySelect:
+            return reinterpret_cast<AudioComponentMethod>(GetProperty);
+        case kAudioUnitSetPropertySelect:
+            return reinterpret_cast<AudioComponentMethod>(SetProperty);
+        #if 0
+        case kAudioUnitAddPropertyListenerSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitRemovePropertyListenerSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitRemovePropertyListenerWithUserDataSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitAddRenderNotifySelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitRemoveRenderNotifySelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitGetParameterSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitSetParameterSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitScheduleParametersSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitRenderSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitResetSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitComplexRenderSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitProcessSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        case kAudioUnitProcessMultipleSelect:
+            return reinterpret_cast<AudioComponentMethod>(Uninitialize);
+        #endif
+        }
+
+        return nullptr;
+    }
+
+    static OSStatus Initialize(AudioComponentPlugInInstance* const self)
+    {
+        d_stdout("AudioComponentPlugInInstance::Initialize(%p)", self);
+        return self->plugin->auInitialize();
+    }
+
+    static OSStatus Uninitialize(AudioComponentPlugInInstance* const self)
+    {
+        d_stdout("AudioComponentPlugInInstance::Uninitialize(%p)", self);
+        return self->plugin->auUninitialize();
+    }
+
+    static OSStatus GetPropertyInfo(AudioComponentPlugInInstance* const self,
+                                    const AudioUnitPropertyID inID,
+                                    const AudioUnitScope inScope,
+                                    const AudioUnitElement inElement,
+                                    UInt32* const outDataSize,
+                                    Boolean* const outWritable)
+    {
+        d_stdout("AudioComponentPlugInInstance::GetPropertyInfo(%p, %2d:%s, %d:%s, %d, %p, ...)",
+                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement);
+
+		UInt32 dataSize = 0;
+		Boolean writable = false;
+        const OSStatus res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, dataSize, writable);
+
+		if (outDataSize != nullptr)
+			*outDataSize = dataSize;
+
+		if (outWritable != nullptr)
+			*outWritable = writable;
+
+        return res;
+    }
+
+    static OSStatus GetProperty(AudioComponentPlugInInstance* const self,
+                                const AudioUnitPropertyID inID,
+                                const AudioUnitScope inScope,
+                                const AudioUnitElement inElement,
+                                void* const outData,
+                                UInt32* const ioDataSize)
+    {
+        d_stdout("AudioComponentPlugInInstance::GetProperty    (%p, %2d:%s, %d:%s, %d, %p, ...)",
+                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement);
+        DISTRHO_SAFE_ASSERT_RETURN(ioDataSize != nullptr, kAudio_ParamError);
+
+        Boolean writable;
+        UInt32 outDataSize = 0;
+        OSStatus res;
+
+        if (outData == nullptr)
+        {
+            res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, outDataSize, writable);
+            *ioDataSize = outDataSize;
+            return res;
+        }
+
+        const UInt32 inDataSize = *ioDataSize;
+        DISTRHO_SAFE_ASSERT_RETURN(inDataSize != 0, kAudio_ParamError);
+
+        res = self->plugin->auGetPropertyInfo(inID, inScope, inElement, outDataSize, writable);
+
+        if (res != noErr)
+            return res;
+
+		void* outBuffer;
+        uint8_t* tmpBuffer;
+        if (inDataSize < outDataSize)
+		{
+			tmpBuffer = new uint8_t[outDataSize];
+			outBuffer = tmpBuffer;
+		}
+        else
+        {
+			tmpBuffer = nullptr;
+			outBuffer = outData;
+		}
+
+        res = self->plugin->auGetProperty(inID, inScope, inElement, outBuffer);
+
+		if (res != noErr)
+        {
+			*ioDataSize = 0;
+            return res;
+        }
+
+        if (tmpBuffer != nullptr)
+        {
+            memcpy(outData, tmpBuffer, inDataSize);
+            delete[] tmpBuffer;
+        }
+        else
+        {
+            *ioDataSize = outDataSize;
+        }
+
+        return noErr;
+    }
+
+    static OSStatus SetProperty(AudioComponentPlugInInstance* const self,
+                                const AudioUnitPropertyID inID,
+                                const AudioUnitScope inScope,
+                                const AudioUnitElement inElement,
+                                const void* const inData,
+                                const UInt32 inDataSize)
+    {
+        d_stdout("AudioComponentPlugInInstance::SetProperty(%p, %d:%s, %d:%s, %d, %d, %p, %u)",
+                 self, inID, AudioUnitPropertyID2Str(inID), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+        return self->plugin->auSetProperty(inID, inScope, inElement, inData, inDataSize);
+    }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
 END_NAMESPACE_DISTRHO
 
-// --------------------------------------------------------------------------------------------------------------------
-
-#ifndef verify
-# define verify(assertion) __Verify(assertion)
-#endif
-#ifndef verify_noerr
-# define verify_noerr(errorCode)  __Verify_noErr(errorCode)
-#endif
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#pragma clang diagnostic ignored "-Wunused-private-field"
-
-#include "au/AUBase.cpp"
-#include "au/AUBuffer.cpp"
-#if !CA_USE_AUDIO_PLUGIN_ONLY
-#include "au/AUDispatch.cpp"
-#endif
-#include "au/AUInputElement.cpp"
-#include "au/AUMIDIBase.cpp"
-#include "au/AUOutputBase.cpp"
-#include "au/AUOutputElement.cpp"
-#include "au/AUPlugInDispatch.cpp"
-#include "au/AUScopeElement.cpp"
-#include "au/CAAUParameter.cpp"
-#include "au/CAAudioChannelLayout.cpp"
-#include "au/CAMutex.cpp"
-#include "au/CAStreamBasicDescription.cpp"
-#include "au/CAVectorUnit.cpp"
-#include "au/ComponentBase.cpp"
-#include "au/MusicDeviceBase.cpp"
-
-#pragma clang diagnostic pop
-
-#undef verify
-#undef verify_noerr
-
-// --------------------------------------------------------------------------------------------------------------------
-
-/*
 DISTRHO_PLUGIN_EXPORT
-OSStatus PluginAUEntry(ComponentParameters*, PluginAU*);
-
-DISTRHO_PLUGIN_EXPORT
-void* PluginAUFactory(const AudioComponentDescription*);
-
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-AUDIOCOMPONENT_ENTRY(AUMIDIEffectFactory, PluginAU)
-#else
-AUDIOCOMPONENT_ENTRY(AUBaseFactory, PluginAU)
-#endif
-
-DISTRHO_PLUGIN_EXPORT
-OSStatus PluginAUEntry(ComponentParameters* const params, PluginAU* const obj)
+void* PluginAUFactory(const AudioComponentDescription*)
 {
+    USE_NAMESPACE_DISTRHO
     TRACE
-    return ComponentEntryPoint<PluginAU>::Dispatch(params, obj);
-}
-*/
 
-DISTRHO_PLUGIN_EXPORT
-void* PluginAUFactory(const AudioComponentDescription* const inDesc)
-{
-    TRACE
     if (d_nextBufferSize == 0)
-        d_nextBufferSize = kAUDefaultMaxFramesPerSlice;
+        d_nextBufferSize = 1156;
 
     if (d_isZero(d_nextSampleRate))
-        d_nextSampleRate = kAUDefaultSampleRate;
+        d_nextSampleRate = 48000.0;
 
     if (d_nextBundlePath == nullptr)
     {
@@ -782,9 +758,9 @@ void* PluginAUFactory(const AudioComponentDescription* const inDesc)
         d_nextBundlePath = bundlePath.buffer();
     }
 
-    // d_nextCanRequestParameterValueChanges = true;
+    d_nextCanRequestParameterValueChanges = true;
 
-    return PluginBaseFactory<PluginAU>::Factory(inDesc);
+    return new AudioComponentPlugInInstance();
 }
 
 // --------------------------------------------------------------------------------------------------------------------
