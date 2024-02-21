@@ -996,14 +996,14 @@ public:
         return fData->sampleRate;
     }
 
-    void setBufferSize(const uint32_t bufferSize, const bool doCallback = false)
+    bool setBufferSize(const uint32_t bufferSize, const bool doCallback = false)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, false);
         DISTRHO_SAFE_ASSERT(bufferSize >= 2);
 
         if (fData->bufferSize == bufferSize)
-            return;
+            return false;
 
         fData->bufferSize = bufferSize;
 
@@ -1013,16 +1013,18 @@ public:
             fPlugin->bufferSizeChanged(bufferSize);
             if (fIsActive) fPlugin->activate();
         }
+
+        return true;
     }
 
-    void setSampleRate(const double sampleRate, const bool doCallback = false)
+    bool setSampleRate(const double sampleRate, const bool doCallback = false)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, false);
         DISTRHO_SAFE_ASSERT(sampleRate > 0.0);
 
         if (d_isEqual(fData->sampleRate, sampleRate))
-            return;
+            return false;
 
         fData->sampleRate = sampleRate;
 
@@ -1032,6 +1034,8 @@ public:
             fPlugin->sampleRateChanged(sampleRate);
             if (fIsActive) fPlugin->activate();
         }
+
+        return true;
     }
 
 private:
