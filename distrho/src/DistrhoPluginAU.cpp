@@ -216,6 +216,11 @@ public:
             outWritable = true;
             */
             break;
+        case kAudioUnitProperty_MakeConnection:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global || inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(AudioUnitConnection);
+            outWritable = true;
+            return noErr;
         case kAudioUnitProperty_SampleRate:
             break;
         case kAudioUnitProperty_ParameterList:
@@ -251,6 +256,11 @@ public:
         case kAudioUnitProperty_MaximumFramesPerSlice:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             outDataSize = sizeof(UInt32);
+            outWritable = true;
+            return noErr;
+        case kAudioUnitProperty_SetRenderCallback:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(AURenderCallbackStruct);
             outWritable = true;
             return noErr;
        #if DISTRHO_PLUGIN_HAS_UI
@@ -395,6 +405,9 @@ public:
         case kAudioUnitProperty_MaximumFramesPerSlice:
             *static_cast<UInt32*>(outData) = fPlugin.getBufferSize();
             return noErr;
+        case kAudioUnitProperty_SetRenderCallback:
+            // TODO
+            break;
        #if DISTRHO_PLUGIN_HAS_UI
         case kAudioUnitProperty_CocoaUI:
             {
@@ -433,6 +446,9 @@ public:
             *static_cast<CFPropertyListRef*>(inData);
             */
             break;
+        case kAudioUnitProperty_MakeConnection:
+            // TODO
+            return noErr;
         case kAudioUnitProperty_StreamFormat:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -462,6 +478,10 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(UInt32), inDataSize, kAudioUnitErr_InvalidPropertyValue);
             fPlugin.setBufferSize(*static_cast<const UInt32*>(inData));
+            return noErr;
+        case kAudioUnitProperty_SetRenderCallback:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
+            // TODO
             return noErr;
         }
 
@@ -529,6 +549,18 @@ public:
         return noErr;
     }
 
+    OSStatus auRender(AudioUnitRenderActionFlags& ioActionFlags,
+                      const AudioTimeStamp& inTimeStamp,
+                      const UInt32 inBusNumber,
+                      const UInt32 inFramesToProcess,
+                      AudioBufferList& ioData)
+    {
+        if (inFramesToProcess > fPlugin.getBufferSize())
+            return kAudioUnitErr_TooManyFramesToProcess;
+
+        return noErr;
+    }
+
     OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
     {
         return noErr;
@@ -538,31 +570,6 @@ public:
 protected:
     // ----------------------------------------------------------------------------------------------------------------
     // ComponentBase AU dispatch
-
-	OSStatus GetParameter(const AudioUnitParameterID inParameterID,
-                          const AudioUnitScope inScope,
-                          const AudioUnitElement inElement,
-                          AudioUnitParameterValue& outValue) override
-    {
-	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
-
-        return fPlugin.getParameterValue(inParameterID);
-    }
-
-	OSStatus SetParameter(AudioUnitParameterID inParameterID,
-                          const AudioUnitScope inScope,
-                          const AudioUnitElement inElement,
-                          const AudioUnitParameterValue inValue,
-                          const UInt32 inBufferOffsetInFrames) override
-    {
-	    DISTRHO_SAFE_ASSERT_INT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-	    DISTRHO_SAFE_ASSERT_UINT_RETURN(inParameterID < fParameterCount, inParameterID, kAudioUnitErr_InvalidParameter);
-
-        PluginBase::SetParameter(inParameterID, inScope, inElement, inValue, inBufferOffsetInFrames);
-        fPlugin.setParameterValue(inParameterID, inValue);
-        return noErr;
-    }
 
     OSStatus Render(AudioUnitRenderActionFlags& ioActionFlags,
                     const AudioTimeStamp& inTimeStamp,
@@ -705,9 +712,9 @@ struct AudioComponentPlugInInstance {
             return reinterpret_cast<AudioComponentMethod>(SetParameter);
         case kAudioUnitScheduleParametersSelect:
             return reinterpret_cast<AudioComponentMethod>(ScheduleParameters);
-        /*
         case kAudioUnitRenderSelect:
             return reinterpret_cast<AudioComponentMethod>(Render);
+        /*
         case kAudioUnitComplexRenderSelect:
             return reinterpret_cast<AudioComponentMethod>(ComplexRender);
         */
@@ -922,6 +929,29 @@ struct AudioComponentPlugInInstance {
         d_stdout("AudioComponentPlugInInstance::Reset(%p, %d:%s, 0x%x)",
                  self, scope, AudioUnitScope2Str(scope), elem);
         return self->plugin->auReset(scope, elem);
+    }
+
+    static OSStatus Render(AudioComponentPlugInInstance* const self,
+                           AudioUnitRenderActionFlags* ioActionFlags,
+                           const AudioTimeStamp* const inTimeStamp,
+                           const UInt32 inOutputBusNumber,
+                           const UInt32 inNumberFrames,
+                           AudioBufferList* const ioData)
+    {
+        d_stdout("AudioComponentPlugInInstance::Render(%p, %p, %p, %u, %u, %p)",
+                 self, ioActionFlags, inTimeStamp, inOutputBusNumber, inNumberFrames, ioData);
+        DISTRHO_SAFE_ASSERT_RETURN(inTimeStamp != nullptr, kAudio_ParamError);
+        DISTRHO_SAFE_ASSERT_RETURN(ioData != nullptr, kAudio_ParamError);
+
+        AudioUnitRenderActionFlags tmpFlags;
+
+        if (ioActionFlags == nullptr)
+        {
+            tmpFlags = 0;
+            ioActionFlags = &tmpFlags;
+        }
+
+        return self->plugin->auRender(*ioActionFlags, *inTimeStamp, inOutputBusNumber, inNumberFrames, *ioData);
     }
 
     DISTRHO_DECLARE_NON_COPYABLE(AudioComponentPlugInInstance)
