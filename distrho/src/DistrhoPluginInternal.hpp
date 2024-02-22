@@ -1017,14 +1017,14 @@ public:
         return true;
     }
 
-    bool setSampleRate(const double sampleRate, const bool doCallback = false)
+    void setSampleRate(const double sampleRate, const bool doCallback = false)
     {
-        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
-        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, false);
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
         DISTRHO_SAFE_ASSERT(sampleRate > 0.0);
 
         if (d_isEqual(fData->sampleRate, sampleRate))
-            return false;
+            return;
 
         fData->sampleRate = sampleRate;
 
@@ -1034,8 +1034,6 @@ public:
             fPlugin->sampleRateChanged(sampleRate);
             if (fIsActive) fPlugin->activate();
         }
-
-        return true;
     }
 
 private:

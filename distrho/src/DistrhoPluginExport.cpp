@@ -17,6 +17,14 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
+#ifndef DISTRHO_PLUGIN_AU_SUBTYPE
+# error DISTRHO_PLUGIN_AU_SUBTYPE undefined!
+#endif
+
+#ifndef DISTRHO_PLUGIN_AU_MANUFACTURER
+# error DISTRHO_PLUGIN_AU_MANUFACTURER undefined!
+#endif
+
 #include <fstream>
 #include <iostream>
 
@@ -36,6 +44,13 @@ void generate_au_plist(const PluginExporter& plugin,
     const uint32_t majorVersion = (version & 0xFF0000) >> 16;
     const uint32_t minorVersion = (version & 0x00FF00) >> 8;
     const uint32_t microVersion = (version & 0x0000FF) >> 0;
+
+    #define MACRO_STR2(s) #s
+    #define MACRO_STR(s) MACRO_STR2(s)
+
+    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_TYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_TYPE has incorrect length");
+    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_SUBTYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_SUBTYPE has incorrect length");
+    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_MANUFACTURER)) == 5, "The macro DISTRHO_PLUGIN_AU_MANUFACTURER has incorrect length");
 
     outputFile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outputFile << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n";
@@ -72,24 +87,12 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "        <string>" << plugin.getDescription() << "</string>\n";
     outputFile << "        <key>factoryFunction</key>\n";
     outputFile << "        <string>PluginAUFactory</string>\n";
-    outputFile << "        <key>manufacturer</key>\n";
-    outputFile << "        <string>Dstr</string>\n";
     outputFile << "        <key>type</key>\n";
-   #if DISTRHO_PLUGIN_IS_SYNTH
-    outputFile << "        <string>aumu</string>\n"; // kAudioUnitType_MusicDevice
-   #elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    outputFile << "        <string>aumf</string>\n"; // kAudioUnitType_MusicEffect
-   #elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    outputFile << "        <string>aumu</string>\n"; // kAudioUnitType_MusicDevice
-   #elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    outputFile << "        <string>aumi</string>\n"; // kAudioUnitType_MIDIProcessor
-   #elif DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    outputFile << "        <string>augn</string>\n"; // kAudioUnitType_Generator
-   #else
-    outputFile << "        <string>aufx</string>\n"; // kAudioUnitType_Effect
-   #endif
+    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_TYPE) "</string>\n";
     outputFile << "        <key>subtype</key>\n";
-    outputFile << "        <string>Cair</string>\n";
+    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_SUBTYPE) "</string>\n";
+    outputFile << "        <key>manufacturer</key>\n";
+    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_MANUFACTURER) "</string>\n";
     outputFile << "        <key>version</key>\n";
     outputFile << "        <integer>" << version << "</integer>\n";
     outputFile << "        <key>resourceUsage</key>\n";
@@ -103,6 +106,9 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "    </array>\n";
     outputFile << "  </dict>\n";
     outputFile << "</plist>\n";
+
+    #undef MACRO_STR
+    #undef MACRO_STR2
 
     outputFile.close();
     std::cout << " done!" << std::endl;

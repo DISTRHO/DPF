@@ -19,11 +19,19 @@
 #define Point AudioUnitPoint
 #define Size AudioUnitSize
 
-// #include <AudioUnit/AudioUnit.h>
+#include <AudioUnit/AudioUnit.h>
 #include <AudioUnit/AUCocoaUIView.h>
 
 #undef Point
 #undef Size
+
+#ifndef DISTRHO_PLUGIN_AU_SUBTYPE
+# error DISTRHO_PLUGIN_AU_SUBTYPE undefined!
+#endif
+
+#ifndef DISTRHO_PLUGIN_AU_MANUFACTURER
+# error DISTRHO_PLUGIN_AU_MANUFACTURER undefined!
+#endif
 
 START_NAMESPACE_DISTRHO
 
@@ -47,11 +55,11 @@ extern const char* d_nextBundlePath;
 class DPF_UI_AU
 {
 public:
-    DPF_UI_AU(const AudioUnit inAU,
+    DPF_UI_AU(const AudioUnit component,
               const intptr_t winId,
               const double sampleRate,
               void* const instancePointer)
-        : fAU(inAU),
+        : fComponent(component),
           fTimerRef(nullptr),
           fUI(this, winId, sampleRate,
               editParameterCallback,
@@ -72,10 +80,14 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(fTimerRef != nullptr,);
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
+
+        AudioUnitAddPropertyListener(fComponent, 19003, auPropertyChangedCallback, this);
     }
 
     ~DPF_UI_AU()
     {
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, 19003, auPropertyChangedCallback, this);
+
         if (fTimerRef != nullptr)
         {
             CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
@@ -89,7 +101,7 @@ public:
     }
 
 private:
-    const AudioUnit fAU;
+    const AudioUnit fComponent;
     CFRunLoopTimerRef fTimerRef;
 
     UIExporter fUI;
@@ -108,10 +120,43 @@ private:
     }
 
     // ----------------------------------------------------------------------------------------------------------------
+    // AU callbacks
+
+    void auPropertyChanged(const AudioUnitPropertyID prop, const AudioUnitElement elem)
+    {
+        switch (prop)
+        {
+        case 19003:
+            {
+                AudioUnitParameterValue value;
+                if (AudioUnitGetParameter(fComponent, elem, kAudioUnitScope_Global, 0, &value) == noErr)
+                    fUI.parameterChanged(elem, value);
+            }
+            break;
+        }
+    }
+
+    static void auPropertyChangedCallback(void* const userData,
+                                          const AudioUnit component,
+                                          const AudioUnitPropertyID prop,
+                                          const AudioUnitScope scope,
+                                          const AudioUnitElement elem)
+    {
+        DPF_UI_AU* const self = static_cast<DPF_UI_AU*>(userData);
+
+        DISTRHO_SAFE_ASSERT_RETURN(self != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(self->fComponent == component,);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
+
+        self->auPropertyChanged(prop, elem);
+    }
+
+    // ----------------------------------------------------------------------------------------------------------------
     // DPF callbacks
 
-    void editParameter(uint32_t, bool) const
+    void editParameter(const uint32_t rindex, const bool started) const
     {
+        AudioUnitSetProperty(fComponent, 19002, kAudioUnitScope_Global, rindex, &started, sizeof(bool));
     }
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
@@ -119,8 +164,9 @@ private:
         static_cast<DPF_UI_AU*>(ptr)->editParameter(rindex, started);
     }
 
-    void setParameterValue(uint32_t, float)
+    void setParameterValue(const uint32_t rindex, const float value)
     {
+        AudioUnitSetProperty(fComponent, 19001, kAudioUnitScope_Global, rindex, &value, sizeof(float));
     }
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
@@ -166,13 +212,18 @@ END_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
-@interface DPF_UI_ViewFactory : NSObject<AUCocoaUIBase>
+#define MACRO_NAME2(a, b, c, d, e, f) a ## b ## c ## d ## e ## f
+#define MACRO_NAME(a, b, c, d, e, f) MACRO_NAME2(a, b, c, d, e, f)
+
+#define COCOA_VIEW_CLASS_NAME MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+
+@interface COCOA_VIEW_CLASS_NAME : NSObject<AUCocoaUIBase>
 {
     DPF_UI_AU* ui;
 }
 @end
 
-@implementation DPF_UI_ViewFactory
+@implementation COCOA_VIEW_CLASS_NAME
 
 - (NSString*) description
 {
@@ -184,17 +235,20 @@ END_NAMESPACE_DISTRHO
     return 0;
 }
 
-- (NSView*) uiViewForAudioUnit:(AudioUnit)inAU withSize:(NSSize)inPreferredSize
+- (NSView*) uiViewForAudioUnit:(AudioUnit)component withSize:(NSSize)inPreferredSize
 {
     const double sampleRate = d_nextSampleRate;
     const intptr_t winId = 0;
     void* const instancePointer = nullptr;
 
-    ui = new DPF_UI_AU(inAU, winId, sampleRate, instancePointer);
+    ui = new DPF_UI_AU(component, winId, sampleRate, instancePointer);
 
     return ui->getNativeView();
 }
 
 @end
+
+#undef MACRO_NAME
+#undef MACRO_NAME2
 
 // --------------------------------------------------------------------------------------------------------------------

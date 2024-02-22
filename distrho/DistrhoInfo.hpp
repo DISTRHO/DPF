@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -666,6 +666,29 @@ START_NAMESPACE_DISTRHO
    By default this is set to @ref DISTRHO_PLUGIN_URI with "#UI" as suffix.
  */
 #define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#UI"
+
+/**
+   The AudioUnit type for a plugin.@n
+   This is a 4-character symbol, automatically set by DPF based on other plugin macros.
+   See https://developer.apple.com/documentation/audiotoolbox/1584142-audio_unit_types for more information.
+ */
+#define DISTRHO_PLUGIN_AU_TYPE aufx
+
+/**
+   The AudioUnit subtype for a plugin.@n
+   This is a 4-character symbol which identifies a plugin.@n
+   It must be unique within a manufacturer's plugins, but different manufacturers can use the same subtype.
+   @note This macro is required when building AU plugins
+ */
+#define DISTRHO_PLUGIN_AU_SUBTYPE test
+
+/**
+   The AudioUnit manufacturer for a plugin.@n
+   This is a 4-character symbol with at least one non-lower case character.@n
+   Plugins from the same brand/maker should use the same symbol.
+   @note This macro is required when building AU plugins
+ */
+#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
 
 /**
    Custom LV2 category for the plugin.@n

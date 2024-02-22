@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -38,6 +38,22 @@
    @note This macro is required.
  */
 #define DISTRHO_PLUGIN_URI "http://distrho.sf.net/examples/CairoUI"
+
+/**
+   The AudioUnit subtype for a plugin.
+   This is a 4-character symbol which identifies a plugin.
+   It must be unique within a manufacturer's plugins, but different manufacturers can use the same subtype.
+   @note This macro is required when building AU plugins
+ */
+#define DISTRHO_PLUGIN_AU_SUBTYPE cair
+
+/**
+   The AudioUnit manufacturer for a plugin.
+   This is a 4-character symbol with at least one non-lower case character.
+   Plugins from the same brand/maker should use the same symbol.
+   @note This macro is required when building AU plugins
+ */
+#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
 
 /**
    The plugin id when exporting in CLAP format, in reverse URI form.
