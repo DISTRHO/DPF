@@ -21,6 +21,10 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
+#if DISTRHO_PLUGIN_HAS_UI
+# include "../extra/RingBuffer.hpp"
+#endif
+
 #include <AudioUnit/AudioUnit.h>
 #include <AudioToolbox/AudioUnitUtilities.h>
 #include <vector>
@@ -221,6 +225,9 @@ public:
           fParameterCount(fPlugin.getParameterCount()),
           fLastParameterValues(nullptr),
           fBypassParameterIndex(UINT32_MAX)
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        , fMidiEventCount(0)
+       #endif
     {
 	    if (fParameterCount != 0)
         {
@@ -245,6 +252,9 @@ public:
     OSStatus auInitialize()
     {
         fPlugin.activate();
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fMidiEventCount = 0;
+       #endif
         return noErr;
     }
 
@@ -306,17 +316,24 @@ public:
 
        #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_StreamFormat:
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
-           #else
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-            outDataSize = sizeof(AudioStreamBasicDescription);
-            outWritable = true;
-            return noErr;
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+            if (inScope == kAudioUnitScope_Input)
+            {
+                outDataSize = sizeof(AudioStreamBasicDescription);
+                outWritable = true;
+                return noErr;
+            }
+           #endif
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            if (inScope == kAudioUnitScope_Output)
+            {
+                outDataSize = sizeof(AudioStreamBasicDescription);
+                outWritable = true;
+                return noErr;
+            }
+           #endif
+            return kAudioUnitErr_InvalidScope;
        #endif
 
         case kAudioUnitProperty_ElementCount:
@@ -375,6 +392,13 @@ public:
             outWritable = true;
             return noErr;
 
+        case kAudioUnitProperty_InPlaceProcessing:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            outDataSize = sizeof(UInt32);
+            outWritable = false;
+            return noErr;
+
         case kAudioUnitProperty_PresentPreset:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -387,6 +411,17 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
            #if DISTRHO_PLUGIN_HAS_UI
             outDataSize = sizeof(AudioUnitCocoaViewInfo);
+            outWritable = false;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
+
+        case kAudioUnitProperty_AudioUnitMIDIProtocol:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            outDataSize = sizeof(SInt32);
             outWritable = false;
             return noErr;
            #else
@@ -415,6 +450,15 @@ public:
             outDataSize = sizeof(float);
             outWritable = true;
             return noErr;
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
+        case 'DPFn':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            outDataSize = sizeof(uint8_t) * 3;
+            outWritable = true;
+            return noErr;
+       #endif
 
        #if DISTRHO_PLUGIN_WANT_STATE
         case 'DPFs':
@@ -670,6 +714,10 @@ public:
             // TODO
             break;
 
+        case kAudioUnitProperty_InPlaceProcessing:
+            *static_cast<UInt32*>(outData) = 1;
+            return noErr;
+
         case kAudioUnitProperty_PresentPreset:
             {
                 AUPreset* const preset = static_cast<AUPreset*>(outData);
@@ -706,6 +754,12 @@ public:
 
                 [bundlePathString release];
             }
+            return noErr;
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        case kAudioUnitProperty_AudioUnitMIDIProtocol:
+            *static_cast<SInt32*>(outData) = kMIDIProtocol_1_0;
             return noErr;
        #endif
 
@@ -967,6 +1021,20 @@ public:
             }
             return noErr;
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
+        case 'DPFn':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(uint8_t) * 3, inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            {
+                const uint8_t* const midiData = static_cast<const uint8_t*>(inData);
+
+                fNotesRingBuffer.writeCustomData(midiData, 3);
+                fNotesRingBuffer.commitWrite();
+            }
+            return noErr;
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_STATE
         case 'DPFs':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1108,6 +1176,23 @@ public:
         return noErr;
     }
 
+    OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global || scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope, kAudioUnitErr_InvalidScope);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
+
+        if (fPlugin.isActive())
+        {
+            fPlugin.deactivate();
+            fPlugin.activate();
+        }
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fMidiEventCount = 0;
+       #endif
+        return noErr;
+    }
+
     OSStatus auRender(AudioUnitRenderActionFlags& ioActionFlags,
                       const AudioTimeStamp& inTimeStamp,
                       const UInt32 inBusNumber,
@@ -1156,11 +1241,34 @@ public:
         constexpr float** outputs = nullptr;
        #endif
 
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        fPlugin.run(inputs, outputs, inFramesToProcess, nullptr, 0);
-       #else
-        fPlugin.run(inputs, outputs, inFramesToProcess);
+      #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+       #if DISTRHO_PLUGIN_HAS_UI
+        if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            const uint32_t frame = fMidiEventCount != 0 ? fMidiEvents[fMidiEventCount-1].frame : 0;
+
+            while (fNotesRingBuffer.isDataAvailableForReading())
+            {
+                if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                    break;
+
+                MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+                midiEvent.frame = frame;
+                midiEvent.size  = 3;
+                std::memcpy(midiEvent.data, midiData, 3);
+
+                if (fMidiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
        #endif
+
+        fPlugin.run(inputs, outputs, inFramesToProcess, fMidiEvents, fMidiEventCount);
+        fMidiEventCount = 0;
+      #else
+        fPlugin.run(inputs, outputs, inFramesToProcess);
+      #endif
 
         float value;
         AudioUnitEvent event;
@@ -1190,19 +1298,48 @@ public:
         return noErr;
     }
 
-    OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    OSStatus auMIDIEvent(const UInt32 inStatus,
+                         const UInt32 inData1,
+                         const UInt32 inData2,
+                         const UInt32 inOffsetSampleFrame)
     {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global || scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope, kAudioUnitErr_InvalidScope);
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
+        if (fMidiEventCount >= kMaxMidiEvents)
+            return noErr;
 
-        if (fPlugin.isActive())
+        MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+        midiEvent.frame   = inOffsetSampleFrame;
+        midiEvent.data[0] = inStatus;
+        midiEvent.data[1] = inData1;
+        midiEvent.data[2] = inData2;
+
+        switch (inStatus)
         {
-            fPlugin.deactivate();
-            fPlugin.activate();
+        case 0x80:
+        case 0x90:
+        case 0xA0:
+        case 0xB0:
+        case 0xD0:
+        case 0xE0:
+            midiEvent.size = 3;
+            break;
+        case 0xC0:
+            midiEvent.size = 2;
+            break;
+        default:
+            midiEvent.size = 1;
+            break;
         }
 
         return noErr;
     }
+
+    OSStatus auSysEx(const UInt8* const inData, const UInt32 inLength)
+    {
+        // TODO
+        return kAudioUnitErr_PropertyNotInUse;
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -1226,6 +1363,14 @@ private:
     const uint32_t fParameterCount;
     float* fLastParameterValues;
     uint32_t fBypassParameterIndex;
+
+  #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    uint32_t fMidiEventCount;
+    MidiEvent fMidiEvents[kMaxMidiEvents];
+   #if DISTRHO_PLUGIN_HAS_UI
+    SmallStackRingBuffer fNotesRingBuffer;
+   #endif
+  #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -1371,6 +1516,12 @@ struct AudioComponentPlugInInstance {
         case kAudioUnitProcessMultipleSelect:
             return reinterpret_cast<AudioComponentMethod>(ProcessMultiple);
         */
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        case kMusicDeviceMIDIEventSelect:
+            return reinterpret_cast<AudioComponentMethod>(MIDIEvent);
+        case kMusicDeviceSysExSelect:
+            return reinterpret_cast<AudioComponentMethod>(SysEx);
+       #endif
         }
 
         d_stdout("TODO Lookup(%3d:%s)", selector, AudioUnitSelector2Str(selector));
@@ -1593,6 +1744,22 @@ struct AudioComponentPlugInInstance {
 
         return self->plugin->auRender(*ioActionFlags, *inTimeStamp, inOutputBusNumber, inNumberFrames, *ioData);
     }
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    static OSStatus MIDIEvent(AudioComponentPlugInInstance* const self,
+                              const UInt32 inStatus,
+                              const UInt32 inData1,
+                              const UInt32 inData2,
+                              const UInt32 inOffsetSampleFrame)
+    {
+        return self->plugin->auMIDIEvent(inStatus, inData1, inData2, inOffsetSampleFrame);
+    }
+
+    static OSStatus SysEx(AudioComponentPlugInInstance* const self, const UInt8* const inData, const UInt32 inLength)
+    {
+        return self->plugin->auSysEx(inData, inLength);
+    }
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE(AudioComponentPlugInInstance)
 };

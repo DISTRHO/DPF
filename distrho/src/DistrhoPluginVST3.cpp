@@ -3103,7 +3103,7 @@ private:
             event.midi_cc_out.cc_number = data[1];
             event.midi_cc_out.value = data[2];
             if (midiEvent.size == 4)
-                event.midi_cc_out.value2 = midiEvent.size == 4;
+                event.midi_cc_out.value2 = data[3];
             break;
         /* TODO how do we deal with program changes??
         case 0xC0:

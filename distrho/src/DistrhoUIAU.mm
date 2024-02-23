@@ -133,6 +133,8 @@ private:
                     fUI.parameterChanged(elem, value);
             }
             break;
+        case 'DPFS':
+            break;
         }
     }
 
@@ -180,14 +182,16 @@ private:
         const size_t len_key = std::strlen(key);
         const size_t len_value = std::strlen(value);
         const size_t len_combined = len_key + len_value + 2;
-        char* const data = new char[len_combined];
+        char* const data = static_cast<char*>(std::malloc(len_combined));
+        DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+
         std::memcpy(data, key, len_key);
         std::memcpy(data + len_key + 1, value, len_value);
         data[len_key] = data[len_key + len_value + 1] = '\0';
 
         AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, len_combined, data, len_combined);
 
-        delete[] data;
+        std::free(data);
     }
 
     static void setStateCallback(void* const ptr, const char* const key, const char* const value)
@@ -197,8 +201,10 @@ private:
    #endif
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-    void sendNote(uint8_t, uint8_t, uint8_t)
+    void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
+        const uint8_t data[3] = { static_cast<uint8_t>((velocity != 0 ? 0x90 : 0x80) | channel), note, velocity };
+        AudioUnitSetProperty(fComponent, 'DPFn', kAudioUnitScope_Global, 0, data, sizeof(data));
     }
 
     static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
@@ -226,7 +232,8 @@ END_NAMESPACE_DISTRHO
 #define MACRO_NAME2(a, b, c, d, e, f) a ## b ## c ## d ## e ## f
 #define MACRO_NAME(a, b, c, d, e, f) MACRO_NAME2(a, b, c, d, e, f)
 
-#define COCOA_VIEW_CLASS_NAME MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+#define COCOA_VIEW_CLASS_NAME \
+    MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
 
 @interface COCOA_VIEW_CLASS_NAME : NSObject<AUCocoaUIBase>
 {
