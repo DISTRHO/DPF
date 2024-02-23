@@ -156,7 +156,7 @@ private:
 
     void editParameter(const uint32_t rindex, const bool started) const
     {
-        AudioUnitSetProperty(fComponent, 'DPFt', kAudioUnitScope_Global, rindex, &started, sizeof(bool));
+        AudioUnitSetProperty(fComponent, 'DPFe', kAudioUnitScope_Global, rindex, &started, sizeof(bool));
     }
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
@@ -175,8 +175,19 @@ private:
     }
 
    #if DISTRHO_PLUGIN_WANT_STATE
-    void setState(const char*, const char*)
+    void setState(const char* const key, const char* const value)
     {
+        const size_t len_key = std::strlen(key);
+        const size_t len_value = std::strlen(value);
+        const size_t len_combined = len_key + len_value + 2;
+        char* const data = new char[len_combined];
+        std::memcpy(data, key, len_key);
+        std::memcpy(data + len_key + 1, value, len_value);
+        data[len_key] = data[len_key + len_value + 1] = '\0';
+
+        AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, len_combined, data, len_combined);
+
+        delete[] data;
     }
 
     static void setStateCallback(void* const ptr, const char* const key, const char* const value)

@@ -402,6 +402,13 @@ public:
             return noErr;
        #endif
 
+        case 'DPFe':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
+            outDataSize = sizeof(bool);
+            outWritable = true;
+            return noErr;
+
         case 'DPFp':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
@@ -409,12 +416,14 @@ public:
             outWritable = true;
             return noErr;
 
-        case 'DPFt':
+       #if DISTRHO_PLUGIN_WANT_STATE
+        case 'DPFs':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
-            outDataSize = sizeof(bool);
+            DISTRHO_SAFE_ASSERT_RETURN(inElement != 0, kAudioUnitErr_InvalidElement);
+            outDataSize = inElement;
             outWritable = true;
             return noErr;
+       #endif
 
         // unwanted properties
         case kAudioUnitProperty_CPULoad:
@@ -917,6 +926,25 @@ public:
             // TODO
             return noErr;
 
+        case 'DPFe':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(bool), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            {
+                const bool started = *static_cast<const bool*>(inData);
+
+                AudioUnitEvent event;
+                std::memset(&event, 0, sizeof(event));
+
+                event.mEventType                        = started ? kAudioUnitEvent_BeginParameterChangeGesture
+                                                                  : kAudioUnitEvent_EndParameterChangeGesture;
+                event.mArgument.mParameter.mAudioUnit   = fComponent;
+                event.mArgument.mParameter.mParameterID = inElement;
+                event.mArgument.mParameter.mScope       = kAudioUnitScope_Global;
+                AUEventListenerNotify(NULL, NULL, &event);
+            }
+            return noErr;
+
         case 'DPFp':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
@@ -939,24 +967,19 @@ public:
             }
             return noErr;
 
-        case 'DPFt':
+       #if DISTRHO_PLUGIN_WANT_STATE
+        case 'DPFs':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(bool), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            DISTRHO_SAFE_ASSERT_RETURN(inElement != 0, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT2_RETURN(inDataSize == inElement, inDataSize, inElement, kAudioUnitErr_InvalidPropertyValue);
             {
-                const bool started = *static_cast<const bool*>(inData);
+                const char* const key = static_cast<const char*>(inData);
+                const char* const value = key + std::strlen(key) + 1;
 
-                AudioUnitEvent event;
-                std::memset(&event, 0, sizeof(event));
-
-                event.mEventType                        = started ? kAudioUnitEvent_BeginParameterChangeGesture
-                                                                  : kAudioUnitEvent_EndParameterChangeGesture;
-                event.mArgument.mParameter.mAudioUnit   = fComponent;
-                event.mArgument.mParameter.mParameterID = inElement;
-                event.mArgument.mParameter.mScope       = kAudioUnitScope_Global;
-                AUEventListenerNotify(NULL, NULL, &event);
+                fPlugin.setState(key, value);
             }
             return noErr;
+       #endif
         }
 
         d_stdout("TODO SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);

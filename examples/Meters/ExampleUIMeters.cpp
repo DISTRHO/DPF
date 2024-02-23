@@ -41,7 +41,9 @@ public:
           fColorValue(0),
           // init meter values to 0
           fOutLeft(0.0f),
-          fOutRight(0.0f)
+          fOutRight(0.0f),
+          // FIXME
+          fNeedsRepaint(false)
     {
         setGeometryConstraints(32, 128, false);
     }
@@ -71,7 +73,9 @@ protected:
             if (fOutLeft != value)
             {
                 fOutLeft = value;
-                repaint();
+                // FIXME
+                // repaint();
+                fNeedsRepaint = true;
             }
             break;
 
@@ -84,7 +88,9 @@ protected:
             if (fOutRight != value)
             {
                 fOutRight = value;
-                repaint();
+                // FIXME
+                // repaint();
+                fNeedsRepaint = true;
             }
             break;
         }
@@ -198,6 +204,15 @@ protected:
         return true;
     }
 
+    void uiIdle() override
+    {
+        if (fNeedsRepaint)
+        {
+            fNeedsRepaint = false;
+            repaint();
+        }
+    }
+
     // -------------------------------------------------------------------------------------------------------
 
 private:
@@ -212,6 +227,9 @@ private:
       These are the parameter outputs from the DSP side.
     */
     float fOutLeft, fOutRight;
+
+    // FIXME this shouldnt be needed!
+    bool fNeedsRepaint;
 
    /**
       Update color if needed.
@@ -233,7 +251,9 @@ private:
             break;
         }
 
-        repaint();
+        // FIXME
+        // repaint();
+        fNeedsRepaint = true;
     }
 
    /**
