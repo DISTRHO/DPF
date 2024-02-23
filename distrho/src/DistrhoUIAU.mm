@@ -67,10 +67,11 @@ public:
               setStateCallback,
               sendNoteCallback,
               setSizeCallback,
-              nullptr, // TODO file request
+              nullptr,
               d_nextBundlePath,
               instancePointer)
     {
+        d_stdout("UI created");
         constexpr const CFTimeInterval interval = 60 * 0.0001;
 
         CFRunLoopTimerContext context = {};
@@ -86,6 +87,7 @@ public:
 
     ~DPF_UI_AU()
     {
+        d_stdout("UI destroyed");
         AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFP', auPropertyChangedCallback, this);
 
         if (fTimerRef != nullptr)

@@ -198,6 +198,13 @@ typedef std::vector<PropertyListener> PropertyListeners;
 
 // --------------------------------------------------------------------------------------------------------------------
 
+typedef struct {
+    UInt32 numPackets;
+    MIDIPacket packets[kMaxMidiEvents];
+} MIDIPacketList;
+
+// --------------------------------------------------------------------------------------------------------------------
+
 #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 static constexpr const writeMidiFunc writeMidiCallback = nullptr;
 #endif
@@ -242,6 +249,15 @@ public:
                     fBypassParameterIndex = i;
             }
         }
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        std::memset(&fMidiEvents, 0, sizeof(fMidiEvents));
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        std::memset(&fMidiOutput, 0, sizeof(fMidiOutput));
+        std::memset(&fMidiOutputPackets, 0, sizeof(fMidiOutputPackets));
+       #endif
     }
 
     ~PluginAU()
@@ -254,6 +270,9 @@ public:
         fPlugin.activate();
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fMidiEventCount = 0;
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fMidiOutputPackets.numPackets = 0;
        #endif
         return noErr;
     }
@@ -417,10 +436,33 @@ public:
             return kAudioUnitErr_InvalidProperty;
            #endif
 
+        case kAudioUnitProperty_MIDIOutputCallbackInfo:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            outDataSize = sizeof(CFArrayRef);
+            outWritable = false;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
+
+        case kAudioUnitProperty_MIDIOutputCallback:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            outDataSize = sizeof(AUMIDIOutputCallbackStruct);
+            outWritable = true;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
+
         case kAudioUnitProperty_AudioUnitMIDIProtocol:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+            // FIXME implement the event list stuff
+           #if 0 && (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT)
             outDataSize = sizeof(SInt32);
             outWritable = false;
             return noErr;
@@ -757,10 +799,26 @@ public:
             return noErr;
        #endif
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        case kAudioUnitProperty_MIDIOutputCallbackInfo:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            {
+                CFStringRef refs[1] = { CFSTR("MIDI Callback") };
+                *static_cast<CFArrayRef*>(outData) = CFArrayCreate(nullptr,
+                                                                   reinterpret_cast<const void**>(refs),
+                                                                   1,
+                                                                   &kCFTypeArrayCallBacks);
+            }
+            return noErr;
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        /* FIXME implement the event list stuff
         case kAudioUnitProperty_AudioUnitMIDIProtocol:
             *static_cast<SInt32*>(outData) = kMIDIProtocol_1_0;
             return noErr;
+        */
        #endif
 
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
@@ -980,6 +1038,15 @@ public:
             // TODO
             return noErr;
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        case kAudioUnitProperty_MIDIOutputCallback:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AUMIDIOutputCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            std::memcpy(&fMidiOutput, inData, sizeof(AUMIDIOutputCallbackStruct));
+            return noErr;
+       #endif
+
         case 'DPFe':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
@@ -1190,6 +1257,9 @@ public:
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fMidiEventCount = 0;
        #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fMidiOutputPackets.numPackets = 0;
+       #endif
         return noErr;
     }
 
@@ -1241,27 +1311,13 @@ public:
         constexpr float** outputs = nullptr;
        #endif
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fMidiOutputPackets.numPackets = 0;
+       #endif
+
       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
        #if DISTRHO_PLUGIN_HAS_UI
-        if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
-        {
-            uint8_t midiData[3];
-            const uint32_t frame = fMidiEventCount != 0 ? fMidiEvents[fMidiEventCount-1].frame : 0;
-
-            while (fNotesRingBuffer.isDataAvailableForReading())
-            {
-                if (! fNotesRingBuffer.readCustomData(midiData, 3))
-                    break;
-
-                MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
-                midiEvent.frame = frame;
-                midiEvent.size  = 3;
-                std::memcpy(midiEvent.data, midiData, 3);
-
-                if (fMidiEventCount == kMaxMidiEvents)
-                    break;
-            }
-        }
+        importRingBufferNotes();
        #endif
 
         fPlugin.run(inputs, outputs, inFramesToProcess, fMidiEvents, fMidiEventCount);
@@ -1269,6 +1325,16 @@ public:
       #else
         fPlugin.run(inputs, outputs, inFramesToProcess);
       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
+        {
+            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
+                                           &inTimeStamp,
+                                           0,
+                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
+        }
+       #endif
 
         float value;
         AudioUnitEvent event;
@@ -1296,6 +1362,11 @@ public:
         }
 
         return noErr;
+
+       #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        // unused
+        (void)inTimeStamp;
+       #endif
     }
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -1330,6 +1401,28 @@ public:
             midiEvent.size = 1;
             break;
         }
+
+        // if plugin has no audio, assume render function is not going to be called
+      #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+       #if DISTRHO_PLUGIN_HAS_UI
+        importRingBufferNotes();
+       #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fMidiOutputPackets.numPackets = 0;
+       #endif
+
+        fPlugin.run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame), fMidiEvents, fMidiEventCount);
+        fMidiEventCount = 0;
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
+        {
+            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
+                                           nullptr, 0, // FIXME do we need a valid timestamp?
+                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
+        }
+       #endif
+      #endif
 
         return noErr;
     }
@@ -1372,7 +1465,37 @@ private:
    #endif
   #endif
 
+   #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    AUMIDIOutputCallbackStruct fMidiOutput;
+    MIDIPacketList fMidiOutputPackets;
+   #endif
+
     // ----------------------------------------------------------------------------------------------------------------
+
+   #if DISTRHO_PLUGIN_HAS_UI
+    void importRingBufferNotes()
+    {
+        if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
+        {
+            uint8_t midiData[3];
+            const uint32_t frame = fMidiEventCount != 0 ? fMidiEvents[fMidiEventCount - 1].frame : 0;
+
+            while (fNotesRingBuffer.isDataAvailableForReading())
+            {
+                if (! fNotesRingBuffer.readCustomData(midiData, 3))
+                    break;
+
+                MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+                midiEvent.frame = frame;
+                midiEvent.size  = 3;
+                std::memcpy(midiEvent.data, midiData, 3);
+
+                if (fMidiEventCount == kMaxMidiEvents)
+                    break;
+            }
+        }
+    }
+   #endif
 
     void notifyListeners(const AudioUnitPropertyID prop, const AudioUnitScope scope, const AudioUnitElement elem)
     {
@@ -1398,8 +1521,20 @@ private:
     // DPF callbacks
 
    #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-    bool writeMidi(const MidiEvent&)
+    bool writeMidi(const MidiEvent& midiEvent)
     {
+        DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN("MIDI output unsupported", fMidiOutput.midiOutputCallback != nullptr, false);
+
+        if (midiEvent.size > sizeof(MIDIPacket::data))
+            return true;
+        if (fMidiOutputPackets.numPackets == kMaxMidiEvents)
+            return false;
+
+        const uint8_t* const midiData = midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data;
+        MIDIPacket& packet(fMidiOutputPackets.packets[fMidiOutputPackets.numPackets++]);
+        packet.timeStamp = midiEvent.frame;
+        packet.length = midiEvent.size;
+        std::memcpy(packet.data, midiData, midiEvent.size);
         return true;
     }
 
@@ -1410,8 +1545,18 @@ private:
    #endif
 
    #if DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
-    bool requestParameterValueChange(uint32_t, float)
+    bool requestParameterValueChange(const uint32_t index, const float value)
     {
+        AudioUnitEvent event;
+        std::memset(&event, 0, sizeof(event));
+        event.mEventType                        = kAudioUnitEvent_ParameterValueChange;
+        event.mArgument.mParameter.mAudioUnit   = fComponent;
+        event.mArgument.mParameter.mParameterID = index;
+        event.mArgument.mParameter.mScope       = kAudioUnitScope_Global;
+
+        fLastParameterValues[index] = value;
+        AUEventListenerNotify(NULL, NULL, &event);
+        notifyListeners('DPFP', kAudioUnitScope_Global, index);
         return true;
     }
 
