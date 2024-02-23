@@ -81,12 +81,12 @@ public:
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
 
-        AudioUnitAddPropertyListener(fComponent, 19003, auPropertyChangedCallback, this);
+        AudioUnitAddPropertyListener(fComponent, 'DPFP', auPropertyChangedCallback, this);
     }
 
     ~DPF_UI_AU()
     {
-        AudioUnitRemovePropertyListenerWithUserData(fComponent, 19003, auPropertyChangedCallback, this);
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFP', auPropertyChangedCallback, this);
 
         if (fTimerRef != nullptr)
         {
@@ -126,7 +126,7 @@ private:
     {
         switch (prop)
         {
-        case 19003:
+        case 'DPFP':
             {
                 AudioUnitParameterValue value;
                 if (AudioUnitGetParameter(fComponent, elem, kAudioUnitScope_Global, 0, &value) == noErr)
@@ -156,7 +156,7 @@ private:
 
     void editParameter(const uint32_t rindex, const bool started) const
     {
-        AudioUnitSetProperty(fComponent, 19002, kAudioUnitScope_Global, rindex, &started, sizeof(bool));
+        AudioUnitSetProperty(fComponent, 'DPFt', kAudioUnitScope_Global, rindex, &started, sizeof(bool));
     }
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
@@ -166,7 +166,7 @@ private:
 
     void setParameterValue(const uint32_t rindex, const float value)
     {
-        AudioUnitSetProperty(fComponent, 19001, kAudioUnitScope_Global, rindex, &value, sizeof(float));
+        AudioUnitSetProperty(fComponent, 'DPFp', kAudioUnitScope_Global, rindex, &value, sizeof(float));
     }
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
@@ -239,7 +239,12 @@ END_NAMESPACE_DISTRHO
 {
     const double sampleRate = d_nextSampleRate;
     const intptr_t winId = 0;
-    void* const instancePointer = nullptr;
+    void* instancePointer = nullptr;
+
+   #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+    UInt32 size = sizeof(void*);
+    AudioUnitGetProperty(component, 'DPFa', kAudioUnitScope_Global, 0, &instancePointer, &size);
+   #endif
 
     ui = new DPF_UI_AU(component, winId, sampleRate, instancePointer);
 

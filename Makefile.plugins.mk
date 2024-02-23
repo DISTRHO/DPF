@@ -698,11 +698,11 @@ endif
 # ---------------------------------------------------------------------------------------------------------------------
 # Export
 
-# ifeq ($(HAVE_DGL),true)
-# $(BUILD_DIR)/export$(APP_EXT): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_EXPORT.cpp.o $(BUILD_DIR)/DistrhoUIMain_EXPORT.cpp.o $(DGL_LIB)
-# else
+ifeq ($(HAVE_DGL),true)
+$(BUILD_DIR)/export$(APP_EXT): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_EXPORT.cpp.o $(BUILD_DIR)/DistrhoUIMain_EXPORT.cpp.o $(DGL_LIB)
+else
 $(BUILD_DIR)/export$(APP_EXT): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_EXPORT.cpp.o
-# endif
+endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating export tool for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) -o $@

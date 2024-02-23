@@ -393,14 +393,23 @@ public:
             return kAudioUnitErr_InvalidProperty;
            #endif
 
-        case 19001:
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+        case 'DPFa':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            outDataSize = sizeof(void*);
+            outWritable = false;
+            return noErr;
+       #endif
+
+        case 'DPFp':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
             outDataSize = sizeof(float);
             outWritable = true;
             return noErr;
 
-        case 19002:
+        case 'DPFt':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
             outDataSize = sizeof(bool);
@@ -690,6 +699,12 @@ public:
             }
             return noErr;
        #endif
+
+       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+        case 'DPFa':
+            *static_cast<void**>(outData) = fPlugin.getInstancePointer();
+            return noErr;
+       #endif
         }
 
         d_stdout("TODO GetProperty(%d:%s, %d:%s, %d, ...)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
@@ -902,7 +917,7 @@ public:
             // TODO
             return noErr;
 
-        case 19001:
+        case 'DPFp':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(float), inDataSize, kAudioUnitErr_InvalidPropertyValue);
@@ -924,7 +939,7 @@ public:
             }
             return noErr;
 
-        case 19002:
+        case 'DPFt':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fParameterCount, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(bool), inDataSize, kAudioUnitErr_InvalidPropertyValue);
@@ -1041,7 +1056,7 @@ public:
             fLastParameterValues[param] = value;
             fPlugin.setParameterValue(param, value);
             // TODO flag param only, notify listeners later on bg thread (sem_post etc)
-            notifyListeners(19003, kAudioUnitScope_Global, param);
+            notifyListeners('DPFP', kAudioUnitScope_Global, param);
         }
 
         return noErr;
