@@ -1138,29 +1138,14 @@ public:
        #else
         fPlugin.run(inputs, outputs, inFramesToProcess);
        #endif
-        return noErr;
-    }
 
-    OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
-    {
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global || scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope, kAudioUnitErr_InvalidScope);
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
-
-        // TODO
-        d_stdout("WIP Reset(%d:%s, %d)", scope, AudioUnitScope2Str(scope), elem);
-        return noErr;
-    }
-
-#if 0
-protected:
-    // ----------------------------------------------------------------------------------------------------------------
-    // ComponentBase AU dispatch
-
-    OSStatus Render(AudioUnitRenderActionFlags& ioActionFlags,
-                    const AudioTimeStamp& inTimeStamp,
-                    const UInt32 nFrames) override
-    {
         float value;
+        AudioUnitEvent event;
+        std::memset(&event, 0, sizeof(event));
+        event.mEventType                      = kAudioUnitEvent_ParameterValueChange;
+        event.mArgument.mParameter.mAudioUnit = fComponent;
+        event.mArgument.mParameter.mScope     = kAudioUnitScope_Global;
+
         for (uint32_t i=0; i<fParameterCount; ++i)
         {
             if (fPlugin.isParameterOutputOrTrigger(i))
@@ -1172,14 +1157,29 @@ protected:
 
                 fLastParameterValues[i] = value;
 
-                if (AUElement* const elem = GlobalScope().GetElement(0))
-                    elem->SetParameter(i, value);
+                // TODO flag param only, notify listeners later on bg thread (sem_post etc)
+                event.mArgument.mParameter.mParameterID = i;
+                AUEventListenerNotify(NULL, NULL, &event);
+                notifyListeners('DPFP', kAudioUnitScope_Global, i);
             }
         }
 
         return noErr;
     }
-#endif
+
+    OSStatus auReset(const AudioUnitScope scope, const AudioUnitElement elem)
+    {
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global || scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope, kAudioUnitErr_InvalidScope);
+        DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
+
+        if (fPlugin.isActive())
+        {
+            fPlugin.deactivate();
+            fPlugin.activate();
+        }
+
+        return noErr;
+    }
 
     // ----------------------------------------------------------------------------------------------------------------
 
