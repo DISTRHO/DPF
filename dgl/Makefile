@@ -14,6 +14,7 @@ BUILD_CXX_FLAGS += -Isrc/pugl-upstream/include
 LINK_FLAGS      += $(DGL_LIBS)
 
 ifeq ($(MACOS),true)
+BUILD_CXX_FLAGS += -DDISTRHO_MACOS_NAMESPACE_TIME=$(shell date +%s)
 BUILD_CXX_FLAGS += -Wno-deprecated-declarations
 else
 PUGL_EXTRA_FLAGS = -Wno-extra -Wmissing-field-initializers
