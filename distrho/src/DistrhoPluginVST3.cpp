@@ -1419,7 +1419,7 @@ public:
 
                 fTimePosition.bbt.valid       = true;
                 fTimePosition.bbt.bar         = static_cast<int32_t>(ppqPos) / ppqPerBar + 1;
-                fTimePosition.bbt.beat        = d_roundToIntPositive<int32_t>(barBeats - rest) + 1;
+                fTimePosition.bbt.beat        = static_cast<int32_t>(barBeats - rest) + 1;
                 fTimePosition.bbt.tick        = rest * fTimePosition.bbt.ticksPerBeat;
                 fTimePosition.bbt.beatsPerBar = ctx->time_sig_numerator;
                 fTimePosition.bbt.beatType    = ctx->time_sig_denom;

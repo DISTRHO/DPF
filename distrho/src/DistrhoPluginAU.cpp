@@ -282,6 +282,13 @@ public:
             fStateMap[dkey] = fPlugin.getStateDefaultValue(i);
         }
        #endif
+
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        std::memset(&fHostCallbackInfo, 0, sizeof(fHostCallbackInfo));
+
+        // ticksPerBeat is not possible with AU
+        fTimePosition.bbt.ticksPerBeat = 1920.0;
+       #endif
     }
 
     ~PluginAU()
@@ -298,6 +305,9 @@ public:
        #endif
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fMidiOutputPackets.numPackets = 0;
+       #endif
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        fTimePosition.clear();
        #endif
         return noErr;
     }
@@ -417,7 +427,7 @@ public:
             if (inScope == kAudioUnitScope_Global && fBypassParameterIndex != UINT32_MAX)
             {
                 outDataSize = sizeof(UInt32);
-                outWritable = false;
+                outWritable = true;
                 return noErr;
             }
             return kAudioUnitErr_InvalidProperty;
@@ -435,6 +445,17 @@ public:
             outDataSize = sizeof(AURenderCallbackStruct);
             outWritable = true;
             return noErr;
+
+        case kAudioUnitProperty_HostCallbacks:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_TIMEPOS
+            outDataSize = sizeof(HostCallbackInfo);
+            outWritable = false;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
 
         case kAudioUnitProperty_InPlaceProcessing:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -758,6 +779,12 @@ public:
             // TODO
             break;
 
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        case kAudioUnitProperty_HostCallbacks:
+            std::memcpy(outData, &fHostCallbackInfo, sizeof(HostCallbackInfo));
+            return noErr;
+       #endif
+
         case kAudioUnitProperty_InPlaceProcessing:
             *static_cast<UInt32*>(outData) = 1;
             return noErr;
@@ -1011,6 +1038,7 @@ public:
                         }
 
                         notifyListeners(inProp, inScope, inElement);
+                        notifyListeners(kAudioUnitProperty_SampleRate, inScope, inElement);
                     }
                     return noErr;
                 }
@@ -1031,6 +1059,7 @@ public:
                         }
 
                         notifyListeners(inProp, inScope, inElement);
+                        notifyListeners(kAudioUnitProperty_SampleRate, inScope, inElement);
                     }
                     return noErr;
                 }
@@ -1074,6 +1103,25 @@ public:
             d_stdout("WIP SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
             // TODO
             return noErr;
+
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        case kAudioUnitProperty_HostCallbacks:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+            {
+                const UInt32 usableDataSize = std::min(inDataSize, static_cast<UInt32>(sizeof(HostCallbackInfo)));
+		        const bool changed = std::memcmp(&fHostCallbackInfo, inData, usableDataSize) != 0;
+
+		        std::memcpy(&fHostCallbackInfo, inData, usableDataSize);
+
+                if (sizeof(HostCallbackInfo) > usableDataSize)
+		            std::memset(&fHostCallbackInfo + usableDataSize, 0, sizeof(HostCallbackInfo) - usableDataSize);
+
+                if (changed)
+                    notifyListeners(inProp, inScope, inElement);
+            }
+            return noErr;
+       #endif
 
         case kAudioUnitProperty_PresentPreset:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1162,6 +1210,9 @@ public:
                 event.mArgument.mParameter.mParameterID = inElement;
                 event.mArgument.mParameter.mScope       = kAudioUnitScope_Global;
                 AUEventListenerNotify(NULL, NULL, &event);
+
+                if (fBypassParameterIndex == inElement)
+	                notifyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
             }
             return noErr;
 
@@ -1309,10 +1360,12 @@ public:
         {
             fLastParameterValues[param] = value;
             fPlugin.setParameterValue(param, value);
-           #if DISTRHO_PLUGIN_HAS_UI
+
             // TODO flag param only, notify listeners later on bg thread (sem_post etc)
             notifyListeners('DPFp', kAudioUnitScope_Global, param);
-           #endif
+
+            if (fBypassParameterIndex == elem)
+                notifyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
         }
 
         return noErr;
@@ -1358,6 +1411,9 @@ public:
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         fMidiOutputPackets.numPackets = 0;
        #endif
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        fTimePosition.clear();
+       #endif
         return noErr;
     }
 
@@ -1372,6 +1428,7 @@ public:
 
         if (inFramesToProcess > fPlugin.getBufferSize())
         {
+d_stdout("auRender inFramesToProcess invalid");
             setLastRenderError(kAudioUnitErr_TooManyFramesToProcess);
             return kAudioUnitErr_TooManyFramesToProcess;
         }
@@ -1382,7 +1439,10 @@ public:
 
             // TODO there must be something more to this...
             if (buffer.mData == nullptr)
+            {
+d_stdout("auRender null buffer");
                 return noErr;
+            }
 
             DISTRHO_SAFE_ASSERT_UINT_RETURN(buffer.mDataByteSize == inFramesToProcess * sizeof(float), buffer.mDataByteSize, kAudio_ParamError);
         }
@@ -1409,62 +1469,8 @@ public:
         constexpr float** outputs = nullptr;
        #endif
 
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fMidiOutputPackets.numPackets = 0;
-       #endif
-
-      #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-       #if DISTRHO_PLUGIN_HAS_UI
-        importRingBufferNotes();
-       #endif
-
-        fPlugin.run(inputs, outputs, inFramesToProcess, fMidiEvents, fMidiEventCount);
-        fMidiEventCount = 0;
-      #else
-        fPlugin.run(inputs, outputs, inFramesToProcess);
-      #endif
-
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
-        {
-            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
-                                           &inTimeStamp,
-                                           0,
-                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
-        }
-       #endif
-
-        float value;
-        AudioUnitEvent event;
-        std::memset(&event, 0, sizeof(event));
-        event.mEventType                      = kAudioUnitEvent_ParameterValueChange;
-        event.mArgument.mParameter.mAudioUnit = fComponent;
-        event.mArgument.mParameter.mScope     = kAudioUnitScope_Global;
-
-        for (uint32_t i=0; i<fParameterCount; ++i)
-        {
-            if (fPlugin.isParameterOutputOrTrigger(i))
-            {
-                value = fPlugin.getParameterValue(i);
-
-                if (d_isEqual(fLastParameterValues[i], value))
-                    continue;
-
-                fLastParameterValues[i] = value;
-
-                // TODO flag param only, notify listeners later on bg thread (sem_post etc)
-                event.mArgument.mParameter.mParameterID = i;
-                AUEventListenerNotify(NULL, NULL, &event);
-                notifyListeners('DPFp', kAudioUnitScope_Global, i);
-            }
-        }
-
+        run(inputs, outputs, inFramesToProcess);
         return noErr;
-
-       #if ! DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        // unused
-        (void)inTimeStamp;
-       #endif
     }
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -1501,27 +1507,10 @@ public:
             break;
         }
 
+       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
         // if plugin has no audio, assume render function is not going to be called
-      #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
-       #if DISTRHO_PLUGIN_HAS_UI
-        importRingBufferNotes();
+        run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame));
        #endif
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fMidiOutputPackets.numPackets = 0;
-       #endif
-
-        fPlugin.run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame), fMidiEvents, fMidiEventCount);
-        fMidiEventCount = 0;
-
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
-        {
-            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
-                                           nullptr, 0, // FIXME do we need a valid timestamp?
-                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
-        }
-       #endif
-      #endif
 
         return noErr;
     }
@@ -1579,11 +1568,27 @@ private:
     StringMap fStateMap;
    #endif
 
+   #if DISTRHO_PLUGIN_WANT_TIMEPOS
+    HostCallbackInfo fHostCallbackInfo;
+    TimePosition fTimePosition;
+   #endif
+
     // ----------------------------------------------------------------------------------------------------------------
 
-   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
-    void importRingBufferNotes()
+    void notifyListeners(const AudioUnitPropertyID prop, const AudioUnitScope scope, const AudioUnitElement elem)
     {
+        for (PropertyListeners::iterator it = fPropertyListeners.begin(); it != fPropertyListeners.end(); ++it)
+        {
+            const PropertyListener& pl(*it);
+
+            if (pl.prop == prop)
+			    pl.proc(pl.userData, fComponent, prop, scope, elem);
+        }
+    }
+
+    void run(const float** inputs, float** outputs, const uint32_t frames)
+    {
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
         if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
         {
             uint8_t midiData[3];
@@ -1603,17 +1608,122 @@ private:
                     break;
             }
         }
-    }
-   #endif
+       #endif
 
-    void notifyListeners(const AudioUnitPropertyID prop, const AudioUnitScope scope, const AudioUnitElement elem)
-    {
-        for (PropertyListeners::iterator it = fPropertyListeners.begin(); it != fPropertyListeners.end(); ++it)
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        fMidiOutputPackets.numPackets = 0;
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_TIMEPOS
+        if (fHostCallbackInfo.beatAndTempoProc != nullptr ||
+            fHostCallbackInfo.musicalTimeLocationProc != nullptr ||
+            fHostCallbackInfo.transportStateProc != nullptr)
         {
-            const PropertyListener& pl(*it);
+            // reused values so we can check null and return value together
+            Boolean b1 = false;
+            Float32 f1 = 4.f; // initial value for beats per bar
+            Float64 g1 = 0.0;
+            Float64 g2 = 0.0;
+            UInt32 u1 = 0.0;
 
-            if (pl.prop == prop)
-			    pl.proc(pl.userData, fComponent, prop, scope, elem);
+            if (fHostCallbackInfo.musicalTimeLocationProc != nullptr
+                && fHostCallbackInfo.musicalTimeLocationProc(fHostCallbackInfo.hostUserData,
+                                                             nullptr, &f1, &u1, nullptr) == noErr)
+            {
+                fTimePosition.bbt.beatsPerBar = f1;
+                fTimePosition.bbt.beatType    = u1;
+            }
+            else
+            {
+                fTimePosition.bbt.beatsPerBar = 4.f;
+                fTimePosition.bbt.beatType    = 4.f;
+            }
+
+            if (fHostCallbackInfo.beatAndTempoProc != nullptr
+                && fHostCallbackInfo.beatAndTempoProc(fHostCallbackInfo.hostUserData, &g1, &g2) == noErr)
+            {
+                const double beat = static_cast<int32_t>(g1);
+
+                fTimePosition.bbt.valid = true;
+                fTimePosition.bbt.bar   = static_cast<int32_t>(beat / f1) + 1;
+                fTimePosition.bbt.beat  = static_cast<int32_t>(std::fmod(beat, f1)) + 1;
+                fTimePosition.bbt.tick  = std::fmod(g1, 1.0) * 1920.0;
+                fTimePosition.bbt.beatsPerMinute = g2;
+            }
+            else
+            {
+                fTimePosition.bbt.valid = false;
+                fTimePosition.bbt.bar   = 1;
+                fTimePosition.bbt.beat  = 1;
+                fTimePosition.bbt.tick  = 0.0;
+                fTimePosition.bbt.beatsPerMinute = 120.0;
+            }
+
+            if (fHostCallbackInfo.transportStateProc != nullptr
+                && fHostCallbackInfo.transportStateProc(fHostCallbackInfo.hostUserData,
+                                                        &b1, nullptr, &g1, nullptr, nullptr, nullptr) == noErr)
+            {
+                fTimePosition.playing = b1;
+                fTimePosition.frame = static_cast<int64_t>(g1);
+            }
+            else
+            {
+                fTimePosition.playing = false;
+                fTimePosition.frame = 0;
+            }
+
+            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat *
+                                             fTimePosition.bbt.beatsPerBar *
+                                             (fTimePosition.bbt.bar - 1);
+
+            fPlugin.setTimePosition(fTimePosition);
+        }
+        else
+        {
+            d_stdout("no time");
+        }
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+        fPlugin.run(inputs, outputs, frames, fMidiEvents, fMidiEventCount);
+        fMidiEventCount = 0;
+       #else
+        fPlugin.run(inputs, outputs, frames);
+       #endif
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
+        {
+            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
+                                           &inTimeStamp,
+                                           0,
+                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
+        }
+       #endif
+
+        float value;
+        AudioUnitEvent event;
+        std::memset(&event, 0, sizeof(event));
+        event.mEventType                      = kAudioUnitEvent_ParameterValueChange;
+        event.mArgument.mParameter.mAudioUnit = fComponent;
+        event.mArgument.mParameter.mScope     = kAudioUnitScope_Global;
+
+        for (uint32_t i=0; i<fParameterCount; ++i)
+        {
+            if (fPlugin.isParameterOutputOrTrigger(i))
+            {
+                value = fPlugin.getParameterValue(i);
+
+                if (d_isEqual(fLastParameterValues[i], value))
+                    continue;
+
+                fLastParameterValues[i] = value;
+
+                // TODO flag param only, notify listeners later on bg thread (sem_post etc)
+                event.mArgument.mParameter.mParameterID = i;
+                AUEventListenerNotify(NULL, NULL, &event);
+                notifyListeners('DPFp', kAudioUnitScope_Global, i);
+            }
         }
     }
 
@@ -1913,6 +2023,10 @@ private:
                     fLastParameterValues[j] = value;
                     fPlugin.setParameterValue(j, value);
                     notifyListeners('DPFp', kAudioUnitScope_Global, j);
+
+                    if (fBypassParameterIndex == j)
+                        notifyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
+
                     break;
                 }
             }

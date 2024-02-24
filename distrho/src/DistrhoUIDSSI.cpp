@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,11 +26,17 @@
 
 START_NAMESPACE_DISTRHO
 
+// --------------------------------------------------------------------------------------------------------------------
+
 #if ! DISTRHO_PLUGIN_WANT_MIDI_INPUT
 static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
-// -----------------------------------------------------------------------
+// unsupported in DSSI
+static constexpr const fileRequestFunc fileRequestCallback = nullptr;
+
+// --------------------------------------------------------------------------------------------------------------------
+
 
 struct OscData {
     lo_address  addr;
@@ -98,7 +104,7 @@ class UIDssi : public DGL_NAMESPACE::IdleCallback
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle, const double sampleRate)
         : fUI(this, 0, sampleRate, nullptr,
-              setParameterCallback, setStateCallback, sendNoteCallback, nullptr, nullptr),
+              setParameterCallback, setStateCallback, sendNoteCallback, fileRequestCallback, nullptr),
           fHostClosed(false),
           fOscData(oscData)
     {

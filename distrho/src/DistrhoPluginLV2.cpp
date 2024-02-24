@@ -459,7 +459,7 @@ public:
 
                     if (fLastPositionData.barBeat >= 0.0f)
                     {
-                        const double rest = std::fmod(fLastPositionData.barBeat, 1.0f);
+                        const double rest = std::fmod(fLastPositionData.barBeat, 1.0);
                         fTimePosition.bbt.beat = std::round(fLastPositionData.barBeat - rest + 1.0);
                         fTimePosition.bbt.tick = rest * fTimePosition.bbt.ticksPerBeat;
                     }

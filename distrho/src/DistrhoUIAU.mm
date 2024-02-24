@@ -45,6 +45,9 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
+// unsupported in AU
+static constexpr const fileRequestFunc fileRequestCallback = nullptr;
+
 // --------------------------------------------------------------------------------------------------------------------
 // Static data, see DistrhoPlugin.cpp
 
@@ -71,7 +74,7 @@ public:
               setStateCallback,
               sendNoteCallback,
               setSizeCallback,
-              nullptr,
+              fileRequestCallback,
               d_nextBundlePath,
               instancePointer)
     {
