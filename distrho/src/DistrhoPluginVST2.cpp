@@ -1286,22 +1286,11 @@ private:
         fPlugin.setState(key, value);
 
         // check if we want to save this key
-        if (! fPlugin.wantStateKey(key))
-            return;
-
-        // check if key already exists
-        for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
+        if (fPlugin.wantStateKey(key))
         {
-            const String& dkey(it->first);
-
-            if (dkey == key)
-            {
-                it->second = value;
-                return;
-            }
+            const String dkey(key);
+            fStateMap[dkey] = value;
         }
-
-        d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
   #endif
 };

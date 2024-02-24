@@ -1353,38 +1353,26 @@ private:
 
         // save this key if necessary
         if (fPlugin.wantStateKey(key))
-            updateInternalState(key, newValue, false);
+        {
+            const String dkey(key);
+            fStateMap[dkey] = newValue;
+        }
     }
 
     bool updateState(const char* const key, const char* const newValue)
     {
         fPlugin.setState(key, newValue);
-        return updateInternalState(key, newValue, true);
-    }
 
-    bool updateInternalState(const char* const key, const char* const newValue, const bool sendToUI)
-    {
         // key must already exist
-        for (StringToStringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
+        for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
         {
-            const String& dkey(it->first);
-
-            if (dkey == key)
+            if (fPlugin.getStateKey(i) == key)
             {
-                it->second = newValue;
+                const String dkey(key);
+                fStateMap[dkey] = newValue;
 
-                if (sendToUI)
-                {
-                    for (uint32_t i=0, count=fPlugin.getStateCount(); i < count; ++i)
-                    {
-                        if (fPlugin.getStateKey(i) == key)
-                        {
-                            if ((fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
-                                fNeededUiSends[i] = true;
-                            break;
-                        }
-                    }
-                }
+                if ((fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
+                    fNeededUiSends[i] = true;
 
                 return true;
             }

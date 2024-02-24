@@ -600,8 +600,8 @@ private:
         // Set state
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
-            const String& key   = cit->first;
-            const String& value = cit->second;
+            const String& key(cit->first);
+            const String& value(cit->second);
 
             // TODO skip DSP only states
 
@@ -1433,7 +1433,7 @@ public:
         // Update current state
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
-            const String& key = cit->first;
+            const String& key(cit->first);
             fStateMap[key] = fPlugin.getStateValue(key);
         }
        #endif
@@ -1457,8 +1457,8 @@ public:
 
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
-                const String& key   = cit->first;
-                const String& value = cit->second;
+                const String& key(cit->first);
+                const String& value(cit->second);
 
                 // join key and value
                 String tmpStr;
@@ -1764,23 +1764,11 @@ public:
     {
         fPlugin.setState(key, value);
 
-        // check if we want to save this key
-        if (! fPlugin.wantStateKey(key))
-            return;
-
-        // check if key already exists
-        for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
+        if (fPlugin.wantStateKey(key))
         {
-            const String& dkey(it->first);
-
-            if (dkey == key)
-            {
-                it->second = value;
-                return;
-            }
+            const String dkey(key);
+            fStateMap[dkey] = value;
         }
-
-        d_stderr("Failed to find plugin state with key \"%s\"", key);
     }
    #endif
 

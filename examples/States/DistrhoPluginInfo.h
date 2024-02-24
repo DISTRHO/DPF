@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,6 +21,9 @@
 #define DISTRHO_PLUGIN_NAME    "States"
 #define DISTRHO_PLUGIN_URI     "http://distrho.sf.net/examples/States"
 #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.states"
+
+#define DISTRHO_PLUGIN_AU_SUBTYPE stat
+#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
 
 #define DISTRHO_PLUGIN_HAS_UI          1
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1

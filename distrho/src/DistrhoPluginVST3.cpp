@@ -1180,7 +1180,7 @@ public:
         // Update current state
         for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
         {
-            const String& key = cit->first;
+            const String& key(cit->first);
             fStateMap[key] = fPlugin.getStateValue(key);
         }
        #endif
@@ -1204,8 +1204,8 @@ public:
 
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
-                const String& key   = cit->first;
-                const String& value = cit->second;
+                const String& key(cit->first);
+                const String& value(cit->second);
 
                 // join key and value
                 String tmpStr;
@@ -2194,7 +2194,7 @@ public:
             // Update current state from plugin side
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
-                const String& key = cit->first;
+                const String& key(cit->first);
                 fStateMap[key] = fPlugin.getStateValue(key);
             }
            #endif
@@ -2203,8 +2203,8 @@ public:
             // Set state
             for (StringMap::const_iterator cit=fStateMap.begin(), cite=fStateMap.end(); cit != cite; ++cit)
             {
-                const String& key   = cit->first;
-                const String& value = cit->second;
+                const String& key(cit->first);
+                const String& value(cit->second);
 
                 sendStateSetToUI(key, value);
             }
@@ -2399,20 +2399,8 @@ public:
         // save this key as needed
         if (fPlugin.wantStateKey(key))
         {
-            for (StringMap::iterator it=fStateMap.begin(), ite=fStateMap.end(); it != ite; ++it)
-            {
-                const String& dkey(it->first);
-
-                if (dkey == key)
-                {
-                    it->second = value;
-                    std::free(key16);
-                    std::free(value16);
-                    return V3_OK;
-                }
-            }
-
-            d_stderr("Failed to find plugin state with key \"%s\"", key);
+            const String dkey(key);
+            fStateMap[dkey] = value;
         }
 
         std::free(key16);

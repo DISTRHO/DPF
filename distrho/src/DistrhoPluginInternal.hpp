@@ -756,6 +756,7 @@ public:
         fPlugin->setParameterValue(index, value);
     }
 
+    /*
     bool getParameterIndexForSymbol(const char* const symbol, uint32_t& index)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
@@ -771,6 +772,7 @@ public:
 
         return false;
     }
+    */
 
     uint32_t getPortGroupCount() const noexcept
     {
@@ -884,7 +886,7 @@ public:
     }
    #endif
 
-# if DISTRHO_PLUGIN_WANT_FULL_STATE
+   #if DISTRHO_PLUGIN_WANT_FULL_STATE
     String getStateValue(const char* const key) const
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, sFallbackString);
@@ -892,7 +894,7 @@ public:
 
         return fPlugin->getState(key);
     }
-# endif
+   #endif
 
     void setState(const char* const key, const char* const value)
     {

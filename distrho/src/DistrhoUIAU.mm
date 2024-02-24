@@ -73,28 +73,40 @@ public:
     {
         d_stdout("UI created");
 
-        // fetch current state
-        UInt32 dataSize;
-        Boolean writable;
-
-        dataSize = 0;
-        if (AudioUnitGetPropertyInfo(component,
-                                     kAudioUnitProperty_ParameterList,
-                                     kAudioUnitScope_Global,
-                                     0,
-                                     &dataSize,
-                                     &writable) == noErr
-            && dataSize != 0 && dataSize % sizeof(AudioUnitParameterID) == 0)
+       #if DISTRHO_PLUGIN_WANT_STATE
+        // create state keys
         {
-            const uint32_t numParams = dataSize / sizeof(AudioUnitParameterID);
-            AudioUnitParameterValue value;
-
-            for (uint32_t i=0; i<numParams; ++i)
+            CFArrayRef keysRef = nullptr;
+            UInt32 dataSize = sizeof(CFArrayRef);
+            if (AudioUnitGetProperty(fComponent, 'DPFl', kAudioUnitScope_Global, 0, &keysRef, &dataSize) == noErr
+                && dataSize == sizeof(CFArrayRef))
             {
-                if (AudioUnitGetParameter(fComponent, i, kAudioUnitScope_Global, 0, &value) == noErr)
-                    fUI.parameterChanged(i, value);
+                const CFIndex numStates = CFArrayGetCount(keysRef);
+                char* key = nullptr;
+                CFIndex keyLen = -1;
+
+                fStateKeys.resize(numStates);
+
+                for (CFIndex i=0; i<numStates; ++i)
+                {
+                    const CFStringRef keyRef = static_cast<CFStringRef>(CFArrayGetValueAtIndex(keysRef, i));
+                    DISTRHO_SAFE_ASSERT_BREAK(CFGetTypeID(keyRef) == CFStringGetTypeID());
+
+                    const CFIndex keyRefLen = CFStringGetLength(keyRef);
+                    if (keyLen < keyRefLen)
+                    {
+                        keyLen = keyRefLen;
+                        key = static_cast<char*>(std::realloc(key, keyLen + 1));
+                    }
+                    DISTRHO_SAFE_ASSERT_BREAK(CFStringGetCString(keyRef, key, keyLen + 1, kCFStringEncodingASCII));
+
+                    fStateKeys[i] = key;
+                }
+
+                std::free(key);
             }
         }
+       #endif
 
         // setup idle timer
         constexpr const CFTimeInterval interval = 60 * 0.0001;
@@ -107,13 +119,25 @@ public:
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
 
-        AudioUnitAddPropertyListener(fComponent, 'DPFP', auPropertyChangedCallback, this);
+        AudioUnitAddPropertyListener(fComponent, 'DPFp', auPropertyChangedCallback, this);
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        AudioUnitAddPropertyListener(fComponent, 'DPFo', auPropertyChangedCallback, this);
+       #endif
+       #if DISTRHO_PLUGIN_WANT_STATE
+        AudioUnitAddPropertyListener(fComponent, 'DPFs', auPropertyChangedCallback, this);
+       #endif
     }
 
     ~DPF_UI_AU()
     {
         d_stdout("UI destroyed");
-        AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFP', auPropertyChangedCallback, this);
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFp', auPropertyChangedCallback, this);
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFo', auPropertyChangedCallback, this);
+       #endif
+       #if DISTRHO_PLUGIN_WANT_STATE
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFs', auPropertyChangedCallback, this);
+       #endif
 
         if (fTimerRef != nullptr)
         {
@@ -133,6 +157,10 @@ private:
 
     UIExporter fUI;
 
+   #if DISTRHO_PLUGIN_WANT_STATE
+    std::vector<String> fStateKeys;
+   #endif
+
     // ----------------------------------------------------------------------------------------------------------------
     // Idle setup
 
@@ -149,21 +177,54 @@ private:
     // ----------------------------------------------------------------------------------------------------------------
     // AU callbacks
 
-    void auPropertyChanged(const AudioUnitPropertyID prop, const AudioUnitElement elem)
+    void auParameterChanged(const AudioUnitElement elem)
     {
-        switch (prop)
+        float value = 0;
+        UInt32 dataSize = sizeof(float);
+        if (AudioUnitGetProperty(fComponent, 'DPFp', kAudioUnitScope_Global, elem, &value, &dataSize) == noErr
+            && dataSize == sizeof(float))
         {
-        case 'DPFP':
-            {
-                AudioUnitParameterValue value;
-                if (AudioUnitGetParameter(fComponent, elem, kAudioUnitScope_Global, 0, &value) == noErr)
-                    fUI.parameterChanged(elem, value);
-            }
-            break;
-        case 'DPFS':
-            break;
+            fUI.parameterChanged(elem, value);
         }
     }
+
+   #if DISTRHO_PLUGIN_WANT_PROGRAMS
+    void auProgramChanged()
+    {
+        uint32_t program = 0;
+        UInt32 dataSize = sizeof(uint32_t);
+        if (AudioUnitGetProperty(fComponent, 'DPFo', kAudioUnitScope_Global, 0, &program, &dataSize) == noErr
+            && dataSize == sizeof(uint32_t))
+        {
+            fUI.programLoaded(program);
+        }
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    void auStateChanged(const AudioUnitElement elem)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(elem < fStateKeys.size(),);
+
+        CFStringRef valueRef = nullptr;
+        UInt32 dataSize = sizeof(valueRef);
+        if (AudioUnitGetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, elem, &valueRef, &dataSize) == noErr
+            && dataSize == sizeof(CFStringRef)
+            && valueRef != nullptr
+            && CFGetTypeID(valueRef) == CFStringGetTypeID())
+        {
+            const CFIndex valueLen = CFStringGetLength(valueRef);
+            char* const value = static_cast<char*>(std::malloc(valueLen + 1));
+            DISTRHO_SAFE_ASSERT_RETURN(value != nullptr,);
+            DISTRHO_SAFE_ASSERT_RETURN(CFStringGetCString(valueRef, value, valueLen + 1, kCFStringEncodingUTF8),);
+
+            fUI.stateChanged(fStateKeys[elem], value);
+
+            CFRelease(valueRef);
+            std::free(value);
+        }
+    }
+   #endif
 
     static void auPropertyChangedCallback(void* const userData,
                                           const AudioUnit component,
@@ -177,7 +238,22 @@ private:
         DISTRHO_SAFE_ASSERT_RETURN(self->fComponent == component,);
         DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
 
-        self->auPropertyChanged(prop, elem);
+        switch (prop)
+        {
+        case 'DPFp':
+            self->auParameterChanged(elem);
+            break;
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        case 'DPFo':
+            self->auProgramChanged();
+            break;
+       #endif
+       #if DISTRHO_PLUGIN_WANT_STATE
+        case 'DPFs':
+            self->auStateChanged(elem);
+            break;
+       #endif
+        }
     }
 
     // ----------------------------------------------------------------------------------------------------------------
@@ -185,7 +261,14 @@ private:
 
     void editParameter(const uint32_t rindex, const bool started) const
     {
-        AudioUnitSetProperty(fComponent, 'DPFe', kAudioUnitScope_Global, rindex, &started, sizeof(bool));
+        const uint8_t flag = started ? 1 : 2;
+        AudioUnitSetProperty(fComponent, 'DPFe', kAudioUnitScope_Global, rindex, &flag, sizeof(uint8_t));
+
+        if (! started)
+        {
+            const uint8_t cancel = 0;
+            AudioUnitSetProperty(fComponent, 'DPFe', kAudioUnitScope_Global, rindex, &cancel, sizeof(uint8_t));
+        }
     }
 
     static void editParameterCallback(void* const ptr, const uint32_t rindex, const bool started)
@@ -206,19 +289,15 @@ private:
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
-        const size_t len_key = std::strlen(key);
-        const size_t len_value = std::strlen(value);
-        const size_t len_combined = len_key + len_value + 2;
-        char* const data = static_cast<char*>(std::malloc(len_combined));
-        DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+        const std::vector<String>::iterator it = std::find(fStateKeys.begin(), fStateKeys.end(), key);
+        DISTRHO_SAFE_ASSERT_RETURN(it != fStateKeys.end(),);
 
-        std::memcpy(data, key, len_key);
-        std::memcpy(data + len_key + 1, value, len_value);
-        data[len_key] = data[len_key + len_value + 1] = '\0';
-
-        AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, len_combined, data, len_combined);
-
-        std::free(data);
+        if (const CFStringRef valueRef = CFStringCreateWithCString(nullptr, value, kCFStringEncodingUTF8))
+        {
+            const uint32_t index = it - fStateKeys.begin();
+            AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, index, &valueRef, sizeof(CFStringRef));
+            CFRelease(valueRef);
+        }
     }
 
     static void setStateCallback(void* const ptr, const char* const key, const char* const value)
@@ -232,6 +311,9 @@ private:
     {
         const uint8_t data[3] = { static_cast<uint8_t>((velocity != 0 ? 0x90 : 0x80) | channel), note, velocity };
         AudioUnitSetProperty(fComponent, 'DPFn', kAudioUnitScope_Global, 0, data, sizeof(data));
+
+        const uint8_t cancel[3] = { 0, 0, 0 };
+        AudioUnitSetProperty(fComponent, 'DPFn', kAudioUnitScope_Global, 0, cancel, sizeof(cancel));
     }
 
     static void sendNoteCallback(void* const ptr, const uint8_t channel, const uint8_t note, const uint8_t velocity)
@@ -292,6 +374,14 @@ END_NAMESPACE_DISTRHO
    #endif
 
     ui = new DPF_UI_AU(component, winId, sampleRate, instancePointer);
+
+    // request data from DSP side
+    {
+        const uint16_t magic = 1337;
+        AudioUnitSetProperty(component, 'DPFi', kAudioUnitScope_Global, 0, &magic, sizeof(uint16_t));
+        const uint16_t cancel = 0;
+        AudioUnitSetProperty(component, 'DPFi', kAudioUnitScope_Global, 0, &cancel, sizeof(uint16_t));
+    }
 
     return ui->getNativeView();
 }
