@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -92,11 +92,17 @@ static constexpr const uint32_t dpf_id_view  = d_cconst('v', 'i', 'e', 'w');
 // --------------------------------------------------------------------------------------------------------------------
 // plugin specific uids (values are filled in during plugin init)
 
-static dpf_tuid dpf_tuid_class = { dpf_id_entry, dpf_id_clas, 0, 0 };
-static dpf_tuid dpf_tuid_component = { dpf_id_entry, dpf_id_comp, 0, 0 };
-static dpf_tuid dpf_tuid_controller = { dpf_id_entry, dpf_id_ctrl, 0, 0 };
-static dpf_tuid dpf_tuid_processor = { dpf_id_entry, dpf_id_proc, 0, 0 };
-static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, 0 };
+#ifdef DISTRHO_PLUGIN_BRAND_ID
+static constexpr const uint32_t dpf_id_brand = d_cconst(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID));
+#else
+static constexpr const uint32_t dpf_id_brand = 0;
+#endif
+
+static dpf_tuid dpf_tuid_class = { dpf_id_entry, dpf_id_clas, 0, dpf_id_brand };
+static dpf_tuid dpf_tuid_component = { dpf_id_entry, dpf_id_comp, 0, dpf_id_brand };
+static dpf_tuid dpf_tuid_controller = { dpf_id_entry, dpf_id_ctrl, 0, dpf_id_brand };
+static dpf_tuid dpf_tuid_processor = { dpf_id_entry, dpf_id_proc, 0, dpf_id_brand };
+static dpf_tuid dpf_tuid_view = { dpf_id_entry, dpf_id_view, 0, dpf_id_brand };
 
 // --------------------------------------------------------------------------------------------------------------------
 // Utility functions
