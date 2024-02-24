@@ -675,20 +675,18 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_AU_TYPE aufx
 
 /**
-   The AudioUnit subtype for a plugin.@n
-   This is a 4-character symbol which identifies a plugin.@n
-   It must be unique within a manufacturer's plugins, but different manufacturers can use the same subtype.
+   A 4-character symbol that identifies a brand or manufacturer, with at least one non-lower case character.@n
+   Plugins from the same brand should use the same symbol.
    @note This macro is required when building AU plugins
  */
-#define DISTRHO_PLUGIN_AU_SUBTYPE test
+#define DISTRHO_PLUGIN_BRAND_ID Dstr
 
 /**
-   The AudioUnit manufacturer for a plugin.@n
-   This is a 4-character symbol with at least one non-lower case character.@n
-   Plugins from the same brand/maker should use the same symbol.
+   A 4-character symbol which identifies a plugin.@n
+   It must be unique within at least a set of plugins from the brand.
    @note This macro is required when building AU plugins
  */
-#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
+#define DISTRHO_PLUGIN_UNIQUE_ID test
 
 /**
    Custom LV2 category for the plugin.@n

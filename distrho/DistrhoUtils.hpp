@@ -55,9 +55,6 @@ inline float round(float __x)
 # define M_PI 3.14159265358979323846
 #endif
 
-#define DISTRHO_MACRO_AS_STRING_VALUE(MACRO) #MACRO
-#define DISTRHO_MACRO_AS_STRING(MACRO) DISTRHO_MACRO_AS_STRING_VALUE(MACRO)
-
 /* --------------------------------------------------------------------------------------------------------------------
  * misc functions */
 
@@ -75,6 +72,15 @@ static inline constexpr
 int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept
 {
     return (a << 24) | (b << 16) | (c << 8) | (d << 0);
+}
+
+/**
+   Return a 32-bit number from 4 ASCII characters.
+ */
+static inline constexpr
+uint32_t d_cconst(const char str[4])
+{
+    return (str[0] << 24) | (str[1] << 16) | (str[2] << 8) | str[3];
 }
 
 /**

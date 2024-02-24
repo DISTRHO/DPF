@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2018 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -87,15 +87,6 @@ protected:
     uint32_t getVersion() const override
     {
         return d_version(1, 0, 0);
-    }
-
-   /**
-      Get the plugin unique Id.@n
-      This value is used by LADSPA, DSSI, VST2 and VST3 plugin formats.
-    */
-    int64_t getUniqueId() const override
-    {
-        return d_cconst('d', 'M', 't', 'r');
     }
 
    /* --------------------------------------------------------------------------------------------------------

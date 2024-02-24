@@ -43,6 +43,21 @@
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
+// Check that symbol macros are well defined
+
+#ifdef DISTRHO_PLUGIN_AU_TYPE
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_AU_TYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_TYPE has incorrect length");
+#endif
+
+#ifdef DISTRHO_PLUGIN_BRAND_ID
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID)) == 5, "The macro DISTRHO_PLUGIN_BRAND_ID has incorrect length");
+#endif
+
+#ifdef DISTRHO_PLUGIN_UNIQUE_ID
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTRHO_PLUGIN_UNIQUE_ID has incorrect length");
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
 // Define optional macros if not done yet
 
 #ifndef DISTRHO_PLUGIN_HAS_UI

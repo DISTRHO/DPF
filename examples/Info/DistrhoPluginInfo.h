@@ -22,8 +22,8 @@
 #define DISTRHO_PLUGIN_URI     "http://distrho.sf.net/examples/Info"
 #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.info"
 
-#define DISTRHO_PLUGIN_AU_SUBTYPE info
-#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
+#define DISTRHO_PLUGIN_BRAND_ID  Dstr
+#define DISTRHO_PLUGIN_UNIQUE_ID dNfo
 
 #define DISTRHO_PLUGIN_HAS_UI       1
 #define DISTRHO_PLUGIN_IS_RT_SAFE   1

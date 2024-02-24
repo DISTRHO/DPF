@@ -31,12 +31,12 @@
 #include <map>
 #include <vector>
 
-#ifndef DISTRHO_PLUGIN_AU_SUBTYPE
-# error DISTRHO_PLUGIN_AU_SUBTYPE undefined!
+#ifndef DISTRHO_PLUGIN_BRAND_ID
+# error DISTRHO_PLUGIN_BRAND_ID undefined!
 #endif
 
-#ifndef DISTRHO_PLUGIN_AU_MANUFACTURER
-# error DISTRHO_PLUGIN_AU_MANUFACTURER undefined!
+#ifndef DISTRHO_PLUGIN_UNIQUE_ID
+# error DISTRHO_PLUGIN_UNIQUE_ID undefined!
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -167,26 +167,11 @@ static const char* AudioUnitSelector2Str(const SInt16 selector) noexcept
     return "[unknown]";
 }
 
-static constexpr FourCharCode getFourCharCodeFromString(const char str[4])
-{
-    return (str[0] << 24) + (str[1] << 16) + (str[2] << 8) + str[3];
-}
-
 // --------------------------------------------------------------------------------------------------------------------
 
-#define MACRO_STR2(s) #s
-#define MACRO_STR(s) MACRO_STR2(s)
-
-static constexpr const char kTypeStr[] = MACRO_STR(DISTRHO_PLUGIN_AU_TYPE);
-static constexpr const char kSubTypeStr[] = MACRO_STR(DISTRHO_PLUGIN_AU_SUBTYPE);
-static constexpr const char kManufacturerStr[] = MACRO_STR(DISTRHO_PLUGIN_AU_MANUFACTURER);
-
-#undef MACRO_STR
-#undef MACRO_STR2
-
-static constexpr const FourCharCode kType = getFourCharCodeFromString(kTypeStr);
-static constexpr const FourCharCode kSubType = getFourCharCodeFromString(kSubTypeStr);
-static constexpr const FourCharCode kManufacturer = getFourCharCodeFromString(kManufacturerStr);
+static constexpr const uint32_t kType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_AU_TYPE));
+static constexpr const uint32_t kSubType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID));
+static constexpr const uint32_t kManufacturer = d_cconst(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID));
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -811,8 +796,8 @@ public:
                 #define MACRO_STR(a, b, c) MACRO_STR2(a, b, c)
 
                 info->mCocoaAUViewClass[0] = CFSTR("CocoaAUView_" MACRO_STR(DISTRHO_PLUGIN_AU_TYPE,
-                                                                            DISTRHO_PLUGIN_AU_SUBTYPE,
-                                                                            DISTRHO_PLUGIN_AU_MANUFACTURER));
+                                                                            DISTRHO_PLUGIN_UNIQUE_ID,
+                                                                            DISTRHO_PLUGIN_BRAND_ID));
 
                 #undef MACRO_STR
                 #undef MACRO_STR2

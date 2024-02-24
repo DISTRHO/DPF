@@ -222,10 +222,19 @@ protected:
 
    /**
       Get the plugin unique Id.@n
-      This value is used by LADSPA, DSSI, VST2, VST3 and AU plugin formats.
+      This value is used by LADSPA, DSSI, VST2, VST3 and AUv2 plugin formats.@n
+      @note It is preferred that you set DISTRHO_PLUGIN_UNIQUE_ID macro instead of overriding this call,
+            as that is required for AUv2 plugins anyhow.
       @see d_cconst()
     */
+   #ifdef DISTRHO_PLUGIN_UNIQUE_ID
+    virtual int64_t getUniqueId() const
+    {
+         return d_cconst(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID));
+    }
+   #else
     virtual int64_t getUniqueId() const = 0;
+   #endif
 
    /* --------------------------------------------------------------------------------------------------------
     * Init */

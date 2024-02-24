@@ -40,20 +40,20 @@
 #define DISTRHO_PLUGIN_URI "http://distrho.sf.net/examples/CairoUI"
 
 /**
-   The AudioUnit subtype for a plugin.
-   This is a 4-character symbol which identifies a plugin.
-   It must be unique within a manufacturer's plugins, but different manufacturers can use the same subtype.
-   @note This macro is required when building AU plugins
- */
-#define DISTRHO_PLUGIN_AU_SUBTYPE cair
-
-/**
    The AudioUnit manufacturer for a plugin.
    This is a 4-character symbol with at least one non-lower case character.
    Plugins from the same brand/maker should use the same symbol.
    @note This macro is required when building AU plugins
  */
-#define DISTRHO_PLUGIN_AU_MANUFACTURER Dstr
+#define DISTRHO_PLUGIN_BRAND_ID Dstr
+
+/**
+   The AudioUnit subtype for a plugin.
+   This is a 4-character symbol which identifies a plugin.
+   It must be unique within a manufacturer's plugins, but different manufacturers can use the same subtype.
+   @note This macro is required when building AU plugins
+ */
+#define DISTRHO_PLUGIN_UNIQUE_ID dCai
 
 /**
    The plugin id when exporting in CLAP format, in reverse URI form.

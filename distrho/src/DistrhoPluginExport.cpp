@@ -17,12 +17,12 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
-#ifndef DISTRHO_PLUGIN_AU_SUBTYPE
-# error DISTRHO_PLUGIN_AU_SUBTYPE undefined!
+#ifndef DISTRHO_PLUGIN_BRAND_ID
+# error DISTRHO_PLUGIN_BRAND_ID undefined!
 #endif
 
-#ifndef DISTRHO_PLUGIN_AU_MANUFACTURER
-# error DISTRHO_PLUGIN_AU_MANUFACTURER undefined!
+#ifndef DISTRHO_PLUGIN_UNIQUE_ID
+# error DISTRHO_PLUGIN_UNIQUE_ID undefined!
 #endif
 
 #include <fstream>
@@ -44,13 +44,6 @@ void generate_au_plist(const PluginExporter& plugin,
     const uint32_t majorVersion = (version & 0xFF0000) >> 16;
     const uint32_t minorVersion = (version & 0x00FF00) >> 8;
     const uint32_t microVersion = (version & 0x0000FF) >> 0;
-
-    #define MACRO_STR2(s) #s
-    #define MACRO_STR(s) MACRO_STR2(s)
-
-    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_TYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_TYPE has incorrect length");
-    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_SUBTYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_SUBTYPE has incorrect length");
-    static_assert(sizeof(MACRO_STR(DISTRHO_PLUGIN_AU_MANUFACTURER)) == 5, "The macro DISTRHO_PLUGIN_AU_MANUFACTURER has incorrect length");
 
     outputFile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outputFile << "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n";
@@ -88,11 +81,11 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "        <key>factoryFunction</key>\n";
     outputFile << "        <string>PluginAUFactory</string>\n";
     outputFile << "        <key>type</key>\n";
-    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_TYPE) "</string>\n";
+    outputFile << "        <string>" STRINGIFY(DISTRHO_PLUGIN_AU_TYPE) "</string>\n";
     outputFile << "        <key>subtype</key>\n";
-    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_SUBTYPE) "</string>\n";
+    outputFile << "        <string>" STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID) "</string>\n";
     outputFile << "        <key>manufacturer</key>\n";
-    outputFile << "        <string>" MACRO_STR(DISTRHO_PLUGIN_AU_MANUFACTURER) "</string>\n";
+    outputFile << "        <string>" STRINGIFY(DISTRHO_PLUGIN_BRAND_ID) "</string>\n";
     outputFile << "        <key>version</key>\n";
     outputFile << "        <integer>" << version << "</integer>\n";
     outputFile << "        <key>resourceUsage</key>\n";
@@ -106,9 +99,6 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "    </array>\n";
     outputFile << "  </dict>\n";
     outputFile << "</plist>\n";
-
-    #undef MACRO_STR
-    #undef MACRO_STR2
 
     outputFile.close();
     std::cout << " done!" << std::endl;

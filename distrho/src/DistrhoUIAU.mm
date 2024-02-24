@@ -26,12 +26,12 @@
 #undef Point
 #undef Size
 
-#ifndef DISTRHO_PLUGIN_AU_SUBTYPE
-# error DISTRHO_PLUGIN_AU_SUBTYPE undefined!
+#ifndef DISTRHO_PLUGIN_BRAND_ID
+# error DISTRHO_PLUGIN_BRAND_ID undefined!
 #endif
 
-#ifndef DISTRHO_PLUGIN_AU_MANUFACTURER
-# error DISTRHO_PLUGIN_AU_MANUFACTURER undefined!
+#ifndef DISTRHO_PLUGIN_UNIQUE_ID
+# error DISTRHO_PLUGIN_UNIQUE_ID undefined!
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -383,7 +383,7 @@ END_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 #define COCOA_VIEW_CLASS_NAME \
-    MACRO_NAME(CocoaView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+    MACRO_NAME(CocoaView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_UNIQUE_ID, _, DISTRHO_PLUGIN_BRAND_ID)
 
 @interface COCOA_VIEW_CLASS_NAME : NSView
 {
@@ -424,7 +424,7 @@ END_NAMESPACE_DISTRHO
 // --------------------------------------------------------------------------------------------------------------------
 
 #define COCOA_UI_CLASS_NAME \
-    MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+    MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_UNIQUE_ID, _, DISTRHO_PLUGIN_BRAND_ID)
 
 @interface COCOA_UI_CLASS_NAME : NSObject<AUCocoaUIBase>
 {

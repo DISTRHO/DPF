@@ -212,6 +212,8 @@ private:                                         \
 
 /* Useful macros */
 #define ARRAY_SIZE(ARRAY) (sizeof(ARRAY)/sizeof(ARRAY[0]))
+#define STRINGIFY2(s) #s
+#define STRINGIFY(s) STRINGIFY2(s)
 
 /* Useful typedefs */
 typedef unsigned char uchar;
@@ -223,5 +225,6 @@ typedef unsigned long long int ulonglong;
 /* Deprecated macros */
 #define DISTRHO_DECLARE_NON_COPY_CLASS(ClassName) DISTRHO_DECLARE_NON_COPYABLE(ClassName)
 #define DISTRHO_DECLARE_NON_COPY_STRUCT(StructName) DISTRHO_DECLARE_NON_COPYABLE(StructName)
+#define DISTRHO_MACRO_AS_STRING(MACRO) STRINGIFY2(MACRO)
 
 #endif // DISTRHO_DEFINES_H_INCLUDED
