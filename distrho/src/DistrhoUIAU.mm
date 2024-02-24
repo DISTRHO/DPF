@@ -21,6 +21,7 @@
 
 #include <AudioUnit/AudioUnit.h>
 #include <AudioUnit/AUCocoaUIView.h>
+#include <Cocoa/Cocoa.h>
 
 #undef Point
 #undef Size
@@ -56,12 +57,15 @@ class DPF_UI_AU
 {
 public:
     DPF_UI_AU(const AudioUnit component,
-              const intptr_t winId,
+              NSView* const view,
               const double sampleRate,
               void* const instancePointer)
         : fComponent(component),
+          fParentView(view),
           fTimerRef(nullptr),
-          fUI(this, winId, sampleRate,
+          fUI(this,
+              reinterpret_cast<uintptr_t>(view),
+              sampleRate,
               editParameterCallback,
               setParameterCallback,
               setStateCallback,
@@ -71,8 +75,6 @@ public:
               d_nextBundlePath,
               instancePointer)
     {
-        d_stdout("UI created");
-
        #if DISTRHO_PLUGIN_WANT_STATE
         // create state keys
         {
@@ -103,6 +105,7 @@ public:
                     fStateKeys[i] = key;
                 }
 
+                CFRelease(keysRef);
                 std::free(key);
             }
         }
@@ -119,6 +122,7 @@ public:
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
 
+        AudioUnitAddPropertyListener(fComponent, kAudioUnitProperty_SampleRate, auPropertyChangedCallback, this);
         AudioUnitAddPropertyListener(fComponent, 'DPFp', auPropertyChangedCallback, this);
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         AudioUnitAddPropertyListener(fComponent, 'DPFo', auPropertyChangedCallback, this);
@@ -130,7 +134,7 @@ public:
 
     ~DPF_UI_AU()
     {
-        d_stdout("UI destroyed");
+        AudioUnitRemovePropertyListenerWithUserData(fComponent, kAudioUnitProperty_SampleRate, auPropertyChangedCallback, this);
         AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFp', auPropertyChangedCallback, this);
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         AudioUnitRemovePropertyListenerWithUserData(fComponent, 'DPFo', auPropertyChangedCallback, this);
@@ -146,13 +150,27 @@ public:
         }
     }
 
-    NSView* getNativeView() const
+    void postSetup()
     {
-        return reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
+        if (fUI.isResizable())
+        {
+            // [view setAutoresizingMask:NSViewNotSizable];
+            [fParentView setAutoresizesSubviews:YES];
+        }
+        else
+        {
+            [fParentView setAutoresizingMask:NSViewNotSizable];
+            [fParentView setAutoresizesSubviews:NO];
+        }
+
+        // NSView* const uiView = reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
+
+        [fParentView setFrameSize:NSMakeSize(fUI.getWidth(), fUI.getHeight())];
     }
 
 private:
     const AudioUnit fComponent;
+    NSView* const fParentView;
     CFRunLoopTimerRef fTimerRef;
 
     UIExporter fUI;
@@ -176,6 +194,17 @@ private:
 
     // ----------------------------------------------------------------------------------------------------------------
     // AU callbacks
+
+    void auSampleRateChanged(const AudioUnitScope scope)
+    {
+        Float64 sampleRate = 0;
+        UInt32 dataSize = sizeof(Float64);
+        if (AudioUnitGetProperty(fComponent, kAudioUnitProperty_SampleRate, scope, 0, &sampleRate, &dataSize) == noErr
+            && dataSize == sizeof(Float64))
+        {
+            fUI.setSampleRate(sampleRate, true);
+        }
+    }
 
     void auParameterChanged(const AudioUnitElement elem)
     {
@@ -236,20 +265,26 @@ private:
 
         DISTRHO_SAFE_ASSERT_RETURN(self != nullptr,);
         DISTRHO_SAFE_ASSERT_RETURN(self->fComponent == component,);
-        DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
 
         switch (prop)
         {
+        case kAudioUnitProperty_SampleRate:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope,);
+            self->auSampleRateChanged(scope);
+            break;
         case 'DPFp':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
             self->auParameterChanged(elem);
             break;
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case 'DPFo':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
             self->auProgramChanged();
             break;
        #endif
        #if DISTRHO_PLUGIN_WANT_STATE
         case 'DPFs':
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global, scope,);
             self->auStateChanged(elem);
             break;
        #endif
@@ -322,8 +357,9 @@ private:
     }
    #endif
 
-    void setSize(uint, uint)
+    void setSize(const uint width, const uint height)
     {
+        [fParentView setFrameSize:NSMakeSize(width, height)];
     }
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
@@ -341,16 +377,59 @@ END_NAMESPACE_DISTRHO
 #define MACRO_NAME2(a, b, c, d, e, f) a ## b ## c ## d ## e ## f
 #define MACRO_NAME(a, b, c, d, e, f) MACRO_NAME2(a, b, c, d, e, f)
 
-#define COCOA_VIEW_CLASS_NAME \
-    MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+// --------------------------------------------------------------------------------------------------------------------
 
-@interface COCOA_VIEW_CLASS_NAME : NSObject<AUCocoaUIBase>
+#define COCOA_VIEW_CLASS_NAME \
+    MACRO_NAME(CocoaView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+
+@interface COCOA_VIEW_CLASS_NAME : NSView
 {
+@public
     DPF_UI_AU* ui;
 }
 @end
 
 @implementation COCOA_VIEW_CLASS_NAME
+
+- (id) initWithPreferredSize:(NSSize)size
+{
+	self = [super initWithFrame: NSMakeRect (0, 0, size.width, size.height)];
+    [self setHidden:NO];
+    return self;
+}
+
+- (BOOL) acceptsFirstResponder
+{
+  return YES;
+}
+
+- (void) dealloc
+{
+    delete ui;
+    ui = nullptr;
+
+	[super dealloc];
+}
+
+- (BOOL) isFlipped
+{
+  return YES;
+}
+
+@end
+
+// --------------------------------------------------------------------------------------------------------------------
+
+#define COCOA_UI_CLASS_NAME \
+    MACRO_NAME(CocoaAUView_, DISTRHO_PLUGIN_AU_TYPE, _, DISTRHO_PLUGIN_AU_SUBTYPE, _, DISTRHO_PLUGIN_AU_MANUFACTURER)
+
+@interface COCOA_UI_CLASS_NAME : NSObject<AUCocoaUIBase>
+{
+    COCOA_VIEW_CLASS_NAME* view;
+}
+@end
+
+@implementation COCOA_UI_CLASS_NAME
 
 - (NSString*) description
 {
@@ -364,16 +443,26 @@ END_NAMESPACE_DISTRHO
 
 - (NSView*) uiViewForAudioUnit:(AudioUnit)component withSize:(NSSize)inPreferredSize
 {
-    const double sampleRate = d_nextSampleRate;
-    const intptr_t winId = 0;
+    Float64 sampleRate = d_nextSampleRate;
     void* instancePointer = nullptr;
+    UInt32 dataSize;
 
    #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-    UInt32 dataSize = sizeof(void*);
+    dataSize = sizeof(void*);
     AudioUnitGetProperty(component, 'DPFa', kAudioUnitScope_Global, 0, &instancePointer, &dataSize);
    #endif
 
-    ui = new DPF_UI_AU(component, winId, sampleRate, instancePointer);
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+    dataSize = sizeof(Float64);
+    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Input, 0, &sampleRate, &dataSize);
+   #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
+    dataSize = sizeof(Float64);
+    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &sampleRate, &dataSize);
+   #endif
+
+    view = [[[COCOA_VIEW_CLASS_NAME alloc] initWithPreferredSize:inPreferredSize] autorelease];
+    view->ui = new DPF_UI_AU(component, view, sampleRate, instancePointer);
+    view->ui->postSetup();
 
     // request data from DSP side
     {
@@ -383,10 +472,12 @@ END_NAMESPACE_DISTRHO
         AudioUnitSetProperty(component, 'DPFi', kAudioUnitScope_Global, 0, &cancel, sizeof(uint16_t));
     }
 
-    return ui->getNativeView();
+    return view;
 }
 
 @end
+
+// --------------------------------------------------------------------------------------------------------------------
 
 #undef MACRO_NAME
 #undef MACRO_NAME2

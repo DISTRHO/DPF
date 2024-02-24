@@ -919,6 +919,7 @@ public:
                     if (d_isNotEqual(fSampleRateForInput, sampleRate))
                     {
                         fSampleRateForInput = sampleRate;
+                        d_nextSampleRate = sampleRate;
 
                        #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                         if (d_isEqual(fSampleRateForOutput, sampleRate))
@@ -939,6 +940,7 @@ public:
                     if (d_isNotEqual(fSampleRateForOutput, sampleRate))
                     {
                         fSampleRateForOutput = sampleRate;
+                        d_nextSampleRate = sampleRate;
 
                        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                         if (d_isEqual(fSampleRateForInput, sampleRate))
@@ -1798,7 +1800,7 @@ private:
             {
                 fCurrentProgram = program;
                 fPlugin.loadProgram(fCurrentProgram);
-                notifyListeners('DPFO', kAudioUnitScope_Global, 0);
+                notifyListeners('DPFo', kAudioUnitScope_Global, 0);
             }
         }
        #endif
@@ -1856,7 +1858,7 @@ private:
                     if (fPlugin.getStateKey(j) == key)
                     {
                         if ((fPlugin.getStateHints(i) & kStateIsOnlyForDSP) == 0x0)
-                            notifyListeners('DPFS', kAudioUnitScope_Global, j);
+                            notifyListeners('DPFs', kAudioUnitScope_Global, j);
 
                         break;
                     }
