@@ -1221,6 +1221,7 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(uint8_t) * 3, inDataSize, kAudioUnitErr_InvalidPropertyValue);
+           #if DISTRHO_PLUGIN_HAS_UI
             {
                 const uint8_t* const midiData = static_cast<const uint8_t*>(inData);
 
@@ -1230,6 +1231,7 @@ public:
                 fNotesRingBuffer.writeCustomData(midiData, 3);
                 fNotesRingBuffer.commitWrite();
             }
+           #endif
             return noErr;
        #endif
 
@@ -1417,8 +1419,8 @@ public:
         return noErr;
     }
 
-    OSStatus auRender(AudioUnitRenderActionFlags& ioActionFlags,
-                      const AudioTimeStamp& inTimeStamp,
+    OSStatus auRender(AudioUnitRenderActionFlags* const ioActionFlags,
+                      const AudioTimeStamp* const inTimeStamp,
                       const UInt32 inBusNumber,
                       const UInt32 inFramesToProcess,
                       AudioBufferList& ioData)
@@ -1428,7 +1430,6 @@ public:
 
         if (inFramesToProcess > fPlugin.getBufferSize())
         {
-d_stdout("auRender inFramesToProcess invalid");
             setLastRenderError(kAudioUnitErr_TooManyFramesToProcess);
             return kAudioUnitErr_TooManyFramesToProcess;
         }
@@ -1440,7 +1441,6 @@ d_stdout("auRender inFramesToProcess invalid");
             // TODO there must be something more to this...
             if (buffer.mData == nullptr)
             {
-d_stdout("auRender null buffer");
                 return noErr;
             }
 
@@ -1469,7 +1469,13 @@ d_stdout("auRender null buffer");
         constexpr float** outputs = nullptr;
        #endif
 
-        run(inputs, outputs, inFramesToProcess);
+        run(inputs, outputs, inFramesToProcess, inTimeStamp);
+
+        if (ioActionFlags != nullptr)
+        {
+            // TODO what now?
+        }
+
         return noErr;
     }
 
@@ -1509,7 +1515,7 @@ d_stdout("auRender null buffer");
 
        #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
         // if plugin has no audio, assume render function is not going to be called
-        run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame));
+        run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame), nullptr);
        #endif
 
         return noErr;
@@ -1517,8 +1523,30 @@ d_stdout("auRender null buffer");
 
     OSStatus auSysEx(const UInt8* const inData, const UInt32 inLength)
     {
-        // TODO
-        return kAudioUnitErr_PropertyNotInUse;
+        if (fMidiEventCount >= kMaxMidiEvents)
+            return noErr;
+
+        MidiEvent& midiEvent(fMidiEvents[fMidiEventCount++]);
+        midiEvent.frame = fMidiEventCount != 1 ? fMidiEvents[fMidiEventCount - 1].frame : 0;
+        midiEvent.size  = inLength;
+
+        // FIXME who owns inData ??
+        if (inLength > MidiEvent::kDataSize)
+        {
+            std::memset(midiEvent.data, 0, MidiEvent::kDataSize);
+            midiEvent.dataExt = inData;
+        }
+        else
+        {
+            std::memcpy(midiEvent.data, inData, inLength);
+        }
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+        // if plugin has no audio, assume render function is not going to be called
+        run(nullptr, nullptr, 1, nullptr);
+       #endif
+
+        return noErr;
     }
    #endif
 
@@ -1586,7 +1614,7 @@ private:
         }
     }
 
-    void run(const float** inputs, float** outputs, const uint32_t frames)
+    void run(const float** inputs, float** outputs, const uint32_t frames, const AudioTimeStamp* const inTimeStamp)
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
         if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
@@ -1695,10 +1723,13 @@ private:
         if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
         {
             fMidiOutput.midiOutputCallback(fMidiOutput.userData,
-                                           &inTimeStamp,
+                                           inTimeStamp,
                                            0,
                                            reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
         }
+       #else
+        // unused
+        (void)inTimeStamp;
        #endif
 
         float value;
@@ -2418,15 +2449,7 @@ struct AudioComponentPlugInInstance {
         DISTRHO_SAFE_ASSERT_RETURN(inTimeStamp != nullptr, kAudio_ParamError);
         DISTRHO_SAFE_ASSERT_RETURN(ioData != nullptr, kAudio_ParamError);
 
-        AudioUnitRenderActionFlags tmpFlags;
-
-        if (ioActionFlags == nullptr)
-        {
-            tmpFlags = 0;
-            ioActionFlags = &tmpFlags;
-        }
-
-        return self->plugin->auRender(*ioActionFlags, *inTimeStamp, inOutputBusNumber, inNumberFrames, *ioData);
+        return self->plugin->auRender(ioActionFlags, inTimeStamp, inOutputBusNumber, inNumberFrames, *ioData);
     }
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
