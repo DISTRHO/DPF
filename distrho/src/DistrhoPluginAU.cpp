@@ -538,49 +538,87 @@ public:
             {
                 CFPropertyListRef* const propList = static_cast<CFPropertyListRef*>(outData);
 
-                CFMutableDictionaryRef dict = CFDictionaryCreateMutable(nullptr, 0, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+                CFMutableDictionaryRef clsInfo = CFDictionaryCreateMutable(nullptr,
+                                                                           0,
+                                                                           &kCFTypeDictionaryKeyCallBacks,
+                                                                           &kCFTypeDictionaryValueCallBacks);
                 SInt32 value;
 
                 value = 0;
                 if (const CFNumberRef num = CFNumberCreate(nullptr, kCFNumberSInt32Type, &value))
                 {
-                    CFDictionarySetValue(dict, CFSTR(kAUPresetVersionKey), num);
+                    CFDictionarySetValue(clsInfo, CFSTR(kAUPresetVersionKey), num);
                     CFRelease(num);
                 }
 
                 value = kType;
                 if (const CFNumberRef num = CFNumberCreate(nullptr, kCFNumberSInt32Type, &value))
                 {
-                    CFDictionarySetValue(dict, CFSTR(kAUPresetTypeKey), num);
+                    CFDictionarySetValue(clsInfo, CFSTR(kAUPresetTypeKey), num);
                     CFRelease(num);
                 }
 
                 value = kSubType;
                 if (const CFNumberRef num = CFNumberCreate(nullptr, kCFNumberSInt32Type, &value))
                 {
-                    CFDictionarySetValue(dict, CFSTR(kAUPresetSubtypeKey), num);
+                    CFDictionarySetValue(clsInfo, CFSTR(kAUPresetSubtypeKey), num);
                     CFRelease(num);
                 }
 
                 value = kManufacturer;
                 if (const CFNumberRef num = CFNumberCreate(nullptr, kCFNumberSInt32Type, &value))
                 {
-                    CFDictionarySetValue(dict, CFSTR(kAUPresetManufacturerKey), num);
+                    CFDictionarySetValue(clsInfo, CFSTR(kAUPresetManufacturerKey), num);
                     CFRelease(num);
                 }
 
-	            if (const CFMutableDataRef data = CFDataCreateMutable(nullptr, 0))
+	            if (const CFMutableDictionaryRef data = CFDictionaryCreateMutable(nullptr,
+                                                                                  0,
+                                                                                  &kCFTypeDictionaryKeyCallBacks,
+                                                                                  &kCFTypeDictionaryValueCallBacks))
                 {
                     // TODO save plugin state here
-                    d_stdout("WIP GetProperty(%d:%s, %d:%s, %d, ...)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+                    d_stdout("WIP GetProperty(%d:%s, %d:%s, %d, ...)",
+                             inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
 
-                    CFDictionarySetValue(dict, CFSTR(kAUPresetDataKey), data);
+                    if (fParameterCount != 0)
+                    {
+                        CFMutableArrayRef params = CFArrayCreateMutable(nullptr, fParameterCount, &kCFTypeArrayCallBacks);
+
+                        for (uint32_t i=0; i<fParameterCount; ++i)
+                        {
+                            if (fPlugin.isParameterOutputOrTrigger(i))
+                                continue;
+
+                            const float valuef = fPlugin.getParameterValue(i);
+                            CFStringRef key = CFStringCreateWithCString(nullptr,
+                                                                        fPlugin.getParameterSymbol(i),
+                                                                        kCFStringEncodingASCII);
+                            CFNumberRef value = CFNumberCreate(nullptr, kCFNumberFloat32Type, &valuef);
+                            CFDictionaryRef dict = CFDictionaryCreate(nullptr,
+                                                                      reinterpret_cast<const void**>(&key),
+                                                                      reinterpret_cast<const void**>(&value),
+                                                                      1,
+                                                                      &kCFTypeDictionaryKeyCallBacks,
+                                                                      &kCFTypeDictionaryValueCallBacks);
+
+                            CFArrayAppendValue(params, dict);
+                            CFRelease(key);
+                            CFRelease(value);
+                            CFRelease(dict);
+                        }
+
+                        CFDictionarySetValue(data, CFSTR("params"), params);
+                        CFRelease(params);
+                    }
+
+                    CFDictionarySetValue(clsInfo, CFSTR(kAUPresetDataKey), data);
                     CFRelease(data);
                 }
 
-	            CFDictionarySetValue(dict, CFSTR(kAUPresetNameKey), CFSTR("Default"));
+	            CFDictionarySetValue(clsInfo, CFSTR(kAUPresetNameKey), CFSTR("Default"));
 
-                *propList = dict;
+                *propList = clsInfo;
             }
             return noErr;
 
@@ -804,7 +842,7 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             {
-                CFStringRef refs[1] = { CFSTR("MIDI Callback") };
+                CFStringRef refs[1] = { CFSTR("MIDI Output") };
                 *static_cast<CFArrayRef*>(outData) = CFArrayCreate(nullptr,
                                                                    reinterpret_cast<const void**>(refs),
                                                                    1,
@@ -844,8 +882,65 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(CFPropertyListRef), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            d_stdout("WIP SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+            {
+                const CFPropertyListRef propList = *static_cast<const CFPropertyListRef*>(inData);
+                DISTRHO_SAFE_ASSERT_RETURN(CFGetTypeID(propList) == CFDictionaryGetTypeID(), kAudioUnitErr_InvalidPropertyValue);
+
+                const CFDictionaryRef clsInfo = static_cast<CFDictionaryRef>(propList);
+
+	            CFDictionaryRef data = nullptr;
+                if (CFDictionaryGetValueIfPresent(clsInfo, CFSTR(kAUPresetDataKey), reinterpret_cast<const void**>(&data)))
+                {
+                    DISTRHO_SAFE_ASSERT_RETURN(CFGetTypeID(data) == CFDictionaryGetTypeID(), kAudioUnitErr_InvalidPropertyValue);
+
+	                CFArrayRef params = nullptr;
+                    if (CFDictionaryGetValueIfPresent(data, CFSTR("params"), reinterpret_cast<const void**>(&params))
+                        && CFGetTypeID(params) == CFArrayGetTypeID())
+                    {
+                        const CFIndex numParams = CFArrayGetCount(params);
+                        CFStringRef keyRef;
+                        CFNumberRef valueRef;
+                        uint32_t index;
+                        float value;
+                        char* symbol = nullptr;
+                        CFIndex symbolLen = -1;
+
+                        for (CFIndex i=0; i<numParams; ++i)
+                        {
+                            const CFDictionaryRef param = static_cast<CFDictionaryRef>(CFArrayGetValueAtIndex(params, i));
+                            DISTRHO_SAFE_ASSERT_BREAK(CFGetTypeID(param) == CFDictionaryGetTypeID());
+                            DISTRHO_SAFE_ASSERT_BREAK(CFDictionaryGetCount(param) == 1);
+
+                            keyRef = nullptr;
+                            valueRef = nullptr;
+                            CFDictionaryGetKeysAndValues(param,
+                                                         reinterpret_cast<const void**>(&keyRef),
+                                                         reinterpret_cast<const void**>(&valueRef));
+                            DISTRHO_SAFE_ASSERT_BREAK(keyRef != nullptr);
+                            DISTRHO_SAFE_ASSERT_BREAK(valueRef != nullptr);
+                            DISTRHO_SAFE_ASSERT_BREAK(CFGetTypeID(keyRef) == CFStringGetTypeID());
+                            DISTRHO_SAFE_ASSERT_BREAK(CFGetTypeID(valueRef) == CFNumberGetTypeID());
+                            DISTRHO_SAFE_ASSERT_BREAK(CFNumberGetValue(valueRef, kCFNumberFloat32Type, &value));
+
+                            const CFIndex keyLen = CFStringGetLength(keyRef);
+                            if (symbolLen < keyLen)
+                            {
+                                symbolLen = keyLen;
+                                symbol = static_cast<char*>(std::realloc(symbol, symbolLen + 1));
+                            }
+                            DISTRHO_SAFE_ASSERT_BREAK(CFStringGetCString(keyRef, symbol, symbolLen + 1, kCFStringEncodingASCII));
+                            DISTRHO_SAFE_ASSERT_BREAK(fPlugin.getParameterIndexForSymbol(symbol, index));
+
+                            fLastParameterValues[index] = value;
+                            fPlugin.setParameterValue(index, value);
+                            notifyListeners('DPFP', kAudioUnitScope_Global, index);
+                        }
+                    }
+                }
+            }
             // TODO
+            d_stdout("WIP SetProperty(%d:%s, %d:%s, %d, %p, %u)",
+                     inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
             return noErr;
 
         case kAudioUnitProperty_MakeConnection:
@@ -1472,7 +1567,7 @@ private:
 
     // ----------------------------------------------------------------------------------------------------------------
 
-   #if DISTRHO_PLUGIN_HAS_UI
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
     void importRingBufferNotes()
     {
         if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())

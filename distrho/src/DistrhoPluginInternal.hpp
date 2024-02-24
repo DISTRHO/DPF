@@ -756,6 +756,22 @@ public:
         fPlugin->setParameterValue(index, value);
     }
 
+    bool getParameterIndexForSymbol(const char* const symbol, uint32_t& index)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, false);
+
+        for (uint32_t i=0; i < fData->parameterCount; ++i)
+        {
+            if (fData->parameters[i].symbol == symbol)
+            {
+                index = i;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     uint32_t getPortGroupCount() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr, 0);

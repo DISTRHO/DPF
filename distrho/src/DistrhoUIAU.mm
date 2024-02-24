@@ -72,6 +72,31 @@ public:
               instancePointer)
     {
         d_stdout("UI created");
+
+        // fetch current state
+        UInt32 dataSize;
+        Boolean writable;
+
+        dataSize = 0;
+        if (AudioUnitGetPropertyInfo(component,
+                                     kAudioUnitProperty_ParameterList,
+                                     kAudioUnitScope_Global,
+                                     0,
+                                     &dataSize,
+                                     &writable) == noErr
+            && dataSize != 0 && dataSize % sizeof(AudioUnitParameterID) == 0)
+        {
+            const uint32_t numParams = dataSize / sizeof(AudioUnitParameterID);
+            AudioUnitParameterValue value;
+
+            for (uint32_t i=0; i<numParams; ++i)
+            {
+                if (AudioUnitGetParameter(fComponent, i, kAudioUnitScope_Global, 0, &value) == noErr)
+                    fUI.parameterChanged(i, value);
+            }
+        }
+
+        // setup idle timer
         constexpr const CFTimeInterval interval = 60 * 0.0001;
 
         CFRunLoopTimerContext context = {};
@@ -262,8 +287,8 @@ END_NAMESPACE_DISTRHO
     void* instancePointer = nullptr;
 
    #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
-    UInt32 size = sizeof(void*);
-    AudioUnitGetProperty(component, 'DPFa', kAudioUnitScope_Global, 0, &instancePointer, &size);
+    UInt32 dataSize = sizeof(void*);
+    AudioUnitGetProperty(component, 'DPFa', kAudioUnitScope_Global, 0, &instancePointer, &dataSize);
    #endif
 
     ui = new DPF_UI_AU(component, winId, sampleRate, instancePointer);
