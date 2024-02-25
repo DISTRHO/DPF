@@ -192,6 +192,10 @@ function(dpf_add_plugin NAME)
       dpf__build_vst3("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "clap")
       dpf__build_clap("${NAME}" "${_dgl_has_ui}")
+    elseif(_target STREQUAL "au")
+      if (APPLE)
+        dpf__build_au("${NAME}" "${_dgl_has_ui}")
+      endif()
     elseif(_target STREQUAL "static")
       dpf__build_static("${NAME}" "${_dgl_has_ui}")
     else()
@@ -542,6 +546,46 @@ function(dpf__build_clap NAME HAS_UI)
     file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
       DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.clap/Contents")
   endif()
+endfunction()
+
+# dpf__build_au
+# ------------------------------------------------------------------------------
+#
+# Add build rules for an AUv2 plugin.
+#
+function(dpf__build_au NAME HAS_UI)
+  dpf__create_dummy_source_list(_no_srcs)
+
+  dpf__add_module("${NAME}-au" ${_no_srcs})
+  dpf__add_plugin_main("${NAME}-au" "au")
+  dpf__add_ui_main("${NAME}-au" "au" "${HAS_UI}")
+  dpf__set_module_export_list("${NAME}-au" "au")
+  find_library(APPLE_AUDIOTOOLBOX_FRAMEWORK "AudioToolbox")
+  target_compile_options("${NAME}-au" PRIVATE "-ObjC++")
+  target_link_libraries("${NAME}-au" PRIVATE "${NAME}-dsp" "${NAME}-ui" "${APPLE_AUDIOTOOLBOX_FRAMEWORK}")
+  set_target_properties("${NAME}-au" PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents/MacOS/$<0:>"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/au/$<0:>"
+    OUTPUT_NAME "${NAME}"
+    PREFIX ""
+    SUFFIX "")
+
+  dpf__add_executable("${NAME}-export" ${_no_srcs})
+  dpf__add_plugin_main("${NAME}-export" "export")
+  dpf__add_ui_main("${NAME}-export" "export" "${HAS_UI}")
+  target_link_libraries("${NAME}-export" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+
+  separate_arguments(CMAKE_CROSSCOMPILING_EMULATOR)
+
+  add_custom_command(TARGET "${NAME}-au" POST_BUILD
+    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} "$<TARGET_FILE:${NAME}-export>" "${NAME}"
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents"
+    DEPENDS "${NAME}-export")
+
+  add_dependencies("${NAME}-au" "${NAME}-export")
+
+  file(COPY "${DPF_ROOT_DIR}/utils/plugin.bundle/Contents/PkgInfo"
+    DESTINATION "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents")
 endfunction()
 
 # dpf__build_static
