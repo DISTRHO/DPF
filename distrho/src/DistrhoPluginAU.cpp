@@ -17,6 +17,7 @@
 // TODO
 // - g_nextBundlePath vs d_nextBundlePath cleanup
 // - scale points to kAudioUnitParameterFlag_ValuesHaveStrings
+// - report latency changes
 
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
@@ -107,6 +108,18 @@ static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexc
     PROP(kAudioUnitProperty_AudioUnitMIDIProtocol)
     PROP(kAudioUnitProperty_HostMIDIProtocol)
     PROP(kAudioUnitProperty_MIDIOutputBufferSizeHint)
+    PROP(kMusicDeviceProperty_DualSchedulingMode)
+    #undef PROP
+    // DPF specific properties
+    #define PROP(s) case d_cconst(#s): return #s;
+    PROP(DPFi)
+    PROP(DPFe)
+    PROP(DPFp)
+    PROP(DPFn)
+    PROP(DPFo)
+    PROP(DPFl)
+    PROP(DPFs)
+    PROP(DPFa)
     #undef PROP
     }
     return "[unknown]";
@@ -166,6 +179,12 @@ static const char* AudioUnitSelector2Str(const SInt16 selector) noexcept
     }
     return "[unknown]";
 }
+
+#if 0
+static OSStatus FastDispatchGetParameter(void*, AudioUnitParameterID, AudioUnitScope, AudioUnitElement, Float32*);
+static OSStatus FastDispatchSetParameter(void*, AudioUnitParameterID, AudioUnitScope, AudioUnitElement, Float32, UInt32);
+static OSStatus FastDispatchRender(void*, AudioUnitRenderActionFlags*, const AudioTimeStamp*, UInt32, UInt32, AudioBufferList*);
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -349,6 +368,14 @@ public:
             outDataSize = sizeof(AudioUnitParameterInfo);
             outWritable = false;
             return noErr;
+
+       #if 0
+        case kAudioUnitProperty_FastDispatch:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            outDataSize = sizeof(void*);
+            outWritable = false;
+            return noErr;
+       #endif
 
         case kAudioUnitProperty_StreamFormat:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -561,12 +588,15 @@ public:
         // unwanted properties
         case kAudioUnitProperty_CPULoad:
         case kAudioUnitProperty_RenderContextObserver:
+        case kAudioUnitProperty_AudioChannelLayout:
         case kAudioUnitProperty_TailTime:
+        case kAudioUnitProperty_SupportedChannelLayoutTags:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             return kAudioUnitErr_InvalidProperty;
         }
 
-        d_stdout("TODO GetPropertyInfo(%2d:%s, %d:%s, %d, ...)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_stdout("TODO GetPropertyInfo(%d:%x:%s, %d:%s, %d, ...)",
+                 inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
         return kAudioUnitErr_InvalidProperty;
     }
 
@@ -665,6 +695,24 @@ public:
             }
             return noErr;
 
+       #if 0
+        case kAudioUnitProperty_FastDispatch:
+            switch (inElement)
+            {
+			case kAudioUnitGetParameterSelect:
+                *static_cast<AudioUnitGetParameterProc*>(outData) = FastDispatchGetParameter;
+                return noErr;
+			case kAudioUnitSetParameterSelect:
+                *static_cast<AudioUnitSetParameterProc*>(outData) = FastDispatchSetParameter;
+                return noErr;
+			case kAudioUnitRenderSelect:
+                *static_cast<AudioUnitRenderProc*>(outData) = FastDispatchRender;
+                return noErr;
+            }
+            d_stdout("WIP FastDispatch(%d:%x:%s)", inElement, inElement, AudioUnitPropertyID2Str(inElement));
+            return kAudioUnitErr_InvalidElement;
+       #endif
+
         case kAudioUnitProperty_StreamFormat:
             {
                 AudioStreamBasicDescription* const desc = static_cast<AudioStreamBasicDescription*>(outData);
@@ -742,7 +790,8 @@ public:
             return noErr;
 
         case kAudioUnitProperty_SetRenderCallback:
-            d_stdout("WIP GetProperty(%d:%s, %d:%s, %d, ...)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+            d_stdout("WIP GetProperty(%d:%x:%s, %d:%s, %d, ...)",
+                      inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
             // TODO
             break;
 
@@ -861,7 +910,8 @@ public:
        #endif
         }
 
-        d_stdout("TODO GetProperty(%d:%s, %d:%s, %d, ...)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_stdout("TODO GetProperty(%d:%x:%s, %d:%s, %d, ...)",
+                 inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
         return kAudioUnitErr_InvalidProperty;
     }
 
@@ -889,7 +939,8 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global || inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AudioUnitConnection), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            d_stdout("WIP SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+            d_stdout("WIP SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)", 
+                     inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
             // TODO
             return noErr;
 
@@ -1036,7 +1087,7 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(UInt32), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            DISTRHO_SAFE_ASSERT_RETURN(fBypassParameterIndex != UINT32_MAX, kAudioUnitErr_InvalidPropertyValue);
+            DISTRHO_SAFE_ASSERT_RETURN(fBypassParameterIndex != UINT32_MAX, kAudioUnitErr_PropertyNotInUse);
             {
                 const bool bypass = *static_cast<const UInt32*>(inData) != 0;
 
@@ -1054,14 +1105,15 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AURenderCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            d_stdout("WIP SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+            d_stdout("WIP SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)", 
+                     inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
             // TODO
             return noErr;
 
-       #if DISTRHO_PLUGIN_WANT_TIMEPOS
         case kAudioUnitProperty_HostCallbacks:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_TIMEPOS
             {
                 const UInt32 usableDataSize = std::min(inDataSize, static_cast<UInt32>(sizeof(HostCallbackInfo)));
 		        const bool changed = std::memcmp(&fHostCallbackInfo, inData, usableDataSize) != 0;
@@ -1075,7 +1127,9 @@ public:
                     notifyListeners(inProp, inScope, inElement);
             }
             return noErr;
-       #endif
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
 
         case kAudioUnitProperty_PresentPreset:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1087,14 +1141,16 @@ public:
             }
             return noErr;
 
-       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
         case kAudioUnitProperty_MIDIOutputCallback:
+          #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AUMIDIOutputCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
             std::memcpy(&fMidiOutput, inData, sizeof(AUMIDIOutputCallbackStruct));
             return noErr;
-       #endif
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
 
         case 'DPFi':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1170,12 +1226,11 @@ public:
             }
             return noErr;
 
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         case 'DPFn':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(uint8_t) * 3, inDataSize, kAudioUnitErr_InvalidPropertyValue);
-           #if DISTRHO_PLUGIN_HAS_UI
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
             {
                 const uint8_t* const midiData = static_cast<const uint8_t*>(inData);
 
@@ -1185,15 +1240,16 @@ public:
                 fNotesRingBuffer.writeCustomData(midiData, 3);
                 fNotesRingBuffer.commitWrite();
             }
-           #endif
             return noErr;
-       #endif
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
 
-       #if DISTRHO_PLUGIN_WANT_STATE
         case 'DPFs':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fStateCount, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(CFStringRef), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+           #if DISTRHO_PLUGIN_WANT_STATE
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fStateCount, inElement, kAudioUnitErr_InvalidElement);
             {
                 const CFStringRef valueRef = *static_cast<const CFStringRef*>(inData);
                 DISTRHO_SAFE_ASSERT_RETURN(valueRef != nullptr && CFGetTypeID(valueRef) == CFStringGetTypeID(),
@@ -1216,10 +1272,13 @@ public:
                 std::free(value);
             }
             return noErr;
-       #endif
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
         }
 
-        d_stdout("TODO SetProperty(%d:%s, %d:%s, %d, %p, %u)", inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+        d_stdout("TODO SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)",
+                 inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
         return kAudioUnitErr_InvalidProperty;
     }
 
@@ -1530,13 +1589,11 @@ private:
     float* fLastParameterValues;
     uint32_t fBypassParameterIndex;
 
-  #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t fMidiEventCount;
     MidiEvent fMidiEvents[kMaxMidiEvents];
-   #if DISTRHO_PLUGIN_HAS_UI
     SmallStackRingBuffer fNotesRingBuffer;
    #endif
-  #endif
 
    #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
     AUMIDIOutputCallbackStruct fMidiOutput;
@@ -1572,7 +1629,7 @@ private:
 
     void run(const float** inputs, float** outputs, const uint32_t frames, const AudioTimeStamp* const inTimeStamp)
     {
-       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT && DISTRHO_PLUGIN_HAS_UI
+       #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (fMidiEventCount != kMaxMidiEvents && fNotesRingBuffer.isDataAvailableForReading())
         {
             uint8_t midiData[3];
@@ -2218,8 +2275,8 @@ struct AudioComponentPlugInInstance {
                                     UInt32* const outDataSize,
                                     Boolean* const outWritable)
     {
-        d_debug("AudioComponentPlugInInstance::GetPropertyInfo(%p, %2d:%s, %d:%s, %d, ...)",
-                self, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_debug("AudioComponentPlugInInstance::GetPropertyInfo(%p, %d:%x:%s, %d:%s, %d, ...)",
+                self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
 
 		UInt32 dataSize = 0;
 		Boolean writable = false;
@@ -2241,8 +2298,8 @@ struct AudioComponentPlugInInstance {
                                 void* const outData,
                                 UInt32* const ioDataSize)
     {
-        d_debug("AudioComponentPlugInInstance::GetProperty    (%p, %2d:%s, %d:%s, %d, ...)",
-                self, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+        d_debug("AudioComponentPlugInInstance::GetProperty(%p, %d:%x:%s, %d:%s, %d, ...)",
+                self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
         DISTRHO_SAFE_ASSERT_RETURN(ioDataSize != nullptr, kAudio_ParamError);
 
         Boolean writable;
@@ -2306,8 +2363,8 @@ struct AudioComponentPlugInInstance {
                                 const void* const inData,
                                 const UInt32 inDataSize)
     {
-        d_debug("AudioComponentPlugInInstance::SetProperty(%p, %d:%s, %d:%s, %d, %p, %u)",
-                self, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
+        d_debug("AudioComponentPlugInInstance::SetProperty(%p, %d:%x:%s, %d:%s, %d, %p, %u)",
+                self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
         return self->plugin->auSetProperty(inProp, inScope, inElement, inData, inDataSize);
     }
 
@@ -2316,8 +2373,8 @@ struct AudioComponentPlugInInstance {
                                         const AudioUnitPropertyListenerProc proc,
                                         void* const userData)
     {
-        d_debug("AudioComponentPlugInInstance::AddPropertyListener(%p, %d:%s, %p, %p)",
-                self, prop, AudioUnitPropertyID2Str(prop), proc, userData);
+        d_debug("AudioComponentPlugInInstance::AddPropertyListener(%p, %d:%x:%s, %p, %p)",
+                self, prop, prop, AudioUnitPropertyID2Str(prop), proc, userData);
         return self->plugin->auAddPropertyListener(prop, proc, userData);
     }
 
@@ -2325,8 +2382,8 @@ struct AudioComponentPlugInInstance {
                                            const AudioUnitPropertyID prop,
                                            const AudioUnitPropertyListenerProc proc)
     {
-        d_debug("AudioComponentPlugInInstance::RemovePropertyListener(%p, %d:%s, %p)",
-                self, prop, AudioUnitPropertyID2Str(prop), proc);
+        d_debug("AudioComponentPlugInInstance::RemovePropertyListener(%p, %d:%x:%s, %p)",
+                self, prop, prop, AudioUnitPropertyID2Str(prop), proc);
         return self->plugin->auRemovePropertyListener(prop, proc);
     }
 
@@ -2335,8 +2392,8 @@ struct AudioComponentPlugInInstance {
                                                        const AudioUnitPropertyListenerProc proc,
                                                        void* const userData)
     {
-        d_debug("AudioComponentPlugInInstance::RemovePropertyListenerWithUserData(%p, %d:%s, %p, %p)",
-                self, prop, AudioUnitPropertyID2Str(prop), proc, userData);
+        d_debug("AudioComponentPlugInInstance::RemovePropertyListenerWithUserData(%p, %d:%x:%s, %p, %p)",
+                self, prop, prop, AudioUnitPropertyID2Str(prop), proc, userData);
         return self->plugin->auRemovePropertyListenerWithUserData(prop, proc, userData);
     }
 
@@ -2426,6 +2483,44 @@ struct AudioComponentPlugInInstance {
 
     DISTRHO_DECLARE_NON_COPYABLE(AudioComponentPlugInInstance)
 };
+
+#if 0
+static OSStatus FastDispatchGetParameter(void* const self,
+                                         const AudioUnitParameterID param,
+                                         const AudioUnitScope scope,
+                                         const AudioUnitElement elem,
+                                         Float32* const value)
+{
+    d_debug("FastDispatchGetParameter(%p, %d, %d:%s, %d, %p)",
+            self, param, scope, AudioUnitScope2Str(scope), elem, value);
+    return static_cast<AudioComponentPlugInInstance*>(self)->plugin->auGetParameter(param, scope, elem, value);
+}
+
+static OSStatus FastDispatchSetParameter(void* const self,
+                                         const AudioUnitParameterID param,
+                                         const AudioUnitScope scope,
+                                         const AudioUnitElement elem,
+                                         const Float32 value,
+                                         const UInt32 bufferOffset)
+{
+    d_debug("FastDispatchSetParameter(%p, %d %d:%s, %d, %f, %u)",
+            self, param, scope, AudioUnitScope2Str(scope), elem, value, bufferOffset);
+    return static_cast<AudioComponentPlugInInstance*>(self)->plugin->auSetParameter(param, scope, elem, value, bufferOffset);
+}
+
+static OSStatus FastDispatchRender(void* const self,
+                                   AudioUnitRenderActionFlags* const ioActionFlags,
+                                   const AudioTimeStamp* const inTimeStamp,
+                                   const UInt32 inBusNumber,
+                                   const UInt32 inNumberFrames,
+                                   AudioBufferList* const ioData)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(inTimeStamp != nullptr, kAudio_ParamError);
+    DISTRHO_SAFE_ASSERT_RETURN(ioData != nullptr, kAudio_ParamError);
+
+    return static_cast<AudioComponentPlugInInstance*>(self)->plugin->auRender(ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, *ioData);
+}
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
