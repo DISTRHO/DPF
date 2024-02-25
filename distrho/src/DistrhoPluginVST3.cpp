@@ -92,7 +92,7 @@ static constexpr const uint32_t dpf_id_view  = d_cconst('v', 'i', 'e', 'w');
 // --------------------------------------------------------------------------------------------------------------------
 // plugin specific uids (values are filled in during plugin init)
 
-#ifdef DISTRHO_PLUGIN_BRAND_ID
+#if defined(DISTRHO_PLUGIN_BRAND_ID) && !defined(DPF_VST3_DONT_USE_BRAND_ID)
 static constexpr const uint32_t dpf_id_brand = d_cconst(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID));
 #else
 static constexpr const uint32_t dpf_id_brand = 0;

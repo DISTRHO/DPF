@@ -677,7 +677,9 @@ START_NAMESPACE_DISTRHO
 /**
    A 4-character symbol that identifies a brand or manufacturer, with at least one non-lower case character.@n
    Plugins from the same brand should use the same symbol.
-   @note This macro is required when building AU plugins
+   @note This macro is required when building AU plugins, and used for VST3 if present
+   @note Setting this macro will change the uid of a VST3 plugin.
+         If you already released a DPF-based VST3 plugin make sure to also enable DISTRHO_PLUGIN_VST3_OLD_ID_COMPAT
  */
 #define DISTRHO_PLUGIN_BRAND_ID Dstr
 
@@ -876,6 +878,12 @@ START_NAMESPACE_DISTRHO
    This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters.
  */
 #define DPF_VST_SHOW_PARAMETER_OUTPUTS
+
+/**
+   Forcibly ignore DISTRHO_PLUGIN_BRAND_ID for VST3 plugins.@n
+   This is required for DPF-based VST3 plugins that got released without setting DISTRHO_PLUGIN_BRAND_ID first.
+ */
+#define DPF_VST3_DONT_USE_BRAND_ID
 
 /**
    Disable all file browser related code.@n
