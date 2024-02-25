@@ -214,11 +214,12 @@ public:
           fComponent(component),
           fLastRenderError(noErr),
           fPropertyListeners(),
-         #if DISTRHO_PLUGIN_NUM_INPUTS != 0
           fSampleRateForInput(d_nextSampleRate),
-         #endif
          #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
           fSampleRateForOutput(d_nextSampleRate),
+         #endif
+         #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+          fHasWorkingAudio(false),
          #endif
           fParameterCount(fPlugin.getParameterCount()),
           fLastParameterValues(nullptr),
@@ -325,20 +326,16 @@ public:
             outWritable = true;
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_SampleRate:
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
-           #else
+           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
            #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             outDataSize = sizeof(Float64);
             outWritable = true;
             return noErr;
-       #endif
 
         case kAudioUnitProperty_ParameterList:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -353,17 +350,14 @@ public:
             outWritable = false;
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_StreamFormat:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             if (inScope == kAudioUnitScope_Input)
             {
                 outDataSize = sizeof(AudioStreamBasicDescription);
                 outWritable = true;
                 return noErr;
             }
-           #endif
            #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             if (inScope == kAudioUnitScope_Output)
             {
@@ -373,7 +367,6 @@ public:
             }
            #endif
             return kAudioUnitErr_InvalidScope;
-       #endif
 
         case kAudioUnitProperty_ElementCount:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -569,10 +562,6 @@ public:
         case kAudioUnitProperty_CPULoad:
         case kAudioUnitProperty_RenderContextObserver:
         case kAudioUnitProperty_TailTime:
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
-        case kAudioUnitProperty_SampleRate:
-        case kAudioUnitProperty_StreamFormat:
-       #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             return kAudioUnitErr_InvalidProperty;
         }
@@ -592,15 +581,12 @@ public:
             *static_cast<CFPropertyListRef*>(outData) = retrieveClassInfo();
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_SampleRate:
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             if (inScope == kAudioUnitScope_Input)
             {
                 *static_cast<Float64*>(outData) = fSampleRateForInput;
             }
             else
-           #endif
            #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             if (inScope == kAudioUnitScope_Output)
             {
@@ -612,7 +598,6 @@ public:
                 return kAudioUnitErr_InvalidScope;
             }
             return noErr;
-       #endif
 
         case kAudioUnitProperty_ParameterList:
             {
@@ -680,7 +665,6 @@ public:
             }
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_StreamFormat:
             {
                 AudioStreamBasicDescription* const desc = static_cast<AudioStreamBasicDescription*>(outData);
@@ -689,13 +673,11 @@ public:
                 if (inElement != 0)
                     return kAudioUnitErr_InvalidElement;
 
-               #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
                 {
                     desc->mChannelsPerFrame = DISTRHO_PLUGIN_NUM_INPUTS;
                 }
                 else
-               #endif
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 if (inScope == kAudioUnitScope_Output)
                 {
@@ -716,7 +698,6 @@ public:
                 desc->mFramesPerPacket  = 1;
             }
             return noErr;
-       #endif
 
         case kAudioUnitProperty_ElementCount:
             switch (inScope)
@@ -725,7 +706,8 @@ public:
                 *static_cast<UInt32*>(outData) = 1;
                 break;
             case kAudioUnitScope_Input:
-                *static_cast<UInt32*>(outData) = DISTRHO_PLUGIN_NUM_INPUTS != 0 ? 1 : 0;
+                // FIXME seems to be mandatory for Logic Pro
+                *static_cast<UInt32*>(outData) = 1; // DISTRHO_PLUGIN_NUM_INPUTS != 0 ? 1 : 0;
                 break;
             case kAudioUnitScope_Output:
                 *static_cast<UInt32*>(outData) = DISTRHO_PLUGIN_NUM_OUTPUTS != 0 ? 1 : 0;
@@ -911,21 +893,17 @@ public:
             // TODO
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_SampleRate:
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
-           #else
+           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
            #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(Float64), inDataSize, kAudioUnitErr_InvalidPropertyValue);
             {
                 const Float64 sampleRate = *static_cast<const Float64*>(inData);
 
-               #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
                 {
                     if (d_isNotEqual(fSampleRateForInput, sampleRate))
@@ -944,7 +922,6 @@ public:
                     }
                     return noErr;
                 }
-               #endif
 
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 if (inScope == kAudioUnitScope_Output)
@@ -954,9 +931,7 @@ public:
                         fSampleRateForOutput = sampleRate;
                         d_nextSampleRate = sampleRate;
 
-                       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                         if (d_isEqual(fSampleRateForInput, sampleRate))
-                       #endif
                         {
                             fPlugin.setSampleRate(sampleRate, true);
                         }
@@ -968,16 +943,12 @@ public:
                #endif
             }
             return kAudioUnitErr_InvalidScope;
-       #endif
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_StreamFormat:
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
-           #else
+           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
            #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AudioStreamBasicDescription), inDataSize, kAudioUnitErr_InvalidPropertyValue);
@@ -1008,7 +979,6 @@ public:
                                                                                  : DISTRHO_PLUGIN_NUM_OUTPUTS))
                     return kAudioUnitErr_FormatNotSupported;
 
-               #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
                 {
                     if (d_isNotEqual(fSampleRateForInput, desc->mSampleRate))
@@ -1025,9 +995,11 @@ public:
                         notifyListeners(inProp, inScope, inElement);
                         notifyListeners(kAudioUnitProperty_SampleRate, inScope, inElement);
                     }
+                   #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+                    fHasWorkingAudio = true;
+                   #endif
                     return noErr;
                 }
-               #endif
 
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 if (inScope == kAudioUnitScope_Output)
@@ -1036,9 +1008,7 @@ public:
                     {
                         fSampleRateForOutput = desc->mSampleRate;
 
-                       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                         if (d_isEqual(fSampleRateForInput, desc->mSampleRate))
-                       #endif
                         {
                             fPlugin.setSampleRate(desc->mSampleRate, true);
                         }
@@ -1051,7 +1021,6 @@ public:
                #endif
             }
             return kAudioUnitErr_InvalidScope;
-       #endif
 
         case kAudioUnitProperty_MaximumFramesPerSlice:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1499,8 +1468,9 @@ public:
         }
 
        #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
-        // if plugin has no audio, assume render function is not going to be called
-        run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame), nullptr);
+        // handle case of plugin having no working audio, simulate audio-side processing
+        if (! fHasWorkingAudio)
+            run(nullptr, nullptr, std::max(1u, inOffsetSampleFrame), nullptr);
        #endif
 
         return noErr;
@@ -1527,8 +1497,9 @@ public:
         }
 
        #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
-        // if plugin has no audio, assume render function is not going to be called
-        run(nullptr, nullptr, 1, nullptr);
+        // handle case of plugin having no working audio, simulate audio-side processing
+        if (! fHasWorkingAudio)
+            run(nullptr, nullptr, 1, nullptr);
        #endif
 
         return noErr;
@@ -1547,11 +1518,12 @@ private:
     AUPreset fCurrentPreset;
     OSStatus fLastRenderError;
     PropertyListeners fPropertyListeners;
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     Float64 fSampleRateForInput;
-   #endif
    #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     Float64 fSampleRateForOutput;
+   #endif
+   #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+    bool fHasWorkingAudio;
    #endif
 
     // Caching

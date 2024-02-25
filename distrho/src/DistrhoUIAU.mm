@@ -448,21 +448,25 @@ END_NAMESPACE_DISTRHO
 {
     Float64 sampleRate = d_nextSampleRate;
     void* instancePointer = nullptr;
+    AudioUnitScope scope;
     UInt32 dataSize;
 
+    // fetch direct access pointer
    #if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
     dataSize = sizeof(void*);
     AudioUnitGetProperty(component, 'DPFa', kAudioUnitScope_Global, 0, &instancePointer, &dataSize);
    #endif
 
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-    dataSize = sizeof(Float64);
-    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Input, 0, &sampleRate, &dataSize);
-   #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
+    // fetch current sample rate
+   #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    scope = kAudioUnitScope_Output;
+   #else
+    scope = kAudioUnitScope_Input;
+   #endif
     dataSize = sizeof(Float64);
     AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &sampleRate, &dataSize);
-   #endif
 
+    // create view
     view = [[[COCOA_VIEW_CLASS_NAME alloc] initWithPreferredSize:inPreferredSize] autorelease];
     view->ui = new DPF_UI_AU(component, view, sampleRate, instancePointer);
     view->ui->postSetup();

@@ -32,6 +32,9 @@ START_NAMESPACE_DISTRHO
 static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
+// unused in DSSI, we only use external and standalone UIs
+static constexpr const setSizeFunc setSizeCallback = nullptr;
+
 // unsupported in DSSI
 static constexpr const fileRequestFunc fileRequestCallback = nullptr;
 
@@ -104,7 +107,7 @@ class UIDssi : public DGL_NAMESPACE::IdleCallback
 public:
     UIDssi(const OscData& oscData, const char* const uiTitle, const double sampleRate)
         : fUI(this, 0, sampleRate, nullptr,
-              setParameterCallback, setStateCallback, sendNoteCallback, fileRequestCallback, nullptr),
+              setParameterCallback, setStateCallback, sendNoteCallback, setSizeCallback, fileRequestCallback),
           fHostClosed(false),
           fOscData(oscData)
     {

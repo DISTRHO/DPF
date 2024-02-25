@@ -49,6 +49,9 @@ static constexpr const setStateFunc setStateCallback = nullptr;
 static constexpr const sendNoteFunc sendNoteCallback = nullptr;
 #endif
 
+// unwanted in LV2, resize extension is deprecated and hosts can do it without extensions
+static constexpr const setSizeFunc setSizeCallback = nullptr;
+
 // -----------------------------------------------------------------------
 
 template <class LV2F>
@@ -96,7 +99,7 @@ public:
               setParameterCallback,
               setStateCallback,
               sendNoteCallback,
-              nullptr, // resize is very messy, hosts can do it without extensions
+              setSizeCallback,
               fileRequestCallback,
               bundlePath, dspPtr, scaleFactor, bgColor, fgColor, appClassName)
     {
