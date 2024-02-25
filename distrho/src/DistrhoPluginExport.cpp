@@ -67,8 +67,11 @@ void generate_au_plist(const PluginExporter& plugin,
     outputFile << "    <string>" << majorVersion << "." << minorVersion << "." << microVersion << "</string>\n";
     outputFile << "    <key>CFBundleVersion</key>\n";
     outputFile << "    <string>" << majorVersion << "." << minorVersion << "." << microVersion << "</string>\n";
-    outputFile << "    <key>NSHumanReadableCopyright</key>\n";
-    outputFile << "    <string>" << license << "</string>\n";
+    if (license != nullptr && license[0] != '\0')
+    {
+        outputFile << "    <key>NSHumanReadableCopyright</key>\n";
+        outputFile << "    <string>" << license << "</string>\n";
+    }
     outputFile << "    <key>NSHighResolutionCapable</key>\n";
     outputFile << "    <true/>\n";
     outputFile << "    <key>AudioComponents</key>\n";
@@ -122,8 +125,10 @@ int main(int argc, char* argv[])
 
     String license(plugin.getLicense());
 
+    if (license.isEmpty())
+    {}
     // License as URL, use as-is
-    if (license.contains("://"))
+    else if (license.contains("://"))
     {}
     // License contains quotes, use as-is
     else if (license.contains('"'))

@@ -247,16 +247,15 @@ public:
         , fMidiEventCount(0)
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
-        , fCurrentProgram(0)
+        , fCurrentProgram(-1)
+        , fLastFactoryProgram(0)
+        , fProgramCount(fPlugin.getProgramCount())
+        , fFactoryPresetsData(nullptr)
        #endif
        #if DISTRHO_PLUGIN_WANT_STATE
         , fStateCount(fPlugin.getStateCount())
        #endif
-
     {
-        fCurrentPreset.presetName = CFSTR("Default");
-        fCurrentPreset.presetNumber = 0;
-
 	    if (fParameterCount != 0)
         {
             fLastParameterValues = new float[fParameterCount];
@@ -280,6 +279,33 @@ public:
         std::memset(&fMidiOutputPackets, 0, sizeof(fMidiOutputPackets));
        #endif
 
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (fProgramCount != 0)
+        {
+            fFactoryPresetsData = new AUPreset[fProgramCount];
+            std::memset(fFactoryPresetsData, 0, sizeof(AUPreset) * fProgramCount);
+
+            for (uint32_t i=0; i<fProgramCount; ++i)
+            {
+                fFactoryPresetsData[i].presetNumber = i;
+                fFactoryPresetsData[i].presetName = CFStringCreateWithCString(nullptr,
+                                                                              fPlugin.getProgramName(i),
+                                                                              kCFStringEncodingUTF8);
+            }
+        }
+        else
+        {
+            fFactoryPresetsData = new AUPreset;
+            std::memset(fFactoryPresetsData, 0, sizeof(AUPreset));
+
+            fFactoryPresetsData->presetNumber = 0;
+            fFactoryPresetsData->presetName = CFSTR("Default");
+        }
+       #endif
+
+        fUserPresetData.presetNumber = -1;
+        fUserPresetData.presetName = CFSTR("");
+
        #if DISTRHO_PLUGIN_WANT_STATE
         for (uint32_t i=0; i<fStateCount; ++i)
         {
@@ -298,8 +324,14 @@ public:
 
     ~PluginAU()
     {
-        CFRelease(fCurrentPreset.presetName);
         delete[] fLastParameterValues;
+        CFRelease(fUserPresetData.presetName);
+
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        for (uint32_t i=0; i<fProgramCount; ++i)
+            CFRelease(fFactoryPresetsData[i].presetName);
+        delete[] fFactoryPresetsData;
+       #endif
     }
 
     OSStatus auInitialize()
@@ -450,6 +482,17 @@ public:
             outDataSize = sizeof(AURenderCallbackStruct);
             outWritable = true;
             return noErr;
+
+        case kAudioUnitProperty_FactoryPresets:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_PROGRAMS
+            outDataSize = sizeof(CFArrayRef);
+            outWritable = false;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
 
         case kAudioUnitProperty_HostCallbacks:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -795,6 +838,19 @@ public:
             // TODO
             break;
 
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        case kAudioUnitProperty_FactoryPresets:
+            if (const CFMutableArrayRef presetsRef = CFArrayCreateMutable(nullptr, fProgramCount, nullptr))
+            {
+                for (uint32_t i=0; i<fProgramCount; ++i)
+                    CFArrayAppendValue(presetsRef, &fFactoryPresetsData[i]);
+
+                *static_cast<CFArrayRef*>(outData) = presetsRef;
+                return noErr;
+            }
+            return kAudio_ParamError;
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         case kAudioUnitProperty_HostCallbacks:
             std::memcpy(outData, &fHostCallbackInfo, sizeof(HostCallbackInfo));
@@ -806,7 +862,16 @@ public:
             return noErr;
 
         case kAudioUnitProperty_PresentPreset:
-            std::memcpy(outData, &fCurrentPreset, sizeof(AUPreset));
+           #if DISTRHO_PLUGIN_WANT_PROGRAMS
+            if (fCurrentProgram >= 0)
+            {
+                std::memcpy(outData, &fFactoryPresetsData[fCurrentProgram], sizeof(AUPreset));
+            }
+            else
+           #endif
+            {
+                std::memcpy(outData, &fUserPresetData, sizeof(AUPreset));
+            }
             return noErr;
 
        #if DISTRHO_PLUGIN_HAS_UI
@@ -865,7 +930,7 @@ public:
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case 'DPFo':
-            *static_cast<uint32_t*>(outData) = fCurrentProgram;
+            *static_cast<uint32_t*>(outData) = fLastFactoryProgram;
             return noErr;
        #endif
 
@@ -1136,8 +1201,30 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AUPreset), inDataSize, kAudioUnitErr_InvalidPropertyValue);
             {
-                CFRelease(fCurrentPreset.presetName);
-                std::memcpy(&fCurrentPreset, inData, sizeof(AUPreset));
+                const int32_t presetNumber = static_cast<const AUPreset*>(inData)->presetNumber;
+
+               #if DISTRHO_PLUGIN_WANT_PROGRAMS
+                if (presetNumber >= 0)
+                {
+                    if (fCurrentProgram != presetNumber)
+                    {
+                        fCurrentProgram = presetNumber;
+                        fLastFactoryProgram = presetNumber;
+                        fPlugin.loadProgram(fLastFactoryProgram);
+                        notifyListeners('DPFo', kAudioUnitScope_Global, 0);
+                    }
+                }
+                else
+                {
+                    fCurrentProgram = presetNumber;
+                    CFRelease(fUserPresetData.presetName);
+                    std::memcpy(&fUserPresetData, inData, sizeof(AUPreset));
+                }
+               #else
+                DISTRHO_SAFE_ASSERT_INT_RETURN(presetNumber < 0, presetNumber, kAudioUnitErr_InvalidPropertyValue);
+                CFRelease(fUserPresetData.presetName);
+                std::memcpy(&fUserPresetData, inData, sizeof(AUPreset));
+               #endif
             }
             return noErr;
 
@@ -1573,7 +1660,6 @@ private:
     const AudioUnit fComponent;
 
     // AUv2 related fields
-    AUPreset fCurrentPreset;
     OSStatus fLastRenderError;
     PropertyListeners fPropertyListeners;
     Float64 fSampleRateForInput;
@@ -1601,8 +1687,12 @@ private:
    #endif
 
    #if DISTRHO_PLUGIN_WANT_PROGRAMS
-    uint32_t fCurrentProgram;
+    int32_t fCurrentProgram;
+    uint32_t fLastFactoryProgram;
+    uint32_t fProgramCount;
+    AUPreset* fFactoryPresetsData;
    #endif
+    AUPreset fUserPresetData;
 
    #if DISTRHO_PLUGIN_WANT_STATE
     const uint32_t fStateCount;
@@ -1818,7 +1908,16 @@ private:
             CFRelease(num);
         }
 
-        CFDictionarySetValue(clsInfo, CFSTR(kAUPresetNameKey), fCurrentPreset.presetName);
+       #if DISTRHO_PLUGIN_WANT_PROGRAMS
+        if (fCurrentProgram >= 0)
+        {
+            CFDictionarySetValue(clsInfo, CFSTR(kAUPresetNameKey), fFactoryPresetsData[fCurrentProgram].presetName);
+        }
+        else
+       #endif
+        {
+            CFDictionarySetValue(clsInfo, CFSTR(kAUPresetNameKey), fUserPresetData.presetName);
+        }
 
         if (const CFMutableDictionaryRef data = CFDictionaryCreateMutable(nullptr,
                                                                           0,
@@ -1949,12 +2048,19 @@ private:
         if (CFDictionaryGetValueIfPresent(data, CFSTR("program"), reinterpret_cast<const void**>(&programRef))
             && CFGetTypeID(programRef) == CFNumberGetTypeID())
         {
-            SInt32 program = 0;
-            if (CFNumberGetValue(programRef, kCFNumberSInt32Type, &program) && program >= 0)
+            SInt32 program = -1;
+            if (CFNumberGetValue(programRef, kCFNumberSInt32Type, &program))
             {
                 fCurrentProgram = program;
-                fPlugin.loadProgram(fCurrentProgram);
-                notifyListeners('DPFo', kAudioUnitScope_Global, 0);
+
+                if (program >= 0)
+                {
+                    fLastFactoryProgram = program;
+                    fPlugin.loadProgram(fLastFactoryProgram);
+                    notifyListeners('DPFo', kAudioUnitScope_Global, 0);
+                }
+
+                notifyListeners(kAudioUnitProperty_PresentPreset, kAudioUnitScope_Global, 0);
             }
         }
        #endif

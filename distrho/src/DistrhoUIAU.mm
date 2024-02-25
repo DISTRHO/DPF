@@ -474,6 +474,11 @@ END_NAMESPACE_DISTRHO
     dataSize = sizeof(Float64);
     AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &sampleRate, &dataSize);
 
+   #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
+    const double scaleFactor = [NSScreen mainScreen].backingScaleFactor;
+    inPreferredSize = NSMakeSize(DISTRHO_UI_DEFAULT_WIDTH * scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor);
+   #endif
+
     // create view
     view = [[[COCOA_VIEW_CLASS_NAME alloc] initWithPreferredSize:inPreferredSize] autorelease];
     view->ui = new DPF_UI_AU(component, view, sampleRate, instancePointer);
