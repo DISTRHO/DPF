@@ -270,6 +270,10 @@ public:
             }
         }
 
+        std::memset(&fInputRenderCallback, 0, sizeof(fInputRenderCallback));
+        fInputRenderCallback.inputProc = nullptr;
+        fInputRenderCallback.inputProcRefCon = nullptr;
+
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         std::memset(&fMidiEvents, 0, sizeof(fMidiEvents));
        #endif
@@ -634,6 +638,7 @@ public:
         case kAudioUnitProperty_AudioChannelLayout:
         case kAudioUnitProperty_TailTime:
         case kAudioUnitProperty_SupportedChannelLayoutTags:
+        case kMusicDeviceProperty_DualSchedulingMode:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             return kAudioUnitErr_InvalidProperty;
         }
@@ -833,10 +838,8 @@ public:
             return noErr;
 
         case kAudioUnitProperty_SetRenderCallback:
-            d_stdout("WIP GetProperty(%d:%x:%s, %d:%s, %d, ...)",
-                      inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
-            // TODO
-            break;
+            std::memcpy(outData, &fInputRenderCallback, sizeof(AURenderCallbackStruct));
+            return noErr;
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case kAudioUnitProperty_FactoryPresets:
@@ -1170,9 +1173,7 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AURenderCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            d_stdout("WIP SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)", 
-                     inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
-            // TODO
+            std::memcpy(&fInputRenderCallback, inData, sizeof(AURenderCallbackStruct));
             return noErr;
 
         case kAudioUnitProperty_HostCallbacks:
@@ -1229,10 +1230,10 @@ public:
             return noErr;
 
         case kAudioUnitProperty_MIDIOutputCallback:
-          #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AUMIDIOutputCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+           #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
             std::memcpy(&fMidiOutput, inData, sizeof(AUMIDIOutputCallbackStruct));
             return noErr;
            #else
@@ -1362,6 +1363,10 @@ public:
            #else
             return kAudioUnitErr_PropertyNotInUse;
            #endif
+
+        // unwanted properties
+        case kMusicDeviceProperty_DualSchedulingMode:
+            return kAudioUnitErr_InvalidProperty;
         }
 
         d_stdout("TODO SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)",
@@ -1662,6 +1667,7 @@ private:
     // AUv2 related fields
     OSStatus fLastRenderError;
     PropertyListeners fPropertyListeners;
+    AURenderCallbackStruct fInputRenderCallback;
     Float64 fSampleRateForInput;
    #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     Float64 fSampleRateForOutput;

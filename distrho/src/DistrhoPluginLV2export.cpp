@@ -1003,8 +1003,10 @@ void lv2_generate_ttl(const char* const basename)
         {
             const String license(plugin.getLicense());
 
+            if (license.isEmpty())
+            {}
             // Using URL as license
-            if (license.contains("://"))
+            else if (license.contains("://"))
             {
                 pluginString += "    doap:license <" +  license + "> ;\n\n";
             }
