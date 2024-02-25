@@ -122,7 +122,11 @@ void d_debug(const char* const fmt, ...) noexcept
     try {
         va_list args;
         va_start(args, fmt);
+       #ifdef DISTRHO_OS_MAC
+        std::fprintf(stdout, "\x1b[37;1m");
+       #else
         std::fprintf(stdout, "\x1b[30;1m");
+       #endif
         std::vfprintf(stdout, fmt, args);
         std::fprintf(stdout, "\x1b[0m\n");
         va_end(args);

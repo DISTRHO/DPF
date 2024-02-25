@@ -314,15 +314,19 @@ private:
         static_cast<DPF_UI_AU*>(ptr)->editParameter(rindex, started);
     }
 
-    void setParameterValue(const uint32_t rindex, const float value)
+    // ----------------------------------------------------------------------------------------------------------------
+
+    void setParameter(const uint32_t rindex, const float value)
     {
         AudioUnitSetProperty(fComponent, 'DPFp', kAudioUnitScope_Global, rindex, &value, sizeof(float));
     }
 
     static void setParameterCallback(void* const ptr, const uint32_t rindex, const float value)
     {
-        static_cast<DPF_UI_AU*>(ptr)->setParameterValue(rindex, value);
+        static_cast<DPF_UI_AU*>(ptr)->setParameter(rindex, value);
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
 
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
@@ -344,6 +348,8 @@ private:
     }
    #endif
 
+    // ----------------------------------------------------------------------------------------------------------------
+
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void sendNote(const uint8_t channel, const uint8_t note, const uint8_t velocity)
     {
@@ -359,6 +365,8 @@ private:
         static_cast<DPF_UI_AU*>(ptr)->sendNote(channel, note, velocity);
     }
    #endif
+
+    // ----------------------------------------------------------------------------------------------------------------
 
     void setSize(const uint width, const uint height)
     {

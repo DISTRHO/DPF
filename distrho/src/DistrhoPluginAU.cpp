@@ -1213,7 +1213,6 @@ public:
 
                 fPlugin.setState(key, value);
 
-                CFRelease(valueRef);
                 std::free(value);
             }
             return noErr;
