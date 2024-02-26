@@ -155,20 +155,12 @@ public:
 
     void postSetup()
     {
-        if (fUI.isResizable())
-        {
-            // [view setAutoresizingMask:NSViewNotSizable];
-            [fParentView setAutoresizesSubviews:YES];
-        }
-        else
-        {
-            [fParentView setAutoresizingMask:NSViewNotSizable];
-            [fParentView setAutoresizesSubviews:NO];
-        }
+        const NSSize size = NSMakeSize(fUI.getWidth(), fUI.getHeight());
+        NSView* const uiView = reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
 
-        // NSView* const uiView = reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
-
-        [fParentView setFrameSize:NSMakeSize(fUI.getWidth(), fUI.getHeight())];
+        [fParentView setAutoresizesSubviews:fUI.isResizable()];
+        [fParentView setFrameSize:size];
+        [uiView setFrameSize:size];
     }
 
 private:

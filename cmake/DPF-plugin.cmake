@@ -561,8 +561,13 @@ function(dpf__build_au NAME HAS_UI)
   dpf__add_ui_main("${NAME}-au" "au" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-au" "au")
   find_library(APPLE_AUDIOTOOLBOX_FRAMEWORK "AudioToolbox")
+  find_library(APPLE_COREFOUNDATION_FRAMEWORK "CoreFoundation")
   target_compile_options("${NAME}-au" PRIVATE "-ObjC++")
-  target_link_libraries("${NAME}-au" PRIVATE "${NAME}-dsp" "${NAME}-ui" "${APPLE_AUDIOTOOLBOX_FRAMEWORK}")
+  target_link_libraries("${NAME}-au" PRIVATE
+    "${NAME}-dsp"
+    "${NAME}-ui"
+    "${APPLE_AUDIOTOOLBOX_FRAMEWORK}"
+    "${APPLE_COREFOUNDATION_FRAMEWORK}")
   set_target_properties("${NAME}-au" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents/MacOS/$<0:>"
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/au/$<0:>"

@@ -22,7 +22,7 @@
 #include "DistrhoPluginInternal.hpp"
 #include "../DistrhoPluginUtils.hpp"
 
-#if DISTRHO_PLUGIN_HAS_UI
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
 # include "../extra/RingBuffer.hpp"
 #endif
 
@@ -239,6 +239,9 @@ static constexpr const requestParameterValueChangeFunc requestParameterValueChan
 #if ! DISTRHO_PLUGIN_WANT_STATE
 static constexpr const updateStateValueFunc updateStateValueCallback = nullptr;
 #endif
+#if DISTRHO_PLUGIN_WANT_TIMEPOS
+static constexpr const double kDefaultTicksPerBeat = 1920.0;
+#endif
 
 typedef std::map<const String, String> StringMap;
 
@@ -352,9 +355,7 @@ public:
 
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         std::memset(&fHostCallbackInfo, 0, sizeof(fHostCallbackInfo));
-
-        // ticksPerBeat is not possible with AU
-        fTimePosition.bbt.ticksPerBeat = 1920.0;
+        fTimePosition.bbt.ticksPerBeat = kDefaultTicksPerBeat;
        #endif
     }
 
@@ -384,6 +385,7 @@ public:
        #endif
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         fTimePosition.clear();
+        fTimePosition.bbt.ticksPerBeat = kDefaultTicksPerBeat;
        #endif
         return noErr;
     }
@@ -1578,6 +1580,7 @@ public:
        #endif
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         fTimePosition.clear();
+        fTimePosition.bbt.ticksPerBeat = kDefaultTicksPerBeat;
        #endif
         return noErr;
     }
@@ -1936,12 +1939,13 @@ private:
             Float32 f1 = 4.f; // initial value for beats per bar
             Float64 g1 = 0.0;
             Float64 g2 = 0.0;
-            UInt32 u1 = 0.0;
+            UInt32 u1 = 0;
 
             if (fHostCallbackInfo.musicalTimeLocationProc != nullptr
                 && fHostCallbackInfo.musicalTimeLocationProc(fHostCallbackInfo.hostUserData,
                                                              nullptr, &f1, &u1, nullptr) == noErr)
             {
+                f1 /= u1;
                 fTimePosition.bbt.beatsPerBar = f1;
                 fTimePosition.bbt.beatType    = u1;
             }
@@ -1984,7 +1988,7 @@ private:
                 fTimePosition.frame = 0;
             }
 
-            fTimePosition.bbt.barStartTick = fTimePosition.bbt.ticksPerBeat *
+            fTimePosition.bbt.barStartTick = kDefaultTicksPerBeat *
                                              fTimePosition.bbt.beatsPerBar *
                                              (fTimePosition.bbt.bar - 1);
 
