@@ -43,25 +43,6 @@
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// Check that symbol macros are well defined
-
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-
-#ifdef DISTRHO_PLUGIN_AU_TYPE
-static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_AU_TYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_TYPE has incorrect length");
-#endif
-
-#ifdef DISTRHO_PLUGIN_BRAND_ID
-static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID)) == 5, "The macro DISTRHO_PLUGIN_BRAND_ID has incorrect length");
-#endif
-
-#ifdef DISTRHO_PLUGIN_UNIQUE_ID
-static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTRHO_PLUGIN_UNIQUE_ID has incorrect length");
-#endif
-
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
 // Define optional macros if not done yet
 
 #ifndef DISTRHO_PLUGIN_HAS_UI
@@ -127,25 +108,6 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 
 #ifndef DISTRHO_UI_USE_NANOVG
 # define DISTRHO_UI_USE_NANOVG 0
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// Define DISTRHO_PLUGIN_AU_TYPE if needed
-
-#ifndef DISTRHO_PLUGIN_AU_TYPE
-# if DISTRHO_PLUGIN_IS_SYNTH
-#  define DISTRHO_PLUGIN_AU_TYPE aumu /* kAudioUnitType_MusicDevice */
-# elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-#  define DISTRHO_PLUGIN_AU_TYPE aumf /* kAudioUnitType_MusicEffect */
-# elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-#  define DISTRHO_PLUGIN_AU_TYPE aumu /* kAudioUnitType_MusicDevice */
-# elif DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-#  define DISTRHO_PLUGIN_AU_TYPE aumi /* kAudioUnitType_MIDIProcessor */
-# elif DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-#  define DISTRHO_PLUGIN_AU_TYPE augn /* kAudioUnitType_Generator */
-# else
-#  define DISTRHO_PLUGIN_AU_TYPE aufx /* kAudioUnitType_Effect */
-# endif
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -245,6 +207,47 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 
 #ifndef DISTRHO_UI_USE_CUSTOM
 # define DISTRHO_UI_USE_CUSTOM 0
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Define DISTRHO_PLUGIN_AU_TYPE if needed
+
+#ifndef DISTRHO_PLUGIN_AU_TYPE
+# if (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+#  define DISTRHO_PLUGIN_AU_TYPE aumf /* kAudioUnitType_MusicEffect */
+# elif (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT) && DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+#  define DISTRHO_PLUGIN_AU_TYPE aumu /* kAudioUnitType_MusicDevice */
+# elif DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+#  define DISTRHO_PLUGIN_AU_TYPE aumi /* kAudioUnitType_MIDIProcessor */
+# elif DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+#  define DISTRHO_PLUGIN_AU_TYPE augn /* kAudioUnitType_Generator */
+# else
+#  define DISTRHO_PLUGIN_AU_TYPE aufx /* kAudioUnitType_Effect */
+# endif
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Check that symbol macros are well defined
+
+#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+
+#ifdef DISTRHO_PLUGIN_AU_TYPE
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_AU_TYPE)) == 5, "The macro DISTRHO_PLUGIN_AU_TYPE has incorrect length");
+# if DISTRHO_PLUGIN_NUM_INPUTS == 0 || DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+static constexpr const char _aut[5] = STRINGIFY(DISTRHO_PLUGIN_AU_TYPE);
+static_assert(_aut[0] != 'a' || _aut[0] != 'u' || _aut[0] != 'm' || _aut[0] != 'u',
+              "The 'aumu' type requires both audio input and output");
+# endif
+#endif
+
+#ifdef DISTRHO_PLUGIN_BRAND_ID
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID)) == 5, "The macro DISTRHO_PLUGIN_BRAND_ID has incorrect length");
+#endif
+
+#ifdef DISTRHO_PLUGIN_UNIQUE_ID
+static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTRHO_PLUGIN_UNIQUE_ID has incorrect length");
+#endif
+
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
