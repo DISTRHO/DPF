@@ -458,13 +458,13 @@ END_NAMESPACE_DISTRHO
    #endif
 
     // fetch current sample rate
-   #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-    scope = kAudioUnitScope_Output;
-   #else
-    scope = kAudioUnitScope_Input;
-   #endif
+   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+    dataSize = sizeof(Float64);
+    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScopeInput, 0, &sampleRate, &dataSize);
+   #elif DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     dataSize = sizeof(Float64);
     AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &sampleRate, &dataSize);
+   #endif
 
    #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
     const double scaleFactor = [NSScreen mainScreen].backingScaleFactor;
