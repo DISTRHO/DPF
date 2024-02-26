@@ -293,8 +293,6 @@ public:
         , fStateCount(fPlugin.getStateCount())
        #endif
     {
-        const uint32_t bufferSize = fPlugin.getBufferSize();
-
 	    if (fParameterCount != 0)
         {
             fLastParameterValues = new float[fParameterCount];
@@ -316,6 +314,8 @@ public:
        #endif
 
        #if DPF_AU_NUM_BUFFERS != 0
+        const uint32_t bufferSize = fPlugin.getBufferSize();
+
         fAudioBufferList.mNumberBuffers = DPF_AU_NUM_BUFFERS;
 
         for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
@@ -1109,7 +1109,9 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(Float64), inDataSize, kAudioUnitErr_InvalidPropertyValue);
             {
+               #if DISTRHO_PLUGIN_NUM_INPUTS != 0 || DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 const Float64 sampleRate = *static_cast<const Float64*>(inData);
+               #endif
 
                #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
@@ -1887,7 +1889,9 @@ private:
    #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     Float64 fSampleRateForOutput;
    #endif
+   #if DPF_AU_NUM_BUFFERS != 0
     d_AudioBufferList fAudioBufferList;
+   #endif
     bool fUsingRenderListeners;
 
     // Caching
