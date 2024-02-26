@@ -431,15 +431,22 @@ public:
             return noErr;
 
         case kAudioUnitProperty_SampleRate:
-           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #else
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-            outDataSize = sizeof(Float64);
-            outWritable = true;
-            return noErr;
+            if (inScope == kAudioUnitScope_Input)
+            {
+                outDataSize = sizeof(Float64);
+                outWritable = true;
+                return noErr;
+            }
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            if (inScope == kAudioUnitScope_Output)
+            {
+                outDataSize = sizeof(Float64);
+                outWritable = true;
+                return noErr;
+            }
+           #endif
+            return kAudioUnitErr_InvalidScope;
 
         case kAudioUnitProperty_ParameterList:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -1062,10 +1069,10 @@ public:
             return noErr;
 
         case kAudioUnitProperty_SampleRate:
-           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #else
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
            #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(Float64), inDataSize, kAudioUnitErr_InvalidPropertyValue);
@@ -1113,10 +1120,10 @@ public:
             return kAudioUnitErr_InvalidScope;
 
         case kAudioUnitProperty_StreamFormat:
-           #if DISTRHO_PLUGIN_NUM_INPUTS == 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
-           #else
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input || inScope == kAudioUnitScope_Output, inScope, kAudioUnitErr_InvalidScope);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
            #endif
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AudioStreamBasicDescription), inDataSize, kAudioUnitErr_InvalidPropertyValue);
