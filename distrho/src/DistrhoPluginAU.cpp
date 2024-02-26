@@ -44,6 +44,14 @@ START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
+#ifndef __MAC_12_3
+enum {
+    kAudioUnitProperty_MIDIOutputBufferSizeHint = 66,
+};
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
 static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexcept
 {
     switch (prop)
