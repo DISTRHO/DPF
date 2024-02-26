@@ -335,9 +335,13 @@ public:
             for (uint32_t i=0; i<fProgramCount; ++i)
             {
                 fFactoryPresetsData[i].presetNumber = i;
-                fFactoryPresetsData[i].presetName = CFStringCreateWithCString(nullptr,
-                                                                              fPlugin.getProgramName(i),
-                                                                              kCFStringEncodingUTF8);
+
+                if (const CFStringRef nameRef = CFStringCreateWithCString(nullptr,
+                                                                          fPlugin.getProgramName(i),
+                                                                          kCFStringEncodingUTF8))
+                    fFactoryPresetsData[i].presetName = nameRef;
+                else
+                    fFactoryPresetsData[i].presetName = CFSTR("");
             }
         }
         else
