@@ -460,7 +460,7 @@ END_NAMESPACE_DISTRHO
     // fetch current sample rate
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     dataSize = sizeof(Float64);
-    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScopeInput, 0, &sampleRate, &dataSize);
+    AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Input, 0, &sampleRate, &dataSize);
    #elif DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     dataSize = sizeof(Float64);
     AudioUnitGetProperty(component, kAudioUnitProperty_SampleRate, kAudioUnitScope_Output, 0, &sampleRate, &dataSize);
@@ -485,6 +485,9 @@ END_NAMESPACE_DISTRHO
     }
 
     return view;
+
+    // maybe unused
+    (void)scope;
 }
 
 @end

@@ -211,7 +211,9 @@ public:
           #endif
            const bool isFloating)
         : fPlugin(plugin),
+         #if DISTRHO_PLUGIN_WANT_STATE
           fPluginEventQueue(eventQueue),
+         #endif
           fEventQueue(eventQueue->fEventQueue),
           fCachedParameters(eventQueue->fCachedParameters),
          #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -534,7 +536,9 @@ public:
 private:
     // Plugin and UI
     PluginExporter& fPlugin;
+   #if DISTRHO_PLUGIN_WANT_STATE
     ClapEventQueue* const fPluginEventQueue;
+   #endif
     ClapEventQueue::Queue& fEventQueue;
     ClapEventQueue::CachedParameters& fCachedParameters;
    #if DISTRHO_PLUGIN_WANT_PROGRAMS
