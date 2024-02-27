@@ -2001,7 +2001,6 @@ private:
                 && fHostCallbackInfo.musicalTimeLocationProc(fHostCallbackInfo.hostUserData,
                                                              nullptr, &f1, &u1, nullptr) == noErr)
             {
-                f1 /= u1;
                 fTimePosition.bbt.beatsPerBar = f1;
                 fTimePosition.bbt.beatType    = u1;
             }
