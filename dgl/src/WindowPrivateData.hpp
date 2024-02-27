@@ -60,7 +60,10 @@ struct Window::PrivateData : IdleCallback {
     /** Whether this Window is embed into another (usually not DGL-controlled) Window. */
     const bool isEmbed;
 
-    /** Whether to ignore resize requests and feed them into the host instead. used for VST3 */
+    /** Whether to schedule repaints on the next idle call, used for AU */
+    const bool usesScheduledRepaints;
+
+    /** Whether to ignore resize requests and feed them into the host instead, used for CLAP and VST3 */
     const bool usesSizeRequest;
 
     /** Scale factor to report to widgets on request, purely informational. */
@@ -131,7 +134,8 @@ struct Window::PrivateData : IdleCallback {
 
     /** Constructor for an embed Window, with a few extra hints from the host side. */
     explicit PrivateData(Application& app, Window* self, uintptr_t parentWindowHandle,
-                         uint width, uint height, double scaling, bool resizable, bool isVST3);
+                         uint width, uint height, double scaling, bool resizable,
+                         bool usesScheduledRepaints, bool usesSizeRequest);
 
     /** Destructor. */
     ~PrivateData() override;

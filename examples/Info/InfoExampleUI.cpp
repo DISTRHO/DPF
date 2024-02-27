@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -38,13 +38,23 @@ public:
         std::memset(fParameters, 0, sizeof(float)*kParameterCount);
         std::memset(fStrBuf, 0, sizeof(char)*(0xff+1));
 
-#ifdef DGL_NO_SHARED_RESOURCES
+       #ifdef DGL_NO_SHARED_RESOURCES
         createFontFromFile("sans", "/usr/share/fonts/truetype/ttf-dejavu/DejaVuSans.ttf");
-#else
+       #else
         loadSharedResources();
-#endif
+       #endif
 
-        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
+        if (d_isNotEqual(fScaleFactor, 1.0))
+        {
+            const uint width = DISTRHO_UI_DEFAULT_WIDTH * fScaleFactor;
+            const uint height = DISTRHO_UI_DEFAULT_HEIGHT * fScaleFactor;
+            setGeometryConstraints(width, height, true);
+            setSize(width, height);
+        }
+        else
+        {
+            setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
+        }
 
         // no need to show resize handle if window is user-resizable
         if (fResizable)

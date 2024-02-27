@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -43,13 +43,19 @@
 # define DISTRHO_UI_IS_STANDALONE 0
 #endif
 
+#if defined(DISTRHO_PLUGIN_TARGET_AU)
+# define DISTRHO_UI_USES_SCHEDULED_REPAINTS true
+#else
+# define DISTRHO_UI_USES_SCHEDULED_REPAINTS false
+#endif
+
 #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
 # define DISTRHO_UI_USES_SIZE_REQUEST true
 #else
 # define DISTRHO_UI_USES_SIZE_REQUEST false
 #endif
 
-#ifdef DISTRHO_PLUGIN_TARGET_VST2
+#if defined(DISTRHO_PLUGIN_TARGET_AU) || defined(DISTRHO_PLUGIN_TARGET_VST2)
 # undef DISTRHO_UI_USER_RESIZABLE
 # define DISTRHO_UI_USER_RESIZABLE 0
 #endif
@@ -103,6 +109,7 @@ struct PluginApplication
     void idle() {}
     void quit() {}
     void triggerIdleCallbacks() {}
+    void repaintIfNeeeded() {}
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
 };
@@ -135,6 +142,11 @@ public:
     void triggerIdleCallbacks()
     {
         pData->triggerIdleCallbacks();
+    }
+
+    void repaintIfNeeeded()
+    {
+        pData->repaintIfNeeeded();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
@@ -194,7 +206,10 @@ public:
                           const uint height,
                           const double scaleFactor)
         : Window(app, parentWindowHandle, width, height, scaleFactor,
-                 DISTRHO_UI_USER_RESIZABLE, DISTRHO_UI_USES_SIZE_REQUEST, false),
+                 DISTRHO_UI_USER_RESIZABLE,
+                 DISTRHO_UI_USES_SCHEDULED_REPAINTS,
+                 DISTRHO_UI_USES_SIZE_REQUEST,
+                 false),
           ui(uiPtr),
           initializing(true),
           receivedReshapeDuringInit(false)

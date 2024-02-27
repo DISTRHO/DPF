@@ -155,12 +155,17 @@ public:
 
     void postSetup()
     {
-        const NSSize size = NSMakeSize(fUI.getWidth(), fUI.getHeight());
+        const double scaleFactor = fUI.getScaleFactor();
+        const NSSize size = NSMakeSize(fUI.getWidth() / scaleFactor, fUI.getHeight() / scaleFactor);
         NSView* const uiView = reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
 
-        [fParentView setAutoresizesSubviews:fUI.isResizable()];
-        [fParentView setFrameSize:size];
+        for (NSView* subview in [uiView subviews])
+        {
+            [subview setFrameSize:size];
+            break;
+        }
         [uiView setFrameSize:size];
+        [fParentView setFrameSize:size];
     }
 
 private:
@@ -362,7 +367,8 @@ private:
 
     void setSize(const uint width, const uint height)
     {
-        [fParentView setFrameSize:NSMakeSize(width, height)];
+        const double scaleFactor = fUI.getScaleFactor();
+        [fParentView setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
     }
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
@@ -396,7 +402,7 @@ END_NAMESPACE_DISTRHO
 
 - (id) initWithPreferredSize:(NSSize)size
 {
-	self = [super initWithFrame: NSMakeRect (0, 0, size.width, size.height)];
+	self = [super initWithFrame: NSMakeRect(0, 0, size.width, size.height)];
     [self setHidden:NO];
     return self;
 }
@@ -467,8 +473,7 @@ END_NAMESPACE_DISTRHO
    #endif
 
    #if defined(DISTRHO_UI_DEFAULT_WIDTH) && defined(DISTRHO_UI_DEFAULT_HEIGHT)
-    const double scaleFactor = [NSScreen mainScreen].backingScaleFactor;
-    inPreferredSize = NSMakeSize(DISTRHO_UI_DEFAULT_WIDTH * scaleFactor, DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor);
+    inPreferredSize = NSMakeSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT);
    #endif
 
     // create view

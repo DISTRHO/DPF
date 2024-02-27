@@ -545,6 +545,7 @@ private:
                     uint height,
                     double scaleFactor,
                     bool resizable,
+                    bool usesScheduledRepaints,
                     bool usesSizeRequest,
                     bool doPostInit);
 

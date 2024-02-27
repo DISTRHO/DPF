@@ -23,6 +23,7 @@
 
 START_NAMESPACE_DGL
 
+typedef std::list<DGL_NAMESPACE::Window*>::iterator WindowListIterator;
 typedef std::list<DGL_NAMESPACE::Window*>::reverse_iterator WindowListReverseIterator;
 
 static d_ThreadHandle getCurrentThreadHandle() noexcept
@@ -59,6 +60,7 @@ Application::PrivateData::PrivateData(const bool standalone)
       isQuitting(false),
       isQuittingInNextCycle(false),
       isStarting(true),
+      needsRepaint(false),
       visibleWindows(0),
       mainThreadHandle(getCurrentThreadHandle()),
       windows(),
@@ -141,6 +143,20 @@ void Application::PrivateData::triggerIdleCallbacks()
     {
         IdleCallback* const idleCallback(*it);
         idleCallback->idleCallback();
+    }
+}
+
+void Application::PrivateData::repaintIfNeeeded()
+{
+    if (needsRepaint)
+    {
+        needsRepaint = false;
+
+        for (WindowListIterator it = windows.begin(), ite = windows.end(); it != ite; ++it)
+        {
+            DGL_NAMESPACE::Window* const window(*it);
+            window->repaint();
+        }
     }
 }
 

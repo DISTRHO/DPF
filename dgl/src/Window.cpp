@@ -106,7 +106,7 @@ Window::Window(Application& app,
                const uint height,
                const double scaleFactor,
                const bool resizable)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable, false))
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable, false, false))
 {
     pData->initPost();
 }
@@ -117,9 +117,11 @@ Window::Window(Application& app,
                const uint height,
                const double scaleFactor,
                const bool resizable,
-               const bool isVST3,
+               const bool usesScheduledRepaints,
+               const bool usesSizeRequest,
                const bool doPostInit)
-    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable, isVST3))
+    : pData(new PrivateData(app, this, parentWindowHandle, width, height, scaleFactor, resizable,
+                            usesScheduledRepaints, usesSizeRequest))
 {
     if (doPostInit)
         pData->initPost();
@@ -411,14 +413,22 @@ bool Window::openFileBrowser(const FileBrowserOptions& options)
 
 void Window::repaint() noexcept
 {
-    if (pData->view != nullptr)
-        puglPostRedisplay(pData->view);
+    if (pData->view == nullptr)
+        return;
+
+    if (pData->usesScheduledRepaints)
+        pData->appData->needsRepaint = true;
+
+    puglPostRedisplay(pData->view);
 }
 
 void Window::repaint(const Rectangle<uint>& rect) noexcept
 {
     if (pData->view == nullptr)
         return;
+
+    if (pData->usesScheduledRepaints)
+        pData->appData->needsRepaint = true;
 
     PuglRect prect = {
         static_cast<PuglCoord>(rect.getX()),

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -232,6 +232,7 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, );
 
         ui->uiIdle();
+        uiData->app.repaintIfNeeeded();
     }
 
     void showAndFocus()
@@ -247,6 +248,7 @@ public:
 
         uiData->app.idle();
         ui->uiIdle();
+        uiData->app.repaintIfNeeeded();
         return ! uiData->app.isQuitting();
     }
 
@@ -277,6 +279,7 @@ public:
 
         uiData->app.triggerIdleCallbacks();
         ui->uiIdle();
+        uiData->app.repaintIfNeeeded();
     }
 
    #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
