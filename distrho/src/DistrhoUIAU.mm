@@ -157,15 +157,9 @@ public:
     {
         const double scaleFactor = fUI.getScaleFactor();
         const NSSize size = NSMakeSize(fUI.getWidth() / scaleFactor, fUI.getHeight() / scaleFactor);
-        NSView* const uiView = reinterpret_cast<NSView*>(fUI.getNativeWindowHandle());
 
-        for (NSView* subview in [uiView subviews])
-        {
-            [subview setFrameSize:size];
-            break;
-        }
-        [uiView setFrameSize:size];
         [fParentView setFrameSize:size];
+        [fParentView setHidden:NO];
     }
 
 private:
@@ -368,7 +362,9 @@ private:
     void setSize(const uint width, const uint height)
     {
         const double scaleFactor = fUI.getScaleFactor();
-        [fParentView setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
+        const NSSize size = NSMakeSize(width / scaleFactor, height / scaleFactor);
+
+        [fParentView setFrameSize:size];
     }
 
     static void setSizeCallback(void* const ptr, const uint width, const uint height)
@@ -402,8 +398,9 @@ END_NAMESPACE_DISTRHO
 
 - (id) initWithPreferredSize:(NSSize)size
 {
-	self = [super initWithFrame: NSMakeRect(0, 0, size.width, size.height)];
-    [self setHidden:NO];
+    ui = nullptr;
+    self = [super initWithFrame: NSMakeRect(0, 0, size.width, size.height)];
+    [self setHidden:YES];
     return self;
 }
 

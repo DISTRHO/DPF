@@ -432,7 +432,7 @@ void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
 
-   #if !(defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP))
+   #if ! DISTRHO_UI_USES_SIZE_REQUEST
     if (uiData->initializing)
         return;
 
@@ -442,10 +442,10 @@ void UI::onResize(const ResizeEvent& ev)
    #endif
 }
 
-// NOTE: only used for VST3 and CLAP
+// NOTE: only used for CLAP and VST3
 void UI::requestSizeChange(const uint width, const uint height)
 {
-   #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+   #if DISTRHO_UI_USES_SIZE_REQUEST
     if (uiData->initializing)
         uiData->window->setSizeFromHost(width, height);
     else

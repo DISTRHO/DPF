@@ -44,15 +44,15 @@
 #endif
 
 #if defined(DISTRHO_PLUGIN_TARGET_AU)
-# define DISTRHO_UI_USES_SCHEDULED_REPAINTS true
+# define DISTRHO_UI_USES_SCHEDULED_REPAINTS 1
 #else
-# define DISTRHO_UI_USES_SCHEDULED_REPAINTS false
+# define DISTRHO_UI_USES_SCHEDULED_REPAINTS 0
 #endif
 
-#if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
-# define DISTRHO_UI_USES_SIZE_REQUEST true
+#if defined(DISTRHO_PLUGIN_TARGET_CLAP) || defined(DISTRHO_PLUGIN_TARGET_VST3)
+# define DISTRHO_UI_USES_SIZE_REQUEST 1
 #else
-# define DISTRHO_UI_USES_SIZE_REQUEST false
+# define DISTRHO_UI_USES_SIZE_REQUEST 0
 #endif
 
 #if defined(DISTRHO_PLUGIN_TARGET_AU) || defined(DISTRHO_PLUGIN_TARGET_VST2)
@@ -234,11 +234,15 @@ public:
         if (pData->view == nullptr)
             return;
 
-        if (receivedReshapeDuringInit)
-            ui->uiReshape(getWidth(), getHeight());
-
         initializing = false;
         puglBackendLeave(pData->view);
+
+        if (receivedReshapeDuringInit)
+        {
+            puglBackendEnter(pData->view);
+            ui->uiReshape(getWidth(), getHeight());
+            puglBackendLeave(pData->view);
+        }
     }
 
     // used for temporary windows (VST/CLAP get size without active/visible view)
@@ -254,7 +258,7 @@ public:
             puglBackendEnter(pData->view);
     }
 
-   #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+   #if DISTRHO_UI_USES_SIZE_REQUEST
     void setSizeFromHost(const uint width, const uint height)
     {
         puglSetSizeAndDefault(pData->view, width, height);
@@ -310,9 +314,9 @@ protected:
         ui->uiScaleFactorChanged(scaleFactor);
     }
 
-# if DISTRHO_UI_FILE_BROWSER
+   #if DISTRHO_UI_FILE_BROWSER
     void onFileSelected(const char* filename) override;
-# endif
+   #endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };

@@ -307,7 +307,7 @@ public:
        #endif
     }
 
-   #if defined(DISTRHO_PLUGIN_TARGET_VST3) || defined(DISTRHO_PLUGIN_TARGET_CLAP)
+   #if DISTRHO_UI_USES_SIZE_REQUEST
     void setWindowSizeFromHost(const uint width, const uint height)
     {
        #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
