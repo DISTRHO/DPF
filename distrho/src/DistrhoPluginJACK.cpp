@@ -234,20 +234,26 @@ public:
 
         std::fflush(stdout);
 
-#if DISTRHO_PLUGIN_HAS_UI
-        if (const char* const name = jackbridge_get_client_name(fClient))
-            fUI.setWindowTitle(name);
-        else
-            fUI.setWindowTitle(fPlugin.getName());
+       #if DISTRHO_PLUGIN_HAS_UI
+        String title(fPlugin.getMaker());
 
+        if (title.isNotEmpty())
+            title += ": ";
+
+        if (const char* const name = jackbridge_get_client_name(fClient))
+            title += name;
+        else
+            title += fPlugin.getName();
+
+        fUI.setWindowTitle(title);
         fUI.exec(this);
-#else
+       #else
         while (! gCloseSignalReceived)
             d_sleep(1);
 
         // unused
         (void)winId;
-#endif
+       #endif
     }
 
     ~PluginJack()
