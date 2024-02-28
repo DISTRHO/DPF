@@ -2,8 +2,15 @@
 
 set -e
 
+DPF_UTILS_DIR="$(dirname $(realpath ${0}))"
+
+# can be overridden by environment variables
+WELCOME_TXT=${WELCOME_TXT:=${DPF_UTILS_DIR}/plugin.pkg/welcome.txt.in}
+
 if [ -d bin ]; then
   cd bin
+elif [ -d build/bin ]; then
+  cd build/bin
 else
   echo "Please run this script from the root folder"
   exit
@@ -89,11 +96,6 @@ else
 fi
 
 cd ..
-
-DPF_UTILS_DIR=$(dirname ${0})
-
-# can be overridden by environment variables
-WELCOME_TXT=${WELCOME_TXT:=${DPF_UTILS_DIR}/plugin.pkg/welcome.txt.in}
 
 mkdir -p build
 sed -e "s|@name@|${NAME}|" "${WELCOME_TXT}" > build/welcome.txt
