@@ -836,7 +836,7 @@ public:
                 if (fPlugin.getParameterDesignation(inElement) == kParameterDesignationBypass)
                 {
                     info->flags |= kAudioUnitParameterFlag_IsWritable;
-                    info->unit = kAudioUnitParameterUnit_Generic;
+                    info->unit = kAudioUnitParameterUnit_Boolean;
 
                     d_strncpy(info->name, "Bypass", sizeof(info->name));
                     info->cfNameString = CFSTR("Bypass");
