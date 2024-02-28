@@ -200,6 +200,64 @@ static constexpr const uint32_t kType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_AU_TYP
 static constexpr const uint32_t kSubType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID));
 static constexpr const uint32_t kManufacturer = d_cconst(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID));
 
+static constexpr const uint32_t kWantedAudioFormat = kAudioFormatFlagsNativeFloatPacked
+                                                   | kAudioFormatFlagIsNonInterleaved;
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// clang `std::max` is not constexpr compatible, we need to define our own
+
+template<typename T>
+static inline constexpr T d_max(const T a, const T b) { return a > b ? a : b; }
+
+// --------------------------------------------------------------------------------------------------------------------
+
+static constexpr const AUChannelInfo kChannelInfo[] = {
+    { DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS },
+   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+    DISTRHO_PLUGIN_EXTRA_IO
+   #endif
+};
+
+#ifdef DISTRHO_PLUGIN_EXTRA_IO
+#if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS == 0
+#error DISTRHO_PLUGIN_EXTRA_IO defined but no IO available
+#endif
+
+static inline
+bool isInputNumChannelsValid(const uint16_t numChannels)
+{
+    for (uint16_t i = 0; i < ARRAY_SIZE(kChannelInfo); ++i)
+    {
+        if (kChannelInfo[i].inChannels == numChannels)
+            return true;
+    }
+    return false;
+}
+
+static inline
+bool isOutputNumChannelsValid(const uint16_t numChannels)
+{
+    for (uint16_t i = 0; i < ARRAY_SIZE(kChannelInfo); ++i)
+    {
+        if (kChannelInfo[i].outChannels == numChannels)
+            return true;
+    }
+    return false;
+}
+
+static inline
+bool isNumChannelsComboValid(const uint16_t numInputs, const uint16_t numOutputs)
+{
+    for (uint16_t i = 0; i < ARRAY_SIZE(kChannelInfo); ++i)
+    {
+        if (kChannelInfo[i].inChannels == numInputs && kChannelInfo[i].outChannels == numOutputs)
+            return true;
+    }
+    return false;
+}
+#endif
+
 // --------------------------------------------------------------------------------------------------------------------
 
 struct PropertyListener {
@@ -215,25 +273,6 @@ struct RenderListener {
 
 typedef std::vector<PropertyListener> PropertyListeners;
 typedef std::vector<RenderListener> RenderListeners;
-
-// --------------------------------------------------------------------------------------------------------------------
-
-#if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-# if DISTRHO_PLUGIN_NUM_INPUTS > DISTRHO_PLUGIN_NUM_OUTPUTS
-#  define DPF_AU_NUM_BUFFERS DISTRHO_PLUGIN_NUM_INPUTS
-# else
-#  define DPF_AU_NUM_BUFFERS DISTRHO_PLUGIN_NUM_OUTPUTS
-# endif
-#else
-# define DPF_AU_NUM_BUFFERS 0
-#endif
-
-#if DPF_AU_NUM_BUFFERS != 0
-typedef struct {
-    UInt32 mNumberBuffers;
-    AudioBuffer mBuffers[DPF_AU_NUM_BUFFERS];
-} d_AudioBufferList;
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -270,11 +309,22 @@ public:
           fLastRenderError(noErr),
           fPropertyListeners(),
           fRenderListeners(),
-         #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+          fInputConnectionBus(0),
+          fInputConnectionUnit(nullptr),
           fSampleRateForInput(d_nextSampleRate),
+         #ifdef DISTRHO_PLUGIN_EXTRA_IO
+          fNumInputs(DISTRHO_PLUGIN_NUM_INPUTS),
          #endif
-         #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        #endif
+        #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
           fSampleRateForOutput(d_nextSampleRate),
+         #ifdef DISTRHO_PLUGIN_EXTRA_IO
+          fNumOutputs(DISTRHO_PLUGIN_NUM_OUTPUTS),
+         #endif
+        #endif
+         #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+          fAudioBufferList(nullptr),
          #endif
           fUsingRenderListeners(false),
           fParameterCount(fPlugin.getParameterCount()),
@@ -311,19 +361,6 @@ public:
         std::memset(&fInputRenderCallback, 0, sizeof(fInputRenderCallback));
         fInputRenderCallback.inputProc = nullptr;
         fInputRenderCallback.inputProcRefCon = nullptr;
-       #endif
-
-       #if DPF_AU_NUM_BUFFERS != 0
-        const uint32_t bufferSize = fPlugin.getBufferSize();
-
-        fAudioBufferList.mNumberBuffers = DPF_AU_NUM_BUFFERS;
-
-        for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
-        {
-            fAudioBufferList.mBuffers[i].mNumberChannels = 1;
-            fAudioBufferList.mBuffers[i].mData = new float[bufferSize];
-            fAudioBufferList.mBuffers[i].mDataByteSize = sizeof(float) * bufferSize;
-        }
        #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -385,9 +422,8 @@ public:
         delete[] fLastParameterValues;
         CFRelease(fUserPresetData.presetName);
 
-       #if DPF_AU_NUM_BUFFERS != 0
-        for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
-            delete[] static_cast<float*>(fAudioBufferList.mBuffers[i].mData);
+       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        reallocAudioBufferList(false);
        #endif
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -399,7 +435,16 @@ public:
 
     OSStatus auInitialize()
     {
-        fPlugin.activate();
+       #if defined(DISTRHO_PLUGIN_EXTRA_IO) && DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        if (! isNumChannelsComboValid(fNumInputs, fNumOutputs))
+            return kAudioUnitErr_FormatNotSupported;
+       #endif
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        if (! reallocAudioBufferList(true))
+            return kAudio_ParamError;
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fMidiEventCount = 0;
        #endif
@@ -410,12 +455,18 @@ public:
         fTimePosition.clear();
         fTimePosition.bbt.ticksPerBeat = kDefaultTicksPerBeat;
        #endif
+
+        fPlugin.activate();
         return noErr;
     }
 
     OSStatus auUninitialize()
     {
         fPlugin.deactivateIfNeeded();
+
+       #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        reallocAudioBufferList(false);
+       #endif
         return noErr;
     }
 
@@ -435,16 +486,20 @@ public:
             return noErr;
 
         case kAudioUnitProperty_MakeConnection:
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global || inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             outDataSize = sizeof(AudioUnitConnection);
             outWritable = true;
             return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
 
         case kAudioUnitProperty_SampleRate:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
            #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-            if (inScope == kAudioUnitScope_Input && 0)
+            if (inScope == kAudioUnitScope_Input)
             {
                 outDataSize = sizeof(Float64);
                 outWritable = true;
@@ -523,7 +578,7 @@ public:
         case kAudioUnitProperty_SupportedNumChannels:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-            outDataSize = sizeof(AUChannelInfo);
+            outDataSize = sizeof(kChannelInfo);
             outWritable = false;
             return noErr;
 
@@ -587,7 +642,7 @@ public:
         case kAudioUnitProperty_InPlaceProcessing:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
-           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
             outDataSize = sizeof(UInt32);
             outWritable = false;
             return noErr;
@@ -853,14 +908,22 @@ public:
                #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
                 {
+                   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+                    desc->mChannelsPerFrame = fNumInputs;
+                   #else
                     desc->mChannelsPerFrame = DISTRHO_PLUGIN_NUM_INPUTS;
+                   #endif
                 }
                 else
                #endif
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 if (inScope == kAudioUnitScope_Output)
                 {
+                   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+                    desc->mChannelsPerFrame = fNumOutputs;
+                   #else
                     desc->mChannelsPerFrame = DISTRHO_PLUGIN_NUM_OUTPUTS;
+                   #endif
                 }
                 else
                #endif
@@ -869,7 +932,7 @@ public:
                 }
 
                 desc->mFormatID         = kAudioFormatLinearPCM;
-                desc->mFormatFlags      = kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved;
+                desc->mFormatFlags      = kWantedAudioFormat;
                 desc->mSampleRate       = fPlugin.getSampleRate();
                 desc->mBitsPerChannel   = 32;
                 desc->mBytesPerFrame    = sizeof(float);
@@ -903,7 +966,7 @@ public:
        #endif
 
         case kAudioUnitProperty_SupportedNumChannels:
-            *static_cast<AUChannelInfo*>(outData) = { DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS };
+            std::memcpy(outData, kChannelInfo, sizeof(kChannelInfo));
             return noErr;
 
         case kAudioUnitProperty_MaximumFramesPerSlice:
@@ -944,7 +1007,7 @@ public:
             return noErr;
        #endif
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
         case kAudioUnitProperty_InPlaceProcessing:
             *static_cast<UInt32*>(outData) = 1;
             return noErr;
@@ -1090,13 +1153,56 @@ public:
             return noErr;
 
         case kAudioUnitProperty_MakeConnection:
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global || inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AudioUnitConnection), inDataSize, kAudioUnitErr_InvalidPropertyValue);
-            d_stdout("WIP SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)", 
-                     inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement, inData, inDataSize);
-            // TODO
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+            {
+                const AudioUnitConnection conn = *static_cast<const AudioUnitConnection*>(inData);
+
+                if (conn.sourceAudioUnit == nullptr)
+                {
+                    fInputConnectionBus = 0;
+                    fInputConnectionUnit = nullptr;
+                    return noErr;
+                }
+
+                AudioStreamBasicDescription desc;
+                std::memset(&desc, 0, sizeof(desc));
+                UInt32 dataSize = sizeof(AudioStreamBasicDescription);
+                if (AudioUnitGetProperty(conn.sourceAudioUnit,
+                                         kAudioUnitProperty_StreamFormat,
+                                         kAudioUnitScope_Output,
+                                         conn.sourceOutputNumber, &desc, &dataSize) != noErr)
+                    return kAudioUnitErr_InvalidPropertyValue;
+
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mFormatID == kAudioFormatLinearPCM,
+                                               desc.mFormatID, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mBitsPerChannel == 32,
+                                               desc.mBitsPerChannel, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mBytesPerFrame == sizeof(float),
+                                               desc.mBytesPerFrame, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mBytesPerPacket == sizeof(float),
+                                               desc.mBytesPerPacket, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mFramesPerPacket == 1,
+                                               desc.mFramesPerPacket, kAudioUnitErr_FormatNotSupported);
+                DISTRHO_SAFE_ASSERT_INT_RETURN(desc.mFormatFlags == kWantedAudioFormat,
+                                               desc.mFormatFlags, kAudioUnitErr_FormatNotSupported);
+               #ifdef DISTRHO_PLUGIN_EXTRA_IO
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc.mChannelsPerFrame == fNumInputs,
+                                                desc.mChannelsPerFrame, kAudioUnitErr_FormatNotSupported);
+               #else
+                DISTRHO_SAFE_ASSERT_UINT_RETURN(desc.mChannelsPerFrame == DISTRHO_PLUGIN_NUM_INPUTS,
+                                                desc.mChannelsPerFrame, kAudioUnitErr_FormatNotSupported);
+               #endif
+
+                fInputConnectionBus = conn.sourceOutputNumber;
+                fInputConnectionUnit = conn.sourceAudioUnit;
+            }
             return noErr;
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
 
         case kAudioUnitProperty_SampleRate:
            #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
@@ -1155,7 +1261,7 @@ public:
                 }
                #endif
             }
-            return kAudioUnitErr_InvalidScope;
+            return kAudioUnitErr_PropertyNotInUse;
 
         case kAudioUnitProperty_StreamFormat:
            #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
@@ -1180,17 +1286,41 @@ public:
                     return kAudioUnitErr_FormatNotSupported;
                 if (desc->mFramesPerPacket != 1)
                     return kAudioUnitErr_FormatNotSupported;
-                if (desc->mFormatFlags != (kAudioFormatFlagsNativeFloatPacked|kAudioFormatFlagIsNonInterleaved))
+                if (desc->mFormatFlags != kWantedAudioFormat)
                     return kAudioUnitErr_FormatNotSupported;
+
+               #ifndef DISTRHO_PLUGIN_EXTRA_IO
                 if (desc->mChannelsPerFrame != (inScope == kAudioUnitScope_Input ? DISTRHO_PLUGIN_NUM_INPUTS
                                                                                  : DISTRHO_PLUGIN_NUM_OUTPUTS))
                     return kAudioUnitErr_FormatNotSupported;
+               #endif
 
                #if DISTRHO_PLUGIN_NUM_INPUTS != 0
                 if (inScope == kAudioUnitScope_Input)
                 {
+                    bool changed = false;
+
+                   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+                    if (! isInputNumChannelsValid(desc->mChannelsPerFrame))
+                        return kAudioUnitErr_FormatNotSupported;
+
+                    if (fNumInputs != desc->mChannelsPerFrame)
+                    {
+                        changed = true;
+                        fNumInputs = desc->mChannelsPerFrame;
+
+                       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+                        if (isNumChannelsComboValid(fNumInputs, fNumOutputs))
+                       #endif
+                        {
+                            fPlugin.setAudioPortIO(fNumInputs, fNumOutputs);
+                        }
+                    }
+                   #endif
+
                     if (d_isNotEqual(fSampleRateForInput, desc->mSampleRate))
                     {
+                        changed = true;
                         fSampleRateForInput = desc->mSampleRate;
 
                        #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
@@ -1200,9 +1330,12 @@ public:
                             fPlugin.setSampleRate(desc->mSampleRate, true);
                         }
 
-                        notifyPropertyListeners(inProp, inScope, inElement);
                         notifyPropertyListeners(kAudioUnitProperty_SampleRate, inScope, inElement);
                     }
+
+                    if (changed)
+                        notifyPropertyListeners(inProp, inScope, inElement);
+
                     return noErr;
                 }
                #endif
@@ -1210,8 +1343,29 @@ public:
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
                 if (inScope == kAudioUnitScope_Output)
                 {
+                    bool changed = false;
+
+                   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+                    if (! isOutputNumChannelsValid(desc->mChannelsPerFrame))
+                        return kAudioUnitErr_FormatNotSupported;
+
+                    if (fNumOutputs != desc->mChannelsPerFrame)
+                    {
+                        changed = true;
+                        fNumOutputs = desc->mChannelsPerFrame;
+
+                       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+                        if (isNumChannelsComboValid(fNumInputs, fNumOutputs))
+                       #endif
+                        {
+                            fPlugin.setAudioPortIO(fNumInputs, fNumOutputs);
+                        }
+                    }
+                   #endif
+
                     if (d_isNotEqual(fSampleRateForOutput, desc->mSampleRate))
                     {
+                        changed = true;
                         fSampleRateForOutput = desc->mSampleRate;
 
                        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
@@ -1221,14 +1375,17 @@ public:
                             fPlugin.setSampleRate(desc->mSampleRate, true);
                         }
 
-                        notifyPropertyListeners(inProp, inScope, inElement);
                         notifyPropertyListeners(kAudioUnitProperty_SampleRate, inScope, inElement);
                     }
+
+                    if (changed)
+                        notifyPropertyListeners(inProp, inScope, inElement);
+
                     return noErr;
                 }
                #endif
             }
-            return kAudioUnitErr_InvalidScope;
+            return kAudioUnitErr_PropertyNotInUse;
 
         case kAudioUnitProperty_MaximumFramesPerSlice:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1238,18 +1395,7 @@ public:
                 const UInt32 bufferSize = *static_cast<const UInt32*>(inData);
 
                 if (fPlugin.setBufferSize(bufferSize, true))
-                {
                     notifyPropertyListeners(inProp, inScope, inElement);
-
-                   #if DPF_AU_NUM_BUFFERS != 0
-                    for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
-                    {
-                        delete[] static_cast<float*>(fAudioBufferList.mBuffers[i].mData);
-                        fAudioBufferList.mBuffers[i].mData = new float[bufferSize];
-                        fAudioBufferList.mBuffers[i].mDataByteSize = sizeof(float) * bufferSize;
-                    }
-                   #endif
-                }
             }
             return noErr;
 
@@ -1271,14 +1417,16 @@ public:
             }
             return noErr;
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
         case kAudioUnitProperty_SetRenderCallback:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Input, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(AURenderCallbackStruct), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+           #if DISTRHO_PLUGIN_NUM_INPUTS != 0
             std::memcpy(&fInputRenderCallback, inData, sizeof(AURenderCallbackStruct));
             return noErr;
-       #endif
+           #else
+            return kAudioUnitErr_PropertyNotInUse;
+           #endif
 
         case kAudioUnitProperty_HostCallbacks:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
@@ -1470,7 +1618,7 @@ public:
 
         // unwanted properties
         case kMusicDeviceProperty_DualSchedulingMode:
-            return kAudioUnitErr_InvalidProperty;
+            return kAudioUnitErr_PropertyNotInUse;
         }
 
         d_stdout("TODO SetProperty(%d:%x:%s, %d:%s, %d, %p, %u)",
@@ -1548,6 +1696,9 @@ public:
                 return auRemoveRenderNotify(proc, userData);
             }
         }
+
+        if (fRenderListeners.empty())
+            fUsingRenderListeners = false;
 
         return noErr;
     }
@@ -1647,9 +1798,14 @@ public:
     {
         if ((actionFlags & kAudioUnitRenderAction_DoNotCheckRenderArgs) == 0x0)
         {
+            DISTRHO_SAFE_ASSERT_RETURN(fPlugin.isActive(), kAudio_ParamError);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inBusNumber == 0, inBusNumber, kAudioUnitErr_InvalidElement);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(ioData->mNumberBuffers == DPF_AU_NUM_BUFFERS,
+           #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(ioData->mNumberBuffers == fAudioBufferList->mNumberBuffers,
                                             ioData->mNumberBuffers, kAudio_ParamError);
+           #else
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(ioData->mNumberBuffers == 0, ioData->mNumberBuffers, kAudio_ParamError);
+           #endif
 
             if (inFramesToProcess > fPlugin.getBufferSize())
             {
@@ -1657,8 +1813,8 @@ public:
                 return kAudioUnitErr_TooManyFramesToProcess;
             }
 
-           #if DPF_AU_NUM_BUFFERS != 0
-            for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
+           #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            for (uint16_t i = 0; i < ioData->mNumberBuffers; ++i)
             {
                 if (ioData->mBuffers[i].mDataByteSize != sizeof(float) * inFramesToProcess)
                 {
@@ -1669,42 +1825,81 @@ public:
            #endif
         }
 
-       #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-        const float* inputs[DISTRHO_PLUGIN_NUM_INPUTS];
+      #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+       #ifdef DISTRHO_PLUGIN_EXTRA_IO
+        const uint32_t numInputs = fNumInputs;
        #else
+        constexpr const uint32_t numInputs = DISTRHO_PLUGIN_NUM_INPUTS;
+       #endif
+        const float* inputs[numInputs];
+      #else
         constexpr const float** inputs = nullptr;
-       #endif
+      #endif
 
-       #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-        float* outputs[DISTRHO_PLUGIN_NUM_OUTPUTS];
+      #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+       #ifdef DISTRHO_PLUGIN_EXTRA_IO
+        const uint32_t numOutputs = fNumOutputs;
        #else
-        constexpr float** outputs = nullptr;
+        constexpr const uint32_t numOutputs = DISTRHO_PLUGIN_NUM_OUTPUTS;
        #endif
+        float* outputs[numOutputs];
+      #else
+        constexpr float** outputs = nullptr;
+      #endif
 
        #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-        if (fInputRenderCallback.inputProc != nullptr)
+        if (fInputConnectionUnit != nullptr)
+        {
+            AudioUnitRenderActionFlags ioActionFlags = 0;
+            const OSStatus err = AudioUnitRender(fInputConnectionUnit,
+                                                 &ioActionFlags,
+                                                 inTimeStamp,
+                                                 fInputConnectionBus,
+                                                 inFramesToProcess,
+                                                 fAudioBufferList);
+
+            if (err != noErr)
+            {
+                setLastRenderError(err);
+                return err;
+            }
+
+            for (uint16_t i = 0; i < numInputs; ++i)
+                inputs[i] = static_cast<const float*>(fAudioBufferList->mBuffers[i].mData);
+
+           #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+            for (uint16_t i = 0; i < numOutputs; ++i)
+            {
+                if (ioData->mBuffers[i].mData == nullptr)
+                    ioData->mBuffers[i].mData = fAudioBufferList->mBuffers[i].mData;
+
+                outputs[i] = static_cast<float*>(ioData->mBuffers[i].mData);
+            }
+           #endif
+        }
+        else if (fInputRenderCallback.inputProc != nullptr)
         {
             bool adjustDataByteSize, usingHostBuffer = true;
             UInt32 prevDataByteSize;
 
-            for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
+            for (uint16_t i = 0; i < ioData->mNumberBuffers; ++i)
             {
                 if (ioData->mBuffers[i].mData == nullptr)
                 {
                     usingHostBuffer = false;
-                    ioData->mBuffers[i].mData = fAudioBufferList.mBuffers[i].mData;
+                    ioData->mBuffers[i].mData = fAudioBufferList->mBuffers[i].mData;
                 }
             }
 
             if (! usingHostBuffer)
             {
-                prevDataByteSize = fAudioBufferList.mBuffers[0].mDataByteSize;
+                prevDataByteSize = fAudioBufferList->mBuffers[0].mDataByteSize;
                 adjustDataByteSize = prevDataByteSize != sizeof(float) * inFramesToProcess;
 
                 if (adjustDataByteSize)
                 {
-                    for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
-                        fAudioBufferList.mBuffers[i].mDataByteSize = sizeof(float) * inFramesToProcess;
+                    for (uint16_t i = 0; i < ioData->mNumberBuffers; ++i)
+                        fAudioBufferList->mBuffers[i].mDataByteSize = sizeof(float) * inFramesToProcess;
                 }
             }
             else
@@ -1713,7 +1908,7 @@ public:
             }
 
             AudioUnitRenderActionFlags rActionFlags = 0;
-            AudioBufferList* const rData = usingHostBuffer ? ioData : reinterpret_cast<AudioBufferList*>(&fAudioBufferList);
+            AudioBufferList* const rData = usingHostBuffer ? ioData : fAudioBufferList;
             const OSStatus err = fInputRenderCallback.inputProc(fInputRenderCallback.inputProcRefCon,
                                                                 &rActionFlags,
                                                                 inTimeStamp,
@@ -1725,8 +1920,8 @@ public:
             {
                 if (adjustDataByteSize)
                 {
-                    for (uint16_t i=0; i<DPF_AU_NUM_BUFFERS; ++i)
-                        fAudioBufferList.mBuffers[i].mDataByteSize = prevDataByteSize;
+                    for (uint16_t i = 0; i < ioData->mNumberBuffers; ++i)
+                        fAudioBufferList->mBuffers[i].mDataByteSize = prevDataByteSize;
                 }
 
                 setLastRenderError(err);
@@ -1735,35 +1930,35 @@ public:
 
             if (usingHostBuffer)
             {
-                for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+                for (uint16_t i = 0; i < numInputs; ++i)
                     inputs[i] = static_cast<const float*>(ioData->mBuffers[i].mData);
 
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-                for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                for (uint16_t i = 0; i < numOutputs; ++i)
                     outputs[i] = static_cast<float*>(ioData->mBuffers[i].mData);
                #endif
 
             }
             else
             {
-                for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
-                    inputs[i] = static_cast<const float*>(fAudioBufferList.mBuffers[i].mData);
+                for (uint16_t i = 0; i < numInputs; ++i)
+                    inputs[i] = static_cast<const float*>(fAudioBufferList->mBuffers[i].mData);
 
                #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-                for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+                for (uint16_t i = 0; i < numOutputs; ++i)
                     outputs[i] = static_cast<float*>(ioData->mBuffers[i].mData);
                #endif
             }
         }
         else
-       #endif
+       #endif // DISTRHO_PLUGIN_NUM_INPUTS != 0
         {
            #if DISTRHO_PLUGIN_NUM_INPUTS != 0
-            for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_INPUTS; ++i)
+            for (uint16_t i = 0; i < numInputs; ++i)
             {
                 if (ioData->mBuffers[i].mData == nullptr)
                 {
-                    ioData->mBuffers[i].mData = fAudioBufferList.mBuffers[i].mData;
+                    ioData->mBuffers[i].mData = fAudioBufferList->mBuffers[i].mData;
                     std::memset(ioData->mBuffers[i].mData, 0, sizeof(float) * inFramesToProcess);
                 }
 
@@ -1772,10 +1967,10 @@ public:
            #endif
 
            #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
-            for (uint16_t i=0; i<DISTRHO_PLUGIN_NUM_OUTPUTS; ++i)
+            for (uint16_t i = 0; i < numOutputs; ++i)
             {
                 if (ioData->mBuffers[i].mData == nullptr)
-                    ioData->mBuffers[i].mData = fAudioBufferList.mBuffers[i].mData;
+                    ioData->mBuffers[i].mData = fAudioBufferList->mBuffers[i].mData;
 
                 outputs[i] = static_cast<float*>(ioData->mBuffers[i].mData);
             }
@@ -1882,15 +2077,23 @@ private:
     OSStatus fLastRenderError;
     PropertyListeners fPropertyListeners;
     RenderListeners fRenderListeners;
-   #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+  #if DISTRHO_PLUGIN_NUM_INPUTS != 0
+    UInt32 fInputConnectionBus;
+    AudioUnit fInputConnectionUnit;
     AURenderCallbackStruct fInputRenderCallback;
     Float64 fSampleRateForInput;
+   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+    uint32_t fNumInputs;
    #endif
-   #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+  #endif
+  #if DISTRHO_PLUGIN_NUM_OUTPUTS != 0
     Float64 fSampleRateForOutput;
+   #ifdef DISTRHO_PLUGIN_EXTRA_IO
+    uint32_t fNumOutputs;
    #endif
-   #if DPF_AU_NUM_BUFFERS != 0
-    d_AudioBufferList fAudioBufferList;
+  #endif
+   #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    AudioBufferList* fAudioBufferList;
    #endif
     bool fUsingRenderListeners;
 
@@ -2105,6 +2308,59 @@ private:
         fLastRenderError = err;
         notifyPropertyListeners(kAudioUnitProperty_LastRenderError, kAudioUnitScope_Global, 0);
     }
+
+    // ----------------------------------------------------------------------------------------------------------------
+
+   #if DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+    bool reallocAudioBufferList(const bool alloc)
+    {
+        if (fAudioBufferList != nullptr)
+        {
+            for (uint16_t i = 0; i < fAudioBufferList->mNumberBuffers; ++i)
+                delete[] static_cast<float*>(fAudioBufferList->mBuffers[i].mData);
+        }
+
+      #ifdef DISTRHO_PLUGIN_EXTRA_IO
+       #if DISTRHO_PLUGIN_NUM_INPUTS != 0 && DISTRHO_PLUGIN_NUM_OUTPUTS != 0
+        const uint16_t numBuffers = std::max(fNumInputs, fNumOutputs);
+       #elif DISTRHO_PLUGIN_NUM_INPUTS != 0
+        const uint16_t numBuffers = fNumInputs;
+       #else
+        const uint16_t numBuffers = fNumOutputs;
+       #endif
+      #else
+        constexpr const uint16_t numBuffers = d_max(DISTRHO_PLUGIN_NUM_INPUTS, DISTRHO_PLUGIN_NUM_OUTPUTS);
+      #endif
+        const uint32_t bufferSize = fPlugin.getBufferSize();
+
+        if (! alloc)
+        {
+            std::free(fAudioBufferList);
+            fAudioBufferList = nullptr;
+            return true;
+        }
+
+        if (AudioBufferList* const abl = static_cast<AudioBufferList*>(
+            std::realloc(fAudioBufferList, sizeof(uint32_t) + sizeof(AudioBuffer) * numBuffers)))
+        {
+            abl->mNumberBuffers = numBuffers;
+
+            for (uint16_t i = 0; i < numBuffers; ++i)
+            {
+                abl->mBuffers[i].mNumberChannels = 1;
+                abl->mBuffers[i].mData = new float[bufferSize];
+                abl->mBuffers[i].mDataByteSize = sizeof(float) * bufferSize;
+            }
+
+            fAudioBufferList = abl;
+            return true;
+        }
+
+        std::free(fAudioBufferList);
+        fAudioBufferList = nullptr;
+        return false;
+    }
+   #endif
 
     // ----------------------------------------------------------------------------------------------------------------
 
@@ -2803,7 +3059,7 @@ struct AudioComponentPlugInInstance {
     {
         const AudioUnitRenderActionFlags actionFlags = ioActionFlags != nullptr ? *ioActionFlags : 0;
 
-        // if ((actionFlags & kAudioUnitRenderAction_DoNotCheckRenderArgs) == 0x0)
+        if ((actionFlags & kAudioUnitRenderAction_DoNotCheckRenderArgs) == 0x0)
         {
             DISTRHO_SAFE_ASSERT_RETURN(inTimeStamp != nullptr, kAudio_ParamError);
             DISTRHO_SAFE_ASSERT_RETURN(ioData != nullptr, kAudio_ParamError);

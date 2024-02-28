@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -965,7 +965,7 @@ public:
         }
     }
 
-#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     void run(const float** const inputs, float** const outputs, const uint32_t frames,
              const MidiEvent* const midiEvents, const uint32_t midiEventCount)
     {
@@ -982,7 +982,7 @@ public:
         fPlugin->run(inputs, outputs, frames, midiEvents, midiEventCount);
         fData->isProcessing = false;
     }
-#else
+   #else
     void run(const float** const inputs, float** const outputs, const uint32_t frames)
     {
         DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
@@ -998,7 +998,21 @@ public:
         fPlugin->run(inputs, outputs, frames);
         fData->isProcessing = false;
     }
-#endif
+   #endif
+
+    // -------------------------------------------------------------------
+
+   #ifdef DISTRHO_PLUGIN_TARGET_AU
+    void setAudioPortIO(const uint16_t numInputs, const uint16_t numOutputs)
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fData != nullptr,);
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr,);
+
+        if (fIsActive) fPlugin->deactivate();
+        fPlugin->ioChanged(numInputs, numOutputs);
+        if (fIsActive) fPlugin->activate();
+    }
+   #endif
 
     // -------------------------------------------------------------------
 

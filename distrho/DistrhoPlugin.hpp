@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -372,6 +372,14 @@ protected:
       @see getSampleRate()
     */
     virtual void sampleRateChanged(double newSampleRate);
+
+   /**
+      Optional callback to inform the plugin about audio port IO changes.@n
+      This function will only be called when the plugin is deactivated.@n
+      Only used in AU (AudioUnit) format when DISTRHO_PLUGIN_EXTRA_IO is defined.
+      @see DISTRHO_PLUGIN_EXTRA_IO
+    */
+    virtual void ioChanged(uint16_t numInputs, uint16_t numOutputs);
 
     // -------------------------------------------------------------------------------------------------------
 
