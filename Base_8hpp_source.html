@@ -71,7 +71,7 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * DISTRHO Plugin Framework (DPF)</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2022 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2024 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * Permission to use, copy, modify, and/or distribute this software for any purpose with</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * or without fee is hereby granted, provided that the above copyright notice and this</span></div>
@@ -111,204 +111,245 @@ $(function() {
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;<span class="comment">   Keyboard modifier flags.</span></div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="keyword">enum</span> Modifier {</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    kModifierShift   = 1u &lt;&lt; 0u, <span class="comment">///&lt; Shift key</span></div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    kModifierControl = 1u &lt;&lt; 1u, <span class="comment">///&lt; Control key</span></div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    kModifierAlt     = 1u &lt;&lt; 2u, <span class="comment">///&lt; Alt/Option key</span></div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    kModifierSuper   = 1u &lt;&lt; 3u  <span class="comment">///&lt; Mod4/Command/Windows key</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;};</div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">   Keyboard key codepoints.</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;    kModifierShift      = 1U &lt;&lt; 0U, <span class="comment">///&lt; Shift key</span></div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;    kModifierControl    = 1U &lt;&lt; 1U, <span class="comment">///&lt; Control key</span></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;    kModifierAlt        = 1U &lt;&lt; 2U, <span class="comment">///&lt; Alt/Option key</span></div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    kModifierSuper      = 1U &lt;&lt; 3U, <span class="comment">///&lt; Mod4/Command/Windows key</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;    kModifierNumLock    = 1U &lt;&lt; 4U, <span class="comment">///&lt; Num lock enabled</span></div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    kModifierScrollLock = 1U &lt;&lt; 5U, <span class="comment">///&lt; Scroll lock enabled</span></div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    kModifierCapsLock   = 1U &lt;&lt; 6U, <span class="comment">///&lt; Caps lock enabled</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;};</div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">   All keys are identified by a Unicode code point in Widget::KeyboardEvent::key.</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">   This enumeration defines constants for special keys that do not have a standard</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">   code point, and some convenience constants for control characters.</span></div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">   Note that all keys are handled in the same way, this enumeration is just for</span></div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">   convenience when writing hard-coded key bindings.</span></div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">   Keys that do not have a standard code point use values in the Private Use</span></div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">   Area in the Basic Multilingual Plane (`U+E000` to `U+F8FF`).</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">   Applications must take care to not interpret these values beyond key detection,</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">   the mapping used here is arbitrary and specific to DPF.</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">enum</span> Key {</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// Convenience symbols for ASCII control characters</span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    kKeyBackspace = 0x08,</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;    kKeyEscape    = 0x1B,</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    kKeyDelete    = 0x7F,</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    <span class="comment">// Backwards compatibility with old DPF</span></div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    kCharBackspace DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyBackspace&quot;</span>) = kKeyBackspace,</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    kCharEscape    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyEscape&quot;</span>) = kKeyEscape,</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    kCharDelete    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyDelete&quot;</span>) = kKeyDelete,</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160; </div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;    <span class="comment">// Unicode Private Use Area</span></div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    kKeyF1 = 0xE000,</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    kKeyF2,</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    kKeyF3,</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    kKeyF4,</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    kKeyF5,</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    kKeyF6,</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    kKeyF7,</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    kKeyF8,</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    kKeyF9,</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    kKeyF10,</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    kKeyF11,</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    kKeyF12,</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    kKeyLeft,</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    kKeyUp,</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    kKeyRight,</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    kKeyDown,</div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    kKeyPageUp,</div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    kKeyPageDown,</div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    kKeyHome,</div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    kKeyEnd,</div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    kKeyInsert,</div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    kKeyShift,</div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    kKeyShiftL = kKeyShift,</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    kKeyShiftR,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    kKeyControl,</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    kKeyControlL = kKeyControl,</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    kKeyControlR,</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    kKeyAlt,</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    kKeyAltL = kKeyAlt,</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    kKeyAltR,</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    kKeySuper,</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    kKeySuperL = kKeySuper,</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    kKeySuperR,</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    kKeyMenu,</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    kKeyCapsLock,</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    kKeyScrollLock,</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    kKeyNumLock,</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    kKeyPrintScreen,</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    kKeyPause</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;};</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">   Common flags for all events.</span></div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="keyword">enum</span> EventFlag {</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    kFlagSendEvent = 1, <span class="comment">///&lt; Event is synthetic</span></div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    kFlagIsHint    = 2  <span class="comment">///&lt; Event is a hint (not direct user input)</span></div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;};</div>
-<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment">   Reason for a crossing event.</span></div>
-<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;<span class="keyword">enum</span> CrossingMode {</div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    kCrossingNormal, <span class="comment">///&lt; Crossing due to pointer motion</span></div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    kCrossingGrab,   <span class="comment">///&lt; Crossing due to a grab</span></div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    kCrossingUngrab  <span class="comment">///&lt; Crossing due to a grab release</span></div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;};</div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;<span class="comment">   A mouse button.</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;<span class="comment">   Mouse button numbers start from 1, and are ordered: primary, secondary, middle.</span></div>
-<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="comment">   So, on a typical right-handed mouse, the button numbers are:</span></div>
-<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;<span class="comment">   Left: 1</span></div>
-<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160;<span class="comment">   Right: 2</span></div>
-<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;<span class="comment">   Middle (often a wheel): 3</span></div>
-<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;<span class="comment">   Higher button numbers are reported in the same order they are represented on the system.</span></div>
-<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;<span class="comment">   There is no universal standard here, but buttons 4 and 5 are typically a pair of buttons or a rocker,</span></div>
-<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160;<span class="comment">   which are usually bound to &quot;back&quot; and &quot;forward&quot; operations.</span></div>
-<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;<span class="comment">   Note that these numbers may differ from those used on the underlying</span></div>
-<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;<span class="comment">   platform, since they are manipulated to provide a consistent portable API.</span></div>
-<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;<span class="keyword">enum</span> MouseButton {</div>
-<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;    kMouseButtonLeft = 1,</div>
-<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;    kMouseButtonRight,</div>
-<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;    kMouseButtonMiddle,</div>
-<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;};</div>
-<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">   A mouse cursor type.</span></div>
-<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">   This is a portable subset of mouse cursors that exist on X11, MacOS, and Windows.</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="keyword">enum</span> MouseCursor {</div>
-<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;    kMouseCursorArrow,       <span class="comment">///&lt; Default pointing arrow</span></div>
-<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;    kMouseCursorCaret,       <span class="comment">///&lt; Caret (I-Beam) for text entry</span></div>
-<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    kMouseCursorCrosshair,   <span class="comment">///&lt; Cross-hair</span></div>
-<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    kMouseCursorHand,        <span class="comment">///&lt; Hand with a pointing finger</span></div>
-<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    kMouseCursorNotAllowed,  <span class="comment">///&lt; Operation not allowed</span></div>
-<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;    kMouseCursorLeftRight,   <span class="comment">///&lt; Left/right arrow for horizontal resize</span></div>
-<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;    kMouseCursorUpDown,      <span class="comment">///&lt; Up/down arrow for vertical resize</span></div>
-<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;    kMouseCursorDiagonal,    <span class="comment">///&lt; Top-left to bottom-right arrow for diagonal resize</span></div>
-<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;    kMouseCursorAntiDiagonal <span class="comment">///&lt; Bottom-left to top-right arrow for diagonal resize</span></div>
-<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;};</div>
-<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment">   Scroll direction.</span></div>
-<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">   Describes the direction of a scroll event along with whether the scroll is a &quot;smooth&quot; scroll.</span></div>
-<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">   The discrete directions are for devices like mouse wheels with constrained axes,</span></div>
-<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment">   while a smooth scroll is for those with arbitrary scroll direction freedom, like some touchpads.</span></div>
-<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="keyword">enum</span> ScrollDirection {</div>
-<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;    kScrollUp,    <span class="comment">///&lt; Scroll up</span></div>
-<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;    kScrollDown,  <span class="comment">///&lt; Scroll down</span></div>
-<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;    kScrollLeft,  <span class="comment">///&lt; Scroll left</span></div>
-<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;    kScrollRight, <span class="comment">///&lt; Scroll right</span></div>
-<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;    kScrollSmooth <span class="comment">///&lt; Smooth scroll in any direction</span></div>
-<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;};</div>
-<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;<span class="comment">   A clipboard data offer.</span></div>
-<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;<span class="comment">   @see Window::onClipboardDataOffer</span></div>
-<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00192"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html">  192</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structClipboardDataOffer.html">ClipboardDataOffer</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment">      The id of this data offer.</span></div>
-<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">      @note The value 0 is reserved for null/invalid.</span></div>
-<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00197"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">  197</a></span>&#160;    uint32_t <a class="code" href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">id</a>;</div>
-<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;<span class="comment">      The type of this data offer.</span></div>
-<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;<span class="comment">      Usually a MIME type, but may also be another platform-specific type identifier.</span></div>
-<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00203"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">  203</a></span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">type</a>;</div>
-<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;};</div>
-<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160; </div>
-<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;<span class="comment">// Base DGL classes</span></div>
-<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;<span class="comment">   Graphics context, definition depends on build type.</span></div>
-<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00212"></a><span class="lineno"><a class="line" href="structGraphicsContext.html">  212</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structGraphicsContext.html">GraphicsContext</a> {};</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">   Keyboard key codepoints.</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">   All keys are identified by a Unicode code point in Widget::KeyboardEvent::key.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;<span class="comment">   This enumeration defines constants for special keys that do not have a standard</span></div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;<span class="comment">   code point, and some convenience constants for control characters.</span></div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment">   Note that all keys are handled in the same way, this enumeration is just for</span></div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">   convenience when writing hard-coded key bindings.</span></div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">   Keys that do not have a standard code point use values in the Private Use</span></div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">   Area in the Basic Multilingual Plane (`U+E000` to `U+F8FF`).</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">   Applications must take care to not interpret these values beyond key detection,</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">   the mapping used here is arbitrary and specific to DPF.</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="keyword">enum</span> Key {</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;    <span class="comment">// Convenience symbols for ASCII control characters</span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;    kKeyBackspace = 0x00000008U, <span class="comment">///&lt; Backspace</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;    kKeyTab       = 0x00000009U, <span class="comment">///&lt; Tab</span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;    kKeyEnter     = 0x0000000DU, <span class="comment">///&lt; Enter</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    kKeyEscape    = 0x0000001BU, <span class="comment">///&lt; Escape</span></div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    kKeyDelete    = 0x0000007FU, <span class="comment">///&lt; Delete</span></div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    kKeySpace     = 0x00000020U, <span class="comment">///&lt; Space</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160; </div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    <span class="comment">// Unicode Private Use Area</span></div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    kKeyF1 = 0x0000E000U,      <span class="comment">///&lt; F1</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    kKeyF2,                    <span class="comment">///&lt; F2</span></div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    kKeyF3,                    <span class="comment">///&lt; F3</span></div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;    kKeyF4,                    <span class="comment">///&lt; F4</span></div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;    kKeyF5,                    <span class="comment">///&lt; F5</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;    kKeyF6,                    <span class="comment">///&lt; F6</span></div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;    kKeyF7,                    <span class="comment">///&lt; F7</span></div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;    kKeyF8,                    <span class="comment">///&lt; F8</span></div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;    kKeyF9,                    <span class="comment">///&lt; F9</span></div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;    kKeyF10,                   <span class="comment">///&lt; F10</span></div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    kKeyF11,                   <span class="comment">///&lt; F11</span></div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    kKeyF12,                   <span class="comment">///&lt; F12</span></div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;    kKeyPageUp = 0xE031,       <span class="comment">///&lt; Page Up</span></div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;    kKeyPageDown,              <span class="comment">///&lt; Page Down</span></div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;    kKeyEnd,                   <span class="comment">///&lt; End</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;    kKeyHome,                  <span class="comment">///&lt; Home</span></div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;    kKeyLeft,                  <span class="comment">///&lt; Left</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;    kKeyUp,                    <span class="comment">///&lt; Up</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;    kKeyRight,                 <span class="comment">///&lt; Right</span></div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;    kKeyDown,                  <span class="comment">///&lt; Down</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;    kKeyPrintScreen = 0xE041U, <span class="comment">///&lt; Print Screen</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;    kKeyInsert,                <span class="comment">///&lt; Insert</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;    kKeyPause,                 <span class="comment">///&lt; Pause/Break</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;    kKeyMenu,                  <span class="comment">///&lt; Menu</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    kKeyNumLock,               <span class="comment">///&lt; Num Lock</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;    kKeyScrollLock,            <span class="comment">///&lt; Scroll Lock</span></div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    kKeyCapsLock,              <span class="comment">///&lt; Caps Lock</span></div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    kKeyShiftL = 0xE051U,      <span class="comment">///&lt; Left Shift,</span></div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;    kKeyShiftR,                <span class="comment">///&lt; Right Shift</span></div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    kKeyControlL,              <span class="comment">///&lt; Left Control</span></div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    kKeyControlR,              <span class="comment">///&lt; Right Control</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;    kKeyAltL,                  <span class="comment">///&lt; Left Alt</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    kKeyAltR,                  <span class="comment">///&lt; Right Alt / AltGr</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    kKeySuperL,                <span class="comment">///&lt; Left Super</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;    kKeySuperR,                <span class="comment">///&lt; Right Super</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;    kKeyPad0 = 0xE060U,        <span class="comment">///&lt; Keypad 0</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;    kKeyPad1,                  <span class="comment">///&lt; Keypad 1</span></div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;    kKeyPad2,                  <span class="comment">///&lt; Keypad 2</span></div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;    kKeyPad3,                  <span class="comment">///&lt; Keypad 3</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;    kKeyPad4,                  <span class="comment">///&lt; Keypad 4</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    kKeyPad5,                  <span class="comment">///&lt; Keypad 5</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    kKeyPad6,                  <span class="comment">///&lt; Keypad 6</span></div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;    kKeyPad7,                  <span class="comment">///&lt; Keypad 7</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;    kKeyPad8,                  <span class="comment">///&lt; Keypad 8</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;    kKeyPad9,                  <span class="comment">///&lt; Keypad 9</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;    kKeyPadEnter,              <span class="comment">///&lt; Keypad Enter</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;    kKeyPadPageUp = 0xE071U,   <span class="comment">///&lt; Keypad Page Up</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;    kKeyPadPageDown,           <span class="comment">///&lt; Keypad Page Down</span></div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;    kKeyPadEnd,                <span class="comment">///&lt; Keypad End</span></div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;    kKeyPadHome,               <span class="comment">///&lt; Keypad Home</span></div>
+<div class="line"><a name="l00126"></a><span class="lineno">  126</span>&#160;    kKeyPadLeft,               <span class="comment">///&lt; Keypad Left</span></div>
+<div class="line"><a name="l00127"></a><span class="lineno">  127</span>&#160;    kKeyPadUp,                 <span class="comment">///&lt; Keypad Up</span></div>
+<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;    kKeyPadRight,              <span class="comment">///&lt; Keypad Right</span></div>
+<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;    kKeyPadDown,               <span class="comment">///&lt; Keypad Down</span></div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;    kKeyPadClear = 0xE09DU,    <span class="comment">///&lt; Keypad Clear/Begin</span></div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;    kKeyPadInsert,             <span class="comment">///&lt; Keypad Insert</span></div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;    kKeyPadDelete,             <span class="comment">///&lt; Keypad Delete</span></div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;    kKeyPadEqual,              <span class="comment">///&lt; Keypad Equal</span></div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;    kKeyPadMultiply = 0xE0AAU, <span class="comment">///&lt; Keypad Multiply</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;    kKeyPadAdd,                <span class="comment">///&lt; Keypad Add</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;    kKeyPadSeparator,          <span class="comment">///&lt; Keypad Separator</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;    kKeyPadSubtract,           <span class="comment">///&lt; Keypad Subtract</span></div>
+<div class="line"><a name="l00138"></a><span class="lineno">  138</span>&#160;    kKeyPadDecimal,            <span class="comment">///&lt; Keypad Decimal</span></div>
+<div class="line"><a name="l00139"></a><span class="lineno">  139</span>&#160;    kKeyPadDivide,             <span class="comment">///&lt; Keypad Divide</span></div>
+<div class="line"><a name="l00140"></a><span class="lineno">  140</span>&#160; </div>
+<div class="line"><a name="l00141"></a><span class="lineno">  141</span>&#160;    <span class="comment">// Backwards compatibility with old DPF</span></div>
+<div class="line"><a name="l00142"></a><span class="lineno">  142</span>&#160;    kCharBackspace DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyBackspace&quot;</span>) = kKeyBackspace,</div>
+<div class="line"><a name="l00143"></a><span class="lineno">  143</span>&#160;    kCharEscape    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyEscape&quot;</span>) = kKeyEscape,</div>
+<div class="line"><a name="l00144"></a><span class="lineno">  144</span>&#160;    kCharDelete    DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyDelete&quot;</span>) = kKeyDelete,</div>
+<div class="line"><a name="l00145"></a><span class="lineno">  145</span>&#160; </div>
+<div class="line"><a name="l00146"></a><span class="lineno">  146</span>&#160;    kKeyShift   DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyShiftL&quot;</span>) = kKeyShiftL,</div>
+<div class="line"><a name="l00147"></a><span class="lineno">  147</span>&#160;    kKeyControl DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyControlL&quot;</span>) = kKeyControlL,</div>
+<div class="line"><a name="l00148"></a><span class="lineno">  148</span>&#160;    kKeyAlt     DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeyAltL&quot;</span>) = kKeyAltL,</div>
+<div class="line"><a name="l00149"></a><span class="lineno">  149</span>&#160;    kKeySuper   DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kKeySuperL&quot;</span>) = kKeySuperL,</div>
+<div class="line"><a name="l00150"></a><span class="lineno">  150</span>&#160;};</div>
+<div class="line"><a name="l00151"></a><span class="lineno">  151</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00152"></a><span class="lineno">  152</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00153"></a><span class="lineno">  153</span>&#160;<span class="comment">   Common flags for all events.</span></div>
+<div class="line"><a name="l00154"></a><span class="lineno">  154</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00155"></a><span class="lineno">  155</span>&#160;<span class="keyword">enum</span> EventFlag {</div>
+<div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;    kFlagSendEvent = 1, <span class="comment">///&lt; Event is synthetic</span></div>
+<div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;    kFlagIsHint    = 2, <span class="comment">///&lt; Event is a hint (not direct user input)</span></div>
+<div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;};</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160;<span class="comment">   Reason for a crossing event.</span></div>
+<div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="keyword">enum</span> CrossingMode {</div>
+<div class="line"><a name="l00164"></a><span class="lineno">  164</span>&#160;    kCrossingNormal, <span class="comment">///&lt; Crossing due to pointer motion</span></div>
+<div class="line"><a name="l00165"></a><span class="lineno">  165</span>&#160;    kCrossingGrab,   <span class="comment">///&lt; Crossing due to a grab</span></div>
+<div class="line"><a name="l00166"></a><span class="lineno">  166</span>&#160;    kCrossingUngrab, <span class="comment">///&lt; Crossing due to a grab release</span></div>
+<div class="line"><a name="l00167"></a><span class="lineno">  167</span>&#160;};</div>
+<div class="line"><a name="l00168"></a><span class="lineno">  168</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00169"></a><span class="lineno">  169</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00170"></a><span class="lineno">  170</span>&#160;<span class="comment">   A mouse button.</span></div>
+<div class="line"><a name="l00171"></a><span class="lineno">  171</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00172"></a><span class="lineno">  172</span>&#160;<span class="comment">   Mouse button numbers start from 1, and are ordered: primary, secondary, middle.</span></div>
+<div class="line"><a name="l00173"></a><span class="lineno">  173</span>&#160;<span class="comment">   So, on a typical right-handed mouse, the button numbers are:</span></div>
+<div class="line"><a name="l00174"></a><span class="lineno">  174</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00175"></a><span class="lineno">  175</span>&#160;<span class="comment">   Left: 1</span></div>
+<div class="line"><a name="l00176"></a><span class="lineno">  176</span>&#160;<span class="comment">   Right: 2</span></div>
+<div class="line"><a name="l00177"></a><span class="lineno">  177</span>&#160;<span class="comment">   Middle (often a wheel): 3</span></div>
+<div class="line"><a name="l00178"></a><span class="lineno">  178</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00179"></a><span class="lineno">  179</span>&#160;<span class="comment">   Higher button numbers are reported in the same order they are represented on the system.</span></div>
+<div class="line"><a name="l00180"></a><span class="lineno">  180</span>&#160;<span class="comment">   There is no universal standard here, but buttons 4 and 5 are typically a pair of buttons or a rocker,</span></div>
+<div class="line"><a name="l00181"></a><span class="lineno">  181</span>&#160;<span class="comment">   which are usually bound to &quot;back&quot; and &quot;forward&quot; operations.</span></div>
+<div class="line"><a name="l00182"></a><span class="lineno">  182</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00183"></a><span class="lineno">  183</span>&#160;<span class="comment">   Note that these numbers may differ from those used on the underlying</span></div>
+<div class="line"><a name="l00184"></a><span class="lineno">  184</span>&#160;<span class="comment">   platform, since they are manipulated to provide a consistent portable API.</span></div>
+<div class="line"><a name="l00185"></a><span class="lineno">  185</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00186"></a><span class="lineno">  186</span>&#160;<span class="keyword">enum</span> MouseButton {</div>
+<div class="line"><a name="l00187"></a><span class="lineno">  187</span>&#160;    kMouseButtonLeft = 1,</div>
+<div class="line"><a name="l00188"></a><span class="lineno">  188</span>&#160;    kMouseButtonRight,</div>
+<div class="line"><a name="l00189"></a><span class="lineno">  189</span>&#160;    kMouseButtonMiddle,</div>
+<div class="line"><a name="l00190"></a><span class="lineno">  190</span>&#160;};</div>
+<div class="line"><a name="l00191"></a><span class="lineno">  191</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00192"></a><span class="lineno">  192</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00193"></a><span class="lineno">  193</span>&#160;<span class="comment">   A mouse cursor type.</span></div>
+<div class="line"><a name="l00194"></a><span class="lineno">  194</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00195"></a><span class="lineno">  195</span>&#160;<span class="comment">   This is a portable subset of mouse cursors that exist on X11, MacOS, and Windows.</span></div>
+<div class="line"><a name="l00196"></a><span class="lineno">  196</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00197"></a><span class="lineno">  197</span>&#160;<span class="keyword">enum</span> MouseCursor {</div>
+<div class="line"><a name="l00198"></a><span class="lineno">  198</span>&#160;    kMouseCursorArrow,           <span class="comment">///&lt; Default pointing arrow</span></div>
+<div class="line"><a name="l00199"></a><span class="lineno">  199</span>&#160;    kMouseCursorCaret,           <span class="comment">///&lt; Caret (I-Beam) for text entry</span></div>
+<div class="line"><a name="l00200"></a><span class="lineno">  200</span>&#160;    kMouseCursorCrosshair,       <span class="comment">///&lt; Cross-hair</span></div>
+<div class="line"><a name="l00201"></a><span class="lineno">  201</span>&#160;    kMouseCursorHand,            <span class="comment">///&lt; Hand with a pointing finger</span></div>
+<div class="line"><a name="l00202"></a><span class="lineno">  202</span>&#160;    kMouseCursorNotAllowed,      <span class="comment">///&lt; Operation not allowed</span></div>
+<div class="line"><a name="l00203"></a><span class="lineno">  203</span>&#160;    kMouseCursorLeftRight,       <span class="comment">///&lt; Left/right arrow for horizontal resize</span></div>
+<div class="line"><a name="l00204"></a><span class="lineno">  204</span>&#160;    kMouseCursorUpDown,          <span class="comment">///&lt; Up/down arrow for vertical resize</span></div>
+<div class="line"><a name="l00205"></a><span class="lineno">  205</span>&#160;    kMouseCursorUpLeftDownRight, <span class="comment">///&lt; Diagonal arrow for down/right resize</span></div>
+<div class="line"><a name="l00206"></a><span class="lineno">  206</span>&#160;    kMouseCursorUpRightDownLeft, <span class="comment">///&lt; Diagonal arrow for down/left resize</span></div>
+<div class="line"><a name="l00207"></a><span class="lineno">  207</span>&#160;    kMouseCursorAllScroll,       <span class="comment">///&lt; Omnidirectional &quot;arrow&quot; for scrolling</span></div>
+<div class="line"><a name="l00208"></a><span class="lineno">  208</span>&#160; </div>
+<div class="line"><a name="l00209"></a><span class="lineno">  209</span>&#160;    <span class="comment">// Backwards compatibility with old DPF</span></div>
+<div class="line"><a name="l00210"></a><span class="lineno">  210</span>&#160;    kMouseCursorDiagonal     DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kMouseCursorUpLeftDownRight&quot;</span>) = kMouseCursorUpLeftDownRight,</div>
+<div class="line"><a name="l00211"></a><span class="lineno">  211</span>&#160;    kMouseCursorAntiDiagonal DISTRHO_DEPRECATED_BY(<span class="stringliteral">&quot;kMouseCursorUpRightDownLeft&quot;</span>) = kMouseCursorUpRightDownLeft,</div>
+<div class="line"><a name="l00212"></a><span class="lineno">  212</span>&#160;};</div>
 <div class="line"><a name="l00213"></a><span class="lineno">  213</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00214"></a><span class="lineno">  214</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment">   Idle callback.</span></div>
-<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00217"></a><span class="lineno"><a class="line" href="structIdleCallback.html">  217</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structIdleCallback.html">IdleCallback</a></div>
-<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;{</div>
-<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="structIdleCallback.html">IdleCallback</a>() {}</div>
-<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> idleCallback() = 0;</div>
-<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;};</div>
-<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160; </div>
-<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160; </div>
-<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;END_NAMESPACE_DGL</div>
-<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;<span class="preprocessor">#ifndef DONT_SET_USING_DGL_NAMESPACE</span></div>
-<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;  <span class="comment">// If your code uses a lot of DGL classes, then this will obviously save you</span></div>
-<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;  <span class="comment">// a lot of typing, but can be disabled by setting DONT_SET_USING_DGL_NAMESPACE.</span></div>
-<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;  <span class="keyword">using namespace </span>DGL_NAMESPACE;</div>
-<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="preprocessor">#endif</span></div>
-<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160; </div>
-<div class="line"><a name="l00233"></a><span class="lineno">  233</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160; </div>
-<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DGL_BASE_HPP_INCLUDED</span></div>
-<div class="ttc" id="astructClipboardDataOffer_html"><div class="ttname"><a href="structClipboardDataOffer.html">ClipboardDataOffer</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:192</div></div>
-<div class="ttc" id="astructClipboardDataOffer_html_a23d607737b1fffbb003b885da5a5ca66"><div class="ttname"><a href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">ClipboardDataOffer::type</a></div><div class="ttdeci">const char * type</div><div class="ttdef"><b>Definition:</b> Base.hpp:203</div></div>
-<div class="ttc" id="astructClipboardDataOffer_html_a573b30efdf1eee418f7388c9713dfddc"><div class="ttname"><a href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">ClipboardDataOffer::id</a></div><div class="ttdeci">uint32_t id</div><div class="ttdef"><b>Definition:</b> Base.hpp:197</div></div>
-<div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:212</div></div>
-<div class="ttc" id="astructIdleCallback_html"><div class="ttname"><a href="structIdleCallback.html">IdleCallback</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:218</div></div>
+<div class="line"><a name="l00215"></a><span class="lineno">  215</span>&#160;<span class="comment">   Scroll direction.</span></div>
+<div class="line"><a name="l00216"></a><span class="lineno">  216</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00217"></a><span class="lineno">  217</span>&#160;<span class="comment">   Describes the direction of a scroll event along with whether the scroll is a &quot;smooth&quot; scroll.</span></div>
+<div class="line"><a name="l00218"></a><span class="lineno">  218</span>&#160;<span class="comment">   The discrete directions are for devices like mouse wheels with constrained axes,</span></div>
+<div class="line"><a name="l00219"></a><span class="lineno">  219</span>&#160;<span class="comment">   while a smooth scroll is for those with arbitrary scroll direction freedom, like some touchpads.</span></div>
+<div class="line"><a name="l00220"></a><span class="lineno">  220</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00221"></a><span class="lineno">  221</span>&#160;<span class="keyword">enum</span> ScrollDirection {</div>
+<div class="line"><a name="l00222"></a><span class="lineno">  222</span>&#160;    kScrollUp,     <span class="comment">///&lt; Scroll up</span></div>
+<div class="line"><a name="l00223"></a><span class="lineno">  223</span>&#160;    kScrollDown,   <span class="comment">///&lt; Scroll down</span></div>
+<div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;    kScrollLeft,   <span class="comment">///&lt; Scroll left</span></div>
+<div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;    kScrollRight,  <span class="comment">///&lt; Scroll right</span></div>
+<div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160;    kScrollSmooth, <span class="comment">///&lt; Smooth scroll in any direction</span></div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;};</div>
+<div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;<span class="comment">   A clipboard data offer.</span></div>
+<div class="line"><a name="l00231"></a><span class="lineno">  231</span>&#160;<span class="comment">   @see Window::onClipboardDataOffer</span></div>
+<div class="line"><a name="l00232"></a><span class="lineno">  232</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00233"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html">  233</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structClipboardDataOffer.html">ClipboardDataOffer</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00234"></a><span class="lineno">  234</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00235"></a><span class="lineno">  235</span>&#160;<span class="comment">      The id of this data offer.</span></div>
+<div class="line"><a name="l00236"></a><span class="lineno">  236</span>&#160;<span class="comment">      @note The value 0 is reserved for null/invalid.</span></div>
+<div class="line"><a name="l00237"></a><span class="lineno">  237</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00238"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">  238</a></span>&#160;    uint32_t <a class="code" href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">id</a>;</div>
+<div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;<span class="comment">      The type of this data offer.</span></div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;<span class="comment">      Usually a MIME type, but may also be another platform-specific type identifier.</span></div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00244"></a><span class="lineno"><a class="line" href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">  244</a></span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">type</a>;</div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;};</div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160; </div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;<span class="comment">// Base DGL classes</span></div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;<span class="comment">   Graphics context, definition depends on build type.</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno"><a class="line" href="structGraphicsContext.html">  253</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structGraphicsContext.html">GraphicsContext</a> {};</div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;<span class="comment">   Idle callback.</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno"><a class="line" href="structIdleCallback.html">  258</a></span>&#160;<span class="keyword">struct </span><a class="code" href="structIdleCallback.html">IdleCallback</a></div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;{</div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;    <span class="keyword">virtual</span> ~<a class="code" href="structIdleCallback.html">IdleCallback</a>() {}</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    <span class="keyword">virtual</span> <span class="keywordtype">void</span> idleCallback() = 0;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;};</div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160; </div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;END_NAMESPACE_DGL</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160; </div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;<span class="preprocessor">#ifndef DONT_SET_USING_DGL_NAMESPACE</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;  <span class="comment">// If your code uses a lot of DGL classes, then this will obviously save you</span></div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;  <span class="comment">// a lot of typing, but can be disabled by setting DONT_SET_USING_DGL_NAMESPACE.</span></div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;  <span class="keyword">using namespace </span>DGL_NAMESPACE;</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160; </div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160; </div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DGL_BASE_HPP_INCLUDED</span></div>
+<div class="ttc" id="astructClipboardDataOffer_html"><div class="ttname"><a href="structClipboardDataOffer.html">ClipboardDataOffer</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:233</div></div>
+<div class="ttc" id="astructClipboardDataOffer_html_a23d607737b1fffbb003b885da5a5ca66"><div class="ttname"><a href="structClipboardDataOffer.html#a23d607737b1fffbb003b885da5a5ca66">ClipboardDataOffer::type</a></div><div class="ttdeci">const char * type</div><div class="ttdef"><b>Definition:</b> Base.hpp:244</div></div>
+<div class="ttc" id="astructClipboardDataOffer_html_a573b30efdf1eee418f7388c9713dfddc"><div class="ttname"><a href="structClipboardDataOffer.html#a573b30efdf1eee418f7388c9713dfddc">ClipboardDataOffer::id</a></div><div class="ttdeci">uint32_t id</div><div class="ttdef"><b>Definition:</b> Base.hpp:238</div></div>
+<div class="ttc" id="astructGraphicsContext_html"><div class="ttname"><a href="structGraphicsContext.html">GraphicsContext</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:253</div></div>
+<div class="ttc" id="astructIdleCallback_html"><div class="ttname"><a href="structIdleCallback.html">IdleCallback</a></div><div class="ttdef"><b>Definition:</b> Base.hpp:259</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

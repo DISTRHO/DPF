@@ -113,96 +113,101 @@ $(function() {
 <div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;<span class="comment">    /** File browser dialog window title, uses &quot;FileBrowser&quot; if null */</span></div>
 <div class="line"><a name="l00044"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#a16d59d24e75eec2c6f9f3aebfe5464e7">   44</a></span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structFileBrowserOptions.html#a16d59d24e75eec2c6f9f3aebfe5464e7">title</a>;</div>
-<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;    <span class="comment">// TODO file filter</span></div>
-<div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;<span class="comment">      File browser button state.</span></div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment">      This allows to customize the behaviour of the file browse dialog buttons.</span></div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">      Note these are merely hints, not all systems support them.</span></div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">   53</a></span>&#160;    <span class="keyword">enum</span> <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> {</div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;      kButtonInvisible,</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;      kButtonVisibleUnchecked,</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;      kButtonVisibleChecked,</div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    };</div>
-<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;<span class="comment">   /**</span></div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;<span class="comment">      File browser buttons.</span></div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment">    */</span></div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html">   62</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structFileBrowserOptions_1_1Buttons.html">Buttons</a> {<span class="comment"></span></div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">      /** Whether to list all files vs only those with matching file extension */</span></div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">   64</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">listAllFiles</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;<span class="comment">      /** Whether to show hidden files */</span></div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">   66</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">showHidden</a>;<span class="comment"></span></div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;<span class="comment">      /** Whether to show list of places (bookmarks) */</span></div>
-<div class="line"><a name="l00068"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">   68</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">showPlaces</a>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">      /** Constructor for default values */</span></div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">   71</a></span>&#160;      <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">Buttons</a>()</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;            : <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">listAllFiles</a>(kButtonVisibleChecked),</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;              <a class="code" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">showHidden</a>(kButtonVisibleUnchecked),</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;              <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">showPlaces</a>(kButtonVisibleChecked) {}</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;    } buttons;</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="comment">    /** Constructor for default values */</span></div>
-<div class="line"><a name="l00078"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">   78</a></span>&#160;    <a class="code" href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">FileBrowserOptions</a>()</div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;      : <a class="code" href="structFileBrowserOptions.html#a923166f4f4477b4491d3f47e05cfbdfe">saving</a>(false),</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;        <a class="code" href="structFileBrowserOptions.html#acc05b9a39052fc84e4d50a62229091d8">defaultName</a>(nullptr),</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;        <a class="code" href="structFileBrowserOptions.html#a921fe62f9783fee2c01ddbaa0851e8b4">startDir</a>(nullptr),</div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;        <a class="code" href="structFileBrowserOptions.html#a16d59d24e75eec2c6f9f3aebfe5464e7">title</a>(nullptr),</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        buttons() {}</div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;};</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160; </div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;<span class="comment">  Create a new file browser dialog.</span></div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment">  @p isEmbed:     Whether the window this dialog belongs to is an embed/child window (needed to close dialog on Windows)</span></div>
-<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">  @p windowId:    The native window id to attach this dialog to as transient parent (X11 Window, HWND or NSView*)</span></div>
-<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">  @p scaleFactor: Scale factor to use (only used on X11)</span></div>
-<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment">  @p options:     Extra options, optional</span></div>
-<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">  By default the file browser dialog will be work as &quot;open file&quot; in the current working directory.</span></div>
-<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> fileBrowserCreate(<span class="keywordtype">bool</span> isEmbed,</div>
-<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;                                    uintptr_t windowId,</div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;                                    <span class="keywordtype">double</span> scaleFactor,</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;                                    <span class="keyword">const</span> <a class="code" href="structFileBrowserOptions.html">FileBrowserOptions</a>&amp; options = <a class="code" href="structFileBrowserOptions.html">FileBrowserOptions</a>());</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;<span class="comment">  Idle the file browser dialog handle.@n</span></div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;<span class="comment">  Returns true if dialog was closed (with or without a file selection),</span></div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment">  in which case the handle must not be used afterwards.</span></div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">  You can then call fileBrowserGetPath to know the selected file (or null if cancelled).</span></div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="keywordtype">bool</span> fileBrowserIdle(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">  Close the file browser dialog, handle must not be used afterwards.</span></div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="keywordtype">void</span> fileBrowserClose(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">  Get the path chosen by the user or null.@n</span></div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="comment">  Should only be called after fileBrowserIdle returns true.</span></div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* fileBrowserGetPath(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
-<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
-<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
-<div class="ttc" id="astructFileBrowserData_html"><div class="ttname"><a href="structFileBrowserData.html">FileBrowserData</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.cpp:169</div></div>
-<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html">FileBrowserOptions::Buttons</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:62</div></div>
-<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_a43b25f4cece01eb8dd8d89a10e921dfc"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">FileBrowserOptions::Buttons::showHidden</a></div><div class="ttdeci">ButtonState showHidden</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:66</div></div>
-<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac2df440c203fb3b1a3be012283427d5b"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">FileBrowserOptions::Buttons::showPlaces</a></div><div class="ttdeci">ButtonState showPlaces</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:68</div></div>
-<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac63aae50a8d713ac6de337cc8739c870"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">FileBrowserOptions::Buttons::Buttons</a></div><div class="ttdeci">Buttons()</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:71</div></div>
-<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac8174fbcf8d85ef5abece32114c234d5"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">FileBrowserOptions::Buttons::listAllFiles</a></div><div class="ttdeci">ButtonState listAllFiles</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:64</div></div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160;<span class="comment">    /** Class name of the matching Application instance that controls this dialog */</span></div>
+<div class="line"><a name="l00047"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#a5cd131b31f02ceff8b9ac5db6b40fc3a">   47</a></span>&#160;    <span class="keyword">const</span> <span class="keywordtype">char</span>* <a class="code" href="structFileBrowserOptions.html#a5cd131b31f02ceff8b9ac5db6b40fc3a">className</a>;</div>
+<div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160; </div>
+<div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;    <span class="comment">// TODO file filter</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;<span class="comment">      File browser button state.</span></div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;<span class="comment">      This allows to customize the behaviour of the file browse dialog buttons.</span></div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;<span class="comment">      Note these are merely hints, not all systems support them.</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">   56</a></span>&#160;    <span class="keyword">enum</span> <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> {</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;      kButtonInvisible,</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160;      kButtonVisibleUnchecked,</div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;      kButtonVisibleChecked,</div>
+<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;    };</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="comment">   /**</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="comment">      File browser buttons.</span></div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;<span class="comment">    */</span></div>
+<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html">   65</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structFileBrowserOptions_1_1Buttons.html">Buttons</a> {<span class="comment"></span></div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;<span class="comment">      /** Whether to list all files vs only those with matching file extension */</span></div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">   67</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">listAllFiles</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;<span class="comment">      /** Whether to show hidden files */</span></div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">   69</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">showHidden</a>;<span class="comment"></span></div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;<span class="comment">      /** Whether to show list of places (bookmarks) */</span></div>
+<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">   71</a></span>&#160;      <a class="code" href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">ButtonState</a> <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">showPlaces</a>;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;<span class="comment">      /** Constructor for default values */</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno"><a class="line" href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">   74</a></span>&#160;      <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">Buttons</a>()</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;            : <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">listAllFiles</a>(kButtonVisibleChecked),</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;              <a class="code" href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">showHidden</a>(kButtonVisibleUnchecked),</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;              <a class="code" href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">showPlaces</a>(kButtonVisibleChecked) {}</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;    } buttons;</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;<span class="comment">    /** Constructor for default values */</span></div>
+<div class="line"><a name="l00081"></a><span class="lineno"><a class="line" href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">   81</a></span>&#160;    <a class="code" href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">FileBrowserOptions</a>()</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;      : <a class="code" href="structFileBrowserOptions.html#a923166f4f4477b4491d3f47e05cfbdfe">saving</a>(false),</div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;        <a class="code" href="structFileBrowserOptions.html#acc05b9a39052fc84e4d50a62229091d8">defaultName</a>(nullptr),</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;        <a class="code" href="structFileBrowserOptions.html#a921fe62f9783fee2c01ddbaa0851e8b4">startDir</a>(nullptr),</div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;        <a class="code" href="structFileBrowserOptions.html#a16d59d24e75eec2c6f9f3aebfe5464e7">title</a>(nullptr),</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;        <a class="code" href="structFileBrowserOptions.html#a5cd131b31f02ceff8b9ac5db6b40fc3a">className</a>(nullptr),</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;        buttons() {}</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;};</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160; </div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00093"></a><span class="lineno">   93</span>&#160;<span class="comment">  Create a new file browser dialog.</span></div>
+<div class="line"><a name="l00094"></a><span class="lineno">   94</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00095"></a><span class="lineno">   95</span>&#160;<span class="comment">  @p isEmbed:     Whether the window this dialog belongs to is an embed/child window (needed to close dialog on Windows)</span></div>
+<div class="line"><a name="l00096"></a><span class="lineno">   96</span>&#160;<span class="comment">  @p windowId:    The native window id to attach this dialog to as transient parent (X11 Window, HWND or NSView*)</span></div>
+<div class="line"><a name="l00097"></a><span class="lineno">   97</span>&#160;<span class="comment">  @p scaleFactor: Scale factor to use (only used on X11)</span></div>
+<div class="line"><a name="l00098"></a><span class="lineno">   98</span>&#160;<span class="comment">  @p options:     Extra options, optional</span></div>
+<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="comment">  By default the file browser dialog will work as &quot;open file&quot; in the current working directory.</span></div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;<a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> fileBrowserCreate(<span class="keywordtype">bool</span> isEmbed,</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;                                    uintptr_t windowId,</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;                                    <span class="keywordtype">double</span> scaleFactor,</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;                                    <span class="keyword">const</span> <a class="code" href="structFileBrowserOptions.html">FileBrowserOptions</a>&amp; options = <a class="code" href="structFileBrowserOptions.html">FileBrowserOptions</a>());</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;<span class="comment">  Idle the file browser dialog handle.@n</span></div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;<span class="comment">  Returns true if dialog was closed (with or without a file selection),</span></div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;<span class="comment">  in which case this idle function must not be called anymore for this handle.</span></div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;<span class="comment">  You can then call fileBrowserGetPath to know the selected file (or null if cancelled).</span></div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;<span class="keywordtype">bool</span> fileBrowserIdle(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;<span class="comment">  Close and free the file browser dialog, handle must not be used afterwards.</span></div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;<span class="keywordtype">void</span> fileBrowserClose(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;<span class="comment">  Get the path chosen by the user or null.@n</span></div>
+<div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;<span class="comment">  Should only be called after fileBrowserIdle returns true.</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160;<span class="keyword">const</span> <span class="keywordtype">char</span>* fileBrowserGetPath(<span class="keyword">const</span> <a class="code" href="structFileBrowserData.html">FileBrowserHandle</a> handle);</div>
+<div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160; </div>
+<div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160;<span class="comment">// --------------------------------------------------------------------------------------------------------------------</span></div>
+<div class="ttc" id="astructFileBrowserData_html"><div class="ttname"><a href="structFileBrowserData.html">FileBrowserData</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.cpp:190</div></div>
+<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html">FileBrowserOptions::Buttons</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:65</div></div>
+<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_a43b25f4cece01eb8dd8d89a10e921dfc"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#a43b25f4cece01eb8dd8d89a10e921dfc">FileBrowserOptions::Buttons::showHidden</a></div><div class="ttdeci">ButtonState showHidden</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:69</div></div>
+<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac2df440c203fb3b1a3be012283427d5b"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac2df440c203fb3b1a3be012283427d5b">FileBrowserOptions::Buttons::showPlaces</a></div><div class="ttdeci">ButtonState showPlaces</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:71</div></div>
+<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac63aae50a8d713ac6de337cc8739c870"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac63aae50a8d713ac6de337cc8739c870">FileBrowserOptions::Buttons::Buttons</a></div><div class="ttdeci">Buttons()</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:74</div></div>
+<div class="ttc" id="astructFileBrowserOptions_1_1Buttons_html_ac8174fbcf8d85ef5abece32114c234d5"><div class="ttname"><a href="structFileBrowserOptions_1_1Buttons.html#ac8174fbcf8d85ef5abece32114c234d5">FileBrowserOptions::Buttons::listAllFiles</a></div><div class="ttdeci">ButtonState listAllFiles</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:67</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html"><div class="ttname"><a href="structFileBrowserOptions.html">FileBrowserOptions</a></div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:33</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html_a16d59d24e75eec2c6f9f3aebfe5464e7"><div class="ttname"><a href="structFileBrowserOptions.html#a16d59d24e75eec2c6f9f3aebfe5464e7">FileBrowserOptions::title</a></div><div class="ttdeci">const char * title</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:44</div></div>
+<div class="ttc" id="astructFileBrowserOptions_html_a5cd131b31f02ceff8b9ac5db6b40fc3a"><div class="ttname"><a href="structFileBrowserOptions.html#a5cd131b31f02ceff8b9ac5db6b40fc3a">FileBrowserOptions::className</a></div><div class="ttdeci">const char * className</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:47</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html_a921fe62f9783fee2c01ddbaa0851e8b4"><div class="ttname"><a href="structFileBrowserOptions.html#a921fe62f9783fee2c01ddbaa0851e8b4">FileBrowserOptions::startDir</a></div><div class="ttdeci">const char * startDir</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:41</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html_a923166f4f4477b4491d3f47e05cfbdfe"><div class="ttname"><a href="structFileBrowserOptions.html#a923166f4f4477b4491d3f47e05cfbdfe">FileBrowserOptions::saving</a></div><div class="ttdeci">bool saving</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:35</div></div>
-<div class="ttc" id="astructFileBrowserOptions_html_ac435c15f821601fa0a10fbd4707b5ab9"><div class="ttname"><a href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">FileBrowserOptions::ButtonState</a></div><div class="ttdeci">ButtonState</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:53</div></div>
+<div class="ttc" id="astructFileBrowserOptions_html_ac435c15f821601fa0a10fbd4707b5ab9"><div class="ttname"><a href="structFileBrowserOptions.html#ac435c15f821601fa0a10fbd4707b5ab9">FileBrowserOptions::ButtonState</a></div><div class="ttdeci">ButtonState</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:56</div></div>
 <div class="ttc" id="astructFileBrowserOptions_html_acc05b9a39052fc84e4d50a62229091d8"><div class="ttname"><a href="structFileBrowserOptions.html#acc05b9a39052fc84e4d50a62229091d8">FileBrowserOptions::defaultName</a></div><div class="ttdeci">const char * defaultName</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:38</div></div>
-<div class="ttc" id="astructFileBrowserOptions_html_afaad52af434db54ecc629ff68b194273"><div class="ttname"><a href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">FileBrowserOptions::FileBrowserOptions</a></div><div class="ttdeci">FileBrowserOptions()</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:78</div></div>
+<div class="ttc" id="astructFileBrowserOptions_html_afaad52af434db54ecc629ff68b194273"><div class="ttname"><a href="structFileBrowserOptions.html#afaad52af434db54ecc629ff68b194273">FileBrowserOptions::FileBrowserOptions</a></div><div class="ttdeci">FileBrowserOptions()</div><div class="ttdef"><b>Definition:</b> FileBrowserDialogImpl.hpp:81</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

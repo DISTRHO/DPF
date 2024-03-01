@@ -156,6 +156,8 @@ virtual bool&#160;</td><td class="memItemRight" valign="bottom"><b>isStateFile</
 <tr class="separator:a9f6c8ad6b054056649d0250e527e1297"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2fcbfa1893f44e661d0d8cd53391dadc"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#a2fcbfa1893f44e661d0d8cd53391dadc">sampleRateChanged</a> (double newSampleRate)</td></tr>
 <tr class="separator:a2fcbfa1893f44e661d0d8cd53391dadc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3a55830c3474a3dc663365d43b581c1"><td class="memItemLeft" align="right" valign="top">virtual void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classPlugin.html#ac3a55830c3474a3dc663365d43b581c1">ioChanged</a> (uint16_t numInputs, uint16_t numOutputs)</td></tr>
+<tr class="separator:ac3a55830c3474a3dc663365d43b581c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -178,7 +180,7 @@ Buffer size is only a hint though, the host might call <a class="el" href="class
 <p>DISTRHO_PLUGIN_WANT_PROGRAMS activates program related features.<br  />
 When enabled you need to implement <a class="el" href="classPlugin.html#a54d66af3111541b7c118f9749ef0231b">initProgramName()</a> and <a class="el" href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">loadProgram()</a>.</p>
 <p>DISTRHO_PLUGIN_WANT_STATE activates internal state features.<br  />
-When enabled you need to implement initStateKey() and <a class="el" href="classPlugin.html#afcbb504b824bacea622de9bac09b2331">setState()</a>.</p>
+When enabled you need to implement <a class="el" href="classPlugin.html#ad4ab623187f905c250a42284704eb840">initState()</a> and <a class="el" href="classPlugin.html#afcbb504b824bacea622de9bac09b2331">setState()</a>.</p>
 <p>The process function <a class="el" href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">run()</a> changes wherever DISTRHO_PLUGIN_WANT_MIDI_INPUT is enabled or not.<br  />
 When enabled it provides midi input events. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
@@ -786,7 +788,9 @@ For commercial plugins this should return some short copyright information. </p>
 </table>
 </div><div class="memdoc">
 <p>Get the plugin unique Id.<br  />
-This value is used by LADSPA, DSSI and VST plugin formats. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst()</a> </dd></dl>
+This value is used by LADSPA, DSSI, VST2, VST3 and AUv2 plugin formats.<br  />
+</p><dl class="section note"><dt>Note</dt><dd>It is preferred that you set DISTRHO_PLUGIN_UNIQUE_ID macro instead of overriding this call, as that is required for AUv2 plugins anyhow. </dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst()</a> </dd></dl>
 
 </div>
 </div>
@@ -1313,6 +1317,45 @@ This function will only be called when the plugin is deactivated. </p><dl class=
 </div><div class="memdoc">
 <p>Optional callback to inform the plugin about a sample rate change.<br  />
 This function will only be called when the plugin is deactivated. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="classPlugin.html#a3e162cfe8f1c52bf09805fd327bcc3c4">getSampleRate()</a> </dd></dl>
+
+</div>
+</div>
+<a id="ac3a55830c3474a3dc663365d43b581c1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3a55830c3474a3dc663365d43b581c1">&#9670;&nbsp;</a></span>ioChanged()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual void Plugin::ioChanged </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>numInputs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>numOutputs</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">protected</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Optional callback to inform the plugin about audio port IO changes.<br  />
+This function will only be called when the plugin is deactivated.<br  />
+Only used in AU (AudioUnit) format when DISTRHO_PLUGIN_EXTRA_IO is defined. </p><dl class="section see"><dt>See also</dt><dd>DISTRHO_PLUGIN_EXTRA_IO </dd></dl>
 
 </div>
 </div>

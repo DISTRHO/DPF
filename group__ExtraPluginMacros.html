@@ -74,6 +74,8 @@ Macros</h2></td></tr>
 <tr class="separator:ga692c508f53e1eb8747e261d2435490b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga9e6df7bd76cecd30e3762a58e29cd011"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ExtraPluginMacros.html#ga9e6df7bd76cecd30e3762a58e29cd011">DPF_VST_SHOW_PARAMETER_OUTPUTS</a></td></tr>
 <tr class="separator:ga9e6df7bd76cecd30e3762a58e29cd011"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga1942006206023a3943ce25a275de0179"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ExtraPluginMacros.html#ga1942006206023a3943ce25a275de0179">DPF_VST3_DONT_USE_BRAND_ID</a></td></tr>
+<tr class="separator:ga1942006206023a3943ce25a275de0179"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gabf2289230c19cc52d848bb174955f379"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ExtraPluginMacros.html#gabf2289230c19cc52d848bb174955f379">DGL_FILE_BROWSER_DISABLED</a></td></tr>
 <tr class="separator:gabf2289230c19cc52d848bb174955f379"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga38bbd9136e90d6b4ecd77823fc2f29ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__ExtraPluginMacros.html#ga38bbd9136e90d6b4ecd77823fc2f29ab">DGL_NO_SHARED_RESOURCES</a></td></tr>
@@ -118,6 +120,22 @@ Under DPF makefiles this can be enabled by using <code>make DPF_RUNTIME_TESTING=
 </div><div class="memdoc">
 <p>Whether to show parameter outputs in the VST2 plugins.<br  />
 This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters. </p>
+
+</div>
+</div>
+<a id="ga1942006206023a3943ce25a275de0179"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga1942006206023a3943ce25a275de0179">&#9670;&nbsp;</a></span>DPF_VST3_DONT_USE_BRAND_ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DPF_VST3_DONT_USE_BRAND_ID</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Forcibly ignore DISTRHO_PLUGIN_BRAND_ID for VST3 plugins.<br  />
+This is required for DPF-based VST3 plugins that got released without setting DISTRHO_PLUGIN_BRAND_ID first. </p>
 
 </div>
 </div>

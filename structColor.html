@@ -90,6 +90,16 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a8d51b3f9457c1d9524ad67c94152b99a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3f163d59e5a313f742acdd2bbd47441f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">withAlpha</a> (float alpha) const noexcept</td></tr>
 <tr class="separator:a3f163d59e5a313f742acdd2bbd47441f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9649cf7255a6241a7b08fda056875853"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a9649cf7255a6241a7b08fda056875853">minus</a> (int value) const noexcept</td></tr>
+<tr class="separator:a9649cf7255a6241a7b08fda056875853"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbd3f5d38f0b344179c7fd1aa6561fa3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#abbd3f5d38f0b344179c7fd1aa6561fa3">minus</a> (float value) const noexcept</td></tr>
+<tr class="separator:abbd3f5d38f0b344179c7fd1aa6561fa3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3c9595604828b97c3cf1bfeb323cfbe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#ad3c9595604828b97c3cf1bfeb323cfbe">plus</a> (int value) const noexcept</td></tr>
+<tr class="separator:ad3c9595604828b97c3cf1bfeb323cfbe"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a919d9746e01fa6ca7083e17242b371d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a919d9746e01fa6ca7083e17242b371d2">plus</a> (float value) const noexcept</td></tr>
+<tr class="separator:a919d9746e01fa6ca7083e17242b371d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1cc575ce361080042b5072f91ca52893"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structColor.html">Color</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a1cc575ce361080042b5072f91ca52893">invert</a> () const noexcept</td></tr>
+<tr class="separator:a1cc575ce361080042b5072f91ca52893"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96283f5b9ad6f6465e40f69012aca00f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a96283f5b9ad6f6465e40f69012aca00f">interpolate</a> (const <a class="el" href="structColor.html">Color</a> &amp;other, float u) noexcept</td></tr>
 <tr class="separator:a96283f5b9ad6f6465e40f69012aca00f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a16880d42b2d52ed23eb307ed2980a9a3"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structColor.html#a16880d42b2d52ed23eb307ed2980a9a3">isEqual</a> (const <a class="el" href="structColor.html">Color</a> &amp;color, bool <a class="el" href="structColor.html#a3f163d59e5a313f742acdd2bbd47441f">withAlpha</a>=true) noexcept</td></tr>
@@ -368,6 +378,140 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Create a new color based on this one but with a different alpha value. </p>
+
+</div>
+</div>
+<a id="a9649cf7255a6241a7b08fda056875853"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9649cf7255a6241a7b08fda056875853">&#9670;&nbsp;</a></span>minus() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::minus </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but with subtracted numeric value on all elements. Value must be in [0..255] range. </p>
+
+</div>
+</div>
+<a id="abbd3f5d38f0b344179c7fd1aa6561fa3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbd3f5d38f0b344179c7fd1aa6561fa3">&#9670;&nbsp;</a></span>minus() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::minus </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but with subtracted floating-point value on all elements. Value must be in [0..1] range. </p>
+
+</div>
+</div>
+<a id="ad3c9595604828b97c3cf1bfeb323cfbe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3c9595604828b97c3cf1bfeb323cfbe">&#9670;&nbsp;</a></span>plus() <span class="overload">[1/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::plus </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but with added numeric value on all elements. Value must be in [0..255] range. </p>
+
+</div>
+</div>
+<a id="a919d9746e01fa6ca7083e17242b371d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a919d9746e01fa6ca7083e17242b371d2">&#9670;&nbsp;</a></span>plus() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::plus </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>value</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but with added floating-point value on all elements. Value must be in [0..1] range. </p>
+
+</div>
+</div>
+<a id="a1cc575ce361080042b5072f91ca52893"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cc575ce361080042b5072f91ca52893">&#9670;&nbsp;</a></span>invert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structColor.html">Color</a> Color::invert </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Create a new color based on this one but colors inverted. </p>
 
 </div>
 </div>

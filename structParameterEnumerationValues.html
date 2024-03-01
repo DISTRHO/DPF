@@ -70,14 +70,14 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="DistrhoPlugin_8hpp_source.html">DistrhoPlugin.hpp</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="DistrhoDetails_8hpp_source.html">DistrhoDetails.hpp</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:ab1bbcf39e2efae872e9b8dbde17a045a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#ab1bbcf39e2efae872e9b8dbde17a045a">ParameterEnumerationValues</a> () noexcept</td></tr>
-<tr class="separator:ab1bbcf39e2efae872e9b8dbde17a045a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a109591a3392e28362de7e1e474f75ae2"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#a109591a3392e28362de7e1e474f75ae2">ParameterEnumerationValues</a> (uint32_t c, bool r, <a class="el" href="structParameterEnumerationValue.html">ParameterEnumerationValue</a> *v) noexcept</td></tr>
-<tr class="separator:a109591a3392e28362de7e1e474f75ae2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f8bc997ceb137ec7ead3b0468f6b0ef"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#a8f8bc997ceb137ec7ead3b0468f6b0ef">ParameterEnumerationValues</a> () noexcept</td></tr>
+<tr class="separator:a8f8bc997ceb137ec7ead3b0468f6b0ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08cf9d8ef22b0ddd6fb288307a3ff1bf"><td class="memItemLeft" align="right" valign="top">constexpr&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#a08cf9d8ef22b0ddd6fb288307a3ff1bf">ParameterEnumerationValues</a> (uint8_t c, bool r, <a class="el" href="structParameterEnumerationValue.html">ParameterEnumerationValue</a> *v) noexcept</td></tr>
+<tr class="separator:a08cf9d8ef22b0ddd6fb288307a3ff1bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
@@ -87,13 +87,15 @@ Public Attributes</h2></td></tr>
 <tr class="separator:a014ebcacbe68c3f77f2f8ac9ffe3cd6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae101471c5d819624398001c84c534b7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structParameterEnumerationValue.html">ParameterEnumerationValue</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#ae101471c5d819624398001c84c534b7a">values</a></td></tr>
 <tr class="separator:ae101471c5d819624398001c84c534b7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf882508439c41eb4c1bc38237dcc976"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structParameterEnumerationValues.html#acf882508439c41eb4c1bc38237dcc976">deleteLater</a></td></tr>
+<tr class="separator:acf882508439c41eb4c1bc38237dcc976"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Collection of parameter enumeration values.<br  />
-Handy class to handle the lifetime and count of all enumeration values. </p>
+<div class="textblock"><p>Details around parameter enumeration values.<br  />
+Wraps <a class="el" href="structParameterEnumerationValues.html">ParameterEnumerationValues</a> and provides a few extra details to the host about these values. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a id="ab1bbcf39e2efae872e9b8dbde17a045a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab1bbcf39e2efae872e9b8dbde17a045a">&#9670;&nbsp;</a></span>ParameterEnumerationValues() <span class="overload">[1/2]</span></h2>
+<a id="a8f8bc997ceb137ec7ead3b0468f6b0ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f8bc997ceb137ec7ead3b0468f6b0ef">&#9670;&nbsp;</a></span>ParameterEnumerationValues() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -102,7 +104,7 @@ Handy class to handle the lifetime and count of all enumeration values. </p>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ParameterEnumerationValues::ParameterEnumerationValues </td>
+          <td class="memname">constexpr ParameterEnumerationValues::ParameterEnumerationValues </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -110,7 +112,7 @@ Handy class to handle the lifetime and count of all enumeration values. </p>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
@@ -118,8 +120,8 @@ Handy class to handle the lifetime and count of all enumeration values. </p>
 
 </div>
 </div>
-<a id="a109591a3392e28362de7e1e474f75ae2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a109591a3392e28362de7e1e474f75ae2">&#9670;&nbsp;</a></span>ParameterEnumerationValues() <span class="overload">[2/2]</span></h2>
+<a id="a08cf9d8ef22b0ddd6fb288307a3ff1bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08cf9d8ef22b0ddd6fb288307a3ff1bf">&#9670;&nbsp;</a></span>ParameterEnumerationValues() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -128,9 +130,9 @@ Handy class to handle the lifetime and count of all enumeration values. </p>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">ParameterEnumerationValues::ParameterEnumerationValues </td>
+          <td class="memname">constexpr ParameterEnumerationValues::ParameterEnumerationValues </td>
           <td>(</td>
-          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramtype">uint8_t&#160;</td>
           <td class="paramname"><em>c</em>, </td>
         </tr>
         <tr>
@@ -153,12 +155,13 @@ Handy class to handle the lifetime and count of all enumeration values. </p>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">constexpr</span><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 <p>Constructor using custom values.<br  />
-The pointer to @values must have been allocated on the heap with <code>new</code>. </p>
+When using this constructor the pointer to @values MUST have been statically declared.<br  />
+It will not be automatically deleted later. </p>
 
 </div>
 </div>
@@ -189,7 +192,7 @@ The pointer to @values must have been allocated on the heap with <code>new</code
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Wherever the host is to be restricted to only use enumeration values.</p>
+<p>Whether the host is to be restricted to only use enumeration values.</p>
 <dl class="section note"><dt>Note</dt><dd>This mode is only a hint! Not all hosts and plugin formats support this mode. </dd></dl>
 
 </div>
@@ -206,12 +209,29 @@ The pointer to @values must have been allocated on the heap with <code>new</code
       </table>
 </div><div class="memdoc">
 <p>Array of @ParameterEnumerationValue items.<br  />
-This pointer must be null or have been allocated on the heap with <code>new <a class="el" href="structParameterEnumerationValue.html">ParameterEnumerationValue</a>[count]</code>. </p>
+When assining this pointer manually, it must be allocated on the heap with <code>new <a class="el" href="structParameterEnumerationValue.html">ParameterEnumerationValue</a>[count]</code>.<br  />
+The array pointer will be automatically deleted later unless <code>deleteLater</code> is set to false. </p>
+
+</div>
+</div>
+<a id="acf882508439c41eb4c1bc38237dcc976"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf882508439c41eb4c1bc38237dcc976">&#9670;&nbsp;</a></span>deleteLater</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool ParameterEnumerationValues::deleteLater</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Whether to take ownership of the <code>values</code> pointer.<br  />
+Defaults to true unless stated otherwise. </p>
 
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>distrho/<a class="el" href="DistrhoPlugin_8hpp_source.html">DistrhoPlugin.hpp</a></li>
+<li>distrho/<a class="el" href="DistrhoDetails_8hpp_source.html">DistrhoDetails.hpp</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

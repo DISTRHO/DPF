@@ -71,7 +71,7 @@ $(function() {
 <div class="contents">
 <div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/*</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> * DISTRHO Plugin Framework (DPF)</span></div>
-<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2022 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * Copyright (C) 2012-2024 Filipe Coelho &lt;falktx@falktx.com&gt;</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * Permission to use, copy, modify, and/or distribute this software for any purpose with</span></div>
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * or without fee is hereby granted, provided that the above copyright notice and this</span></div>
@@ -295,7 +295,7 @@ $(function() {
 <div class="line"><a name="l00224"></a><span class="lineno">  224</span>&#160;<span class="keyword">      </span>{</div>
 <div class="line"><a name="l00225"></a><span class="lineno">  225</span>&#160;          <span class="comment">// we only have one parameter so we can skip checking the index</span></div>
 <div class="line"><a name="l00226"></a><span class="lineno">  226</span>&#160; </div>
-<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;          parameter.<a class="code" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">hints</a>      = <a class="code" href="group__ParameterHints.html#ga6d39267b105c2d8dfc82a810c5e8a061">kParameterIsAutomatable</a>;</div>
+<div class="line"><a name="l00227"></a><span class="lineno">  227</span>&#160;          parameter.<a class="code" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">hints</a>      = <a class="code" href="group__ParameterHints.html#gaf82d83a105dc418877ef91e84ac6efd3">kParameterIsAutomatable</a>;</div>
 <div class="line"><a name="l00228"></a><span class="lineno">  228</span>&#160;          parameter.<a class="code" href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">name</a>       = <span class="stringliteral">&quot;Gain&quot;</span>;</div>
 <div class="line"><a name="l00229"></a><span class="lineno">  229</span>&#160;          parameter.<a class="code" href="structParameter.html#a3e546efd8dbd0d77351208b670719468">symbol</a>     = <span class="stringliteral">&quot;gain&quot;</span>;</div>
 <div class="line"><a name="l00230"></a><span class="lineno">  230</span>&#160;          parameter.<a class="code" href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">ranges</a>.<a class="code" href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">min</a> = 0.0f;</div>
@@ -405,7 +405,7 @@ $(function() {
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;<span class="comment">      */</span></div>
 <div class="line"><a name="l00335"></a><span class="lineno">  335</span>&#160;      <span class="keywordtype">void</span> initParameter(uint32_t index, <a class="code" href="structParameter.html">Parameter</a>&amp; parameter)<span class="keyword"> override</span></div>
 <div class="line"><a name="l00336"></a><span class="lineno">  336</span>&#160;<span class="keyword">      </span>{</div>
-<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;          parameter.<a class="code" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">hints</a>      = <a class="code" href="group__ParameterHints.html#ga6d39267b105c2d8dfc82a810c5e8a061">kParameterIsAutomatable</a>;</div>
+<div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;          parameter.<a class="code" href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">hints</a>      = <a class="code" href="group__ParameterHints.html#gaf82d83a105dc418877ef91e84ac6efd3">kParameterIsAutomatable</a>;</div>
 <div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;          parameter.<a class="code" href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">ranges</a>.<a class="code" href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">min</a> = 0.0f;</div>
 <div class="line"><a name="l00339"></a><span class="lineno">  339</span>&#160;          parameter.<a class="code" href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">ranges</a>.<a class="code" href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">max</a> = 2.0f;</div>
 <div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;          parameter.<a class="code" href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">ranges</a>.<a class="code" href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">def</a> = 1.0f;</div>
@@ -739,278 +739,307 @@ $(function() {
 <div class="line"><a name="l00668"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">  668</a></span>&#160;<span class="preprocessor">#define DISTRHO_UI_URI DISTRHO_PLUGIN_URI &quot;#UI&quot;</span></div>
 <div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;<span class="comment">   Custom LV2 category for the plugin.@n</span></div>
-<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;<span class="comment">   This is a single string, and can be one of the following values:</span></div>
-<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;<span class="comment">      - lv2:AllpassPlugin</span></div>
-<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;<span class="comment">      - lv2:AmplifierPlugin</span></div>
-<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;<span class="comment">      - lv2:AnalyserPlugin</span></div>
-<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;<span class="comment">      - lv2:BandpassPlugin</span></div>
-<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;<span class="comment">      - lv2:ChorusPlugin</span></div>
-<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;<span class="comment">      - lv2:CombPlugin</span></div>
-<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;<span class="comment">      - lv2:CompressorPlugin</span></div>
-<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;<span class="comment">      - lv2:ConstantPlugin</span></div>
-<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;<span class="comment">      - lv2:ConverterPlugin</span></div>
-<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;<span class="comment">      - lv2:DelayPlugin</span></div>
-<div class="line"><a name="l00684"></a><span class="lineno">  684</span>&#160;<span class="comment">      - lv2:DistortionPlugin</span></div>
-<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;<span class="comment">      - lv2:DynamicsPlugin</span></div>
-<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;<span class="comment">      - lv2:EQPlugin</span></div>
-<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;<span class="comment">      - lv2:EnvelopePlugin</span></div>
-<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;<span class="comment">      - lv2:ExpanderPlugin</span></div>
-<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;<span class="comment">      - lv2:FilterPlugin</span></div>
-<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;<span class="comment">      - lv2:FlangerPlugin</span></div>
-<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160;<span class="comment">      - lv2:FunctionPlugin</span></div>
-<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;<span class="comment">      - lv2:GatePlugin</span></div>
-<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;<span class="comment">      - lv2:GeneratorPlugin</span></div>
-<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160;<span class="comment">      - lv2:HighpassPlugin</span></div>
-<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;<span class="comment">      - lv2:InstrumentPlugin</span></div>
-<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;<span class="comment">      - lv2:LimiterPlugin</span></div>
-<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;<span class="comment">      - lv2:LowpassPlugin</span></div>
-<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;<span class="comment">      - lv2:MIDIPlugin</span></div>
-<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;<span class="comment">      - lv2:MixerPlugin</span></div>
-<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;<span class="comment">      - lv2:ModulatorPlugin</span></div>
-<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;<span class="comment">      - lv2:MultiEQPlugin</span></div>
-<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;<span class="comment">      - lv2:OscillatorPlugin</span></div>
-<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;<span class="comment">      - lv2:ParaEQPlugin</span></div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;<span class="comment">      - lv2:PhaserPlugin</span></div>
-<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;<span class="comment">      - lv2:PitchPlugin</span></div>
-<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;<span class="comment">      - lv2:ReverbPlugin</span></div>
-<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;<span class="comment">      - lv2:SimulatorPlugin</span></div>
-<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;<span class="comment">      - lv2:SpatialPlugin</span></div>
-<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;<span class="comment">      - lv2:SpectralPlugin</span></div>
-<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;<span class="comment">      - lv2:UtilityPlugin</span></div>
-<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;<span class="comment">      - lv2:WaveshaperPlugin</span></div>
-<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;<span class="comment">   See http://lv2plug.in/ns/lv2core for more information.</span></div>
-<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00715"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga97bd6556fb9fcfc181778edb4fceeeef">  715</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_LV2_CATEGORY &quot;lv2:Plugin&quot;</span></div>
-<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;<span class="comment">   Custom VST3 categories for the plugin.@n</span></div>
-<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;<span class="comment">   This is a single concatenated string of categories, separated by a @c |.</span></div>
-<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;<span class="comment">   Each effect category can be one of the following values:</span></div>
-<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;<span class="comment">      - Fx</span></div>
-<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;<span class="comment">      - Fx|Ambisonics</span></div>
-<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;<span class="comment">      - Fx|Analyzer</span></div>
-<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;<span class="comment">      - Fx|Delay</span></div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;<span class="comment">      - Fx|Distortion</span></div>
-<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;<span class="comment">      - Fx|Dynamics</span></div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;<span class="comment">      - Fx|EQ</span></div>
-<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;<span class="comment">      - Fx|Filter</span></div>
-<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;<span class="comment">      - Fx|Instrument</span></div>
-<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;<span class="comment">      - Fx|Instrument|External</span></div>
-<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;<span class="comment">      - Fx|Spatial</span></div>
-<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;<span class="comment">      - Fx|Generator</span></div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;<span class="comment">      - Fx|Mastering</span></div>
-<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;<span class="comment">      - Fx|Modulation</span></div>
-<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;<span class="comment">      - Fx|Network</span></div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;<span class="comment">      - Fx|Pitch Shift</span></div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;<span class="comment">      - Fx|Restoration</span></div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;<span class="comment">      - Fx|Reverb</span></div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;<span class="comment">      - Fx|Surround</span></div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;<span class="comment">      - Fx|Tools</span></div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;<span class="comment">   The AudioUnit type for a plugin.@n</span></div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;<span class="comment">   This is a 4-character symbol, automatically set by DPF based on other plugin macros.</span></div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;<span class="comment">   See https://developer.apple.com/documentation/audiotoolbox/1584142-audio_unit_types for more information.</span></div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00675"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga0cb49832109c90267e4e7f7272154d4d">  675</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_AU_TYPE aufx</span></div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;<span class="comment">   A 4-character symbol that identifies a brand or manufacturer, with at least one non-lower case character.@n</span></div>
+<div class="line"><a name="l00679"></a><span class="lineno">  679</span>&#160;<span class="comment">   Plugins from the same brand should use the same symbol.</span></div>
+<div class="line"><a name="l00680"></a><span class="lineno">  680</span>&#160;<span class="comment">   @note This macro is required when building AU plugins, and used for VST3 if present</span></div>
+<div class="line"><a name="l00681"></a><span class="lineno">  681</span>&#160;<span class="comment">   @note Setting this macro will change the uid of a VST3 plugin.</span></div>
+<div class="line"><a name="l00682"></a><span class="lineno">  682</span>&#160;<span class="comment">         If you already released a DPF-based VST3 plugin make sure to also enable DISTRHO_PLUGIN_VST3_OLD_ID_COMPAT</span></div>
+<div class="line"><a name="l00683"></a><span class="lineno">  683</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00684"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga9c9caf7e3376c9235c3529dbc612a964">  684</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_BRAND_ID Dstr</span></div>
+<div class="line"><a name="l00685"></a><span class="lineno">  685</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00686"></a><span class="lineno">  686</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160;<span class="comment">   A 4-character symbol which identifies a plugin.@n</span></div>
+<div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;<span class="comment">   It must be unique within at least a set of plugins from the brand.</span></div>
+<div class="line"><a name="l00689"></a><span class="lineno">  689</span>&#160;<span class="comment">   @note This macro is required when building AU plugins</span></div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00691"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga096d7684289e65485311a427ad8772f3">  691</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_UNIQUE_ID test</span></div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160;<span class="comment">   Custom LV2 category for the plugin.@n</span></div>
+<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;<span class="comment">   This is a single string, and can be one of the following values:</span></div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;<span class="comment">      - lv2:AllpassPlugin</span></div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;<span class="comment">      - lv2:AmplifierPlugin</span></div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;<span class="comment">      - lv2:AnalyserPlugin</span></div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;<span class="comment">      - lv2:BandpassPlugin</span></div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;<span class="comment">      - lv2:ChorusPlugin</span></div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;<span class="comment">      - lv2:CombPlugin</span></div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;<span class="comment">      - lv2:CompressorPlugin</span></div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;<span class="comment">      - lv2:ConstantPlugin</span></div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;<span class="comment">      - lv2:ConverterPlugin</span></div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;<span class="comment">      - lv2:DelayPlugin</span></div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;<span class="comment">      - lv2:DistortionPlugin</span></div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;<span class="comment">      - lv2:DynamicsPlugin</span></div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;<span class="comment">      - lv2:EQPlugin</span></div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;<span class="comment">      - lv2:EnvelopePlugin</span></div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;<span class="comment">      - lv2:ExpanderPlugin</span></div>
+<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;<span class="comment">      - lv2:FilterPlugin</span></div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;<span class="comment">      - lv2:FlangerPlugin</span></div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;<span class="comment">      - lv2:FunctionPlugin</span></div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;<span class="comment">      - lv2:GatePlugin</span></div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;<span class="comment">      - lv2:GeneratorPlugin</span></div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;<span class="comment">      - lv2:HighpassPlugin</span></div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;<span class="comment">      - lv2:InstrumentPlugin</span></div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;<span class="comment">      - lv2:LimiterPlugin</span></div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;<span class="comment">      - lv2:LowpassPlugin</span></div>
+<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;<span class="comment">      - lv2:MIDIPlugin</span></div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;<span class="comment">      - lv2:MixerPlugin</span></div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;<span class="comment">      - lv2:ModulatorPlugin</span></div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;<span class="comment">      - lv2:MultiEQPlugin</span></div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;<span class="comment">      - lv2:OscillatorPlugin</span></div>
+<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;<span class="comment">      - lv2:ParaEQPlugin</span></div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;<span class="comment">      - lv2:PhaserPlugin</span></div>
+<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;<span class="comment">      - lv2:PitchPlugin</span></div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;<span class="comment">      - lv2:ReverbPlugin</span></div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;<span class="comment">      - lv2:SimulatorPlugin</span></div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;<span class="comment">      - lv2:SpatialPlugin</span></div>
+<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;<span class="comment">      - lv2:SpectralPlugin</span></div>
+<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;<span class="comment">      - lv2:UtilityPlugin</span></div>
+<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;<span class="comment">      - lv2:WaveshaperPlugin</span></div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;<span class="comment">   See http://lv2plug.in/ns/lv2core for more information.</span></div>
+<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00738"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#ga97bd6556fb9fcfc181778edb4fceeeef">  738</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_LV2_CATEGORY &quot;lv2:Plugin&quot;</span></div>
+<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;<span class="comment">   Custom VST3 categories for the plugin.@n</span></div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;<span class="comment">   This is a single concatenated string of categories, separated by a @c |.</span></div>
 <div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;<span class="comment">   Each instrument category can be one of the following values:</span></div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;<span class="comment">   Each effect category can be one of the following values:</span></div>
 <div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;<span class="comment">      - Instrument</span></div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;<span class="comment">      - Instrument|Drum</span></div>
-<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;<span class="comment">      - Instrument|External</span></div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;<span class="comment">      - Instrument|Piano</span></div>
-<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;<span class="comment">      - Instrument|Sampler</span></div>
-<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;<span class="comment">      - Instrument|Synth</span></div>
-<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;<span class="comment">      - Instrument|Synth|Sampler</span></div>
-<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;<span class="comment">   And extra categories possible for any plugin type:</span></div>
-<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;<span class="comment">      - Mono</span></div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;<span class="comment">      - Stereo</span></div>
-<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00759"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">  759</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_VST3_CATEGORIES &quot;Fx|Stereo&quot;</span></div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="comment">   Custom CLAP features for the plugin.@n</span></div>
-<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;<span class="comment">   This is a list of features defined as a string array body, without the terminating @c , or nullptr.</span></div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;<span class="comment">   A top-level category can be set as feature and be one of the following values:</span></div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;<span class="comment">      - Fx</span></div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;<span class="comment">      - Fx|Ambisonics</span></div>
+<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;<span class="comment">      - Fx|Analyzer</span></div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;<span class="comment">      - Fx|Delay</span></div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;<span class="comment">      - Fx|Distortion</span></div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;<span class="comment">      - Fx|Dynamics</span></div>
+<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;<span class="comment">      - Fx|EQ</span></div>
+<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;<span class="comment">      - Fx|Filter</span></div>
+<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;<span class="comment">      - Fx|Instrument</span></div>
+<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;<span class="comment">      - Fx|Instrument|External</span></div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;<span class="comment">      - Fx|Spatial</span></div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;<span class="comment">      - Fx|Generator</span></div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;<span class="comment">      - Fx|Mastering</span></div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;<span class="comment">      - Fx|Modulation</span></div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;<span class="comment">      - Fx|Network</span></div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;<span class="comment">      - Fx|Pitch Shift</span></div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;<span class="comment">      - Fx|Restoration</span></div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;<span class="comment">      - Fx|Reverb</span></div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;<span class="comment">      - Fx|Surround</span></div>
+<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;<span class="comment">      - Fx|Tools</span></div>
 <div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="comment">      - instrument</span></div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="comment">      - audio-effect</span></div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;<span class="comment">      - note-effect</span></div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;<span class="comment">      - analyzer</span></div>
-<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;<span class="comment">   The following sub-categories can also be set:</span></div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;<span class="comment">      - synthesizer</span></div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;<span class="comment">      - sampler</span></div>
-<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;<span class="comment">      - drum</span></div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;<span class="comment">      - drum-machine</span></div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="comment">   Each instrument category can be one of the following values:</span></div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;<span class="comment">      - Instrument</span></div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;<span class="comment">      - Instrument|Drum</span></div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;<span class="comment">      - Instrument|External</span></div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;<span class="comment">      - Instrument|Piano</span></div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;<span class="comment">      - Instrument|Sampler</span></div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;<span class="comment">      - Instrument|Synth</span></div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;<span class="comment">      - Instrument|Synth|Sampler</span></div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;<span class="comment">   And extra categories possible for any plugin type:</span></div>
 <div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;<span class="comment">      - filter</span></div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;<span class="comment">      - phaser</span></div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;<span class="comment">      - equalizer</span></div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;<span class="comment">      - de-esser</span></div>
-<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;<span class="comment">      - phase-vocoder</span></div>
-<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;<span class="comment">      - granular</span></div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;<span class="comment">      - frequency-shifter</span></div>
-<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;<span class="comment">      - pitch-shifter</span></div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;<span class="comment">      - Mono</span></div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;<span class="comment">      - Stereo</span></div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00782"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">  782</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_VST3_CATEGORIES &quot;Fx|Stereo&quot;</span></div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;<span class="comment">   Custom CLAP features for the plugin.@n</span></div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;<span class="comment">   This is a list of features defined as a string array body, without the terminating @c , or nullptr.</span></div>
 <div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;<span class="comment">      - distortion</span></div>
-<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;<span class="comment">      - transient-shaper</span></div>
-<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;<span class="comment">      - compressor</span></div>
-<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="comment">      - limiter</span></div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;<span class="comment">      - flanger</span></div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="comment">      - chorus</span></div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="comment">      - delay</span></div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="comment">      - reverb</span></div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;<span class="comment">      - tremolo</span></div>
-<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="comment">      - glitch</span></div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;<span class="comment">      - utility</span></div>
-<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;<span class="comment">      - pitch-correction</span></div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;<span class="comment">      - restoration</span></div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;<span class="comment">      - multi-effects</span></div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;<span class="comment">      - mixing</span></div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;<span class="comment">      - mastering</span></div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;<span class="comment">   And finally the following audio capabilities can be set:</span></div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;<span class="comment">      - mono</span></div>
-<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;<span class="comment">      - stereo</span></div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;<span class="comment">      - surround</span></div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;<span class="comment">      - ambisonic</span></div>
-<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00817"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf0fb4c49c6a9019a63bc52fbc2592f2">  817</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_CLAP_FEATURES &quot;audio-effect&quot;</span>, &quot;stereo&quot;</div>
-<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;<span class="comment">   The plugin id when exporting in CLAP format, in reverse URI form.</span></div>
-<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;<span class="comment">   @note This macro is required when building CLAP plugins</span></div>
-<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;<span class="comment">*/</span></div>
-<div class="line"><a name="l00823"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaae12b710ad877c03b2a369e4a5e05140">  823</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_CLAP_ID &quot;studio.kx.distrho.effect&quot;</span></div>
-<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;<span class="comment">/** @} */</span></div>
-<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160; </div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;<span class="comment"> * Plugin Macros */</span></div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;<span class="comment">   A top-level category can be set as feature and be one of the following values:</span></div>
+<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;<span class="comment">      - instrument</span></div>
+<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;<span class="comment">      - audio-effect</span></div>
+<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;<span class="comment">      - note-effect</span></div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;<span class="comment">      - analyzer</span></div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;<span class="comment">   The following sub-categories can also be set:</span></div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;<span class="comment">      - synthesizer</span></div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;<span class="comment">      - sampler</span></div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;<span class="comment">      - drum</span></div>
+<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;<span class="comment">      - drum-machine</span></div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;<span class="comment">      - filter</span></div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;<span class="comment">      - phaser</span></div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;<span class="comment">      - equalizer</span></div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;<span class="comment">      - de-esser</span></div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;<span class="comment">      - phase-vocoder</span></div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;<span class="comment">      - granular</span></div>
+<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;<span class="comment">      - frequency-shifter</span></div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;<span class="comment">      - pitch-shifter</span></div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;<span class="comment">      - distortion</span></div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;<span class="comment">      - transient-shaper</span></div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;<span class="comment">      - compressor</span></div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;<span class="comment">      - limiter</span></div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;<span class="comment">      - flanger</span></div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;<span class="comment">      - chorus</span></div>
+<div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;<span class="comment">      - delay</span></div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;<span class="comment">      - reverb</span></div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;<span class="comment">      - tremolo</span></div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;<span class="comment">      - glitch</span></div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;<span class="comment">      - utility</span></div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;<span class="comment">      - pitch-correction</span></div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;<span class="comment">      - restoration</span></div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;<span class="comment">      - multi-effects</span></div>
 <div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;<span class="comment">   @defgroup ExtraPluginMacros Extra Plugin Macros</span></div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;<span class="comment">      - mixing</span></div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;<span class="comment">      - mastering</span></div>
 <div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;<span class="comment">   C Macros to customize DPF behaviour.</span></div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;<span class="comment">   And finally the following audio capabilities can be set:</span></div>
 <div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;<span class="comment">   These are macros that do not set plugin features or information, but instead change DPF internals.</span></div>
-<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;<span class="comment">   They are all optional.</span></div>
-<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;<span class="comment">   Unless stated otherwise, values are assumed to be a simple/empty define.</span></div>
-<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;<span class="comment">   @{</span></div>
-<div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160;<span class="comment">      - mono</span></div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;<span class="comment">      - stereo</span></div>
+<div class="line"><a name="l00837"></a><span class="lineno">  837</span>&#160;<span class="comment">      - surround</span></div>
+<div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;<span class="comment">      - ambisonic</span></div>
+<div class="line"><a name="l00839"></a><span class="lineno">  839</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00840"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gadf0fb4c49c6a9019a63bc52fbc2592f2">  840</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_CLAP_FEATURES &quot;audio-effect&quot;</span>, &quot;stereo&quot;</div>
 <div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160;<span class="comment">   Whether to enable runtime plugin tests.@n</span></div>
-<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;<span class="comment">   This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n</span></div>
-<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;<span class="comment">   Useful to enable as part of CI, can safely be skipped.@n</span></div>
-<div class="line"><a name="l00846"></a><span class="lineno">  846</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make DPF_RUNTIME_TESTING=true`.</span></div>
+<div class="line"><a name="l00843"></a><span class="lineno">  843</span>&#160;<span class="comment">   The plugin id when exporting in CLAP format, in reverse URI form.</span></div>
+<div class="line"><a name="l00844"></a><span class="lineno">  844</span>&#160;<span class="comment">   @note This macro is required when building CLAP plugins</span></div>
+<div class="line"><a name="l00845"></a><span class="lineno">  845</span>&#160;<span class="comment">*/</span></div>
+<div class="line"><a name="l00846"></a><span class="lineno"><a class="line" href="group__PluginMacros.html#gaae12b710ad877c03b2a369e4a5e05140">  846</a></span>&#160;<span class="preprocessor">#define DISTRHO_PLUGIN_CLAP_ID &quot;studio.kx.distrho.effect&quot;</span></div>
 <div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;<span class="comment">   @note Some checks are only available with the GCC compiler,</span></div>
-<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;<span class="comment">         for detecting if a virtual function has been reimplemented.</span></div>
-<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00851"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga692c508f53e1eb8747e261d2435490b7">  851</a></span>&#160;<span class="preprocessor">#define DPF_RUNTIME_TESTING</span></div>
+<div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160; </div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;<span class="comment"> * Plugin Macros */</span></div>
 <div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;<span class="comment">   Whether to show parameter outputs in the VST2 plugins.@n</span></div>
-<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;<span class="comment">   This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters.</span></div>
-<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00857"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga9e6df7bd76cecd30e3762a58e29cd011">  857</a></span>&#160;<span class="preprocessor">#define DPF_VST_SHOW_PARAMETER_OUTPUTS</span></div>
-<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;<span class="comment">   Disable all file browser related code.@n</span></div>
-<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;<span class="comment">   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS=&quot;-DDGL_FILE_BROWSER_DISABLED&quot;`)</span></div>
-<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00863"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#gabf2289230c19cc52d848bb174955f379">  863</a></span>&#160;<span class="preprocessor">#define DGL_FILE_BROWSER_DISABLED</span></div>
+<div class="line"><a name="l00854"></a><span class="lineno">  854</span>&#160;<span class="comment">   @defgroup ExtraPluginMacros Extra Plugin Macros</span></div>
+<div class="line"><a name="l00855"></a><span class="lineno">  855</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00856"></a><span class="lineno">  856</span>&#160;<span class="comment">   C Macros to customize DPF behaviour.</span></div>
+<div class="line"><a name="l00857"></a><span class="lineno">  857</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00858"></a><span class="lineno">  858</span>&#160;<span class="comment">   These are macros that do not set plugin features or information, but instead change DPF internals.</span></div>
+<div class="line"><a name="l00859"></a><span class="lineno">  859</span>&#160;<span class="comment">   They are all optional.</span></div>
+<div class="line"><a name="l00860"></a><span class="lineno">  860</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00861"></a><span class="lineno">  861</span>&#160;<span class="comment">   Unless stated otherwise, values are assumed to be a simple/empty define.</span></div>
+<div class="line"><a name="l00862"></a><span class="lineno">  862</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00863"></a><span class="lineno">  863</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00864"></a><span class="lineno">  864</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00865"></a><span class="lineno">  865</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="comment">   Disable resource files, like internally used fonts.@n</span></div>
-<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;<span class="comment">   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS=&quot;-DDGL_NO_SHARED_RESOURCES&quot;`)</span></div>
-<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00869"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga38bbd9136e90d6b4ecd77823fc2f29ab">  869</a></span>&#160;<span class="preprocessor">#define DGL_NO_SHARED_RESOURCES</span></div>
+<div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;<span class="comment">   Whether to enable runtime plugin tests.@n</span></div>
+<div class="line"><a name="l00867"></a><span class="lineno">  867</span>&#160;<span class="comment">   This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n</span></div>
+<div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;<span class="comment">   Useful to enable as part of CI, can safely be skipped.@n</span></div>
+<div class="line"><a name="l00869"></a><span class="lineno">  869</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make DPF_RUNTIME_TESTING=true`.</span></div>
 <div class="line"><a name="l00870"></a><span class="lineno">  870</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;<span class="comment">   Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.</span></div>
-<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.</span></div>
-<div class="line"><a name="l00874"></a><span class="lineno">  874</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;<span class="comment">   @note This is experimental and incomplete, contributions are welcome and appreciated.</span></div>
-<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00877"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga01988e3c3664d33fac3b7958715b00fd">  877</a></span>&#160;<span class="preprocessor">#define DGL_USE_OPENGL3</span></div>
-<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;<span class="comment">/** @} */</span></div>
-<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160; </div>
-<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;<span class="comment"> * Namespace Macros */</span></div>
-<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;<span class="comment">   @defgroup NamespaceMacros Namespace Macros</span></div>
-<div class="line"><a name="l00886"></a><span class="lineno">  886</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;<span class="comment">   C Macros to use and customize DPF namespaces.</span></div>
-<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;<span class="comment">   These are macros that serve as helpers around C++ namespaces, and also as a way to set custom namespaces during a build.</span></div>
-<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00871"></a><span class="lineno">  871</span>&#160;<span class="comment">   @note Some checks are only available with the GCC compiler,</span></div>
+<div class="line"><a name="l00872"></a><span class="lineno">  872</span>&#160;<span class="comment">         for detecting if a virtual function has been reimplemented.</span></div>
+<div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00874"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga692c508f53e1eb8747e261d2435490b7">  874</a></span>&#160;<span class="preprocessor">#define DPF_RUNTIME_TESTING</span></div>
+<div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;<span class="comment">   Whether to show parameter outputs in the VST2 plugins.@n</span></div>
+<div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;<span class="comment">   This is disabled (unset) by default, as the VST2 format has no notion of read-only parameters.</span></div>
+<div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00880"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga9e6df7bd76cecd30e3762a58e29cd011">  880</a></span>&#160;<span class="preprocessor">#define DPF_VST_SHOW_PARAMETER_OUTPUTS</span></div>
+<div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;<span class="comment">   Forcibly ignore DISTRHO_PLUGIN_BRAND_ID for VST3 plugins.@n</span></div>
+<div class="line"><a name="l00884"></a><span class="lineno">  884</span>&#160;<span class="comment">   This is required for DPF-based VST3 plugins that got released without setting DISTRHO_PLUGIN_BRAND_ID first.</span></div>
+<div class="line"><a name="l00885"></a><span class="lineno">  885</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00886"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga1942006206023a3943ce25a275de0179">  886</a></span>&#160;<span class="preprocessor">#define DPF_VST3_DONT_USE_BRAND_ID</span></div>
+<div class="line"><a name="l00887"></a><span class="lineno">  887</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00888"></a><span class="lineno">  888</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00889"></a><span class="lineno">  889</span>&#160;<span class="comment">   Disable all file browser related code.@n</span></div>
+<div class="line"><a name="l00890"></a><span class="lineno">  890</span>&#160;<span class="comment">   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS=&quot;-DDGL_FILE_BROWSER_DISABLED&quot;`)</span></div>
 <div class="line"><a name="l00891"></a><span class="lineno">  891</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00892"></a><span class="lineno">  892</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;<span class="comment">   Compiler macro that sets the C++ namespace for DPF plugins.@n</span></div>
-<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;<span class="comment">   If unset during build, it will use the name @b DISTRHO by default.</span></div>
-<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160;<span class="comment">   Unless you know exactly what you are doing, you do need to modify this value.@n</span></div>
-<div class="line"><a name="l00898"></a><span class="lineno">  898</span>&#160;<span class="comment">   The only probable useful case for customizing it is if you are building a big collection of very similar DPF-based plugins in your application.@n</span></div>
-<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;<span class="comment">   For example, having 2 different versions of the same plugin that should behave differently but still exist within the same binary.</span></div>
-<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;<span class="comment">   On macOS (where due to Objective-C restrictions all code that interacts with Cocoa needs to be in a flat namespace),</span></div>
-<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;<span class="comment">   DPF will automatically use the plugin name as prefix to flat namespace functions in order to avoid conflicts.</span></div>
+<div class="line"><a name="l00892"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#gabf2289230c19cc52d848bb174955f379">  892</a></span>&#160;<span class="preprocessor">#define DGL_FILE_BROWSER_DISABLED</span></div>
+<div class="line"><a name="l00893"></a><span class="lineno">  893</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00894"></a><span class="lineno">  894</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00895"></a><span class="lineno">  895</span>&#160;<span class="comment">   Disable resource files, like internally used fonts.@n</span></div>
+<div class="line"><a name="l00896"></a><span class="lineno">  896</span>&#160;<span class="comment">   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS=&quot;-DDGL_NO_SHARED_RESOURCES&quot;`)</span></div>
+<div class="line"><a name="l00897"></a><span class="lineno">  897</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00898"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga38bbd9136e90d6b4ecd77823fc2f29ab">  898</a></span>&#160;<span class="preprocessor">#define DGL_NO_SHARED_RESOURCES</span></div>
+<div class="line"><a name="l00899"></a><span class="lineno">  899</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00900"></a><span class="lineno">  900</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00901"></a><span class="lineno">  901</span>&#160;<span class="comment">   Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.</span></div>
+<div class="line"><a name="l00902"></a><span class="lineno">  902</span>&#160;<span class="comment">   Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.</span></div>
 <div class="line"><a name="l00903"></a><span class="lineno">  903</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00904"></a><span class="lineno">  904</span>&#160;<span class="comment">   So, basically, it is DPF&#39;s job to make sure plugin binaries are 100% usable as-is.@n</span></div>
-<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;<span class="comment">   You typically do not need to care about this at all.</span></div>
-<div class="line"><a name="l00906"></a><span class="lineno">  906</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00907"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">  907</a></span>&#160;<span class="preprocessor">#define DISTRHO_NAMESPACE DISTRHO</span></div>
-<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;<span class="comment">   Compiler macro that begins the C++ namespace for @b DISTRHO, as needed for (the DSP side of) plugins.@n</span></div>
-<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;<span class="comment">   All classes in DPF are within this namespace except for UI/graphics stuff.</span></div>
-<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;<span class="comment">   @see END_NAMESPACE_DISTRHO</span></div>
-<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00914"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">  914</a></span>&#160;<span class="preprocessor">#define START_NAMESPACE_DISTRHO namespace DISTRHO_NAMESPACE {</span></div>
+<div class="line"><a name="l00904"></a><span class="lineno">  904</span>&#160;<span class="comment">   @note This is experimental and incomplete, contributions are welcome and appreciated.</span></div>
+<div class="line"><a name="l00905"></a><span class="lineno">  905</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00906"></a><span class="lineno"><a class="line" href="group__ExtraPluginMacros.html#ga01988e3c3664d33fac3b7958715b00fd">  906</a></span>&#160;<span class="preprocessor">#define DGL_USE_OPENGL3</span></div>
+<div class="line"><a name="l00907"></a><span class="lineno">  907</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00908"></a><span class="lineno">  908</span>&#160;<span class="comment">/** @} */</span></div>
+<div class="line"><a name="l00909"></a><span class="lineno">  909</span>&#160; </div>
+<div class="line"><a name="l00910"></a><span class="lineno">  910</span>&#160;<span class="comment">/* ------------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00911"></a><span class="lineno">  911</span>&#160;<span class="comment"> * Namespace Macros */</span></div>
+<div class="line"><a name="l00912"></a><span class="lineno">  912</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00913"></a><span class="lineno">  913</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00914"></a><span class="lineno">  914</span>&#160;<span class="comment">   @defgroup NamespaceMacros Namespace Macros</span></div>
 <div class="line"><a name="l00915"></a><span class="lineno">  915</span>&#160;<span class="comment"></span> </div>
-<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;<span class="comment">   Close the namespace previously started by @ref START_NAMESPACE_DISTRHO.@n</span></div>
-<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;<span class="comment">   This doesn&#39;t really need to be a macro, it is just prettier/more consistent that way.</span></div>
-<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00920"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">  920</a></span>&#160;<span class="preprocessor">#define END_NAMESPACE_DISTRHO }</span></div>
+<div class="line"><a name="l00916"></a><span class="lineno">  916</span>&#160;<span class="comment">   C Macros to use and customize DPF namespaces.</span></div>
+<div class="line"><a name="l00917"></a><span class="lineno">  917</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00918"></a><span class="lineno">  918</span>&#160;<span class="comment">   These are macros that serve as helpers around C++ namespaces, and also as a way to set custom namespaces during a build.</span></div>
+<div class="line"><a name="l00919"></a><span class="lineno">  919</span>&#160;<span class="comment">   @{</span></div>
+<div class="line"><a name="l00920"></a><span class="lineno">  920</span>&#160;<span class="comment"> */</span></div>
 <div class="line"><a name="l00921"></a><span class="lineno">  921</span>&#160;<span class="comment"></span> </div>
 <div class="line"><a name="l00922"></a><span class="lineno">  922</span>&#160;<span class="comment">/**</span></div>
-<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;<span class="comment">   Make the @b DISTRHO namespace available in the current function scope.@n</span></div>
-<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;<span class="comment">   This is not set by default in order to avoid conflicts with commonly used names such as &quot;Parameter&quot; and &quot;Plugin&quot;.</span></div>
-<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00926"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">  926</a></span>&#160;<span class="preprocessor">#define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;</span></div>
-<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160; </div>
-<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;<span class="comment">/* TODO</span></div>
-<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;<span class="comment"> *</span></div>
-<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;<span class="comment"> * DISTRHO_MACRO_AS_STRING_VALUE</span></div>
-<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;<span class="comment"> * DISTRHO_MACRO_AS_STRING</span></div>
-<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;<span class="comment"> * DISTRHO_PROPER_CPP11_SUPPORT</span></div>
-<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;<span class="comment"> * DONT_SET_USING_DISTRHO_NAMESPACE</span></div>
-<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00923"></a><span class="lineno">  923</span>&#160;<span class="comment">   Compiler macro that sets the C++ namespace for DPF plugins.@n</span></div>
+<div class="line"><a name="l00924"></a><span class="lineno">  924</span>&#160;<span class="comment">   If unset during build, it will use the name @b DISTRHO by default.</span></div>
+<div class="line"><a name="l00925"></a><span class="lineno">  925</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00926"></a><span class="lineno">  926</span>&#160;<span class="comment">   Unless you know exactly what you are doing, you do need to modify this value.@n</span></div>
+<div class="line"><a name="l00927"></a><span class="lineno">  927</span>&#160;<span class="comment">   The only probable useful case for customizing it is if you are building a big collection of very similar DPF-based plugins in your application.@n</span></div>
+<div class="line"><a name="l00928"></a><span class="lineno">  928</span>&#160;<span class="comment">   For example, having 2 different versions of the same plugin that should behave differently but still exist within the same binary.</span></div>
+<div class="line"><a name="l00929"></a><span class="lineno">  929</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00930"></a><span class="lineno">  930</span>&#160;<span class="comment">   On macOS (where due to Objective-C restrictions all code that interacts with Cocoa needs to be in a flat namespace),</span></div>
+<div class="line"><a name="l00931"></a><span class="lineno">  931</span>&#160;<span class="comment">   DPF will automatically use the plugin name as prefix to flat namespace functions in order to avoid conflicts.</span></div>
+<div class="line"><a name="l00932"></a><span class="lineno">  932</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00933"></a><span class="lineno">  933</span>&#160;<span class="comment">   So, basically, it is DPF&#39;s job to make sure plugin binaries are 100% usable as-is.@n</span></div>
+<div class="line"><a name="l00934"></a><span class="lineno">  934</span>&#160;<span class="comment">   You typically do not need to care about this at all.</span></div>
 <div class="line"><a name="l00935"></a><span class="lineno">  935</span>&#160;<span class="comment"> */</span></div>
-<div class="line"><a name="l00936"></a><span class="lineno">  936</span>&#160; </div>
-<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;<span class="comment">// -----------------------------------------------------------------------------------------------------------</span></div>
-<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160; </div>
-<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;<a class="code" href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div>
-<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160; </div>
-<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DOXYGEN</span></div>
-<div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:966</div></div>
+<div class="line"><a name="l00936"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gad4d95edc702f6066ba2f41740f7e5393">  936</a></span>&#160;<span class="preprocessor">#define DISTRHO_NAMESPACE DISTRHO</span></div>
+<div class="line"><a name="l00937"></a><span class="lineno">  937</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00938"></a><span class="lineno">  938</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00939"></a><span class="lineno">  939</span>&#160;<span class="comment">   Compiler macro that begins the C++ namespace for @b DISTRHO, as needed for (the DSP side of) plugins.@n</span></div>
+<div class="line"><a name="l00940"></a><span class="lineno">  940</span>&#160;<span class="comment">   All classes in DPF are within this namespace except for UI/graphics stuff.</span></div>
+<div class="line"><a name="l00941"></a><span class="lineno">  941</span>&#160;<span class="comment">   @see END_NAMESPACE_DISTRHO</span></div>
+<div class="line"><a name="l00942"></a><span class="lineno">  942</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00943"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">  943</a></span>&#160;<span class="preprocessor">#define START_NAMESPACE_DISTRHO namespace DISTRHO_NAMESPACE {</span></div>
+<div class="line"><a name="l00944"></a><span class="lineno">  944</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00945"></a><span class="lineno">  945</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00946"></a><span class="lineno">  946</span>&#160;<span class="comment">   Close the namespace previously started by @ref START_NAMESPACE_DISTRHO.@n</span></div>
+<div class="line"><a name="l00947"></a><span class="lineno">  947</span>&#160;<span class="comment">   This doesn&#39;t really need to be a macro, it is just prettier/more consistent that way.</span></div>
+<div class="line"><a name="l00948"></a><span class="lineno">  948</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00949"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">  949</a></span>&#160;<span class="preprocessor">#define END_NAMESPACE_DISTRHO }</span></div>
+<div class="line"><a name="l00950"></a><span class="lineno">  950</span>&#160;<span class="comment"></span> </div>
+<div class="line"><a name="l00951"></a><span class="lineno">  951</span>&#160;<span class="comment">/**</span></div>
+<div class="line"><a name="l00952"></a><span class="lineno">  952</span>&#160;<span class="comment">   Make the @b DISTRHO namespace available in the current function scope.@n</span></div>
+<div class="line"><a name="l00953"></a><span class="lineno">  953</span>&#160;<span class="comment">   This is not set by default in order to avoid conflicts with commonly used names such as &quot;Parameter&quot; and &quot;Plugin&quot;.</span></div>
+<div class="line"><a name="l00954"></a><span class="lineno">  954</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00955"></a><span class="lineno"><a class="line" href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">  955</a></span>&#160;<span class="preprocessor">#define USE_NAMESPACE_DISTRHO using namespace DISTRHO_NAMESPACE;</span></div>
+<div class="line"><a name="l00956"></a><span class="lineno">  956</span>&#160; </div>
+<div class="line"><a name="l00957"></a><span class="lineno">  957</span>&#160;<span class="comment">/* TODO</span></div>
+<div class="line"><a name="l00958"></a><span class="lineno">  958</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00959"></a><span class="lineno">  959</span>&#160;<span class="comment"> * DISTRHO_MACRO_AS_STRING_VALUE</span></div>
+<div class="line"><a name="l00960"></a><span class="lineno">  960</span>&#160;<span class="comment"> * DISTRHO_MACRO_AS_STRING</span></div>
+<div class="line"><a name="l00961"></a><span class="lineno">  961</span>&#160;<span class="comment"> * DISTRHO_PROPER_CPP11_SUPPORT</span></div>
+<div class="line"><a name="l00962"></a><span class="lineno">  962</span>&#160;<span class="comment"> * DONT_SET_USING_DISTRHO_NAMESPACE</span></div>
+<div class="line"><a name="l00963"></a><span class="lineno">  963</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00964"></a><span class="lineno">  964</span>&#160;<span class="comment"> */</span></div>
+<div class="line"><a name="l00965"></a><span class="lineno">  965</span>&#160; </div>
+<div class="line"><a name="l00966"></a><span class="lineno">  966</span>&#160;<span class="comment">// -----------------------------------------------------------------------------------------------------------</span></div>
+<div class="line"><a name="l00967"></a><span class="lineno">  967</span>&#160; </div>
+<div class="line"><a name="l00968"></a><span class="lineno">  968</span>&#160;<a class="code" href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div>
+<div class="line"><a name="l00969"></a><span class="lineno">  969</span>&#160; </div>
+<div class="line"><a name="l00970"></a><span class="lineno">  970</span>&#160;<span class="preprocessor">#endif </span><span class="comment">// DOXYGEN</span></div>
+<div class="ttc" id="aclassPlugin_html"><div class="ttname"><a href="classPlugin.html">Plugin</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:61</div></div>
 <div class="ttc" id="aclassPlugin_html_a00f7945c16149db6845fbcc2af729f4f"><div class="ttname"><a href="classPlugin.html#a00f7945c16149db6845fbcc2af729f4f">Plugin::getLabel</a></div><div class="ttdeci">virtual const char * getLabel() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_a0a969c78f8455ac6ba65fa42e8c498f6"><div class="ttname"><a href="classPlugin.html#a0a969c78f8455ac6ba65fa42e8c498f6">Plugin::run</a></div><div class="ttdeci">virtual void run(const float **inputs, float **outputs, uint32_t frames, const MidiEvent *midiEvents, uint32_t midiEventCount)=0</div></div>
 <div class="ttc" id="aclassPlugin_html_a44eb1bfcc3a3e5949ad053fc9ce55ce8"><div class="ttname"><a href="classPlugin.html#a44eb1bfcc3a3e5949ad053fc9ce55ce8">Plugin::loadProgram</a></div><div class="ttdeci">virtual void loadProgram(uint32_t index)</div></div>
@@ -1018,24 +1047,24 @@ $(function() {
 <div class="ttc" id="aclassPlugin_html_a955832840de786a7a22798f0ef451c5d"><div class="ttname"><a href="classPlugin.html#a955832840de786a7a22798f0ef451c5d">Plugin::getMaker</a></div><div class="ttdeci">virtual const char * getMaker() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_abae540dd93caf4834270358a8aad334a"><div class="ttname"><a href="classPlugin.html#abae540dd93caf4834270358a8aad334a">Plugin::getVersion</a></div><div class="ttdeci">virtual uint32_t getVersion() const =0</div></div>
 <div class="ttc" id="aclassPlugin_html_ad6ff8c80227d5ceebd40b96f3be29a66"><div class="ttname"><a href="classPlugin.html#ad6ff8c80227d5ceebd40b96f3be29a66">Plugin::getUniqueId</a></div><div class="ttdeci">virtual int64_t getUniqueId() const =0</div></div>
-<div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:31</div></div>
-<div class="ttc" id="aclassUI_html"><div class="ttname"><a href="classUI.html">UI</a></div><div class="ttdef"><b>Definition:</b> DistrhoUI.hpp:77</div></div>
+<div class="ttc" id="aclassString_html"><div class="ttname"><a href="classString.html">String</a></div><div class="ttdef"><b>Definition:</b> String.hpp:35</div></div>
+<div class="ttc" id="aclassUI_html"><div class="ttname"><a href="classUI.html">UI</a></div><div class="ttdef"><b>Definition:</b> DistrhoUI.hpp:78</div></div>
 <div class="ttc" id="agroup__EntryPoints_html_ga87f1fa9084f2490ca04ea733292c6dee"><div class="ttname"><a href="group__EntryPoints.html#ga87f1fa9084f2490ca04ea733292c6dee">createPlugin</a></div><div class="ttdeci">Plugin * createPlugin()</div></div>
-<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga6827e90feb9bdcb6f76175a245fbf12c"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a></div><div class="ttdeci">static constexpr int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:75</div></div>
-<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga95d67ff74d46b2c80f15c7790a523154"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a></div><div class="ttdeci">static constexpr uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:84</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:920</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_gac4cb97c393d20c28ba19365d844341cd"><div class="ttname"><a href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">START_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define START_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:914</div></div>
-<div class="ttc" id="agroup__NamespaceMacros_html_gadcd7e7d900fbae0fa1a71d6fbab4d59c"><div class="ttname"><a href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">USE_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define USE_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:926</div></div>
-<div class="ttc" id="agroup__ParameterHints_html_ga6d39267b105c2d8dfc82a810c5e8a061"><div class="ttname"><a href="group__ParameterHints.html#ga6d39267b105c2d8dfc82a810c5e8a061">kParameterIsAutomatable</a></div><div class="ttdeci">static const uint32_t kParameterIsAutomatable</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:92</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga6827e90feb9bdcb6f76175a245fbf12c"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a></div><div class="ttdeci">static constexpr int64_t d_cconst(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:72</div></div>
+<div class="ttc" id="agroup__MiscellaneousFunctions_html_ga95d67ff74d46b2c80f15c7790a523154"><div class="ttname"><a href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a></div><div class="ttdeci">static constexpr uint32_t d_version(const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</div><div class="ttdef"><b>Definition:</b> DistrhoUtils.hpp:90</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_ga3ff541a449593e069a29e92d21e38ef3"><div class="ttname"><a href="group__NamespaceMacros.html#ga3ff541a449593e069a29e92d21e38ef3">END_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define END_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:949</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_gac4cb97c393d20c28ba19365d844341cd"><div class="ttname"><a href="group__NamespaceMacros.html#gac4cb97c393d20c28ba19365d844341cd">START_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define START_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:943</div></div>
+<div class="ttc" id="agroup__NamespaceMacros_html_gadcd7e7d900fbae0fa1a71d6fbab4d59c"><div class="ttname"><a href="group__NamespaceMacros.html#gadcd7e7d900fbae0fa1a71d6fbab4d59c">USE_NAMESPACE_DISTRHO</a></div><div class="ttdeci">#define USE_NAMESPACE_DISTRHO</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:955</div></div>
+<div class="ttc" id="agroup__ParameterHints_html_gaf82d83a105dc418877ef91e84ac6efd3"><div class="ttname"><a href="group__ParameterHints.html#gaf82d83a105dc418877ef91e84ac6efd3">kParameterIsAutomatable</a></div><div class="ttdeci">static constexpr const uint32_t kParameterIsAutomatable</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:96</div></div>
 <div class="ttc" id="agroup__PluginMacros_html_gad95e24b17f196260cee15255fdb5b677"><div class="ttname"><a href="group__PluginMacros.html#gad95e24b17f196260cee15255fdb5b677">DISTRHO_PLUGIN_WANT_PROGRAMS</a></div><div class="ttdeci">#define DISTRHO_PLUGIN_WANT_PROGRAMS</div><div class="ttdef"><b>Definition:</b> DistrhoInfo.hpp:581</div></div>
-<div class="ttc" id="astructParameterRanges_html_a175c78c905c598df929a4450e4d2a2a0"><div class="ttname"><a href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">ParameterRanges::max</a></div><div class="ttdeci">float max</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:311</div></div>
-<div class="ttc" id="astructParameterRanges_html_a63c40988463a8ace9d0e9e55a00f3c7b"><div class="ttname"><a href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">ParameterRanges::min</a></div><div class="ttdeci">float min</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:306</div></div>
-<div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:301</div></div>
-<div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:547</div></div>
-<div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:593</div></div>
-<div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:552</div></div>
-<div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:574</div></div>
-<div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoPlugin.hpp:559</div></div>
+<div class="ttc" id="astructParameterRanges_html_a175c78c905c598df929a4450e4d2a2a0"><div class="ttname"><a href="structParameterRanges.html#a175c78c905c598df929a4450e4d2a2a0">ParameterRanges::max</a></div><div class="ttdeci">float max</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:338</div></div>
+<div class="ttc" id="astructParameterRanges_html_a63c40988463a8ace9d0e9e55a00f3c7b"><div class="ttname"><a href="structParameterRanges.html#a63c40988463a8ace9d0e9e55a00f3c7b">ParameterRanges::min</a></div><div class="ttdeci">float min</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:333</div></div>
+<div class="ttc" id="astructParameterRanges_html_aa0aba68115bcfff25c35b2da2f7aed4c"><div class="ttname"><a href="structParameterRanges.html#aa0aba68115bcfff25c35b2da2f7aed4c">ParameterRanges::def</a></div><div class="ttdeci">float def</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:328</div></div>
+<div class="ttc" id="astructParameter_html"><div class="ttname"><a href="structParameter.html">Parameter</a></div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:588</div></div>
+<div class="ttc" id="astructParameter_html_a2d0c81e4fb8fad18d920ef6ecd4a64db"><div class="ttname"><a href="structParameter.html#a2d0c81e4fb8fad18d920ef6ecd4a64db">Parameter::ranges</a></div><div class="ttdeci">ParameterRanges ranges</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:634</div></div>
+<div class="ttc" id="astructParameter_html_a397fb977f0c6cbec31df4f141ca3f5b3"><div class="ttname"><a href="structParameter.html#a397fb977f0c6cbec31df4f141ca3f5b3">Parameter::hints</a></div><div class="ttdeci">uint32_t hints</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:593</div></div>
+<div class="ttc" id="astructParameter_html_a3e546efd8dbd0d77351208b670719468"><div class="ttname"><a href="structParameter.html#a3e546efd8dbd0d77351208b670719468">Parameter::symbol</a></div><div class="ttdeci">String symbol</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:615</div></div>
+<div class="ttc" id="astructParameter_html_ae63c1fcfb20e320bada1f58c04ff18da"><div class="ttname"><a href="structParameter.html#ae63c1fcfb20e320bada1f58c04ff18da">Parameter::name</a></div><div class="ttdeci">String name</div><div class="ttdef"><b>Definition:</b> DistrhoDetails.hpp:600</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

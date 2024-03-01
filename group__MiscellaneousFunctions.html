@@ -72,6 +72,8 @@ $(function() {
 Functions</h2></td></tr>
 <tr class="memitem:ga6827e90feb9bdcb6f76175a245fbf12c"><td class="memItemLeft" align="right" valign="top">static constexpr int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__MiscellaneousFunctions.html#ga6827e90feb9bdcb6f76175a245fbf12c">d_cconst</a> (const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) noexcept</td></tr>
 <tr class="separator:ga6827e90feb9bdcb6f76175a245fbf12c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:gaa6e4fa8bdcebd0d15f4ead3bb923e3f3"><td class="memItemLeft" align="right" valign="top">static constexpr uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__MiscellaneousFunctions.html#gaa6e4fa8bdcebd0d15f4ead3bb923e3f3">d_cconst</a> (const char str[4])</td></tr>
+<tr class="separator:gaa6e4fa8bdcebd0d15f4ead3bb923e3f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga95d67ff74d46b2c80f15c7790a523154"><td class="memItemLeft" align="right" valign="top">static constexpr uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__MiscellaneousFunctions.html#ga95d67ff74d46b2c80f15c7790a523154">d_version</a> (const uint8_t major, const uint8_t minor, const uint8_t micro) noexcept</td></tr>
 <tr class="separator:ga95d67ff74d46b2c80f15c7790a523154"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga208c5bc138b7d4d4e318b6174c9dbf6d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__MiscellaneousFunctions.html#ga208c5bc138b7d4d4e318b6174c9dbf6d">d_pass</a> () noexcept</td></tr>
@@ -80,7 +82,7 @@ Functions</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="ga6827e90feb9bdcb6f76175a245fbf12c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ga6827e90feb9bdcb6f76175a245fbf12c">&#9670;&nbsp;</a></span>d_cconst()</h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ga6827e90feb9bdcb6f76175a245fbf12c">&#9670;&nbsp;</a></span>d_cconst() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,6 +128,33 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Return a 32-bit number from 4 8-bit numbers.<br  />
 The return type is a int64_t for better compatibility with plugin formats that use such numbers. </p>
+
+</div>
+</div>
+<a id="gaa6e4fa8bdcebd0d15f4ead3bb923e3f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#gaa6e4fa8bdcebd0d15f4ead3bb923e3f3">&#9670;&nbsp;</a></span>d_cconst() <span class="overload">[2/2]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static constexpr uint32_t d_cconst </td>
+          <td>(</td>
+          <td class="paramtype">const char&#160;</td>
+          <td class="paramname"><em>str</em>[4]</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span><span class="mlabel">constexpr</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Return a 32-bit number from 4 ASCII characters. </p>
 
 </div>
 </div>

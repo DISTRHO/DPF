@@ -122,6 +122,12 @@ Macros</h2></td></tr>
 <tr class="separator:gabadb9d9ba7f479df39b3963ee60b7a4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga420a88022da249b9f38a6046998dbd7c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga420a88022da249b9f38a6046998dbd7c">DISTRHO_UI_URI</a>&#160;&#160;&#160;<a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a> &quot;#UI&quot;</td></tr>
 <tr class="separator:ga420a88022da249b9f38a6046998dbd7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga0cb49832109c90267e4e7f7272154d4d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga0cb49832109c90267e4e7f7272154d4d">DISTRHO_PLUGIN_AU_TYPE</a>&#160;&#160;&#160;aufx</td></tr>
+<tr class="separator:ga0cb49832109c90267e4e7f7272154d4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga9c9caf7e3376c9235c3529dbc612a964"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga9c9caf7e3376c9235c3529dbc612a964">DISTRHO_PLUGIN_BRAND_ID</a>&#160;&#160;&#160;Dstr</td></tr>
+<tr class="separator:ga9c9caf7e3376c9235c3529dbc612a964"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ga096d7684289e65485311a427ad8772f3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga096d7684289e65485311a427ad8772f3">DISTRHO_PLUGIN_UNIQUE_ID</a>&#160;&#160;&#160;test</td></tr>
+<tr class="separator:ga096d7684289e65485311a427ad8772f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#ga97bd6556fb9fcfc181778edb4fceeeef">DISTRHO_PLUGIN_LV2_CATEGORY</a>&#160;&#160;&#160;&quot;lv2:Plugin&quot;</td></tr>
 <tr class="separator:ga97bd6556fb9fcfc181778edb4fceeeef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:gab5bfd0f8045aa7eedd2ec6f5c9c2d17f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="group__PluginMacros.html#gab5bfd0f8045aa7eedd2ec6f5c9c2d17f">DISTRHO_PLUGIN_VST3_CATEGORIES</a>&#160;&#160;&#160;&quot;Fx|Stereo&quot;</td></tr>
@@ -561,6 +567,56 @@ Enabling this options makes it possible for the user to resize the plugin <a cla
 </div><div class="memdoc">
 <p>The UI URI when exporting in LV2 format.<br  />
 By default this is set to <a class="el" href="group__PluginMacros.html#ga9cc186448134e6a1956474b3878c97a8">DISTRHO_PLUGIN_URI</a> with "#UI" as suffix. </p>
+
+</div>
+</div>
+<a id="ga0cb49832109c90267e4e7f7272154d4d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga0cb49832109c90267e4e7f7272154d4d">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_AU_TYPE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_AU_TYPE&#160;&#160;&#160;aufx</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The AudioUnit type for a plugin.<br  />
+This is a 4-character symbol, automatically set by DPF based on other plugin macros. See <a href="https://developer.apple.com/documentation/audiotoolbox/1584142-audio_unit_types">https://developer.apple.com/documentation/audiotoolbox/1584142-audio_unit_types</a> for more information. </p>
+
+</div>
+</div>
+<a id="ga9c9caf7e3376c9235c3529dbc612a964"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga9c9caf7e3376c9235c3529dbc612a964">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_BRAND_ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_BRAND_ID&#160;&#160;&#160;Dstr</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A 4-character symbol that identifies a brand or manufacturer, with at least one non-lower case character.<br  />
+Plugins from the same brand should use the same symbol. </p><dl class="section note"><dt>Note</dt><dd>This macro is required when building AU plugins, and used for VST3 if present </dd>
+<dd>
+Setting this macro will change the uid of a VST3 plugin. If you already released a DPF-based VST3 plugin make sure to also enable DISTRHO_PLUGIN_VST3_OLD_ID_COMPAT </dd></dl>
+
+</div>
+</div>
+<a id="ga096d7684289e65485311a427ad8772f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ga096d7684289e65485311a427ad8772f3">&#9670;&nbsp;</a></span>DISTRHO_PLUGIN_UNIQUE_ID</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTRHO_PLUGIN_UNIQUE_ID&#160;&#160;&#160;test</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A 4-character symbol which identifies a plugin.<br  />
+It must be unique within at least a set of plugins from the brand. </p><dl class="section note"><dt>Note</dt><dd>This macro is required when building AU plugins </dd></dl>
 
 </div>
 </div>

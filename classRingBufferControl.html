@@ -80,6 +80,9 @@ bool&#160;</td><td class="memItemRight" valign="bottom"><b>isDataAvailableForRea
 <tr class="memitem:ac795fc07ffa5c591b9516b514dedc7aa"><td class="memItemLeft" align="right" valign="top"><a id="ac795fc07ffa5c591b9516b514dedc7aa"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>isEmpty</b> () const noexcept</td></tr>
 <tr class="separator:ac795fc07ffa5c591b9516b514dedc7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a904c3d96f7c501357bde107392307746"><td class="memItemLeft" align="right" valign="top"><a id="a904c3d96f7c501357bde107392307746"></a>
+uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getSize</b> () const noexcept</td></tr>
+<tr class="separator:a904c3d96f7c501357bde107392307746"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a798dea2af126ea7749d4325e401d6b90"><td class="memItemLeft" align="right" valign="top"><a id="a798dea2af126ea7749d4325e401d6b90"></a>
 uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getReadableDataSize</b> () const noexcept</td></tr>
 <tr class="separator:a798dea2af126ea7749d4325e401d6b90"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -89,6 +92,9 @@ uint32_t&#160;</td><td class="memItemRight" valign="bottom"><b>getWritableDataSi
 <tr class="memitem:a8a93880bd798351b66c7c546ee91d7af"><td class="memItemLeft" align="right" valign="top"><a id="a8a93880bd798351b66c7c546ee91d7af"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><b>clearData</b> () noexcept</td></tr>
 <tr class="separator:a8a93880bd798351b66c7c546ee91d7af"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a84cf5dece61cf5d0a3050eb4d757f072"><td class="memItemLeft" align="right" valign="top"><a id="a84cf5dece61cf5d0a3050eb4d757f072"></a>
+void&#160;</td><td class="memItemRight" valign="bottom"><b>flush</b> () noexcept</td></tr>
+<tr class="separator:a84cf5dece61cf5d0a3050eb4d757f072"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7861a13bc22c3a692490002e11cfa001"><td class="memItemLeft" align="right" valign="top"><a id="a7861a13bc22c3a692490002e11cfa001"></a>
 bool&#160;</td><td class="memItemRight" valign="bottom"><b>readBool</b> () noexcept</td></tr>
 <tr class="separator:a7861a13bc22c3a692490002e11cfa001"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -200,11 +206,11 @@ class RingBufferControl&lt; BufferStruct &gt;</h3>
 <div class="line">       <span class="comment">// do something with &quot;anotherData&quot;</span></div>
 <div class="line">   }</div>
 <div class="line">}</div>
-<div class="ttc" id="aclassHeapRingBuffer_html"><div class="ttname"><a href="classHeapRingBuffer.html">HeapRingBuffer</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:689</div></div>
-<div class="ttc" id="aclassHeapRingBuffer_html_ab7d60a3acc757e88e1c7254626ce9709"><div class="ttname"><a href="classHeapRingBuffer.html#ab7d60a3acc757e88e1c7254626ce9709">HeapRingBuffer::createBuffer</a></div><div class="ttdeci">bool createBuffer(const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:711</div></div>
-<div class="ttc" id="aclassRingBufferControl_html_a72e173dcae573f6e2e8ac4cfeb8aa96b"><div class="ttname"><a href="classRingBufferControl.html#a72e173dcae573f6e2e8ac4cfeb8aa96b">RingBufferControl::writeCustomData</a></div><div class="ttdeci">bool writeCustomData(const void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:472</div></div>
-<div class="ttc" id="aclassRingBufferControl_html_aafdb126b2885c507cec852bc63fd6cb8"><div class="ttname"><a href="classRingBufferControl.html#aafdb126b2885c507cec852bc63fd6cb8">RingBufferControl::readCustomData</a></div><div class="ttdeci">bool readCustomData(void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:356</div></div>
-<div class="ttc" id="aclassRingBufferControl_html_afe0c53d2591eb265d657c1cab6800036"><div class="ttname"><a href="classRingBufferControl.html#afe0c53d2591eb265d657c1cab6800036">RingBufferControl::commitWrite</a></div><div class="ttdeci">bool commitWrite() noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:496</div></div>
+<div class="ttc" id="aclassHeapRingBuffer_html"><div class="ttname"><a href="classHeapRingBuffer.html">HeapRingBuffer</a></div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:711</div></div>
+<div class="ttc" id="aclassHeapRingBuffer_html_ab7d60a3acc757e88e1c7254626ce9709"><div class="ttname"><a href="classHeapRingBuffer.html#ab7d60a3acc757e88e1c7254626ce9709">HeapRingBuffer::createBuffer</a></div><div class="ttdeci">bool createBuffer(const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:733</div></div>
+<div class="ttc" id="aclassRingBufferControl_html_a72e173dcae573f6e2e8ac4cfeb8aa96b"><div class="ttname"><a href="classRingBufferControl.html#a72e173dcae573f6e2e8ac4cfeb8aa96b">RingBufferControl::writeCustomData</a></div><div class="ttdeci">bool writeCustomData(const void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:494</div></div>
+<div class="ttc" id="aclassRingBufferControl_html_aafdb126b2885c507cec852bc63fd6cb8"><div class="ttname"><a href="classRingBufferControl.html#aafdb126b2885c507cec852bc63fd6cb8">RingBufferControl::readCustomData</a></div><div class="ttdeci">bool readCustomData(void *const data, const uint32_t size) noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:378</div></div>
+<div class="ttc" id="aclassRingBufferControl_html_afe0c53d2591eb265d657c1cab6800036"><div class="ttname"><a href="classRingBufferControl.html#afe0c53d2591eb265d657c1cab6800036">RingBufferControl::commitWrite</a></div><div class="ttdeci">bool commitWrite() noexcept</div><div class="ttdef"><b>Definition:</b> RingBuffer.hpp:518</div></div>
 </div><!-- fragment --><dl class="section see"><dt>See also</dt><dd><a class="el" href="structHeapBuffer.html">HeapBuffer</a> </dd></dl>
 </div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="aafdb126b2885c507cec852bc63fd6cb8"></a>

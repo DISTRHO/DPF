@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['layout_638',['Layout',['../structLayout.html',1,'']]],
-  ['leakedobjectdetector_639',['LeakedObjectDetector',['../classLeakedObjectDetector.html',1,'']]],
-  ['line_640',['Line',['../classLine.html',1,'']]]
+  ['layout_662',['Layout',['../structLayout.html',1,'']]],
+  ['leakedobjectdetector_663',['LeakedObjectDetector',['../classLeakedObjectDetector.html',1,'']]],
+  ['line_664',['Line',['../classLine.html',1,'']]],
+  ['linearvaluesmoother_665',['LinearValueSmoother',['../classLinearValueSmoother.html',1,'']]]
 ];
