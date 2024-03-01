@@ -679,7 +679,7 @@ START_NAMESPACE_DISTRHO
    Plugins from the same brand should use the same symbol.
    @note This macro is required when building AU plugins, and used for VST3 if present
    @note Setting this macro will change the uid of a VST3 plugin.
-         If you already released a DPF-based VST3 plugin make sure to also enable DISTRHO_PLUGIN_VST3_OLD_ID_COMPAT
+         If you already released a DPF-based VST3 plugin make sure to also enable DPF_VST3_DONT_USE_BRAND_ID
  */
 #define DISTRHO_PLUGIN_BRAND_ID Dstr
 
