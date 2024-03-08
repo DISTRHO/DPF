@@ -1,6 +1,6 @@
 # DISTRHO Plugin Framework (DPF)
 # Copyright (C) 2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
-# Copyright (C) 2022 Filipe Coelho <falktx@falktx.com>
+# Copyright (C) 2022-2024 Filipe Coelho <falktx@falktx.com>
 #
 # SPDX-License-Identifier: ISC
 
@@ -661,12 +661,12 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
   else()
     target_sources(dgl-cairo PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
   endif()
-  if(NOT APPLE)
-    target_sources(dgl-cairo PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else()
+  if(APPLE)
     target_sources(dgl-cairo PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-cairo PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
   endif()
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl")
@@ -728,12 +728,12 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
   else()
     target_sources(dgl-opengl PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
   endif()
-  if(NOT APPLE)
-    target_sources(dgl-opengl PRIVATE
-      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
-  else()
+  if(APPLE)
     target_sources(dgl-opengl PRIVATE
       "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
   endif()
   target_include_directories(dgl-opengl PUBLIC
     "${DPF_ROOT_DIR}/dgl")
@@ -855,7 +855,9 @@ endfunction()
 function(dpf__add_module NAME)
   add_library("${NAME}" MODULE ${ARGN})
   dpf__set_target_defaults("${NAME}")
-  if(MINGW)
+  if(APPLE)
+    set_target_properties("${NAME}" PROPERTIES SUFFIX ".dylib")
+  elseif(MINGW)
     target_link_libraries("${NAME}" PRIVATE "-static")
   endif()
 endfunction()
