@@ -72,7 +72,7 @@ ENABLE_LV2=$(find . -maxdepth 1 -name '*.lv2' -print -quit | grep -q '.lv2' && e
 if [ -n "${ENABLE_LV2}" ]; then
   mkdir pkg/lv2
   cp -RL *.lv2 pkg/lv2/
-  [ -n "${MACOS_APP_DEV_ID}" ] && codesign -s "${MACOS_APP_DEV_ID}" --force --verbose --option=runtime pkg/lv2/*.lv2/*.so
+  [ -n "${MACOS_APP_DEV_ID}" ] && codesign -s "${MACOS_APP_DEV_ID}" --force --verbose --option=runtime pkg/lv2/*.lv2/*.dylib
   pkgbuild \
     --identifier "studio.kx.distrho.plugins.${SNAME}.lv2bundles" \
     --install-location "/Library/Audio/Plug-Ins/LV2/" \
