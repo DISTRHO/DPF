@@ -4,15 +4,22 @@
 # Created by falkTX
 #
 
-AR  ?= ar
-CC  ?= gcc
-CXX ?= g++
-
 # Before including this file, a few variables can be set in order to tweak build behaviour:
+
 # DEBUG=true
+#  Building in debug mode
+#  Implies SKIP_STRIPPING=true as well
+
 # NOOPT=true
+#  Do not automatically set optimization flags
+
 # SKIP_STRIPPING=true
+#  Do not strip output binaries
+
 # NVG_DISABLE_SKIPPING_WHITESPACE=true
+#  Tweak `nvgTextBreakLines` to allow space characters
+#  FIXME proper details
+
 # NVG_FONT_TEXTURE_FLAGS=0
 # FILE_BROWSER_DISABLED=true
 # WINDOWS_ICON_ID=0
@@ -21,9 +28,23 @@ CXX ?= g++
 # USE_OPENGL3=true
 # USE_NANOVG_FBO=true
 # USE_NANOVG_FREETYPE=true
+
 # STATIC_BUILD=true
+#  Tweak build to be able to generate fully static builds (e.g. skip use of libdl)
+#  Experimental, use only if you know what you are doing
+
 # FORCE_NATIVE_AUDIO_FALLBACK=true
+#  Do not use JACK for the standalone, only native audio
+
 # SKIP_NATIVE_AUDIO_FALLBACK=true
+#  Do not use native audio for the standalone, only use JACK
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Read target compiler from environment
+
+AR  ?= ar
+CC  ?= gcc
+CXX ?= g++
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Protect against multiple inclusion

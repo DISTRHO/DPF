@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
-# Makefile for DPF Example Plugins #
-# -------------------------------- #
+# Makefile for DPF #
+# ---------------- #
 # Created by falkTX
 #
 
