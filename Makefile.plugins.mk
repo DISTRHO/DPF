@@ -6,20 +6,25 @@
 
 # NOTE: NAME, FILES_DSP and FILES_UI must have been defined before including this file!
 
+# extra useful variables to define before including this file:
+# - DPF_BUILD_DIR: where to place temporary build files
+# - DPF_TARGET_DIR: where to place final binary files
+# - UI_TYPE: one of cairo, opengl, opengl3 or external, with opengl being default
+#            ("generic" is also allowed if only using image widgets)
+
+# override the "all" target after including this file to define which plugin formats to build, like so:
+# all: au clap jack lv2_sep vst2 vst3
+
+# NOTE the "lv2" target refers to a monolithic build (dsp and ui combined),
+#      while "lv2_sep" target has dsp and ui in separate binaries.
+#      use of this target must match the definition of `DISTRHO_PLUGIN_WANT_DIRECT_ACCESS`
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Try to figure out where DPF is located
+
 ifeq ($(DPF_PATH),)
-ifneq (,$(wildcard dpf/Makefile.base.mk))
-BASE_PATH=.
-DPF_PATH=dpf
-else ifneq (,$(wildcard ../dpf/Makefile.base.mk))
-BASE_PATH=..
-DPF_PATH=../dpf
-else ifneq (,$(wildcard ../../dpf/Makefile.base.mk))
-BASE_PATH=../..
-DPF_PATH=../../dpf
-else
-BASE_PATH=../..
-DPF_PATH=../..
-endif
+DPF_PATH=$(subst $(notdir $(lastword $(MAKEFILE_LIST))),,$(lastword $(MAKEFILE_LIST)))
+BASE_PATH=$(dir $(DPF_PATH))
 endif
 
 include $(DPF_PATH)/Makefile.base.mk
