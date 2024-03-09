@@ -23,9 +23,29 @@
 # Try to figure out where DPF is located
 
 ifeq ($(DPF_PATH),)
+
+# find path to this makefile
 DPF_PLUGINS_MAKEFILE = $(lastword $(filter %Makefile.plugins.mk,$(MAKEFILE_LIST)))
-DPF_PATH = $(patsubst %/,%,$(patsubst %Makefile.plugins.mk,%,$(DPF_PLUGINS_MAKEFILE)))
+
+# error out if wrongly named or referencing it without any path
+ifeq (,$(findstring /Makefile.plugins.mk,$(DPF_PLUGINS_MAKEFILE)))
+$(error wrong inclusion of Makefile.plugins.mk, must be either absolute or relative path)
+endif
+
+# find path to DPF
+DPF_PATH = $(patsubst %/Makefile.plugins.mk,%,$(DPF_PLUGINS_MAKEFILE))
+
+# best guess for where to place binary files
+ifeq ($(DPF_PATH),..)
+BASE_PATH = $(DPF_PATH)
+else ifeq ($(DPF_PATH),../..)
+BASE_PATH = $(DPF_PATH)
+else ifeq ($(DPF_PATH),../../..)
+BASE_PATH = $(DPF_PATH)
+else
 BASE_PATH = $(patsubst %/,%,$(dir $(DPF_PATH)))
+endif
+
 endif
 
 include $(DPF_PATH)/Makefile.base.mk
