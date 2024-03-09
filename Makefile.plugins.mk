@@ -23,8 +23,9 @@
 # Try to figure out where DPF is located
 
 ifeq ($(DPF_PATH),)
-DPF_PATH=$(subst $(notdir $(lastword $(MAKEFILE_LIST))),,$(lastword $(MAKEFILE_LIST)))
-BASE_PATH=$(dir $(DPF_PATH))
+DPF_PLUGINS_MAKEFILE = $(lastword $(filter %Makefile.plugins.mk,$(MAKEFILE_LIST)))
+DPF_PATH = $(patsubst %/,%,$(patsubst %Makefile.plugins.mk,%,$(DPF_PLUGINS_MAKEFILE)))
+BASE_PATH = $(patsubst %/,%,$(dir $(DPF_PATH)))
 endif
 
 include $(DPF_PATH)/Makefile.base.mk
