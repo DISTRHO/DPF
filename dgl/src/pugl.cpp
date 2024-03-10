@@ -407,9 +407,16 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
         if (const PuglStatus status = puglSetSize(view, width, height))
             return status;
 
-        // handle new PUGL_DEFAULT_SIZE hint
-        if (const PuglStatus status = updateSizeHints(view))
-            return status;
+        // updateSizeHints will use last known size, which is not yet updated
+        const PuglSpan lastWidth = view->lastConfigure.width;
+        const PuglSpan lastHeight = view->lastConfigure.height;
+        view->lastConfigure.width = static_cast<PuglSpan>(width);
+        view->lastConfigure.height = static_cast<PuglSpan>(height);
+
+        updateSizeHints(view);
+
+        view->lastConfigure.width = lastWidth;
+        view->lastConfigure.height = lastHeight;
 
         // flush size changes
         XFlush(view->world->impl->display);
