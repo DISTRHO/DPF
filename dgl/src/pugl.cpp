@@ -363,7 +363,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
 
 #ifdef DGL_USING_X11
     // workaround issues in fluxbox, see https://github.com/lv2/pugl/issues/118
-    if (view->impl->win && !view->parent)
+    if (view->impl->win && !view->parent && !view->transientParent)
     {
         view->sizeHints[PUGL_DEFAULT_SIZE].width = view->sizeHints[PUGL_DEFAULT_SIZE].height = 0;
     }
