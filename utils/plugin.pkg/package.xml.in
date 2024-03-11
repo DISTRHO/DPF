@@ -3,38 +3,38 @@
     <title>@name@</title>
     <domains enable_anywhere="false" enable_currentUserHome="false" enable_localSystem="true" />
     <options customize="always" hostArchitectures="arm64,x86_64" require-scripts="false" rootVolumeOnly="true" />
-    <pkg-ref id="studio.kx.distrho.@sname@" />
+    <pkg-ref id="@symbol@" />
     <welcome file="@builddir@/welcome.txt" mime-type="text/plain" />
     @skip_au_start@
-    <choice id="studio.kx.distrho.@sname@-au" title="AU" description="Install AU plugins" visible="true">
-        <pkg-ref id="studio.kx.distrho.@sname@-components" version="0">@aubundleref@</pkg-ref>
+    <choice id="@symbol@-au" title="AU" description="Install AU plugins" visible="true">
+        <pkg-ref id="@symbol@-components" version="0">dpf-@sname@-components.pkg</pkg-ref>
     </choice>
     @skip_au_end@
     @skip_clap_start@
-    <choice id="studio.kx.distrho.@sname@-clap" title="CLAP" description="Install CLAP plugins" visible="true">
-        <pkg-ref id="studio.kx.distrho.@sname@-clapbundles" version="0">@clapbundleref@</pkg-ref>
+    <choice id="@symbol@-clap" title="CLAP" description="Install CLAP plugins" visible="true">
+        <pkg-ref id="@symbol@-clapbundles" version="0">dpf-@sname@-clapbundles.pkg</pkg-ref>
     </choice>
     @skip_clap_end@
     @skip_lv2_start@
-    <choice id="studio.kx.distrho.@sname@-lv2" title="LV2" description="Install LV2 plugins" visible="true">
-        <pkg-ref id="studio.kx.distrho.@sname@-lv2bundles" version="0">@lv2bundleref@</pkg-ref>
+    <choice id="@symbol@-lv2" title="LV2" description="Install LV2 plugins" visible="true">
+        <pkg-ref id="@symbol@-lv2bundles" version="0">dpf-@sname@-lv2bundles.pkg</pkg-ref>
     </choice>
     @skip_lv2_end@
     @skip_vst2_start@
-    <choice id="studio.kx.distrho.@sname@-vst2" title="VST2" description="Install VST2 plugins" visible="true">
-        <pkg-ref id="studio.kx.distrho.@sname@-vst2bundles" version="0">@vst2bundleref@</pkg-ref>
+    <choice id="@symbol@-vst2" title="VST2" description="Install VST2 plugins" visible="true">
+        <pkg-ref id="@symbol@-vst2bundles" version="0">dpf-@sname@-vst2bundles.pkg</pkg-ref>
     </choice>
     @skip_vst2_end@
     @skip_vst3_start@
-    <choice id="studio.kx.distrho.@sname@-vst3" title="VST3" description="Install VST3 plugins" visible="true">
-        <pkg-ref id="studio.kx.distrho.@sname@-vst3bundles" version="0">@vst3bundleref@</pkg-ref>
+    <choice id="@symbol@-vst3" title="VST3" description="Install VST3 plugins" visible="true">
+        <pkg-ref id="@symbol@-vst3bundles" version="0">dpf-@sname@-vst3bundles.pkg</pkg-ref>
     </choice>
     @skip_vst3_end@
     <choices-outline>
-        @skip_au_start@<line choice="studio.kx.distrho.@sname@-au"/>@skip_au_end@
-        @skip_clap_start@<line choice="studio.kx.distrho.@sname@-clap"/>@skip_clap_end@
-        @skip_lv2_start@<line choice="studio.kx.distrho.@sname@-lv2"/>@skip_lv2_end@
-        @skip_vst2_start@<line choice="studio.kx.distrho.@sname@-vst2"/>@skip_vst2_end@
-        @skip_vst3_start@<line choice="studio.kx.distrho.@sname@-vst3"/>@skip_vst3_end@
+        @skip_au_start@<line choice="@symbol@-au"/>@skip_au_end@
+        @skip_clap_start@<line choice="@symbol@-clap"/>@skip_clap_end@
+        @skip_lv2_start@<line choice="@symbol@-lv2"/>@skip_lv2_end@
+        @skip_vst2_start@<line choice="@symbol@-vst2"/>@skip_vst2_end@
+        @skip_vst3_start@<line choice="@symbol@-vst3"/>@skip_vst3_end@
     </choices-outline>
 </installer-gui-script>
