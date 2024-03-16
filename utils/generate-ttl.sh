@@ -9,7 +9,13 @@ fi
 
 set -e
 
-if [ ! -d bin ]; then
+BIN_DIR=${1}
+
+if [ -z "${BIN_DIR}" ]; then
+  BIN_DIR=bin
+fi
+
+if [ ! -d ${BIN_DIR} ]; then
   echo "Please run this script from the source root folder"
   exit
 fi
@@ -28,7 +34,7 @@ else
   fi
 fi
 
-cd bin
+cd ${BIN_DIR}
 FOLDERS=`find . -type d -name \*.lv2`
 
 for i in ${FOLDERS}; do
