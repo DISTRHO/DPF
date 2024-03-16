@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,6 +84,10 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 #endif
 #if ! DISTRHO_PLUGIN_WANT_PARAMETER_VALUE_CHANGE_REQUEST
 static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
+#endif
+
+#ifdef DPF_USING_LD_LINUX_WEBVIEW
+int dpf_webview_start(int argc, char* argv[]);
 #endif
 
 // -----------------------------------------------------------------------
@@ -994,6 +998,11 @@ int main(int argc, char* argv[])
         }
       #endif
     }
+   #endif
+
+   #ifdef DPF_USING_LD_LINUX_WEBVIEW
+    if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
+        return dpf_webview_start(argc - 1, argv + 1);
    #endif
 
     if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)

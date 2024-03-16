@@ -94,6 +94,10 @@
 # define DISTRHO_PLUGIN_WANT_TIMEPOS 0
 #endif
 
+#ifndef DISTRHO_PLUGIN_WANT_WEBVIEW
+# define DISTRHO_PLUGIN_WANT_WEBVIEW 0
+#endif
+
 #ifndef DISTRHO_UI_FILE_BROWSER
 # if defined(DGL_FILE_BROWSER_DISABLED) || DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 #  define DISTRHO_UI_FILE_BROWSER 0
@@ -255,6 +259,17 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 
 #ifdef DISTRHO_UI_IS_STANDALONE
 # error DISTRHO_UI_IS_STANDALONE must not be defined
+#endif
+
+#ifdef DPF_USING_LD_LINUX_WEBVIEW
+# error DPF_USING_LD_LINUX_WEBVIEW must not be defined
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Set DPF_USING_LD_LINUX_WEBVIEW for internal use
+
+#if DISTRHO_PLUGIN_WANT_WEBVIEW && defined(__linux__)
+# define DPF_USING_LD_LINUX_WEBVIEW
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

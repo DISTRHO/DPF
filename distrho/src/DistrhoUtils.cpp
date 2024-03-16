@@ -49,7 +49,7 @@ BOOL WINAPI DllMain(HINSTANCE hInst, DWORD reason, LPVOID)
 
 START_NAMESPACE_DISTRHO
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 const char* getBinaryFilename()
 {
@@ -165,6 +165,18 @@ bool requestBufferSizeChange(uint) { return false; }
 bool requestMIDI() { return false; }
 #endif
 
-// -----------------------------------------------------------------------
+/* define webview start */
+#ifdef DPF_USING_LD_LINUX_WEBVIEW
+int dpf_webview_start(int argc, char* argv[]);
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
+
+#if defined(DPF_USING_LD_LINUX_WEBVIEW) && !DISTRHO_IS_STANDALONE
+int main(int argc, char* argv[])
+{
+    return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
+}
+#endif

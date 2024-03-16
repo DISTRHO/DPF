@@ -38,6 +38,10 @@ static constexpr const setSizeFunc setSizeCallback = nullptr;
 // unsupported in DSSI
 static constexpr const fileRequestFunc fileRequestCallback = nullptr;
 
+#ifdef DPF_USING_LD_LINUX_WEBVIEW
+int dpf_webview_start(int argc, char* argv[]);
+#endif
+
 // --------------------------------------------------------------------------------------------------------------------
 
 
@@ -386,6 +390,11 @@ END_NAMESPACE_DISTRHO
 int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO
+
+   #ifdef DPF_USING_LD_LINUX_WEBVIEW
+    if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
+        return dpf_webview_start(argc - 1, argv + 1);
+   #endif
 
     // dummy test mode
     if (argc == 1)

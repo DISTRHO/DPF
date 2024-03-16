@@ -366,13 +366,15 @@ int32_t d_roundToInt(const T& value)
 /** @} */
 
 /* --------------------------------------------------------------------------------------------------------------------
- * math functions */
+ * other stuff */
 
 #ifndef DONT_SET_USING_DISTRHO_NAMESPACE
-  // If your code uses a lot of DISTRHO classes, then this will obviously save you
-  // a lot of typing, but can be disabled by setting DONT_SET_USING_DISTRHO_NAMESPACE.
-  namespace DISTRHO_NAMESPACE {}
-  using namespace DISTRHO_NAMESPACE;
+/**
+   If your code uses a lot of DISTRHO classes, then this will obviously save you a lot of typing,
+   but can be disabled by setting DONT_SET_USING_DISTRHO_NAMESPACE.
+ */
+namespace DISTRHO_NAMESPACE {}
+using namespace DISTRHO_NAMESPACE;
 #endif
 
 #endif // DISTRHO_UTILS_HPP_INCLUDED

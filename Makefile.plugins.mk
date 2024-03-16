@@ -250,6 +250,10 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(HAVE_DGL)$(LINUX)$(USING_WEBVIEW),truetruetrue)
+DGL_LIB_SHARED = $(shell $(CC) -print-file-name=Scrt1.o)
+endif
+
 DGL_LIBS += $(DGL_SYSTEM_LIBS) -lm
 
 # TODO split dsp and ui object build flags
@@ -545,9 +549,9 @@ lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
 ifeq ($(HAVE_DGL),true)
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
+$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
+$(lv2): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 endif
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin for $(NAME)"
@@ -558,7 +562,7 @@ $(lv2_dsp): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 	@echo "Creating LV2 plugin library for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_DSP_LIBS) $(SHARED) $(SYMBOLS_LV2DSP) -o $@
 
-$(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB)
+$(lv2_ui): $(OBJS_UI) $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 	-@mkdir -p $(shell dirname $@)
 	@echo "Creating LV2 plugin UI for $(NAME)"
 	$(SILENT)$(CXX) $^ $(BUILD_CXX_FLAGS) $(LINK_FLAGS) $(EXTRA_LIBS) $(EXTRA_UI_LIBS) $(DGL_LIBS) $(SHARED) $(SYMBOLS_LV2UI) -o $@
@@ -663,7 +667,7 @@ modgui:
 vst2 vst: $(vst2) $(vst2files)
 
 ifeq ($(HAVE_DGL),true)
-$(vst2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.o $(DGL_LIB)
+$(vst2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
 $(vst2): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.o
 endif
@@ -677,7 +681,7 @@ endif
 vst3: $(vst3) $(vst3files)
 
 ifeq ($(HAVE_DGL),true)
-$(vst3): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.o $(DGL_LIB)
+$(vst3): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
 $(vst3): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.o
 endif
@@ -699,7 +703,7 @@ endif
 clap: $(clap) $(clapfiles)
 
 ifeq ($(HAVE_DGL),true)
-$(clap): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.o $(DGL_LIB)
+$(clap): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
 $(clap): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.o
 endif
@@ -739,7 +743,7 @@ endif
 shared: $(shared)
 
 ifeq ($(HAVE_DGL),true)
-$(shared): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.o $(DGL_LIB)
+$(shared): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o $(BUILD_DIR)/DistrhoUIMain_SHARED.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
 $(shared): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_SHARED.cpp.o
 endif
