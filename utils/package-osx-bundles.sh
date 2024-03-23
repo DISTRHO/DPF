@@ -21,6 +21,7 @@ else
 fi
 
 # can be overridden by environment variables
+MACOS_PKG_LICENSE_FILE=${MACOS_PKG_LICENSE_FILE:=""}
 MACOS_PKG_NAME=${MACOS_PKG_NAME:="$(basename $(git rev-parse --show-toplevel))"}
 MACOS_PKG_SNAME=${MACOS_PKG_SNAME:="$(echo ${MACOS_PKG_NAME} | tr -d ' ' | tr '/' '-')"}
 MACOS_PKG_SYMBOL=${MACOS_PKG_SYMBOL:="studio.kx.distrho.plugins.${MACOS_PKG_SNAME}"}
@@ -40,6 +41,11 @@ fi
 
 rm -rf pkg
 mkdir pkg
+
+if [ -z "${MACOS_PKG_LICENSE_FILE}" ]; then
+  SKIP_LICENSE_START="${SKIP_START}"
+  SKIP_LICENSE_END="${SKIP_END}"
+fi
 
 ENABLE_AU=$(find . -maxdepth 1 -name '*.component' -print -quit | grep -q '.component' && echo 1 || echo)
 if [ -n "${ENABLE_AU}" ]; then
@@ -126,16 +132,19 @@ cd ..
 mkdir -p build
 sed -e "s|@name@|${MACOS_PKG_NAME}|" "${MACOS_PKG_WELCOME_TXT}" > build/welcome.txt
 sed -e "s|@builddir@|${PWD}/build|" \
+    -e "s|@skip_license_start@|${SKIP_LICENSE_START}|" \
     -e "s|@skip_au_start@|${SKIP_AU_START}|" \
     -e "s|@skip_clap_start@|${SKIP_CLAP_START}|" \
     -e "s|@skip_lv2_start@|${SKIP_LV2_START}|" \
     -e "s|@skip_vst2_start@|${SKIP_VST2_START}|" \
     -e "s|@skip_vst3_start@|${SKIP_VST3_START}|" \
+    -e "s|@skip_license_end@|${SKIP_LICENSE_END}|" \
     -e "s|@skip_au_end@|${SKIP_AU_END}|" \
     -e "s|@skip_clap_end@|${SKIP_CLAP_END}|" \
     -e "s|@skip_lv2_end@|${SKIP_LV2_END}|" \
     -e "s|@skip_vst2_end@|${SKIP_VST2_END}|" \
     -e "s|@skip_vst3_end@|${SKIP_VST3_END}|" \
+    -e "s|@license_file@|${MACOS_PKG_LICENSE_FILE}|" \
     -e "s|@name@|${MACOS_PKG_NAME}|g" \
     -e "s|@sname@|${MACOS_PKG_SNAME}|g" \
     -e "s|@symbol@|${MACOS_PKG_SYMBOL}|g" \
