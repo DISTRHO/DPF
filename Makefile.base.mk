@@ -835,7 +835,7 @@ moddwarf-new:
 	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64)
 
 modpush:
-	tar -C bin -cz $(subst bin/,,$(wildcard bin/*.lv2)) | base64 | curl -F 'package=@-' http://192.168.51.1/sdk/install && echo
+	tar -C bin -chz $(subst bin/,,$(wildcard bin/*.lv2)) | base64 | curl -F 'package=@-' http://192.168.51.1/sdk/install && echo
 
 ifneq (,$(findstring modduo-new-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
