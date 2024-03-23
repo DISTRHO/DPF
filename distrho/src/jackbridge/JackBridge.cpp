@@ -475,12 +475,12 @@ struct JackBridge {
 
         if (lib == nullptr)
         {
-            fprintf(stderr, "Failed to load JACK DLL, reason:\n%s\n", lib_error(filename));
+            d_stderr("Failed to load JACK DLL, reason:\n%s", lib_error(filename));
             return;
         }
         else
         {
-            fprintf(stdout, "%s loaded successfully!\n", filename);
+            d_stdout("%s loaded successfully!", filename);
         }
 
         #define JOIN(a, b) a ## b

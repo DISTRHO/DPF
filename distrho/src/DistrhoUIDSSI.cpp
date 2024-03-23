@@ -413,7 +413,7 @@ int main(int argc, char* argv[])
 
     if (argc != 5)
     {
-        fprintf(stderr, "Usage: %s <osc-url> <plugin-dll> <plugin-label> <instance-name>\n", argv[0]);
+        d_stderr("Usage: %s <osc-url> <plugin-dll> <plugin-label> <instance-name>", argv[0]);
         return 1;
     }
 

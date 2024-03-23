@@ -109,6 +109,27 @@ void d_pass() noexcept {}
    @{
  */
 
+/*
+ * Internal noexcept-safe fopen function.
+ */
+static inline
+FILE* __d_fopen(const char* const filename, FILE* const fallback) noexcept
+{
+    if (std::getenv("DPF_CAPTURE_CONSOLE_OUTPUT") == nullptr)
+        return fallback;
+
+    FILE* ret = nullptr;
+
+    try {
+        ret = std::fopen(filename, "a+");
+    } catch (...) {}
+
+    if (ret == nullptr)
+        ret = fallback;
+
+    return ret;
+}
+
 /**
    Print a string to stdout with newline (gray color).
    Does nothing if DEBUG is not defined.
@@ -119,16 +140,30 @@ void d_pass() noexcept {}
 static inline
 void d_debug(const char* const fmt, ...) noexcept
 {
+    static FILE* const output = __d_fopen("/tmp/dpf.debug.log", stdout);
+
     try {
         va_list args;
         va_start(args, fmt);
-       #ifdef DISTRHO_OS_MAC
-        std::fprintf(stdout, "\x1b[37;1m");
-       #else
-        std::fprintf(stdout, "\x1b[30;1m");
-       #endif
-        std::vfprintf(stdout, fmt, args);
-        std::fprintf(stdout, "\x1b[0m\n");
+
+        if (output == stdout)
+        {
+           #ifdef DISTRHO_OS_MAC
+            std::fprintf(output, "\x1b[37;1m[dpf] ");
+           #else
+            std::fprintf(output, "\x1b[30;1m[dpf] ");
+           #endif
+            std::vfprintf(output, fmt, args);
+            std::fprintf(output, "\x1b[0m\n");
+        }
+        else
+        {
+            std::fprintf(output, "[dpf] ");
+            std::vfprintf(output, fmt, args);
+            std::fprintf(output, "\n");
+        }
+
+        std::fflush(output);
         va_end(args);
     } catch (...) {}
 }
@@ -140,11 +175,18 @@ void d_debug(const char* const fmt, ...) noexcept
 static inline
 void d_stdout(const char* const fmt, ...) noexcept
 {
+    static FILE* const output = __d_fopen("/tmp/dpf.stdout.log", stdout);
+
     try {
         va_list args;
         va_start(args, fmt);
-        std::vfprintf(stdout, fmt, args);
-        std::fprintf(stdout, "\n");
+        std::fprintf(output, "[dpf] ");
+        std::vfprintf(output, fmt, args);
+        std::fprintf(output, "\n");
+       #ifndef DEBUG
+        if (output != stdout)
+       #endif
+            std::fflush(output);
         va_end(args);
     } catch (...) {}
 }
@@ -155,11 +197,18 @@ void d_stdout(const char* const fmt, ...) noexcept
 static inline
 void d_stderr(const char* const fmt, ...) noexcept
 {
+    static FILE* const output = __d_fopen("/tmp/dpf.stderr.log", stderr);
+
     try {
         va_list args;
         va_start(args, fmt);
-        std::vfprintf(stderr, fmt, args);
-        std::fprintf(stderr, "\n");
+        std::fprintf(output, "[dpf] ");
+        std::vfprintf(output, fmt, args);
+        std::fprintf(output, "\n");
+       #ifndef DEBUG
+        if (output != stderr)
+       #endif
+            std::fflush(output);
         va_end(args);
     } catch (...) {}
 }
@@ -170,12 +219,26 @@ void d_stderr(const char* const fmt, ...) noexcept
 static inline
 void d_stderr2(const char* const fmt, ...) noexcept
 {
+    static FILE* const output = __d_fopen("/tmp/dpf.stderr2.log", stderr);
+
     try {
         va_list args;
         va_start(args, fmt);
-        std::fprintf(stderr, "\x1b[31m");
-        std::vfprintf(stderr, fmt, args);
-        std::fprintf(stderr, "\x1b[0m\n");
+
+        if (output == stdout)
+        {
+            std::fprintf(output, "\x1b[31m[dpf] ");
+            std::vfprintf(output, fmt, args);
+            std::fprintf(output, "\x1b[0m\n");
+        }
+        else
+        {
+            std::fprintf(output, "[dpf] ");
+            std::vfprintf(output, fmt, args);
+            std::fprintf(output, "\n");
+        }
+
+        std::fflush(output);
         va_end(args);
     } catch (...) {}
 }
