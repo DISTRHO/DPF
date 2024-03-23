@@ -4571,8 +4571,13 @@ static const char* getPluginCategories()
         categories = DISTRHO_PLUGIN_VST3_CATEGORIES;
        #elif DISTRHO_PLUGIN_IS_SYNTH
         categories = "Instrument";
+       #else
+        categories = "Fx";
        #endif
         firstInit = false;
+
+        // An empty category is considered invalid in Cubase
+        DISTRHO_SAFE_ASSERT(categories.isNotEmpty());
     }
 
     return categories.buffer();
@@ -4858,7 +4863,7 @@ struct dpf_factory : v3_plugin_factory_cpp {
         DISTRHO_NAMESPACE::strncpy_utf16(info->name, sPlugin->getName(), ARRAY_SIZE(info->name));
         DISTRHO_NAMESPACE::strncpy_utf16(info->vendor, sPlugin->getMaker(), ARRAY_SIZE(info->vendor));
         DISTRHO_NAMESPACE::strncpy_utf16(info->version, getPluginVersion(), ARRAY_SIZE(info->version));
-        DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "Travesty 3.7.4", ARRAY_SIZE(info->sdk_version));
+        DISTRHO_NAMESPACE::strncpy_utf16(info->sdk_version, "VST 3.7.4", ARRAY_SIZE(info->sdk_version));
 
         if (idx == 0)
         {
