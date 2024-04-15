@@ -862,6 +862,55 @@ $(MAKECMDGOALS):
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
+# Convenience rules for common builds
+
+macos-intel-10.8:
+	$(MAKE) \
+		CFLAGS="$(CFLAGS) -arch x86_64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_8 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_8 -mmacosx-version-min=10.8" \
+		CXXFLAGS="$(CXXFLAGS) -arch x86_64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_8 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_8 -mmacosx-version-min=10.8 -stdlib=libc++" \
+		LDFLAGS="$(LDFLAGS) -stdlib=libc++" \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+macos-universal-10.8:
+	$(MAKE) \
+		CFLAGS="$(CFLAGS) -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_8 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_8 -mmacosx-version-min=10.15" \
+		CXXFLAGS="$(CXXFLAGS) -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_8 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_8 -mmacosx-version-min=10.15 -stdlib=libc++" \
+		LDFLAGS="$(LDFLAGS) -stdlib=libc++" \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+macos-intel-10.15:
+	$(MAKE) \
+		CFLAGS="$(CFLAGS) -arch x86_64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_15 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_15 -mmacosx-version-min=10.15" \
+		CXXFLAGS="$(CXXFLAGS) -arch x86_64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_15 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_15 -mmacosx-version-min=10.15" \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+macos-universal-10.15:
+	$(MAKE) \
+		CFLAGS="$(CFLAGS) -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_15 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_15 -mmacosx-version-min=10.15" \
+		CXXFLAGS="$(CXXFLAGS) -arch x86_64 -arch arm64 -DMAC_OS_X_VERSION_MAX_ALLOWED=MAC_OS_X_VERSION_10_15 -DMAC_OS_X_VERSION_MIN_REQUIRED=MAC_OS_X_VERSION_10_15 -mmacosx-version-min=10.15" \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+mingw32:
+	$(MAKE) \
+		AR=i686-w64-mingw32-ar \
+		CC=i686-w64-mingw32-gcc \
+		CXX=i686-w64-mingw32-g++ \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+mingw64:
+	$(MAKE) \
+		AR=x86_64-w64-mingw32-ar \
+		CC=x86_64-w64-mingw32-gcc \
+		CXX=x86_64-w64-mingw32-g++ \
+		PKG_CONFIG=/usr/bin/false \
+		PKG_CONFIG_PATH=/NOT
+
+# ---------------------------------------------------------------------------------------------------------------------
 # Protect against multiple inclusion
 
 endif # DPF_MAKEFILE_BASE_INCLUDED
