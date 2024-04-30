@@ -23,7 +23,7 @@ fi
 PWD="$(dirname "${0}")"
 
 if [ -f "${PWD}/lv2_ttl_generator.exe" ]; then
-  GEN="${PWD}/lv2_ttl_generator.exe"
+  GEN="$(realpath ${PWD}/lv2_ttl_generator.exe)"
   EXT=dll
 else
   GEN="$(realpath ${PWD}/lv2_ttl_generator)"
