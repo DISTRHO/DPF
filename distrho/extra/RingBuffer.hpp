@@ -405,6 +405,36 @@ public:
     }
 
     // -------------------------------------------------------------------
+    // peek operations (returns a value without advancing read position)
+
+    /*
+     * Peek for an unsigned 32-bit integer.
+     * Returns 0 if reading fails.
+     */
+    uint32_t peekUInt() const noexcept
+    {
+        uint32_t ui = 0;
+        return tryPeek(&ui, sizeof(int32_t)) ? ui : 0;
+    }
+
+    /*!
+     * Peek for a custom data type specified by the template typename used,
+     * with size being automatically deduced by the compiler (through the use of sizeof).
+     *
+     * Returns true if peeking succeeds.
+     * In case of failure, @a type value is automatically cleared by its deduced size.
+     */
+    template <typename T>
+    bool peekCustomType(T& type) const noexcept
+    {
+        if (tryPeek(&type, sizeof(T)))
+            return true;
+
+        std::memset(&type, 0, sizeof(T));
+        return false;
+    }
+
+    // -------------------------------------------------------------------
     // write operations
 
     /*
@@ -601,7 +631,7 @@ protected:
             }
             else
             {
-                const uint32_t firstpart(buffer->size - tail);
+                const uint32_t firstpart = buffer->size - tail;
                 std::memcpy(bytebuf, buffer->buf + tail, firstpart);
                 std::memcpy(bytebuf + firstpart, buffer->buf, readto);
             }
@@ -616,6 +646,63 @@ protected:
 
         buffer->tail = readto;
         errorReading = false;
+        return true;
+    }
+
+    /** @internal try reading from the buffer, can fail. */
+    bool tryPeek(void* const buf, const uint32_t size) const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(buffer != nullptr, false);
+       #if defined(__clang__)
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+       #endif
+        DISTRHO_SAFE_ASSERT_RETURN(buffer->buf != nullptr, false);
+       #if defined(__clang__)
+        #pragma clang diagnostic pop
+       #endif
+        DISTRHO_SAFE_ASSERT_RETURN(buf != nullptr, false);
+        DISTRHO_SAFE_ASSERT_RETURN(size > 0, false);
+        DISTRHO_SAFE_ASSERT_RETURN(size < buffer->size, false);
+
+        // empty
+        if (buffer->head == buffer->tail)
+            return false;
+
+        uint8_t* const bytebuf = static_cast<uint8_t*>(buf);
+
+        const uint32_t head = buffer->head;
+        const uint32_t tail = buffer->tail;
+        const uint32_t wrap = head > tail ? 0 : buffer->size;
+
+        if (size > wrap + head - tail)
+            return false;
+
+        uint32_t readto = tail + size;
+
+        if (readto > buffer->size)
+        {
+            readto -= buffer->size;
+
+            if (size == 1)
+            {
+                std::memcpy(bytebuf, buffer->buf + tail, 1);
+            }
+            else
+            {
+                const uint32_t firstpart = buffer->size - tail;
+                std::memcpy(bytebuf, buffer->buf + tail, firstpart);
+                std::memcpy(bytebuf + firstpart, buffer->buf, readto);
+            }
+        }
+        else
+        {
+            std::memcpy(bytebuf, buffer->buf + tail, size);
+
+            if (readto == buffer->size)
+                readto = 0;
+        }
+
         return true;
     }
 
@@ -656,7 +743,7 @@ protected:
             }
             else
             {
-                const uint32_t firstpart(buffer->size - wrtn);
+                const uint32_t firstpart = buffer->size - wrtn;
                 std::memcpy(buffer->buf + wrtn, bytebuf, firstpart);
                 std::memcpy(buffer->buf, bytebuf + firstpart, writeto);
             }
