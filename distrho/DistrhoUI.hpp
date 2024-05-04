@@ -44,6 +44,9 @@ typedef DGL_NAMESPACE::CairoTopLevelWidget UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
+#elif DISTRHO_UI_USE_WEBVIEW
+# include "../dgl/Web.hpp"
+typedef DGL_NAMESPACE::WebViewWidget UIWidget;
 #else
 # include "../dgl/TopLevelWidget.hpp"
 typedef DGL_NAMESPACE::TopLevelWidget UIWidget;

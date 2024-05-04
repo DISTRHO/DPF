@@ -112,6 +112,17 @@ endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+OBJS_web = $(OBJS_common) \
+	$(BUILD_DIR)/dgl/Web.cpp.o
+
+ifeq ($(MACOS),true)
+OBJS_web += $(BUILD_DIR)/dgl/pugl.mm.o
+else
+OBJS_web += $(BUILD_DIR)/dgl/pugl.cpp.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+
 ifeq ($(HAVE_CAIRO),true)
 TARGETS += $(BUILD_DIR)/libdgl-cairo.a
 endif
@@ -139,6 +150,7 @@ opengl:  $(BUILD_DIR)/libdgl-opengl.a
 opengl3: $(BUILD_DIR)/libdgl-opengl3.a
 stub:    $(BUILD_DIR)/libdgl-stub.a
 vulkan:  $(BUILD_DIR)/libdgl-vulkan.a
+web:     $(BUILD_DIR)/libdgl-web.a
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -169,6 +181,12 @@ $(BUILD_DIR)/libdgl-stub.a: $(OBJS_stub)
 $(BUILD_DIR)/libdgl-vulkan.a: $(OBJS_vulkan)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Creating libdgl-vulkan.a"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
+$(BUILD_DIR)/libdgl-web.a: $(OBJS_web)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Creating libdgl-web.a"
 	$(SILENT)rm -f $@
 	$(SILENT)$(AR) crs $@ $^
 
@@ -270,5 +288,6 @@ debug:
 -include $(OBJS_opengl3:%.o=%.d)
 -include $(OBJS_stub:%.o=%.d)
 -include $(OBJS_vulkan:%.o=%.d)
+-include $(OBJS_web:%.o=%.d)
 
 # ---------------------------------------------------------------------------------------------------------------------
