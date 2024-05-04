@@ -271,7 +271,9 @@ BASE_OPTS += -mtune=generic -msse -msse2 -mfpmath=sse
 endif
 
 ifeq ($(MACOS),true)
+ifneq ($(MACOS_NO_DEAD_STRIP),true)
 LINK_OPTS += -Wl,-dead_strip,-dead_strip_dylibs
+endif
 else ifeq ($(WASM),true)
 LINK_OPTS += -O3
 LINK_OPTS += -Wl,--gc-sections
