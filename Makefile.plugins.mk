@@ -236,6 +236,12 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),web)
+DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-web.a
+HAVE_DGL   = true
+endif
+
 ifeq ($(UI_TYPE),external)
 DGL_FLAGS += -DDGL_EXTERNAL
 HAVE_DGL   = true
