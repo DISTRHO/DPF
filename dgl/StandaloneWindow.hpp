@@ -73,6 +73,7 @@ public:
     uint getHeight() const noexcept { return Window::getHeight(); }
     const Size<uint> getSize() const noexcept { return Window::getSize(); }
     void repaint() noexcept { Window::repaint(); }
+    void repaint(const Rectangle<uint>& rect) noexcept { Window::repaint(rect); }
     void setWidth(uint width) { Window::setWidth(width); }
     void setHeight(uint height) { Window::setHeight(height); }
     void setSize(uint width, uint height) { Window::setSize(width, height); }
