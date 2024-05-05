@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,7 +29,9 @@
 # include <unistd.h>
 #endif
 
-// -----------------------------------------------------------------------
+START_NAMESPACE_DISTRHO
+
+// -----------------------------------------------------------------------------------------------------------
 // d_*sleep
 
 /*
@@ -66,6 +68,8 @@ void d_msleep(const uint msecs) noexcept
     } DISTRHO_SAFE_EXCEPTION("d_msleep");
 }
 
-// -----------------------------------------------------------------------
+// -----------------------------------------------------------------------------------------------------------
+
+END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_SLEEP_HPP_INCLUDED

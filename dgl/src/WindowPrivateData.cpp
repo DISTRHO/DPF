@@ -604,7 +604,7 @@ void Window::PrivateData::onPuglConfigure(const double width, const double heigh
 #ifndef DPF_TEST_WINDOW_CPP
     FOR_EACH_TOP_LEVEL_WIDGET(it)
     {
-        TopLevelWidget* const widget(*it);
+        TopLevelWidget* const widget = *it;
 
         /* Some special care here, we call Widget::setSize instead of the TopLevelWidget one.
          * This is because we want TopLevelWidget::setSize to handle both window and widget size,

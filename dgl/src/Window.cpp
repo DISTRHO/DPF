@@ -227,7 +227,7 @@ uint Window::getWidth() const noexcept
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
     const double width = puglGetFrame(pData->view).width;
-    DISTRHO_SAFE_ASSERT_RETURN(width >= 0.0, 0);
+    DISTRHO_SAFE_ASSERT_RETURN(width > 0.0, 0);
     return static_cast<uint>(width + 0.5);
 }
 
@@ -236,7 +236,7 @@ uint Window::getHeight() const noexcept
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
     const double height = puglGetFrame(pData->view).height;
-    DISTRHO_SAFE_ASSERT_RETURN(height >= 0.0, 0);
+    DISTRHO_SAFE_ASSERT_RETURN(height > 0.0, 0);
     return static_cast<uint>(height + 0.5);
 }
 
@@ -245,8 +245,8 @@ Size<uint> Window::getSize() const noexcept
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, Size<uint>());
 
     const PuglRect rect = puglGetFrame(pData->view);
-    DISTRHO_SAFE_ASSERT_RETURN(rect.width >= 0.0, Size<uint>());
-    DISTRHO_SAFE_ASSERT_RETURN(rect.height >= 0.0, Size<uint>());
+    DISTRHO_SAFE_ASSERT_RETURN(rect.width > 0.0, Size<uint>());
+    DISTRHO_SAFE_ASSERT_RETURN(rect.height > 0.0, Size<uint>());
     return Size<uint>(static_cast<uint>(rect.width + 0.5),
                       static_cast<uint>(rect.height + 0.5));
 }
@@ -315,6 +315,16 @@ void Window::setSize(uint width, uint height)
     else if (pData->view != nullptr)
     {
         puglSetSizeAndDefault(pData->view, width, height);
+
+        // there are no resize events for closed windows, so short-circuit the top-level widgets here
+        if (pData->isClosed)
+        {
+            for (std::list<TopLevelWidget*>::iterator it = pData->topLevelWidgets.begin(),
+                                                      end = pData->topLevelWidgets.end(); it != end; ++it)
+            {
+                ((Widget*)*it)->setSize(width, height);
+            }
+        }
     }
 }
 

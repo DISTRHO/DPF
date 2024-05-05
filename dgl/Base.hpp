@@ -73,7 +73,7 @@ enum Key {
     kKeySpace     = 0x00000020U, ///< Space
 
     // Unicode Private Use Area
-    kKeyF1 = 0x0000E000U,      ///< F1
+    kKeyF1 = 0xE000U,          ///< F1
     kKeyF2,                    ///< F2
     kKeyF3,                    ///< F3
     kKeyF4,                    ///< F4
@@ -85,7 +85,7 @@ enum Key {
     kKeyF10,                   ///< F10
     kKeyF11,                   ///< F11
     kKeyF12,                   ///< F12
-    kKeyPageUp = 0xE031,       ///< Page Up
+    kKeyPageUp = 0xE031U,      ///< Page Up
     kKeyPageDown,              ///< Page Down
     kKeyEnd,                   ///< End
     kKeyHome,                  ///< Home
@@ -100,7 +100,7 @@ enum Key {
     kKeyNumLock,               ///< Num Lock
     kKeyScrollLock,            ///< Scroll Lock
     kKeyCapsLock,              ///< Caps Lock
-    kKeyShiftL = 0xE051U,      ///< Left Shift,
+    kKeyShiftL = 0xE051U,      ///< Left Shift
     kKeyShiftR,                ///< Right Shift
     kKeyControlL,              ///< Left Control
     kKeyControlR,              ///< Right Control
