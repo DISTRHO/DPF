@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,7 +29,14 @@
 #define DISTRHO_PLUGIN_NUM_INPUTS      2
 #define DISTRHO_PLUGIN_NUM_OUTPUTS     2
 #define DISTRHO_UI_FILE_BROWSER        0
+#define DISTRHO_UI_USE_WEBVIEW         1
 #define DISTRHO_UI_USER_RESIZABLE      1
+#define DISTRHO_UI_DEFAULT_WIDTH       1184
+#define DISTRHO_UI_DEFAULT_HEIGHT      768
+
+// #ifdef _WIN32
+// #define WEB_VIEW_USING_CHOC 1
+// #endif
 
 enum Parameters {
     kParameterWidth = 0,

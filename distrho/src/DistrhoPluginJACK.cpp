@@ -965,6 +965,11 @@ int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO;
 
+   #ifdef DISTRHO_OS_WINDOWS
+    OleInitialize(nullptr);
+    CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+   #endif
+
     initSignalHandler();
 
    #ifndef STATIC_BUILD
@@ -975,15 +980,11 @@ int main(int argc, char* argv[])
         String tmpPath(getBinaryFilename());
         tmpPath.truncate(tmpPath.rfind(DISTRHO_OS_SEP));
       #if defined(DISTRHO_OS_MAC)
-        if (tmpPath.endsWith("/MacOS"))
+        if (tmpPath.endsWith("/Contents/MacOS"))
         {
-            tmpPath.truncate(tmpPath.rfind('/'));
-            if (tmpPath.endsWith("/Contents"))
-            {
-                tmpPath.truncate(tmpPath.rfind('/'));
-                bundlePath = tmpPath;
-                d_nextBundlePath = bundlePath.buffer();
-            }
+            tmpPath.truncate(tmpPath.length() - 15);
+            bundlePath = tmpPath;
+            d_nextBundlePath = bundlePath.buffer();
         }
       #else
        #ifdef DISTRHO_OS_WINDOWS
@@ -1002,7 +1003,7 @@ int main(int argc, char* argv[])
 
    #ifdef DPF_USING_LD_LINUX_WEBVIEW
     if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
-        return dpf_webview_start(argc - 1, argv + 1);
+        return dpf_webview_start(argc, argv);
    #endif
 
     if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)
@@ -1042,6 +1043,10 @@ int main(int argc, char* argv[])
         }
 
         hasConsole = true;
+
+        // tell windows to output console output as utf-8
+        SetConsoleCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
     }
    #endif
 
@@ -1168,6 +1173,11 @@ int main(int argc, char* argv[])
         ip.ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
         SendInput(1, &ip, sizeof(INPUT));
     }
+   #endif
+
+   #ifdef DISTRHO_OS_WINDOWS
+    CoUninitialize();
+    OleUninitialize();
    #endif
 
     return 0;

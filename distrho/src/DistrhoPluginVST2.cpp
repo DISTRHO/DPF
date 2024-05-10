@@ -1720,7 +1720,7 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
     return effect;
 }
 
-#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS) || DISTRHO_PLUGIN_WANT_WEBVIEW)
+#if !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS) || DISTRHO_UI_WEB_VIEW)
 DISTRHO_PLUGIN_EXPORT
 const vst_effect* VSTPluginMainCompat(vst_host_callback) asm ("main");
 

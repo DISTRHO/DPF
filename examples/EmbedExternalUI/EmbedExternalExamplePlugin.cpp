@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -28,8 +28,8 @@ class EmbedExternalExamplePlugin : public Plugin
 public:
     EmbedExternalExamplePlugin()
         : Plugin(kParameterCount, 0, 0),
-          fWidth(512.0f),
-          fHeight(256.0f)
+          fWidth(DISTRHO_UI_DEFAULT_WIDTH),
+          fHeight(DISTRHO_UI_DEFAULT_HEIGHT)
     {
     }
 
@@ -122,8 +122,8 @@ protected:
         {
         case kParameterWidth:
             parameter.hints      = kParameterIsAutomatable|kParameterIsInteger;
-            parameter.ranges.def = 512.0f;
-            parameter.ranges.min = 256.0f;
+            parameter.ranges.def = DISTRHO_UI_DEFAULT_WIDTH;
+            parameter.ranges.min = 512.0f;
             parameter.ranges.max = 4096.0f;
             parameter.name   = "Width";
             parameter.symbol = "width";
@@ -131,8 +131,8 @@ protected:
             break;
         case kParameterHeight:
             parameter.hints      = kParameterIsAutomatable|kParameterIsInteger;
-            parameter.ranges.def = 256.0f;
-            parameter.ranges.min = 256.0f;
+            parameter.ranges.def = DISTRHO_UI_DEFAULT_HEIGHT;
+            parameter.ranges.min = 512.0f;
             parameter.ranges.max = 4096.0f;
             parameter.name   = "Height";
             parameter.symbol = "height";

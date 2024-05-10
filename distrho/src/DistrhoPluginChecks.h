@@ -94,16 +94,16 @@
 # define DISTRHO_PLUGIN_WANT_TIMEPOS 0
 #endif
 
-#ifndef DISTRHO_PLUGIN_WANT_WEBVIEW
-# define DISTRHO_PLUGIN_WANT_WEBVIEW 0
-#endif
-
 #ifndef DISTRHO_UI_FILE_BROWSER
 # if defined(DGL_FILE_BROWSER_DISABLED) || DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 #  define DISTRHO_UI_FILE_BROWSER 0
 # else
 #  define DISTRHO_UI_FILE_BROWSER 1
 # endif
+#endif
+
+#ifndef DISTRHO_UI_WEB_VIEW
+# define DISTRHO_UI_WEB_VIEW 0
 #endif
 
 #ifndef DISTRHO_UI_USER_RESIZABLE
@@ -130,11 +130,11 @@
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// Define DISTRHO_PLUGIN_WANT_WEBVIEW if needed
+// Define DISTRHO_UI_WEB_VIEW if needed
 
-#if DISTRHO_UI_USE_WEBVIEW && !DISTRHO_PLUGIN_WANT_WEBVIEW
-# undef DISTRHO_PLUGIN_WANT_WEBVIEW
-# define DISTRHO_PLUGIN_WANT_WEBVIEW 1
+#if DISTRHO_UI_USE_WEBVIEW && !DISTRHO_UI_WEB_VIEW
+# undef DISTRHO_UI_WEB_VIEW
+# define DISTRHO_UI_WEB_VIEW 1
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -142,6 +142,29 @@
 
 #ifndef DISTRHO_UI_URI
 # define DISTRHO_UI_URI DISTRHO_PLUGIN_URI "#DPF_UI"
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Test for wrong compiler macros
+
+#if defined(DGL_CAIRO) && defined(DGL_OPENGL)
+# error invalid build config: trying to build for both cairo and opengl at the same time
+#endif
+
+#if defined(DGL_CAIRO) && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# error invalid build config: trying to build cairo while using external UI
+#endif
+
+#if defined(DGL_OPENGL) && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+# error invalid build config: trying to build opengl while using external UI
+#endif
+
+#if DISTRHO_UI_FILE_BROWSER && defined(DGL_FILE_BROWSER_DISABLED)
+# error invalid build config: file browser requested but `FILE_BROWSER_DISABLED` build option is set
+#endif
+
+#if DISTRHO_UI_USE_WEBVIEW && !defined(DGL_USE_WEBVIEW)
+# error invalid build config: web view requested but `USE_WEBVIEW` build option is not set
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -280,7 +303,7 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 // --------------------------------------------------------------------------------------------------------------------
 // Set DPF_USING_LD_LINUX_WEBVIEW for internal use
 
-#if DISTRHO_PLUGIN_WANT_WEBVIEW && defined(__linux__)
+#if DISTRHO_UI_WEB_VIEW && defined(__linux__)
 # define DPF_USING_LD_LINUX_WEBVIEW
 #endif
 

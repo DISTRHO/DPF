@@ -28,6 +28,7 @@
 # USE_OPENGL3=true
 # USE_NANOVG_FBO=true
 # USE_NANOVG_FREETYPE=true
+# USE_WEBVIEW=true
 
 # STATIC_BUILD=true
 #  Tweak build to be able to generate fully static builds (e.g. skip use of libdl)
@@ -439,6 +440,9 @@ else ifeq ($(MACOS),true)
 
 DGL_SYSTEM_LIBS += -framework Cocoa
 DGL_SYSTEM_LIBS += -framework CoreVideo
+ifeq ($(USE_WEBVIEW),true)
+DGL_SYSTEM_LIBS += -framework WebKit
+endif
 
 else ifeq ($(WASM),true)
 
@@ -453,12 +457,18 @@ DGL_SYSTEM_LIBS += -lcomdlg32
 DGL_SYSTEM_LIBS += -ldwmapi
 DGL_SYSTEM_LIBS += -lgdi32
 # DGL_SYSTEM_LIBS += -lole32
+ifeq ($(USE_WEBVIEW),true)
+DGL_SYSTEM_LIBS += -lole32
+DGL_SYSTEM_LIBS += -luuid
+endif
 
 else
 
+ifneq ($(FILE_BROWSER_DISABLED),true)
 ifeq ($(HAVE_DBUS),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
+endif
 endif
 
 ifeq ($(HAVE_X11),true)
@@ -475,6 +485,10 @@ endif
 ifeq ($(HAVE_XRANDR),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xrandr) -DHAVE_XRANDR
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xrandr)
+endif
+ifeq ($(USE_WEBVIEW),true)
+DGL_FLAGS       += -pthread
+DGL_SYSTEM_LIBS += -pthread -lrt
 endif
 endif # HAVE_X11
 
@@ -654,6 +668,10 @@ endif
 
 ifeq ($(USE_RGBA),true)
 BUILD_CXX_FLAGS += -DDGL_USE_RGBA
+endif
+
+ifeq ($(USE_WEBVIEW),true)
+BUILD_CXX_FLAGS += -DDGL_USE_WEBVIEW
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -901,6 +919,7 @@ mingw32:
 		AR=i686-w64-mingw32-ar \
 		CC=i686-w64-mingw32-gcc \
 		CXX=i686-w64-mingw32-g++ \
+		EXE_WRAPPER=wine \
 		PKG_CONFIG=/usr/bin/false \
 		PKG_CONFIG_PATH=/NOT
 
@@ -909,6 +928,7 @@ mingw64:
 		AR=x86_64-w64-mingw32-ar \
 		CC=x86_64-w64-mingw32-gcc \
 		CXX=x86_64-w64-mingw32-g++ \
+		EXE_WRAPPER=wine \
 		PKG_CONFIG=/usr/bin/false \
 		PKG_CONFIG_PATH=/NOT
 

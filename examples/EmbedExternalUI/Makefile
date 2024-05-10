@@ -21,11 +21,14 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
+USE_WEBVIEW = true
 UI_TYPE = external
 include ../../Makefile.plugins.mk
 
 ifeq ($(MACOS),true)
 BUILD_CXX_FLAGS  += -ObjC++
+# else ifeq ($(WINDOWS),true)
+# BUILD_CXX_FLAGS  += -std=gnu++17
 endif
 
 # --------------------------------------------------------------

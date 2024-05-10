@@ -240,6 +240,7 @@ ifeq ($(UI_TYPE),web)
 DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-web.a
 HAVE_DGL   = true
+USE_WEBVIEW = true
 endif
 
 ifeq ($(UI_TYPE),external)
@@ -256,7 +257,7 @@ HAVE_DGL   = false
 endif
 endif
 
-ifeq ($(HAVE_DGL)$(LINUX)$(USING_WEBVIEW),truetruetrue)
+ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEBVIEW),truetruetrue)
 DGL_LIB_SHARED = $(shell $(CC) -print-file-name=Scrt1.o)
 endif
 
@@ -480,6 +481,9 @@ $(DGL_BUILD_DIR)/libdgl-stub.a: $(DGL_POSSIBLE_DEPS)
 
 $(DGL_BUILD_DIR)/libdgl-vulkan.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl vulkan
+
+$(DGL_BUILD_DIR)/libdgl-web.a: $(DGL_POSSIBLE_DEPS)
+	$(MAKE) -C $(DPF_PATH)/dgl web
 
 # ---------------------------------------------------------------------------------------------------------------------
 

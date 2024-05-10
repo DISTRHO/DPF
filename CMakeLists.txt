@@ -1,5 +1,6 @@
 # DISTRHO Plugin Framework (DPF)
 # Copyright (C) 2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
+# Copyright (C) 2022-2024 Filipe Coelho <falktx@falktx.com>
 #
 # SPDX-License-Identifier: ISC
 
