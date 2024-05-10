@@ -112,8 +112,8 @@ protected:
         static const Color kColorYellow(255, 255, 0);
 
         // get meter values
-        const float outLeft(fOutLeft);
-        const float outRight(fOutRight);
+        const float outLeft = fOutLeft;
+        const float outRight = fOutRight;
 
         // tell DSP side to reset meter values
         setState("reset", "");

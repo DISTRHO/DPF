@@ -590,7 +590,7 @@ public:
 
                 const LV2_Atom* property = nullptr;
                 const LV2_Atom* value    = nullptr;
-                lv2_atom_object_get(object, fURIDs.patchProperty, &property, fURIDs.patchValue, &value, nullptr);
+                lv2_atom_object_get(object, fURIDs.patchProperty, &property, fURIDs.patchValue, &value, 0);
 
                 if (property != nullptr && property->type == fURIDs.atomURID &&
                     value != nullptr && (value->type == fURIDs.atomPath || value->type == fURIDs.atomString))
@@ -1122,7 +1122,7 @@ public:
 
             const LV2_Atom* property = nullptr;
             const LV2_Atom* value    = nullptr;
-            lv2_atom_object_get(object, fURIDs.patchProperty, &property, fURIDs.patchValue, &value, nullptr);
+            lv2_atom_object_get(object, fURIDs.patchProperty, &property, fURIDs.patchValue, &value, 0);
             DISTRHO_SAFE_ASSERT_RETURN(property != nullptr, LV2_WORKER_ERR_UNKNOWN);
             DISTRHO_SAFE_ASSERT_RETURN(property->type == fURIDs.atomURID, LV2_WORKER_ERR_UNKNOWN);
             DISTRHO_SAFE_ASSERT_RETURN(value != nullptr, LV2_WORKER_ERR_UNKNOWN);

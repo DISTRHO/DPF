@@ -27,10 +27,12 @@
 #ifdef DISTRHO_OS_MAC
 # import <Cocoa/Cocoa.h>
 #endif
+
 #ifdef DISTRHO_OS_WASM
 # include <emscripten/emscripten.h>
 # include <sys/stat.h>
 #endif
+
 #ifdef DISTRHO_OS_WINDOWS
 # include <direct.h>
 # include <process.h>
@@ -41,9 +43,11 @@
 #else
 # include <unistd.h>
 #endif
+
 #ifdef HAVE_DBUS
 # include <dbus/dbus.h>
 #endif
+
 #ifdef HAVE_X11
 # define DBLCLKTME 400
 # include "sofd/libsofd.h"

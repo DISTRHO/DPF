@@ -109,17 +109,17 @@ FileBrowserHandle fileBrowserCreate(bool isEmbed,
   in which case this idle function must not be called anymore for this handle.
   You can then call fileBrowserGetPath to know the selected file (or null if cancelled).
 */
-bool fileBrowserIdle(const FileBrowserHandle handle);
+bool fileBrowserIdle(FileBrowserHandle handle);
 
 /**
   Close and free the file browser dialog, handle must not be used afterwards.
 */
-void fileBrowserClose(const FileBrowserHandle handle);
+void fileBrowserClose(FileBrowserHandle handle);
 
 /**
   Get the path chosen by the user or null.@n
   Should only be called after fileBrowserIdle returns true.
 */
-const char* fileBrowserGetPath(const FileBrowserHandle handle);
+const char* fileBrowserGetPath(FileBrowserHandle handle);
 
 // --------------------------------------------------------------------------------------------------------------------
