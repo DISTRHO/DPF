@@ -119,7 +119,8 @@ static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexc
     PROP(kMusicDeviceProperty_DualSchedulingMode)
     #undef PROP
     // DPF specific properties
-    #define PROP(s) case d_cconst(#s): return #s;
+    #define PROPX(s) (s[0] << 24) | (s[1] << 16) | (s[2] << 8) | (s[3] << 0)
+    #define PROP(s) case PROPX(#s): return #s;
     PROP(DPFi)
     PROP(DPFe)
     PROP(DPFp)
@@ -129,6 +130,7 @@ static const char* AudioUnitPropertyID2Str(const AudioUnitPropertyID prop) noexc
     PROP(DPFs)
     PROP(DPFa)
     #undef PROP
+    #undef PROPX
     }
     return "[unknown]";
 }

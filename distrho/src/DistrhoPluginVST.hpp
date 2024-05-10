@@ -45,7 +45,7 @@
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
+#if defined(DISTRHO_PROPER_CPP11_SUPPORT) || defined(DISTRHO_OS_MAC)
 # include <atomic>
 #else
 // quick and dirty std::atomic replacement for the things we need

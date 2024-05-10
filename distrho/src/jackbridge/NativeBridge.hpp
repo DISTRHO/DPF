@@ -49,10 +49,10 @@ struct NativeBridge {
     uint numMidiOuts;
 
     // JACK callbacks
-    JackProcessCallback jackProcessCallback = nullptr;
-    JackBufferSizeCallback bufferSizeCallback = nullptr;
-    void* jackProcessArg = nullptr;
-    void* jackBufferSizeArg = nullptr;
+    JackProcessCallback jackProcessCallback;
+    JackBufferSizeCallback bufferSizeCallback;
+    void* jackProcessArg;
+    void* jackBufferSizeArg;
 
     // Runtime buffers
     enum PortMask {

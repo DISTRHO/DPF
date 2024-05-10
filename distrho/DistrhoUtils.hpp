@@ -38,7 +38,7 @@
 typedef SSIZE_T ssize_t;
 #endif
 
-#if ! defined(CARLA_MATH_UTILS_HPP_INCLUDED) && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
+#if ! defined(CARLA_MATH_UTILS_HPP_INCLUDED) && ! defined(DISTRHO_PROPER_CPP11_SUPPORT) && ! defined(DISTRHO_OS_MAC)
 namespace std {
 inline float fmin(float __x, float __y)
   { return __builtin_fminf(__x, __y); }
