@@ -200,12 +200,9 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Disable UI if DGL is not available
 
-#if (defined(DGL_CAIRO) && ! defined(HAVE_CAIRO)) || (defined(DGL_OPENGL) && ! defined(HAVE_OPENGL))
+#if DISTRHO_PLUGIN_HAS_UI && !defined(HAVE_DGL)
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
-# ifdef HAVE_DGL
-#  error HAVE_DGL is defined in a wrong configuration
-# endif
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

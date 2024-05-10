@@ -600,11 +600,11 @@ SHARED_MEMORY_LIBS = -lrt
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
-# Backwards-compatible HAVE_DGL
+# Generic HAVE_DGL
 
 ifeq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 HAVE_DGL = true
-else ifeq ($(HAVE_OPENGL),true)
+else
 HAVE_DGL = $(HAVE_X11)
 endif
 
