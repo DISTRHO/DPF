@@ -404,10 +404,12 @@ public:
     Window& getParentWindow() const noexcept { return getWindow(); }
 
 protected:
+   #if defined(DGL_CAIRO) || defined(DGL_OPENGL) || defined(DGL_VULKAN)
    /**
       A function called to draw the widget contents.
     */
     virtual void onDisplay() = 0;
+   #endif
 
    /**
       A function called when a key is pressed or released.

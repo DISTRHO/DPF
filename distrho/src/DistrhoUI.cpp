@@ -60,7 +60,7 @@ END_NAMESPACE_DISTRHO
 # include "../extra/FileBrowserDialogImpl.cpp"
 #endif
 
-#if DISTRHO_UI_USE_WEBVIEW && !defined(DISTRHO_OS_MAC)
+#if DISTRHO_UI_WEB_VIEW && !defined(DISTRHO_OS_MAC)
 # define DISTRHO_WEB_VIEW_HPP_INCLUDED
 # define WEB_VIEW_NAMESPACE DISTRHO_NAMESPACE
 # define WEB_VIEW_DISTRHO_NAMESPACE
@@ -70,11 +70,8 @@ END_NAMESPACE_DISTRHO
 # include "../extra/WebViewImpl.cpp"
 #endif
 
-#if ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "src/TopLevelWidgetPrivateData.hpp"
-# include "src/WindowPrivateData.hpp"
-#endif
-
+#include "src/TopLevelWidgetPrivateData.hpp"
+#include "src/WindowPrivateData.hpp"
 #include "DistrhoUIPrivateData.hpp"
 
 START_NAMESPACE_DISTRHO
@@ -82,11 +79,7 @@ START_NAMESPACE_DISTRHO
 /* ------------------------------------------------------------------------------------------------------------
  * Static data, see DistrhoUIInternal.hpp */
 
-const char* g_nextBundlePath  = nullptr;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-uintptr_t   g_nextWindowId    = 0;
-double      g_nextScaleFactor = 1.0;
-#endif
+const char* g_nextBundlePath = nullptr;
 
 /* ------------------------------------------------------------------------------------------------------------
  * get global scale factor */
@@ -177,12 +170,7 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
 UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-ExternalWindow::PrivateData
-#else
-PluginWindow&
-#endif
-UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const bool adjustForScaleFactor)
+PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const bool adjustForScaleFactor)
 {
     UI::PrivateData* const pData = s_nextPrivateData;
     const double scaleFactor = d_isNotZero(pData->scaleFactor) ? pData->scaleFactor : getDesktopScaleFactor(pData->winId);
@@ -193,17 +181,6 @@ UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const b
         height *= scaleFactor;
     }
 
-   #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    pData->window = new PluginWindow(ui, pData->app);
-    ExternalWindow::PrivateData ewData;
-    ewData.parentWindowHandle = pData->winId;
-    ewData.width = width;
-    ewData.height = height;
-    ewData.scaleFactor = scaleFactor;
-    ewData.title = DISTRHO_PLUGIN_NAME;
-    ewData.isStandalone = DISTRHO_UI_IS_STANDALONE;
-    return ewData;
-   #else
     d_stdout("createNextWindow %u %u %f %d", width, height, scaleFactor, adjustForScaleFactor);
     pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, scaleFactor);
 
@@ -212,7 +189,6 @@ UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const b
         pData->window->setIgnoreIdleCallbacks();
 
     return pData->window.getObject();
-   #endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -239,7 +215,6 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
                )),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     if (width != 0 && height != 0)
     {
         Widget::setSize(width, height);
@@ -253,10 +228,6 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
         Widget::setSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT);
     }
    #endif
-#else
-    // unused
-    (void)automaticallyScaleAndSetAsMinimumSize;
-#endif
 }
 
 UI::~UI()
@@ -268,15 +239,11 @@ UI::~UI()
 
 bool UI::isResizable() const noexcept
 {
-#if DISTRHO_UI_USER_RESIZABLE
-# if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    return true;
-# else
+   #if DISTRHO_UI_USER_RESIZABLE
     return uiData->window->isResizable();
-# endif
-#else
+   #else
     return false;
-#endif
+   #endif
 }
 
 uint UI::getBackgroundColor() const noexcept
@@ -347,28 +314,6 @@ void* UI::getPluginInstancePointer() const noexcept
 }
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-/* ------------------------------------------------------------------------------------------------------------
- * External UI helpers (static calls) */
-
-const char* UI::getNextBundlePath() noexcept
-{
-    return g_nextBundlePath;
-}
-
-double UI::getNextScaleFactor() noexcept
-{
-    return g_nextScaleFactor;
-}
-
-# if DISTRHO_PLUGIN_HAS_EMBED_UI
-uintptr_t UI::getNextWindowId() noexcept
-{
-    return g_nextWindowId;
-}
-# endif
-#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks */
 
@@ -402,7 +347,6 @@ void UI::uiScaleFactorChanged(double)
 {
 }
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 std::vector<DGL_NAMESPACE::ClipboardDataOffer> UI::getClipboardDataOfferTypes()
 {
     return uiData->window->getClipboardDataOfferTypes();
@@ -431,7 +375,6 @@ void UI::uiReshape(const uint width, const uint height)
     // NOTE this must be the same as Window::onReshape
     pData->fallbackOnResize(width, height);
 }
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 #if DISTRHO_UI_FILE_BROWSER
 void UI::uiFileBrowserSelected(const char*)
@@ -442,14 +385,6 @@ void UI::uiFileBrowserSelected(const char*)
 /* ------------------------------------------------------------------------------------------------------------
  * UI Resize Handling, internal */
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-void UI::sizeChanged(const uint width, const uint height)
-{
-    UIWidget::sizeChanged(width, height);
-
-    uiData->setSizeCallback(width, height);
-}
-#else
 void UI::onResize(const ResizeEvent& ev)
 {
     UIWidget::onResize(ev);
@@ -478,7 +413,6 @@ void UI::requestSizeChange(const uint width, const uint height)
     (void)height;
    #endif
 }
-#endif
 
 // -----------------------------------------------------------------------------------------------------------
 

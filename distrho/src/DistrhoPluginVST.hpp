@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -23,17 +23,7 @@
 #include <algorithm>
 #include <cmath>
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# undef DISTRHO_PLUGIN_HAS_UI
-# define DISTRHO_PLUGIN_HAS_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_UI
 # include "Base.hpp"
 #endif
 
@@ -224,7 +214,7 @@ void snprintf_u32_utf16(int16_t* const dst, const uint32_t value, const size_t s
     return snprintf_utf16_t<uint32_t>(dst, value, "%u", size);
 }
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_UI
 // --------------------------------------------------------------------------------------------------------------------
 // translate a vstgui-based key character and code to matching values used by DPF
 

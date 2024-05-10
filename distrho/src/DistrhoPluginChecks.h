@@ -49,10 +49,6 @@
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
 
-#ifndef DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# define DISTRHO_PLUGIN_HAS_EXTERNAL_UI 0
-#endif
-
 #ifndef DISTRHO_PLUGIN_IS_RT_SAFE
 # define DISTRHO_PLUGIN_IS_RT_SAFE 0
 #endif
@@ -110,23 +106,16 @@
 # define DISTRHO_UI_USER_RESIZABLE 0
 #endif
 
+#ifndef DISTRHO_UI_USE_EXTERNAL
+# define DISTRHO_UI_USE_EXTERNAL 0
+#endif
+
 #ifndef DISTRHO_UI_USE_NANOVG
 # define DISTRHO_UI_USE_NANOVG 0
 #endif
 
 #ifndef DISTRHO_UI_USE_WEBVIEW
 # define DISTRHO_UI_USE_WEBVIEW 0
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// Define DISTRHO_PLUGIN_HAS_EMBED_UI if needed
-
-#ifndef DISTRHO_PLUGIN_HAS_EMBED_UI
-# if (defined(DGL_CAIRO) && defined(HAVE_CAIRO)) || (defined(DGL_OPENGL) && defined(HAVE_OPENGL)) || defined(DGL_WEB)
-#  define DISTRHO_PLUGIN_HAS_EMBED_UI 1
-# else
-#  define DISTRHO_PLUGIN_HAS_EMBED_UI 0
-# endif
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -147,16 +136,20 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Test for wrong compiler macros
 
+#if defined(DISTRHO_PLUGIN_HAS_EXTERNAL_UI)
+# error DISTRHO_PLUGIN_HAS_EXTERNAL_UI has been replaced by DISTRHO_UI_USE_EXTERNAL
+#endif
+
+#if defined(DISTRHO_PLUGIN_HAS_EMBED_UI)
+# warning DISTRHO_PLUGIN_HAS_EMBED_UI has been removed, it is now always on
+#endif
+
 #if defined(DGL_CAIRO) && defined(DGL_OPENGL)
 # error invalid build config: trying to build for both cairo and opengl at the same time
-#endif
-
-#if defined(DGL_CAIRO) && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# error invalid build config: trying to build cairo while using external UI
-#endif
-
-#if defined(DGL_OPENGL) && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# error invalid build config: trying to build opengl while using external UI
+#elif defined(DGL_EXTERNAL) && defined(DGL_CAIRO)
+# error invalid build config: trying to build for both external and cairo at the same time
+#elif defined(DGL_EXTERNAL) && defined(DGL_OPENGL)
+# error invalid build config: trying to build for both external and opengl at the same time
 #endif
 
 #if DISTRHO_UI_FILE_BROWSER && defined(DGL_FILE_BROWSER_DISABLED)
@@ -205,25 +198,14 @@
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
-// Disable file browser if using external UI
-
-#if DISTRHO_UI_FILE_BROWSER && DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# warning file browser APIs do not work for external UIs
-# undef DISTRHO_UI_FILE_BROWSER 0
-# define DISTRHO_UI_FILE_BROWSER 0
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// Disable UI if DGL or external UI is not available
+// Disable UI if DGL is not available
 
 #if (defined(DGL_CAIRO) && ! defined(HAVE_CAIRO)) || (defined(DGL_OPENGL) && ! defined(HAVE_OPENGL))
-# undef DISTRHO_PLUGIN_HAS_EMBED_UI
-# define DISTRHO_PLUGIN_HAS_EMBED_UI 0
-#endif
-
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_HAS_EMBED_UI && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
+# ifdef HAVE_DGL
+#  error HAVE_DGL is defined in a wrong configuration
+# endif
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

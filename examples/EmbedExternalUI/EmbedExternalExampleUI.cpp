@@ -15,17 +15,15 @@
  */
 
 #include "DistrhoUI.hpp"
-#include "NativeWindow.hpp"
+#include "Window.hpp"
 #include "extra/WebView.hpp"
 
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
 
-class EmbedExternalExampleUI : public UI,
-                               public NativeWindow::Callbacks
+class EmbedExternalExampleUI : public UI
 {
-    ScopedPointer<NativeWindow> window;
     WebViewHandle webview;
 
 public:
@@ -33,24 +31,19 @@ public:
         : UI(),
           webview(nullptr)
     {
-        const bool standalone = isStandalone();
         const double scaleFactor = getScaleFactor();
-        d_stdout("isStandalone %d", (int)standalone);
 
         const uint width = DISTRHO_UI_DEFAULT_WIDTH * scaleFactor;
         const uint height = DISTRHO_UI_DEFAULT_HEIGHT * scaleFactor;
-
-        window = new NativeWindow(this, getTitle(), getParentWindowHandle(), width, height, standalone);
-        webview = webViewCreate("https://distrho.github.io/DPF/",
-                                window->getNativeWindowHandle(),
-                                width, height, scaleFactor);
 
         setGeometryConstraints(width, height);
 
         if (d_isNotEqual(scaleFactor, 1.0))
             setSize(width, height);
 
-        d_stdout("created external window with size %u %u", getWidth(), getHeight());
+        webview = webViewCreate("https://distrho.github.io/DPF/",
+                                getWindow().getNativeWindowHandle(),
+                                width, height, scaleFactor);
     }
 
     ~EmbedExternalExampleUI()
@@ -83,68 +76,18 @@ protected:
     }
 
    /* --------------------------------------------------------------------------------------------------------
-    * External Window callbacks */
+    * UI overrides */
 
-    void nativeHide() override
+    void onResize(const ResizeEvent& ev) override
     {
-        d_stdout("nativeHide");
-        UI::hide();
-    }
-
-    void nativeResize(const uint width, const uint height) override
-    {
-        d_stdout("nativeResize");
-        setSize(width, height);
-    }
-
-   /* --------------------------------------------------------------------------------------------------------
-    * External Window overrides */
-
-    void focus() override
-    {
-        d_stdout("focus");
-        window->focus();
-    }
-
-    uintptr_t getNativeWindowHandle() const noexcept override
-    {
-        return window->getNativeWindowHandle();
-    }
-
-    void sizeChanged(const uint width, const uint height) override
-    {
-        d_stdout("sizeChanged %u %u", width, height);
-        UI::sizeChanged(width, height);
-
-        window->setSize(width, height);
+        UI::onResize(ev);
 
         if (webview != nullptr)
-            webViewResize(webview, width, height, getScaleFactor());
-    }
-
-    void titleChanged(const char* const title) override
-    {
-        d_stdout("titleChanged %s", title);
-        window->setTitle(title);
-    }
-
-    void transientParentWindowChanged(const uintptr_t winId) override
-    {
-        d_stdout("transientParentWindowChanged %lu", winId);
-        window->setTransientParentWindow(winId);
-    }
-
-    void visibilityChanged(const bool visible) override
-    {
-        d_stdout("visibilityChanged %d", visible);
-        window->setVisible(visible);
+            webViewResize(webview, ev.size.getWidth(), ev.size.getHeight(), getScaleFactor());
     }
 
     void uiIdle() override
     {
-        // d_stdout("uiIdle");
-        window->idle();
-
         if (webview != nullptr)
             webViewIdle(webview);
     }

@@ -23,16 +23,11 @@
 # include "DistrhoPluginVST.hpp"
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "../extra/Sleep.hpp"
-// TODO import and use file browser here
-#else
-# include "../../dgl/src/ApplicationPrivateData.hpp"
-# include "../../dgl/src/WindowPrivateData.hpp"
-# include "../../dgl/src/pugl.hpp"
-#endif
+#include "../../dgl/src/ApplicationPrivateData.hpp"
+#include "../../dgl/src/WindowPrivateData.hpp"
+#include "../../dgl/src/pugl.hpp"
 
-#if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER
 # include <map>
 # include <string>
 #endif
@@ -65,55 +60,6 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------
 // Plugin Application, will set class name based on plugin details
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-struct PluginApplication
-{
-    DGL_NAMESPACE::IdleCallback* idleCallback;
-    UI* ui;
-
-    explicit PluginApplication(const char*)
-        : idleCallback(nullptr),
-          ui(nullptr) {}
-
-    void addIdleCallback(DGL_NAMESPACE::IdleCallback* const cb)
-    {
-        DISTRHO_SAFE_ASSERT_RETURN(cb != nullptr,);
-        DISTRHO_SAFE_ASSERT_RETURN(idleCallback == nullptr,);
-
-        idleCallback = cb;
-    }
-
-    bool isQuitting() const noexcept
-    {
-        return ui->isQuitting();
-    }
-
-    bool isStandalone() const noexcept
-    {
-        return DISTRHO_UI_IS_STANDALONE;
-    }
-
-    void exec()
-    {
-        while (ui->isRunning())
-        {
-            d_msleep(30);
-            idleCallback->idleCallback();
-        }
-
-        if (! ui->isQuitting())
-            ui->close();
-    }
-
-    // these are not needed
-    void idle() {}
-    void quit() {}
-    void triggerIdleCallbacks() {}
-    void repaintIfNeeeded() {}
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
-};
-#else
 class PluginApplication : public DGL_NAMESPACE::Application
 {
 public:
@@ -151,47 +97,10 @@ public:
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginApplication)
 };
-#endif
 
 // -----------------------------------------------------------------------
 // Plugin Window, will pass some Window events to UI
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-class PluginWindow
-{
-    UI* const ui;
-
-public:
-    explicit PluginWindow(UI* const uiPtr, PluginApplication& app)
-        : ui(uiPtr)
-    {
-        app.ui = ui;
-    }
-
-    // fetch cached data
-    uint getWidth() const noexcept { return ui->pData.width; }
-    uint getHeight() const noexcept { return ui->pData.height; }
-    double getScaleFactor() const noexcept { return ui->pData.scaleFactor; }
-
-    // direct mappings
-    void close() { ui->close(); }
-    void focus() { ui->focus(); }
-    void show() { ui->show(); }
-    bool isResizable() const noexcept { return ui->isResizable(); }
-    bool isVisible() const noexcept { return ui->isVisible(); }
-    void setTitle(const char* const title) { ui->setTitle(title); }
-    void setVisible(const bool visible) { ui->setVisible(visible); }
-    uintptr_t getNativeWindowHandle() const noexcept { return ui->getNativeWindowHandle(); }
-    void getGeometryConstraints(uint& minimumWidth, uint& minimumHeight, bool& keepAspectRatio) const noexcept
-    {
-        minimumWidth = ui->pData.minWidth;
-        minimumHeight = ui->pData.minHeight;
-        keepAspectRatio = ui->pData.keepAspectRatio;
-    }
-
-    DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
-};
-#else // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 class PluginWindow : public DGL_NAMESPACE::Window
 {
     UI* const ui;
@@ -320,7 +229,6 @@ protected:
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(PluginWindow)
 };
-#endif // DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 // -----------------------------------------------------------------------
 // UI callbacks
@@ -350,7 +258,7 @@ struct UI::PrivateData {
     uint fgColor;
     double scaleFactor;
     uintptr_t winId;
-   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER
     char* uiStateFileKeyRequest;
     std::map<std::string,std::string> lastUsedDirnames;
    #endif
@@ -378,7 +286,7 @@ struct UI::PrivateData {
           fgColor(0xffffffff),
           scaleFactor(1.0),
           winId(0),
-         #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+         #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER
           uiStateFileKeyRequest(nullptr),
          #endif
           bundlePath(nullptr),
@@ -414,7 +322,7 @@ struct UI::PrivateData {
 
     ~PrivateData() noexcept
     {
-       #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+       #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER
         std::free(uiStateFileKeyRequest);
        #endif
         std::free(bundlePath);
@@ -454,11 +362,7 @@ struct UI::PrivateData {
     bool fileRequestCallback(const char* const key);
 
     static UI::PrivateData* s_nextPrivateData;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    static ExternalWindow::PrivateData createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
-#else
     static PluginWindow& createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
-#endif
 };
 
 // -----------------------------------------------------------------------
@@ -469,7 +373,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
     if (fileRequestCallbackFunc != nullptr)
         return fileRequestCallbackFunc(callbacksPtr, key);
 
-   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER
     std::free(uiStateFileKeyRequest);
     uiStateFileKeyRequest = strdup(key);
     DISTRHO_SAFE_ASSERT_RETURN(uiStateFileKeyRequest != nullptr, false);
@@ -491,7 +395,7 @@ inline bool UI::PrivateData::fileRequestCallback(const char* const key)
 // -----------------------------------------------------------------------
 // PluginWindow onFileSelected that require UI::PrivateData definitions
 
-#if DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_UI_FILE_BROWSER
 inline void PluginWindow::onFileSelected(const char* const filename)
 {
     DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
@@ -499,7 +403,7 @@ inline void PluginWindow::onFileSelected(const char* const filename)
     if (initializing)
         return;
 
-   #if DISTRHO_PLUGIN_WANT_STATE && DISTRHO_UI_FILE_BROWSER && !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+   #if DISTRHO_PLUGIN_WANT_STATE
     if (char* const key = ui->uiData->uiStateFileKeyRequest)
     {
         ui->uiData->uiStateFileKeyRequest = nullptr;

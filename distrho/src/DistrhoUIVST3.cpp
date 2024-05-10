@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -20,15 +20,6 @@
 #include "travesty/edit_controller.h"
 #include "travesty/host.h"
 #include "travesty/view.h"
-
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# if defined(DISTRHO_OS_MAC)
-#  include <CoreFoundation/CoreFoundation.h>
-# elif defined(DISTRHO_OS_WINDOWS)
-#  include <winuser.h>
-#  define DPF_VST3_WIN32_TIMER_ID 1
-# endif
-#endif
 
 /* TODO items:
  * - mousewheel event
@@ -110,7 +101,6 @@ static void applyGeometryConstraints(const uint minimumWidth,
 
 // --------------------------------------------------------------------------------------------------------------------
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 static uint translateVST3Modifiers(const int64_t modifiers) noexcept
 {
     using namespace DGL_NAMESPACE;
@@ -134,115 +124,9 @@ static uint translateVST3Modifiers(const int64_t modifiers) noexcept
 
     return dglmods;
 }
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI && !DPF_VST3_USING_HOST_RUN_LOOP
-/**
- * Helper class for getting a native idle timer via native APIs.
- */
-class NativeIdleHelper
-{
-public:
-    NativeIdleHelper(IdleCallback* const callback)
-        : fCallback(callback),
-       #ifdef DISTRHO_OS_MAC
-          fTimerRef(nullptr)
-       #else
-          fTimerWindow(nullptr),
-          fTimerWindowClassName()
-       #endif
-    {
-    }
-
-    void registerNativeIdleCallback()
-    {
-       #ifdef DISTRHO_OS_MAC
-        constexpr const CFTimeInterval interval = DPF_VST3_TIMER_INTERVAL * 0.0001;
-
-        CFRunLoopTimerContext context = {};
-        context.info = this;
-        fTimerRef = CFRunLoopTimerCreate(kCFAllocatorDefault, CFAbsoluteTimeGetCurrent() + interval, interval, 0, 0,
-                                         platformIdleTimerCallback, &context);
-        DISTRHO_SAFE_ASSERT_RETURN(fTimerRef != nullptr,);
-
-        CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
-       #else
-        /* 
-         * Create an invisible window to handle a timer.
-         * There is no need for implementing a window proc because DefWindowProc already calls the
-         * callback function when processing WM_TIMER messages.
-         */
-        fTimerWindowClassName = (
-           #ifdef DISTRHO_PLUGIN_BRAND
-            DISTRHO_PLUGIN_BRAND
-           #else
-            DISTRHO_MACRO_AS_STRING(DISTRHO_NAMESPACE)
-           #endif
-            "-" DISTRHO_PLUGIN_NAME "-"
-        );
-
-        char suffix[9];
-        std::snprintf(suffix, sizeof(suffix), "%08x", std::rand());
-        suffix[sizeof(suffix)-1] = '\0';
-        fTimerWindowClassName += suffix;
-
-        WNDCLASSEX cls;
-        ZeroMemory(&cls, sizeof(cls));
-        cls.cbSize = sizeof(WNDCLASSEX);
-        cls.cbWndExtra = sizeof(LONG_PTR);
-        cls.lpszClassName = fTimerWindowClassName.buffer();
-        cls.lpfnWndProc = DefWindowProc;
-        RegisterClassEx(&cls);
-
-        fTimerWindow = CreateWindowEx(0, cls.lpszClassName, "DPF Timer Helper",
-                                      0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
-        DISTRHO_SAFE_ASSERT_RETURN(fTimerWindow != nullptr,);
-
-        SetWindowLongPtr(fTimerWindow, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(static_cast<void*>(this)));
-        SetTimer(fTimerWindow, DPF_VST3_WIN32_TIMER_ID, DPF_VST3_TIMER_INTERVAL,
-                 static_cast<TIMERPROC>(platformIdleTimerCallback));
-       #endif
-    }
-
-    void unregisterNativeIdleCallback()
-    {
-       #ifdef DISTRHO_OS_MAC
-        CFRunLoopRemoveTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
-        CFRelease(fTimerRef);
-       #else
-        DISTRHO_SAFE_ASSERT_RETURN(fTimerWindow != nullptr,);
-        KillTimer(fTimerWindow, DPF_VST3_WIN32_TIMER_ID);
-        DestroyWindow(fTimerWindow);
-        UnregisterClass(fTimerWindowClassName, nullptr);
-       #endif
-    }
-
-private:
-    IdleCallback* const fCallback;
-
-   #ifdef DISTRHO_OS_MAC
-    CFRunLoopTimerRef fTimerRef;
-
-    static void platformIdleTimerCallback(CFRunLoopTimerRef, void* const info)
-    {
-        static_cast<NativeIdleHelper*>(info)->fCallback->idleCallback();
-    }
-   #else
-    HWND fTimerWindow;
-    String fTimerWindowClassName;
-
-    static void WINAPI platformIdleTimerCallback(const HWND hwnd, UINT, UINT_PTR, DWORD)
-    {
-        reinterpret_cast<NativeIdleHelper*>(GetWindowLongPtr(hwnd, GWLP_USERDATA))->fCallback->idleCallback();
-    }
-   #endif
-};
-#endif
 
 /**
- * Helper class for getting a native idle timer, either through pugl or via native APIs.
+ * Helper class for getting a native idle timer.
  */
 #if !DPF_VST3_USING_HOST_RUN_LOOP
 class NativeIdleCallback : public IdleCallback
@@ -250,49 +134,25 @@ class NativeIdleCallback : public IdleCallback
 public:
     NativeIdleCallback(UIExporter& ui)
         : fCallbackRegistered(false),
-         #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-          fIdleHelper(this)
-         #else
-          fUI(ui)
-         #endif
-    {
-       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        // unused
-        (void)ui;
-       #endif
-    }
+          fUI(ui) {}
 
     void registerNativeIdleCallback()
     {
         DISTRHO_SAFE_ASSERT_RETURN(!fCallbackRegistered,);
         fCallbackRegistered = true;
-
-       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        fIdleHelper.registerNativeIdleCallback();
-       #else
         fUI.addIdleCallbackForNativeIdle(this, DPF_VST3_TIMER_INTERVAL);
-       #endif
     }
 
     void unregisterNativeIdleCallback()
     {
         DISTRHO_SAFE_ASSERT_RETURN(fCallbackRegistered,);
         fCallbackRegistered = false;
-
-       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        fIdleHelper.unregisterNativeIdleCallback();
-       #else
         fUI.removeIdleCallbackForNativeIdle(this);
-       #endif
     }
 
 private:
     bool fCallbackRegistered;
-   #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-    NativeIdleHelper fIdleHelper;
-   #else
     UIExporter& fUI;
-   #endif
 };
 #endif
 
@@ -392,7 +252,6 @@ public:
     // ----------------------------------------------------------------------------------------------------------------
     // v3_plugin_view interface calls
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     v3_result onWheel(float /*distance*/)
     {
         // TODO
@@ -432,7 +291,6 @@ public:
         fUI.notifyFocusChanged(state);
         return V3_OK;
     }
-#endif
 
     v3_result getSize(v3_view_rect* const rect) const noexcept
     {
@@ -1464,7 +1322,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_wheel(void* const self, const float distance)
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_debug("dpf_plugin_view::on_wheel => %p %f", self, distance);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1472,16 +1329,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onWheel(distance);
-#else
-        return V3_NOT_IMPLEMENTED;
-        // unused
-        (void)self; (void)distance;
-#endif
     }
 
     static v3_result V3_API on_key_down(void* const self, const int16_t key_char, const int16_t key_code, const int16_t modifiers)
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_debug("dpf_plugin_view::on_key_down => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1489,16 +1340,10 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyDown(key_char, key_code, modifiers);
-#else
-        return V3_NOT_IMPLEMENTED;
-        // unused
-        (void)self; (void)key_char; (void)key_code; (void)modifiers;
-#endif
     }
 
     static v3_result V3_API on_key_up(void* const self, const int16_t key_char, const int16_t key_code, const int16_t modifiers)
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_debug("dpf_plugin_view::on_key_up => %p %i %i %i", self, key_char, key_code, modifiers);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1506,11 +1351,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onKeyUp(key_char, key_code, modifiers);
-#else
-        return V3_NOT_IMPLEMENTED;
-        // unused
-        (void)self; (void)key_char; (void)key_code; (void)modifiers;
-#endif
     }
 
     static v3_result V3_API get_size(void* const self, v3_view_rect* const rect)
@@ -1569,7 +1409,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
 
     static v3_result V3_API on_focus(void* const self, const v3_bool state)
     {
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         d_debug("dpf_plugin_view::on_focus => %p %u", self, state);
         dpf_plugin_view* const view = *static_cast<dpf_plugin_view**>(self);
 
@@ -1577,11 +1416,6 @@ struct dpf_plugin_view : v3_plugin_view_cpp {
         DISTRHO_SAFE_ASSERT_RETURN(uivst3 != nullptr, V3_NOT_INITIALIZED);
 
         return uivst3->onFocus(state);
-#else
-        return V3_NOT_IMPLEMENTED;
-        // unused
-        (void)self; (void)state;
-#endif
     }
 
     static v3_result V3_API set_frame(void* const self, v3_plugin_frame** const frame)

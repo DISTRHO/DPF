@@ -31,11 +31,7 @@
 # include "Vulkan.hpp"
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include "../dgl/Base.hpp"
-# include "extra/ExternalWindow.hpp"
-typedef DISTRHO_NAMESPACE::ExternalWindow UIWidget;
-#elif DISTRHO_UI_USE_CUSTOM
+#if DISTRHO_UI_USE_CUSTOM
 # include DISTRHO_UI_CUSTOM_INCLUDE_PATH
 typedef DISTRHO_UI_CUSTOM_WIDGET_TYPE UIWidget;
 #elif DISTRHO_UI_USE_CAIRO
@@ -44,9 +40,6 @@ typedef DGL_NAMESPACE::CairoTopLevelWidget UIWidget;
 #elif DISTRHO_UI_USE_NANOVG
 # include "../dgl/NanoVG.hpp"
 typedef DGL_NAMESPACE::NanoTopLevelWidget UIWidget;
-#elif DISTRHO_UI_USE_WEBVIEW
-# include "../dgl/Web.hpp"
-typedef DGL_NAMESPACE::WebViewWidget UIWidget;
 #else
 # include "../dgl/TopLevelWidget.hpp"
 typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
@@ -55,9 +48,8 @@ typedef DGL_NAMESPACE::TopLevelWidget UIWidget;
 #if DISTRHO_UI_FILE_BROWSER
 # include "extra/FileBrowserDialog.hpp"
 #endif
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# include <vector>
-#endif
+
+#include <vector>
 
 START_NAMESPACE_DISTRHO
 
@@ -217,34 +209,6 @@ public:
     void* getPluginInstancePointer() const noexcept;
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   /* --------------------------------------------------------------------------------------------------------
-    * External UI helpers */
-
-   /**
-      Get the bundle path that will be used for the next UI.
-      @note: This function is only valid during createUI(),
-             it will return null when called from anywhere else.
-    */
-    static const char* getNextBundlePath() noexcept;
-
-   /**
-      Get the scale factor that will be used for the next UI.
-      @note: This function is only valid during createUI(),
-             it will return 1.0 when called from anywhere else.
-    */
-    static double getNextScaleFactor() noexcept;
-
-# if DISTRHO_PLUGIN_HAS_EMBED_UI
-   /**
-      Get the Window Id that will be used for the next created window.
-      @note: This function is only valid during createUI(),
-             it will return 0 when called from anywhere else.
-    */
-    static uintptr_t getNextWindowId() noexcept;
-# endif
-#endif
-
 protected:
    /* --------------------------------------------------------------------------------------------------------
     * DSP/Plugin Callbacks */
@@ -300,7 +264,6 @@ protected:
     */
     virtual void uiScaleFactorChanged(double scaleFactor);
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /**
       Get the types available for the data in a clipboard.
       Must only be called within the context of uiClipboardDataOffer.
@@ -337,7 +300,6 @@ protected:
       The most common exception is custom OpenGL setup, but only really needed for custom OpenGL drawing code.
     */
     virtual void uiReshape(uint width, uint height);
-#endif // !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
 
 #if DISTRHO_UI_FILE_BROWSER
    /**
@@ -355,21 +317,12 @@ protected:
    /* --------------------------------------------------------------------------------------------------------
     * UI Resize Handling, internal */
 
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-   /**
-      External Window resize function, called when the window is resized.
-      This is overriden here so the host knows when the UI is resized by you.
-      @see ExternalWindow::sizeChanged(uint,uint)
-    */
-    void sizeChanged(uint width, uint height) override;
-#else
    /**
       Widget resize function, called when the widget is resized.
       This is overriden here so the host knows when the UI is resized by you.
       @see Widget::onResize(const ResizeEvent&)
     */
     void onResize(const ResizeEvent& ev) override;
-#endif
 
     // -------------------------------------------------------------------------------------------------------
 
@@ -378,10 +331,8 @@ private:
     PrivateData* const uiData;
     friend class PluginWindow;
     friend class UIExporter;
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
    /** @internal */
     void requestSizeChange(uint width, uint height) override;
-#endif
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(UI)
 };

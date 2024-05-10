@@ -35,9 +35,9 @@ examples: dgl
 ifeq ($(HAVE_CAIRO),true)
 	$(MAKE) all -C examples/CairoUI
 endif
-ifeq ($(HAVE_DGL),true)
-	$(MAKE) all -C examples/EmbedExternalUI
-endif
+# ifeq ($(HAVE_DGL),true)
+# 	$(MAKE) all -C examples/EmbedExternalUI
+# endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
 gen: examples utils/lv2_ttl_generator

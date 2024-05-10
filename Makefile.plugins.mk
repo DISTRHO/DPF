@@ -185,6 +185,9 @@ ifeq ($(HAVE_OPENGL),true)
 UI_TYPE = opengl
 else ifeq ($(HAVE_CAIRO),true)
 UI_TYPE = cairo
+else
+HAVE_DGL = false
+UI_TYPE = none
 endif
 endif
 
@@ -236,25 +239,23 @@ HAVE_DGL   = false
 endif
 endif
 
-ifeq ($(UI_TYPE),web)
-DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
-DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-web.a
-HAVE_DGL   = true
-USE_WEBVIEW = true
-endif
-
 ifeq ($(UI_TYPE),external)
-DGL_FLAGS += -DDGL_EXTERNAL
-HAVE_DGL   = true
-endif
-
-ifeq ($(UI_TYPE),stub)
+DGL_FLAGS += -DDGL_EXTERNAL -DHAVE_DGL
 ifeq ($(HAVE_STUB),true)
+DGL_FLAGS += $(STUB_FLAGS)
+DGL_LIBS  += $(STUB_LIBS)
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-stub.a
 HAVE_DGL   = true
 else
 HAVE_DGL   = false
 endif
+endif
+
+ifeq ($(UI_TYPE),web)
+DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-stub.a
+HAVE_DGL   = true
+USE_WEBVIEW = true
 endif
 
 ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEBVIEW),truetruetrue)

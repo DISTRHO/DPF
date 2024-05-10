@@ -74,7 +74,7 @@
 # define DISTRHO_PLUGIN_USES_CUSTOM_MODGUI 0
 #endif
 
-#if DISTRHO_PLUGIN_HAS_EMBED_UI
+#if DISTRHO_PLUGIN_HAS_UI
 # if defined(DISTRHO_OS_HAIKU)
 #  define DISTRHO_LV2_UI_TYPE "BeUI"
 # elif defined(DISTRHO_OS_MAC)
@@ -155,7 +155,7 @@ static constexpr const char* const lv2ManifestUiExtensionData[] = {
 };
 
 static constexpr const char* const lv2ManifestUiOptionalFeatures[] = {
-  #if DISTRHO_PLUGIN_HAS_EMBED_UI
+  #if DISTRHO_PLUGIN_HAS_UI
    #if !DISTRHO_UI_USER_RESIZABLE
     "ui:noUserResize",
    #endif
@@ -1550,7 +1550,7 @@ void lv2_generate_ttl(const char* const basename)
         stylesheetFile.close();
         std::cout << " done!" << std::endl;
     }
-   #endif // DISTRHO_PLUGIN_USES_MODGUI && DISTRHO_PLUGIN_HAS_EMBED_UI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
+   #endif // DISTRHO_PLUGIN_USES_MODGUI && !DISTRHO_PLUGIN_USES_CUSTOM_MODGUI
 
     // ---------------------------------------------
 

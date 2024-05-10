@@ -91,7 +91,8 @@ endif
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-OBJS_stub = $(OBJS_common)
+OBJS_stub = $(OBJS_common) \
+	$(BUILD_DIR)/dgl/Stub.cpp.o
 
 ifeq ($(MACOS),true)
 OBJS_stub += $(BUILD_DIR)/dgl/pugl.mm.o

@@ -25,10 +25,6 @@ START_NAMESPACE_DISTRHO
 // Static data, see DistrhoUI.cpp
 
 extern const char* g_nextBundlePath;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-extern uintptr_t   g_nextWindowId;
-extern double      g_nextScaleFactor;
-#endif
 
 // -----------------------------------------------------------------------
 // UI exporter class
@@ -79,41 +75,25 @@ public:
         uiData->setSizeCallbackFunc     = setSizeCall;
         uiData->fileRequestCallbackFunc = fileRequestCall;
 
-        g_nextBundlePath  = bundlePath;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        g_nextWindowId    = winId;
-        g_nextScaleFactor = scaleFactor;
-#endif
+        g_nextBundlePath = bundlePath;
         UI::PrivateData::s_nextPrivateData = uiData;
 
         UI* const uiPtr = createUI();
 
         g_nextBundlePath  = nullptr;
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        g_nextWindowId    = 0;
-        g_nextScaleFactor = 0.0;
-#else
         // enter context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
         uiData->window->leaveContext();
-#endif
         UI::PrivateData::s_nextPrivateData = nullptr;
 
         DISTRHO_SAFE_ASSERT_RETURN(uiPtr != nullptr,);
         ui = uiPtr;
         uiData->initializing = false;
-
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        // unused
-        (void)bundlePath;
-#endif
     }
 
     ~UIExporter()
     {
         quit();
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
         uiData->window->enterContextForDeletion();
-#endif
         delete ui;
         delete uiData;
     }
@@ -137,13 +117,9 @@ public:
 
     bool getGeometryConstraints(uint& minimumWidth, uint& minimumHeight, bool& keepAspectRatio) const noexcept
     {
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        uiData->window->getGeometryConstraints(minimumWidth, minimumHeight, keepAspectRatio);
-#else
         const DGL_NAMESPACE::Size<uint> size(uiData->window->getGeometryConstraints(keepAspectRatio));
         minimumWidth = size.getWidth();
         minimumHeight = size.getHeight();
-#endif
         return true;
     }
 
@@ -263,16 +239,14 @@ public:
         uiData->app.quit();
     }
 
-   #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     void repaint()
     {
         uiData->window->repaint();
     }
-   #endif
 
     // -------------------------------------------------------------------
 
-  #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
+   #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
     void idleFromNativeIdle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
@@ -282,7 +256,6 @@ public:
         uiData->app.repaintIfNeeeded();
     }
 
-   #if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     void addIdleCallbackForNativeIdle(IdleCallback* const cb, const uint timerFrequencyInMs)
     {
         uiData->window->addIdleCallback(cb, timerFrequencyInMs);
@@ -293,28 +266,18 @@ public:
         uiData->window->removeIdleCallback(cb);
     }
    #endif
-  #endif
 
     // -------------------------------------------------------------------
 
     void setWindowOffset(const int x, const int y)
     {
-       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        // TODO
-        (void)x; (void)y;
-       #else
         uiData->window->setOffset(x, y);
-       #endif
     }
 
    #if DISTRHO_UI_USES_SIZE_REQUEST
     void setWindowSizeFromHost(const uint width, const uint height)
     {
-       #if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        ui->setSize(width, height);
-       #else
         uiData->window->setSizeFromHost(width, height);
-       #endif
     }
    #endif
 
@@ -325,11 +288,7 @@ public:
 
     void setWindowTransientWinId(const uintptr_t transientParentWindowHandle)
     {
-#if DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-        ui->setTransientWindowId(transientParentWindowHandle);
-#else
         uiData->window->setTransientParent(transientParentWindowHandle);
-#endif
     }
 
     bool setWindowVisible(const bool yesNo)
@@ -339,7 +298,6 @@ public:
         return ! uiData->app.isQuitting();
     }
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     bool handlePluginKeyboardVST(const bool press, const bool special, const uint keychar, const uint keycode, const uint16_t mods)
     {
         using namespace DGL_NAMESPACE;
@@ -372,7 +330,6 @@ public:
 
         return ret;
     }
-#endif
 
     // -------------------------------------------------------------------
 
@@ -383,14 +340,12 @@ public:
         ui->uiScaleFactorChanged(scaleFactor);
     }
 
-#if !DISTRHO_PLUGIN_HAS_EXTERNAL_UI
     void notifyFocusChanged(const bool focus)
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
         ui->uiFocus(focus, DGL_NAMESPACE::kCrossingNormal);
     }
-#endif
 
     void setSampleRate(const double sampleRate, const bool doCallback = false)
     {

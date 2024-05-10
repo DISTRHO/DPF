@@ -18,8 +18,8 @@
 # error bad include
 #endif
 
-#if defined(DISTRHO_UI_USE_WEBVIEW) && DISTRHO_UI_USE_WEBVIEW == 0
-# error To use WebViews in DPF plugins please set DISTRHO_UI_USE_WEBVIEW to 1
+#if defined(DISTRHO_UI_WEB_VIEW) && DISTRHO_UI_WEB_VIEW == 0
+# error To use WebViews in DPF plugins please set DISTRHO_UI_WEB_VIEW to 1
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

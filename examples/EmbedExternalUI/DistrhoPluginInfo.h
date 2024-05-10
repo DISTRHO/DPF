@@ -23,16 +23,15 @@
 #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.embed-external-ui"
 
 #define DISTRHO_PLUGIN_HAS_UI          1
-#define DISTRHO_PLUGIN_HAS_EMBED_UI    1
-#define DISTRHO_PLUGIN_HAS_EXTERNAL_UI 1
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
 #define DISTRHO_PLUGIN_NUM_INPUTS      2
 #define DISTRHO_PLUGIN_NUM_OUTPUTS     2
 #define DISTRHO_UI_FILE_BROWSER        0
-#define DISTRHO_UI_USE_WEBVIEW         1
+#define DISTRHO_UI_WEB_VIEW            1
+#define DISTRHO_UI_USE_EXTERNAL        1
 #define DISTRHO_UI_USER_RESIZABLE      1
-#define DISTRHO_UI_DEFAULT_WIDTH       1184
-#define DISTRHO_UI_DEFAULT_HEIGHT      768
+#define DISTRHO_UI_DEFAULT_WIDTH       768
+#define DISTRHO_UI_DEFAULT_HEIGHT      512
 
 // #ifdef _WIN32
 // #define WEB_VIEW_USING_CHOC 1

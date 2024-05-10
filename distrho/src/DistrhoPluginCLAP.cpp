@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -29,7 +29,7 @@
 # error DISTRHO_PLUGIN_CLAP_ID undefined!
 #endif
 
-#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if DISTRHO_PLUGIN_HAS_UI && ! defined(HAVE_DGL)
 # undef DISTRHO_PLUGIN_HAS_UI
 # define DISTRHO_PLUGIN_HAS_UI 0
 #endif
@@ -57,7 +57,7 @@
 #include "clap/ext/thread-check.h"
 #include "clap/ext/timer-support.h"
 
-#if (defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)) && ! DISTRHO_PLUGIN_HAS_EXTERNAL_UI
+#if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS)
 # define DPF_CLAP_USING_HOST_TIMER 0
 #else
 # define DPF_CLAP_USING_HOST_TIMER 1
