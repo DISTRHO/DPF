@@ -28,7 +28,8 @@
 # USE_OPENGL3=true
 # USE_NANOVG_FBO=true
 # USE_NANOVG_FREETYPE=true
-# USE_WEBVIEW=true
+# USE_FILE_BROWSER=true
+# USE_WEB_VIEW=true
 
 # STATIC_BUILD=true
 #  Tweak build to be able to generate fully static builds (e.g. skip use of libdl)
@@ -233,6 +234,27 @@ endif
 ifeq ($(MACOS),true)
 UNIX = true
 endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Compatibility checks
+
+ifeq ($(FILE_BROWSER_DISABLED),true)
+$(error FILE_BROWSER_DISABLED has been replaced by USE_FILE_BROWSER (opt-in vs opt-out))
+endif
+
+ifeq ($(USE_FILEBROWSER),true)
+$(error typo detected use USE_FILE_BROWSER instead of USE_FILEBROWSER)
+endif
+
+ifeq ($(USE_WEBVIEW),true)
+$(error typo detected use USE_WEB_VIEW instead of USE_WEBVIEW)
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Set optional flags
+
+USE_FILE_BROWSER ?= true
+USE_WEB_VIEW ?= false
 
 # ---------------------------------------------------------------------------------------------------------------------
 # Set build and link flags
@@ -440,7 +462,7 @@ else ifeq ($(MACOS),true)
 
 DGL_SYSTEM_LIBS += -framework Cocoa
 DGL_SYSTEM_LIBS += -framework CoreVideo
-ifeq ($(USE_WEBVIEW),true)
+ifeq ($(USE_WEB_VIEW),true)
 DGL_SYSTEM_LIBS += -framework WebKit
 endif
 
@@ -457,7 +479,7 @@ DGL_SYSTEM_LIBS += -lcomdlg32
 DGL_SYSTEM_LIBS += -ldwmapi
 DGL_SYSTEM_LIBS += -lgdi32
 # DGL_SYSTEM_LIBS += -lole32
-ifeq ($(USE_WEBVIEW),true)
+ifeq ($(USE_WEB_VIEW),true)
 DGL_SYSTEM_LIBS += -lole32
 DGL_SYSTEM_LIBS += -luuid
 endif
@@ -486,7 +508,7 @@ ifeq ($(HAVE_XRANDR),true)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags xrandr) -DHAVE_XRANDR
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs xrandr)
 endif
-ifeq ($(USE_WEBVIEW),true)
+ifeq ($(USE_WEB_VIEW),true)
 DGL_FLAGS       += -pthread
 DGL_SYSTEM_LIBS += -pthread -lrt
 endif
@@ -630,10 +652,6 @@ ifneq ($(NVG_FONT_TEXTURE_FLAGS),)
 BUILD_CXX_FLAGS += -DNVG_FONT_TEXTURE_FLAGS=$(NVG_FONT_TEXTURE_FLAGS)
 endif
 
-ifeq ($(FILE_BROWSER_DISABLED),true)
-BUILD_CXX_FLAGS += -DDGL_FILE_BROWSER_DISABLED
-endif
-
 ifneq ($(WINDOWS_ICON_ID),)
 BUILD_CXX_FLAGS += -DDGL_WINDOWS_ICON_ID=$(WINDOWS_ICON_ID)
 endif
@@ -670,8 +688,12 @@ ifeq ($(USE_RGBA),true)
 BUILD_CXX_FLAGS += -DDGL_USE_RGBA
 endif
 
-ifeq ($(USE_WEBVIEW),true)
-BUILD_CXX_FLAGS += -DDGL_USE_WEBVIEW
+ifeq ($(USE_FILE_BROWSER),true)
+BUILD_CXX_FLAGS += -DDGL_USE_FILE_BROWSER
+endif
+
+ifeq ($(USE_WEB_VIEW),true)
+BUILD_CXX_FLAGS += -DDGL_USE_WEB_VIEW
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------

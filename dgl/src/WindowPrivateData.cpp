@@ -128,7 +128,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-     #ifndef DGL_FILE_BROWSER_DISABLED
+     #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
       modal()
@@ -158,7 +158,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-     #ifndef DGL_FILE_BROWSER_DISABLED
+     #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
       modal(ppData)
@@ -190,7 +190,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-     #ifndef DGL_FILE_BROWSER_DISABLED
+     #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
       modal()
@@ -225,7 +225,7 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       waitingForClipboardEvents(false),
       clipboardTypeId(0),
       filenameToRenderInto(nullptr),
-     #ifndef DGL_FILE_BROWSER_DISABLED
+     #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
       modal()
@@ -244,7 +244,7 @@ Window::PrivateData::~PrivateData()
 
     if (isEmbed)
     {
-       #ifndef DGL_FILE_BROWSER_DISABLED
+       #ifdef DGL_USE_FILE_BROWSER
         if (fileBrowserHandle != nullptr)
             fileBrowserClose(fileBrowserHandle);
        #endif
@@ -394,7 +394,7 @@ void Window::PrivateData::hide()
     if (modal.enabled)
         stopModal();
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
     if (fileBrowserHandle != nullptr)
     {
         fileBrowserClose(fileBrowserHandle);
@@ -435,7 +435,7 @@ void Window::PrivateData::setResizable(const bool resizable)
 
 void Window::PrivateData::idleCallback()
 {
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
     if (fileBrowserHandle != nullptr && fileBrowserIdle(fileBrowserHandle))
     {
         self->onFileSelected(fileBrowserGetPath(fileBrowserHandle));
@@ -477,7 +477,7 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
     return puglStopTimer(view, (uintptr_t)callback) == PUGL_SUCCESS;
 }
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
 // -----------------------------------------------------------------------
 // file handling
 
@@ -498,7 +498,7 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 
     return fileBrowserHandle != nullptr;
 }
-#endif // ! DGL_FILE_BROWSER_DISABLED
+#endif // DGL_USE_FILE_BROWSER
 
 // -----------------------------------------------------------------------
 // modal handling

@@ -21,7 +21,7 @@ FILES_UI  = \
 # --------------------------------------------------------------
 # Do some magic
 
-USE_WEBVIEW = true
+USE_WEB_VIEW = true
 UI_TYPE = external
 include ../../Makefile.plugins.mk
 

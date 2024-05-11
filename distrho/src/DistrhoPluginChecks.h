@@ -121,14 +121,14 @@
 # define DISTRHO_UI_USE_NANOVG 0
 #endif
 
-#ifndef DISTRHO_UI_USE_WEBVIEW
-# define DISTRHO_UI_USE_WEBVIEW 0
+#ifndef DISTRHO_UI_USE_WEB_VIEW
+# define DISTRHO_UI_USE_WEB_VIEW 0
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // Define DISTRHO_UI_WEB_VIEW if needed
 
-#if DISTRHO_UI_USE_WEBVIEW && !DISTRHO_UI_WEB_VIEW
+#if DISTRHO_UI_USE_WEB_VIEW && !DISTRHO_UI_WEB_VIEW
 # undef DISTRHO_UI_WEB_VIEW
 # define DISTRHO_UI_WEB_VIEW 1
 #endif
@@ -151,20 +151,20 @@
 # error DISTRHO_PLUGIN_HAS_EXTERNAL_UI has been replaced by DISTRHO_UI_USE_EXTERNAL
 #endif
 
-#if defined(DGL_CAIRO) && defined(DGL_OPENGL)
-# error invalid build config: trying to build for both cairo and opengl at the same time
-#elif defined(DGL_EXTERNAL) && defined(DGL_CAIRO)
-# error invalid build config: trying to build for both external and cairo at the same time
-#elif defined(DGL_EXTERNAL) && defined(DGL_OPENGL)
-# error invalid build config: trying to build for both external and opengl at the same time
+#ifdef DISTRHO_UI_FILEBROWSER
+# error typo detected use DGL_USE_FILE_BROWSER instead of DISTRHO_UI_FILEBROWSER
 #endif
 
-#if DISTRHO_UI_FILE_BROWSER && defined(DGL_FILE_BROWSER_DISABLED)
-# error invalid build config: file browser requested but `FILE_BROWSER_DISABLED` build option is set
+#ifdef DISTRHO_UI_USE_WEBVIEW
+# error typo detected use DISTRHO_UI_USE_WEB_VIEW instead of DISTRHO_UI_USE_WEBVIEW
 #endif
 
-#if DISTRHO_UI_USE_WEBVIEW && !defined(DGL_USE_WEBVIEW)
-# error invalid build config: web view requested but `USE_WEBVIEW` build option is not set
+#if DISTRHO_UI_FILE_BROWSER && !defined(DGL_USE_FILE_BROWSER)
+# error invalid build config: file browser requested but `USE_FILE_BROWSER` build option is not set
+#endif
+
+#if DISTRHO_UI_USE_WEB_VIEW && !defined(DGL_UI_USE_WEB_VIEW)
+# error invalid build config: web view requested but `USE_WEB_VIEW` build option is not set
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

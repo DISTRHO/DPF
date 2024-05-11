@@ -414,7 +414,7 @@ void Window::focus()
     pData->focus();
 }
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
 bool Window::openFileBrowser(const FileBrowserOptions& options)
 {
     return pData->openFileBrowser(options);
@@ -574,7 +574,7 @@ void Window::onScaleFactorChanged(double)
 {
 }
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
 void Window::onFileSelected(const char*)
 {
 }

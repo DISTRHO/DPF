@@ -255,10 +255,10 @@ ifeq ($(UI_TYPE),web)
 DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-stub.a
 HAVE_DGL   = true
-USE_WEBVIEW = true
+USE_WEB_VIEW = true
 endif
 
-ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEBVIEW),truetruetrue)
+ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEB_VIEW),truetruetrue)
 DGL_LIB_SHARED = $(shell $(CC) -print-file-name=Scrt1.o)
 endif
 

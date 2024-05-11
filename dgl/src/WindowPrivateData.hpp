@@ -90,7 +90,7 @@ struct Window::PrivateData : IdleCallback {
     /** Render to a picture file when non-null, automatically free+unset after saving. */
     char* filenameToRenderInto;
 
-   #ifndef DGL_FILE_BROWSER_DISABLED
+   #ifdef DGL_USE_FILE_BROWSER
     /** Handle for file browser dialog operations. */
     DGL_NAMESPACE::FileBrowserHandle fileBrowserHandle;
    #endif
@@ -168,7 +168,7 @@ struct Window::PrivateData : IdleCallback {
     bool addIdleCallback(IdleCallback* callback, uint timerFrequencyInMs);
     bool removeIdleCallback(IdleCallback* callback);
 
-   #ifndef DGL_FILE_BROWSER_DISABLED
+   #ifdef DGL_USE_FILE_BROWSER
     // file handling
     bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options);
    #endif

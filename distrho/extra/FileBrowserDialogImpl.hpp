@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,6 +16,10 @@
 
 #if !defined(DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED) && !defined(DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED)
 # error bad include
+#endif
+
+#if !defined(DGL_USE_FILE_BROWSER) && defined(DISTRHO_UI_FILE_BROWSER) && DISTRHO_UI_FILE_BROWSER == 0
+# error To use File Browser in DPF plugins please set DISTRHO_UI_FILE_BROWSER to 1
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------

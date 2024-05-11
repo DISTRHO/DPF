@@ -30,7 +30,9 @@
 # include <winsock2.h>
 # include <windows.h>
 #elif defined(HAVE_X11)
+# define Window X11Window
 # include <X11/Xresource.h>
+# undef Window
 #endif
 
 #if DISTRHO_UI_FILE_BROWSER && !defined(DISTRHO_OS_MAC)
@@ -57,7 +59,9 @@
 START_NAMESPACE_DISTRHO
 # include "../extra/FileBrowserDialogImpl.hpp"
 END_NAMESPACE_DISTRHO
+# define Window X11Window
 # include "../extra/FileBrowserDialogImpl.cpp"
+# undef Window
 #endif
 
 #if DISTRHO_UI_WEB_VIEW && !defined(DISTRHO_OS_MAC)
@@ -67,7 +71,9 @@ END_NAMESPACE_DISTRHO
 START_NAMESPACE_DISTRHO
 # include "../extra/WebViewImpl.hpp"
 END_NAMESPACE_DISTRHO
+# define Window X11Window
 # include "../extra/WebViewImpl.cpp"
+# undef Window
 #endif
 
 #include "src/TopLevelWidgetPrivateData.hpp"

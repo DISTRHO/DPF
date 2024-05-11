@@ -21,6 +21,35 @@
 #include "../distrho/extra/ScopedPointer.hpp"
 
 // --------------------------------------------------------------------------------------------------------------------
+// Compatibility checks
+
+#if defined(DGL_CAIRO) && defined(DGL_EXTERNAL)
+# error invalid build config: trying to build for both cairo and external at the same time
+#elif defined(DGL_CAIRO) && defined(DGL_OPENGL)
+# error invalid build config: trying to build for both cairo and opengl at the same time
+#elif defined(DGL_CAIRO) && defined(DGL_VULKAN)
+# error invalid build config: trying to build for both cairo and vulkan at the same time
+#elif defined(DGL_EXTERNAL) && defined(DGL_OPENGL)
+# error invalid build config: trying to build for both external and opengl at the same time
+#elif defined(DGL_EXTERNAL) && defined(DGL_VULKAN)
+# error invalid build config: trying to build for both external and vulkan at the same time
+#elif defined(DGL_OPENGL) && defined(DGL_VULKAN)
+# error invalid build config: trying to build for both opengl and vulkan at the same time
+#endif
+
+#ifdef DGL_USE_FILEBROWSER
+# error typo detected use DGL_USE_FILE_BROWSER instead of DGL_USE_FILEBROWSER
+#endif
+
+#ifdef DGL_UI_USE_WEBVIEW
+# error typo detected use DGL_UI_USE_WEB_VIEW instead of DGL_UI_USE_WEBVIEW
+#endif
+
+#if defined(DGL_FILE_BROWSER_DISABLED)
+# error DGL_FILE_BROWSER_DISABLED has been replaced by DGL_USE_FILE_BROWSER (opt-in vs opt-out)
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
 // Define namespace
 
 #ifndef DGL_NAMESPACE
