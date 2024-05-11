@@ -20,9 +20,7 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
-#if DISTRHO_UI_FILE_BROWSER || DISTRHO_UI_WEB_VIEW || DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-# import <Cocoa/Cocoa.h>
-#endif
+#import <Cocoa/Cocoa.h>
 
 #if DISTRHO_UI_FILE_BROWSER
 # define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED

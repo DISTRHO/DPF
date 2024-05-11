@@ -91,11 +91,7 @@
 #endif
 
 #ifndef DISTRHO_UI_FILE_BROWSER
-# if defined(DGL_FILE_BROWSER_DISABLED) || DISTRHO_PLUGIN_HAS_EXTERNAL_UI
-#  define DISTRHO_UI_FILE_BROWSER 0
-# else
-#  define DISTRHO_UI_FILE_BROWSER 1
-# endif
+# define DISTRHO_UI_FILE_BROWSER 0
 #endif
 
 #ifndef DISTRHO_UI_WEB_VIEW
@@ -104,6 +100,17 @@
 
 #ifndef DISTRHO_UI_USER_RESIZABLE
 # define DISTRHO_UI_USER_RESIZABLE 0
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// set UI type
+
+#ifndef DISTRHO_UI_USE_CAIRO
+# define DISTRHO_UI_USE_CAIRO 0
+#endif
+
+#ifndef DISTRHO_UI_USE_CUSTOM
+# define DISTRHO_UI_USE_CUSTOM 0
 #endif
 
 #ifndef DISTRHO_UI_USE_EXTERNAL
@@ -136,12 +143,12 @@
 // --------------------------------------------------------------------------------------------------------------------
 // Test for wrong compiler macros
 
-#if defined(DISTRHO_PLUGIN_HAS_EXTERNAL_UI)
-# error DISTRHO_PLUGIN_HAS_EXTERNAL_UI has been replaced by DISTRHO_UI_USE_EXTERNAL
-#endif
-
 #if defined(DISTRHO_PLUGIN_HAS_EMBED_UI)
 # warning DISTRHO_PLUGIN_HAS_EMBED_UI has been removed, it is now always on
+#endif
+
+#if defined(DISTRHO_PLUGIN_HAS_EXTERNAL_UI)
+# error DISTRHO_PLUGIN_HAS_EXTERNAL_UI has been replaced by DISTRHO_UI_USE_EXTERNAL
 #endif
 
 #if defined(DGL_CAIRO) && defined(DGL_OPENGL)
@@ -214,17 +221,6 @@
 
 #if defined(DISTRHO_UI_DEFAULT_HEIGHT) && !defined(DISTRHO_UI_DEFAULT_WIDTH)
 # error DISTRHO_UI_DEFAULT_HEIGHT is defined but DISTRHO_UI_DEFAULT_WIDTH is not
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// Other UI defaults
-
-#ifndef DISTRHO_UI_USE_CAIRO
-# define DISTRHO_UI_USE_CAIRO 0
-#endif
-
-#ifndef DISTRHO_UI_USE_CUSTOM
-# define DISTRHO_UI_USE_CUSTOM 0
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
