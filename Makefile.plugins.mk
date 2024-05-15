@@ -60,6 +60,8 @@ else ifeq ($(UI_TYPE),opengl3)
 USE_OPENGL3 = true
 else ifeq ($(UI_TYPE),vulkan)
 else ifeq ($(UI_TYPE),webview)
+USE_CLAP_BUNDLE = true
+USE_VST2_BUNDLE = true
 USE_WEB_VIEW = true
 else
 $(error unknown UI_TYPE $(UI_TYPE))
@@ -186,6 +188,8 @@ OBJS_UI  = $(FILES_UI:%=$(BUILD_DIR)/%.o)
 
 ifeq ($(MACOS),true)
 OBJS_UI += $(BUILD_DIR)/DistrhoUI_macOS_$(NAME).mm.o
+else ifeq ($(WINDOWS)$(USE_WEB_VIEW),truetrue)
+OBJS_UI += $(BUILD_DIR)/DistrhoUI_win32.cpp.o
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -527,6 +531,11 @@ $(BUILD_DIR)/DistrhoUI_macOS_%.mm.o: $(DPF_PATH)/distrho/DistrhoUI_macOS.mm $(EX
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoUI_macOS.mm ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -ObjC++ -c -o $@
+
+$(BUILD_DIR)/DistrhoUI_win32.cpp.o: $(DPF_PATH)/distrho/DistrhoUI_win32.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUI_win32.cpp ($*)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -std=gnu++17 -c -o $@
 
 $(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: BUILD_CXX_FLAGS += $(JACK_FLAGS)
 

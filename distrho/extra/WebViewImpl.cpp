@@ -25,32 +25,27 @@
 // #include <gtk/gtkx.h>
 // #include <webkit2/webkit2.h>
 
-#ifndef WEB_VIEW_USING_CHOC
-# define WEB_VIEW_USING_CHOC 0
-#elif WEB_VIEW_USING_CHOC && !(defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WINDOWS))
-# undef WEB_VIEW_USING_CHOC
-# define WEB_VIEW_USING_CHOC 0
-#endif
-
-#if defined(DISTRHO_OS_MAC) && !WEB_VIEW_USING_CHOC
-# undef WEB_VIEW_USING_MACOS_WEBKIT
+#ifdef DISTRHO_OS_MAC
 # define WEB_VIEW_USING_MACOS_WEBKIT 1
 #else
-# undef WEB_VIEW_USING_MACOS_WEBKIT
 # define WEB_VIEW_USING_MACOS_WEBKIT 0
 #endif
 
+#ifdef DISTRHO_OS_WINDOWS
+# define WEB_VIEW_USING_CHOC 1
+#else
+# define WEB_VIEW_USING_CHOC 0
+#endif
+
 #if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX)
-# undef WEB_VIEW_USING_X11_IPC
 # define WEB_VIEW_USING_X11_IPC 1
 #else
-# undef WEB_VIEW_USING_X11_IPC
 # define WEB_VIEW_USING_X11_IPC 0
 #endif
 
 #if WEB_VIEW_USING_CHOC
-# define WC_ERR_INVALID_CHARS 0
-# include "../CHOC/gui/choc_WebView.h"
+# include "WebViewWin32.hpp"
+# include "String.hpp"
 #elif WEB_VIEW_USING_MACOS_WEBKIT
 # include <Cocoa/Cocoa.h>
 # include <WebKit/WebKit.h>
@@ -217,8 +212,6 @@
 
 @end
 
-#elif WEB_VIEW_USING_X11_IPC
-
 #endif // WEB_VIEW_USING_MACOS_WEBKIT
 
 // -----------------------------------------------------------------------------------------------------------
@@ -233,6 +226,7 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------------------------------------------
 
 #if WEB_VIEW_USING_X11_IPC
+
 #ifdef __linux__
 typedef int32_t ipc_sem_t;
 #else
@@ -329,14 +323,15 @@ static void getFilenameFromFunctionPtr(char filename[PATH_MAX], const void* cons
         std::strncpy(filename, info.dli_fname, PATH_MAX - 1);
     }
 }
-#endif
+
+#endif // WEB_VIEW_USING_X11_IPC
+
+// -----------------------------------------------------------------------------------------------------------
 
 struct WebViewData {
    #if WEB_VIEW_USING_CHOC
-    choc::ui::WebView* webview;
-    WebViewMessageCallback callback;
-    void* callbackPtr;
-    std::string url;
+    WebView* webview;
+    String url;
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     NSView* view;
     WKWebView* webview;
@@ -368,46 +363,11 @@ WebViewHandle webViewCreate(const char* const url,
                             const WebViewOptions& options)
 {
 #if WEB_VIEW_USING_CHOC
-    choc::ui::WebView::Options woptions;
-    woptions.acceptsFirstMouseClick = true;
-    woptions.enableDebugMode = true;
+    WebView* const webview = webview_choc_create(options);
+    if (webview == nullptr)
+        return nullptr;
 
-    std::unique_ptr<choc::ui::WebView> webview = std::make_unique<choc::ui::WebView>(woptions);
-    DISTRHO_SAFE_ASSERT_RETURN(webview->loadedOK(), nullptr);
-
-    void* const handle = webview->getViewHandle();
-    DISTRHO_SAFE_ASSERT_RETURN(handle != nullptr, nullptr);
-
-    if (const WebViewMessageCallback callback = options.callback)
-    {
-        webview->addInitScript("function postMessage(m) { js2cpp(m); }");
-
-        void* const callbackPtr = options.callbackPtr;
-        webview->bind("js2cpp", [callback, callbackPtr](const choc::value::ValueView& args) -> choc::value::Value {
-            callback(callbackPtr, args[0].toString().data());
-            return {};
-        });
-    }
-    else
-    {
-        webview->addInitScript("function postMessage(m) {}");
-    }
-
-    if (options.initialJS != nullptr)
-        webview->addInitScript(options.initialJS);
-
-    webview->navigate(url);
-
-   #ifdef DISTRHO_OS_MAC
-    NSView* const view = static_cast<NSView*>(handle);
-
-    [reinterpret_cast<NSView*>(windowId) addSubview:view];
-    [view setFrame:NSMakeRect(options.offset.x,
-                              options.offset.y,
-                              DISTRHO_UI_DEFAULT_WIDTH - options.offset.x,
-                              DISTRHO_UI_DEFAULT_HEIGHT - options.offset.y)];
-   #else
-    const HWND hwnd = static_cast<HWND>(handle);
+    const HWND hwnd = static_cast<HWND>(webview_choc_handle(webview));
 
     LONG_PTR flags = GetWindowLongPtr(hwnd, -16);
     flags = (flags & ~WS_POPUP) | WS_CHILD;
@@ -421,13 +381,13 @@ WebViewHandle webViewCreate(const char* const url,
                  initialHeight - options.offset.y,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     ShowWindow(hwnd, SW_SHOW);
-   #endif
 
     WebViewData* const whandle = new WebViewData;
-    whandle->webview = webview.release();
-    whandle->callback = options.callback;
-    whandle->callbackPtr = options.callbackPtr;
+    whandle->webview = webview;
     whandle->url = url;
+
+    webview_choc_navigate(webview, url);
+
     return whandle;
 #elif WEB_VIEW_USING_MACOS_WEBKIT
     NSView* const view = reinterpret_cast<NSView*>(windowId);
@@ -470,7 +430,7 @@ WebViewHandle webViewCreate(const char* const url,
         WKUserScript* const mscript = [[WKUserScript alloc]
             initWithSource:(options.callback != nullptr
                 ? @"function postMessage(m){window.webkit.messageHandlers.external.postMessage(m)}"
-                : @"function postMessage(m){}}")
+                : @"function postMessage(m){}")
              injectionTime:WKUserScriptInjectionTimeAtDocumentStart
           forMainFrameOnly:true
         ];
@@ -711,7 +671,7 @@ WebViewHandle webViewCreate(const char* const url,
 void webViewDestroy(const WebViewHandle handle)
 {
    #if WEB_VIEW_USING_CHOC
-    delete handle->webview;
+    webview_choc_destroy(handle->webview);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview setHidden:YES];
     [handle->webview removeFromSuperview];
@@ -780,7 +740,7 @@ void webViewIdle(const WebViewHandle handle)
 void webViewEvaluateJS(const WebViewHandle handle, const char* const js)
 {
    #if WEB_VIEW_USING_CHOC
-    handle->webview->evaluateJavascript(js);
+    webview_choc_eval(handle->webview, js);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     NSString* const nsjs = [[NSString alloc] initWithBytes:js
                                                     length:std::strlen(js)
@@ -805,7 +765,7 @@ void webViewEvaluateJS(const WebViewHandle handle, const char* const js)
 void webViewReload(const WebViewHandle handle)
 {
    #if WEB_VIEW_USING_CHOC
-    handle->webview->navigate(handle->url);
+    webview_choc_navigate(handle->webview, handle->url);
    #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview loadRequest:handle->urlreq];
    #elif WEB_VIEW_USING_X11_IPC
@@ -821,19 +781,12 @@ void webViewReload(const WebViewHandle handle)
 
 void webViewResize(const WebViewHandle handle, const uint width, const uint height, const double scaleFactor)
 {
-  #if WEB_VIEW_USING_CHOC
-   #ifdef DISTRHO_OS_MAC
-    NSView* const view = static_cast<NSView*>(handle->webview->getViewHandle());
-    [view setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
-   #else
-    const HWND hwnd = static_cast<HWND>(handle->webview->getViewHandle());
-    SetWindowPos(hwnd, nullptr, 0, 0,
-                 width, height,
-                 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
-   #endif
-  #elif WEB_VIEW_USING_MACOS_WEBKIT
+   #if WEB_VIEW_USING_CHOC
+    const HWND hwnd = static_cast<HWND>(webview_choc_handle(handle->webview));
+    SetWindowPos(hwnd, nullptr, 0, 0, width, height, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOZORDER);
+   #elif WEB_VIEW_USING_MACOS_WEBKIT
     [handle->webview setFrameSize:NSMakeSize(width / scaleFactor, height / scaleFactor)];
-  #elif WEB_VIEW_USING_X11_IPC
+   #elif WEB_VIEW_USING_X11_IPC
     if (handle->childWindow == 0)
     {
         ::Window rootWindow, parentWindow;
@@ -852,7 +805,7 @@ void webViewResize(const WebViewHandle handle, const uint width, const uint heig
 
     XResizeWindow(handle->display, handle->childWindow, width, height);
     XFlush(handle->display);
-  #endif
+   #endif
 
     // maybe unused
     (void)handle;
