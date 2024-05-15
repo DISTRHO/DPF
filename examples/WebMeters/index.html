@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <script>
+      const METER_COLOR_GREEN = 0;
+      const METER_COLOR_BLUE = 1;
+      const kSmoothMultiplier = 3.0;
+      let fColorValue = null;
+      let fColor = 'rgb(93, 231, 61)';
+      let fOutLeft = 0.0;
+      let fOutRight = 0.0;
+
+      setTimeout(function() {
+        document.getElementById('user-agent').textContent = window.navigator.userAgent;
+        document.getElementById('left-meter').onclick = function() {
+          console.log("left meter clicked");
+          fColorValue = fColorValue == 1 ? 0 : 1;
+          updateColor(fColorValue, true);
+          setParameterValue(0, fColorValue);
+          repaint();
+        }
+        document.getElementById('right-meter').onclick = function() {
+          console.log("right meter clicked");
+          fColorValue = fColorValue == 1 ? 0 : 1;
+          updateColor(fColorValue, true);
+          setParameterValue(0, fColorValue);
+          repaint();
+        }
+      }, 1)
+
+      function repaint() {
+        const lmeter = document.getElementById('left-meter-x');
+        const rmeter = document.getElementById('right-meter-x');
+        lmeter.setAttribute('style', 'background:' + fColor + ';top:' + (100 * (1.0 - fOutLeft)) + '%;height:' + (100 * fOutLeft) + '%');
+        rmeter.setAttribute('style', 'background:' + fColor + ';top:' + (100 * (1.0 - fOutRight)) + '%;height:' + (100 * fOutRight) + '%');
+        setTimeout(function() {
+          setState('reset', '');
+        }, 1)
+      }
+      function updateColor(color, forced) {
+        if (fColorValue === color && !forced)
+            return;
+
+        fColorValue = color;
+
+        switch (color) {
+        case METER_COLOR_GREEN:
+          fColor = "rgb(93, 231, 61)";
+          break;
+        case METER_COLOR_BLUE:
+          fColor = "rgb(82, 238, 248)";
+          break;
+        }
+
+        repaint();
+      }
+      function parameterChanged(index, value) {
+        // console.log("paramChanged", index, value)
+        switch (index) {
+          case 0: // color
+            updateColor(parseInt(Math.round(value)));
+            break;
+          case 1: // out-left
+            value = (fOutLeft * kSmoothMultiplier + value) / (kSmoothMultiplier + 1.0);
+
+            /**/ if (value < 0.001) value = 0.0;
+            else if (value > 0.999) value = 1.0;
+
+            if (fOutLeft != value)
+            {
+                fOutLeft = value;
+                repaint();
+            }
+            break;
+          case 2: // out-right
+            value = (fOutRight * kSmoothMultiplier + value) / (kSmoothMultiplier + 1.0);
+
+            /**/ if (value < 0.001) value = 0.0;
+            else if (value > 0.999) value = 1.0;
+
+            if (fOutRight != value)
+            {
+                fOutRight = value;
+                repaint();
+            }
+            break;
+        }
+      }
+    </script>
+    <style>
+      html, body {
+        background: grey;
+        color: white;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        display: flex;
+        flex-direction: column;
+      }
+      p {
+        margin: 6px;
+        font-size: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: calc(100% - 12px);
+        height: 15px;
+        white-space: nowrap;
+      }
+      #meters {
+        display: flex;
+        flex-direction: row;
+      }
+      .meter {
+        background: black;
+        margin: 6px;
+        margin-top: 0px;
+        width: calc(50vw - 9px);
+        height: calc(100vh - 12px - 6px - 15px);
+      }
+      .meter:first-child {
+        margin-right: 3px;
+      }
+      .meter:last-child {
+        margin-left: 3px;
+      }
+      .meter-x {
+        background: rgb(93, 231, 61);
+        position: relative;
+        top: 0%;
+        left: 0;
+        width: 100%;
+        height: 0%;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="user-agent">&nbsp;</p>
+    <div id="meters">
+      <div class="meter" id="left-meter">
+        <div class="meter-x" id="left-meter-x"></div>
+      </div>
+      <div class="meter" id="right-meter">
+        <div class="meter-x" id="right-meter-x"></div>
+      </div>
+    </div>
+  </body>
+</html>

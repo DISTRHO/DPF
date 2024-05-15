@@ -163,7 +163,7 @@
 # error invalid build config: file browser requested but `USE_FILE_BROWSER` build option is not set
 #endif
 
-#if DISTRHO_UI_USE_WEB_VIEW && !defined(DGL_UI_USE_WEB_VIEW)
+#if DISTRHO_UI_USE_WEB_VIEW && !defined(DGL_USE_WEB_VIEW)
 # error invalid build config: web view requested but `USE_WEB_VIEW` build option is not set
 #endif
 

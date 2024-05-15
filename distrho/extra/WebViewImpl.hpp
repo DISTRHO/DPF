@@ -84,7 +84,7 @@ struct WebViewOptions {
   This means it will draw on top of whatever is below it,
   something to take into consideration if mixing regular widgets with web views.
 
-  Provided metrics must not have scale factor pre-applied.
+  Provided metrics must have scale factor pre-applied.
 
   @p windowId:    The native window id to attach this view to (X11 Window, HWND or NSView*)
   @p scaleFactor: Scale factor in use

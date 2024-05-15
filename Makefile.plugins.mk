@@ -48,6 +48,26 @@ endif
 
 endif
 
+# ---------------------------------------------------------------------------------------------------------------------
+# Check for proper UI_TYPE parameter
+
+ifeq ($(UI_TYPE),)
+else ifeq ($(UI_TYPE),generic)
+else ifeq ($(UI_TYPE),external)
+else ifeq ($(UI_TYPE),cairo)
+else ifeq ($(UI_TYPE),opengl)
+else ifeq ($(UI_TYPE),opengl3)
+USE_OPENGL3 = true
+else ifeq ($(UI_TYPE),vulkan)
+else ifeq ($(UI_TYPE),webview)
+USE_WEB_VIEW = true
+else
+$(error unknown UI_TYPE $(UI_TYPE))
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+# Include DPF base setup
+
 include $(DPF_PATH)/Makefile.base.mk
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -251,11 +271,16 @@ HAVE_DGL   = false
 endif
 endif
 
-ifeq ($(UI_TYPE),web)
-DGL_FLAGS += -DDGL_WEB -DHAVE_DGL
+ifeq ($(UI_TYPE),webview)
+DGL_FLAGS += -DDGL_EXTERNAL -DHAVE_DGL
+ifeq ($(HAVE_STUB),true)
+DGL_FLAGS += $(STUB_FLAGS)
+DGL_LIBS  += $(STUB_LIBS)
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-stub.a
 HAVE_DGL   = true
-USE_WEB_VIEW = true
+else
+HAVE_DGL   = false
+endif
 endif
 
 ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEB_VIEW),truetruetrue)

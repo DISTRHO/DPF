@@ -83,11 +83,6 @@ END_NAMESPACE_DISTRHO
 START_NAMESPACE_DISTRHO
 
 /* ------------------------------------------------------------------------------------------------------------
- * Static data, see DistrhoUIInternal.hpp */
-
-const char* g_nextBundlePath = nullptr;
-
-/* ------------------------------------------------------------------------------------------------------------
  * get global scale factor */
 
 #ifdef DISTRHO_OS_MAC
@@ -178,8 +173,8 @@ UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
 
 PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const bool adjustForScaleFactor)
 {
-    UI::PrivateData* const pData = s_nextPrivateData;
-    const double scaleFactor = d_isNotZero(pData->scaleFactor) ? pData->scaleFactor : getDesktopScaleFactor(pData->winId);
+    UI::PrivateData* const uiData = s_nextPrivateData;
+    const double scaleFactor = d_isNotZero(uiData->scaleFactor) ? uiData->scaleFactor : getDesktopScaleFactor(uiData->winId);
 
     if (adjustForScaleFactor && d_isNotZero(scaleFactor) && d_isNotEqual(scaleFactor, 1.0))
     {
@@ -188,14 +183,131 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint h
     }
 
     d_stdout("createNextWindow %u %u %f %d", width, height, scaleFactor, adjustForScaleFactor);
-    pData->window = new PluginWindow(ui, pData->app, pData->winId, width, height, scaleFactor);
+    uiData->window = new PluginWindow(ui, uiData->app, uiData->winId, width, height, scaleFactor);
 
+    if (uiData->callbacksPtr != nullptr)
+    {
+       #if DISTRHO_UI_USE_WEB_VIEW
+        String path;
+        if (uiData->bundlePath != nullptr)
+        {
+            path = getResourcePath(uiData->bundlePath);
+        }
+        else
+        {
+            path = getBinaryFilename();
+            path.truncate(path.rfind(DISTRHO_OS_SEP));
+            path += "/resources";
+        }
+
+        // TODO convert win32 paths to web
+        // TODO encode paths (e.g. %20 for space)
+
+        WebViewOptions opts;
+        opts.initialJS = ""
+"editParameter = function(index, started){ postMessage('editparam '+index+' '+(started ? 1 : 0)) };"
+"setParameterValue = function(index, value){ postMessage('setparam '+index+' '+value) };"
+#if DISTRHO_PLUGIN_WANT_STATE
+"setState = function(key, value){ postMessage('setstate '+key+' '+value) };"
+"requestStateFile = function(key){ postMessage('reqstatefile '+key) };"
+#endif
+#if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+"sendNote = function(channel, note, velocity){ postMessage('sendnote '+channel+' '+note+' '+velocity) };"
+#endif
+        ;
+        opts.callback = webViewMessageCallback;
+        opts.callbackPtr = uiData;
+        uiData->webview = webViewCreate("file://" + path + "/index.html", uiData->winId, width, height, scaleFactor, opts);
+       #endif
+    }
     // If there are no callbacks, this is most likely a temporary window, so ignore idle callbacks
-    if (pData->callbacksPtr == nullptr)
-        pData->window->setIgnoreIdleCallbacks();
+    else
+    {
+        uiData->window->setIgnoreIdleCallbacks();
+    }
 
-    return pData->window.getObject();
+    return uiData->window.getObject();
 }
+
+#if DISTRHO_UI_USE_WEB_VIEW
+void UI::PrivateData::webViewMessageCallback(void* const arg, char* const msg)
+{
+    UI::PrivateData* const uiData = static_cast<UI::PrivateData*>(arg);
+
+    if (std::strncmp(msg, "setparam ", 9) == 0)
+    {
+        const char* const strindex = msg + 9;
+        char* strvalue = nullptr;
+        const ulong index = std::strtoul(strindex, &strvalue, 10);
+        DISTRHO_SAFE_ASSERT_RETURN(strvalue != nullptr && strindex != strvalue,);
+
+        float value;
+        {
+            const ScopedSafeLocale ssl;
+            value = std::atof(strvalue);
+        }
+        uiData->setParamCallback(index + uiData->parameterOffset, value);
+        return;
+    }
+
+    if (std::strncmp(msg, "editparam ", 10) == 0)
+    {
+        const char* const strindex = msg + 10;
+        char* strvalue = nullptr;
+        const ulong index = std::strtoul(strindex, &strvalue, 10);
+        DISTRHO_SAFE_ASSERT_RETURN(strvalue != nullptr && strindex != strvalue,);
+
+        const bool started = strvalue[0] != '0';
+        uiData->editParamCallback(index + uiData->parameterOffset, started);
+        return;
+    }
+
+   #if DISTRHO_PLUGIN_WANT_STATE
+    if (std::strncmp(msg, "setstate ", 9) == 0)
+    {
+        char* const key = msg + 9;
+        char* const sep = std::strchr(key, ' ');
+        DISTRHO_SAFE_ASSERT_RETURN(sep != nullptr,);
+        *sep = 0;
+        char* const value = sep + 1;
+
+        uiData->setStateCallback(key, value);
+        return;
+    }
+
+    if (std::strncmp(msg, "reqstatefile ", 13) == 0)
+    {
+        const char* const key = msg + 13;
+        uiData->fileRequestCallback(key);
+        return;
+    }
+   #endif
+
+   #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+    if (std::strncmp(msg, "sendnote ", 9) == 0)
+    {
+        const char* const strchannel = msg + 9;
+        char* strnote = nullptr;
+        char* strvelocity = nullptr;
+        char* end = nullptr;
+
+        const ulong channel = std::strtoul(strchannel, &strnote, 10);
+        DISTRHO_SAFE_ASSERT_RETURN(strnote != nullptr && strchannel != strnote,);
+
+        const ulong note = std::strtoul(strnote, &strvelocity, 10);
+        DISTRHO_SAFE_ASSERT_RETURN(strvelocity != nullptr && strchannel != strvelocity,);
+
+        const ulong velocity = std::strtoul(strvelocity, &end, 10);
+        DISTRHO_SAFE_ASSERT_RETURN(end != nullptr && strvelocity != end,);
+
+        uiData->sendNoteCallback(channel, note, velocity);
+        return;
+    }
+   #endif
+
+    d_stderr("UI received unknown message '%s'", msg);
+}
+#endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * UI */
@@ -238,6 +350,10 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
 
 UI::~UI()
 {
+   #if DISTRHO_UI_USE_WEB_VIEW
+    if (uiData->webview != nullptr)
+        webViewDestroy(uiData->webview);
+   #endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------
@@ -323,27 +439,91 @@ void* UI::getPluginInstancePointer() const noexcept
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks */
 
-void UI::parameterChanged(uint32_t, float)
+void UI::parameterChanged(const uint32_t index, const float value)
 {
+   #if DISTRHO_UI_USE_WEB_VIEW
+    if (uiData->webview != nullptr)
+    {
+        char msg[128];
+        {
+            const ScopedSafeLocale ssl;
+            std::snprintf(msg, sizeof(msg) - 1,
+                          "typeof(parameterChanged) === 'function' && parameterChanged(%u,%f)", index, value);
+        }
+        webViewEvaluateJS(uiData->webview, msg);
+    }
+   #else
+    // unused
+    (void)index;
+    (void)value;
+   #endif
 }
 
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
-void UI::programLoaded(uint32_t)
+void UI::programLoaded(const uint32_t index)
 {
+   #if DISTRHO_UI_USE_WEB_VIEW
+    if (uiData->webview != nullptr)
+    {
+        char msg[128];
+        std::snprintf(msg, sizeof(msg) - 1,
+                      "typeof(programLoaded) === 'function' && programLoaded(%u)", index);
+        webViewEvaluateJS(uiData->webview, msg);
+    }
+   #else
+    // unused
+    (void)index;
+   #endif
 }
 #endif
 
 #if DISTRHO_PLUGIN_WANT_STATE
-void UI::stateChanged(const char*, const char*)
+void UI::stateChanged(const char* const key, const char* const value)
 {
+   #if DISTRHO_UI_USE_WEB_VIEW
+    if (uiData->webview != nullptr)
+    {
+        const size_t keylen = std::strlen(key);
+        const size_t valuelen = std::strlen(value);
+        const size_t msglen = keylen + valuelen + 60;
+        if (char* const msg = static_cast<char*>(std::malloc(msglen)))
+        {
+            // TODO escape \\'
+            std::snprintf(msg, sizeof(msglen) - 1,
+                          "typeof(stateChanged) === 'function' && stateChanged('%s','%s')", key, value);
+            msg[msglen - 1] = '\0';
+            webViewEvaluateJS(uiData->webview, msg);
+            std::free(msg);
+        }
+    }
+   #else
+    // unused
+    (void)key;
+    (void)value;
+   #endif
 }
 #endif
 
 /* ------------------------------------------------------------------------------------------------------------
  * DSP/Plugin Callbacks (optional) */
 
-void UI::sampleRateChanged(double)
+void UI::sampleRateChanged(const double sampleRate)
 {
+   #if DISTRHO_UI_USE_WEB_VIEW
+    if (uiData->webview != nullptr)
+    {
+        char msg[128];
+        {
+            const ScopedSafeLocale ssl;
+            std::snprintf(msg, sizeof(msg) - 1,
+                          "typeof(sampleRateChanged) === 'function' && sampleRateChanged(%f)", sampleRate);
+        }
+        webViewEvaluateJS(uiData->webview, msg);
+    }
+   #else
+    // unused
+    (void)sampleRate;
+   #endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------

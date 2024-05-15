@@ -22,11 +22,6 @@
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
-// Static data, see DistrhoUI.cpp
-
-extern const char* g_nextBundlePath;
-
-// -----------------------------------------------------------------------
 // UI exporter class
 
 class UIExporter
@@ -75,12 +70,10 @@ public:
         uiData->setSizeCallbackFunc     = setSizeCall;
         uiData->fileRequestCallbackFunc = fileRequestCall;
 
-        g_nextBundlePath = bundlePath;
         UI::PrivateData::s_nextPrivateData = uiData;
 
         UI* const uiPtr = createUI();
 
-        g_nextBundlePath  = nullptr;
         // enter context called in the PluginWindow constructor, see DistrhoUIPrivateData.hpp
         uiData->window->leaveContext();
         UI::PrivateData::s_nextPrivateData = nullptr;
@@ -201,11 +194,17 @@ public:
         uiData->window->focus();
         uiData->app.addIdleCallback(cb);
         uiData->app.exec();
+        uiData->app.removeIdleCallback(cb);
     }
 
     void exec_idle()
     {
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, );
+
+       #if DISTRHO_UI_USE_WEB_VIEW
+        if (uiData->webview != nullptr)
+            webViewIdle(uiData->webview);
+       #endif
 
         ui->uiIdle();
         uiData->app.repaintIfNeeeded();
@@ -223,6 +222,12 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr, false);
 
         uiData->app.idle();
+
+       #if DISTRHO_UI_USE_WEB_VIEW
+        if (uiData->webview != nullptr)
+            webViewIdle(uiData->webview);
+       #endif
+
         ui->uiIdle();
         uiData->app.repaintIfNeeeded();
         return ! uiData->app.isQuitting();
@@ -252,6 +257,12 @@ public:
         DISTRHO_SAFE_ASSERT_RETURN(ui != nullptr,);
 
         uiData->app.triggerIdleCallbacks();
+
+       #if DISTRHO_UI_USE_WEB_VIEW
+        if (uiData->webview != nullptr)
+            webViewIdle(uiData->webview);
+       #endif
+
         ui->uiIdle();
         uiData->app.repaintIfNeeeded();
     }

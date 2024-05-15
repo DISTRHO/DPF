@@ -415,10 +415,10 @@ WebViewHandle webViewCreate(const char* const url,
 
     SetParent(hwnd, reinterpret_cast<HWND>(windowId));
     SetWindowPos(hwnd, nullptr,
-                 options.offset.x * scaleFactor,
-                 options.offset.y * scaleFactor,
-                 (initialWidth - options.offset.x) * scaleFactor,
-                 (initialHeight - options.offset.y) * scaleFactor,
+                 options.offset.x,
+                 options.offset.y,
+                 initialWidth - options.offset.x,
+                 initialHeight - options.offset.y,
                  SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     ShowWindow(hwnd, SW_SHOW);
    #endif
@@ -448,8 +448,8 @@ WebViewHandle webViewCreate(const char* const url,
 
     const CGRect rect = CGRectMake(options.offset.x / scaleFactor,
                                    options.offset.y / scaleFactor,
-                                   initialWidth,
-                                   initialHeight);
+                                   initialWidth / scaleFactor,
+                                   initialHeight / scaleFactor);
 
     WKWebView* const webview = [[WKWebView alloc] initWithFrame:rect
                                                   configuration:config];

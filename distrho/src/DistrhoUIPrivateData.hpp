@@ -32,6 +32,10 @@
 # include <string>
 #endif
 
+#if DISTRHO_UI_USE_WEB_VIEW
+# include "extra/WebView.hpp"
+#endif
+
 #if defined(DISTRHO_PLUGIN_TARGET_JACK) || defined(DISTRHO_PLUGIN_TARGET_DSSI)
 # define DISTRHO_UI_IS_STANDALONE 1
 #else
@@ -247,6 +251,9 @@ struct UI::PrivateData {
     // DGL
     PluginApplication app;
     ScopedPointer<PluginWindow> window;
+   #if DISTRHO_UI_USE_WEB_VIEW
+    WebViewHandle webview;
+   #endif
 
     // DSP
     double   sampleRate;
@@ -279,6 +286,9 @@ struct UI::PrivateData {
     PrivateData(const char* const appClassName) noexcept
         : app(appClassName),
           window(nullptr),
+         #if DISTRHO_UI_USE_WEB_VIEW
+          webview(nullptr),
+         #endif
           sampleRate(0),
           parameterOffset(0),
           dspPtr(nullptr),
@@ -359,10 +369,13 @@ struct UI::PrivateData {
     }
 
     // implemented below, after PluginWindow
-    bool fileRequestCallback(const char* const key);
+    bool fileRequestCallback(const char* key);
 
     static UI::PrivateData* s_nextPrivateData;
     static PluginWindow& createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
+   #if DISTRHO_UI_USE_WEB_VIEW
+    static void webViewMessageCallback(void* arg, char* msg);
+   #endif
 };
 
 // -----------------------------------------------------------------------

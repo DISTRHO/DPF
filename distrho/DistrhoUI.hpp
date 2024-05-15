@@ -192,8 +192,7 @@ public:
 
       This function does not block the event loop.
 
-      @note This is exactly the same API as provided by the Window class,
-            but redeclared here so that non-embed/DGL based UIs can still use file browser related functions.
+      @note This is exactly the same API as provided by the Window class, but redeclared here for convenience.
     */
     bool openFileBrowser(const DISTRHO_NAMESPACE::FileBrowserOptions& options = FileBrowserOptions());
 #endif
