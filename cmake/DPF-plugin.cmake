@@ -989,6 +989,10 @@ function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
   if(APPLE)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_macOS.mm")
+    if (USE_WEB_VIEW)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-system-libs INTERFACE "${APPLE_WEBKIT_FRAMEWORK}")
+    endif()
   elseif(WIN32 AND USE_WEB_VIEW)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp")
