@@ -19,6 +19,7 @@
 #endif
 
 #include "../extra/String.hpp"
+#include "../DistrhoPluginUtils.hpp"
 #include "../DistrhoStandaloneUtils.hpp"
 
 #ifdef DISTRHO_OS_WINDOWS

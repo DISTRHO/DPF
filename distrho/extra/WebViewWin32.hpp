@@ -24,7 +24,7 @@
 
 START_NAMESPACE_DISTRHO
 
-struct WebView;
+class WebView;
 
 WebView* webview_choc_create(const WebViewOptions& opts);
 void webview_choc_destroy(WebView*);
