@@ -489,7 +489,7 @@ void UI::stateChanged(const char* const key, const char* const value)
         if (char* const msg = static_cast<char*>(std::malloc(msglen)))
         {
             // TODO escape \\'
-            std::snprintf(msg, sizeof(msglen) - 1,
+            std::snprintf(msg, msglen - 1,
                           "typeof(stateChanged) === 'function' && stateChanged('%s','%s')", key, value);
             msg[msglen - 1] = '\0';
             webViewEvaluateJS(uiData->webview, msg);
