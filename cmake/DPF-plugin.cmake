@@ -75,7 +75,13 @@ include(CMakeParseArguments)
 #       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`, `clap`
 #
 #   `UI_TYPE` <type>
-#       the user interface type: `opengl` (default), `cairo`, `external`
+#       the user interface type, can be one of the following:
+#          - cairo
+#          - external
+#          - opengl (default)
+#          - opengl3
+#          - vulkan
+#          - webview
 #
 #   `FILES_COMMON` <file1>...<fileN>
 #       list of sources which are part of both DSP and UI
@@ -96,8 +102,14 @@ include(CMakeParseArguments)
 #   `NO_SHARED_RESOURCES`
 #       do not build DPF shared resources (fonts, etc)
 #
+#   `USE_FILE_BROWSER`
+#       enable file browser dialog APIs
+#
+#   `USE_WEB_VIEW`
+#       enable web browser view APIs
+#
 function(dpf_add_plugin NAME)
-  set(options MONOLITHIC NO_SHARED_RESOURCES)
+  set(options MONOLITHIC NO_SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   set(oneValueArgs MODGUI_CLASS_NAME UI_TYPE)
   set(multiValueArgs FILES_COMMON FILES_DSP FILES_UI TARGETS)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -107,23 +119,34 @@ function(dpf_add_plugin NAME)
   endif()
 
   set(_dgl_library)
-  set(_dgl_external OFF)
   if(_dpf_plugin_FILES_UI)
     if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
-      dpf__add_dgl_cairo("${_dpf_plugin_NO_SHARED_RESOURCES}")
+      dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
       set(_dgl_library dgl-cairo)
-    elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
-      dpf__add_dgl_opengl("${_dpf_plugin_NO_SHARED_RESOURCES}")
-      set(_dgl_library dgl-opengl)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
-      set(_dgl_external ON)
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      set(_dgl_library dgl-external)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
+      dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      set(_dgl_library dgl-opengl)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl3")
+      dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      set(_dgl_library dgl-opengl3)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
+      dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      set(_dgl_library dgl-vulkan)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      set(_dgl_library dgl-external)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
     endif()
+  else()
+    set(_dpf_plugin_UI_TYPE "")
   endif()
 
   set(_dgl_has_ui OFF)
-  if(_dgl_library OR _dgl_external)
+  if(_dgl_library)
     set(_dgl_has_ui ON)
   endif()
 
@@ -137,6 +160,14 @@ function(dpf_add_plugin NAME)
   target_include_directories("${NAME}" PUBLIC
     "${DPF_ROOT_DIR}/distrho")
 
+  if(_dpf_plugin_USE_FILE_BROWSER)
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(_dpf_plugin_USE_WEB_VIEW OR _dpf_plugin_UI_TYPE STREQUAL "webview")
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
   if(_dpf_plugin_MODGUI_CLASS_NAME)
     target_compile_definitions("${NAME}" PUBLIC "DISTRHO_PLUGIN_MODGUI_CLASS_NAME=\"${_dpf_plugin_MODGUI_CLASS_NAME}\"")
   endif()
@@ -145,7 +176,7 @@ function(dpf_add_plugin NAME)
     target_link_libraries("${NAME}" PRIVATE "dl")
   endif()
 
-  if(_dgl_library AND NOT _dgl_external)
+  if(_dgl_library)
     # make sure that all code will see DGL_* definitions
     target_link_libraries("${NAME}" PUBLIC
       "${_dgl_library}-definitions"
@@ -156,17 +187,9 @@ function(dpf_add_plugin NAME)
   dpf__add_static_library("${NAME}-dsp" ${_dpf_plugin_FILES_DSP})
   target_link_libraries("${NAME}-dsp" PUBLIC "${NAME}")
 
-  if(_dgl_library AND NOT _dgl_external)
+  if(_dgl_library)
     dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})
     target_link_libraries("${NAME}-ui" PUBLIC "${NAME}" ${_dgl_library})
-    if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
-      target_link_libraries("${NAME}-ui" PRIVATE "dl")
-    endif()
-    # add the files containing Objective-C classes
-    dpf__add_plugin_specific_ui_sources("${NAME}-ui")
-  elseif(_dgl_external)
-    dpf__add_static_library("${NAME}-ui" ${_dpf_plugin_FILES_UI})
-    target_link_libraries("${NAME}-ui" PUBLIC "${NAME}")
     if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
       target_link_libraries("${NAME}-ui" PRIVATE "dl")
     endif()
@@ -628,7 +651,7 @@ endfunction()
 #
 # Add the Cairo variant of DGL, if not already available.
 #
-function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
+function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER)
   if(TARGET dgl-cairo)
     return()
   endif()
@@ -656,10 +679,10 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/Cairo.cpp")
-  if(NO_SHARED_RESOURCES)
-    target_compile_definitions(dgl-cairo PUBLIC "DGL_NO_SHARED_RESOURCES")
-  else()
+  if(SHARED_RESOURCES)
     target_sources(dgl-cairo PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-cairo PUBLIC "DGL_NO_SHARED_RESOURCES")
   endif()
   if(APPLE)
     target_sources(dgl-cairo PRIVATE
@@ -672,6 +695,10 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
     "${DPF_ROOT_DIR}/dgl")
   target_include_directories(dgl-cairo PUBLIC
     "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-cairo PRIVATE dgl-system-libs)
@@ -688,12 +715,68 @@ function(dpf__add_dgl_cairo NO_SHARED_RESOURCES)
   target_link_libraries(dgl-cairo PRIVATE dgl-cairo-definitions)
 endfunction()
 
+# dpf__add_dgl_external
+# ------------------------------------------------------------------------------
+#
+# Add the external variant of DGL, if not already available.
+#
+function(dpf__add_dgl_external USE_FILE_BROWSER)
+  if(TARGET dgl-external)
+    return()
+  endif()
+
+  dpf__add_static_library(dgl-external STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Stub.cpp")
+
+  if(APPLE)
+    target_sources(dgl-external PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-external PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-external PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-external PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-external PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_compile_definitions(dgl-external PUBLIC "DGL_NO_SHARED_RESOURCES")
+  target_link_libraries(dgl-external PRIVATE dgl-system-libs)
+
+  add_library(dgl-external-definitions INTERFACE)
+  target_compile_definitions(dgl-external-definitions INTERFACE "DGL_EXTERNAL" "HAVE_DGL")
+
+  target_include_directories(dgl-external PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-external PRIVATE dgl-external-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
 # dpf__add_dgl_opengl
 # ------------------------------------------------------------------------------
 #
 # Add the OpenGL variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
+function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
   if(TARGET dgl-opengl)
     return()
   endif()
@@ -723,10 +806,10 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
-  if(NO_SHARED_RESOURCES)
-    target_compile_definitions(dgl-opengl PUBLIC "DGL_NO_SHARED_RESOURCES")
-  else()
+  if(SHARED_RESOURCES)
     target_sources(dgl-opengl PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-opengl PUBLIC "DGL_NO_SHARED_RESOURCES")
   endif()
   if(APPLE)
     target_sources(dgl-opengl PRIVATE
@@ -744,6 +827,10 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
     target_compile_definitions(dgl-opengl PUBLIC "GL_SILENCE_DEPRECATION")
   endif()
 
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
 
@@ -752,6 +839,141 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_dgl_opengl3
+# ------------------------------------------------------------------------------
+#
+# Add the OpenGL3 variant of DGL, if not already available.
+#
+function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
+  if(TARGET dgl-opengl3)
+    return()
+  endif()
+
+  if(NOT OpenGL_GL_PREFERENCE)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+  endif()
+
+  find_package(OpenGL REQUIRED)
+
+  dpf__add_static_library(dgl-opengl3 STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(SHARED_RESOURCES)
+    target_sources(dgl-opengl3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-opengl3 PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-opengl3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-opengl3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-opengl3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-opengl3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-opengl3 PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-opengl3 PRIVATE dgl-system-libs)
+
+  add_library(dgl-opengl3-definitions INTERFACE)
+  target_compile_definitions(dgl-opengl3-definitions INTERFACE "DGL_USE_OPENGL3" "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
+
+  target_include_directories(dgl-opengl3 PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-opengl3 PRIVATE dgl-opengl3-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_dgl_vulkan
+# ------------------------------------------------------------------------------
+#
+# Add the Vulkan variant of DGL, if not already available.
+#
+function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER)
+  if(TARGET dgl-vulkan)
+    return()
+  endif()
+
+  find_package(Vulkan REQUIRED)
+
+  dpf__add_static_library(dgl-vulkan STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Vulkan.cpp")
+  if(NO_SHARED_RESOURCES)
+    target_sources(dgl-vulkan PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-vulkan PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-vulkan PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-vulkan PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-vulkan PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-vulkan PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-vulkan PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-vulkan PRIVATE dgl-system-libs)
+
+  add_library(dgl-vulkan-definitions INTERFACE)
+  target_compile_definitions(dgl-vulkan-definitions INTERFACE "DGL_VULKAN" "HAVE_VULKAN" "HAVE_DGL")
+
+  target_include_directories(dgl-vulkan PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-vulkan PRIVATE dgl-vulkan-definitions "${OPENGL_gl_LIBRARY}")
 endfunction()
 
 # dpf__add_plugin_specific_ui_sources

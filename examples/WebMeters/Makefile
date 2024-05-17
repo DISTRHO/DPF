@@ -7,7 +7,7 @@
 # --------------------------------------------------------------
 # Project name, used for binaries
 
-NAME = d_web
+NAME = d_webmeters
 
 # --------------------------------------------------------------
 # Files to build
@@ -35,16 +35,12 @@ BUILD_CXX_FLAGS += -Wno-deprecated-declarations
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
-ifeq ($(HAVE_OPENGL),true)
-
 TARGETS += jack
 TARGETS += lv2_sep
 TARGETS += vst2
 TARGETS += vst3
 TARGETS += clap
 TARGETS += au
-
-endif # HAVE_OPENGL
 
 ifeq ($(MACOS_APP_BUNDLE),true)
 jackfiles += $(TARGET_DIR)/$(NAME).app/Contents/Resources/index.html
