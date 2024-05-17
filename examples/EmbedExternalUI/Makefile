@@ -25,12 +25,6 @@ USE_WEB_VIEW = true
 UI_TYPE = external
 include ../../Makefile.plugins.mk
 
-ifeq ($(MACOS),true)
-BUILD_CXX_FLAGS  += -ObjC++
-# else ifeq ($(WINDOWS),true)
-# BUILD_CXX_FLAGS  += -std=gnu++17
-endif
-
 # --------------------------------------------------------------
 # Enable all possible plugin types
 
