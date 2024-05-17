@@ -12,24 +12,25 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  ubuntu-20-04:
-    strategy:
-      matrix:
-        target: [linux-arm64, linux-armhf, linux-i686, linux-riscv64, linux-x86_64, win32, win64, pluginval]
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: distrho/dpf-cmake-action@v1
-        with:
-          target: ${{ matrix.target }}
-          dpf_path: .
+  #ubuntu-20-04:
+    #strategy:
+      #matrix:
+        #target: [linux-arm64, linux-armhf, linux-i686, linux-riscv64, linux-x86_64, win32, win64, pluginval]
+    #runs-on: ubuntu-20.04
+    #steps:
+      #- uses: actions/checkout@v3
+        #with:
+          #submodules: recursive
+      #- uses: distrho/dpf-cmake-action@v1
+        #with:
+          #target: ${{ matrix.target }}
+          #dpf_path: .
 
   ubuntu-22-04:
     strategy:
       matrix:
-        target: [linux-arm64, linux-armhf, linux-i686, linux-riscv64, linux-x86_64, win32, win64, pluginval]
+        target: [linux-arm64, linux-armhf, linux-i686, linux-x86_64, win32, win64, pluginval]
+        # linux-riscv64,
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3

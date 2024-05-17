@@ -992,6 +992,8 @@ function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
   elseif(WIN32 AND USE_WEB_VIEW)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp")
+    set_source_files_properties("${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp"
+      PROPERTIES COMPILE_FLAGS -std=gnu++17)
   endif()
 endfunction()
 
