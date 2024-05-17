@@ -136,6 +136,7 @@ function(dpf_add_plugin NAME)
       dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
       set(_dgl_library dgl-vulkan)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
+      set(_dpf_plugin_USE_WEB_VIEW TRUE)
       dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
       set(_dgl_library dgl-external)
     else()
@@ -164,7 +165,7 @@ function(dpf_add_plugin NAME)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
-  if(_dpf_plugin_USE_WEB_VIEW OR _dpf_plugin_UI_TYPE STREQUAL "webview")
+  if(_dpf_plugin_USE_WEB_VIEW)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_WEB_VIEW")
   endif()
 
@@ -192,9 +193,12 @@ function(dpf_add_plugin NAME)
     target_link_libraries("${NAME}-ui" PUBLIC "${NAME}" ${_dgl_library})
     if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
       target_link_libraries("${NAME}-ui" PRIVATE "dl")
+      if(_dpf_plugin_USE_WEB_VIEW)
+        target_link_libraries("${NAME}-ui" PRIVATE "rt")
+      endif()
     endif()
-    # add the files containing Objective-C classes
-    dpf__add_plugin_specific_ui_sources("${NAME}-ui")
+    # add the files containing C++17 or Objective-C classes
+    dpf__add_plugin_specific_ui_sources("${NAME}-ui" $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
   else()
     add_library("${NAME}-ui" INTERFACE)
   endif()
@@ -981,10 +985,13 @@ endfunction()
 #
 # Compile system specific files, for now it is just Objective-C code
 #
-function(dpf__add_plugin_specific_ui_sources NAME)
+function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
   if(APPLE)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_macOS.mm")
+  elseif(WIN32 AND USE_WEB_VIEW)
+    target_sources("${NAME}" PRIVATE
+      "${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp")
   endif()
 endfunction()
 
