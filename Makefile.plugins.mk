@@ -52,9 +52,9 @@ endif
 # Check for proper UI_TYPE parameter
 
 ifeq ($(UI_TYPE),)
-else ifeq ($(UI_TYPE),generic)
-else ifeq ($(UI_TYPE),external)
 else ifeq ($(UI_TYPE),cairo)
+else ifeq ($(UI_TYPE),external)
+else ifeq ($(UI_TYPE),generic)
 else ifeq ($(UI_TYPE),opengl)
 else ifeq ($(UI_TYPE),opengl3)
 USE_OPENGL3 = true
@@ -511,9 +511,6 @@ $(DGL_BUILD_DIR)/libdgl-stub.a: $(DGL_POSSIBLE_DEPS)
 
 $(DGL_BUILD_DIR)/libdgl-vulkan.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl vulkan
-
-$(DGL_BUILD_DIR)/libdgl-web.a: $(DGL_POSSIBLE_DEPS)
-	$(MAKE) -C $(DPF_PATH)/dgl web
 
 # ---------------------------------------------------------------------------------------------------------------------
 

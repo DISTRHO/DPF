@@ -193,12 +193,15 @@ function(dpf_add_plugin NAME)
     target_link_libraries("${NAME}-ui" PUBLIC "${NAME}" ${_dgl_library})
     if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
       target_link_libraries("${NAME}-ui" PRIVATE "dl")
-      if(_dpf_plugin_USE_WEB_VIEW)
+      if(LINUX AND _dpf_plugin_USE_WEB_VIEW)
+        execute_process(COMMAND ${CMAKE_C_COMPILER} -print-file-name=Scrt1.o
+          OUTPUT_STRIP_TRAILING_WHITESPACE
+          OUTPUT_VARIABLE _dpf_plugin_shared_crt)
         target_link_libraries("${NAME}-ui" PRIVATE "rt")
       endif()
     endif()
     # add the files containing C++17 or Objective-C classes
-    dpf__add_plugin_specific_ui_sources("${NAME}-ui" $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    dpf__add_plugin_specific_ui_sources("${NAME}-ui" "${_dpf_plugin_USE_WEB_VIEW}")
   else()
     add_library("${NAME}-ui" INTERFACE)
   endif()
@@ -212,13 +215,13 @@ function(dpf_add_plugin NAME)
     elseif(_target STREQUAL "dssi")
       dpf__build_dssi("${NAME}" "${_dgl_has_ui}")
     elseif(_target STREQUAL "lv2")
-      dpf__build_lv2("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_MONOLITHIC}")
+      dpf__build_lv2("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_MONOLITHIC}" "${_dpf_plugin_shared_crt}")
     elseif(_target STREQUAL "vst2")
-      dpf__build_vst2("${NAME}" "${_dgl_has_ui}")
+      dpf__build_vst2("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_shared_crt}")
     elseif(_target STREQUAL "vst3")
-      dpf__build_vst3("${NAME}" "${_dgl_has_ui}")
+      dpf__build_vst3("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_shared_crt}")
     elseif(_target STREQUAL "clap")
-      dpf__build_clap("${NAME}" "${_dgl_has_ui}")
+      dpf__build_clap("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_shared_crt}")
     elseif(_target STREQUAL "au")
       if (APPLE)
         dpf__build_au("${NAME}" "${_dgl_has_ui}")
@@ -372,7 +375,7 @@ endfunction()
 #
 # Add build rules for an LV2 plugin.
 #
-function(dpf__build_lv2 NAME HAS_UI MONOLITHIC)
+function(dpf__build_lv2 NAME HAS_UI MONOLITHIC EXTRA_UI_LINK_OPTS)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-lv2" ${_no_srcs})
@@ -393,12 +396,14 @@ function(dpf__build_lv2 NAME HAS_UI MONOLITHIC)
     if(MONOLITHIC)
       dpf__add_ui_main("${NAME}-lv2" "lv2" "${HAS_UI}")
       target_link_libraries("${NAME}-lv2" PRIVATE "${NAME}-ui")
+      target_link_options("${NAME}-lv2" PRIVATE "${EXTRA_UI_LINK_OPTS}")
       set_target_properties("${NAME}-lv2" PROPERTIES
         OUTPUT_NAME "${NAME}")
     else()
       dpf__add_module("${NAME}-lv2-ui" ${_no_srcs})
       dpf__add_ui_main("${NAME}-lv2-ui" "lv2" "${HAS_UI}")
       dpf__set_module_export_list("${NAME}-lv2-ui" "lv2-ui")
+      target_link_options("${NAME}-lv2-ui" PRIVATE "${EXTRA_UI_LINK_OPTS}")
       target_link_libraries("${NAME}-lv2-ui" PRIVATE "${NAME}-ui")
       set_target_properties("${NAME}-lv2-ui" PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2/$<0:>"
@@ -427,7 +432,7 @@ endfunction()
 #
 # Add build rules for a VST2 plugin.
 #
-function(dpf__build_vst2 NAME HAS_UI)
+function(dpf__build_vst2 NAME HAS_UI EXTRA_UI_LINK_OPTS)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-vst2" ${_no_srcs})
@@ -435,6 +440,7 @@ function(dpf__build_vst2 NAME HAS_UI)
   dpf__add_ui_main("${NAME}-vst2" "vst2" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-vst2" "vst2")
   target_link_libraries("${NAME}-vst2" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  target_link_options("${NAME}-vst2" PRIVATE "${EXTRA_UI_LINK_OPTS}")
   set_target_properties("${NAME}-vst2" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst2/$<0:>"
@@ -505,7 +511,7 @@ endfunction()
 #
 # Add build rules for a VST3 plugin.
 #
-function(dpf__build_vst3 NAME HAS_UI)
+function(dpf__build_vst3 NAME HAS_UI EXTRA_UI_LINK_OPTS)
   dpf__determine_vst3_package_architecture(vst3_arch)
 
   dpf__create_dummy_source_list(_no_srcs)
@@ -515,6 +521,7 @@ function(dpf__build_vst3 NAME HAS_UI)
   dpf__add_ui_main("${NAME}-vst3" "vst3" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-vst3" "vst3")
   target_link_libraries("${NAME}-vst3" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  target_link_options("${NAME}-vst3" PRIVATE "${EXTRA_UI_LINK_OPTS}")
   set_target_properties("${NAME}-vst3" PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/vst3/$<0:>"
     OUTPUT_NAME "${NAME}"
@@ -547,7 +554,7 @@ endfunction()
 #
 # Add build rules for a CLAP plugin.
 #
-function(dpf__build_clap NAME HAS_UI)
+function(dpf__build_clap NAME HAS_UI EXTRA_UI_LINK_OPTS)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_module("${NAME}-clap" ${_no_srcs})
@@ -555,6 +562,7 @@ function(dpf__build_clap NAME HAS_UI)
   dpf__add_ui_main("${NAME}-clap" "clap" "${HAS_UI}")
   dpf__set_module_export_list("${NAME}-clap" "clap")
   target_link_libraries("${NAME}-clap" PRIVATE "${NAME}-dsp" "${NAME}-ui")
+  target_link_options("${NAME}-clap" PRIVATE "${EXTRA_UI_LINK_OPTS}")
   set_target_properties("${NAME}-clap" PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/obj/clap/$<0:>"
@@ -983,15 +991,15 @@ endfunction()
 # dpf__add_plugin_specific_ui_sources
 # ------------------------------------------------------------------------------
 #
-# Compile system specific files, for now it is just Objective-C code
+# Compile system specific files
 #
 function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
   if(APPLE)
     target_sources("${NAME}" PRIVATE
       "${DPF_ROOT_DIR}/distrho/DistrhoUI_macOS.mm")
-    if (USE_WEB_VIEW)
+    if(USE_WEB_VIEW)
       find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
-      target_link_libraries(dgl-system-libs INTERFACE "${APPLE_WEBKIT_FRAMEWORK}")
+      target_link_libraries("${NAME}" PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
     endif()
   elseif(WIN32 AND USE_WEB_VIEW)
     target_sources("${NAME}" PRIVATE
@@ -1003,6 +1011,7 @@ function(dpf__add_plugin_specific_ui_sources NAME USE_WEB_VIEW)
       set_source_files_properties("${DPF_ROOT_DIR}/distrho/DistrhoUI_win32.cpp"
         PROPERTIES COMPILE_FLAGS -std=gnu++17)
     endif()
+    target_link_libraries("${NAME}" PRIVATE "ole32" "uuid")
   endif()
 endfunction()
 
@@ -1153,6 +1162,9 @@ function(dpf__set_target_defaults NAME)
   endif()
   if (CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options("${NAME}" PUBLIC "-fno-gnu-unique")
+  endif()
+  if ((NOT APPLE) AND (NOT MSVC))
+    target_link_options("${NAME}" PUBLIC "-Wl,--no-undefined")
   endif()
 endfunction()
 

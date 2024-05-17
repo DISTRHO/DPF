@@ -58,6 +58,19 @@
 #  define DISTRHO_IS_STANDALONE 0
 # endif
 # include "src/DistrhoUtils.cpp"
+#else
+# ifdef DISTRHO_PLUGIN_TARGET_JACK
+#  define DISTRHO_IS_STANDALONE 1
+# else
+#  define DISTRHO_IS_STANDALONE 0
+# endif
+#endif
+
+#if defined(DPF_USING_LD_LINUX_WEBVIEW) && !DISTRHO_IS_STANDALONE
+int main(int argc, char* argv[])
+{
+    return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
+}
 #endif
 
 #endif

@@ -174,10 +174,3 @@ int dpf_webview_start(int argc, char* argv[]);
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO
-
-#if defined(DPF_USING_LD_LINUX_WEBVIEW) && !DISTRHO_IS_STANDALONE
-int main(int argc, char* argv[])
-{
-    return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
-}
-#endif

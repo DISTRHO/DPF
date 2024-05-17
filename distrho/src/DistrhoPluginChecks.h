@@ -155,6 +155,10 @@
 # error typo detected use DGL_USE_FILE_BROWSER instead of DISTRHO_UI_FILEBROWSER
 #endif
 
+#ifdef DISTRHO_UI_WEBVIEW
+# error typo detected use DISTRHO_UI_WEB_VIEW instead of DISTRHO_UI_WEBVIEW
+#endif
+
 #ifdef DISTRHO_UI_USE_WEBVIEW
 # error typo detected use DISTRHO_UI_USE_WEB_VIEW instead of DISTRHO_UI_USE_WEBVIEW
 #endif
@@ -163,7 +167,7 @@
 # error invalid build config: file browser requested but `USE_FILE_BROWSER` build option is not set
 #endif
 
-#if DISTRHO_UI_USE_WEB_VIEW && !defined(DGL_USE_WEB_VIEW)
+#if DISTRHO_UI_WEB_VIEW && !defined(DGL_USE_WEB_VIEW)
 # error invalid build config: web view requested but `USE_WEB_VIEW` build option is not set
 #endif
 
@@ -278,7 +282,7 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 // --------------------------------------------------------------------------------------------------------------------
 // Set DPF_USING_LD_LINUX_WEBVIEW for internal use
 
-#if DISTRHO_UI_WEB_VIEW && defined(__linux__)
+#if DISTRHO_UI_WEB_VIEW && defined(DISTRHO_OS_LINUX)
 # define DPF_USING_LD_LINUX_WEBVIEW
 #endif
 

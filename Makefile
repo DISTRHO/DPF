@@ -37,6 +37,7 @@ ifeq ($(HAVE_CAIRO),true)
 endif
 ifeq ($(HAVE_DGL),true)
 	$(MAKE) all -C examples/EmbedExternalUI
+	$(MAKE) all -C examples/WebMeters
 endif
 
 ifeq ($(CAN_GENERATE_TTL),true)
@@ -68,6 +69,7 @@ clean:
 	$(MAKE) clean -C examples/Parameters
 	$(MAKE) clean -C examples/SendNote
 	$(MAKE) clean -C examples/States
+	$(MAKE) clean -C examples/WebMeters
 	$(MAKE) clean -C utils/lv2-ttl-generator
 	rm -rf bin build
 
