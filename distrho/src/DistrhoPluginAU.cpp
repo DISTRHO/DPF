@@ -1451,6 +1451,10 @@ public:
             return kAudioUnitErr_PropertyNotInUse;
            #endif
 
+        case kAudioUnitProperty_InPlaceProcessing:
+            // nothing to do
+            return noErr;
+
         case kAudioUnitProperty_PresentPreset:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
