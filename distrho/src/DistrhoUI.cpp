@@ -182,7 +182,7 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint h
         height *= scaleFactor;
     }
 
-    d_stdout("createNextWindow %u %u %d", width, height, scaleFactor);
+    d_stdout("createNextWindow %u %u %f", width, height, scaleFactor);
     uiData->window = new PluginWindow(ui, uiData->app, uiData->winId, width, height, scaleFactor);
 
     if (uiData->callbacksPtr != nullptr)
