@@ -44,7 +44,9 @@
 # undef Point
 #endif
 
-#ifndef DISTRHO_OS_WINDOWS
+#ifdef DISTRHO_OS_WINDOWS
+# include <objbase.h>
+#else
 # include <signal.h>
 # include <unistd.h>
 #endif
