@@ -352,6 +352,9 @@ struct UI::PrivateData {
 
     void setStateCallback(const char* const key, const char* const value)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(key != nullptr && key[0] != '\0',);
+        DISTRHO_SAFE_ASSERT_RETURN(value != nullptr,);
+
         if (setStateCallbackFunc != nullptr)
             setStateCallbackFunc(callbacksPtr, key, value);
     }
@@ -364,6 +367,8 @@ struct UI::PrivateData {
 
     void setSizeCallback(const uint width, const uint height)
     {
+        DISTRHO_SAFE_ASSERT_RETURN(width != 0 && height != 0,);
+
         if (setSizeCallbackFunc != nullptr)
             setSizeCallbackFunc(callbacksPtr, width, height);
     }
@@ -372,7 +377,7 @@ struct UI::PrivateData {
     bool fileRequestCallback(const char* key);
 
     static UI::PrivateData* s_nextPrivateData;
-    static PluginWindow& createNextWindow(UI* ui, uint width, uint height, bool adjustForScaleFactor);
+    static PluginWindow& createNextWindow(UI* ui, uint width, uint height);
    #if DISTRHO_UI_USE_WEB_VIEW
     static void webViewMessageCallback(void* arg, char* msg);
    #endif

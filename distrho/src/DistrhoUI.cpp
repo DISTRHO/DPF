@@ -171,18 +171,18 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
 
 UI::PrivateData* UI::PrivateData::s_nextPrivateData = nullptr;
 
-PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height, const bool adjustForScaleFactor)
+PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint height)
 {
     UI::PrivateData* const uiData = s_nextPrivateData;
     const double scaleFactor = d_isNotZero(uiData->scaleFactor) ? uiData->scaleFactor : getDesktopScaleFactor(uiData->winId);
 
-    if (adjustForScaleFactor && d_isNotZero(scaleFactor) && d_isNotEqual(scaleFactor, 1.0))
+    if (d_isNotZero(scaleFactor) && d_isNotEqual(scaleFactor, 1.0))
     {
         width *= scaleFactor;
         height *= scaleFactor;
     }
 
-    d_stdout("createNextWindow %u %u %f %d", width, height, scaleFactor, adjustForScaleFactor);
+    d_stdout("createNextWindow %u %u %d", width, height, scaleFactor);
     uiData->window = new PluginWindow(ui, uiData->app, uiData->winId, width, height, scaleFactor);
 
     if (uiData->callbacksPtr != nullptr)
@@ -323,13 +323,7 @@ UI::UI(const uint width, const uint height, const bool automaticallyScaleAndSetA
               #ifdef DISTRHO_UI_DEFAULT_HEIGHT
                height == 0 ? DISTRHO_UI_DEFAULT_HEIGHT :
               #endif
-               height,
-               // adjustForScaleFactor
-              #ifdef DISTRHO_UI_DEFAULT_WIDTH
-               width == 0
-              #else
-               false
-              #endif
+               height
                )),
       uiData(UI::PrivateData::s_nextPrivateData)
 {
