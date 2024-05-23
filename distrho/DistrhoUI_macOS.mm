@@ -20,7 +20,11 @@
 #include "src/DistrhoPluginChecks.h"
 #include "src/DistrhoDefines.h"
 
+#define Point CocoaPoint
+#define Size CocoaSize
 #import <Cocoa/Cocoa.h>
+#undef Point
+#undef Size
 
 #if DISTRHO_UI_FILE_BROWSER
 # define DISTRHO_FILE_BROWSER_DIALOG_HPP_INCLUDED
