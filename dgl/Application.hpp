@@ -54,6 +54,12 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
 #endif
 
+#ifdef DGL_NO_SHARED_RESOURCES
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_no_shared_resources_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_no_shared_resources_off)
+#endif
+
 #undef BUILD_CONFIG_SENTINEL
 
 // --------------------------------------------------------------------------------------------------------------------

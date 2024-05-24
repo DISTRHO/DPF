@@ -42,6 +42,12 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
 #endif
 
+#ifdef DGL_NO_SHARED_RESOURCES
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_no_shared_resources_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_no_shared_resources_off)
+#endif
+
 #undef BUILD_CONFIG_SENTINEL
 
 static inline
@@ -57,6 +63,11 @@ bool dpf_check_build_status() noexcept
       fail_to_link_is_mismatch_dgl_use_file_browser_on.ok &&
      #else
       fail_to_link_is_mismatch_dgl_use_file_browser_off.ok &&
+     #endif
+     #ifdef DGL_NO_SHARED_RESOURCES
+      fail_to_link_is_mismatch_dgl_no_shared_resources_on.ok &&
+     #else
+      fail_to_link_is_mismatch_dgl_no_shared_resources_off.ok &&
      #endif
       true
    );
@@ -84,6 +95,11 @@ Application::Application(const bool isStandalone)
     fail_to_link_is_mismatch_dgl_use_file_browser_on.ok = true;
    #else
     fail_to_link_is_mismatch_dgl_use_file_browser_off.ok = true;
+   #endif
+   #ifdef DGL_NO_SHARED_RESOURCES
+    fail_to_link_is_mismatch_dgl_no_shared_resources_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_no_shared_resources_off.ok = true;
    #endif
     DISTRHO_SAFE_ASSERT(dpf_check_build_status());
 }
