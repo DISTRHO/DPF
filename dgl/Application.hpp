@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,6 +26,41 @@ END_NAMESPACE_DISTRHO
 #endif
 
 START_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------
+// build config sentinels
+
+/**
+   This set of static variables act as a build sentinel that detects a configuration error.
+
+   Usually this means the way DGL was built and how it is being used and linked into your program are different,
+   we want to avoid such combinations as memory layout would then also be different
+   leading to all sort of nasty memory corruption issues.
+
+   Make sure the flags used to build DGL match the ones used by your program and the link errors should go away.
+ */
+#define BUILD_CONFIG_SENTINEL(NAME) \
+   static struct DISTRHO_JOIN_MACRO(_, NAME) { bool ok; DISTRHO_JOIN_MACRO(_, NAME)() noexcept; } NAME;
+
+#ifdef DPF_DEBUG
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_off)
+#endif
+
+#ifdef DGL_USE_FILE_BROWSER
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
+#endif
+
+#undef BUILD_CONFIG_SENTINEL
 
 // --------------------------------------------------------------------------------------------------------------------
 

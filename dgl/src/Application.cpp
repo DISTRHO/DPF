@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -25,6 +25,55 @@
 START_NAMESPACE_DGL
 
 // --------------------------------------------------------------------------------------------------------------------
+// build config sentinels
+
+#define BUILD_CONFIG_SENTINEL(NAME) \
+   DISTRHO_JOIN_MACRO(_, NAME)::DISTRHO_JOIN_MACRO(_, NAME)() noexcept : ok(false) {}
+
+#ifdef DPF_DEBUG
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_off)
+#endif
+
+#ifdef DGL_USE_FILE_BROWSER
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
+#endif
+
+#undef BUILD_CONFIG_SENTINEL
+
+static inline
+bool dpf_check_build_status() noexcept
+{
+   return (
+     #ifdef DPF_DEBUG
+      fail_to_link_is_mismatch_dpf_debug_on.ok &&
+     #else
+      fail_to_link_is_mismatch_dpf_debug_off.ok &&
+     #endif
+     #ifdef DGL_USE_FILE_BROWSER
+      fail_to_link_is_mismatch_dgl_use_file_browser_on.ok &&
+     #else
+      fail_to_link_is_mismatch_dgl_use_file_browser_off.ok &&
+     #endif
+     #ifdef DGL_USE_WEB_VIEW
+      fail_to_link_is_mismatch_dgl_use_web_view_on.ok &&
+     #else
+      fail_to_link_is_mismatch_dgl_use_web_view_off.ok &&
+     #endif
+      true
+   );
+}
+
+// --------------------------------------------------------------------------------------------------------------------
 
 #ifdef __EMSCRIPTEN__
 static void app_idle(void* const app)
@@ -34,7 +83,26 @@ static void app_idle(void* const app)
 #endif
 
 Application::Application(const bool isStandalone)
-    : pData(new PrivateData(isStandalone)) {}
+    : pData(new PrivateData(isStandalone))
+{
+    // build config sentinels
+   #ifdef DPF_DEBUG
+    fail_to_link_is_mismatch_dpf_debug_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dpf_debug_off.ok = true;
+   #endif
+   #ifdef DGL_USE_FILE_BROWSER
+    fail_to_link_is_mismatch_dgl_use_file_browser_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_use_file_browser_off.ok = true;
+   #endif
+   #ifdef DGL_USE_WEB_VIEW
+    fail_to_link_is_mismatch_dgl_use_web_view_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_use_web_view_off.ok = true;
+   #endif
+    DISTRHO_SAFE_ASSERT(dpf_check_build_status());
+}
 
 Application::~Application()
 {
