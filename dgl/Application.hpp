@@ -33,9 +33,9 @@ START_NAMESPACE_DGL
 /**
    This set of static variables act as a build sentinel that detects a configuration error.
 
-   Usually this means the way DGL was built and how it is being used and linked into your program are different,
+   Usually this means the way DGL was built and how it is being used and linked into your program is different,
    we want to avoid such combinations as memory layout would then also be different
-   leading to all sort of nasty memory corruption issues.
+   leading to all sort of subtle but very nasty memory corruption issues.
 
    Make sure the flags used to build DGL match the ones used by your program and the link errors should go away.
  */
@@ -52,12 +52,6 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_off)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 #else
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
-#endif
-
-#ifdef DGL_USE_WEB_VIEW
-BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
-#else
-BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
 #endif
 
 #undef BUILD_CONFIG_SENTINEL

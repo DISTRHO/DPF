@@ -42,12 +42,6 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
 #endif
 
-#ifdef DGL_USE_WEB_VIEW
-BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
-#else
-BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
-#endif
-
 #undef BUILD_CONFIG_SENTINEL
 
 static inline
@@ -63,11 +57,6 @@ bool dpf_check_build_status() noexcept
       fail_to_link_is_mismatch_dgl_use_file_browser_on.ok &&
      #else
       fail_to_link_is_mismatch_dgl_use_file_browser_off.ok &&
-     #endif
-     #ifdef DGL_USE_WEB_VIEW
-      fail_to_link_is_mismatch_dgl_use_web_view_on.ok &&
-     #else
-      fail_to_link_is_mismatch_dgl_use_web_view_off.ok &&
      #endif
       true
    );
@@ -95,11 +84,6 @@ Application::Application(const bool isStandalone)
     fail_to_link_is_mismatch_dgl_use_file_browser_on.ok = true;
    #else
     fail_to_link_is_mismatch_dgl_use_file_browser_off.ok = true;
-   #endif
-   #ifdef DGL_USE_WEB_VIEW
-    fail_to_link_is_mismatch_dgl_use_web_view_on.ok = true;
-   #else
-    fail_to_link_is_mismatch_dgl_use_web_view_off.ok = true;
    #endif
     DISTRHO_SAFE_ASSERT(dpf_check_build_status());
 }
