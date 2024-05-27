@@ -1974,24 +1974,24 @@ public:
         {
        #if DPF_VST3_USES_SEPARATE_CONTROLLER
         case kVst3InternalParameterBufferSize:
-            return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_BUFFER_SIZE));
+            return std::max<double>(0.0, std::min<double>(1.0, plain / DPF_VST3_MAX_BUFFER_SIZE));
         case kVst3InternalParameterSampleRate:
-            return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_SAMPLE_RATE));
+            return std::max<double>(0.0, std::min<double>(1.0, plain / DPF_VST3_MAX_SAMPLE_RATE));
        #endif
        #if DISTRHO_PLUGIN_WANT_LATENCY
         case kVst3InternalParameterLatency:
-            return std::max(0.0, std::min(1.0, plain / DPF_VST3_MAX_LATENCY));
+            return std::max<double>(0.0, std::min<double>(1.0, plain / DPF_VST3_MAX_LATENCY));
        #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         case kVst3InternalParameterProgram:
-            return std::max(0.0, std::min(1.0, plain / fProgramCountMinusOne));
+            return std::max<double>(0.0, std::min<double>(1.0, plain / fProgramCountMinusOne));
        #endif
         }
       #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         if (rindex < kVst3InternalParameterCount)
-            return std::max(0.0, std::min(1.0, plain / 127));
+            return std::max<double>(0.0, std::min<double>(1.0, plain / 127));
        #endif
 
         const uint32_t index = static_cast<uint32_t>(rindex - kVst3InternalParameterCount);
