@@ -152,7 +152,7 @@
 #endif
 
 #ifdef DISTRHO_UI_FILEBROWSER
-# error typo detected use DGL_USE_FILE_BROWSER instead of DISTRHO_UI_FILEBROWSER
+# error typo detected use DISTRHO_UI_FILE_BROWSER instead of DISTRHO_UI_FILEBROWSER
 #endif
 
 #ifdef DISTRHO_UI_WEBVIEW

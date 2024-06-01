@@ -14,37 +14,37 @@
    This is used to identify your plugin before a Plugin instance can be created.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NAME "CairoUI"
+#define DISTRHO_PLUGIN_NAME "Plugin Name"
 
 /**
    Number of audio inputs the plugin has.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NUM_INPUTS 1
+#define DISTRHO_PLUGIN_NUM_INPUTS 2
 
 /**
    Number of audio outputs the plugin has.
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_NUM_OUTPUTS 1
+#define DISTRHO_PLUGIN_NUM_OUTPUTS 2
 
 /**
    The plugin URI when exporting in LV2 format.
    TODO describe what a URI is
    @note This macro is required.
  */
-#define DISTRHO_PLUGIN_URI "http://distrho.sf.net/examples/CairoUI"
+#define DISTRHO_PLUGIN_URI "urn:distrho:name"
 
 /**
    Whether the plugin has a custom UI.
  */
-#define DISTRHO_PLUGIN_HAS_UI 1
+// #define DISTRHO_PLUGIN_HAS_UI 0
 
 /**
    Whether the plugin processing is realtime-safe.
    TODO - list rtsafe requirements
  */
-#define DISTRHO_PLUGIN_IS_RT_SAFE 1
+// #define DISTRHO_PLUGIN_IS_RT_SAFE 0
 
 /**
    Whether the plugin is a synth.
@@ -135,7 +135,7 @@
    Whether the UI uses Cairo for drawing instead of the default OpenGL mode.
    When enabled your UI instance will subclass CairoTopLevelWidget instead of TopLevelWidget.
  */
-#define DISTRHO_UI_USE_CAIRO 1
+// #define DISTRHO_UI_USE_CAIRO 0
 
 /**
    Whether the UI uses a custom toolkit implementation based on OpenGL.
@@ -172,7 +172,7 @@
 
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_HEIGHT macro must be defined as well.
  */
-#define DISTRHO_UI_DEFAULT_WIDTH 200
+// #define DISTRHO_UI_DEFAULT_WIDTH 300
 
 /**
    Default UI height to use when creating initial and temporary windows.
@@ -183,7 +183,7 @@
 
    When this macro is defined, the companion DISTRHO_UI_DEFAULT_WIDTH macro must be defined as well.
  */
-#define DISTRHO_UI_DEFAULT_HEIGHT 200
+// #define DISTRHO_UI_DEFAULT_HEIGHT 300
 
 /**
    Whether the UI is resizable to any size by the user and OS.
@@ -232,7 +232,7 @@
    It must be unique within at least a set of plugins from the brand.
    @note This macro is required when building AU plugins
  */
-#define DISTRHO_PLUGIN_UNIQUE_ID dCai
+// #define DISTRHO_PLUGIN_UNIQUE_ID test
 
 /**
    Custom LV2 category for the plugin.
@@ -279,7 +279,7 @@
 
    See http://lv2plug.in/ns/lv2core for more information.
  */
-#define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:UtilityPlugin"
+// #define DISTRHO_PLUGIN_LV2_CATEGORY "lv2:Plugin"
 
 /**
    Custom VST3 categories for the plugin.
@@ -323,7 +323,7 @@
       - Mono
       - Stereo
  */
-#define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Tools|Mono"
+// #define DISTRHO_PLUGIN_VST3_CATEGORIES "Fx|Stereo"
 
 /**
    Custom CLAP features for the plugin.
@@ -381,17 +381,12 @@
       - surround
       - ambisonic
 */
-#define DISTRHO_PLUGIN_CLAP_FEATURES "audio-effect", "utility", "mono"
+// #define DISTRHO_PLUGIN_CLAP_FEATURES "audio-effect", "stereo"
 
 /**
    The plugin id when exporting in CLAP format, in reverse URI form.
    @note This macro is required when building CLAP plugins
 */
-#define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.examples.cairo-ui"
+// #define DISTRHO_PLUGIN_CLAP_ID "studio.kx.distrho.effect"
 
-enum Parameters {
-   kParameterKnob,
-   kParameterTriState,
-   kParameterButton,
-   kParameterCount
-};
+/** @} */

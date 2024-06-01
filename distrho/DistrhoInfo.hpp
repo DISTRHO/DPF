@@ -604,6 +604,12 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_TIMEPOS 1
 
 /**
+   Whether the %UI uses Cairo for drawing instead of the default OpenGL mode.@n
+   When enabled your %UI instance will subclass @ref CairoTopLevelWidget instead of @ref TopLevelWidget.
+ */
+#define DISTRHO_UI_USE_CAIRO 1
+
+/**
    Whether the %UI uses a custom toolkit implementation based on OpenGL.@n
    When enabled, the macros @ref DISTRHO_UI_CUSTOM_INCLUDE_PATH and @ref DISTRHO_UI_CUSTOM_WIDGET_TYPE are required.
  */
@@ -615,6 +621,12 @@ START_NAMESPACE_DISTRHO
    @see DISTRHO_UI_USE_CUSTOM
  */
 #define DISTRHO_UI_CUSTOM_INCLUDE_PATH
+
+/**
+   Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL mode.@n
+   When enabled your %UI instance will subclass @ref NanoTopLevelWidget instead of @ref TopLevelWidget.
+ */
+#define DISTRHO_UI_USE_NANOVG 1
 
 /**
    The top-level-widget typedef to use for the custom toolkit.
@@ -648,18 +660,24 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_UI_DEFAULT_HEIGHT 300
 
 /**
-   Whether the %UI uses NanoVG for drawing instead of the default raw OpenGL calls.@n
-   When enabled your %UI instance will subclass @ref NanoWidget instead of @ref Widget.
- */
-#define DISTRHO_UI_USE_NANOVG 1
-
-/**
-   Whether the %UI is resizable to any size by the user.@n
-   By default this is false, and resizing is only allowed under the plugin UI control,@n
+   Whether the %UI is resizable to any size by the user and OS.@n
+   By default this is false, with resizing only allowed when coded from the the plugin UI side.@n
    Enabling this options makes it possible for the user to resize the plugin UI at anytime.
    @see UI::setGeometryConstraints(uint, uint, bool, bool)
  */
 #define DISTRHO_UI_USER_RESIZABLE 1
+
+/**
+   Whether to %UI is going to use file browser dialogs.@n
+   By default this is false, with the file browser APIs not available for use.
+ */
+#define DISTRHO_UI_FILE_BROWSER 1
+
+/**
+   Whether to %UI is going to use web browser views.@n
+   By default this is false, with the web browser APIs not available for use.
+ */
+#define DISTRHO_UI_WEB_VIEW 1
 
 /**
    The %UI URI when exporting in LV2 format.@n
@@ -865,7 +883,7 @@ START_NAMESPACE_DISTRHO
 /**
    Whether to enable runtime plugin tests.@n
    This will check, during initialization of the plugin, if parameters, programs and states are setup properly.@n
-   Useful to enable as part of CI, can safely be skipped.@n
+   Useful to enable as part of CI, can be safely skipped.@n
    Under DPF makefiles this can be enabled by using `make DPF_RUNTIME_TESTING=true`.
 
    @note Some checks are only available with the GCC compiler,
@@ -886,24 +904,10 @@ START_NAMESPACE_DISTRHO
 #define DPF_VST3_DONT_USE_BRAND_ID
 
 /**
-   Disable all file browser related code.@n
-   Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS="-DDGL_FILE_BROWSER_DISABLED"`)
- */
-#define DGL_FILE_BROWSER_DISABLED
-
-/**
    Disable resource files, like internally used fonts.@n
    Must be set as compiler macro when building DGL. (e.g. `CXXFLAGS="-DDGL_NO_SHARED_RESOURCES"`)
  */
 #define DGL_NO_SHARED_RESOURCES
-
-/**
-   Whether to use OpenGL3 instead of the default OpenGL2 compatility profile.
-   Under DPF makefiles this can be enabled by using `make USE_OPENGL3=true` on the dgl build step.
-
-   @note This is experimental and incomplete, contributions are welcome and appreciated.
- */
-#define DGL_USE_OPENGL3
 
 /** @} */
 

@@ -189,30 +189,65 @@ protected:
       Get the plugin label.@n
       This label is a short restricted name consisting of only _, a-z, A-Z and 0-9 characters.
     */
+   #ifdef DISTRHO_PLUGIN_LABEL
+    virtual const char* getLabel() const
+    {
+         return DISTRHO_PLUGIN_LABEL;
+    }
+   #else
     virtual const char* getLabel() const = 0;
+   #endif
 
    /**
       Get an extensive comment/description about the plugin.@n
       Optional, returns nothing by default.
     */
-    virtual const char* getDescription() const { return ""; }
+    virtual const char* getDescription() const
+    {
+       #ifdef DISTRHO_PLUGIN_DESCRIPTION
+        return DISTRHO_PLUGIN_DESCRIPTION;
+       #else
+        return "";
+       #endif
+    }
 
    /**
       Get the plugin author/maker.
     */
+   #ifdef DISTRHO_PLUGIN_MAKER
+    virtual const char* getMaker() const
+    {
+         return DISTRHO_PLUGIN_MAKER;
+    }
+   #else
     virtual const char* getMaker() const = 0;
+   #endif
 
    /**
       Get the plugin homepage.@n
       Optional, returns nothing by default.
     */
-    virtual const char* getHomePage() const { return ""; }
+    virtual const char* getHomePage() const
+    {
+       #ifdef DISTRHO_PLUGIN_HOMEPAGE
+        return DISTRHO_PLUGIN_HOMEPAGE;
+       #else
+        return "";
+       #endif
+    }
 
    /**
       Get the plugin license (a single line of text or a URL).@n
       For commercial plugins this should return some short copyright information.
     */
+   #ifdef DISTRHO_PLUGIN_LICENSE
+    virtual const char* getLicense() const
+    {
+         return DISTRHO_PLUGIN_LICENSE;
+    }
+   #else
     virtual const char* getLicense() const = 0;
+   #endif
 
    /**
       Get the plugin version, in hexadecimal.

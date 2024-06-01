@@ -74,19 +74,11 @@ public:
         fButton->setCallback(this);
         fButton->setId(kParameterButton);
 
-#if 0
-        // we can use this if/when our resources are scalable, for now they are PNGs
-        const double scaleFactor = getScaleFactor();
-        if (scaleFactor != 1.0)
-            setSize(200 * scaleFactor, 200 * scaleFactor);
-#else
-        // without scalable resources, let DPF handle the scaling internally
         setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true, true);
-#endif
     }
 
 protected:
-    void onCairoDisplay(const CairoGraphicsContext& context)
+    void onCairoDisplay(const CairoGraphicsContext& context) override
     {
         cairo_t* const cr = context.handle;
         cairo_set_source_rgb(cr, 1.0, 0.8, 0.5);
