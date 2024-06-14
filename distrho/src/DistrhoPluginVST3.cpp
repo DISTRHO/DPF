@@ -359,14 +359,14 @@ class PluginVst3
                     midiEvent.size = 3;
                     midiEvent.data[0] = 0x90 | (eventStorage.noteOn.channel & 0xf);
                     midiEvent.data[1] = eventStorage.noteOn.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.noteOn.velocity / 0.0078125)));
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)std::round(eventStorage.noteOn.velocity * 127)));
                     midiEvent.data[3] = 0;
                     break;
                 case NoteOff:
                     midiEvent.size = 3;
                     midiEvent.data[0] = 0x80 | (eventStorage.noteOff.channel & 0xf);
                     midiEvent.data[1] = eventStorage.noteOff.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.noteOff.velocity / 0.0078125)));
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)std::round(eventStorage.noteOff.velocity * 127)));
                     midiEvent.data[3] = 0;
                     break;
                 /* TODO
@@ -377,7 +377,7 @@ class PluginVst3
                     midiEvent.size = 3;
                     midiEvent.data[0] = 0xA0 | (eventStorage.polyPressure.channel & 0xf);
                     midiEvent.data[1] = eventStorage.polyPressure.pitch;
-                    midiEvent.data[2] = std::max(0, std::min(127, (int)(eventStorage.polyPressure.pressure / 0.0078125)));
+                    midiEvent.data[2] = std::max(0, std::min(127, (int)std::round(eventStorage.polyPressure.pressure * 127)));
                     midiEvent.data[3] = 0;
                     break;
                 case CC_Normal:
@@ -469,7 +469,7 @@ class PluginVst3
             {
             case 128:
                 eventStorage.type = CC_ChannelPressure;
-                eventStorage.midi[1] = std::max(0, std::min(127, (int)(normalized / 0.0078125)));
+                eventStorage.midi[1] = std::max(0, std::min(127, (int)std::round(normalized * 127)));
                 eventStorage.midi[2] = 0;
                 break;
             case 129:
@@ -480,7 +480,7 @@ class PluginVst3
             default:
                 eventStorage.type = CC_Normal;
                 eventStorage.midi[1] = cc;
-                eventStorage.midi[2] = std::max(0, std::min(127, (int)(normalized / 0.0078125)));
+                eventStorage.midi[2] = std::max(0, std::min(127, (int)std::round(normalized * 127)));
                 break;
             }
 
