@@ -316,6 +316,13 @@ struct ImageBaseKnob<ImageType>::PrivateData : public KnobEventHandler::Callback
                 callback->imageKnobValueChanged(imageKnob, value);
     }
 
+    void knobDoubleClicked(SubWidget* const widget) override
+    {
+        if (callback != nullptr)
+            if (ImageBaseKnob* const imageKnob = dynamic_cast<ImageBaseKnob*>(widget))
+                callback->imageKnobDoubleClicked(imageKnob);
+    }
+
     // implemented independently per graphics backend
     void init();
     void cleanup();
