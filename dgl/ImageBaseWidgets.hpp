@@ -138,6 +138,7 @@ public:
         virtual void imageKnobDragStarted(ImageBaseKnob* imageKnob) = 0;
         virtual void imageKnobDragFinished(ImageBaseKnob* imageKnob) = 0;
         virtual void imageKnobValueChanged(ImageBaseKnob* imageKnob, float value) = 0;
+        virtual void imageKnobDoubleClicked(ImageBaseKnob* imageKnob) = 0;
     };
 
     explicit ImageBaseKnob(Widget* parentWidget, const ImageType& image, Orientation orientation = Vertical) noexcept;
