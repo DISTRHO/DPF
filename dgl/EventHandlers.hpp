@@ -133,6 +133,8 @@ public:
     // returns 0-1 ranged value, already with log scale as needed
     float getNormalizedValue() const noexcept;
 
+    float getDefault() const noexcept;
+
     // NOTE: value is assumed to be scaled if using log
     void setDefault(float def) noexcept;
 

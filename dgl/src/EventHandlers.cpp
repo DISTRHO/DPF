@@ -618,6 +618,11 @@ float KnobEventHandler::getNormalizedValue() const noexcept
     return pData->getNormalizedValue();
 }
 
+float KnobEventHandler::getDefault() const noexcept
+{
+    return pData->valueDef;
+}
+
 void KnobEventHandler::setDefault(const float def) noexcept
 {
     pData->valueDef = def;
