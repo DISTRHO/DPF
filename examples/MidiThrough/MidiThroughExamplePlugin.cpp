@@ -101,15 +101,7 @@ protected:
              const MidiEvent* midiEvents, uint32_t midiEventCount) override
     {
         for (uint32_t i=0; i<midiEventCount; ++i)
-        {
-            uint8_t b0 = midiEvents[i].data[0]; // status + channel
-            uint8_t b0_status = b0 & 0xF0;
-            uint8_t b0_channel = b0 & 0x0F;
-            uint8_t b1 = midiEvents[i].data[1]; // note
-            uint8_t b2 = midiEvents[i].data[2]; // velocity
-            d_stdout("MIDI in 0x%x (status: 0x%x, channel: 0x%x) %d %d", b0, b0_status, b0_channel, b1, b2);
             writeMidiEvent(midiEvents[i]);
-        }
     }
 
     // -------------------------------------------------------------------------------------------------------
