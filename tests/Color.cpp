@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -17,13 +17,15 @@
 #include "tests.hpp"
 
 #define DPF_TEST_COLOR_CPP
+#include "dgl/src/Application.cpp"
+#include "dgl/src/ApplicationPrivateData.cpp"
 #include "dgl/src/Color.cpp"
 
 // --------------------------------------------------------------------------------------------------------------------
 
 int main()
 {
-    USE_NAMESPACE_DGL;
+    using DGL_NAMESPACE::Color;
 
     // constructor with no arguments, must give solid black
     {

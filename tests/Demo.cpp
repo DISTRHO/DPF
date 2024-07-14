@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -66,11 +66,11 @@ typedef ExampleImagesWidget<StandaloneWindow, DemoImage> ExampleImagesStandalone
 class LeftSideWidget : public SubWidget
 {
 public:
-#ifdef DGL_OPENGL
+   #ifdef DGL_OPENGL
     static const int kPageCount = 5;
-#else
+   #else
     static const int kPageCount = 4;
-#endif
+   #endif
 
     class Callback
     {
@@ -92,12 +92,12 @@ public:
         img3.loadFromMemory(ico3Data, ico3Width, ico2Height, kImageFormatBGR);
         img4.loadFromMemory(ico4Data, ico4Width, ico4Height, kImageFormatBGR);
 
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         img5.loadFromMemory(ico5Data, ico5Width, ico5Height, kImageFormatBGR);
 
         // for text
         nvg.loadSharedResources();
-#endif
+       #endif
     }
 
 protected:
@@ -143,7 +143,7 @@ protected:
         img3.drawAt(context, pad, pad + 6 + iconSize*2);
         img4.drawAt(context, pad, pad + 9 + iconSize*3);
 
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         img5.drawAt(context, pad, pad + 12 + iconSize*4);
 
         // draw some text
@@ -158,7 +158,7 @@ protected:
         nvg.textBox(15 * scaleFactor, 440 * scaleFactor, iconSize, "Look!", nullptr);
 
         nvg.endFrame();
-#endif
+       #endif
     }
 
     bool onMouse(const MouseEvent& ev) override
@@ -245,10 +245,10 @@ private:
     Line<int> lineSep;
     DemoImage img1, img2, img3, img4, img5;
 
-#ifdef DGL_OPENGL
+   #ifdef DGL_OPENGL
     // for text
     NanoVG nvg;
-#endif
+   #endif
 };
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -260,15 +260,13 @@ class DemoWindow : public StandaloneWindow,
     static const int kSidebarWidth = 81;
 
 public:
-#ifdef DGL_CAIRO
+   #if defined(DGL_CAIRO)
     static constexpr const char* const kExampleWidgetName = "Demo - Cairo";
-#endif
-#ifdef DGL_OPENGL
+   #elif defined(DGL_OPENGL)
     static constexpr const char* const kExampleWidgetName = "Demo - OpenGL";
-#endif
-#ifdef DGL_VULKAN
+   #elif defined(DGL_VULKAN)
     static constexpr const char* const kExampleWidgetName = "Demo - Vulkan";
-#endif
+   #endif
 
     DemoWindow(Application& app)
         : StandaloneWindow(app),
@@ -293,11 +291,11 @@ public:
         wShapes->hide();
         wShapes->setAbsoluteX(kSidebarWidth * scaleFactor);
 
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         wText = new ExampleTextSubWidget(this),
         wText->hide();
         wText->setAbsoluteX(kSidebarWidth * scaleFactor);
-#endif
+       #endif
         wLeft = new LeftSideWidget(this, this),
         wLeft->setAbsolutePos(2 * scaleFactor, 2 * scaleFactor);
 
@@ -327,11 +325,11 @@ protected:
         case 3:
             curWidget = wShapes;
             break;
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         case 4:
             curWidget = wText;
             break;
-#endif
+       #endif
         default:
             curWidget = nullptr;
             break;
@@ -359,9 +357,9 @@ protected:
         wImages->setSize(size);
         wRects->setSize(size);
         wShapes->setSize(size);
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         wText->setSize(size);
-#endif
+       #endif
         wLeft->setSize((kSidebarWidth - 4) * scaleFactor, (height - 4) * scaleFactor);
     }
 
@@ -370,9 +368,9 @@ private:
     ScopedPointer<ExampleImagesSubWidget> wImages;
     ScopedPointer<ExampleRectanglesSubWidget> wRects;
     ScopedPointer<ExampleShapesSubWidget> wShapes;
-#ifdef DGL_OPENGL
+   #ifdef DGL_OPENGL
     ScopedPointer<ExampleTextSubWidget> wText;
-#endif
+   #endif
     ScopedPointer<LeftSideWidget> wLeft;
     ScopedPointer<ResizeHandle> resizer;
 
@@ -401,8 +399,16 @@ END_NAMESPACE_DGL
 
 int main(int argc, char* argv[])
 {
-    USE_NAMESPACE_DGL;
-    using DGL_NAMESPACE::Window;
+    using DGL_NAMESPACE::Application;
+    using DGL_NAMESPACE::DemoWindow;
+    using DGL_NAMESPACE::ExampleColorStandaloneWindow;
+    using DGL_NAMESPACE::ExampleImagesStandaloneWindow;
+    using DGL_NAMESPACE::ExampleRectanglesStandaloneWindow;
+    using DGL_NAMESPACE::ExampleShapesStandaloneWindow;
+   #ifdef DGL_OPENGL
+    using DGL_NAMESPACE::ExampleTextStandaloneWindow;
+   #endif
+    using DGL_NAMESPACE::createAndShowExampleWidgetStandaloneWindow;
 
     Application app;
 
@@ -416,10 +422,10 @@ int main(int argc, char* argv[])
             createAndShowExampleWidgetStandaloneWindow<ExampleRectanglesStandaloneWindow>(app);
         else if (std::strcmp(argv[1], "shapes") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleShapesStandaloneWindow>(app);
-#ifdef DGL_OPENGL
+       #ifdef DGL_OPENGL
         else if (std::strcmp(argv[1], "text") == 0)
             createAndShowExampleWidgetStandaloneWindow<ExampleTextStandaloneWindow>(app);
-#endif
+       #endif
         else
             d_stderr2("Invalid demo mode, must be one of: color, images, rectangles or shapes");
     }
