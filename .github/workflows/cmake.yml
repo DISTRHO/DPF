@@ -27,6 +27,8 @@ jobs:
           #dpf_path: .
 
   ubuntu-22-04:
+    env:
+      TARGET_SUFFIX: _22_04
     strategy:
       matrix:
         target: [linux-arm64, linux-armhf, linux-i686, linux-x86_64, win32, win64, pluginval]
@@ -42,6 +44,8 @@ jobs:
           dpf_path: .
 
   macos-12:
+    env:
+      TARGET_SUFFIX: _12
     strategy:
       matrix:
         target: [macos-intel, macos-universal, macos-10.15]
@@ -56,6 +60,8 @@ jobs:
           dpf_path: .
 
   macos-13:
+    env:
+      TARGET_SUFFIX: _13
     strategy:
       matrix:
         target: [macos-intel, macos-universal, macos-10.15]
@@ -70,6 +76,8 @@ jobs:
           dpf_path: .
 
   macos-14:
+    env:
+      TARGET_SUFFIX: _14
     strategy:
       matrix:
         target: [macos-intel, macos-universal, macos-10.15]
