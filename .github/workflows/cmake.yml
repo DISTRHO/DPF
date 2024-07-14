@@ -33,21 +33,7 @@ jobs:
         # linux-riscv64,
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: distrho/dpf-cmake-action@v1
-        with:
-          target: ${{ matrix.target }}
-          dpf_path: .
-
-  macos-11:
-    strategy:
-      matrix:
-        target: [macos-intel, macos-universal, macos-10.15]
-    runs-on: macos-11
-    steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -61,7 +47,35 @@ jobs:
         target: [macos-intel, macos-universal, macos-10.15]
     runs-on: macos-12
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: distrho/dpf-cmake-action@v1
+        with:
+          target: ${{ matrix.target }}
+          dpf_path: .
+
+  macos-13:
+    strategy:
+      matrix:
+        target: [macos-intel, macos-universal, macos-10.15]
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: distrho/dpf-cmake-action@v1
+        with:
+          target: ${{ matrix.target }}
+          dpf_path: .
+
+  macos-14:
+    strategy:
+      matrix:
+        target: [macos-intel, macos-universal, macos-10.15]
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: distrho/dpf-cmake-action@v1
@@ -86,7 +100,7 @@ jobs:
     #- name: Install packages
     #  run: |
     #    & "${Env:VCPKG_ROOT}/vcpkg" install "cairo:${Env:vcpkg_triplet}"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: Create Build Environment
@@ -124,7 +138,7 @@ jobs:
     #- name: Install packages
     #  run: |
     #    & "${Env:VCPKG_ROOT}/vcpkg" install "cairo:${Env:vcpkg_triplet}"
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
     - name: Create Build Environment
