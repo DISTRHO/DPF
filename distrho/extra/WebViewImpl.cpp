@@ -21,6 +21,19 @@
 # error bad usage
 #endif
 
+// #undef Bool
+// #undef CursorShape
+// #undef Expose
+// #undef FocusIn
+// #undef FocusOut
+// #undef FontChange
+// #undef KeyPress
+// #undef KeyRelease
+// #undef None
+// #undef Status
+// #include <QGuiApplication>
+// #include <QEvent>
+
 // #include <gtk/gtk.h>
 // #include <gtk/gtkx.h>
 // #include <webkit2/webkit2.h>
@@ -818,6 +831,7 @@ void webViewResize(const WebViewHandle handle, const uint width, const uint heig
 
 // -----------------------------------------------------------------------------------------------------------
 
+static bool running = false;
 static std::function<void(const char* js)> evaluateFn;
 static std::function<void()> reloadFn;
 static std::function<void()> terminateFn;
@@ -843,10 +857,25 @@ typedef int gboolean;
 #define GTK_WINDOW(p) reinterpret_cast<GtkWindow*>(p)
 #define WEBKIT_WEB_VIEW(p) reinterpret_cast<WebKitWebView*>(p)
 
-// struct QApplication;
-// struct QUrl;
-// struct QWebEngineView;
-// struct QWindow;
+// -----------------------------------------------------------------------------------------------------------
+
+class QApplication;
+class QChar;
+class QEvent;
+class QMetaMethod;
+class QMetaObject;
+class QString;
+class QUrl;
+class QWebEngineView;
+class QWindow;
+
+struct QPoint {
+    int x, y;
+};
+
+struct QSize {
+    int w, h;
+};
 
 // -----------------------------------------------------------------------------------------------------------
 
@@ -865,10 +894,7 @@ typedef int gboolean;
     S NAME = reinterpret_cast<S>(dlsym(nullptr, #SN)); \
     DISTRHO_SAFE_ASSERT_RETURN(NAME != nullptr, false);
 
-// -----------------------------------------------------------------------------------------------------------
-// gtk3 variant
-
-static void gtk3_idle(void* const ptr)
+static void web_wake_idle(void* const ptr)
 {
     WebViewRingBuffer* const shmptr = static_cast<WebViewRingBuffer*>(ptr);
 
@@ -918,6 +944,9 @@ static void gtk3_idle(void* const ptr)
     free(buffer);
 }
 
+// -----------------------------------------------------------------------------------------------------------
+// gtk3 variant
+
 static int gtk3_js_cb(WebKitUserContentManager*, WebKitJavascriptResult* const result, void* const arg)
 {
     WebViewRingBuffer* const shmptr = static_cast<WebViewRingBuffer*>(arg);
@@ -962,9 +991,12 @@ static bool gtk3(Display* const display,
                  WebViewRingBuffer* const shmptr)
 {
     void* lib;
-    if ((lib = dlopen("libwebkit2gtk-4.0.so.37", RTLD_NOW|RTLD_GLOBAL)) == nullptr ||
+    if ((lib = dlopen("libwebkit2gtk-4.0.so.37", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
         (lib = dlopen("libwebkit2gtk-4.0.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr)
+    {
+        d_stdout("WebView gtk3 platform not available: %s", dlerror());
         return false;
+    }
 
     using g_main_context_invoke_t = void (*)(void*, void*, void*);
     using g_signal_connect_data_t = ulong (*)(void*, const char*, void*, void*, void*, int);
@@ -1047,8 +1079,11 @@ static bool gtk3(Display* const display,
 
     gdk_set_allowed_backends("x11");
 
-    if (! gtk_init_check (nullptr, nullptr))
+    if (! gtk_init_check(nullptr, nullptr))
+    {
+        d_stderr("WebView gtk_init_check failed");
         return false;
+    }
 
     GtkWidget* const window = gtk_plug_new(winId);
     DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
@@ -1116,43 +1151,113 @@ static bool gtk3(Display* const display,
     };
 
     terminateFn = [=](){
-        d_stdout("terminateFn");
-        static bool quit = true;
-        if (quit)
+        if (running)
         {
-            quit = false;
+            running = false;
+            webview_wake(&shmptr->client.sem);
             gtk_main_quit();
         }
     };
 
     wakeFn = [=](WebViewRingBuffer* const rb){
-        g_main_context_invoke(NULL, G_CALLBACK(gtk3_idle), rb);
+        g_main_context_invoke(NULL, G_CALLBACK(web_wake_idle), rb);
     };
 
     // notify server we started ok
     webview_wake(&shmptr->server.sem);
 
+    d_stdout("WebView gtk3 main loop started");
+
     gtk_main();
-    d_stdout("quit");
+
+    d_stdout("WebView gtk3 main loop quit");
 
     dlclose(lib);
     return true;
 }
 
-#if 0
+// -----------------------------------------------------------------------------------------------------------
+// qt common code
+
+// VTable compatible with real QObject
+class QObject
+{
+public:
+    using QObject__init_t = void (*)(QObject*, QObject*);
+
+    QObject(const QObject__init_t init)
+    {
+        init(this, nullptr);
+    }
+
+    virtual const QMetaObject* metaObject() const
+    {
+        static const uint8_t mdata[56 * 2] = {}; // sizeof(QMetaObject) == 56
+        return static_cast<const QMetaObject*>(static_cast<const void*>(mdata));
+    }
+
+    virtual void* qt_metacast(const char*) { return 0; }
+    virtual int qt_metacall(void* /* QMetaObject::Call */, int, void**) { return 0; }
+    virtual ~QObject() {}
+    virtual bool event(QEvent *e) { return false; }
+    virtual bool eventFilter(QObject*, QEvent*) { return false; }
+    virtual void timerEvent(void*) {}
+    virtual void childEvent(void*) {}
+    virtual void customEvent(void*) {}
+    virtual void connectNotify(const QMetaMethod&) {}
+    virtual void disconnectNotify(const QMetaMethod&) {}
+
+private:
+    uint8_t _[8 * 2];
+};
+
+// QObject subclass for receiving events on main thread
+class EventFilterQObject : public QObject
+{
+    WebViewRingBuffer* const _rb;
+
+public:
+    EventFilterQObject(const QObject__init_t init, WebViewRingBuffer* const rb)
+        : QObject(init),
+          _rb(rb) {}
+
+    bool event(QEvent * e) override
+    {
+        printf("custom event YES\n");
+        web_wake_idle(_rb);
+        return false;
+    }
+};
+
 // -----------------------------------------------------------------------------------------------------------
 // qt5webengine variant
 
-static bool qt5webengine(const Window winId, const double scaleFactor, const char* const url)
+static bool qt5webengine(Display* const display,
+                         const Window winId,
+                         const int x,
+                         const int y,
+                         const uint width,
+                         const uint height,
+                         double scaleFactor,
+                         const char* const url,
+                         const char* const initialJS,
+                         WebViewRingBuffer* const shmptr)
 {
     void* lib;
-    if ((lib = dlopen("libQt5WebEngineWidgets.so.5", RTLD_NOW|RTLD_GLOBAL)) == nullptr ||
+    if ((lib = dlopen("libQt5WebEngineWidgets.so.5", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
         (lib = dlopen("libQt5WebEngineWidgets.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr)
+    {
+        d_stdout("WebView Qt5 platform not available: %s", dlerror());
         return false;
+    }
 
     using QApplication__init_t = void (*)(QApplication*, int&, char**, int);
     using QApplication_exec_t = void (*)();
-    using QApplication_setAttribute_t = void (*)(Qt::ApplicationAttribute, bool);
+    using QApplication_postEvent_t = void (*)(QObject*, QEvent*, int);
+    using QApplication_quit_t = void (*)();
+    using QApplication_setAttribute_t = void (*)(int, bool);
+    using QEvent__init_t = void (*)(QEvent*, int);
+    using QObject__init_t = void (*)(QObject*, QObject*);
     using QString__init_t = void (*)(void*, const QChar*, ptrdiff_t);
     using QUrl__init_t = void (*)(void*, const QString&, int /* QUrl::ParsingMode */);
     using QWebEngineView__init_t = void (*)(QWebEngineView*, void*);
@@ -1167,7 +1272,11 @@ static bool qt5webengine(const Window winId, const double scaleFactor, const cha
 
     CPPSYM(QApplication__init_t, QApplication__init, _ZN12QApplicationC1ERiPPci)
     CPPSYM(QApplication_exec_t, QApplication_exec, _ZN15QGuiApplication4execEv)
+    CPPSYM(QApplication_postEvent_t, QApplication_postEvent, _ZN16QCoreApplication9postEventEP7QObjectP6QEventi)
+    CPPSYM(QApplication_quit_t, QApplication_quit, _ZN16QCoreApplication4quitEv)
     CPPSYM(QApplication_setAttribute_t, QApplication_setAttribute, _ZN16QCoreApplication12setAttributeEN2Qt20ApplicationAttributeEb)
+    CPPSYM(QEvent__init_t, QEvent__init, _ZN6QEventC1ENS_4TypeE)
+    CPPSYM(QObject__init_t, QObject__init, _ZN7QObjectC1EPS_)
     CPPSYM(QString__init_t, QString__init, _ZN7QStringC2EPK5QChari)
     CPPSYM(QUrl__init_t, QUrl__init, _ZN4QUrlC1ERK7QStringNS_11ParsingModeE)
     CPPSYM(QWebEngineView__init_t, QWebEngineView__init, _ZN14QWebEngineViewC1EP7QWidget)
@@ -1184,17 +1293,19 @@ static bool qt5webengine(const Window winId, const double scaleFactor, const cha
     unsetenv("QT_SCREEN_SCALE_FACTORS");
     unsetenv("QT_USE_PHYSICAL_DPI");
     setenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0", 1);
+    setenv("QT_QPA_PLATFORM", "xcb", 1);
 
     char scale[8] = {};
     std::snprintf(scale, 7, "%.2f", scaleFactor);
     setenv("QT_SCALE_FACTOR", scale, 1);
 
-    QApplication_setAttribute(Qt::AA_X11InitThreads, true);
-    QApplication_setAttribute(Qt::AA_EnableHighDpiScaling, true);
-    QApplication_setAttribute(Qt::AA_UseHighDpiPixmaps, true);
+    QApplication_setAttribute(10 /* Qt::AA_X11InitThreads */, true);
+    QApplication_setAttribute(13 /* Qt::AA_UseHighDpiPixmaps */, true);
+    QApplication_setAttribute(20 /* Qt::AA_EnableHighDpiScaling */, true);
 
-    static int argc = 0;
-    static char* argv[] = { nullptr };
+    static int argc = 1;
+    static char argv0[] = "dpf-webview";
+    static char* argv[] = { argv0, nullptr };
 
     uint8_t _app[64]; // sizeof(QApplication) == 16
     QApplication* const app = reinterpret_cast<QApplication*>(_app);
@@ -1205,40 +1316,68 @@ static bool qt5webengine(const Window winId, const double scaleFactor, const cha
 
     {
         const size_t url_len = std::strlen(url);
-        QChar* const url_qchar = new QChar[url_len + 1];
+        ushort* const url_qchar = new ushort[url_len + 1];
 
         for (size_t i = 0; i < url_len; ++i)
-            url_qchar[i] = QChar(url[i]);
+            url_qchar[i] = url[i];
 
         url_qchar[url_len] = 0;
 
-        QString__init(qstrurl, url_qchar, url_len);
+        QString__init(qstrurl, reinterpret_cast<QChar*>(url_qchar), url_len);
     }
 
     uint8_t _qurl[32]; // sizeof(QUrl) == 8
     QUrl* const qurl(reinterpret_cast<QUrl*>(_qurl));
     QUrl__init(qurl, *qstrurl, 1 /* QUrl::StrictMode */);
 
+    EventFilterQObject eventFilter(QObject__init, shmptr);
+    EventFilterQObject* const eventFilterPtr = &eventFilter;
+
     uint8_t _webview[128]; // sizeof(QWebEngineView) == 56
     QWebEngineView* const webview = reinterpret_cast<QWebEngineView*>(_webview);
     QWebEngineView__init(webview, nullptr);
-
-    QWebEngineView_move(webview, QPoint(0, kVerticalOffset));
-    QWebEngineView_resize(webview, QSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT - kVerticalOffset));
+    QWebEngineView_move(webview, QPoint{x, y});
+    QWebEngineView_resize(webview, QSize{DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT});
     QWebEngineView_winId(webview);
     QWindow_setParent(QWebEngineView_windowHandle(webview), QWindow_fromWinId(winId));
     QWebEngineView_setUrl(webview, *qurl);
     QWebEngineView_show(webview);
+
+    evaluateFn = [=](const char* const js){
+        // TODO
+    };
 
     reloadFn = [=](){
         QWebEngineView_setUrl(webview, *qurl);
     };
 
     terminateFn = [=](){
-        // TODO
+        if (running)
+        {
+            running = false;
+            webview_wake(&shmptr->client.sem);
+            QApplication_quit();
+        }
     };
 
+    wakeFn = [=](WebViewRingBuffer* const rb){
+        d_stdout("wakeFn");
+        // NOTE event pointer is deleted by Qt
+        typedef struct { uint8_t _[16 * 2]; } uint8_64_t; // sizeof(QEvent) == 16
+        QEvent* const qevent = reinterpret_cast<QEvent*>(new uint8_64_t);
+        QEvent__init(qevent, 1000 /* QEvent::User */);
+
+        QApplication_postEvent(eventFilterPtr, qevent, 1 /* Qt::HighEventPriority */);
+    };
+
+    // notify server we started ok
+    webview_wake(&shmptr->server.sem);
+
+    d_stdout("WebView Qt5 main loop started");
+
     QApplication_exec();
+
+    d_stdout("WebView Qt5 main loop quit");
 
     dlclose(lib);
     return true;
@@ -1247,17 +1386,32 @@ static bool qt5webengine(const Window winId, const double scaleFactor, const cha
 // -----------------------------------------------------------------------------------------------------------
 // qt6webengine variant (same as qt5 but `QString__init_t` has different arguments)
 
-static bool qt6webengine(const Window winId, const double scaleFactor, const char* const url)
+static bool qt6webengine(Display* const display,
+                         const Window winId,
+                         const int x,
+                         const int y,
+                         const uint width,
+                         const uint height,
+                         double scaleFactor,
+                         const char* const url,
+                         const char* const initialJS,
+                         WebViewRingBuffer* const shmptr)
 {
     void* lib;
-    if ((lib = dlopen("libQt6WebEngineWidgets.so.6", RTLD_NOW|RTLD_GLOBAL)) == nullptr ||
+    if ((lib = dlopen("libQt6WebEngineWidgets.so.6", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
         (lib = dlopen("libQt6WebEngineWidgets.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr)
+    {
+        d_stdout("WebView Qt6 platform not available: %s", dlerror());
         return false;
+    }
 
     using QApplication__init_t = void (*)(QApplication*, int&, char**, int);
     using QApplication_exec_t = void (*)();
-    using QApplication_setAttribute_t = void (*)(Qt::ApplicationAttribute, bool);
-    using QString__init_t = void (*)(void*, const QChar*, long long);
+    using QApplication_postEvent_t = void (*)(QObject*, QEvent*, int);
+    using QApplication_quit_t = void (*)();
+    using QEvent__init_t = void (*)(QEvent*, int);
+    using QObject__init_t = void (*)(QObject*, QObject*);
+    using QString__init_t = void (*)(QString*, const QChar*, long long);
     using QUrl__init_t = void (*)(void*, const QString&, int /* QUrl::ParsingMode */);
     using QWebEngineView__init_t = void (*)(QWebEngineView*, void*);
     using QWebEngineView_move_t = void (*)(QWebEngineView*, const QPoint&);
@@ -1271,7 +1425,10 @@ static bool qt6webengine(const Window winId, const double scaleFactor, const cha
 
     CPPSYM(QApplication__init_t, QApplication__init, _ZN12QApplicationC1ERiPPci)
     CPPSYM(QApplication_exec_t, QApplication_exec, _ZN15QGuiApplication4execEv)
-    CPPSYM(QApplication_setAttribute_t, QApplication_setAttribute, _ZN16QCoreApplication12setAttributeEN2Qt20ApplicationAttributeEb)
+    CPPSYM(QApplication_postEvent_t, QApplication_postEvent, _ZN16QCoreApplication9postEventEP7QObjectP6QEventi)
+    CPPSYM(QApplication_quit_t, QApplication_quit, _ZN16QCoreApplication4quitEv)
+    CPPSYM(QEvent__init_t, QEvent__init, _ZN6QEventC1ENS_4TypeE)
+    CPPSYM(QObject__init_t, QObject__init, _ZN7QObjectC1EPS_)
     CPPSYM(QString__init_t, QString__init, _ZN7QStringC2EPK5QCharx)
     CPPSYM(QUrl__init_t, QUrl__init, _ZN4QUrlC1ERK7QStringNS_11ParsingModeE)
     CPPSYM(QWebEngineView__init_t, QWebEngineView__init, _ZN14QWebEngineViewC1EP7QWidget)
@@ -1287,18 +1444,16 @@ static bool qt6webengine(const Window winId, const double scaleFactor, const cha
     unsetenv("QT_FONT_DPI");
     unsetenv("QT_SCREEN_SCALE_FACTORS");
     unsetenv("QT_USE_PHYSICAL_DPI");
-    setenv("QT_AUTO_SCREEN_SCALE_FACTOR", "0", 1);
+    setenv("QT_ENABLE_HIGHDPI_SCALING", "0", 1);
+    setenv("QT_QPA_PLATFORM", "xcb", 1);
 
     char scale[8] = {};
     std::snprintf(scale, 7, "%.2f", scaleFactor);
     setenv("QT_SCALE_FACTOR", scale, 1);
 
-    QApplication_setAttribute(Qt::AA_X11InitThreads, true);
-    QApplication_setAttribute(Qt::AA_EnableHighDpiScaling, true);
-    QApplication_setAttribute(Qt::AA_UseHighDpiPixmaps, true);
-
-    static int argc = 0;
-    static char* argv[] = { nullptr };
+    static int argc = 1;
+    static char argv0[] = "dpf-webview";
+    static char* argv[] = { argv0, nullptr };
 
     uint8_t _app[64]; // sizeof(QApplication) == 16
     QApplication* const app = reinterpret_cast<QApplication*>(_app);
@@ -1309,45 +1464,78 @@ static bool qt6webengine(const Window winId, const double scaleFactor, const cha
 
     {
         const size_t url_len = std::strlen(url);
-        QChar* const url_qchar = new QChar[url_len + 1];
+        ushort* const url_qchar = new ushort[url_len + 1];
 
         for (size_t i = 0; i < url_len; ++i)
-            url_qchar[i] = QChar(url[i]);
+            url_qchar[i] = url[i];
 
         url_qchar[url_len] = 0;
 
-        QString__init(qstrurl, url_qchar, url_len);
+        QString__init(qstrurl, reinterpret_cast<QChar*>(url_qchar), url_len);
     }
 
     uint8_t _qurl[32]; // sizeof(QUrl) == 8
     QUrl* const qurl(reinterpret_cast<QUrl*>(_qurl));
     QUrl__init(qurl, *qstrurl, 1 /* QUrl::StrictMode */);
 
+    EventFilterQObject eventFilter(QObject__init, shmptr);
+    EventFilterQObject* const eventFilterPtr = &eventFilter;
+
     uint8_t _webview[128]; // sizeof(QWebEngineView) == 56
     QWebEngineView* const webview = reinterpret_cast<QWebEngineView*>(_webview);
     QWebEngineView__init(webview, nullptr);
 
-    QWebEngineView_move(webview, QPoint(0, kVerticalOffset));
-    QWebEngineView_resize(webview, QSize(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT - kVerticalOffset));
+    QWebEngineView_move(webview, QPoint{x, y});
+    QWebEngineView_resize(webview, QSize{DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT});
     QWebEngineView_winId(webview);
     QWindow_setParent(QWebEngineView_windowHandle(webview), QWindow_fromWinId(winId));
     QWebEngineView_setUrl(webview, *qurl);
+
+    // FIXME Qt6 seems to need some forcing..
+    XReparentWindow(display, QWebEngineView_winId(webview), winId, x, y);
+    XFlush(display);
+
     QWebEngineView_show(webview);
+
+    evaluateFn = [=](const char* const js){
+        // TODO
+    };
 
     reloadFn = [=](){
         QWebEngineView_setUrl(webview, *qurl);
     };
 
     terminateFn = [=](){
-        // TODO
+        if (running)
+        {
+            running = false;
+            webview_wake(&shmptr->client.sem);
+            QApplication_quit();
+        }
     };
 
+    wakeFn = [=](WebViewRingBuffer* const rb){
+        d_stdout("wakeFn");
+        // NOTE event pointer is deleted by Qt
+        typedef struct { uint8_t _[16 * 2]; } uint8_64_t; // sizeof(QEvent) == 16
+        QEvent* const qevent = reinterpret_cast<QEvent*>(new uint8_64_t);
+        QEvent__init(qevent, 1000 /* QEvent::User */);
+
+        QApplication_postEvent(eventFilterPtr, qevent, 1 /* Qt::HighEventPriority */);
+    };
+
+    // notify server we started ok
+    webview_wake(&shmptr->server.sem);
+
+    d_stdout("WebView Qt6 main loop started");
+
     QApplication_exec();
+
+    d_stdout("WebView Qt6 main loop quit");
 
     dlclose(lib);
     return true;
 }
-#endif
 
 // -----------------------------------------------------------------------------------------------------------
 // startup via ld-linux
@@ -1366,12 +1554,9 @@ static void* threadHandler(void* const ptr)
 {
     WebViewRingBuffer* const shmptr = static_cast<WebViewRingBuffer*>(ptr);
 
-    // TODO wait until page is loaded, or something better
-    d_sleep(1);
-
-    while (shmptr->valid)
+    while (running && shmptr->valid)
     {
-        if (webview_timedwait(&shmptr->client.sem))
+        if (webview_timedwait(&shmptr->client.sem) && running)
             wakeFn(shmptr);
     }
 
@@ -1380,13 +1565,13 @@ static void* threadHandler(void* const ptr)
 
 int dpf_webview_start(const int argc, char* argv[])
 {
-    d_stdout("started %d %s", argc, argv[1]);
-
     if (argc != 3)
     {
         d_stderr("WebView entry point, nothing to see here! ;)");
         return 1;
     }
+
+    d_stdout("starting... %d '%s' '%s'", argc, argv[1], argv[2]);
 
     uselocale(newlocale(LC_NUMERIC_MASK, "C", nullptr));
 
@@ -1431,7 +1616,7 @@ int dpf_webview_start(const int argc, char* argv[])
         {
             DISTRHO_SAFE_ASSERT_RETURN(rbctrl.readUInt() == kWebViewMessageInitData, 1);
 
-            hasInitialData = true;
+            hasInitialData = running = true;
             winId = rbctrl.readULong();
             width = rbctrl.readUInt();
             height = rbctrl.readUInt();
@@ -1454,20 +1639,30 @@ int dpf_webview_start(const int argc, char* argv[])
     pthread_t thread;
     if (hasInitialData && pthread_create(&thread, nullptr, threadHandler, shmptr) == 0)
     {
+        d_stdout("WebView IPC in place, starting engine...");
+
         struct sigaction sig = {};
         sig.sa_handler = signalHandler;
         sig.sa_flags = SA_RESTART;
         sigemptyset(&sig.sa_mask);
         sigaction(SIGTERM, &sig, nullptr);
 
-        // qt5webengine(winId, scaleFactor, url) ||
-        // qt6webengine(winId, scaleFactor, url) ||
-        gtk3(display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr);
+        if (! qt5webengine(display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
+            ! qt6webengine(display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr) &&
+            ! gtk3(display, winId, x, y, width, height, scaleFactor, url, initJS, shmptr))
+        {
+            d_stderr("Failed to find usable WebView platform");
+        }
 
-        shmptr->valid = false;
+        shmptr->valid = running = false;
         pthread_join(thread, nullptr);
     }
+    else
+    {
+        d_stderr("Failed to setup WebView IPC");
+    }
 
+    std::free(initJS);
     munmap(shmptr, sizeof(WebViewRingBuffer));
     close(shmfd);
 
