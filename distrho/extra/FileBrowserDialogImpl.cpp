@@ -691,17 +691,17 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
         while (dbus_connection_dispatch(dbuscon) == DBUS_DISPATCH_DATA_REMAINS) {}
         dbus_connection_read_write_dispatch(dbuscon, 0);
 
-        if (DBusMessage* const message = dbus_connection_pop_message(dbuscon))
+        if (DBusMessage* const msg = dbus_connection_pop_message(dbuscon))
         {
-            const char* const interface = dbus_message_get_interface(message);
-            const char* const member = dbus_message_get_member(message);
+            const char* const interface = dbus_message_get_interface(msg);
+            const char* const member = dbus_message_get_member(msg);
 
             if (interface != nullptr && std::strcmp(interface, "org.freedesktop.portal.Request") == 0
                 && member != nullptr && std::strcmp(member, "Response") == 0)
             {
                 do {
                     DBusMessageIter iter;
-                    dbus_message_iter_init(message, &iter);
+                    dbus_message_iter_init(msg, &iter);
 
                     // starts with uint32 for return/exit code
                     DISTRHO_SAFE_ASSERT_BREAK(dbus_message_iter_get_arg_type(&iter) == DBUS_TYPE_UINT32);
@@ -813,6 +813,8 @@ bool fileBrowserIdle(const FileBrowserHandle handle)
                 if (handle->selectedFile == nullptr)
                     handle->selectedFile = kSelectedFileCancelled;
             }
+
+            dbus_message_unref(msg);
         }
     }
 #endif
