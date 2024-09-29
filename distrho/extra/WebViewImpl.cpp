@@ -1734,7 +1734,7 @@ static bool qtwebengine(const int qtVersion,
         }
     };
 
-    wakeFn = [=, &eventFilter](WebViewRingBuffer* const rb){
+    wakeFn = [=, &eventFilter](WebViewRingBuffer*){
         // NOTE event pointer is deleted by Qt
         QEvent* const qevent = new QEvent;
         QEvent__init(qevent, 1000 /* QEvent::User */);
