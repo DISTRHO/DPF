@@ -34,14 +34,13 @@ jobs:
         CXXFLAGS: -Werror
       run: |
         xvfb-run make -C tests run
-# FIXME enable again after finishing web-ui stuff
-#     - name: As C++98 mode
-#       env:
-#         CFLAGS: -Werror
-#         CXXFLAGS: -Werror -std=gnu++98
-#       run: |
-#         make clean >/dev/null
-#         make -j $(nproc)
+    - name: As C++98 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++98
+      run: |
+        make clean >/dev/null
+        make -j $(nproc)
     - name: No namespace
       env:
         CFLAGS: -Werror

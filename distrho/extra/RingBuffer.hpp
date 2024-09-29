@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2021 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -118,14 +118,6 @@ struct HugeStackBuffer {
     bool     invalidateCommit;
     uint8_t  buf[size];
 };
-
-#ifdef DISTRHO_PROPER_CPP11_SUPPORT
-# define HeapBuffer_INIT  {0, 0, 0, 0, false, nullptr}
-# define StackBuffer_INIT {0, 0, 0, false, {0}}
-#else
-# define HeapBuffer_INIT
-# define StackBuffer_INIT
-#endif
 
 // -----------------------------------------------------------------------
 // RingBufferControl templated class
@@ -799,12 +791,7 @@ class HeapRingBuffer : public RingBufferControl<HeapBuffer>
 public:
     /** Constructor. */
     HeapRingBuffer() noexcept
-        : heapBuffer(HeapBuffer_INIT)
-    {
-#ifndef DISTRHO_PROPER_CPP11_SUPPORT
-        std::memset(&heapBuffer, 0, sizeof(heapBuffer));
-#endif
-    }
+        : heapBuffer(CPP_AGGREGATE_INIT(HeapBuffer){0, 0, 0, 0, false, nullptr}) {}
 
     /** Destructor. */
     ~HeapRingBuffer() noexcept override
@@ -874,11 +861,8 @@ class SmallStackRingBuffer : public RingBufferControl<SmallStackBuffer>
 public:
     /** Constructor. */
     SmallStackRingBuffer() noexcept
-        : stackBuffer(StackBuffer_INIT)
+        : stackBuffer(CPP_AGGREGATE_INIT(SmallStackBuffer){0, 0, 0, false, {0}})
     {
-#ifndef DISTRHO_PROPER_CPP11_SUPPORT
-        std::memset(&stackBuffer, 0, sizeof(stackBuffer));
-#endif
         setRingBuffer(&stackBuffer, true);
     }
 

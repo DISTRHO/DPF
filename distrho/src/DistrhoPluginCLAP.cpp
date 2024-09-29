@@ -171,12 +171,9 @@ struct ClapEventQueue
 
     ClapEventQueue()
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        : fNotesBuffer(StackBuffer_INIT)
+        : fNotesBuffer(CPP_AGGREGATE_INIT(SmallStackBuffer){0, 0, 0, false, {0}})
        #endif
     {
-       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
-        std::memset(&fNotesBuffer, 0, sizeof(fNotesBuffer));
-       #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         fCurrentProgram = 0;
        #endif

@@ -1,5 +1,18 @@
-// SPDX-FileCopyrightText: 2023-2024 MOD Audio UG
-// SPDX-License-Identifier: AGPL-3.0-or-later
+/*
+ * DISTRHO Plugin Framework (DPF)
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with
+ * or without fee is hereby granted, provided that the above copyright notice and this
+ * permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN
+ * NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
 
 #pragma once
 
@@ -24,13 +37,18 @@ START_NAMESPACE_DISTRHO
 class ChildProcess
 {
    #ifdef _WIN32
-    PROCESS_INFORMATION pinfo = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 };
+    PROCESS_INFORMATION pinfo;
    #else
-    pid_t pid = -1;
+    pid_t pid;
    #endif
 
 public:
     ChildProcess()
+       #ifdef _WIN32
+        : pinfo(CPP_AGGREGATE_INIT(PROCESS_INFORMATION){ INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 })
+       #else
+        : pid(-1)
+       #endif
     {
     }
 
@@ -120,7 +138,7 @@ public:
             return;
 
         const PROCESS_INFORMATION opinfo = pinfo;
-        pinfo = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 };
+        pinfo = (PROCESS_INFORMATION){ INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 };
 
         for (DWORD exitCode;;)
         {
@@ -226,7 +244,7 @@ public:
             WaitForSingleObject(pinfo.hProcess, 0) != WAIT_TIMEOUT)
         {
             const PROCESS_INFORMATION opinfo = pinfo;
-            pinfo = { INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 };
+            pinfo = (PROCESS_INFORMATION){ INVALID_HANDLE_VALUE, INVALID_HANDLE_VALUE, 0, 0 };
             CloseHandle(opinfo.hThread);
             CloseHandle(opinfo.hProcess);
             return false;

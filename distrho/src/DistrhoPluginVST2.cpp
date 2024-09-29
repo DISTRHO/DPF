@@ -117,13 +117,10 @@ struct ParameterAndNotesHelper
       #if DISTRHO_PLUGIN_HAS_UI
         , parameterChecks(nullptr)
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-        , notesRingBuffer(StackBuffer_INIT)
+        , notesRingBuffer(CPP_AGGREGATE_INIT(SmallStackBuffer){0, 0, 0, false, {0}})
        #endif
       #endif
     {
-       #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT && ! defined(DISTRHO_PROPER_CPP11_SUPPORT)
-        std::memset(&notesRingBuffer, 0, sizeof(notesRingBuffer));
-       #endif
     }
 
     virtual ~ParameterAndNotesHelper()

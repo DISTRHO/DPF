@@ -19,6 +19,10 @@
 
 #include "src/DistrhoDefines.h"
 
+#ifndef __STDC_LIMIT_MACROS
+# define __STDC_LIMIT_MACROS
+#endif
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
