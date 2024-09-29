@@ -4459,7 +4459,8 @@ struct dpf_component : v3_component_cpp {
         dpf_component* const component = *static_cast<dpf_component**>(self);
 
         PluginVst3* const vst3 = component->vst3;
-        DISTRHO_SAFE_ASSERT_RETURN(vst3 != nullptr, V3_NOT_INITIALIZED);
+        // It must be called *before* "initialize".
+        DISTRHO_SAFE_ASSERT_RETURN(vst3 == nullptr, V3_NOT_INITIALIZED);
 
         // TODO
         return V3_NOT_IMPLEMENTED;
