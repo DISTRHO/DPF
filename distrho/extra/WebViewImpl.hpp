@@ -86,6 +86,7 @@ struct WebViewOptions {
 
   Provided metrics must have scale factor pre-applied.
 
+  @p url:         The URL to open, assumed to be in encoded form (e.g spaces converted to %20)
   @p windowId:    The native window id to attach this view to (X11 Window, HWND or NSView*)
   @p scaleFactor: Scale factor in use
   @p options:     Extra options, optional

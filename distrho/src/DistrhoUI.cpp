@@ -200,19 +200,20 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint h
             path += "/resources";
         }
 
+        path.urlEncode();
+
         // TODO convert win32 paths to web
-        // TODO encode paths (e.g. %20 for space)
 
         WebViewOptions opts;
         opts.initialJS = ""
-"editParameter = function(index, started){ postMessage('editparam '+index+' '+(started ? 1 : 0)) };"
-"setParameterValue = function(index, value){ postMessage('setparam '+index+' '+value) };"
+"editParameter = function(index, started){ postMessage('editparam ' + index + ' ' + (started ? '1' : '0')) };"
+"setParameterValue = function(index, value){ postMessage('setparam ' + index + ' ' + value) };"
 #if DISTRHO_PLUGIN_WANT_STATE
-"setState = function(key, value){ postMessage('setstate '+key+' '+value) };"
-"requestStateFile = function(key){ postMessage('reqstatefile '+key) };"
+"setState = function(key, value){ postMessage('setstate ' + key + ' ' + value) };"
+"requestStateFile = function(key){ postMessage('reqstatefile ' + key) };"
 #endif
 #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
-"sendNote = function(channel, note, velocity){ postMessage('sendnote '+channel+' '+note+' '+velocity) };"
+"sendNote = function(channel, note, velocity){ postMessage('sendnote ' + channel + ' ' + note + ' ' + velocity) };"
 #endif
         ;
         opts.callback = webViewMessageCallback;
@@ -273,7 +274,7 @@ void UI::PrivateData::webViewMessageCallback(void* const arg, char* const msg)
         char* const key = msg + 9;
         char* const sep = std::strchr(key, ' ');
         DISTRHO_SAFE_ASSERT_RETURN(sep != nullptr,);
-        *sep = 0;
+        *sep = '\0';
         char* const value = sep + 1;
 
         uiData->setStateCallback(key, value);

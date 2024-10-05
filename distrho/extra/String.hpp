@@ -676,7 +676,7 @@ public:
 
     static String asBase64(const void* const data, const std::size_t dataSize)
     {
-        static const char* const kBase64Chars =
+        static constexpr const char* const kBase64Chars =
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "abcdefghijklmnopqrstuvwxyz"
             "0123456789+/";
@@ -747,6 +747,131 @@ public:
         }
 
         return ret;
+    }
+
+    /*
+     * Convert to a URL encoded string.
+     */
+    String& urlEncode() noexcept
+    {
+        static constexpr const char* const kHexChars = "0123456789ABCDEF";
+
+        if (fBufferLen == 0)
+            return *this;
+
+        char* const newbuf = static_cast<char*>(std::malloc(fBufferLen * 3 + 1));
+        DISTRHO_SAFE_ASSERT_RETURN(newbuf != nullptr, *this);
+
+        char* newbufptr = newbuf;
+
+        for (std::size_t i=0; i < fBufferLen; ++i)
+        {
+            const char c = fBuffer[i];
+
+            switch (c)
+            {
+            case '!': // 33
+            case '#': // 35
+            case '$': // 36
+            case '&': // 38
+            case '\'': // 39
+            case '(': // 40
+            case ')': // 41
+            case '*': // 42
+            case '+': // 43
+            case ',': // 44
+            case '-': // 45
+            case '.': // 46
+            case '/': // 47
+            case '0': // 48
+            case '1': // 49
+            case '2': // 50
+            case '3': // 51
+            case '4': // 52
+            case '5': // 53
+            case '6': // 54
+            case '7': // 55
+            case '8': // 56
+            case '9': // 57
+            case ':': // 58
+            case ';': // 59
+            case '=': // 61
+            case '?': // 63
+            case '@': // 64
+            case 'A': // 65
+            case 'B': // 66
+            case 'C': // 67
+            case 'D': // 68
+            case 'E': // 69
+            case 'F': // 70
+            case 'G': // 71
+            case 'H': // 72
+            case 'I': // 73
+            case 'J': // 74
+            case 'K': // 75
+            case 'L': // 76
+            case 'M': // 77
+            case 'N': // 78
+            case 'O': // 79
+            case 'P': // 80
+            case 'Q': // 81
+            case 'R': // 82
+            case 'S': // 83
+            case 'T': // 84
+            case 'U': // 85
+            case 'V': // 86
+            case 'W': // 87
+            case 'X': // 88
+            case 'Y': // 89
+            case 'Z': // 90
+            case '[': // 91
+            case ']': // 93
+            case '_': // 95
+            case 'a': // 97
+            case 'b': // 98
+            case 'c': // 99
+            case 'd': // 100
+            case 'e': // 101
+            case 'f': // 102
+            case 'g': // 103
+            case 'h': // 104
+            case 'i': // 105
+            case 'j': // 106
+            case 'k': // 107
+            case 'l': // 108
+            case 'm': // 109
+            case 'n': // 110
+            case 'o': // 111
+            case 'p': // 112
+            case 'q': // 113
+            case 'r': // 114
+            case 's': // 115
+            case 't': // 116
+            case 'u': // 117
+            case 'v': // 118
+            case 'w': // 119
+            case 'x': // 120
+            case 'y': // 121
+            case 'z': // 122
+            case '~': // 126
+                *newbufptr++ = c;
+                break;
+            default:
+                *newbufptr++ = '%';
+                *newbufptr++ = kHexChars[(c >> 4) & 0xf];
+                *newbufptr++ = kHexChars[c & 0xf];
+                break;
+            }
+        }
+
+        *newbufptr = '\0';
+
+        std::free(fBuffer);
+        fBuffer = newbuf;
+        fBufferLen = std::strlen(newbuf);
+        fBufferAlloc = true;
+
+        return *this;
     }
 
     // -------------------------------------------------------------------
@@ -830,7 +955,7 @@ public:
         }
 
         // we have some data ourselves, reallocate to add the new stuff
-        char* const newBuf = (char*)realloc(fBuffer, fBufferLen + strBufLen + 1);
+        char* const newBuf = static_cast<char*>(std::realloc(fBuffer, fBufferLen + strBufLen + 1));
         DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, *this);
 
         std::memcpy(newBuf + fBufferLen, strBuf, strBufLen + 1);
@@ -855,7 +980,7 @@ public:
 
         const std::size_t strBufLen = std::strlen(strBuf);
         const std::size_t newBufSize = fBufferLen + strBufLen;
-        char* const newBuf = (char*)malloc(newBufSize + 1);
+        char* const newBuf = static_cast<char*>(std::malloc(newBufSize + 1));
         DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
 
         std::memcpy(newBuf, fBuffer, fBufferLen);
@@ -912,7 +1037,7 @@ private:
                 std::free(fBuffer);
 
             fBufferLen = (size > 0) ? size : std::strlen(strBuf);
-            fBuffer    = (char*)std::malloc(fBufferLen+1);
+            fBuffer    = static_cast<char*>(std::malloc(fBufferLen + 1));
 
             if (fBuffer == nullptr)
             {
@@ -960,7 +1085,7 @@ String operator+(const String& strBefore, const char* const strBufAfter) noexcep
     const std::size_t strBeforeLen = strBefore.length();
     const std::size_t strBufAfterLen = std::strlen(strBufAfter);
     const std::size_t newBufSize = strBeforeLen + strBufAfterLen;
-    char* const newBuf = (char*)malloc(newBufSize + 1);
+    char* const newBuf = static_cast<char*>(malloc(newBufSize + 1));
     DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
 
     std::memcpy(newBuf, strBefore.buffer(), strBeforeLen);
@@ -980,7 +1105,7 @@ String operator+(const char* const strBufBefore, const String& strAfter) noexcep
     const std::size_t strBufBeforeLen = std::strlen(strBufBefore);
     const std::size_t strAfterLen = strAfter.length();
     const std::size_t newBufSize = strBufBeforeLen + strAfterLen;
-    char* const newBuf = (char*)malloc(newBufSize + 1);
+    char* const newBuf = static_cast<char*>(malloc(newBufSize + 1));
     DISTRHO_SAFE_ASSERT_RETURN(newBuf != nullptr, String());
 
     std::memcpy(newBuf, strBufBefore, strBufBeforeLen);
