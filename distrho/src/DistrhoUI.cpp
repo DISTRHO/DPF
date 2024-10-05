@@ -217,7 +217,12 @@ PluginWindow& UI::PrivateData::createNextWindow(UI* const ui, uint width, uint h
         ;
         opts.callback = webViewMessageCallback;
         opts.callbackPtr = uiData;
-        uiData->webview = webViewCreate("file://" + path + "/index.html", uiData->winId, width, height, scaleFactor, opts);
+        uiData->webview = webViewCreate("file://" + path + "/index.html",
+                                        uiData->winId != 0 ? uiData->winId : uiData->window->getNativeWindowHandle(),
+                                        width,
+                                        height,
+                                        scaleFactor,
+                                        opts);
        #endif
     }
     // If there are no callbacks, this is most likely a temporary window, so ignore idle callbacks
