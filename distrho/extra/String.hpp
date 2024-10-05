@@ -591,7 +591,7 @@ public:
      */
     String& toLower() noexcept
     {
-        static const char kCharDiff('a' - 'A');
+        static constexpr const char kCharDiff = 'a' - 'A';
 
         for (std::size_t i=0; i < fBufferLen; ++i)
         {
@@ -607,7 +607,7 @@ public:
      */
     String& toUpper() noexcept
     {
-        static const char kCharDiff('a' - 'A');
+        static constexpr const char kCharDiff = 'a' - 'A';
 
         for (std::size_t i=0; i < fBufferLen; ++i)
         {
@@ -861,6 +861,67 @@ public:
                 *newbufptr++ = kHexChars[(c >> 4) & 0xf];
                 *newbufptr++ = kHexChars[c & 0xf];
                 break;
+            }
+        }
+
+        *newbufptr = '\0';
+
+        std::free(fBuffer);
+        fBuffer = newbuf;
+        fBufferLen = std::strlen(newbuf);
+        fBufferAlloc = true;
+
+        return *this;
+    }
+
+    /*
+     * Convert to a URL decoded string.
+     */
+    String& urlDecode() noexcept
+    {
+        if (fBufferLen == 0)
+            return *this;
+
+        char* const newbuf = static_cast<char*>(std::malloc(fBufferLen + 1));
+        DISTRHO_SAFE_ASSERT_RETURN(newbuf != nullptr, *this);
+
+        char* newbufptr = newbuf;
+
+        for (std::size_t i=0; i < fBufferLen; ++i)
+        {
+            const char c = fBuffer[i];
+
+            if (c == '%')
+            {
+                DISTRHO_SAFE_ASSERT_CONTINUE(fBufferLen > i + 2);
+
+                char c1 = fBuffer[i + 1];
+                char c2 = fBuffer[i + 2];
+                i += 2;
+
+                /**/ if (c1 >= '0' && c1 <= '9')
+                    c1 -= '0';
+                else if (c1 >= 'A' && c1 <= 'Z')
+                    c1 -= 'A' - 10;
+                else if (c1 >= 'a' && c1 <= 'z')
+                    c1 -= 'a' - 10;
+                else
+                    continue;
+
+                /**/ if (c2 >= '0' && c2 <= '9')
+                    c2 -= '0';
+                else if (c2 >= 'A' && c2 <= 'Z')
+                    c2 -= 'A' - 10;
+                else if (c2 >= 'a' && c2 <= 'z')
+                    c2 -= 'a' - 10;
+                else
+                    continue;
+
+                *newbufptr++ = c1 << 4 | c2;
+            }
+            else
+            {
+                *newbufptr++ = c;
             }
         }
 
