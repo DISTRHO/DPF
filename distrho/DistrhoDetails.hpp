@@ -1051,6 +1051,91 @@ struct TimePosition {
     }
 };
 
+/**
+   The build version number is not available.
+ */
+static constexpr const uint32_t kDistrhoNoBuildVersion = (uint32_t)-1;
+
+/**
+   Version information.
+
+   @see DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+ */
+struct VersionInfo {
+   /**
+      Major version number.
+    */
+    uint32_t major;
+
+   /**
+      Minor version number.
+    */
+    uint32_t minor;
+
+   /**
+      Micro version number.
+    */
+    uint32_t micro;
+
+    /**
+      Build version number. @n
+
+      This should be set to kDistrhoNoBuildVersion if the build number is not available.
+    */
+    uint32_t build;
+
+    /**
+      Default constructor for a null version.
+    */
+    VersionInfo() noexcept
+        : major(0),
+          minor(0),
+          micro(0),
+          build(kDistrhoNoBuildVersion) {}
+
+    /**
+      Constructor using custom values.
+    */
+    VersionInfo(uint32_t maj, uint32_t min, uint32_t mic, uint32_t bld = kDistrhoNoBuildVersion) noexcept
+        : major(maj),
+          minor(min),
+          micro(mic),
+          build(bld) {}
+
+    /**
+      Constructor using uint32_t version number.
+    */
+    VersionInfo(uint32_t ver) noexcept
+        : major((ver >> 16) & 0xFF),
+          minor((ver >> 8) & 0xFF),
+          micro((ver) & 0xFF),
+          build(kDistrhoNoBuildVersion) {}
+
+    /**
+      Convert to uint32_t version number.
+    */
+    uint32_t toUint32() const noexcept
+    {
+      uint32_t ver = 0;
+      if (major > 0xFFFF)
+        ver |= 0xFFFF0000;
+      else
+        ver |= (major << 16);
+
+      if (minor > 0xFF)
+        ver |= 0xFF00;
+      else
+        ver |= (minor << 8);
+
+      if (micro > 0xFF)
+        ver |= 0xFF;
+      else
+        ver |= micro;
+
+      return ver;
+    }
+};
+
 /** @} */
 
 // --------------------------------------------------------------------------------------------------------------------

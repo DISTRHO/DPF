@@ -525,12 +525,21 @@ public:
         return fPlugin->getLicense();
     }
 
+#if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+    VersionInfo getVersion() const noexcept
+    {
+        DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, VersionInfo());
+
+        return fPlugin->getVersion();
+    }
+#else
     uint32_t getVersion() const noexcept
     {
         DISTRHO_SAFE_ASSERT_RETURN(fPlugin != nullptr, 0);
 
         return fPlugin->getVersion();
     }
+#endif
 
     long getUniqueId() const noexcept
     {

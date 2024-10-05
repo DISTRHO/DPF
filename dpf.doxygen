@@ -255,6 +255,7 @@ PREDEFINED             = DOXYGEN \
                          DISTRHO_PLUGIN_IS_RT_SAFE=1 \
                          DISTRHO_PLUGIN_IS_SYNTH=1 \
                          DISTRHO_PLUGIN_WANT_DIRECT_ACCESS=1 \
+                         DISTRHO_PLUGIN_WANT_EXTRA_VERSION=1 \
                          DISTRHO_PLUGIN_WANT_LATENCY=1 \
                          DISTRHO_PLUGIN_WANT_MIDI_INPUT=1 \
                          DISTRHO_PLUGIN_WANT_MIDI_OUTPUT=1 \

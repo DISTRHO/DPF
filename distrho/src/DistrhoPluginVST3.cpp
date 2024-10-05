@@ -4590,13 +4590,30 @@ static const char* getPluginVersion()
 
     if (version.isEmpty())
     {
+        char versionBuf[64];
+       #if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+        const VersionInfo versionInfo = sPlugin->getVersion();
+
+        if (versionInfo.build != kDistrhoNoBuildVersion) {
+          std::snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d.%d",
+                        versionInfo.major,
+                        versionInfo.minor,
+                        versionInfo.micro,
+                        versionInfo.build);
+        } else {
+          std::snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
+                        versionInfo.major,
+                        versionInfo.minor,
+                        versionInfo.micro);
+        }
+       #else
         const uint32_t versionNum = sPlugin->getVersion();
 
-        char versionBuf[64];
         std::snprintf(versionBuf, sizeof(versionBuf)-1, "%d.%d.%d",
                       (versionNum >> 16) & 0xff,
                       (versionNum >>  8) & 0xff,
                       (versionNum >>  0) & 0xff);
+       #endif
         versionBuf[sizeof(versionBuf)-1] = '\0';
         version = versionBuf;
     }

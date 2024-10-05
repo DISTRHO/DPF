@@ -36,6 +36,10 @@
 
 #include "xaymar-vst2/vst.h"
 
+#if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+# warning "VST2 does not support version number higher than 0xFF nor the build version"
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -1530,7 +1534,11 @@ static intptr_t VST_FUNCTION_INTERFACE vst_dispatcherCallback(vst_effect* const 
         return 0;
 
     case VST_EFFECT_OPCODE_VENDOR_VERSION:
+       #if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+        return sPlugin->getVersion().toUint32();
+       #else
         return sPlugin->getVersion();
+       #endif
 
     case VST_EFFECT_OPCODE_VST_VERSION:
         return VST_VERSION_2_4_0_0;
@@ -1651,7 +1659,11 @@ const vst_effect* VSTPluginMain(const vst_host_callback audioMaster)
     effect->magic_number = 0x56737450;
    #endif
     effect->unique_id    = sPlugin->getUniqueId();
+   #if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+    effect->version      = sPlugin->getVersion().toUint32();
+   #else
     effect->version      = sPlugin->getVersion();
+   #endif
 
     // VST doesn't support parameter outputs. we can fake them, but it is a hack. Disabled by default.
    #ifdef DPF_VST_SHOW_PARAMETER_OUTPUTS

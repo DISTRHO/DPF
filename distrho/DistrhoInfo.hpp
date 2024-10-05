@@ -548,6 +548,14 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_DIRECT_ACCESS 0
 
 /**
+   Enable extra version information.
+
+   @see Plugin::getVersion()
+   @see VersionInfo
+ */
+#define DISTRHO_PLUGIN_WANT_EXTRA_VERSION 0
+
+/**
    Whether the plugin introduces latency during audio or midi processing.
    @see Plugin::setLatency(uint32_t)
  */

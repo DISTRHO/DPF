@@ -1176,11 +1176,19 @@ void lv2_generate_ttl(const char* const basename)
         }
 
         {
+           #if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+            const VersionInfo version(plugin.getVersion());
+
+            const uint32_t majorVersion = version.major;
+            /* */ uint32_t minorVersion = version.minor;
+            const uint32_t microVersion = version.micro;
+           #else
             const uint32_t version(plugin.getVersion());
 
             const uint32_t majorVersion = (version & 0xFF0000) >> 16;
             /* */ uint32_t minorVersion = (version & 0x00FF00) >> 8;
             const uint32_t microVersion = (version & 0x0000FF) >> 0;
+           #endif
 
             // NOTE: LV2 ignores 'major' version and says 0 for minor is pre-release/unstable.
             if (majorVersion > 0)

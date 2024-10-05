@@ -27,6 +27,7 @@ If the limitation is within DPF, a link is provided to a description below on th
 | UI host-resize      | Yes                                   | No                 | Yes                 | Yes                           | No                         | Yes                        | Yes                        | No                         | UI host-resize      |
 | UI remote control   | No                                    | No                 | Yes                 | Yes                           | No                         | Yes                        | No                         | Yes                        | UI remote control   |
 | UI send midi note   | Yes                                   | No                 | Yes                 | Yes                           | Yes                        | Yes                        | Yes                        | Yes                        | UI send midi note   |
+| Extra version info  | N/A                                   | N/A                | N/A                 | Yes                           | No                         | Yes                        | N/A                        | N/A                        | Extra version info  |
 
 For things that could be unclear:
 

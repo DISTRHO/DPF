@@ -249,11 +249,19 @@ protected:
     virtual const char* getLicense() const = 0;
    #endif
 
+#if DISTRHO_PLUGIN_WANT_EXTRA_VERSION
+   /**
+      Get the plugin version.
+      @see VersionInfo
+    */
+    virtual VersionInfo getVersion() const = 0;
+#else
    /**
       Get the plugin version, in hexadecimal.
       @see d_version()
     */
     virtual uint32_t getVersion() const = 0;
+#endif
 
    /**
       Get the plugin unique Id.@n
