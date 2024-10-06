@@ -2038,7 +2038,7 @@ public:
             case 0x9:
             case 0xD:
                 // unsupported
-                kAudioUnitErr_InvalidPropertyValue;
+                return kAudioUnitErr_InvalidPropertyValue;
             case 0x1:
             case 0x2:
             case 0x3:
