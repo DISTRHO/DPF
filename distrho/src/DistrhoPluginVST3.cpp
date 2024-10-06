@@ -1573,7 +1573,7 @@ public:
                 {
                    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
                     // if there are any MIDI CC events as parameter changes, handle them here
-                    if (canAppendMoreEvents && rindex >= kVst3InternalParameterMidiCC_start && rindex <= kVst3InternalParameterMidiCC_end)
+                    if (canAppendMoreEvents && rindex >= kVst3InternalParameterMidiCC_start && rindex < kVst3InternalParameterCount)
                     {
                         for (int32_t j = 0, pcount = v3_cpp_obj(queue)->get_point_count(queue); j < pcount; ++j)
                         {
@@ -2008,7 +2008,7 @@ public:
            #if !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
             rindex >= kVst3InternalParameterMidiCC_start &&
            #endif
-            rindex <= kVst3InternalParameterMidiCC_end)
+            rindex < kVst3InternalParameterCount)
             return 0.0;
        #endif
 
@@ -2045,7 +2045,7 @@ public:
            #if !DPF_VST3_PURE_MIDI_INTERNAL_PARAMETERS
             rindex >= kVst3InternalParameterMidiCC_start &&
            #endif
-            rindex <= kVst3InternalParameterMidiCC_end)
+            rindex < kVst3InternalParameterCount)
             return V3_INVALID_ARG;
        #endif
 
