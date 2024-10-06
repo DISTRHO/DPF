@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2016 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -19,10 +19,9 @@
 
 #include "../DistrhoUtils.hpp"
 
-#include <cctype>
 #include <vector>
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // base64 stuff, based on http://www.adp-gmbh.ch/cpp/common/base64.html
 
 /*
@@ -49,13 +48,13 @@
    René Nyffenegger rene.nyffenegger@adp-gmbh.ch
 */
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Helpers
 
 #ifndef DOXYGEN
 namespace DistrhoBase64Helpers {
 
-static const char* const kBase64Chars =
+static constexpr const char* const kBase64Chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
@@ -63,7 +62,7 @@ static const char* const kBase64Chars =
 static inline
 uint8_t findBase64CharIndex(const char c)
 {
-    static const uint8_t kBase64CharsLen(static_cast<uint8_t>(std::strlen(kBase64Chars)));
+    static const uint8_t kBase64CharsLen = static_cast<uint8_t>(std::strlen(kBase64Chars));
 
     for (uint8_t i=0; i<kBase64CharsLen; ++i)
     {
@@ -75,16 +74,16 @@ uint8_t findBase64CharIndex(const char c)
     return 0;
 }
 
-static inline
+static constexpr inline
 bool isBase64Char(const char c)
 {
-    return (std::isalnum(c) || (c == '+') || (c == '/'));
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '+' || c == '/';
 }
 
 } // namespace DistrhoBase64Helpers
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static inline
 std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
@@ -145,6 +144,6 @@ std::vector<uint8_t> d_getChunkFromBase64String(const char* const base64string)
     return ret;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #endif // DISTRHO_BASE64_HPP_INCLUDED

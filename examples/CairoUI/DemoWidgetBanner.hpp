@@ -1,7 +1,7 @@
 /*
  * DISTRHO Plugin Framework (DPF)
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -48,10 +48,8 @@ static constexpr const char banner[] =
 "                          *****   *      *                              "
 "                                                                        ";
 
-enum {
-    rows = 23,
-    columns = 72,
-};
+static constexpr const int kNumRows = 23;
+static constexpr const int kNumColumns = 72;
 
 class DemoWidgetBanner : public CairoSubWidget
 {
@@ -71,19 +69,19 @@ protected:
         int w = sz.getWidth();
         int h = sz.getHeight();
 
-        const double diameter = (double)w / columns;
+        const double diameter = (double)w / kNumColumns;
         const double radius = 0.5 * diameter;
         const double xoff = 0;
-        const double yoff = 0.5 * (h - rows * diameter);
+        const double yoff = 0.5 * (h - kNumRows * diameter);
 
-        for (int r = 0; r < rows; ++r)
+        for (int r = 0; r < kNumRows; ++r)
         {
-            for (int c = 0; c < columns; ++c)
+            for (int c = 0; c < kNumColumns; ++c)
             {
                 double cx = xoff + radius + c * diameter;
                 double cy = yoff + radius + r * diameter;
 
-                char ch = banner[c + r * columns];
+                char ch = banner[c + r * kNumColumns];
                 if (ch != ' ')
                     cairo_set_source_rgb(cr, 0.5, 0.9, 0.2);
                 else
