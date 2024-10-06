@@ -1,6 +1,6 @@
 /*
  * JackBridge for DPF
- * Copyright (C) 2013-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2013-2024 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -60,10 +60,15 @@ typedef void* lib_t;
 # undef HAVE_SDL2
 #endif
 
-#if defined(HAVE_RTAUDIO) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+#if defined(HAVE_RTAUDIO) && (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) > 0
 // fix conflict between DGL and macOS names
 # define Point CorePoint
 # define Size CoreSize
+# ifdef __clang__
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#  pragma clang diagnostic ignored "-Wunused-but-set-variable"
+# endif
 # include "RtAudioBridge.hpp"
 # ifdef RTAUDIO_API_TYPE
 #  include "rtaudio/RtAudio.cpp"
@@ -71,15 +76,18 @@ typedef void* lib_t;
 # ifdef RTMIDI_API_TYPE
 #  include "rtmidi/RtMidi.cpp"
 # endif
+# ifdef __clang__
+#  pragma clang diagnostic pop
+# endif
 # undef Point
 # undef Size
 #endif
 
-#if defined(HAVE_SDL2) && DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS > 0
+#if defined(HAVE_SDL2) && (DISTRHO_PLUGIN_NUM_INPUTS + DISTRHO_PLUGIN_NUM_OUTPUTS) > 0
 # include "SDL2Bridge.hpp"
 #endif
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 extern "C" {
 
@@ -229,7 +237,7 @@ typedef void (JACKSYM_API *jacksym_set_thread_creator)(jacksym_thread_creator_t)
 
 } // extern "C"
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 struct JackBridge {
     lib_t lib;
@@ -632,7 +640,7 @@ static bool usingNativeBridge = false;
 static bool usingRealJACK = true;
 static NativeBridge* nativeBridge = nullptr;
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static JackBridge& getBridgeInstance() noexcept
 {
@@ -642,7 +650,7 @@ static JackBridge& getBridgeInstance() noexcept
 
 #endif // ! (defined(JACKBRIDGE_DIRECT) || defined(JACKBRIDGE_DUMMY))
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #if defined(__WINE__) && ! defined(JACKBRIDGE_DIRECT)
 
@@ -861,7 +869,7 @@ struct WineBridge {
 
 #endif // __WINE__ && ! JACKBRIDGE_DIRECT
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_is_ok() noexcept
 {
@@ -882,7 +890,7 @@ void jackbridge_init()
 #endif
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 void jackbridge_get_version(int* major_ptr, int* minor_ptr, int* micro_ptr, int* proto_ptr)
 {
@@ -915,7 +923,7 @@ const char* jackbridge_get_version_string()
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options, jack_status_t* status)
 {
@@ -1006,7 +1014,7 @@ bool jackbridge_client_close(jack_client_t* client)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 int jackbridge_client_name_size()
 {
@@ -1034,7 +1042,7 @@ const char* jackbridge_get_client_name(jack_client_t* client)
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 char* jackbridge_client_get_uuid(jack_client_t* client)
 {
@@ -1075,7 +1083,7 @@ char* jackbridge_get_client_name_by_uuid(jack_client_t* client, const char* uuid
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_uuid_parse(const char* buf, jack_uuid_t* uuid)
 {
@@ -1102,7 +1110,7 @@ void jackbridge_uuid_unparse(jack_uuid_t uuid, char buf[JACK_UUID_STRING_SIZE])
 #endif
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_activate(jack_client_t* client)
 {
@@ -1145,7 +1153,7 @@ bool jackbridge_is_realtime(jack_client_t* client)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_set_thread_init_callback(jack_client_t* client, JackThreadInitCallback thread_init_callback, void* arg)
 {
@@ -1423,7 +1431,7 @@ bool jackbridge_set_latency_callback(jack_client_t* client, JackLatencyCallback 
     return false;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_set_freewheel(jack_client_t* client, bool onoff)
 {
@@ -1452,7 +1460,7 @@ bool jackbridge_set_buffer_size(jack_client_t* client, jack_nframes_t nframes)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 jack_nframes_t jackbridge_get_sample_rate(jack_client_t* client)
 {
@@ -1495,7 +1503,7 @@ float jackbridge_cpu_load(jack_client_t* client)
     return 0.0f;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 jack_port_t* jackbridge_port_register(jack_client_t* client, const char* port_name, const char* type, uint64_t flags, uint64_t buffer_size)
 {
@@ -1540,7 +1548,7 @@ void* jackbridge_port_get_buffer(jack_port_t* port, jack_nframes_t nframes)
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 const char* jackbridge_port_name(const jack_port_t* port)
 {
@@ -1672,7 +1680,7 @@ const char** jackbridge_port_get_all_connections(const jack_client_t* client, co
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_port_rename(jack_client_t* client, jack_port_t* port, const char* port_name)
 {
@@ -1731,7 +1739,7 @@ int jackbridge_port_get_aliases(const jack_port_t* port, char* const aliases[2])
     return 0;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_port_request_monitor(jack_port_t* port, bool onoff)
 {
@@ -1785,7 +1793,7 @@ bool jackbridge_port_monitoring_input(jack_port_t* port)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_connect(jack_client_t* client, const char* source_port, const char* destination_port)
 {
@@ -1828,7 +1836,8 @@ bool jackbridge_port_disconnect(jack_client_t* client, jack_port_t* port)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 int jackbridge_port_name_size()
 {
@@ -1869,7 +1878,8 @@ uint32_t jackbridge_port_type_get_buffer_size(jack_client_t* client, const char*
     return 0;
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 void jackbridge_port_get_latency_range(jack_port_t* port, uint32_t mode, jack_latency_range_t* range)
 {
@@ -1914,7 +1924,8 @@ bool jackbridge_recompute_total_latencies(jack_client_t* client)
     return false;
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 const char** jackbridge_get_ports(jack_client_t* client, const char* port_name_pattern, const char* type_name_pattern, uint64_t flags)
 {
@@ -1956,7 +1967,8 @@ jack_port_t* jackbridge_port_by_id(jack_client_t* client, jack_port_id_t port_id
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 void jackbridge_free(void* ptr)
 {
@@ -1973,7 +1985,8 @@ void jackbridge_free(void* ptr)
 #endif
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 uint32_t jackbridge_midi_get_event_count(void* port_buffer)
 {
@@ -2043,7 +2056,8 @@ jack_midi_data_t* jackbridge_midi_event_reserve(void* port_buffer, jack_nframes_
     return nullptr;
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_release_timebase(jack_client_t* client)
 {
@@ -2192,7 +2206,8 @@ void jackbridge_transport_stop(jack_client_t* client)
 #endif
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 bool jackbridge_set_property(jack_client_t* client, jack_uuid_t subject, const char* key, const char* value, const char* type)
 {
@@ -2360,7 +2375,8 @@ void jackbridge_cycle_signal(jack_client_t* client, int status)
 #endif
 }
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------
 
 #ifndef JACKBRIDGE_SKIP_NATIVE_UTILS
 
@@ -2460,4 +2476,5 @@ END_NAMESPACE_DISTRHO
 
 #endif // JACKBRIDGE_SKIP_NATIVE_UTILS
 
-// -----------------------------------------------------------------------------
+
+// --------------------------------------------------------------------------------------------------------------------

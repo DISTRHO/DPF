@@ -1,0 +1,122 @@
+name: build
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os:
+          # wrong use of AU MIDIPacket
+          # - macos-12
+          # - macos-13
+          # - macos-14
+          # webgui failure
+          # - ubuntu-20.04
+          - ubuntu-22.04
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+    - name: Set up dependencies
+      if: ${{ runner.os == 'Linux' }}
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get update -qq
+        sudo apt-get install -yq libasound2-dev libcairo2-dev libdbus-1-dev libgl1-mesa-dev liblo-dev libpulse-dev libsdl2-dev libx11-dev libxcursor-dev libxext-dev libxrandr-dev xvfb
+    - name: Set num jobs
+      if: ${{ runner.os == 'Linux' }}
+      run: echo "JOBS=$(nproc)" >> $GITHUB_ENV
+    - name: Set num jobs
+      if: ${{ runner.os != 'Linux' }}
+      run: echo "JOBS=$(sysctl -n hw.logicalcpu)" >> $GITHUB_ENV
+    - name: Without any warnings
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: Run tests
+      if: ${{ runner.os == 'Linux' }}
+      run: |
+        xvfb-run make -C tests run
+    - name: As C++98 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++98
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: As C++11 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++11
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: As C++14 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++14
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: As C++17 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++17
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: As C++20 mode
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -std=gnu++20
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: No namespace
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -DDONT_SET_USING_DISTRHO_NAMESPACE -DDONT_SET_USING_DGL_NAMESPACE
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: Custom namespace
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror -DDISTRHO_NAMESPACE=WubbWubb -DDGL_NAMESPACE=DabDab
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }}
+    - name: With OpenGL 3.x
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} USE_OPENGL3=true
+    - name: Without Cairo
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} HAVE_CAIRO=false
+    - name: Without OpenGL
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} HAVE_OPENGL=false
