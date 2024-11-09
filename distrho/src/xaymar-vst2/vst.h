@@ -1,9 +1,22 @@
-// This was created from released VST2.x plugins, and is technically under the 2-clause BSD license.
-// Depending on which country you are in, Steinberg can do fuck all about this. Notable countries for
-// this are most members of the United States of America, the entirety of Europe, Japan, and Russia.
-// Consult a lawyer if you don't know if clean room reverse engineering is allowed in your country.
+/*
+ * Copyright 2020 Michael Fabian 'Xaymar' Dirks <info@xaymar.com>
+ *
+ * Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-// See README.md for all information.
+/*
+ * This was created from released VST2.x plugins, and is technically under the 2-clause BSD license. Depending on which country you are in, Steinberg can do fuck all about this. Notable countries for this are most members of the United States of America, the entirety of Europe, Japan, and Russia.
+ *
+ * Consult a lawyer if you don't know if clean room reverse engineering is allowed in your country.
+ *
+ * See README.md for all information.
+ */
 
 // Known additional information:
 // - Function call standard seems to be stdcall.
@@ -94,7 +107,7 @@ enum VST_CATEGORY {
 
 enum VST_EFFECT_OPCODE {
 	/* Create/Initialize the effect (if it has not been created already).
-	 * 
+	 *
 	 * @return Always 0.
 	 */
 	VST_EFFECT_OPCODE_00         = 0x00,
@@ -104,7 +117,7 @@ enum VST_EFFECT_OPCODE {
 	/* Destroy the effect (if there is any) and free its memory.
 	 *
 	 * This should destroy the actual object created by VST_ENTRYPOINT.
-	 * 
+	 *
 	 * @return Always 0.
 	 */
 	VST_EFFECT_OPCODE_01      = 0x01,
@@ -135,7 +148,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_05 = 0x05,
 
 	/* Get the value? label for the parameter.
-	 * 
+	 *
 	 * @param p_int1 Parameter index.
 	 * @param p_ptr 'char[8]'
 	 * @return 0 on success, 1 on failure.
@@ -144,7 +157,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_PARAM_GETLABEL = 0x06,
 
 	/* Get the string value for the parameter.
-	 * 
+	 *
 	 * @param p_int1 Parameter index.
 	 * @param p_ptr 'char[8]'
 	 * @return 0 on success, 1 on failure.
@@ -153,7 +166,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_PARAM_GETVALUE = 0x07,
 
 	/* Get the name for the parameter.
-	 * 
+	 *
 	 * @param p_int1 Parameter index.
 	 * @param p_ptr 'char[8]'
 	 * @return 0 on success, 1 on failure.
@@ -168,7 +181,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_09 = 0x09,
 
 	/* Set the new sample rate for the plugin to use.
-	 * 
+	 *
 	 * @param p_float New sample rate as a float (double on 64-bit because register upgrades).
 	 */
 	VST_EFFECT_OPCODE_0A              = 0x0A,
@@ -186,7 +199,7 @@ enum VST_EFFECT_OPCODE {
 	/* Effect processing should be suspended/paused.
 	 *
 	 * Unclear if this is should result in a flush of buffers.
-	 * 
+	 *
 	 * @param p_int2 0 if the effect should suspend processing, 1 if it should resume.
 	 */
 	VST_EFFECT_OPCODE_0C      = 0x0C,
@@ -202,7 +215,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_WINDOW_GETRECT = 0x0D,
 
 	/* Create the window for the plugin.
-	 * 
+	 *
 	 * @param p_ptr HWND of the parent window.
 	 * @return 0 on failure, or HWND on success.
 	 */
@@ -210,7 +223,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_WINDOW_CREATE = 0x0E,
 
 	/* Destroy the plugins window.
-	 * 
+	 *
 	 * @return Always 0.
 	 */
 	VST_EFFECT_OPCODE_0F             = 0x0F,
@@ -383,7 +396,7 @@ enum VST_EFFECT_OPCODE {
 	 */
 	VST_EFFECT_OPCODE_29 = 0x29,
 
-	/* Set the speaker arrangement 
+	/* Set the speaker arrangement
 	 *
 	 * @param p_int2 (vst_speaker_arrangement*) Pointer to a pointer to the speaker arrangement for the input.
 	 * @param p_ptr (vst_speaker_arrangement*) Pointer to a pointer to the speaker arrangement for the output.
@@ -446,13 +459,13 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_VENDOR_VERSION   = 0x31,
 
 	/* User defined OP Code, for custom interaction.
-	 * 
+	 *
 	 */
 	VST_EFFECT_OPCODE_32     = 0x32,
 	VST_EFFECT_OPCODE_CUSTOM = 0x32,
 
 	/* Test for support of a specific named feature.
-	 * 
+	 *
 	 * @param p_ptr Pointer to a zero-terminated buffer containing the feature name.
 	 * @return Non-zero if the feature is supported, otherwise 0.
 	 */
@@ -460,7 +473,7 @@ enum VST_EFFECT_OPCODE {
 	VST_EFFECT_OPCODE_SUPPORTS = 0x33,
 
 	/* Number of samples that are at the tail at the end of playback.
-	 * 
+	 *
 	 * @return 0 or 1 for no tail, > 1 for number of samples to tail.
 	 */
 	VST_EFFECT_OPCODE_34             = 0x34,
@@ -586,14 +599,14 @@ enum VST_EFFECT_OPCODE {
 
 	/* Begin processing of audio.
 	 *
-	 * 
-	 * 
+	 *
+	 *
 	 */
 	VST_EFFECT_OPCODE_PROCESS_BEGIN = 0x47,
 
 	/* End processing of audio.
 	 *
-	 * 
+	 *
 	 *
 	 */
 	VST_EFFECT_OPCODE_PROCESS_END = 0x48,
@@ -705,7 +718,7 @@ enum VST_HOST_OPCODE {
 	VST_HOST_OPCODE_2B = 0x2B,
 
 	/* Parameter lost focus.
-	 * 
+	 *
 	 * @param int1 Parameter index.
 	 */
 	VST_HOST_OPCODE_2C = 0x2C,
@@ -808,7 +821,7 @@ struct vst_effect {
 	// 64-bit adds 4-byte padding here to align pointers.
 
 	/* Control the VST through an opcode and up to four parameters.
-	 * 
+	 *
 	 * @param this Pointer to the effect itself.
 	 * @param opcode The opcode to run, see VST_EFFECT_OPCODES.
 	 * @param p_int1 Parameter, see VST_EFFECT_OPCODES.
@@ -817,22 +830,22 @@ struct vst_effect {
 	 * @param p_float Parameter, see VST_EFFECT_OPCODES.
 	 */
 	intptr_t(VST_FUNCTION_INTERFACE* control)(vst_effect* pthis, VST_EFFECT_OPCODE opcode, int32_t p_int1,
-											  intptr_t p_int2, void* p_ptr, float p_float);
+	                                          intptr_t p_int2, void* p_ptr, float p_float);
 
 	/* Process the given number of samples in inputs and outputs.
 	 *
 	 * Different to process_float how? Never seen any difference.
-	 * 
+	 *
 	 * @param pthis Pointer to the effect itself.
 	 * @param inputs Pointer to an array of 'const float[samples]' with size numInputs.
 	 * @param outputs Pointer to an array of 'float[samples]' with size numOutputs.
 	 * @param samples Number of samples per channel in inputs.
 	 */
 	void(VST_FUNCTION_INTERFACE* process)(vst_effect* pthis, const float* const* inputs, float** outputs,
-										  int32_t samples);
+	                                      int32_t samples);
 
 	/* Updates the value for the parameter at the given index, or does nothing if out of bounds.
-	 * 
+	 *
 	 * @param pthis Pointer to the effect itself.
 	 * @param index Parameter index.
 	 * @param value New value for the parameter.
@@ -840,7 +853,7 @@ struct vst_effect {
 	void(VST_FUNCTION_INTERFACE* set_parameter)(vst_effect* pthis, uint32_t index, float value);
 
 	/* Returns the value stored for the parameter at index, or 0 if out of bounds.
-	 * 
+	 *
 	 * @param pthis Pointer to the effect itself.
 	 * @param index Parameter index.
 	 * @return float Value of the parameter.
@@ -853,7 +866,7 @@ struct vst_effect {
 	int32_t num_outputs;  // Number of outputs.
 
 	/* Bitflags
-	 * 
+	 *
 	 * Bit		Description
 	 * 1		Effect has "Editor"
 	 * 2		Unknown (Found in: ReaDelay)
@@ -872,7 +885,7 @@ struct vst_effect {
 
 	/* Initial delay before processing of samples can actually begin in Samples.
 	 *
-	 * Should be updated before or during handling the 0x47 control call. 
+	 * Should be updated before or during handling the 0x47 control call.
 	 */
 	int32_t delay;
 
@@ -884,16 +897,16 @@ struct vst_effect {
 
 	/* Id of the plugin.
 	 *
-	 * Due to this not being enough for uniqueness, it should not be used alone 
+	 * Due to this not being enough for uniqueness, it should not be used alone
 	 * for indexing. Ideally you want to index like this:
 	 *     [unique_id][module_name][version][flags]
-	 * If any of the checks after unique_id fail, you default to the first 
+	 * If any of the checks after unique_id fail, you default to the first
 	 * possible choice.
 	 */
 	int32_t unique_id;
 
 	/* Plugin version
-	 * 
+	 *
 	 * Unrelated to the minimum VST Version, but often the same.
 	 */
 	int32_t version;
@@ -908,19 +921,19 @@ struct vst_effect {
 	 * @param samples Number of samples per channel in inputs.
 	 */
 	void(VST_FUNCTION_INTERFACE* process_float)(vst_effect* pthis, const float* const* inputs, float** outputs,
-												int32_t samples);
+	                                            int32_t samples);
 
 	/* Process the given number of double samples in inputs and outputs.
 	 *
 	 * Used only by 2.4 hosts and plugins, possibly restricted to said version.
-	 * 
+	 *
 	 * @param pthis Pointer to the effect itself.
 	 * @param inputs Pointer to an array of 'const double[samples]' with size numInputs.
 	 * @param outputs Pointer to an array of 'double[samples]' with size numOutputs.
 	 * @param samples Number of samples per channel in inputs.
 	 */
 	void(VST_FUNCTION_INTERFACE* process_double)(vst_effect* pthis, const double* const* inputs, double** outputs,
-												 int32_t samples);
+	                                             int32_t samples);
 
 	// Everything after this is unknown and was present in reacomp-standalone.dll.
 	uint8_t _unknown[56]; // 56-bytes of something. Could also just be 52-bytes.
@@ -969,13 +982,13 @@ struct vst_speaker_arrangement {
 };
 
 /* Callback used by the plugin to interface with the host.
- * 
+ *
  * @param opcode See VST_HOST_OPCODE
  * @param p_str Zero terminated string or null on call.
  * @return ?
  */
 typedef intptr_t (*vst_host_callback)(vst_effect* plugin, VST_HOST_OPCODE opcode, int32_t p_int1, int64_t p_int2,
-									  void* p_str, float p_float);
+                                      void* p_str, float p_float);
 
 /* Entry point for VST2.x plugins.
  *
