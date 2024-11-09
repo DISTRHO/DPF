@@ -180,20 +180,20 @@ public:
     inline float peek() const noexcept
     {
         const float dy = target - mem;
-        return mem + std::copysign(std::fmin(std::abs(dy), std::abs(step)), dy);
+        return mem + std::copysign(std::fmin(std::abs(dy), step), dy);
     }
 
     inline float next() noexcept
     {
         const float y0 = mem;
         const float dy = target - y0;
-        return (mem = y0 + std::copysign(std::fmin(std::abs(dy), std::abs(step)), dy));
+        return (mem = y0 + std::copysign(std::fmin(std::abs(dy), step), dy));
     }
 
 private:
     void updateStep() noexcept
     {
-        step = (target - mem) / (tau * sampleRate);
+        step = std::abs(target - mem) / (tau * sampleRate);
     }
 };
 
