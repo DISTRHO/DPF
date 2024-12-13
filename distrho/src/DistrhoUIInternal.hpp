@@ -267,12 +267,12 @@ public:
         uiData->app.repaintIfNeeeded();
     }
 
-    void addIdleCallbackForNativeIdle(IdleCallback* const cb, const uint timerFrequencyInMs)
+    void addIdleCallbackForNativeIdle(DGL_NAMESPACE::IdleCallback* const cb, const uint timerFrequencyInMs)
     {
         uiData->window->addIdleCallback(cb, timerFrequencyInMs);
     }
 
-    void removeIdleCallbackForNativeIdle(IdleCallback* const cb)
+    void removeIdleCallbackForNativeIdle(DGL_NAMESPACE::IdleCallback* const cb)
     {
         uiData->window->removeIdleCallback(cb);
     }

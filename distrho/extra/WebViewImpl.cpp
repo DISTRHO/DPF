@@ -106,7 +106,7 @@
 
 @implementation WEB_VIEW_DELEGATE_CLASS_NAME {
 @public
-    WebViewMessageCallback callback;
+    DISTRHO_NAMESPACE::WebViewMessageCallback callback;
     void* callbackPtr;
     bool loaded;
 }
