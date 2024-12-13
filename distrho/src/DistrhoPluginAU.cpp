@@ -2015,7 +2015,7 @@ public:
         midiEvent.data[1] = inData1;
         midiEvent.data[2] = inData2;
 
-        switch (inStatus)
+        switch (inStatus & 0xF0)
         {
         case 0x80:
         case 0x90:
@@ -2057,6 +2057,8 @@ public:
             break;
         default:
             // invalid
+            d_debug("auMIDIEvent received invalid event %u %u %u %u @ %u",
+                    inStatus, inData1, inData2, inOffsetSampleFrame, fMidiEventCount);
             return kAudioUnitErr_InvalidPropertyValue;
         }
 
@@ -2814,12 +2816,16 @@ struct AudioComponentPlugInInstance {
 
 	static OSStatus Open(void* const self, const AudioUnit component)
     {
+        d_debug("AudioComponentPlugInInstance::Open(%p)", self);
+
         static_cast<AudioComponentPlugInInstance*>(self)->plugin = new PluginAU(component);
         return noErr;
     }
 
 	static OSStatus Close(void* const self)
     {
+        d_debug("AudioComponentPlugInInstance::Close(%p)", self);
+
         delete static_cast<AudioComponentPlugInInstance*>(self);
         return noErr;
     }
@@ -2928,8 +2934,16 @@ struct AudioComponentPlugInInstance {
                                 void* const outData,
                                 UInt32* const ioDataSize)
     {
-        d_debug("AudioComponentPlugInInstance::GetProperty(%p, %d:%x:%s, %d:%s, %d, ...)",
-                self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+       #ifdef DEBUG
+        switch (inProp) {
+        case kAudioUnitProperty_PresentPreset:
+            break;
+        default:
+            d_debug("AudioComponentPlugInInstance::GetProperty(%p, %d:%x:%s, %d:%s, %d, ...)",
+                    self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
+            break;
+        }
+       #endif
         DISTRHO_SAFE_ASSERT_RETURN(ioDataSize != nullptr, kAudio_ParamError);
 
         Boolean writable;
