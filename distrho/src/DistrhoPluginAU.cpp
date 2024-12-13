@@ -651,7 +651,7 @@ public:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
            #if DISTRHO_PLUGIN_WANT_TIMEPOS
             outDataSize = sizeof(HostCallbackInfo);
-            outWritable = false;
+            outWritable = true;
             return noErr;
            #else
             return kAudioUnitErr_InvalidProperty;
