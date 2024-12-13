@@ -276,12 +276,18 @@ struct RenderListener {
 typedef std::vector<PropertyListener> PropertyListeners;
 typedef std::vector<RenderListener> RenderListeners;
 
-// --------------------------------------------------------------------------------------------------------------------
+#if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+// useful definitions
+static constexpr const uint32_t kMIDIPacketNonDataSize = sizeof(MIDIPacket) - sizeof(MIDIPacket::data);
+static constexpr const uint32_t kMIDIPacketListNonDataSize = sizeof(MIDIPacketList) - sizeof(MIDIPacketList::packet);
 
-typedef struct {
-    UInt32 numPackets;
-    MIDIPacket packets[kMaxMidiEvents];
-} d_MIDIPacketList;
+// size of data used for midi events
+static constexpr const uint32_t kMIDIPacketListMaxDataSize = kMIDIPacketNonDataSize * kMaxMidiEvents
+                                                           + sizeof(Byte) * MidiEvent::kDataSize * kMaxMidiEvents;
+
+// size of midi list + data
+static constexpr const uint32_t kMIDIPacketListSize = kMIDIPacketListNonDataSize + kMIDIPacketListMaxDataSize;
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -335,6 +341,9 @@ public:
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fMidiEventCount(0)
        #endif
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        , fMidiOutputDataOffset(0)
+       #endif
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         , fCurrentProgram(-1)
         , fLastFactoryProgram(0)
@@ -370,8 +379,10 @@ public:
        #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if ((fMidiOutputPackets = static_cast<MIDIPacketList*>(std::malloc(kMIDIPacketListSize))) != nullptr)
+            std::memset(fMidiOutputPackets, 0, kMIDIPacketListSize);
+
         std::memset(&fMidiOutput, 0, sizeof(fMidiOutput));
-        std::memset(&fMidiOutputPackets, 0, sizeof(fMidiOutputPackets));
        #endif
 
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -428,6 +439,10 @@ public:
         reallocAudioBufferList(false);
        #endif
 
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        std::free(fMidiOutputPackets);
+       #endif
+
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
         for (uint32_t i=0; i<fProgramCount; ++i)
             CFRelease(fFactoryPresetsData[i].presetName);
@@ -451,7 +466,8 @@ public:
         fMidiEventCount = 0;
        #endif
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fMidiOutputPackets.numPackets = 0;
+        fMidiOutputDataOffset = 0;
+        fMidiOutputPackets->numPackets = 0;
        #endif
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         fTimePosition.clear();
@@ -1787,7 +1803,8 @@ public:
         fMidiEventCount = 0;
        #endif
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fMidiOutputPackets.numPackets = 0;
+        fMidiOutputDataOffset = 0;
+        fMidiOutputPackets->numPackets = 0;
        #endif
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
         fTimePosition.clear();
@@ -2143,8 +2160,9 @@ private:
    #endif
 
    #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+    uint32_t fMidiOutputDataOffset;
+    MIDIPacketList* fMidiOutputPackets;
     AUMIDIOutputCallbackStruct fMidiOutput;
-    d_MIDIPacketList fMidiOutputPackets;
    #endif
 
    #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -2219,7 +2237,8 @@ private:
        #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        fMidiOutputPackets.numPackets = 0;
+        fMidiOutputDataOffset = 0;
+        fMidiOutputPackets->numPackets = 0;
        #endif
 
        #if DISTRHO_PLUGIN_WANT_TIMEPOS
@@ -2296,12 +2315,11 @@ private:
        #endif
 
        #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
-        if (fMidiOutputPackets.numPackets != 0 && fMidiOutput.midiOutputCallback != nullptr)
+        if (fMidiOutputPackets != nullptr &&
+            fMidiOutputPackets->numPackets != 0 &&
+            fMidiOutput.midiOutputCallback != nullptr)
         {
-            fMidiOutput.midiOutputCallback(fMidiOutput.userData,
-                                           inTimeStamp,
-                                           0,
-                                           reinterpret_cast<const ::MIDIPacketList*>(&fMidiOutputPackets));
+            fMidiOutput.midiOutputCallback(fMidiOutput.userData, inTimeStamp, 0, fMidiOutputPackets);
         }
        #else
         // unused
@@ -2718,17 +2736,21 @@ private:
     bool writeMidi(const MidiEvent& midiEvent)
     {
         DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN("MIDI output unsupported", fMidiOutput.midiOutputCallback != nullptr, false);
+        DISTRHO_CUSTOM_SAFE_ASSERT_ONCE_RETURN("Out of memory", fMidiOutputPackets != nullptr, false);
 
-        if (midiEvent.size > sizeof(MIDIPacket::data))
-            return true;
-        if (fMidiOutputPackets.numPackets == kMaxMidiEvents)
+        if (fMidiOutputDataOffset + kMIDIPacketNonDataSize + midiEvent.size >= kMIDIPacketListMaxDataSize)
             return false;
 
         const uint8_t* const midiData = midiEvent.size > MidiEvent::kDataSize ? midiEvent.dataExt : midiEvent.data;
-        MIDIPacket& packet(fMidiOutputPackets.packets[fMidiOutputPackets.numPackets++]);
-        packet.timeStamp = midiEvent.frame;
-        packet.length = midiEvent.size;
-        std::memcpy(packet.data, midiData, midiEvent.size);
+        MIDIPacket* const packet = reinterpret_cast<MIDIPacket*>(
+             reinterpret_cast<uint8_t*>(fMidiOutputPackets->packet) + fMidiOutputDataOffset);
+
+        packet->timeStamp = midiEvent.frame;
+        packet->length = midiEvent.size;
+        std::memcpy(packet->data, midiData, midiEvent.size);
+
+        ++fMidiOutputPackets->numPackets;
+        fMidiOutputDataOffset += kMIDIPacketNonDataSize + midiEvent.size;
         return true;
     }
 
