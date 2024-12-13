@@ -202,7 +202,8 @@ static constexpr const uint32_t kType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_AU_TYP
 static constexpr const uint32_t kSubType = d_cconst(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID));
 static constexpr const uint32_t kManufacturer = d_cconst(STRINGIFY(DISTRHO_PLUGIN_BRAND_ID));
 
-static constexpr const uint32_t kWantedAudioFormat = kAudioFormatFlagsNativeFloatPacked
+static constexpr const uint32_t kWantedAudioFormat = 0
+                                                   | kAudioFormatFlagsNativeFloatPacked
                                                    | kAudioFormatFlagIsNonInterleaved;
 
 
@@ -278,8 +279,18 @@ typedef std::vector<RenderListener> RenderListeners;
 
 #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 // useful definitions
-static constexpr const uint32_t kMIDIPacketNonDataSize = sizeof(MIDIPacket) - sizeof(MIDIPacket::data);
-static constexpr const uint32_t kMIDIPacketListNonDataSize = sizeof(MIDIPacketList) - sizeof(MIDIPacketList::packet);
+static constexpr const uint32_t kMIDIPacketNonDataSize = sizeof(MIDIPacket)
+                                                      #if __cplusplus >= 201103L
+                                                       - sizeof(MIDIPacket::data);
+                                                      #else
+                                                       - sizeof(static_cast<MIDIPacket*>(0)->data);
+                                                      #endif
+static constexpr const uint32_t kMIDIPacketListNonDataSize = sizeof(MIDIPacketList)
+                                                          #if __cplusplus >= 201103L
+                                                           - sizeof(MIDIPacketList::packet);
+                                                          #else
+                                                           - sizeof(static_cast<MIDIPacketList*>(0)->packet);
+                                                          #endif
 
 // size of data used for midi events
 static constexpr const uint32_t kMIDIPacketListMaxDataSize = kMIDIPacketNonDataSize * kMaxMidiEvents
