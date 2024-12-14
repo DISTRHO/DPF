@@ -686,6 +686,17 @@ public:
             outWritable = true;
             return noErr;
 
+        case kAudioUnitProperty_SupportsMPE:
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
+           #if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
+            outDataSize = sizeof(UInt32);
+            outWritable = false;
+            return noErr;
+           #else
+            return kAudioUnitErr_InvalidProperty;
+           #endif
+
         case kAudioUnitProperty_CocoaUI:
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
@@ -1054,6 +1065,12 @@ public:
                 std::memcpy(outData, &fUserPresetData, sizeof(AUPreset));
             }
             return noErr;
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
+        case kAudioUnitProperty_SupportsMPE:
+            *static_cast<UInt32*>(outData) = 1;
+            return noErr;
+       #endif
 
        #if DISTRHO_PLUGIN_HAS_UI
         case kAudioUnitProperty_CocoaUI:

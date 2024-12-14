@@ -65,6 +65,10 @@
 # define DISTRHO_PLUGIN_WANT_LATENCY 0
 #endif
 
+#ifndef DISTRHO_PLUGIN_WANT_MIDI_AS_MPE
+# define DISTRHO_PLUGIN_WANT_MIDI_AS_MPE 0
+#endif
+
 #ifndef DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
 # define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 0
 #endif
@@ -176,6 +180,13 @@
 
 #if DISTRHO_PLUGIN_IS_SYNTH && DISTRHO_PLUGIN_NUM_OUTPUTS == 0
 # error Synths need audio output to work!
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// Test if MIDI as MPE enabled where it doesn't make sense
+
+#if DISTRHO_PLUGIN_WANT_MIDI_AS_MPE && ! (DISTRHO_PLUGIN_WANT_MIDI_INPUT || DISTRHO_PLUGIN_WANT_MIDI_OUTPUT)
+# error MIDI as MPE needs MIDI input or output to work!
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
