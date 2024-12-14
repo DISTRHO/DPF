@@ -566,6 +566,12 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_MIDI_OUTPUT 1
 
 /**
+   Whether the plugin uses MIDI MPE for MIDI input and MIDI output.
+   @note Only CLAP implements this macro at the moment
+*/
+#define DISTRHO_PLUGIN_MIDI_MPE 0
+
+/**
    Whether the plugin wants to change its own parameter inputs.@n
    Not all hosts or plugin formats support this,
    so Plugin::canRequestParameterValueChanges() can be used to query support at runtime.
