@@ -821,6 +821,11 @@ public:
        #endif
     }
 
+    void reset()
+    {
+        fHost->request_restart(fHost);
+    }
+
     bool process(const clap_process_t* const process)
     {
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
@@ -2450,9 +2455,10 @@ static void CLAP_ABI clap_plugin_stop_processing(const clap_plugin_t*)
     // nothing to do
 }
 
-static void CLAP_ABI clap_plugin_reset(const clap_plugin_t*)
+static void CLAP_ABI clap_plugin_reset(const clap_plugin_t* const plugin)
 {
-    // nothing to do
+    PluginCLAP* const instance = static_cast<PluginCLAP*>(plugin->plugin_data);
+    instance->reset();
 }
 
 static clap_process_status CLAP_ABI clap_plugin_process(const clap_plugin_t* const plugin, const clap_process_t* const process)
