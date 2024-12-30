@@ -264,7 +264,7 @@ bool isNumChannelsComboValid(const uint16_t numInputs, const uint16_t numOutputs
 // --------------------------------------------------------------------------------------------------------------------
 
 struct PropertyListener {
-    AudioUnitPropertyID	prop;
+    AudioUnitPropertyID prop;
     AudioUnitPropertyListenerProc proc;
     void* userData;
 };
@@ -348,7 +348,8 @@ public:
           fUsingRenderListeners(false),
           fParameterCount(fPlugin.getParameterCount()),
           fLastParameterValues(nullptr),
-          fBypassParameterIndex(UINT32_MAX)
+          fBypassParameterIndex(UINT32_MAX),
+          fResetParameterIndex(UINT32_MAX)
        #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
         , fMidiEventCount(0)
        #endif
@@ -365,7 +366,7 @@ public:
         , fStateCount(fPlugin.getStateCount())
        #endif
     {
-	    if (fParameterCount != 0)
+        if (fParameterCount != 0)
         {
             fLastParameterValues = new float[fParameterCount];
             std::memset(fLastParameterValues, 0, sizeof(float) * fParameterCount);
@@ -374,8 +375,17 @@ public:
             {
                 fLastParameterValues[i] = fPlugin.getParameterValue(i);
 
-                if (fPlugin.getParameterDesignation(i) == kParameterDesignationBypass)
+                switch (fPlugin.getParameterDesignation(i))
+                {
+                case kParameterDesignationNull:
+                    break;
+                case kParameterDesignationBypass:
                     fBypassParameterIndex = i;
+                    break;
+                case kParameterDesignationReset:
+                    fResetParameterIndex = i;
+                    break;
+                }
             }
         }
 
@@ -923,13 +933,13 @@ public:
         case kAudioUnitProperty_FastDispatch:
             switch (inElement)
             {
-			case kAudioUnitGetParameterSelect:
+            case kAudioUnitGetParameterSelect:
                 *static_cast<AudioUnitGetParameterProc*>(outData) = FastDispatchGetParameter;
                 return noErr;
-			case kAudioUnitSetParameterSelect:
+            case kAudioUnitSetParameterSelect:
                 *static_cast<AudioUnitSetParameterProc*>(outData) = FastDispatchSetParameter;
                 return noErr;
-			case kAudioUnitRenderSelect:
+            case kAudioUnitRenderSelect:
                 *static_cast<AudioUnitRenderProc*>(outData) = FastDispatchRender;
                 return noErr;
             }
@@ -1458,7 +1468,7 @@ public:
                     const float value = bypass ? 1.f : 0.f;
                     fLastParameterValues[fBypassParameterIndex] = value;
                     fPlugin.setParameterValue(fBypassParameterIndex, value);
-	                notifyPropertyListeners(inProp, inScope, inElement);
+                    notifyPropertyListeners(inProp, inScope, inElement);
                 }
             }
             return noErr;
@@ -1480,12 +1490,12 @@ public:
            #if DISTRHO_PLUGIN_WANT_TIMEPOS
             {
                 const UInt32 usableDataSize = std::min(inDataSize, static_cast<UInt32>(sizeof(HostCallbackInfo)));
-		        const bool changed = std::memcmp(&fHostCallbackInfo, inData, usableDataSize) != 0;
+                const bool changed = std::memcmp(&fHostCallbackInfo, inData, usableDataSize) != 0;
 
-		        std::memcpy(&fHostCallbackInfo, inData, usableDataSize);
+                std::memcpy(&fHostCallbackInfo, inData, usableDataSize);
 
                 if (sizeof(HostCallbackInfo) > usableDataSize)
-		            std::memset(&fHostCallbackInfo + usableDataSize, 0, sizeof(HostCallbackInfo) - usableDataSize);
+                    std::memset(&fHostCallbackInfo + usableDataSize, 0, sizeof(HostCallbackInfo) - usableDataSize);
 
                 if (changed)
                     notifyPropertyListeners(inProp, inScope, inElement);
@@ -1612,7 +1622,7 @@ public:
                 AUEventListenerNotify(NULL, NULL, &event);
 
                 if (fBypassParameterIndex == inElement)
-	                notifyPropertyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
+                    notifyPropertyListeners(kAudioUnitProperty_BypassEffect, kAudioUnitScope_Global, 0);
             }
             return noErr;
 
@@ -1821,7 +1831,12 @@ public:
         DISTRHO_SAFE_ASSERT_UINT_RETURN(scope == kAudioUnitScope_Global || scope == kAudioUnitScope_Input || scope == kAudioUnitScope_Output, scope, kAudioUnitErr_InvalidScope);
         DISTRHO_SAFE_ASSERT_UINT_RETURN(elem == 0, elem, kAudioUnitErr_InvalidElement);
 
-        if (fPlugin.isActive())
+        if (fResetParameterIndex != UINT32_MAX)
+        {
+            fPlugin.setParameterValue(fResetParameterIndex, 1.f);
+            fPlugin.setParameterValue(fResetParameterIndex, 0.f);
+        }
+        else if (fPlugin.isActive())
         {
             fPlugin.deactivate();
             fPlugin.activate();
@@ -2180,6 +2195,7 @@ private:
     const uint32_t fParameterCount;
     float* fLastParameterValues;
     uint32_t fBypassParameterIndex;
+    uint32_t fResetParameterIndex;
 
    #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
     uint32_t fMidiEventCount;
@@ -2220,7 +2236,7 @@ private:
             const PropertyListener& pl(*it);
 
             if (pl.prop == prop)
-			    pl.proc(pl.userData, fComponent, prop, scope, elem);
+                pl.proc(pl.userData, fComponent, prop, scope, elem);
         }
     }
 
@@ -2845,7 +2861,7 @@ private:
 // --------------------------------------------------------------------------------------------------------------------
 
 struct AudioComponentPlugInInstance {
-	AudioComponentPlugInInterface acpi;
+    AudioComponentPlugInInterface acpi;
     PluginAU* plugin;
 
     AudioComponentPlugInInstance() noexcept
@@ -2854,9 +2870,9 @@ struct AudioComponentPlugInInstance {
     {
         std::memset(&acpi, 0, sizeof(acpi));
         acpi.Open = Open;
-		acpi.Close = Close;
-		acpi.Lookup = Lookup;
-		acpi.reserved = nullptr;
+        acpi.Close = Close;
+        acpi.Lookup = Lookup;
+        acpi.reserved = nullptr;
     }
 
     ~AudioComponentPlugInInstance()
@@ -2864,7 +2880,7 @@ struct AudioComponentPlugInInstance {
         delete plugin;
     }
 
-	static OSStatus Open(void* const self, const AudioUnit component)
+    static OSStatus Open(void* const self, const AudioUnit component)
     {
         d_debug("AudioComponentPlugInInstance::Open(%p)", self);
 
@@ -2872,7 +2888,7 @@ struct AudioComponentPlugInInstance {
         return noErr;
     }
 
-	static OSStatus Close(void* const self)
+    static OSStatus Close(void* const self)
     {
         d_debug("AudioComponentPlugInInstance::Close(%p)", self);
 
@@ -2964,15 +2980,15 @@ struct AudioComponentPlugInInstance {
         d_debug("AudioComponentPlugInInstance::GetPropertyInfo(%p, %d:%x:%s, %d:%s, %d, ...)",
                 self, inProp, inProp, AudioUnitPropertyID2Str(inProp), inScope, AudioUnitScope2Str(inScope), inElement);
 
-		UInt32 dataSize = 0;
-		Boolean writable = false;
+        UInt32 dataSize = 0;
+        Boolean writable = false;
         const OSStatus res = self->plugin->auGetPropertyInfo(inProp, inScope, inElement, dataSize, writable);
 
-		if (outDataSize != nullptr)
-			*outDataSize = dataSize;
+        if (outDataSize != nullptr)
+            *outDataSize = dataSize;
 
-		if (outWritable != nullptr)
-			*outWritable = writable;
+        if (outWritable != nullptr)
+            *outWritable = writable;
 
         return res;
     }
@@ -3016,24 +3032,24 @@ struct AudioComponentPlugInInstance {
         if (res != noErr)
             return res;
 
-		void* outBuffer;
+        void* outBuffer;
         uint8_t* tmpBuffer;
         if (inDataSize < outDataSize)
-		{
-			tmpBuffer = new uint8_t[outDataSize];
-			outBuffer = tmpBuffer;
-		}
+        {
+            tmpBuffer = new uint8_t[outDataSize];
+            outBuffer = tmpBuffer;
+        }
         else
         {
-			tmpBuffer = nullptr;
-			outBuffer = outData;
-		}
+            tmpBuffer = nullptr;
+            outBuffer = outData;
+        }
 
         res = self->plugin->auGetProperty(inProp, inScope, inElement, outBuffer);
 
-		if (res != noErr)
+        if (res != noErr)
         {
-			*ioDataSize = 0;
+            *ioDataSize = 0;
             return res;
         }
 

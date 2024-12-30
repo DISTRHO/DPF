@@ -751,6 +751,7 @@ public:
                   updateStateValueCallback),
           fHost(host),
           fOutputEvents(nullptr),
+          fResetParameterIndex(UINT32_MAX),
          #if DISTRHO_PLUGIN_NUM_INPUTS+DISTRHO_PLUGIN_NUM_OUTPUTS != 0
           fUsingCV(false),
          #endif
@@ -763,7 +764,19 @@ public:
          #endif
           fHostExtensions(host)
     {
-        fCachedParameters.setup(fPlugin.getParameterCount());
+        if (const uint32_t paramCount = fPlugin.getParameterCount())
+        {
+            fCachedParameters.setup(paramCount);
+
+            for (uint32_t i=0; i<paramCount; ++i)
+            {
+                if (fPlugin.getParameterDesignation(i) == kParameterDesignationReset)
+                {
+                    fResetParameterIndex = i;
+                    break;
+                }
+            }
+        }
 
        #if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_MIDI_INPUT
         fNotesRingBuffer.setRingBuffer(&fNotesBuffer, true);
@@ -823,7 +836,18 @@ public:
 
     void reset()
     {
-        fHost->request_restart(fHost);
+        if (fResetParameterIndex != UINT32_MAX)
+        {
+           #if DISTRHO_PLUGIN_WANT_MIDI_INPUT
+            fMidiEventCount = 0;
+           #endif
+            fPlugin.setParameterValue(fResetParameterIndex, 1.f);
+            fPlugin.setParameterValue(fResetParameterIndex, 0.f);
+        }
+        else
+        {
+            fHost->request_restart(fHost);
+        }
     }
 
     bool process(const clap_process_t* const process)
@@ -1119,14 +1143,19 @@ public:
     {
         const ParameterRanges& ranges(fPlugin.getParameterRanges(index));
 
-        if (fPlugin.getParameterDesignation(index) == kParameterDesignationBypass)
+        switch (fPlugin.getParameterDesignation(index))
         {
+        case kParameterDesignationBypass:
             info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_BYPASS|CLAP_PARAM_IS_AUTOMATABLE;
             std::strcpy(info->name, "Bypass");
             std::strcpy(info->module, "dpf_bypass");
-        }
-        else
-        {
+            break;
+        case kParameterDesignationReset:
+            info->flags = CLAP_PARAM_IS_STEPPED|CLAP_PARAM_IS_READONLY;
+            std::strcpy(info->name, "Reset");
+            std::strcpy(info->module, "dpf_reset");
+            break;
+        default:
             const uint32_t hints = fPlugin.getParameterHints(index);
             const uint32_t groupId = fPlugin.getParameterGroupId(index);
 
@@ -1156,6 +1185,7 @@ public:
             }
 
             d_strncpy(info->module + wrtn, fPlugin.getParameterSymbol(index), CLAP_PATH_SIZE - wrtn);
+            break;
         }
 
         info->id = index;
@@ -1791,6 +1821,7 @@ private:
     const clap_host_t* const fHost;
     const clap_output_events_t* fOutputEvents;
 
+    uint32_t fResetParameterIndex;
    #if DISTRHO_PLUGIN_NUM_INPUTS != 0
     const float* fAudioInputs[DISTRHO_PLUGIN_NUM_INPUTS];
    #endif

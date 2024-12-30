@@ -1,6 +1,6 @@
 /*
   LV2 KXStudio Properties Extension
-  Copyright 2014-2021 Filipe Coelho <falktx@falktx.com>
+  Copyright 2014-2024 Filipe Coelho <falktx@falktx.com>
 
   Permission to use, copy, modify, and/or distribute this software for any
   purpose with or without fee is hereby granted, provided that the above
@@ -27,6 +27,7 @@
 #define LV2_KXSTUDIO_PROPERTIES_PREFIX LV2_KXSTUDIO_PROPERTIES_URI "#"
 
 #define LV2_KXSTUDIO_PROPERTIES__NonAutomatable           LV2_KXSTUDIO_PROPERTIES_PREFIX "NonAutomatable"
+#define LV2_KXSTUDIO_PROPERTIES__Reset                    LV2_KXSTUDIO_PROPERTIES_PREFIX "Reset"
 #define LV2_KXSTUDIO_PROPERTIES__TimePositionTicksPerBeat LV2_KXSTUDIO_PROPERTIES_PREFIX "TimePositionTicksPerBeat"
 #define LV2_KXSTUDIO_PROPERTIES__TransientWindowId        LV2_KXSTUDIO_PROPERTIES_PREFIX "TransientWindowId"
 
