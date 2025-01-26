@@ -579,11 +579,11 @@ void Window::PrivateData::runAsModal(const bool blockWait)
 // -----------------------------------------------------------------------
 // pugl events
 
-void Window::PrivateData::onPuglConfigure(const double width, const double height)
+void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
 {
     DISTRHO_SAFE_ASSERT_INT2_RETURN(width > 1 && height > 1, width, height,);
 
-    DGL_DBGp("PUGL: onReshape : %f %f\n", width, height);
+    DGL_DBGp("PUGL: onReshape : %d %d\n", width, height);
 
     if (autoScaling)
     {
@@ -1188,25 +1188,21 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 
 	if (verbose) {
 		switch (event->type) {
-		case PUGL_CREATE:
-			return fprintf(stderr, "%sCreate\n", prefix);
-		case PUGL_DESTROY:
-			return fprintf(stderr, "%sDestroy\n", prefix);
-		case PUGL_MAP:
-			return fprintf(stderr, "%sMap\n", prefix);
-		case PUGL_UNMAP:
-			return fprintf(stderr, "%sUnmap\n", prefix);
-		case PUGL_UPDATE:
-			return 0; // fprintf(stderr, "%sUpdate\n", prefix);
+		case PUGL_REALIZE:
+			return PRINT("%sRealize\n", prefix);
+		case PUGL_UNREALIZE:
+			return PRINT("%sUnrealize\n", prefix);
 		case PUGL_CONFIGURE:
-			return PRINT("%sConfigure " PFMT " " PFMT "\n",
+			return PRINT("%sConfigure %d %d %d %d\n",
 			             prefix,
 			             event->configure.x,
 			             event->configure.y,
 			             event->configure.width,
 			             event->configure.height);
+		case PUGL_UPDATE:
+			return 0; // fprintf(stderr, "%sUpdate\n", prefix);
 		case PUGL_EXPOSE:
-			return PRINT("%sExpose    " PFMT " " PFMT "\n",
+			return PRINT("%sExpose    %d %d %d %d\n",
 			             prefix,
 			             event->expose.x,
 			             event->expose.y,
