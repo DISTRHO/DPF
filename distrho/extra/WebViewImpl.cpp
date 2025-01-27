@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -1039,7 +1039,9 @@ static bool gtk3(Display* const display,
 {
     void* lib;
     if ((lib = dlopen("libwebkit2gtk-4.0.so.37", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
-        (lib = dlopen("libwebkit2gtk-4.0.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr)
+        (lib = dlopen("libwebkit2gtk-4.1.so.0", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
+        (lib = dlopen("libwebkit2gtk-4.0.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr &&
+        (lib = dlopen("libwebkit2gtk-4.1.so", RTLD_NOW|RTLD_GLOBAL)) == nullptr)
     {
         d_stdout("WebView gtk3 platform not available: %s", dlerror());
         return false;
