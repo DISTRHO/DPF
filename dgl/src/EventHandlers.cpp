@@ -32,6 +32,7 @@ struct ButtonEventHandler::PrivateData {
     bool checkable;
     bool checked;
     bool enabled;
+    bool enabledInput;
 
     Point<double> lastClickPos;
     Point<double> lastMotionPos;
@@ -46,12 +47,13 @@ struct ButtonEventHandler::PrivateData {
           checkable(false),
           checked(false),
           enabled(true),
+          enabledInput(true),
           lastClickPos(0, 0),
           lastMotionPos(0, 0)  {}
 
     bool mouseEvent(const Widget::MouseEvent& ev)
     {
-        if (! enabled)
+        if (! enabledInput)
             return false;
 
         lastClickPos = ev.pos;
@@ -103,7 +105,7 @@ struct ButtonEventHandler::PrivateData {
 
     bool motionEvent(const Widget::MotionEvent& ev)
     {
-        if (! enabled)
+        if (! enabledInput)
             return false;
 
         // keep pressed
@@ -179,8 +181,11 @@ struct ButtonEventHandler::PrivateData {
         }
     }
 
-    void setEnabled(const bool enabled2) noexcept
+    void setEnabled(const bool enabled2, const bool appliesToEventInput) noexcept
     {
+        if (appliesToEventInput)
+            enabledInput = enabled2;
+
         if (enabled == enabled2)
             return;
 
@@ -248,9 +253,9 @@ bool ButtonEventHandler::isEnabled() const noexcept
     return pData->enabled;
 }
 
-void ButtonEventHandler::setEnabled(const bool enabled) noexcept
+void ButtonEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
 {
-    pData->setEnabled(enabled);
+    pData->setEnabled(enabled, appliesToEventInput);
 }
 
 Point<double> ButtonEventHandler::getLastClickPosition() const noexcept
@@ -318,6 +323,7 @@ struct KnobEventHandler::PrivateData {
     float valueDef;
     float valueTmp;
     bool enabled;
+    bool enabledInput;
     bool usingDefault;
     bool usingLog;
     Orientation orientation;
@@ -339,6 +345,7 @@ struct KnobEventHandler::PrivateData {
           valueDef(value),
           valueTmp(value),
           enabled(true),
+          enabledInput(true),
           usingDefault(false),
           usingLog(false),
           orientation(Vertical),
@@ -359,6 +366,7 @@ struct KnobEventHandler::PrivateData {
           valueDef(other->valueDef),
           valueTmp(value),
           enabled(other->enabled),
+          enabledInput(other->enabledInput),
           usingDefault(other->usingDefault),
           usingLog(other->usingLog),
           orientation(other->orientation),
@@ -378,6 +386,7 @@ struct KnobEventHandler::PrivateData {
         valueDef     = other->valueDef;
         valueTmp     = value;
         enabled      = other->enabled;
+        enabledInput = other->enabledInput;
         usingDefault = other->usingDefault;
         usingLog     = other->usingLog;
         orientation  = other->orientation;
@@ -403,7 +412,7 @@ struct KnobEventHandler::PrivateData {
 
     bool mouseEvent(const Widget::MouseEvent& ev, const double scaleFactor)
     {
-        if (! enabled)
+        if (! enabledInput)
             return false;
 
         if (ev.button != 1)
@@ -459,7 +468,7 @@ struct KnobEventHandler::PrivateData {
 
     bool motionEvent(const Widget::MotionEvent& ev, const double scaleFactor)
     {
-        if (! enabled)
+        if (! enabledInput)
             return false;
 
         if ((state & kKnobStateDragging) == 0x0)
@@ -547,7 +556,7 @@ struct KnobEventHandler::PrivateData {
 
     bool scrollEvent(const Widget::ScrollEvent& ev)
     {
-        if (! enabled)
+        if (! enabledInput)
             return false;
 
         if (! widget->contains(ev.pos))
@@ -590,8 +599,11 @@ struct KnobEventHandler::PrivateData {
         return ((usingLog ? invlogscale(value) : value) - minimum) / diff;
     }
 
-    void setEnabled(const bool enabled2) noexcept
+    void setEnabled(const bool enabled2, const bool appliesToEventInput) noexcept
     {
+        if (appliesToEventInput)
+            enabledInput = enabled2;
+
         if (enabled == enabled2)
             return;
 
@@ -671,9 +683,9 @@ bool KnobEventHandler::isEnabled() const noexcept
     return pData->enabled;
 }
 
-void KnobEventHandler::setEnabled(const bool enabled) noexcept
+void KnobEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
 {
-    pData->setEnabled(enabled);
+    pData->setEnabled(enabled, appliesToEventInput);
 }
 
 bool KnobEventHandler::isInteger() const noexcept

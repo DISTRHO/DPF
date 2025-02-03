@@ -64,7 +64,7 @@ public:
     void setCheckable(bool checkable) noexcept;
 
     bool isEnabled() const noexcept;
-    void setEnabled(bool enabled) noexcept;
+    void setEnabled(bool enabled, bool appliesToEventInput = true) noexcept;
 
     Point<double> getLastClickPosition() const noexcept;
     Point<double> getLastMotionPosition() const noexcept;
@@ -125,7 +125,7 @@ public:
     virtual ~KnobEventHandler();
 
     bool isEnabled() const noexcept;
-    void setEnabled(bool enabled) noexcept;
+    void setEnabled(bool enabled, bool appliesToEventInput = true) noexcept;
 
     // if setStep(1) has been called before, this returns true
     bool isInteger() const noexcept;
