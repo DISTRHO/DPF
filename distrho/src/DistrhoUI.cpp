@@ -26,7 +26,9 @@
 # include <stdint.h>
 #endif
 
-#if defined(DISTRHO_OS_WINDOWS)
+#if defined(DISTRHO_OS_WASM)
+# include <emscripten/emscripten.h>
+#elif defined(DISTRHO_OS_WINDOWS)
 # include <winsock2.h>
 # include <windows.h>
 #elif defined(HAVE_X11)
@@ -94,7 +96,9 @@ static double getDesktopScaleFactor(const uintptr_t parentWindowHandle)
     if (const char* const scale = getenv("DPF_SCALE_FACTOR"))
         return std::max(1.0, std::atof(scale));
 
-   #if defined(DISTRHO_OS_WINDOWS)
+   #if defined(DISTRHO_OS_WASM)
+    return emscripten_get_device_pixel_ratio();
+   #elif defined(DISTRHO_OS_WINDOWS)
     if (const HMODULE Shcore = LoadLibraryA("Shcore.dll"))
     {
         typedef HRESULT(WINAPI* PFN_GetProcessDpiAwareness)(HANDLE, DWORD*);

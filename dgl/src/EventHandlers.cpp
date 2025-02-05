@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -31,6 +31,8 @@ struct ButtonEventHandler::PrivateData {
     int state;
     bool checkable;
     bool checked;
+    bool enabled;
+    bool enabledInput;
 
     Point<double> lastClickPos;
     Point<double> lastMotionPos;
@@ -44,11 +46,16 @@ struct ButtonEventHandler::PrivateData {
           state(kButtonStateDefault),
           checkable(false),
           checked(false),
+          enabled(true),
+          enabledInput(true),
           lastClickPos(0, 0),
           lastMotionPos(0, 0)  {}
 
     bool mouseEvent(const Widget::MouseEvent& ev)
     {
+        if (! enabledInput)
+            return false;
+
         lastClickPos = ev.pos;
 
         // button was released, handle it now
@@ -98,6 +105,9 @@ struct ButtonEventHandler::PrivateData {
 
     bool motionEvent(const Widget::MotionEvent& ev)
     {
+        if (! enabledInput)
+            return false;
+
         // keep pressed
         if (button != -1)
         {
@@ -171,6 +181,27 @@ struct ButtonEventHandler::PrivateData {
         }
     }
 
+    void setEnabled(const bool enabled2, const bool appliesToEventInput) noexcept
+    {
+        if (appliesToEventInput)
+            enabledInput = enabled2;
+
+        if (enabled == enabled2)
+            return;
+
+        // reset temp vars if disabling
+        if (! enabled2)
+        {
+            button = -1;
+            state = kButtonStateDefault;
+            lastClickPos = Point<double>();
+            lastMotionPos = Point<double>();
+        }
+
+        enabled = enabled2;
+        widget->repaint();
+    }
+
     DISTRHO_DECLARE_NON_COPYABLE(PrivateData)
 };
 
@@ -215,6 +246,16 @@ void ButtonEventHandler::setCheckable(const bool checkable) noexcept
         return;
 
     pData->checkable = checkable;
+}
+
+bool ButtonEventHandler::isEnabled() const noexcept
+{
+    return pData->enabled;
+}
+
+void ButtonEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
+{
+    pData->setEnabled(enabled, appliesToEventInput);
 }
 
 Point<double> ButtonEventHandler::getLastClickPosition() const noexcept
@@ -281,6 +322,8 @@ struct KnobEventHandler::PrivateData {
     float value;
     float valueDef;
     float valueTmp;
+    bool enabled;
+    bool enabledInput;
     bool usingDefault;
     bool usingLog;
     Orientation orientation;
@@ -301,6 +344,8 @@ struct KnobEventHandler::PrivateData {
           value(0.5f),
           valueDef(value),
           valueTmp(value),
+          enabled(true),
+          enabledInput(true),
           usingDefault(false),
           usingLog(false),
           orientation(Vertical),
@@ -320,6 +365,8 @@ struct KnobEventHandler::PrivateData {
           value(other->value),
           valueDef(other->valueDef),
           valueTmp(value),
+          enabled(other->enabled),
+          enabledInput(other->enabledInput),
           usingDefault(other->usingDefault),
           usingLog(other->usingLog),
           orientation(other->orientation),
@@ -338,6 +385,8 @@ struct KnobEventHandler::PrivateData {
         value        = other->value;
         valueDef     = other->valueDef;
         valueTmp     = value;
+        enabled      = other->enabled;
+        enabledInput = other->enabledInput;
         usingDefault = other->usingDefault;
         usingLog     = other->usingLog;
         orientation  = other->orientation;
@@ -363,6 +412,9 @@ struct KnobEventHandler::PrivateData {
 
     bool mouseEvent(const Widget::MouseEvent& ev, const double scaleFactor)
     {
+        if (! enabledInput)
+            return false;
+
         if (ev.button != 1)
             return false;
 
@@ -416,6 +468,9 @@ struct KnobEventHandler::PrivateData {
 
     bool motionEvent(const Widget::MotionEvent& ev, const double scaleFactor)
     {
+        if (! enabledInput)
+            return false;
+
         if ((state & kKnobStateDragging) == 0x0)
             return false;
 
@@ -501,6 +556,9 @@ struct KnobEventHandler::PrivateData {
 
     bool scrollEvent(const Widget::ScrollEvent& ev)
     {
+        if (! enabledInput)
+            return false;
+
         if (! widget->contains(ev.pos))
             return false;
 
@@ -539,6 +597,28 @@ struct KnobEventHandler::PrivateData {
     {
         const float diff = maximum - minimum;
         return ((usingLog ? invlogscale(value) : value) - minimum) / diff;
+    }
+
+    void setEnabled(const bool enabled2, const bool appliesToEventInput) noexcept
+    {
+        if (appliesToEventInput)
+            enabledInput = enabled2;
+
+        if (enabled == enabled2)
+            return;
+
+        // reset temp vars if disabling
+        if (! enabled2)
+        {
+            state = kKnobStateDefault;
+            lastX = 0.0;
+            lastY = 0.0;
+            lastClickTime = 0;
+            valueTmp = value;
+        }
+
+        enabled = enabled2;
+        widget->repaint();
     }
 
     void setRange(const float min, const float max) noexcept
@@ -596,6 +676,16 @@ KnobEventHandler& KnobEventHandler::operator=(const KnobEventHandler& other)
 KnobEventHandler::~KnobEventHandler()
 {
     delete pData;
+}
+
+bool KnobEventHandler::isEnabled() const noexcept
+{
+    return pData->enabled;
+}
+
+void KnobEventHandler::setEnabled(const bool enabled, const bool appliesToEventInput) noexcept
+{
+    pData->setEnabled(enabled, appliesToEventInput);
 }
 
 bool KnobEventHandler::isInteger() const noexcept

@@ -1747,6 +1747,12 @@ public:
         case kParameterDesignationBypass:
             flags |= V3_PARAM_IS_BYPASS;
             break;
+        case kParameterDesignationReset:
+            info->flags = V3_PARAM_READ_ONLY | V3_PARAM_IS_HIDDEN;
+            info->step_count = 1;
+            strncpy_utf16(info->title, "Reset", 128);
+            strncpy_utf16(info->short_title, "Reset", 128);
+            return V3_OK;
         }
 
         if (hints & kParameterIsOutput)

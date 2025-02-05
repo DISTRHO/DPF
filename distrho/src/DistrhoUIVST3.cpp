@@ -129,7 +129,7 @@ static uint translateVST3Modifiers(const int64_t modifiers) noexcept
  * Helper class for getting a native idle timer.
  */
 #if !DPF_VST3_USING_HOST_RUN_LOOP
-class NativeIdleCallback : public IdleCallback
+class NativeIdleCallback : public DGL_NAMESPACE::IdleCallback
 {
 public:
     NativeIdleCallback(UIExporter& ui)

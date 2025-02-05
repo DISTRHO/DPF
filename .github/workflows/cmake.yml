@@ -42,21 +42,6 @@ jobs:
           suffix: _24_04
           target: ${{ matrix.target }}
 
-  macos-12:
-    strategy:
-      matrix:
-        target: [macos-intel, macos-universal, macos-10.15]
-    runs-on: macos-12
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-      - uses: distrho/dpf-cmake-action@v1
-        with:
-          dpf_path: .
-          suffix: _12
-          target: ${{ matrix.target }}
-
   macos-13:
     strategy:
       matrix:
@@ -85,6 +70,21 @@ jobs:
         with:
           dpf_path: .
           suffix: _14
+          target: ${{ matrix.target }}
+
+  macos-15:
+    strategy:
+      matrix:
+        target: [macos-intel, macos-universal, macos-10.15]
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: distrho/dpf-cmake-action@v1
+        with:
+          dpf_path: .
+          suffix: _15
           target: ${{ matrix.target }}
 
   cmake_win32:
