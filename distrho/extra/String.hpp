@@ -22,6 +22,10 @@
 
 #include <algorithm>
 
+#if __cplusplus >= 201703L
+# include <string_view>
+#endif
+
 START_NAMESPACE_DISTRHO
 
 // -----------------------------------------------------------------------
@@ -49,10 +53,7 @@ public:
           fBufferLen(0),
           fBufferAlloc(false)
     {
-        char ch[2];
-        ch[0] = c;
-        ch[1] = '\0';
-
+        const char ch[2] = { c, '\0' };
         _dup(ch);
     }
 
@@ -86,6 +87,19 @@ public:
     {
         _dup(strBuf);
     }
+
+   #if __cplusplus >= 201703L
+    /*
+     * std::string_view compatible variant.
+     */
+    explicit String(const std::string_view& strView) noexcept
+        : fBuffer(_null()),
+          fBufferLen(0),
+          fBufferAlloc(false)
+    {
+        _dup(strView.data(), strView.size());
+    }
+   #endif
 
     /*
      * Integer.

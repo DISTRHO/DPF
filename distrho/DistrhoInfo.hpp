@@ -554,6 +554,12 @@ START_NAMESPACE_DISTRHO
 #define DISTRHO_PLUGIN_WANT_LATENCY 1
 
 /**
+   Whether the plugin wants MPE for MIDI input and/or output.
+   @note Only AU and CLAP formats implement this at the moment
+*/
+#define DISTRHO_PLUGIN_WANT_MIDI_AS_MPE 0
+
+/**
    Whether the plugin wants MIDI input.@n
    This is automatically enabled if @ref DISTRHO_PLUGIN_IS_SYNTH is true.
  */

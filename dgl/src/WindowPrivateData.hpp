@@ -181,7 +181,7 @@ struct Window::PrivateData : IdleCallback {
     void runAsModal(bool blockWait);
 
     // pugl events
-    void onPuglConfigure(double width, double height);
+    void onPuglConfigure(uint width, uint height);
     void onPuglExpose();
     void onPuglClose();
     void onPuglFocus(bool focus, CrossingMode mode);

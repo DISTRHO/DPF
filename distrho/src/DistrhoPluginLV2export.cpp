@@ -758,6 +758,16 @@ void lv2_generate_ttl(const char* const basename)
                         pluginString += "        lv2:portProperty lv2:toggled , lv2:integer ;\n";
                         pluginString += "        lv2:designation lv2:enabled ;\n";
                         break;
+                    case kParameterDesignationReset:
+                        designated = true;
+                        pluginString += "        lv2:name \"Reset\" ;\n";
+                        pluginString += "        lv2:symbol \"" + String(ParameterDesignationSymbols::reset) + "\" ;\n";
+                        pluginString += "        lv2:default 0 ;\n";
+                        pluginString += "        lv2:minimum 0 ;\n";
+                        pluginString += "        lv2:maximum 1 ;\n";
+                        pluginString += "        lv2:portProperty lv2:toggled , lv2:integer , <" LV2_PORT_PROPS__trigger "> ;\n";
+                        pluginString += "        lv2:designation <" LV2_KXSTUDIO_PROPERTIES__Reset "> ;\n";
+                        break;
                     }
                 }
 
