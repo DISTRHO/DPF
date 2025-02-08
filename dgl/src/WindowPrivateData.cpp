@@ -40,13 +40,11 @@ START_NAMESPACE_DGL
 #endif
 
 #ifdef DGL_DEBUG_EVENTS
-# define DGL_DBG(msg)  std::fprintf(stderr, "%s", msg);
-# define DGL_DBGp(...) std::fprintf(stderr, __VA_ARGS__);
-# define DGL_DBGF      std::fflush(stderr);
+# define DGL_DBG(msg)  d_stdout("%s", msg);
+# define DGL_DBGp(...) d_stdout(__VA_ARGS__);
 #else
 # define DGL_DBG(msg)
 # define DGL_DBGp(...)
-# define DGL_DBGF
 #endif
 
 #define DEFAULT_WIDTH 640
@@ -505,7 +503,7 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 
 void Window::PrivateData::startModal()
 {
-    DGL_DBG("Window modal loop starting..."); DGL_DBGF;
+    DGL_DBG("Window modal loop starting...");
     DISTRHO_SAFE_ASSERT_RETURN(modal.parent != nullptr, show());
 
     // activate modal mode for this window
@@ -527,7 +525,7 @@ void Window::PrivateData::startModal()
 
 void Window::PrivateData::stopModal()
 {
-    DGL_DBG("Window modal loop stopping..."); DGL_DBGF;
+    DGL_DBG("Window modal loop stopping...");
 
     // deactivate modal mode
     modal.enabled = false;
@@ -860,7 +858,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
 {
     Window::PrivateData* const pData = (Window::PrivateData*)puglGetHandle(view);
 #if defined(DEBUG) && defined(DGL_DEBUG_EVENTS)
-    if (event->type != PUGL_TIMER) {
+    if (event->type != PUGL_TIMER && event->type != PUGL_EXPOSE && event->type != PUGL_MOTION) {
         printEvent(event, "pugl event: ", true);
     }
 #endif
@@ -1119,7 +1117,7 @@ static int printEvent(const PuglEvent* event, const char* prefix, const bool ver
 {
 #define FFMT            "%6.1f"
 #define PFMT            FFMT " " FFMT
-#define PRINT(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__)
+#define PRINT(fmt, ...) d_stdout(fmt, __VA_ARGS__), 1
 
 	switch (event->type) {
 	case PUGL_NOTHING:
