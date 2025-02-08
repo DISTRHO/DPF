@@ -363,8 +363,8 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
 
 #ifdef DGL_USING_X11
     // workaround issues in fluxbox, see https://github.com/lv2/pugl/issues/118
-    // NOTE troublesome if used under wayland
-    if (view->impl->win && !view->parent && !view->transientParent && std::getenv("WAYLAND_DISPLAY") == nullptr)
+    // NOTE troublesome if used under KDE
+    if (view->impl->win && !view->parent && !view->transientParent && std::getenv("KDE_SESSION_VERSION") == nullptr)
     {
         view->sizeHints[PUGL_DEFAULT_SIZE].width = view->sizeHints[PUGL_DEFAULT_SIZE].height = 0;
     }
