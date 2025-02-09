@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -23,13 +23,19 @@
 #include "../DistrhoStandaloneUtils.hpp"
 
 #ifdef DISTRHO_OS_WINDOWS
+# include <direct.h>
+# include <shlobj.h>
 # include <windows.h>
 #else
 # ifndef STATIC_BUILD
 #  include <dlfcn.h>
 # endif
+# include <fcntl.h>
 # include <limits.h>
+# include <pwd.h>
 # include <stdlib.h>
+# include <sys/stat.h>
+# include <unistd.h>
 #endif
 
 #ifdef DISTRHO_OS_WINDOWS
@@ -74,6 +80,177 @@ const char* getBinaryFilename()
   #endif
 
     return filename;
+}
+
+const char* getConfigDir()
+{
+   #if defined(DISTRHO_OS_MAC) || defined(DISTRHO_OS_WASM) || defined(DISTRHO_OS_WINDOWS)
+    return getDocumentsDir();
+   #else
+    static String dir;
+
+    if (dir.isEmpty())
+    {
+        if (const char* const xdgEnv = getenv("XDG_CONFIG_HOME"))
+            dir = xdgEnv;
+
+        if (dir.isEmpty())
+        {
+            dir  = getHomeDir();
+            dir += "/.config";
+        }
+
+        // ensure main config dir exists
+        if (access(dir, F_OK) != 0)
+            mkdir(dir, 0755);
+
+        // and also our custom subdir
+        dir += "/" DISTRHO_PLUGIN_NAME "/";
+        if (access(dir, F_OK) != 0)
+            mkdir(dir, 0755);
+    }
+
+    return dir;
+   #endif
+}
+
+const char* getDocumentsDir()
+{
+    static String dir;
+
+    if (dir.isEmpty())
+    {
+       #if defined(DISTRHO_OS_MAC)
+        dir  = getHomeDir();
+        dir += "/Documents/" DISTRHO_PLUGIN_NAME "/";
+       #elif defined(DISTRHO_OS_WASM)
+        dir  = getHomeDir();
+        dir += "/";
+       #elif defined(DISTRHO_OS_WINDOWS)
+        WCHAR wpath[MAX_PATH];
+        if (SHGetFolderPathW(nullptr, CSIDL_MYDOCUMENTS, nullptr, SHGFP_TYPE_CURRENT, wpath) == S_OK)
+        {
+            CHAR apath[MAX_PATH];
+            if (WideCharToMultiByte(CP_UTF8, 0, wpath, -1, apath, MAX_PATH, nullptr, nullptr) != 0)
+            {
+                dir = apath;
+                dir += "\\" DISTRHO_PLUGIN_NAME "\\";
+                wcscat(wpath, L"\\" DISTRHO_PLUGIN_NAME "\\");
+            }
+        }
+       #else
+        String xdgDirsConfigPath(getConfigDir());
+        xdgDirsConfigPath += "/user-dirs.dirs";
+
+        if (FILE* const f = std::fopen(xdgDirsConfigPath, "r"))
+        {
+            std::fseek(f, 0, SEEK_END);
+            const long size = std::ftell(f);
+            std::fseek(f, 0, SEEK_SET);
+
+            // something is wrong if config dirs file is longer than 1MiB!
+            if (size > 0 && size < 1024 * 1024)
+            {
+                if (char* filedata = static_cast<char*>(std::malloc(size)))
+                {
+                    for (long r = 0, total = 0; total < size;)
+                    {
+                        r = std::fread(filedata + total, 1, size - total, f);
+
+                        if (r == 0)
+                        {
+                            std::free(filedata);
+                            filedata = nullptr;
+                            break;
+                        }
+
+                        total += r;
+                    }
+
+                    if (filedata != nullptr)
+                    {
+                        if (char* const xdgDocsDir = std::strstr(filedata, "XDG_DOCUMENTS_DIR=\""))
+                        {
+                            if (char* const xdgDocsDirNL = std::strstr(xdgDocsDir, "\"\n"))
+                            {
+                                *xdgDocsDirNL = '\0';
+                                String sdir(xdgDocsDir + 19);
+
+                                if (sdir.startsWith("$HOME"))
+                                {
+                                    dir  = getHomeDir();
+                                    dir += sdir.buffer() + 5;
+                                }
+                                else
+                                {
+                                    dir = sdir;
+                                }
+
+                                // ensure main config dir exists
+                                if (access(dir, F_OK) != 0)
+                                    mkdir(dir, 0755);
+                            }
+                        }
+
+                        std::free(filedata);
+                    }
+                }
+            }
+
+            std::fclose(f);
+        }
+
+        // ${XDG_CONFIG_HOME}/user-dirs.dirs does not exist or has bad data
+        if (dir.isEmpty())
+        {
+            dir  = getDocumentsDir();
+            dir += DISTRHO_PLUGIN_NAME "/";
+        }
+       #endif
+
+        // ensure our custom subdir exists
+        if (dir.isNotEmpty())
+        {
+           #ifdef DISTRHO_OS_WINDOWS
+            _wmkdir(wpath);
+           #else
+            if (access(dir, F_OK) != 0)
+                mkdir(dir, 0755);
+           #endif
+        }
+    }
+
+    return dir;
+}
+
+const char* getHomeDir()
+{
+    static String dir;
+
+    if (dir.isEmpty())
+    {
+       #ifdef DISTRHO_OS_WINDOWS
+        WCHAR wpath[MAX_PATH];
+        if (SHGetFolderPathW(nullptr, CSIDL_PROFILE, nullptr, SHGFP_TYPE_CURRENT, wpath) == S_OK)
+        {
+            CHAR apath[MAX_PATH];
+            if (WideCharToMultiByte(CP_UTF8, 0, wpath, -1, apath, MAX_PATH, nullptr, nullptr) != 0)
+                dir = apath;
+        }
+       #else
+        if (const char* const homeEnv = getenv("HOME"))
+            dir = homeEnv;
+
+        if (dir.isEmpty())
+            if (struct passwd* const pwd = getpwuid(getuid()))
+                dir = pwd->pw_dir;
+
+        if (dir.isNotEmpty() && ! dir.endsWith('/'))
+            dir += "/";
+       #endif
+    }
+
+    return dir;
 }
 
 const char* getPluginFormatName() noexcept
