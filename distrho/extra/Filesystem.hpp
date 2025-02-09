@@ -63,7 +63,6 @@ FILE* d_fopen(const char* const pathname, const char* const mode)
  */
 struct SafeFileWriter
 {
-    /** Parameters from the run function, adjusted for event sync */
     String filename;
     FILE* const fd;
 
