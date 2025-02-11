@@ -91,10 +91,10 @@ static PuglView* puglNewViewWithParentWindow(PuglWorld* const world, const uintp
 
     if (PuglView* const view = puglNewView(world))
     {
-        puglSetParentWindow(view, parentWindowHandle);
+        puglSetParent(view, parentWindowHandle);
 
         if (parentWindowHandle != 0)
-            puglSetPosition(view, 0, 0);
+            puglSetPositionHint(view, PUGL_CURRENT_POSITION, 0, 0);
 
         return view;
     }
@@ -617,7 +617,7 @@ void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
 #endif
 
     // always repaint after a resize
-    puglPostRedisplay(view);
+    puglObscureView(view);
 }
 
 void Window::PrivateData::onPuglExpose()
@@ -637,9 +637,9 @@ void Window::PrivateData::onPuglExpose()
 
     if (char* const filename = filenameToRenderInto)
     {
-        const PuglRect rect = puglGetFrame(view);
+      const PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
         filenameToRenderInto = nullptr;
-        renderToPicture(filename, getGraphicsContext(), static_cast<uint>(rect.width), static_cast<uint>(rect.height));
+        renderToPicture(filename, getGraphicsContext(), static_cast<uint>(size.width), static_cast<uint>(size.height));
         std::free(filename);
     }
 #endif

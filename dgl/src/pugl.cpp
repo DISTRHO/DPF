@@ -405,7 +405,7 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
     // matches upstream pugl, adds flush at the end
     if (view->impl->win)
     {
-        if (const PuglStatus status = puglSetSize(view, width, height))
+        if (const PuglStatus status = puglSetSizeHint(view, PUGL_CURRENT_SIZE, width, height))
             return status;
 
         // updateSizeHints will use last known size, which is not yet updated

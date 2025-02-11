@@ -180,22 +180,22 @@ int Window::getOffsetX() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
-    return puglGetFrame(pData->view).x;
+    return puglGetPositionHint(pData->view, PUGL_CURRENT_POSITION).x;
 }
 
 int Window::getOffsetY() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
-    return puglGetFrame(pData->view).y;
+    return puglGetPositionHint(pData->view, PUGL_CURRENT_POSITION).y;
 }
 
 Point<int> Window::getOffset() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, Point<int>());
 
-    const PuglRect rect = puglGetFrame(pData->view);
-    return Point<int>(rect.x, rect.y);
+    const PuglPoint point = puglGetPositionHint(pData->view, PUGL_CURRENT_POSITION);
+    return Point<int>(point.x, point.y);
 }
 
 void Window::setOffsetX(const int x)
@@ -214,7 +214,7 @@ void Window::setOffset(const int x, const int y)
     DISTRHO_SAFE_ASSERT_RETURN(!pData->isEmbed,);
 
     if (pData->view != nullptr)
-        puglSetPosition(pData->view, x, y);
+        puglSetPositionHint(pData->view, PUGL_CURRENT_POSITION, x, y);
 }
 
 void Window::setOffset(const Point<int>& offset)
@@ -226,7 +226,7 @@ uint Window::getWidth() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
-    const double width = puglGetFrame(pData->view).width;
+    const double width = puglGetSizeHint(pData->view, PUGL_CURRENT_SIZE).width;
     DISTRHO_SAFE_ASSERT_RETURN(width > 0.0, 0);
     return static_cast<uint>(width + 0.5);
 }
@@ -235,7 +235,7 @@ uint Window::getHeight() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, 0);
 
-    const double height = puglGetFrame(pData->view).height;
+    const double height = puglGetSizeHint(pData->view, PUGL_CURRENT_SIZE).height;
     DISTRHO_SAFE_ASSERT_RETURN(height > 0.0, 0);
     return static_cast<uint>(height + 0.5);
 }
@@ -244,11 +244,11 @@ Size<uint> Window::getSize() const noexcept
 {
     DISTRHO_SAFE_ASSERT_RETURN(pData->view != nullptr, Size<uint>());
 
-    const PuglRect rect = puglGetFrame(pData->view);
-    DISTRHO_SAFE_ASSERT_RETURN(rect.width > 0.0, Size<uint>());
-    DISTRHO_SAFE_ASSERT_RETURN(rect.height > 0.0, Size<uint>());
-    return Size<uint>(static_cast<uint>(rect.width + 0.5),
-                      static_cast<uint>(rect.height + 0.5));
+    const PuglArea size = puglGetSizeHint(pData->view, PUGL_CURRENT_SIZE);
+    DISTRHO_SAFE_ASSERT_RETURN(size.width > 0.0, Size<uint>());
+    DISTRHO_SAFE_ASSERT_RETURN(size.height > 0.0, Size<uint>());
+    return Size<uint>(static_cast<uint>(size.width + 0.5),
+                      static_cast<uint>(size.height + 0.5));
 }
 
 void Window::setWidth(const uint width)
@@ -429,7 +429,7 @@ void Window::repaint() noexcept
     if (pData->usesScheduledRepaints)
         pData->appData->needsRepaint = true;
 
-    puglPostRedisplay(pData->view);
+    puglObscureView(pData->view);
 }
 
 void Window::repaint(const Rectangle<uint>& rect) noexcept
@@ -440,22 +440,21 @@ void Window::repaint(const Rectangle<uint>& rect) noexcept
     if (pData->usesScheduledRepaints)
         pData->appData->needsRepaint = true;
 
-    PuglRect prect = {
-        static_cast<PuglCoord>(rect.getX()),
-        static_cast<PuglCoord>(rect.getY()),
-        static_cast<PuglSpan>(rect.getWidth()),
-        static_cast<PuglSpan>(rect.getHeight()),
-    };
+    PuglCoord x = static_cast<PuglCoord>(rect.getX());
+    PuglCoord y = static_cast<PuglCoord>(rect.getY());
+    PuglSpan w = static_cast<PuglSpan>(rect.getWidth());
+	PuglSpan h = static_cast<PuglSpan>(rect.getHeight());
+
     if (pData->autoScaling)
     {
         const double autoScaleFactor = pData->autoScaleFactor;
 
-        prect.x = static_cast<PuglCoord>(prect.x * autoScaleFactor);
-        prect.y = static_cast<PuglCoord>(prect.y * autoScaleFactor);
-        prect.width = static_cast<PuglSpan>(prect.width * autoScaleFactor + 0.5);
-        prect.height = static_cast<PuglSpan>(prect.height * autoScaleFactor + 0.5);
+        x = static_cast<PuglCoord>(x * autoScaleFactor);
+        y = static_cast<PuglCoord>(y * autoScaleFactor);
+        w = static_cast<PuglSpan>(w * autoScaleFactor + 0.5);
+        h = static_cast<PuglSpan>(h * autoScaleFactor + 0.5);
     }
-    puglPostRedisplayRect(pData->view, prect);
+    puglObscureRegion(pData->view, x, y, w, h);
 }
 
 void Window::renderToPicture(const char* const filename)
