@@ -489,6 +489,8 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
     if (options2.title == nullptr)
         options2.title = puglGetViewString(view, PUGL_WINDOW_TITLE);
 
+    options2.className = puglGetViewString(view, PUGL_CLASS_NAME);
+
     fileBrowserHandle = fileBrowserCreate(isEmbed,
                                           puglGetNativeView(view),
                                           autoScaling ? autoScaleFactor : scaleFactor,
@@ -594,8 +596,8 @@ void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
         autoScaleFactor = 1.0;
     }
 
-    const uint uwidth = static_cast<uint>(width / autoScaleFactor + 0.5);
-    const uint uheight = static_cast<uint>(height / autoScaleFactor + 0.5);
+    const uint uwidth = d_roundToUnsignedInt(width / autoScaleFactor);
+    const uint uheight = d_roundToUnsignedInt(height / autoScaleFactor);
 
     self->onReshape(uwidth, uheight);
 
@@ -960,7 +962,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         Widget::KeyboardEvent ev;
         ev.mod     = event->key.state;
         ev.flags   = event->key.flags;
-        ev.time    = static_cast<uint>(event->key.time * 1000.0 + 0.5);
+        ev.time    = d_roundToUnsignedInt(event->key.time * 1000.0);
         ev.press   = event->type == PUGL_KEY_PRESS;
         ev.key     = event->key.key;
         ev.keycode = event->key.keycode;
@@ -983,7 +985,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         Widget::CharacterInputEvent ev;
         ev.mod       = event->text.state;
         ev.flags     = event->text.flags;
-        ev.time      = static_cast<uint>(event->text.time * 1000.0 + 0.5);
+        ev.time      = d_roundToUnsignedInt(event->text.time * 1000.0);
         ev.keycode   = event->text.keycode;
         ev.character = event->text.character;
         std::strncpy(ev.string, event->text.string, sizeof(ev.string));
@@ -1006,7 +1008,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         Widget::MouseEvent ev;
         ev.mod    = event->button.state;
         ev.flags  = event->button.flags;
-        ev.time   = static_cast<uint>(event->button.time * 1000.0 + 0.5);
+        ev.time   = d_roundToUnsignedInt(event->button.time * 1000.0);
         ev.button = event->button.button + 1;
         ev.press  = event->type == PUGL_BUTTON_PRESS;
         if (pData->autoScaling && 0)
@@ -1029,7 +1031,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         Widget::MotionEvent ev;
         ev.mod   = event->motion.state;
         ev.flags = event->motion.flags;
-        ev.time  = static_cast<uint>(event->motion.time * 1000.0 + 0.5);
+        ev.time  = d_roundToUnsignedInt(event->motion.time * 1000.0);
         if (pData->autoScaling && 0)
         {
             const double scaleFactor = pData->autoScaleFactor;
@@ -1050,7 +1052,7 @@ PuglStatus Window::PrivateData::puglEventCallback(PuglView* const view, const Pu
         Widget::ScrollEvent ev;
         ev.mod       = event->scroll.state;
         ev.flags     = event->scroll.flags;
-        ev.time      = static_cast<uint>(event->scroll.time * 1000.0 + 0.5);
+        ev.time      = d_roundToUnsignedInt(event->scroll.time * 1000.0);
         if (pData->autoScaling && 0)
         {
             const double scaleFactor = pData->autoScaleFactor;
