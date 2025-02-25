@@ -144,6 +144,9 @@ public:
     // NOTE: value is assumed to be scaled if using log
     void setDefault(float def) noexcept;
 
+    float getMinimum() const noexcept;
+    float getMaximum() const noexcept;
+
     // NOTE: value is assumed to be scaled if using log
     void setRange(float min, float max) noexcept;
 

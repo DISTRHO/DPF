@@ -719,6 +719,16 @@ void KnobEventHandler::setDefault(const float def) noexcept
     pData->usingDefault = true;
 }
 
+float KnobEventHandler::getMinimum() const noexcept
+{
+    return pData->minimum;
+}
+
+float KnobEventHandler::getMaximum() const noexcept
+{
+    return pData->maximum;
+}
+
 void KnobEventHandler::setRange(const float min, const float max) noexcept
 {
     pData->setRange(min, max);
