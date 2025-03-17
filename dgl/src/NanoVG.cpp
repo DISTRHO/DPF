@@ -272,6 +272,14 @@ Size<uint> NanoImage::getSize() const noexcept
     return fSize;
 }
 
+void NanoImage::update(const unsigned char* data)
+{
+    int w, h;
+    void * uptr = nvgInternalParams(fHandle.context)->userPtr;
+    glnvg__renderGetTextureSize(uptr, getTextureHandle(), &w, &h);
+    glnvg__renderUpdateTexture(uptr, getTextureHandle(), 0, 0, w, h, data);
+}
+
 GLuint NanoImage::getTextureHandle() const
 {
     DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0, 0);

@@ -107,6 +107,7 @@ public:
     */
     Size<uint> getSize() const noexcept;
 
+    void update(const unsigned char* data);
    /**
       Get the OpenGL texture handle.
     */
