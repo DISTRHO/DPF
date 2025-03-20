@@ -279,6 +279,14 @@ GLuint NanoImage::getTextureHandle() const
     return nvglImageHandle(fHandle.context, fHandle.imageId);
 }
 
+void NanoImage::update(const uchar* const data)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(fHandle.context != nullptr && fHandle.imageId != 0,);
+    DISTRHO_SAFE_ASSERT_RETURN(data != nullptr,);
+
+    nvgUpdateImage(fHandle.context, fHandle.imageId, data);
+}
+
 void NanoImage::_updateSize()
 {
     int w=0, h=0;
