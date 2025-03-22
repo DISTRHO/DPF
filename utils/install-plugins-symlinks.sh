@@ -20,7 +20,7 @@ else
   exit
 fi
 
-if [ "$(uname -m)" = ]; then
+if [ "$(uname -s)" = "Darwin" ]; then
     CLAP_PATH=~/Library/Audio/Plug-Ins/CLAP
     LV2_PATH=~/Library/Audio/Plug-Ins/LV2
     VST2_PATH=~/Library/Audio/Plug-Ins/VST
