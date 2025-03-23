@@ -441,7 +441,7 @@ public:
             bool hasNonUiState = false;
             for (uint32_t i=0; i < fData->stateCount; ++i)
             {
-                if ((fData->states[i].flags & kStateIsOnlyForUI) == 0)
+                if ((fData->states[i].hints & kStateIsOnlyForUI) == 0)
                 {
                     hasNonUiState = true;
                     break;
