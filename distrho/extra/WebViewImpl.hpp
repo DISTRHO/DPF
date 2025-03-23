@@ -125,3 +125,12 @@ void webViewReload(WebViewHandle webview);
 void webViewResize(WebViewHandle webview, uint width, uint height, double scaleFactor);
 
 // --------------------------------------------------------------------------------------------------------------------
+
+/**
+  Helper class for usage in std::shared_ptr and std::unique_ptr.
+*/
+struct WebViewDestroy {
+  void operator()(WebViewHandle handle) { webViewDestroy(handle); }
+};
+
+// --------------------------------------------------------------------------------------------------------------------
