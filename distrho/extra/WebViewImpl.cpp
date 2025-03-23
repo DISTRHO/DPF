@@ -1137,7 +1137,7 @@ static bool gtk3(Display* const display,
     GtkWidget* const window = gtk_plug_new(winId);
     DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
 
-    gtk_window_set_default_size(GTK_WINDOW(window), width - x, height - y);
+    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
     gtk_window_move(GTK_WINDOW(window), x, y);
 
     WebKitSettings* const settings = webkit_settings_new();
