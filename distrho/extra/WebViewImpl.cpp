@@ -1137,10 +1137,8 @@ static bool gtk3(Display* const display,
     GtkWidget* const window = gtk_plug_new(winId);
     DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
 
-    gtk_window_set_default_size(GTK_WINDOW(window),
-                                (width - x) * scaleFactor,
-                                (height - y) * scaleFactor);
-    gtk_window_move(GTK_WINDOW(window), x * scaleFactor, y * scaleFactor);
+    gtk_window_set_default_size(GTK_WINDOW(window), width - x, height - y);
+    gtk_window_move(GTK_WINDOW(window), x, y);
 
     WebKitSettings* const settings = webkit_settings_new();
     DISTRHO_SAFE_ASSERT_RETURN(settings != nullptr, false);
@@ -1776,7 +1774,7 @@ static bool qtwebengine(const int qtVersion,
     QWebEnginePage_setWebChannel(&page, &channel, 0);
 
     QWebEngineView_move(&webview, QPoint(x, y));
-    QWebEngineView_resize(&webview, QSize(static_cast<int>(width), static_cast<int>(height)));
+    QWebEngineView_resize(&webview, QSize(static_cast<int>(width / scaleFactor), static_cast<int>(height / scaleFactor)));
     QWebEngineView_winId(&webview);
     QWindow_setParent(QWebEngineView_windowHandle(&webview), QWindow_fromWinId(winId));
 
