@@ -1651,25 +1651,23 @@ public:
            #if DISTRHO_PLUGIN_WANT_STATE
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fStateCount, inElement, kAudioUnitErr_InvalidElement);
             {
-                const CFStringRef valueRef = *static_cast<const CFStringRef*>(inData);
-                DISTRHO_SAFE_ASSERT_RETURN(valueRef != nullptr && CFGetTypeID(valueRef) == CFStringGetTypeID(),
+                const CFDictionaryRef dictRef = *static_cast<const CFDictionaryRef*>(inData);
+                DISTRHO_SAFE_ASSERT_RETURN(dictRef != nullptr && CFGetTypeID(dictRef) == CFDictionaryGetTypeID(),
                                            kAudioUnitErr_InvalidPropertyValue);
+                const void * keyArr;
+                const void * valueArr;
+                CFDictionaryGetKeysAndValues(dictRef, &keyArr, &valueArr);
 
-                const CFIndex valueLen = CFStringGetLength(valueRef);
-                char* const value = static_cast<char*>(std::malloc(valueLen + 1));
-                DISTRHO_SAFE_ASSERT_RETURN(value != nullptr, kAudio_ParamError);
-                DISTRHO_SAFE_ASSERT_RETURN(CFStringGetCString(valueRef, value, valueLen + 1, kCFStringEncodingUTF8),
-                                           kAudioUnitErr_InvalidPropertyValue);
+                const char* cKey = [keyArr UTF8String];
+                const char* cValue = [valueArr UTF8String];
 
-                const String& key(fPlugin.getStateKey(inElement));
+                const String stringKey(cKey);
 
                 // save this key as needed
-                if (fPlugin.wantStateKey(key))
-                    fStateMap[key] = value;
+                if (fPlugin.wantStateKey(stringKey))
+                    fStateMap[stringKey] = cValue;
 
-                fPlugin.setState(key, value);
-
-                std::free(value);
+                fPlugin.setState(stringKey, cValue);
             }
             return noErr;
            #else

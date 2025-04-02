@@ -34,6 +34,8 @@
 # error DISTRHO_PLUGIN_UNIQUE_ID undefined!
 #endif
 
+#include <iostream>
+
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -322,14 +324,23 @@ private:
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
-        const std::vector<String>::iterator it = std::find(fStateKeys.begin(), fStateKeys.end(), key);
-        DISTRHO_SAFE_ASSERT_RETURN(it != fStateKeys.end(),);
-
-        if (const CFStringRef valueRef = CFStringCreateWithCString(nullptr, value, kCFStringEncodingUTF8))
+        if (const CFStringRef keyRef = CFStringCreateWithCString((CFAllocatorRef )NULL,key,kCFStringEncodingUTF8))
         {
-            const uint32_t index = it - fStateKeys.begin();
-            AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, index, &valueRef, sizeof(CFStringRef));
-            CFRelease(valueRef);
+            if (const CFStringRef valueRef = CFStringCreateWithCString(( CFAllocatorRef )NULL,
+                value,kCFStringEncodingUTF8))
+            {
+                CFTypeRef keyArrayRef[1] = {keyRef};
+                CFTypeRef valueArrayRef[1] = {valueRef};
+
+                CFDictionaryRef dictRef = CFDictionaryCreate((CFAllocatorRef)NULL,( const void ** )keyArrayRef,
+                    ( const void ** )valueArrayRef, 1, &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
+
+                AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, 0, &dictRef, sizeof(dictRef));
+
+                CFRelease(keyRef);
+                CFRelease(valueRef);
+                CFRelease(dictRef);
+            }
         }
     }
 
