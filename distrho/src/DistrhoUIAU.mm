@@ -34,8 +34,6 @@
 # error DISTRHO_PLUGIN_UNIQUE_ID undefined!
 #endif
 
-#include <iostream>
-
 START_NAMESPACE_DISTRHO
 
 // --------------------------------------------------------------------------------------------------------------------
