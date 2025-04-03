@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -1153,6 +1153,8 @@ public:
                     const CFStringRef keyRef = CFStringCreateWithCString(nullptr,
                                                                          fPlugin.getStateKey(i),
                                                                          kCFStringEncodingASCII);
+                    DISTRHO_SAFE_ASSERT_CONTINUE(keyRef != nullptr);
+
                     CFArrayAppendValue(keysRef, keyRef);
                     CFRelease(keyRef);
                 }
@@ -1647,29 +1649,42 @@ public:
 
         case 'DPFs':
             DISTRHO_SAFE_ASSERT_UINT_RETURN(inScope == kAudioUnitScope_Global, inScope, kAudioUnitErr_InvalidScope);
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(CFStringRef), inDataSize, kAudioUnitErr_InvalidPropertyValue);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inDataSize == sizeof(CFDictionaryRef), inDataSize, kAudioUnitErr_InvalidPropertyValue);
            #if DISTRHO_PLUGIN_WANT_STATE
-            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement < fStateCount, inElement, kAudioUnitErr_InvalidElement);
+            DISTRHO_SAFE_ASSERT_UINT_RETURN(inElement == 0, inElement, kAudioUnitErr_InvalidElement);
             {
-                const CFStringRef valueRef = *static_cast<const CFStringRef*>(inData);
+                const CFDictionaryRef dictRef = *static_cast<const CFDictionaryRef*>(inData);
+                DISTRHO_SAFE_ASSERT_RETURN(CFGetTypeID(dictRef) == CFDictionaryGetTypeID(),
+                                           kAudioUnitErr_InvalidPropertyValue);
+                DISTRHO_SAFE_ASSERT_RETURN(CFDictionaryGetCount(dictRef) == 1, kAudioUnitErr_InvalidPropertyValue);
+
+                CFStringRef keyRef = nullptr;
+                CFStringRef valueRef = nullptr;
+                CFDictionaryGetKeysAndValues(dictRef,
+                                             reinterpret_cast<const void**>(&keyRef),
+                                             reinterpret_cast<const void**>(&valueRef));
+                DISTRHO_SAFE_ASSERT_RETURN(keyRef != nullptr && CFGetTypeID(keyRef) == CFStringGetTypeID(),
+                                           kAudioUnitErr_InvalidPropertyValue);
                 DISTRHO_SAFE_ASSERT_RETURN(valueRef != nullptr && CFGetTypeID(valueRef) == CFStringGetTypeID(),
                                            kAudioUnitErr_InvalidPropertyValue);
 
-                const CFIndex valueLen = CFStringGetLength(valueRef);
-                char* const value = static_cast<char*>(std::malloc(valueLen + 1));
-                DISTRHO_SAFE_ASSERT_RETURN(value != nullptr, kAudio_ParamError);
-                DISTRHO_SAFE_ASSERT_RETURN(CFStringGetCString(valueRef, value, valueLen + 1, kCFStringEncodingUTF8),
+                const CFIndex keyRefLen = CFStringGetLength(keyRef);
+                char* key = static_cast<char*>(std::malloc(keyRefLen + 1));
+                DISTRHO_SAFE_ASSERT_RETURN(CFStringGetCString(keyRef, key, keyRefLen + 1, kCFStringEncodingASCII),
                                            kAudioUnitErr_InvalidPropertyValue);
 
-                const String& key(fPlugin.getStateKey(inElement));
+                const CFIndex valueRefLen = CFStringGetLength(valueRef);
+                char* value = static_cast<char*>(std::malloc(valueRefLen + 1));
+                DISTRHO_SAFE_ASSERT_RETURN(CFStringGetCString(valueRef, value, valueRefLen + 1, kCFStringEncodingUTF8),
+                                           kAudioUnitErr_InvalidPropertyValue);
+
+                const String dkey(key);
 
                 // save this key as needed
-                if (fPlugin.wantStateKey(key))
-                    fStateMap[key] = value;
+                if (fPlugin.wantStateKey(dkey))
+                    fStateMap[dkey] = value;
 
-                fPlugin.setState(key, value);
-
-                std::free(value);
+                fPlugin.setState(dkey, value);
             }
             return noErr;
            #else
@@ -2561,12 +2576,12 @@ private:
                     CFStringRef keyRef = CFStringCreateWithCString(nullptr, key, kCFStringEncodingASCII);
                     CFStringRef valueRef = CFStringCreateWithCString(nullptr, value, kCFStringEncodingUTF8);
 
-                    if (CFDictionaryRef dictRef = CFDictionaryCreate(nullptr,
-                                                                     reinterpret_cast<const void**>(&keyRef),
-                                                                     reinterpret_cast<const void**>(&valueRef),
-                                                                     1,
-                                                                     &kCFTypeDictionaryKeyCallBacks,
-                                                                     &kCFTypeDictionaryValueCallBacks))
+                    if (const CFDictionaryRef dictRef = CFDictionaryCreate(nullptr,
+                                                                           reinterpret_cast<const void**>(&keyRef),
+                                                                           reinterpret_cast<const void**>(&valueRef),
+                                                                           1,
+                                                                           &kCFTypeDictionaryKeyCallBacks,
+                                                                           &kCFTypeDictionaryValueCallBacks))
                     {
                         CFArrayAppendValue(statesRef, dictRef);
                         CFRelease(dictRef);
