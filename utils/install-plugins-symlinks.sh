@@ -36,12 +36,13 @@ export IFS=$'\n'
 
 # NOTE macOS ignores AU plugins installed in ~/Library/Audio/Plug-Ins/Components/
 # we **MUST** install AU plugins system-wide, so we need sudo/root here
-# for p in $(find . -maxdepth 1 -name '*.component' -print -quit | grep '.component'); do
-#     basename=$(basename ${p})
-#     if [ ! -L /Library/Audio/Plug-Ins/Components/"${basename}" ]; then
-#         sudo ln -s $(pwd)/"${basename}" /Library/Audio/Plug-Ins/Components/"${basename}"
-#     fi
-# done
+# they cannot be symlinks either, so we do a full copy
+for p in $(find . -maxdepth 1 -name '*.component' -print | grep '.component'); do
+    basename=$(basename ${p})
+    if [ ! -L /Library/Audio/Plug-Ins/Components/"${basename}" ]; then
+        sudo cp -r $(pwd)/"${basename}" /Library/Audio/Plug-Ins/Components/
+    fi
+done
 
 for p in $(find . -maxdepth 1 -name '*.clap' -print); do
     basename=$(basename ${p})
