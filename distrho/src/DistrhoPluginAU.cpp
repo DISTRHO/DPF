@@ -1685,6 +1685,9 @@ public:
                     fStateMap[dkey] = value;
 
                 fPlugin.setState(dkey, value);
+
+                std::free(key);
+                std::free(value);
             }
             return noErr;
            #else
