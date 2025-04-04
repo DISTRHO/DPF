@@ -722,7 +722,10 @@ function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
-    if(WIN32)
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-cairo PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
       target_sources(dgl-cairo PRIVATE
         "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
       set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
@@ -794,7 +797,10 @@ function(dpf__add_dgl_external USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-external PUBLIC "DGL_USE_WEB_VIEW")
-    if(WIN32)
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-external PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
       target_sources(dgl-external PRIVATE
         "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
       set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
@@ -877,7 +883,10 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_WEB_VIEW")
-    if(WIN32)
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-opengl PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
       target_sources(dgl-opengl PRIVATE
         "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
       set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
@@ -959,7 +968,10 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_WEB_VIEW")
-    if(WIN32)
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-opengl3 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
       target_sources(dgl-opengl3 PRIVATE
         "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
       set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
@@ -1036,7 +1048,10 @@ function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   if(USE_WEB_VIEW)
     target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_WEB_VIEW")
-    if(WIN32)
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-vulkan PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
       target_sources(dgl-vulkan PRIVATE
         "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
       set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
