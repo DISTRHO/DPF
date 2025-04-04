@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -418,6 +418,20 @@ void Window::focus()
 bool Window::openFileBrowser(const FileBrowserOptions& options)
 {
     return pData->openFileBrowser(options);
+}
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+bool Window::createWebView(const char* const url, const DGL_NAMESPACE::WebViewOptions& options)
+{
+    return pData->createWebView(url, options);
+}
+
+void Window::evaluateJS(const char* const js)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pData->webViewHandle != nullptr,);
+
+    webViewEvaluateJS(pData->webViewHandle, js);
 }
 #endif
 

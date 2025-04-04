@@ -110,14 +110,23 @@
 # endif
 #endif
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
+# define DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED
 # define FILE_BROWSER_DIALOG_DGL_NAMESPACE
 # define FILE_BROWSER_DIALOG_NAMESPACE DGL_NAMESPACE
-# define DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED
 START_NAMESPACE_DGL
 # include "../../distrho/extra/FileBrowserDialogImpl.hpp"
 END_NAMESPACE_DGL
 # include "../../distrho/extra/FileBrowserDialogImpl.cpp"
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+# define DGL_WEB_VIEW_HPP_INCLUDED
+# define WEB_VIEW_DGL_NAMESPACE
+START_NAMESPACE_DGL
+# include "../../distrho/extra/WebViewImpl.hpp"
+END_NAMESPACE_DGL
+# include "../../distrho/extra/WebViewImpl.cpp"
 #endif
 
 #if defined(DGL_USING_X11) && defined(DGL_X11_WINDOW_ICON_NAME)

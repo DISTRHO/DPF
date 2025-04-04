@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -129,6 +129,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s)
      #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
+     #ifdef DGL_USE_WEB_VIEW
+      webViewHandle(nullptr),
+     #endif
       modal()
 {
     initPre(DEFAULT_WIDTH, DEFAULT_HEIGHT, false);
@@ -158,6 +161,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s, PrivateData* c
       filenameToRenderInto(nullptr),
      #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
+     #endif
+     #ifdef DGL_USE_WEB_VIEW
+      webViewHandle(nullptr),
      #endif
       modal(ppData)
 {
@@ -190,6 +196,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
       filenameToRenderInto(nullptr),
      #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
+     #endif
+     #ifdef DGL_USE_WEB_VIEW
+      webViewHandle(nullptr),
      #endif
       modal()
 {
@@ -226,6 +235,9 @@ Window::PrivateData::PrivateData(Application& a, Window* const s,
      #ifdef DGL_USE_FILE_BROWSER
       fileBrowserHandle(nullptr),
      #endif
+     #ifdef DGL_USE_WEB_VIEW
+      webViewHandle(nullptr),
+     #endif
       modal()
 {
     initPre(width != 0 ? width : DEFAULT_WIDTH, height != 0 ? height : DEFAULT_HEIGHT, resizable);
@@ -245,6 +257,10 @@ Window::PrivateData::~PrivateData()
        #ifdef DGL_USE_FILE_BROWSER
         if (fileBrowserHandle != nullptr)
             fileBrowserClose(fileBrowserHandle);
+       #endif
+       #ifdef DGL_USE_WEB_VIEW
+        if (webViewHandle != nullptr)
+            webViewDestroy(webViewHandle);
        #endif
         puglHide(view);
         appData->oneWindowClosed();
@@ -392,13 +408,21 @@ void Window::PrivateData::hide()
     if (modal.enabled)
         stopModal();
 
-#ifdef DGL_USE_FILE_BROWSER
+   #ifdef DGL_USE_FILE_BROWSER
     if (fileBrowserHandle != nullptr)
     {
         fileBrowserClose(fileBrowserHandle);
         fileBrowserHandle = nullptr;
     }
-#endif
+   #endif
+
+   #ifdef DGL_USE_WEB_VIEW
+    if (webViewHandle != nullptr)
+    {
+        webViewDestroy(webViewHandle);
+        webViewHandle = nullptr;
+    }
+   #endif
 
     puglHide(view);
 
@@ -441,6 +465,11 @@ void Window::PrivateData::idleCallback()
         fileBrowserHandle = nullptr;
     }
 #endif
+
+#ifdef DGL_USE_WEB_VIEW
+    if (webViewHandle != nullptr)
+        webViewIdle(webViewHandle);
+#endif
 }
 
 // -----------------------------------------------------------------------
@@ -477,7 +506,7 @@ bool Window::PrivateData::removeIdleCallback(IdleCallback* const callback)
 
 #ifdef DGL_USE_FILE_BROWSER
 // -----------------------------------------------------------------------
-// file handling
+// file browser dialog
 
 bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
 {
@@ -499,6 +528,32 @@ bool Window::PrivateData::openFileBrowser(const FileBrowserOptions& options)
     return fileBrowserHandle != nullptr;
 }
 #endif // DGL_USE_FILE_BROWSER
+
+#ifdef DGL_USE_WEB_VIEW
+// -----------------------------------------------------------------------
+// file browser dialog
+
+bool Window::PrivateData::createWebView(const char* const url, const DGL_NAMESPACE::WebViewOptions& options)
+{
+    if (webViewHandle != nullptr)
+        webViewDestroy(webViewHandle);
+
+    const PuglRect rect = puglGetFrame(view);
+    uint initialWidth = static_cast<uint>(rect.width) - options.offset.x;
+    uint initialHeight = static_cast<uint>(rect.height) - options.offset.y;
+
+    webViewOffset = Point<int>(options.offset.x, options.offset.y);
+
+    webViewHandle = webViewCreate(url,
+                                  puglGetNativeView(view),
+                                  initialWidth,
+                                  initialHeight,
+                                  autoScaling ? autoScaleFactor : scaleFactor,
+                                  options);
+
+    return webViewHandle != nullptr;
+}
+#endif // DGL_USE_WEB_VIEW
 
 // -----------------------------------------------------------------------
 // modal handling
@@ -598,6 +653,14 @@ void Window::PrivateData::onPuglConfigure(const uint width, const uint height)
 
     const uint uwidth = d_roundToUnsignedInt(width / autoScaleFactor);
     const uint uheight = d_roundToUnsignedInt(height / autoScaleFactor);
+
+   #ifdef DGL_USE_WEB_VIEW
+    if (webViewHandle != nullptr)
+        webViewResize(webViewHandle,
+                      uwidth - webViewOffset.getX(),
+                      uheight - webViewOffset.getY(),
+                      autoScaling ? autoScaleFactor : scaleFactor);
+   #endif
 
     self->onReshape(uwidth, uheight);
 

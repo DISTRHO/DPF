@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -21,6 +21,10 @@
 
 #ifdef DGL_USE_FILE_BROWSER
 # include "FileBrowserDialog.hpp"
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+# include "WebView.hpp"
 #endif
 
 #include <vector>
@@ -405,6 +409,27 @@ public:
       This function does not block the event loop.
     */
     bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options = FileBrowserOptions());
+   #endif
+
+   #ifdef DGL_USE_WEB_VIEW
+   /**
+      Create a new web view.
+
+      The web view will be added on top of this window.
+      This means it will draw on top of whatever is below it,
+      something to take into consideration if mixing regular widgets with web views.
+
+      Provided metrics in @p options must have scale factor pre-applied.
+
+      @p url:     The URL to open, assumed to be in encoded form (e.g spaces converted to %20)
+      @p options: Extra options, optional
+    */
+    bool createWebView(const char* url, const DGL_NAMESPACE::WebViewOptions& options = WebViewOptions());
+
+   /**
+      Evaluate/run JavaScript on the web view.
+    */
+    void evaluateJS(const char* js);
    #endif
 
    /**

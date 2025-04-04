@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -95,6 +95,12 @@ struct Window::PrivateData : IdleCallback {
     DGL_NAMESPACE::FileBrowserHandle fileBrowserHandle;
    #endif
 
+   #ifdef DGL_USE_WEB_VIEW
+    /** Handle for web view operations. */
+    DGL_NAMESPACE::WebViewHandle webViewHandle;
+    DGL_NAMESPACE::Point<int> webViewOffset;
+   #endif
+
     /** Modal window setup. */
     struct Modal {
         PrivateData* parent; // parent of this window (so we can become modal)
@@ -169,8 +175,13 @@ struct Window::PrivateData : IdleCallback {
     bool removeIdleCallback(IdleCallback* callback);
 
    #ifdef DGL_USE_FILE_BROWSER
-    // file handling
+    // file browser dialog
     bool openFileBrowser(const DGL_NAMESPACE::FileBrowserOptions& options);
+   #endif
+
+   #ifdef DGL_USE_WEB_VIEW
+    // web view
+    bool createWebView(const char* url, const DGL_NAMESPACE::WebViewOptions& options);
    #endif
 
     static void renderToPicture(const char* filename, const GraphicsContext& context, uint width, uint height);
