@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -24,6 +24,11 @@
 
 START_NAMESPACE_DGL
 
+/* define webview start */
+#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && defined(DGL_USE_WEB_VIEW)
+int dpf_webview_start(int argc, char* argv[]);
+#endif
+
 // --------------------------------------------------------------------------------------------------------------------
 // build config sentinels
 
@@ -40,6 +45,12 @@ BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dpf_debug_off)
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_on)
 #else
 BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_file_browser_off)
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_on)
+#else
+BUILD_CONFIG_SENTINEL(fail_to_link_is_mismatch_dgl_use_web_view_off)
 #endif
 
 #ifdef DGL_NO_SHARED_RESOURCES
@@ -63,6 +74,11 @@ bool dpf_check_build_status() noexcept
       fail_to_link_is_mismatch_dgl_use_file_browser_on.ok &&
      #else
       fail_to_link_is_mismatch_dgl_use_file_browser_off.ok &&
+     #endif
+     #ifdef DGL_USE_WEB_VIEW
+      fail_to_link_is_mismatch_dgl_use_web_view_on.ok &&
+     #else
+      fail_to_link_is_mismatch_dgl_use_web_view_off.ok &&
      #endif
      #ifdef DGL_NO_SHARED_RESOURCES
       fail_to_link_is_mismatch_dgl_no_shared_resources_on.ok &&
@@ -95,6 +111,43 @@ Application::Application(const bool isStandalone)
     fail_to_link_is_mismatch_dgl_use_file_browser_on.ok = true;
    #else
     fail_to_link_is_mismatch_dgl_use_file_browser_off.ok = true;
+   #endif
+   #ifdef DGL_USE_WEB_VIEW
+    fail_to_link_is_mismatch_dgl_use_web_view_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_use_web_view_off.ok = true;
+   #endif
+   #ifdef DGL_NO_SHARED_RESOURCES
+    fail_to_link_is_mismatch_dgl_no_shared_resources_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_no_shared_resources_off.ok = true;
+   #endif
+    DISTRHO_SAFE_ASSERT(dpf_check_build_status());
+}
+
+Application::Application(int argc, char* argv[])
+    : pData(new PrivateData(true))
+{
+   #if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && defined(DGL_USE_WEB_VIEW)
+    if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
+        std::exit(dpf_webview_start(argc, argv));
+   #endif
+
+    // build config sentinels
+   #ifdef DPF_DEBUG
+    fail_to_link_is_mismatch_dpf_debug_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dpf_debug_off.ok = true;
+   #endif
+   #ifdef DGL_USE_FILE_BROWSER
+    fail_to_link_is_mismatch_dgl_use_file_browser_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_use_file_browser_off.ok = true;
+   #endif
+   #ifdef DGL_USE_WEB_VIEW
+    fail_to_link_is_mismatch_dgl_use_web_view_on.ok = true;
+   #else
+    fail_to_link_is_mismatch_dgl_use_web_view_off.ok = true;
    #endif
    #ifdef DGL_NO_SHARED_RESOURCES
     fail_to_link_is_mismatch_dgl_no_shared_resources_on.ok = true;
