@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -16,13 +16,8 @@
 
 // Include CHOC separately because it requires C++17
 
-#include "DistrhoDetails.hpp"
-#include "src/DistrhoPluginChecks.h"
-#include "src/DistrhoDefines.h"
-
-#if DISTRHO_UI_WEB_VIEW
-# define DISTRHO_WEB_VIEW_INCLUDE_IMPLEMENTATION
-# define WEB_VIEW_NAMESPACE DISTRHO_NAMESPACE
-# include "extra/WebView.hpp"
-# include "extra/WebViewWin32.hpp"
-#endif
+#define DISTRHO_WEB_VIEW_INCLUDE_IMPLEMENTATION
+#define WEB_VIEW_NAMESPACE DGL_NAMESPACE
+#define WEB_VIEW_DGL_NAMESPACE
+#include "../WebView.hpp"
+#include "../../distrho/extra/WebViewWin32.hpp"

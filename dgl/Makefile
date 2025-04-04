@@ -54,6 +54,10 @@ OBJS_common = \
 	$(BUILD_DIR)/dgl/Window.cpp.o \
 	$(BUILD_DIR)/dgl/WindowPrivateData.cpp.o
 
+ifeq ($(WINDOWS)$(USE_WEB_VIEW),truetrue)
+OBJS_common += $(BUILD_DIR)/dgl/WebViewWin32.cpp.o
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_cairo = $(OBJS_common) \
@@ -200,6 +204,11 @@ $(BUILD_DIR)/dgl/pugl.mm.o: src/pugl.mm
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) -c -ObjC++ -o $@
+
+$(BUILD_DIR)/dgl/WebViewWin32.cpp.o: src/WebViewWin32.cpp
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -std=gnu++17 -c -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
