@@ -99,14 +99,14 @@
 #define MACRO_NAME(a, b, c) MACRO_NAME2(a, b, c)
 
 #define WEB_VIEW_DELEGATE_CLASS_NAME \
-    MACRO_NAME(WebViewDelegate_, _, DISTRHO_NAMESPACE)
+    MACRO_NAME(WebViewDelegate_, _, WEB_VIEW_NAMESPACE)
 
 @interface WEB_VIEW_DELEGATE_CLASS_NAME : NSObject<WKNavigationDelegate, WKScriptMessageHandler, WKUIDelegate>
 @end
 
 @implementation WEB_VIEW_DELEGATE_CLASS_NAME {
 @public
-    DISTRHO_NAMESPACE::WebViewMessageCallback callback;
+    WEB_VIEW_NAMESPACE::WebViewMessageCallback callback;
     void* callbackPtr;
     bool loaded;
 }
@@ -2063,3 +2063,4 @@ END_NAMESPACE_DISTRHO
 
 #undef WEB_VIEW_DISTRHO_NAMESPACE
 #undef WEB_VIEW_DGL_NAMESPACE
+#undef WEB_VIEW_NAMESPACE
