@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -18,7 +18,7 @@
 # error bad include
 #endif
 
-#if !defined(DGL_UI_USE_WEB_VIEW) && defined(DISTRHO_UI_WEB_VIEW) && DISTRHO_UI_WEB_VIEW == 0
+#if !defined(DGL_USE_WEB_VIEW) && defined(DISTRHO_UI_WEB_VIEW) && DISTRHO_UI_WEB_VIEW == 0
 # error To use WebViews in DPF plugins please set DISTRHO_UI_WEB_VIEW to 1
 #endif
 

@@ -121,23 +121,33 @@ function(dpf_add_plugin NAME)
   set(_dgl_library)
   if(_dpf_plugin_FILES_UI)
     if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
-      dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-cairo)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
-      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                            $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-external)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
-      dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                          $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-opengl)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl3")
-      dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                           $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                           $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-opengl3)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
-      dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>> $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                          $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-vulkan)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
       set(_dpf_plugin_USE_WEB_VIEW TRUE)
-      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>)
+      dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                            $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-external)
     else()
       message(FATAL_ERROR "Unrecognized UI type for plugin: ${_dpf_plugin_UI_TYPE}")
@@ -661,7 +671,7 @@ endfunction()
 #
 # Add the Cairo variant of DGL, if not already available.
 #
-function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-cairo)
     return()
   endif()
@@ -710,6 +720,10 @@ function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-cairo PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-cairo PRIVATE dgl-system-libs)
 
@@ -730,7 +744,7 @@ endfunction()
 #
 # Add the external variant of DGL, if not already available.
 #
-function(dpf__add_dgl_external USE_FILE_BROWSER)
+function(dpf__add_dgl_external USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-external)
     return()
   endif()
@@ -770,6 +784,10 @@ function(dpf__add_dgl_external USE_FILE_BROWSER)
     target_compile_definitions(dgl-external PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-external PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
   dpf__add_dgl_system_libs()
   target_compile_definitions(dgl-external PUBLIC "DGL_NO_SHARED_RESOURCES")
   target_link_libraries(dgl-external PRIVATE dgl-system-libs)
@@ -786,7 +804,7 @@ endfunction()
 #
 # Add the OpenGL variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-opengl)
     return()
   endif()
@@ -841,6 +859,10 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-opengl PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
 
@@ -856,7 +878,7 @@ endfunction()
 #
 # Add the OpenGL3 variant of DGL, if not already available.
 #
-function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-opengl3)
     return()
   endif()
@@ -911,6 +933,10 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER)
     target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_FILE_BROWSER")
   endif()
 
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-opengl3 PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl3 PRIVATE dgl-system-libs)
 
@@ -926,7 +952,7 @@ endfunction()
 #
 # Add the Vulkan variant of DGL, if not already available.
 #
-function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER)
+function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   if(TARGET dgl-vulkan)
     return()
   endif()
@@ -974,6 +1000,10 @@ function(dpf__add_dgl_vulkan SHARED_RESOURCES USE_FILE_BROWSER)
 
   if(USE_FILE_BROWSER)
     target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-vulkan PUBLIC "DGL_USE_WEB_VIEW")
   endif()
 
   dpf__add_dgl_system_libs()

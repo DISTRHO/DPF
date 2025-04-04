@@ -23,10 +23,6 @@ START_NAMESPACE_DGL
 
 #include "../distrho/extra/WebViewImpl.hpp"
 
-#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX)
-int dpf_webview_start(int argc, char* argv[]);
-#endif
-
 END_NAMESPACE_DGL
 
 #endif // DGL_WEB_VIEW_HPP_INCLUDED

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -387,7 +387,7 @@ int main(int argc, char* argv[])
 {
     USE_NAMESPACE_DISTRHO
 
-   #if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && DISTRHO_UI_WEB_VIEW
+   #if defined(DISTRHO_UI_LINUX_WEBVIEW_START)
     if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
         return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
    #endif

@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -284,6 +284,10 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 
 #ifdef DISTRHO_UI_IS_STANDALONE
 # error DISTRHO_UI_IS_STANDALONE must not be defined
+#endif
+
+#ifdef DISTRHO_UI_LINUX_WEBVIEW_START
+# error DISTRHO_UI_LINUX_WEBVIEW_START must not be defined
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
