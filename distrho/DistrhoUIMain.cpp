@@ -66,7 +66,7 @@
 # endif
 #endif
 
-#if defined(DPF_USING_LD_LINUX_WEBVIEW) && !DISTRHO_IS_STANDALONE
+#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && DISTRHO_UI_WEB_VIEW && !DISTRHO_IS_STANDALONE
 int main(int argc, char* argv[])
 {
     return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);

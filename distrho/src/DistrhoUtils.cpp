@@ -343,11 +343,6 @@ bool requestBufferSizeChange(uint) { return false; }
 bool requestMIDI() { return false; }
 #endif
 
-/* define webview start */
-#ifdef DPF_USING_LD_LINUX_WEBVIEW
-int dpf_webview_start(int argc, char* argv[]);
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DISTRHO

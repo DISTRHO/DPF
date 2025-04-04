@@ -286,17 +286,6 @@ static_assert(sizeof(STRINGIFY(DISTRHO_PLUGIN_UNIQUE_ID)) == 5, "The macro DISTR
 # error DISTRHO_UI_IS_STANDALONE must not be defined
 #endif
 
-#ifdef DPF_USING_LD_LINUX_WEBVIEW
-# error DPF_USING_LD_LINUX_WEBVIEW must not be defined
-#endif
-
-// --------------------------------------------------------------------------------------------------------------------
-// Set DPF_USING_LD_LINUX_WEBVIEW for internal use
-
-#if DISTRHO_UI_WEB_VIEW && defined(DISTRHO_OS_LINUX)
-# define DPF_USING_LD_LINUX_WEBVIEW
-#endif
-
 // --------------------------------------------------------------------------------------------------------------------
 
 #endif // DISTRHO_PLUGIN_CHECKS_H_INCLUDED

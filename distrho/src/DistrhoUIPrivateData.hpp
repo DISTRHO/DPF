@@ -61,6 +61,11 @@
 
 START_NAMESPACE_DISTRHO
 
+/* define webview start */
+#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && DISTRHO_UI_WEB_VIEW
+int dpf_webview_start(int argc, char* argv[]);
+#endif
+
 // -----------------------------------------------------------------------
 // Plugin Application, will set class name based on plugin details
 

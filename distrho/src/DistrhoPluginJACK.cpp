@@ -88,10 +88,6 @@ static const writeMidiFunc writeMidiCallback = nullptr;
 static const requestParameterValueChangeFunc requestParameterValueChangeCallback = nullptr;
 #endif
 
-#ifdef DPF_USING_LD_LINUX_WEBVIEW
-int dpf_webview_start(int argc, char* argv[]);
-#endif
-
 // -----------------------------------------------------------------------
 
 static volatile bool gCloseSignalReceived = false;
@@ -1003,9 +999,9 @@ int main(int argc, char* argv[])
     }
    #endif
 
-   #ifdef DPF_USING_LD_LINUX_WEBVIEW
+   #if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && DISTRHO_UI_WEB_VIEW
     if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
-        return dpf_webview_start(argc, argv);
+        return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);
    #endif
 
     if (argc == 2 && std::strcmp(argv[1], "selftest") == 0)

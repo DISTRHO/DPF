@@ -23,6 +23,10 @@ START_NAMESPACE_DISTRHO
 
 #include "WebViewImpl.hpp"
 
+#if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX)
+int dpf_webview_start(int argc, char* argv[]);
+#endif
+
 END_NAMESPACE_DISTRHO
 
 #endif // DISTRHO_WEB_VIEW_HPP_INCLUDED
