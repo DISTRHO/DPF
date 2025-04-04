@@ -773,8 +773,10 @@ void webViewIdle(const WebViewHandle handle)
 
         d_stderr("server ringbuffer data race, abort!");
         handle->rbctrl2.flush();
-        return;
+        break;
     }
+
+    std::free(buffer);
    #else
     // unused
     (void)handle;
