@@ -111,6 +111,15 @@ Window::Window(Application& app,
     pData->initPost();
 }
 
+Window::Window(Application& app, Window& transientParentWindow, const uint type)
+    : pData(new PrivateData(app, this, transientParentWindow.pData))
+{
+    if (pData->view != nullptr)
+        puglSetViewHint(pData->view, PUGL_VIEW_TYPE, type);
+
+    pData->initPost();
+}
+
 Window::Window(Application& app,
                const uintptr_t parentWindowHandle,
                const uint width,
@@ -130,6 +139,11 @@ Window::Window(Application& app,
 Window::~Window()
 {
     delete pData;
+}
+
+Window* Window::createPopup()
+{
+    return new Window(pData->app, *this, PUGL_VIEW_TYPE_UTILITY);
 }
 
 bool Window::isEmbed() const noexcept

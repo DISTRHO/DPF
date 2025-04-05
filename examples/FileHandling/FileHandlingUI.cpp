@@ -49,6 +49,8 @@ public:
     static const uint kInitialWidth  = 600;
     static const uint kInitialHeight = 350;
 
+    ScopedPointer<Window> win;
+
     FileHandlingExampleUI()
         : UI(kInitialWidth, kInitialHeight),
           fButton1(this, this),
@@ -70,6 +72,11 @@ public:
 #endif
 
         setGeometryConstraints(kInitialWidth, kInitialHeight, false);
+
+        win = getWindow().createPopup();
+        win->setTitle("test1");
+        win->setSize(300, 300);
+        win->runAsModal();
     }
 
 protected:

@@ -159,6 +159,11 @@ public:
     virtual ~Window();
 
    /**
+      TEST.
+    */
+    Window* createPopup();
+
+   /**
       Whether this Window is embed into another (usually not DGL-controlled) Window.
     */
     bool isEmbed() const noexcept;
@@ -573,6 +578,9 @@ private:
                     bool usesScheduledRepaints,
                     bool usesSizeRequest,
                     bool doPostInit);
+
+   /** @internal */
+    explicit Window(Application& app, Window& transientParentWindow, uint type);
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Window)
 };
