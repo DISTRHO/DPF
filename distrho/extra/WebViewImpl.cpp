@@ -242,6 +242,11 @@ START_NAMESPACE_DISTRHO
 
 #if WEB_VIEW_USING_X11_IPC
 
+#ifdef WEB_VIEW_DGL_NAMESPACE
+using DISTRHO_NAMESPACE::ChildProcess;
+using DISTRHO_NAMESPACE::RingBufferControl;
+#endif
+
 #ifdef __linux__
 typedef int32_t ipc_sem_t;
 #else
