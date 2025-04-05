@@ -244,6 +244,112 @@ function(dpf_add_plugin NAME)
   endforeach()
 endfunction()
 
+# dpf_add_executable(target <args...>)
+# ------------------------------------------------------------------------------
+#
+# Add a simple executable built using the DISTRHO Plugin Framework.
+#
+# ------------------------------------------------------------------------------
+# Arguments:
+#
+#   `UI_TYPE` <type>
+#       the user interface type, can be one of the following:
+#          - cairo
+#          - external
+#          - opengl (default)
+#          - opengl3
+#          - vulkan
+#          - webview
+#
+#   `NO_SHARED_RESOURCES`
+#       do not build DPF shared resources (fonts, etc)
+#
+#   `USE_FILE_BROWSER`
+#       enable file browser dialog APIs
+#
+#   `USE_WEB_VIEW`
+#       enable web browser view APIs
+#
+function(dpf_add_executable NAME)
+  set(options NO_SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  set(oneValueArgs UI_TYPE)
+  cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if("${_dpf_plugin_UI_TYPE}" STREQUAL "")
+    set(_dpf_plugin_UI_TYPE "opengl")
+  endif()
+
+  set(_dgl_library)
+  if(_dpf_plugin_UI_TYPE STREQUAL "cairo")
+    dpf__add_dgl_cairo($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-cairo)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
+    dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-external)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
+    dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                        $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                        $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-opengl)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl3")
+    dpf__add_dgl_opengl3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-opengl3)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
+    dpf__add_dgl_vulkan($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                        $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                        $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-vulkan)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "webview")
+    set(_dpf_plugin_USE_WEB_VIEW TRUE)
+    dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                          $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-external)
+  else()
+    message(FATAL_ERROR "Unrecognized UI type for executable: ${_dpf_plugin_UI_TYPE}")
+  endif()
+
+  set(_dgl_has_ui OFF)
+  if(_dgl_library)
+    set(_dgl_has_ui ON)
+  endif()
+
+  dpf__create_dummy_source_list(_no_srcs)
+  dpf__add_executable("${NAME}" ${_no_srcs})
+  target_include_directories("${NAME}" PUBLIC "${DPF_ROOT_DIR}/distrho")
+
+  if(_dpf_plugin_USE_FILE_BROWSER)
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(_dpf_plugin_USE_WEB_VIEW)
+    target_compile_definitions("${NAME}" PUBLIC "DGL_USE_WEB_VIEW")
+  endif()
+
+  if((NOT WIN32) AND (NOT APPLE) AND (NOT HAIKU))
+    target_link_libraries("${NAME}" PRIVATE "dl")
+  endif()
+
+  if(_dgl_library)
+    # make sure that all code will see DGL_* definitions
+    target_link_libraries("${NAME}" PUBLIC
+      "${_dgl_library}"
+      "${_dgl_library}-definitions"
+      dgl-system-libs-definitions
+      dgl-system-libs)
+    # extra linkage for linux web view
+    if(LINUX AND _dpf_plugin_USE_WEB_VIEW)
+      target_link_libraries("${NAME}" PRIVATE "rt")
+    endif()
+    # add the files containing C++17 or Objective-C classes
+    dpf__add_plugin_specific_ui_sources("${NAME}" "${_dpf_plugin_USE_WEB_VIEW}")
+  endif()
+endfunction()
+
 # ------------------------------------------------------------------------------
 # DPF private functions (prefixed with `dpf__`)
 # ------------------------------------------------------------------------------
