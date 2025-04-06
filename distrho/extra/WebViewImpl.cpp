@@ -948,7 +948,7 @@ struct QSize {
     S NAME = reinterpret_cast<S>(dlsym(nullptr, #SN)); \
     DISTRHO_SAFE_ASSERT_RETURN(NAME != nullptr, false);
 
-static void web_wake_idle(void* const ptr)
+static int web_wake_idle(void* const ptr)
 {
     WebViewRingBuffer* const shmptr = static_cast<WebViewRingBuffer*>(ptr);
 
@@ -996,6 +996,7 @@ static void web_wake_idle(void* const ptr)
     }
 
     free(buffer);
+    return 0;
 }
 
 // -----------------------------------------------------------------------------------------------------------
