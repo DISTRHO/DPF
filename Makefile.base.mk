@@ -838,7 +838,7 @@ features:
 # Extra rules for MOD Audio stuff
 
 # NOTE: path must be absolute
-MOD_WORKDIR ?= $(HOME)/mod-workdir
+WORKDIR ?= $(HOME)/mod-workdir
 MOD_ENVIRONMENT = \
 	AR=${1}/host/usr/bin/${2}-gcc-ar \
 	CC=${1}/host/usr/bin/${2}-gcc \
@@ -858,49 +858,57 @@ MOD_ENVIRONMENT = \
 	MOD_BUILD=true \
 	NOOPT=true
 
+darkglass-anagram:
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/darkglass-anagram,aarch64-modaudio.generic-linux-gnu,aarch64)
+
 modduo:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm)
 
 modduo-new:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm)
 
 modduox:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64)
 
 modduox-new:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64)
 
 moddwarf:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64)
 
 moddwarf-new:
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64)
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64)
 
 modpush:
 	tar -C bin -chz $(subst bin/,,$(wildcard bin/*.lv2)) | base64 | curl -F 'package=@-' http://192.168.51.1/sdk/install && echo
 
+ifneq (,$(findstring darkglass-anagram-,$(MAKECMDGOALS)))
+$(MAKECMDGOALS):
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/darkglass-anagram,aarch64-modaudio.generic-linux-gnu,aarch64) $(subst darkglass-anagram-,,$(MAKECMDGOALS))
+endif
+
 ifneq (,$(findstring modduo-new-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm) $(subst modduo-new-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduo-new,arm-modaudio-linux-gnueabihf,arm) $(subst modduo-new-,,$(MAKECMDGOALS))
 else ifneq (,$(findstring modduo-,$(filter-out modduo-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm) $(subst modduo-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduo-static,arm-mod-linux-gnueabihf.static,arm) $(subst modduo-,,$(MAKECMDGOALS))
 endif
 
 ifneq (,$(findstring modduox-new-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64) $(subst modduox-new-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduox-new,aarch64-modaudio-linux-gnueabi,aarch64) $(subst modduox-new-,,$(MAKECMDGOALS))
 else ifneq (,$(findstring modduox-,$(filter-out modduox-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64) $(subst modduox-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/modduox-static,aarch64-mod-linux-gnueabi.static,aarch64) $(subst modduox-,,$(MAKECMDGOALS))
 endif
 
 ifneq (,$(findstring moddwarf-new-,$(MAKECMDGOALS)))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64) $(subst moddwarf-new-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/moddwarf-new,aarch64-modaudio-linux-gnu,aarch64) $(subst moddwarf-new-,,$(MAKECMDGOALS))
 else ifneq (,$(findstring moddwarf-,$(filter-out moddwarf-new,$(MAKECMDGOALS))))
 $(MAKECMDGOALS):
-	$(MAKE) $(call MOD_ENVIRONMENT,$(MOD_WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64) $(subst moddwarf-,,$(MAKECMDGOALS))
+	$(MAKE) $(call MOD_ENVIRONMENT,$(WORKDIR)/moddwarf,aarch64-mod-linux-gnu,aarch64) $(subst moddwarf-,,$(MAKECMDGOALS))
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
