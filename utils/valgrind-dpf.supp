@@ -93,3 +93,27 @@
    fun:fftwf_plan_dft_r2c_1d
    ...
 }
+{
+   leak in fftw plan
+   Memcheck:Leak
+   fun:memalign
+   fun:fftwf_malloc_plain
+   fun:fftwf_mkapiplan
+   fun:fftwf_plan_many_r2r
+   fun:fftwf_plan_r2r
+   fun:fftwf_plan_r2r_1d
+   ...
+}
+{
+   leak in fftw plan
+   Memcheck:Leak
+   fun:memalign
+   fun:fftwf_malloc_plain
+   fun:fftwf_mkplanner
+   fun:fftwf_the_planner
+   fun:fftwf_mkapiplan
+   fun:fftwf_plan_many_r2r
+   fun:fftwf_plan_r2r
+   fun:fftwf_plan_r2r_1d
+   ...
+}
