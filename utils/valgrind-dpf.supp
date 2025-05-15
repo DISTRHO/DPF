@@ -96,8 +96,9 @@
 {
    leak in fftw plan
    Memcheck:Leak
-   fun:memalign
+   fun:malloc
    fun:fftwf_malloc_plain
+   ...
    fun:fftwf_mkapiplan
    fun:fftwf_plan_many_r2r
    fun:fftwf_plan_r2r
@@ -109,8 +110,7 @@
    Memcheck:Leak
    fun:memalign
    fun:fftwf_malloc_plain
-   fun:fftwf_mkplanner
-   fun:fftwf_the_planner
+   ...
    fun:fftwf_mkapiplan
    fun:fftwf_plan_many_r2r
    fun:fftwf_plan_r2r
