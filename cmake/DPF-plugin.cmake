@@ -75,7 +75,7 @@ include(CMakeParseArguments)
 #       `jack`, `ladspa`, `dssi`, `lv2`, `vst2`, `vst3`, `clap`
 #
 #   `UI_TYPE` <type>
-#       the user interface type: `opengl` (default), `cairo`, `external`
+#       the user interface type: `opengl` (default), `vulkan`, `cairo`, `external`
 #
 #   `FILES_COMMON` <file1>...<fileN>
 #       list of sources which are part of both DSP and UI
@@ -115,6 +115,9 @@ function(dpf_add_plugin NAME)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
       dpf__add_dgl_opengl("${_dpf_plugin_NO_SHARED_RESOURCES}")
       set(_dgl_library dgl-opengl)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "vulkan")
+      dpf__add_dgl_vulkan("${_dpf_plugin_NO_SHARED_RESOURCES}")
+      set(_dgl_library dgl-vulkan)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "external")
       set(_dgl_external ON)
     else()
@@ -752,6 +755,68 @@ function(dpf__add_dgl_opengl NO_SHARED_RESOURCES)
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_dgl_vulkan
+# ------------------------------------------------------------------------------
+#
+# Add the Vulkan variant of DGL, if not already available.
+#
+function(dpf__add_dgl_vulkan NO_SHARED_RESOURCES)
+  if(TARGET dgl-vulkan)
+    return()
+  endif()
+
+  find_package(Vulkan REQUIRED)
+
+  dpf__add_static_library(dgl-vulkan STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Vulkan.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(NO_SHARED_RESOURCES)
+    target_compile_definitions(dgl-vulkan PUBLIC "DGL_NO_SHARED_RESOURCES")
+  else()
+    target_sources(dgl-vulkan PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  endif()
+  if(APPLE)
+    target_sources(dgl-vulkan PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-vulkan PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-vulkan PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-vulkan PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-vulkan PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-vulkan PRIVATE dgl-system-libs)
+
+  add_library(dgl-vulkan-definitions INTERFACE)
+  target_compile_definitions(dgl-vulkan-definitions INTERFACE "DGL_VULKAN" "HAVE_VULKAN" "HAVE_DGL")
+
+  target_include_directories(dgl-vulkan PUBLIC "${VULKAN_INCLUDE_DIR}")
+  target_link_libraries(dgl-vulkan PRIVATE dgl-vulkan-definitions "${VULKAN_gl_LIBRARY}")
 endfunction()
 
 # dpf__add_plugin_specific_ui_sources
