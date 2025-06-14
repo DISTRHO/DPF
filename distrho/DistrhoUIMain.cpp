@@ -23,7 +23,11 @@
 
 #if DISTRHO_PLUGIN_HAS_UI
 
-#if defined(DISTRHO_PLUGIN_TARGET_AU)
+#if defined(DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT)
+# if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#  warning Using single/monolithic LV2 target while DISTRHO_PLUGIN_WANT_DIRECT_ACCESS is 0
+# endif
+#elif defined(DISTRHO_PLUGIN_TARGET_AU)
 # define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT 1
 # import "src/DistrhoUIAU.mm"
 #elif defined(DISTRHO_PLUGIN_TARGET_CARLA)

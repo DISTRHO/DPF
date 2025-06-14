@@ -66,6 +66,10 @@
 # define DISTRHO_PLUGIN_MINIMUM_BUFFER_SIZE 2048
 #endif
 
+#ifndef DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
+# define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#endif
+
 #ifndef DISTRHO_PLUGIN_USES_MODGUI
 # define DISTRHO_PLUGIN_USES_MODGUI 0
 #endif
@@ -260,14 +264,14 @@ void lv2_generate_ttl(const char* const basename)
     const String pluginDLL(basename);
     const String pluginTTL(pluginDLL + ".ttl");
 
-#if DISTRHO_PLUGIN_HAS_UI
+  #if DISTRHO_PLUGIN_HAS_UI
     String pluginUI(pluginDLL);
-# if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+   #if ! DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
     pluginUI.truncate(pluginDLL.rfind("_dsp"));
     pluginUI += "_ui";
     const String uiTTL(pluginUI + ".ttl");
-# endif
-#endif
+   #endif
+  #endif
 
     // ---------------------------------------------
 
@@ -278,7 +282,7 @@ void lv2_generate_ttl(const char* const basename)
         String manifestString;
         manifestString += "@prefix lv2:  <" LV2_CORE_PREFIX "> .\n";
         manifestString += "@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .\n";
-#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#if DISTRHO_PLUGIN_HAS_UI && DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "@prefix opts: <" LV2_OPTIONS_PREFIX "> .\n";
 #endif
 #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -304,14 +308,14 @@ void lv2_generate_ttl(const char* const basename)
         manifestString += "<" DISTRHO_UI_URI ">\n";
         manifestString += "    a ui:" DISTRHO_LV2_UI_TYPE " ;\n";
         manifestString += "    ui:binary <" + pluginUI + "." DISTRHO_DLL_EXTENSION "> ;\n";
-# if DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# if DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         addAttribute(manifestString, "lv2:extensionData", lv2ManifestUiExtensionData, 4);
         addAttribute(manifestString, "lv2:optionalFeature", lv2ManifestUiOptionalFeatures, 4);
         addAttribute(manifestString, "lv2:requiredFeature", lv2ManifestUiRequiredFeatures, 4);
         addAttribute(manifestString, "opts:supportedOption", lv2ManifestUiSupportedOptions, 4, true);
-# else // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# else // DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "    rdfs:seeAlso <" + uiTTL + "> .\n";
-# endif // DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# endif // DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
         manifestString += "\n";
 #endif
 
@@ -1564,7 +1568,7 @@ void lv2_generate_ttl(const char* const basename)
 
     // ---------------------------------------------
 
-#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#if DISTRHO_PLUGIN_HAS_UI && ! DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT
     {
         std::cout << "Writing " << uiTTL << "..."; std::cout.flush();
         std::fstream uiFile(uiTTL, std::ios::out);
