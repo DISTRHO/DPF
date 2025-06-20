@@ -131,6 +131,10 @@ Application::Application(int argc, char* argv[])
    #if defined(HAVE_X11) && defined(DISTRHO_OS_LINUX) && defined(DGL_USE_WEB_VIEW)
     if (argc >= 2 && std::strcmp(argv[1], "dpf-ld-linux-webview") == 0)
         std::exit(dpf_webview_start(argc, argv));
+   #else
+    // unused
+    (void)argc;
+    (void)argv;
    #endif
 
     // build config sentinels
