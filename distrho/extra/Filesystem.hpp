@@ -23,6 +23,8 @@
 
 #ifdef DISTRHO_OS_WINDOWS
 # include <stringapiset.h>
+#else
+# include <cerrno>
 #endif
 
 START_NAMESPACE_DISTRHO
@@ -71,7 +73,13 @@ struct SafeFileWriter
     */
     SafeFileWriter(const char* const pathname, const char* const mode = "w")
         : filename(pathname),
-          fd(d_fopen(filename + ".tmp", mode)) {}
+          fd(d_fopen(filename + ".tmp", mode))
+    {
+       #ifndef DISTRHO_OS_WINDOWS
+        if (fd == nullptr)
+            d_stderr2("failed to open '%s' for writing: %s", pathname, std::strerror(errno));
+       #endif
+    }
 
     /**
        Destructor, will flush file data contents, close and rename file.
