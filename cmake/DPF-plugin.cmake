@@ -78,6 +78,8 @@ include(CMakeParseArguments)
 #       the user interface type, can be one of the following:
 #          - cairo
 #          - external
+#          - gles2
+#          - gles3
 #          - opengl (default)
 #          - opengl3
 #          - vulkan
@@ -129,6 +131,16 @@ function(dpf_add_plugin NAME)
       dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
                             $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
       set(_dgl_library dgl-external)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "gles2")
+      dpf__add_dgl_gles2($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+      set(_dgl_library dgl-gles2)
+    elseif(_dpf_plugin_UI_TYPE STREQUAL "gles3")
+      dpf__add_dgl_gles3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                         $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+      set(_dgl_library dgl-gles3)
     elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
       dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
                           $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
@@ -256,6 +268,8 @@ endfunction()
 #       the user interface type, can be one of the following:
 #          - cairo
 #          - external
+#          - gles2
+#          - gles3
 #          - opengl (default)
 #          - opengl3
 #          - vulkan
@@ -289,6 +303,16 @@ function(dpf_add_executable NAME)
     dpf__add_dgl_external($<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
                           $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
     set(_dgl_library dgl-external)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "gles2")
+    dpf__add_dgl_gles2($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-gles2)
+  elseif(_dpf_plugin_UI_TYPE STREQUAL "gles3")
+    dpf__add_dgl_gles3($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
+                       $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
+                       $<BOOL:${_dpf_plugin_USE_WEB_VIEW}>)
+    set(_dgl_library dgl-gles3)
   elseif(_dpf_plugin_UI_TYPE STREQUAL "opengl")
     dpf__add_dgl_opengl($<NOT:$<BOOL:${_dpf_plugin_NO_SHARED_RESOURCES}>>
                         $<BOOL:${_dpf_plugin_USE_FILE_BROWSER}>
@@ -927,6 +951,197 @@ function(dpf__add_dgl_external USE_FILE_BROWSER USE_WEB_VIEW)
   target_link_libraries(dgl-external PRIVATE dgl-external-definitions "${OPENGL_gl_LIBRARY}")
 endfunction()
 
+# dpf__add_dgl_gles2
+# ------------------------------------------------------------------------------
+#
+# Add the GLESv2 variant of DGL, if not already available.
+#
+function(dpf__add_dgl_gles2 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  if(TARGET dgl-gles2)
+    return()
+  endif()
+
+  if(NOT OpenGL_GL_PREFERENCE)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+  endif()
+
+  find_package(OpenGL REQUIRED)
+
+  dpf__add_static_library(dgl-gles2 STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(SHARED_RESOURCES)
+    target_sources(dgl-gles2 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-gles2 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-gles2 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-gles2 PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-gles2 PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-gles2 PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-gles2 PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-gles2 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-gles2 PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-gles2 PRIVATE dgl-system-libs)
+  target_link_options(dgl-gles2
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sMIN_WEBGL_VERSION=2>
+      $<$<BOOL:${EMSCRIPTEN}>:-sMAX_WEBGL_VERSION=2>
+  )
+
+  add_library(dgl-gles2-definitions INTERFACE)
+  target_compile_definitions(dgl-gles2-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_USE_GLES
+      DGL_USE_GLES2
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
+
+  target_include_directories(dgl-gles2 PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-gles2 PRIVATE dgl-gles2-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
+# dpf__add_dgl_gles3
+# ------------------------------------------------------------------------------
+#
+# Add the GLESv3 variant of DGL, if not already available.
+#
+function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  if(TARGET dgl-gles3)
+    return()
+  endif()
+
+  if(NOT OpenGL_GL_PREFERENCE)
+    set(OpenGL_GL_PREFERENCE "LEGACY")
+  endif()
+
+  find_package(OpenGL REQUIRED)
+
+  dpf__add_static_library(dgl-gles3 STATIC
+    "${DPF_ROOT_DIR}/dgl/src/Application.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ApplicationPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Color.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/EventHandlers.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Geometry.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBase.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/ImageBaseWidgets.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Layout.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/SubWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/TopLevelWidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Widget.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WidgetPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
+  if(SHARED_RESOURCES)
+    target_sources(dgl-gles3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
+  else()
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_NO_SHARED_RESOURCES")
+  endif()
+  if(APPLE)
+    target_sources(dgl-gles3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.mm")
+  else()
+    target_sources(dgl-gles3 PRIVATE
+      "${DPF_ROOT_DIR}/dgl/src/pugl.cpp")
+  endif()
+  target_include_directories(dgl-gles3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl")
+  target_include_directories(dgl-gles3 PUBLIC
+    "${DPF_ROOT_DIR}/dgl/src/pugl-upstream/include")
+
+  if(APPLE)
+    target_compile_definitions(dgl-gles3 PUBLIC "GL_SILENCE_DEPRECATION")
+  endif()
+
+  if(USE_FILE_BROWSER)
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_USE_FILE_BROWSER")
+  endif()
+
+  if(USE_WEB_VIEW)
+    target_compile_definitions(dgl-gles3 PUBLIC "DGL_USE_WEB_VIEW")
+    if(APPLE)
+      find_library(APPLE_WEBKIT_FRAMEWORK "WebKit")
+      target_link_libraries(dgl-gles3 PRIVATE "${APPLE_WEBKIT_FRAMEWORK}")
+    elseif(WIN32)
+      target_sources(dgl-gles3 PRIVATE
+        "${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp")
+      set_source_files_properties("${DPF_ROOT_DIR}/dgl/src/WebViewWin32.cpp"
+        PROPERTIES
+          COMPILE_FLAGS
+            $<IF:$<BOOL:${MSVC}>,/std:c++17,-std=gnu++17>)
+    endif()
+  endif()
+
+  dpf__add_dgl_system_libs()
+  target_link_libraries(dgl-gles3 PRIVATE dgl-system-libs)
+
+  add_library(dgl-gles3-definitions INTERFACE)
+  target_compile_definitions(dgl-gles3-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_USE_GLES
+      DGL_USE_GLES3
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
+
+  target_include_directories(dgl-gles3 PUBLIC "${OPENGL_INCLUDE_DIR}")
+  target_link_libraries(dgl-gles3 PRIVATE dgl-gles3-definitions "${OPENGL_gl_LIBRARY}")
+endfunction()
+
 # dpf__add_dgl_opengl
 # ------------------------------------------------------------------------------
 #
@@ -1004,9 +1219,19 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-opengl PRIVATE dgl-system-libs)
+  target_link_options(dgl-opengl
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sLEGACY_GL_EMULATION>
+      $<$<BOOL:${EMSCRIPTEN}>:-sGL_UNSAFE_OPTS=0>
+  )
 
   add_library(dgl-opengl-definitions INTERFACE)
-  target_compile_definitions(dgl-opengl-definitions INTERFACE "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
+  target_compile_definitions(dgl-opengl-definitions
+    INTERFACE
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
 
   target_include_directories(dgl-opengl PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl PRIVATE dgl-opengl-definitions "${OPENGL_gl_LIBRARY}")
@@ -1091,7 +1316,13 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
   target_link_libraries(dgl-opengl3 PRIVATE dgl-system-libs)
 
   add_library(dgl-opengl3-definitions INTERFACE)
-  target_compile_definitions(dgl-opengl3-definitions INTERFACE "DGL_USE_OPENGL3" "DGL_OPENGL" "HAVE_OPENGL" "HAVE_DGL")
+  target_compile_definitions(dgl-opengl3-definitions
+    INTERFACE
+      DGL_USE_OPENGL3
+      DGL_OPENGL
+      HAVE_OPENGL
+      HAVE_DGL
+  )
 
   target_include_directories(dgl-opengl3 PUBLIC "${OPENGL_INCLUDE_DIR}")
   target_link_libraries(dgl-opengl3 PRIVATE dgl-opengl3-definitions "${OPENGL_gl_LIBRARY}")
@@ -1349,7 +1580,7 @@ function(dpf__set_target_defaults NAME)
   if (CMAKE_COMPILER_IS_GNUCXX)
     target_compile_options("${NAME}" PUBLIC "-fno-gnu-unique")
   endif()
-  if ((NOT APPLE) AND (NOT MSVC))
+  if ((NOT APPLE) AND (NOT EMSCRIPTEN) AND (NOT MSVC))
     target_link_options("${NAME}" PUBLIC "-Wl,--no-undefined")
   endif()
 endfunction()
