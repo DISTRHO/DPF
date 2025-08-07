@@ -4,7 +4,7 @@
 #
 # SPDX-License-Identifier: ISC
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.8...3.31)
 
 project(DPF)
 
@@ -30,7 +30,7 @@ list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 include(DPF-plugin)
 
 if(DPF_LIBRARIES)
-  find_package(PkgConfig)
+  find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
     pkg_check_modules(CAIRO "cairo")
     if(CAIRO_FOUND AND (NOT HAIKU))
@@ -42,7 +42,7 @@ if(DPF_LIBRARIES)
 endif()
 
 if(DPF_EXAMPLES)
-  find_package(PkgConfig)
+  find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
     pkg_check_modules(CAIRO "cairo")
     if(CAIRO_FOUND AND (NOT HAIKU))

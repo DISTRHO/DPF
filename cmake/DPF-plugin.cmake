@@ -401,8 +401,12 @@ function(dpf__build_jack NAME HAS_UI)
   target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
   target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
 
-  find_package(PkgConfig)
-  pkg_check_modules(SDL2 "sdl2")
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(SDL2 "sdl2")
+  else()
+    set(SDL2_FOUND FALSE)
+  endif()
   if(SDL2_FOUND)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_SDL2")
     target_include_directories("${NAME}-jack" PRIVATE ${SDL2_STATIC_INCLUDE_DIRS})
@@ -475,8 +479,12 @@ endfunction()
 # Add build rules for a DSSI plugin.
 #
 function(dpf__build_dssi NAME HAS_UI)
-  find_package(PkgConfig)
-  pkg_check_modules(LIBLO "liblo")
+  find_package(PkgConfig QUIET)
+  if(PKG_CONFIG_FOUND)
+    pkg_check_modules(LIBLO "liblo")
+  else()
+    set(LIBLO_FOUND FALSE)
+  endif()
   if(NOT LIBLO_FOUND)
     dpf__warn_once_only(missing_liblo
       "liblo is not found, skipping the `dssi` plugin targets")
@@ -563,8 +571,7 @@ function(dpf__build_lv2 NAME HAS_UI MONOLITHIC EXTRA_UI_LINK_OPTS)
     ${CMAKE_CROSSCOMPILING_EMULATOR}
     "$<TARGET_FILE:lv2_ttl_generator>"
     "$<TARGET_FILE:${NAME}-lv2>"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2"
-    DEPENDS lv2_ttl_generator)
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.lv2")
 endfunction()
 
 # dpf__build_vst2
@@ -759,8 +766,7 @@ function(dpf__build_au NAME HAS_UI)
 
   add_custom_command(TARGET "${NAME}-au" POST_BUILD
     COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} "$<TARGET_FILE:${NAME}-export>" "${NAME}"
-    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents"
-    DEPENDS "${NAME}-export")
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/bin/${NAME}.component/Contents")
 
   add_dependencies("${NAME}-au" "${NAME}-export")
 
@@ -806,7 +812,7 @@ function(dpf__add_dgl_cairo SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
     return()
   endif()
 
-  find_package(PkgConfig)
+  find_package(PkgConfig REQUIRED)
   pkg_check_modules(CAIRO "cairo" REQUIRED)
 
   link_directories(${CAIRO_LIBRARY_DIRS})
@@ -1453,7 +1459,7 @@ function(dpf__add_dgl_system_libs)
   elseif(WIN32)
     target_link_libraries(dgl-system-libs INTERFACE "comdlg32" "dwmapi" "gdi32")
   else()
-    find_package(PkgConfig)
+    find_package(PkgConfig REQUIRED)
     pkg_check_modules(DBUS "dbus-1")
     if(DBUS_FOUND)
       target_compile_definitions(dgl-system-libs-definitions INTERFACE "HAVE_DBUS")
