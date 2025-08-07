@@ -9,8 +9,8 @@
 # extra useful variables to define before including this file:
 # - DPF_BUILD_DIR: where to place temporary build files
 # - DPF_TARGET_DIR: where to place final binary files
-# - UI_TYPE: one of cairo, opengl, opengl3 or external, with opengl being default
-#            ("generic" is also allowed if only using image widgets)
+# - UI_TYPE: one of cairo, gles2, gles3, opengl, opengl3 or external, with opengl being default
+#            ("generic" is also allowed if only using basic DPF classes like image widgets)
 
 # override the "all" target after including this file to define which plugin formats to build, like so:
 # all: au clap jack lv2_sep vst2 vst3
@@ -55,6 +55,10 @@ ifeq ($(UI_TYPE),)
 else ifeq ($(UI_TYPE),cairo)
 else ifeq ($(UI_TYPE),external)
 else ifeq ($(UI_TYPE),generic)
+else ifeq ($(UI_TYPE),gles2)
+USE_GLES2 = true
+else ifeq ($(UI_TYPE),gles3)
+USE_GLES3 = true
 else ifeq ($(UI_TYPE),opengl)
 else ifeq ($(UI_TYPE),opengl3)
 USE_OPENGL3 = true
@@ -227,6 +231,30 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),gles2)
+ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2
+DGL_FLAGS += $(OPENGL_FLAGS)
+DGL_LIBS  += $(OPENGL_LIBS)
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-gles2.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
+ifeq ($(UI_TYPE),gles3)
+ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3
+DGL_FLAGS += $(OPENGL_FLAGS)
+DGL_LIBS  += $(OPENGL_LIBS)
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-gles3.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 ifeq ($(UI_TYPE),opengl)
 ifeq ($(HAVE_OPENGL),true)
 DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL
@@ -241,7 +269,7 @@ endif
 
 ifeq ($(UI_TYPE),opengl3)
 ifeq ($(HAVE_OPENGL),true)
-DGL_FLAGS += -DDGL_OPENGL -DDGL_USE_OPENGL3 -DHAVE_DGL
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-opengl3.a
@@ -499,6 +527,12 @@ DGL_POSSIBLE_DEPS = \
 
 $(DGL_BUILD_DIR)/libdgl-cairo.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl cairo
+
+$(DGL_BUILD_DIR)/libdgl-gles2.a: $(DGL_POSSIBLE_DEPS)
+	$(MAKE) -C $(DPF_PATH)/dgl gles2
+
+$(DGL_BUILD_DIR)/libdgl-gles3.a: $(DGL_POSSIBLE_DEPS)
+	$(MAKE) -C $(DPF_PATH)/dgl gles3
 
 $(DGL_BUILD_DIR)/libdgl-opengl.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
