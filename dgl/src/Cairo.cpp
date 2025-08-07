@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  * Copyright (C) 2019-2021 Jean Pierre Cimalando <jp-dev@inbox.ru>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
@@ -46,7 +46,7 @@ static void notImplemented(const char* const name)
 
 void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
 {
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     if (includeAlpha)
         cairo_set_source_rgba(handle, red, green, blue, alpha);
@@ -63,7 +63,7 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
     DISTRHO_SAFE_ASSERT_RETURN(posStart != posEnd,);
     DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     cairo_set_line_width(handle, width);
     cairo_move_to(handle, posStart.getX(), posStart.getY());
@@ -129,7 +129,7 @@ static void drawCircle(cairo_t* const handle,
 template<typename T>
 void Circle<T>::draw(const GraphicsContext& context)
 {
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     drawCircle<T>(handle, fPos, fNumSegments, fSize, fSin, fCos, false);
 }
@@ -139,7 +139,7 @@ void Circle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
 {
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     cairo_set_line_width(handle, lineWidth);
     drawCircle<T>(handle, fPos, fNumSegments, fSize, fSin, fCos, true);
@@ -190,7 +190,7 @@ static void drawTriangle(cairo_t* const handle,
 template<typename T>
 void Triangle<T>::draw(const GraphicsContext& context)
 {
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     drawTriangle<T>(handle, pos1, pos2, pos3, false);
 }
@@ -200,7 +200,7 @@ void Triangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
 {
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     cairo_set_line_width(handle, lineWidth);
     drawTriangle<T>(handle, pos1, pos2, pos3, true);
@@ -244,7 +244,7 @@ void Rectangle<T>::draw(const GraphicsContext& context)
 {
     DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     drawRectangle(handle, *this, false);
 }
@@ -255,7 +255,7 @@ void Rectangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth
     DISTRHO_SAFE_ASSERT_RETURN(isValid(),);
     DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     cairo_set_line_width(handle, lineWidth);
     drawRectangle(handle, *this, true);
@@ -516,7 +516,7 @@ void CairoImage::loadFromPNG(const char* const pngData, const uint pngSize) noex
     if (datarefcount != nullptr && --(*datarefcount) == 0)
         std::free(surfacedata);
     else
-        datarefcount = (int*)malloc(sizeof(*datarefcount));
+        datarefcount = static_cast<int*>(malloc(sizeof(*datarefcount)));
 
     surface = newsurface;
     surfacedata = nullptr; // cairo_image_surface_get_data(newsurface);
@@ -531,7 +531,7 @@ void CairoImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
 {
     DISTRHO_SAFE_ASSERT_RETURN(surface != nullptr,);
 
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
 
     cairo_set_source_surface(handle, surface, pos.getX(), pos.getY());
     cairo_paint(handle);
@@ -623,7 +623,7 @@ void ImageBaseKnob<CairoImage>::PrivateData::init()
 template <>
 void ImageBaseKnob<CairoImage>::PrivateData::cleanup()
 {
-    cairo_surface_destroy((cairo_surface_t*)cairoSurface);
+    cairo_surface_destroy(static_cast<cairo_surface_t*>(cairoSurface));
     cairoSurface = nullptr;
 }
 
@@ -672,10 +672,10 @@ template <>
 void ImageBaseKnob<CairoImage>::onDisplay()
 {
     const GraphicsContext& context(getGraphicsContext());
-    cairo_t* const handle = ((const CairoGraphicsContext&)context).handle;
+    cairo_t* const handle = static_cast<const CairoGraphicsContext&>(context).handle;
     const double normValue = getNormalizedValue();
 
-    cairo_surface_t* surface = (cairo_surface_t*)pData->cairoSurface;
+    cairo_surface_t* surface = static_cast<cairo_surface_t*>(pData->cairoSurface);
 
     if (! pData->isReady)
     {
@@ -830,8 +830,8 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
 
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
-    GraphicsContext& context((GraphicsContext&)graphicsContext);
-    ((CairoGraphicsContext&)context).handle = (cairo_t*)puglGetContext(view);
+    GraphicsContext& context = reinterpret_cast<GraphicsContext&>(graphicsContext);
+    static_cast<CairoGraphicsContext&>(context).handle = static_cast<cairo_t*>(puglGetContext(view));
     return context;
 }
 
