@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -14,6 +14,11 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef _MSC_VER
+// instantiated template classes whose methods are defined elsewhere
+# pragma warning(disable:4661)
+#endif
+
 #include "Color.hpp"
 #include "SubWidgetPrivateData.hpp"
 #include "TopLevelWidgetPrivateData.hpp"
@@ -26,7 +31,7 @@ START_NAMESPACE_DGL
 
 static void notImplemented(const char* const name)
 {
-    d_stderr2("stub function not implemented: %s", name);
+    d_stderr2("Stub function not implemented: %s", name);
 }
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -184,8 +189,7 @@ void Window::PrivateData::renderToPicture(const char*, const GraphicsContext&, u
 
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
-    GraphicsContext& context((GraphicsContext&)graphicsContext);
-    return context;
+    return reinterpret_cast<GraphicsContext&>(graphicsContext);
 }
 
 // --------------------------------------------------------------------------------------------------------------------

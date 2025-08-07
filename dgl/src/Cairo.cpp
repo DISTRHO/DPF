@@ -38,7 +38,7 @@ START_NAMESPACE_DGL
 
 static void notImplemented(const char* const name)
 {
-    d_stderr2("cairo function not implemented: %s", name);
+    d_stderr2("Cairo function not implemented: %s", name);
 }
 
 // -----------------------------------------------------------------------
