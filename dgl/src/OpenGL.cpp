@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -33,35 +33,59 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 #ifdef DGL_USE_OPENGL3
+# if defined(DGL_USE_GLES2) && defined(DGL_USE_GLES3)
+#  error Build config error, both GLESv2 and GLESv3 requested at the same time
+# endif
+
+struct OpenGL3GraphicsContext : GraphicsContext
+{
+    mutable int prog, color, pos;
+    mutable uint w, h;
+};
+
 static void notImplemented(const char* const name)
 {
-    d_stderr2("OpenGL3 function not implemented: %s", name);
+  #if defined(DGL_USE_GLES2)
+   #define DGL_OPENGL3_NAME "GLESv2"
+  #elif defined(DGL_USE_GLES3)
+   #define DGL_OPENGL3_NAME "GLESv3"
+  #else
+   #define DGL_OPENGL3_NAME "OpenGL3"
+  #endif
+    d_stderr2(DGL_OPENGL3_NAME " function not implemented: %s", name);
+  #undef DGL_OPENGL3_NAME
 }
 #else
+# if defined(DGL_USE_GLES2) || defined(DGL_USE_GLES3)
+#  error Build config error, GLES requested while using OpenGL compat mode
+# endif
 # define DGL_USE_COMPAT_OPENGL
 #endif
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Color
 
-void Color::setFor(const GraphicsContext&, const bool includeAlpha)
+void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
 {
-#ifdef DGL_USE_COMPAT_OPENGL
+   #ifdef DGL_USE_OPENGL3
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+    const GLfloat color[4] = { red, green, blue, includeAlpha ? alpha : 1.f };
+    glUniform4fv(gl3context.color, 1, color);
+   #else
     if (includeAlpha)
         glColor4f(red, green, blue, alpha);
     else
         glColor3f(red, green, blue);
-#else
-    notImplemented("Color::setFor");
+
     // unused
-    (void)includeAlpha;
-#endif
+    (void)context;
+   #endif
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Line
 
 #ifdef DGL_USE_COMPAT_OPENGL
@@ -82,16 +106,29 @@ static void drawLine(const Point<T>& posStart, const Point<T>& posEnd)
 #endif
 
 template<typename T>
-void Line<T>::draw(const GraphicsContext&, const T width)
+void Line<T>::draw(const GraphicsContext& context, const T width)
 {
-#ifdef DGL_USE_COMPAT_OPENGL
     DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
     glLineWidth(static_cast<GLfloat>(width));
+
+   #ifdef DGL_USE_OPENGL3
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.w) * 2 - 1;
+    const GLfloat y1 = (static_cast<double>(posStart.y) / gl3context.h) * -2 + 1;
+    const GLfloat x2 = (static_cast<double>(posEnd.x) / gl3context.w) * 2 - 1;
+    const GLfloat y2 = (static_cast<double>(posEnd.y) / gl3context.h) * -2 + 1;
+
+    const GLfloat vertices[] = { x1, y1, x2, y2, };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    GLubyte order[] = { 0, 1 };
+    glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+   #else
     drawLine<T>(posStart, posEnd);
-#else
-    notImplemented("Line::draw");
-#endif
+   #endif
 }
 
 // deprecated calls
@@ -306,13 +343,27 @@ static void drawRectangle(const Rectangle<T>& rect, const bool outline)
 #endif
 
 template<typename T>
-void Rectangle<T>::draw(const GraphicsContext&)
+void Rectangle<T>::draw(const GraphicsContext& context)
 {
-#ifdef DGL_USE_COMPAT_OPENGL
+   #ifdef DGL_USE_OPENGL3
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+    const GLfloat x = (static_cast<double>(pos.x) / gl3context.w) * 2 - 1;
+    const GLfloat y = (static_cast<double>(pos.y) / gl3context.h) * -2 + 1;
+    const GLfloat w = (static_cast<double>(size.fWidth) / gl3context.w) * 2;
+    const GLfloat h = (static_cast<double>(size.fHeight) / gl3context.h) * -2;
+
+    GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+   #else
     drawRectangle<T>(*this, false);
-#else
-    notImplemented("Rectangle::draw");
-#endif
+
+    // unused
+    (void)context;
+   #endif
 }
 
 template<typename T>
@@ -787,13 +838,96 @@ void Window::PrivateData::renderToPicture(const char* const filename,
     fclose(f);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
+
+#ifdef DGL_USE_OPENGL3
+const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& gl3context)
+{
+    gl3context.prog = -1;
+    return gl3context;
+}
+#endif
 
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
-    return (const GraphicsContext&)graphicsContext;
+    GraphicsContext& context = reinterpret_cast<GraphicsContext&>(graphicsContext);
+
+   #ifdef DGL_USE_OPENGL3
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    // previous context creation failed
+    if (gl3context.prog == -1)
+        return context;
+
+    // create new context
+    if (gl3context.prog == 0)
+    {
+        int status;
+
+        const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        DISTRHO_SAFE_ASSERT_RETURN(fragment != 0, contextCreationFail(gl3context));
+
+        const GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+        DISTRHO_SAFE_ASSERT_RETURN(vertex != 0, contextCreationFail(gl3context));
+
+        const GLuint program = glCreateProgram();
+        DISTRHO_SAFE_ASSERT_RETURN(program != 0, contextCreationFail(gl3context));
+
+       #if defined(DGL_USE_GLES2)
+        #define DGL_SHADER_HEADER "#version 100\n"
+       #elif defined(DGL_USE_GLES3)
+        #define DGL_SHADER_HEADER "#version 300 es\n"
+       #else
+        #define DGL_SHADER_HEADER "#version 150 core\n"
+       #endif
+
+        {
+            static constexpr const char* const src = DGL_SHADER_HEADER
+                "precision mediump float;"
+                "uniform vec4 color;"
+                "void main() { gl_FragColor = color; }";
+
+            glShaderSource(fragment, 1, &src, nullptr);
+            glCompileShader(fragment);
+
+            glGetShaderiv(fragment, GL_COMPILE_STATUS, &status);
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+        }
+
+        {
+            static constexpr const char* const src = DGL_SHADER_HEADER
+                "attribute vec4 pos;"
+                "void main() { gl_Position = pos; }";
+
+            glShaderSource(vertex, 1, &src, nullptr);
+            glCompileShader(vertex);
+
+            glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+        }
+
+        glAttachShader(program, fragment);
+        glAttachShader(program, vertex);
+        glLinkProgram(program);
+
+        glGetProgramiv(program, GL_LINK_STATUS, &status);
+        DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+
+        gl3context.prog = program;
+        gl3context.color = glGetUniformLocation(program, "color");
+        gl3context.pos = glGetAttribLocation(program, "pos");
+    }
+
+    const PuglRect rect = puglGetFrame(view);
+    gl3context.w = static_cast<uint>(rect.width + 0.5);
+    gl3context.h = static_cast<uint>(rect.height + 0.5);
+
+    glUseProgram(gl3context.prog);
+   #endif
+
+    return context;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL

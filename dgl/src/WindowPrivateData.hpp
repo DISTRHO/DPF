@@ -45,7 +45,7 @@ struct Window::PrivateData : IdleCallback {
     PuglView* view;
 
     /** Reserved space for graphics context. */
-    mutable uint8_t graphicsContext[sizeof(void*)];
+    mutable uint8_t graphicsContext[sizeof(int) * 5];
 
     /** The top-level widgets associated with this Window. */
     std::list<TopLevelWidget*> topLevelWidgets;
