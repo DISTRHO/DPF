@@ -185,7 +185,8 @@ public:
 #if DISTRHO_UI_FILE_BROWSER
    /**
       Open a file browser dialog with this window as transient parent.@n
-      A few options can be specified to setup the dialog.
+      A few options can be specified to setup the dialog.@n
+      The @a DISTRHO_NAMESPACE::FileBrowserOptions::className variable is automatically set in this call.
 
       If a path is selected, onFileSelected() will be called with the user chosen path.
       If the user cancels or does not pick a file, onFileSelected() will be called with nullptr as filename.

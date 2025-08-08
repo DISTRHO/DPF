@@ -88,7 +88,7 @@ jobs:
           target: ${{ matrix.target }}
 
   cmake_win32:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - name: Set environment
       run: |
@@ -113,7 +113,7 @@ jobs:
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       run: |
-       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 16 2019" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 17 2022" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
     - name: Build all
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config "${Env:BUILD_TYPE}" -j 2
@@ -126,7 +126,7 @@ jobs:
         path: ${{runner.workspace}}/build/bin/
 
   cmake_win64:
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
     - name: Set environment
       run: |
@@ -151,7 +151,7 @@ jobs:
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       run: |
-       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 16 2019" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+       cmake "${Env:GITHUB_WORKSPACE}" -G"Visual Studio 17 2022" -A"${Env:release_arch}" -DCMAKE_BUILD_TYPE="${Env:BUILD_TYPE}" -DVCPKG_TARGET_TRIPLET="${Env:vcpkg_triplet}" -DCMAKE_TOOLCHAIN_FILE="${Env:VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
     - name: Build all
       working-directory: ${{runner.workspace}}/build
       run: cmake --build . --config "${Env:BUILD_TYPE}" -j 2

@@ -99,14 +99,14 @@
 #define MACRO_NAME(a, b, c) MACRO_NAME2(a, b, c)
 
 #define WEB_VIEW_DELEGATE_CLASS_NAME \
-    MACRO_NAME(WebViewDelegate_, _, DISTRHO_NAMESPACE)
+    MACRO_NAME(WebViewDelegate_, _, WEB_VIEW_NAMESPACE)
 
 @interface WEB_VIEW_DELEGATE_CLASS_NAME : NSObject<WKNavigationDelegate, WKScriptMessageHandler, WKUIDelegate>
 @end
 
 @implementation WEB_VIEW_DELEGATE_CLASS_NAME {
 @public
-    DISTRHO_NAMESPACE::WebViewMessageCallback callback;
+    WEB_VIEW_NAMESPACE::WebViewMessageCallback callback;
     void* callbackPtr;
     bool loaded;
 }
@@ -241,6 +241,11 @@ START_NAMESPACE_DISTRHO
 // -----------------------------------------------------------------------------------------------------------
 
 #if WEB_VIEW_USING_X11_IPC
+
+#ifdef WEB_VIEW_DGL_NAMESPACE
+using DISTRHO_NAMESPACE::ChildProcess;
+using DISTRHO_NAMESPACE::RingBufferControl;
+#endif
 
 #ifdef __linux__
 typedef int32_t ipc_sem_t;
@@ -773,8 +778,10 @@ void webViewIdle(const WebViewHandle handle)
 
         d_stderr("server ringbuffer data race, abort!");
         handle->rbctrl2.flush();
-        return;
+        break;
     }
+
+    std::free(buffer);
    #else
     // unused
     (void)handle;
@@ -941,7 +948,7 @@ struct QSize {
     S NAME = reinterpret_cast<S>(dlsym(nullptr, #SN)); \
     DISTRHO_SAFE_ASSERT_RETURN(NAME != nullptr, false);
 
-static void web_wake_idle(void* const ptr)
+static int web_wake_idle(void* const ptr)
 {
     WebViewRingBuffer* const shmptr = static_cast<WebViewRingBuffer*>(ptr);
 
@@ -989,6 +996,7 @@ static void web_wake_idle(void* const ptr)
     }
 
     free(buffer);
+    return 0;
 }
 
 // -----------------------------------------------------------------------------------------------------------
@@ -1137,10 +1145,8 @@ static bool gtk3(Display* const display,
     GtkWidget* const window = gtk_plug_new(winId);
     DISTRHO_SAFE_ASSERT_RETURN(window != nullptr, false);
 
-    gtk_window_set_default_size(GTK_WINDOW(window),
-                                (width - x) * scaleFactor,
-                                (height - y) * scaleFactor);
-    gtk_window_move(GTK_WINDOW(window), x * scaleFactor, y * scaleFactor);
+    gtk_window_set_default_size(GTK_WINDOW(window), width, height);
+    gtk_window_move(GTK_WINDOW(window), x, y);
 
     WebKitSettings* const settings = webkit_settings_new();
     DISTRHO_SAFE_ASSERT_RETURN(settings != nullptr, false);
@@ -1776,7 +1782,7 @@ static bool qtwebengine(const int qtVersion,
     QWebEnginePage_setWebChannel(&page, &channel, 0);
 
     QWebEngineView_move(&webview, QPoint(x, y));
-    QWebEngineView_resize(&webview, QSize(static_cast<int>(width), static_cast<int>(height)));
+    QWebEngineView_resize(&webview, QSize(static_cast<int>(width / scaleFactor), static_cast<int>(height / scaleFactor)));
     QWebEngineView_winId(&webview);
     QWindow_setParent(QWebEngineView_windowHandle(&webview), QWindow_fromWinId(winId));
 
@@ -2063,3 +2069,4 @@ END_NAMESPACE_DISTRHO
 
 #undef WEB_VIEW_DISTRHO_NAMESPACE
 #undef WEB_VIEW_DGL_NAMESPACE
+#undef WEB_VIEW_NAMESPACE

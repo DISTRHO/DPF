@@ -54,6 +54,10 @@ OBJS_common = \
 	$(BUILD_DIR)/dgl/Window.cpp.o \
 	$(BUILD_DIR)/dgl/WindowPrivateData.cpp.o
 
+ifeq ($(WINDOWS)$(USE_WEB_VIEW),truetrue)
+OBJS_common += $(BUILD_DIR)/dgl/WebViewWin32.cpp.o
+endif
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 OBJS_cairo = $(OBJS_common) \
@@ -63,6 +67,30 @@ ifeq ($(MACOS),true)
 OBJS_cairo += $(BUILD_DIR)/dgl/pugl.mm.cairo.o
 else
 OBJS_cairo += $(BUILD_DIR)/dgl/pugl.cpp.cairo.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+OBJS_gles2 = $(OBJS_common) \
+	$(BUILD_DIR)/dgl/OpenGL.cpp.gles2.o \
+	$(BUILD_DIR)/dgl/NanoVG.cpp.gles2.o
+
+ifeq ($(MACOS),true)
+OBJS_gles2 += $(BUILD_DIR)/dgl/pugl.mm.gles2.o
+else
+OBJS_gles2 += $(BUILD_DIR)/dgl/pugl.cpp.gles2.o
+endif
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+OBJS_gles3 = $(OBJS_common) \
+	$(BUILD_DIR)/dgl/OpenGL.cpp.gles3.o \
+	$(BUILD_DIR)/dgl/NanoVG.cpp.gles3.o
+
+ifeq ($(MACOS),true)
+OBJS_gles3 += $(BUILD_DIR)/dgl/pugl.mm.gles3.o
+else
+OBJS_gles3 += $(BUILD_DIR)/dgl/pugl.cpp.gles3.o
 endif
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -134,6 +162,8 @@ endif
 all: $(TARGETS)
 
 cairo:   $(BUILD_DIR)/libdgl-cairo.a
+gles2:   $(BUILD_DIR)/libdgl-gles2.a
+gles3:   $(BUILD_DIR)/libdgl-gles3.a
 opengl:  $(BUILD_DIR)/libdgl-opengl.a
 opengl3: $(BUILD_DIR)/libdgl-opengl3.a
 stub:    $(BUILD_DIR)/libdgl-stub.a
@@ -145,6 +175,18 @@ web:     $(BUILD_DIR)/libdgl-web.a
 $(BUILD_DIR)/libdgl-cairo.a: $(OBJS_cairo)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Creating libdgl-cairo.a"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
+$(BUILD_DIR)/libdgl-gles2.a: $(OBJS_gles2)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Creating libdgl-gles2.a"
+	$(SILENT)rm -f $@
+	$(SILENT)$(AR) crs $@ $^
+
+$(BUILD_DIR)/libdgl-gles3.a: $(OBJS_gles3)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Creating libdgl-gles3.a"
 	$(SILENT)rm -f $@
 	$(SILENT)$(AR) crs $@ $^
 
@@ -201,6 +243,11 @@ $(BUILD_DIR)/dgl/pugl.mm.o: src/pugl.mm
 	@echo "Compiling $<"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) -c -ObjC++ -o $@
 
+$(BUILD_DIR)/dgl/WebViewWin32.cpp.o: src/WebViewWin32.cpp
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $<"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -std=gnu++17 -c -o $@
+
 # ---------------------------------------------------------------------------------------------------------------------
 
 $(BUILD_DIR)/dgl/%.cpp.cairo.o: src/%.cpp
@@ -212,6 +259,30 @@ $(BUILD_DIR)/dgl/%.mm.cairo.o: src/%.mm
 	-@mkdir -p $(BUILD_DIR)/dgl
 	@echo "Compiling $< (Cairo variant)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(CAIRO_FLAGS) -DDGL_CAIRO -c -ObjC++ -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+$(BUILD_DIR)/dgl/%.cpp.gles2.o: src/%.cpp
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $< (GLESv2 variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -c -o $@
+
+$(BUILD_DIR)/dgl/%.mm.gles2.o: src/%.mm
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $< (GLESv2 variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2 -c -ObjC++ -o $@
+
+# ---------------------------------------------------------------------------------------------------------------------
+
+$(BUILD_DIR)/dgl/%.cpp.gles3.o: src/%.cpp
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $< (GLESv3 variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -c -o $@
+
+$(BUILD_DIR)/dgl/%.mm.gles3.o: src/%.mm
+	-@mkdir -p $(BUILD_DIR)/dgl
+	@echo "Compiling $< (GLESv3 variant)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) $(PUGL_EXTRA_FLAGS) $(OPENGL_FLAGS) -DDGL_OPENGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3 -c -ObjC++ -o $@
 
 # ---------------------------------------------------------------------------------------------------------------------
 
@@ -261,6 +332,8 @@ debug:
 
 -include $(OBJS_common:%.o=%.d)
 -include $(OBJS_cairo:%.o=%.d)
+-include $(OBJS_gles2:%.o=%.d)
+-include $(OBJS_gles3:%.o=%.d)
 -include $(OBJS_opengl:%.o=%.d)
 -include $(OBJS_opengl3:%.o=%.d)
 -include $(OBJS_stub:%.o=%.d)

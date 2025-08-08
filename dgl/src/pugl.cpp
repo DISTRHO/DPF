@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -110,14 +110,24 @@
 # endif
 #endif
 
-#ifndef DGL_FILE_BROWSER_DISABLED
+#ifdef DGL_USE_FILE_BROWSER
+# define DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED
 # define FILE_BROWSER_DIALOG_DGL_NAMESPACE
 # define FILE_BROWSER_DIALOG_NAMESPACE DGL_NAMESPACE
-# define DGL_FILE_BROWSER_DIALOG_HPP_INCLUDED
 START_NAMESPACE_DGL
 # include "../../distrho/extra/FileBrowserDialogImpl.hpp"
 END_NAMESPACE_DGL
 # include "../../distrho/extra/FileBrowserDialogImpl.cpp"
+#endif
+
+#ifdef DGL_USE_WEB_VIEW
+# define DGL_WEB_VIEW_HPP_INCLUDED
+# define WEB_VIEW_NAMESPACE DGL_NAMESPACE
+# define WEB_VIEW_DGL_NAMESPACE
+START_NAMESPACE_DGL
+# include "../../distrho/extra/WebViewImpl.hpp"
+END_NAMESPACE_DGL
+# include "../../distrho/extra/WebViewImpl.cpp"
 #endif
 
 #if defined(DGL_USING_X11) && defined(DGL_X11_WINDOW_ICON_NAME)
@@ -363,8 +373,8 @@ PuglStatus puglSetSizeAndDefault(PuglView* view, uint width, uint height)
 
 #ifdef DGL_USING_X11
     // workaround issues in fluxbox, see https://github.com/lv2/pugl/issues/118
-    // NOTE troublesome if used under wayland
-    if (view->impl->win && !view->parent && !view->transientParent && std::getenv("WAYLAND_DISPLAY") == nullptr)
+    // NOTE troublesome if used under KDE
+    if (view->impl->win && !view->parent && !view->transientParent && std::getenv("KDE_SESSION_VERSION") == nullptr)
     {
         view->sizeHints[PUGL_DEFAULT_SIZE].width = view->sizeHints[PUGL_DEFAULT_SIZE].height = 0;
     }

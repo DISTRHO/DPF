@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -36,7 +36,13 @@
 # define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT 0
 # include "src/DistrhoUIDSSI.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_LV2)
-# define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# if defined(DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT)
+#  if ! DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+#   warning Using single/monolithic LV2 target while DISTRHO_PLUGIN_WANT_DIRECT_ACCESS is 0
+#  endif
+# else
+#  define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT DISTRHO_PLUGIN_WANT_DIRECT_ACCESS
+# endif
 # include "src/DistrhoUILV2.cpp"
 #elif defined(DISTRHO_PLUGIN_TARGET_VST2)
 # define DISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT 1
@@ -66,7 +72,7 @@
 # endif
 #endif
 
-#if defined(DPF_USING_LD_LINUX_WEBVIEW) && !DISTRHO_IS_STANDALONE
+#if defined(DISTRHO_UI_LINUX_WEBVIEW_START) && !DISTRHO_IS_STANDALONE
 int main(int argc, char* argv[])
 {
     return DISTRHO_NAMESPACE::dpf_webview_start(argc, argv);

@@ -100,6 +100,11 @@ struct Color {
     Color invert() const noexcept;
 
    /**
+      Create a new color based on this one but in grayscale (using weighted average).
+    */
+    Color asGrayscale() const noexcept;
+
+   /**
       Create a color specified by hue, saturation and lightness.
       Values must in [0..1] range.
     */

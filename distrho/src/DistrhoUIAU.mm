@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -125,6 +125,7 @@ public:
 
         CFRunLoopAddTimer(CFRunLoopGetCurrent(), fTimerRef, kCFRunLoopCommonModes);
 
+        // setup property listeners
         AudioUnitAddPropertyListener(fComponent, kAudioUnitProperty_SampleRate, auPropertyChangedCallback, this);
         AudioUnitAddPropertyListener(fComponent, 'DPFp', auPropertyChangedCallback, this);
        #if DISTRHO_PLUGIN_WANT_PROGRAMS
@@ -322,15 +323,22 @@ private:
    #if DISTRHO_PLUGIN_WANT_STATE
     void setState(const char* const key, const char* const value)
     {
-        const std::vector<String>::iterator it = std::find(fStateKeys.begin(), fStateKeys.end(), key);
-        DISTRHO_SAFE_ASSERT_RETURN(it != fStateKeys.end(),);
+        CFStringRef keyRef = CFStringCreateWithCString(nullptr, key, kCFStringEncodingASCII);
+        CFStringRef valueRef = CFStringCreateWithCString(nullptr, value, kCFStringEncodingUTF8);
 
-        if (const CFStringRef valueRef = CFStringCreateWithCString(nullptr, value, kCFStringEncodingUTF8))
+        if (const CFDictionaryRef dictRef = CFDictionaryCreate(nullptr,
+                                                               reinterpret_cast<const void**>(&keyRef),
+                                                               reinterpret_cast<const void**>(&valueRef),
+                                                               1,
+                                                               &kCFTypeDictionaryKeyCallBacks,
+                                                               &kCFTypeDictionaryValueCallBacks))
         {
-            const uint32_t index = it - fStateKeys.begin();
-            AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, index, &valueRef, sizeof(CFStringRef));
-            CFRelease(valueRef);
+            AudioUnitSetProperty(fComponent, 'DPFs', kAudioUnitScope_Global, 0, &dictRef, sizeof(dictRef));
+            CFRelease(dictRef);
         }
+
+        CFRelease(keyRef);
+        CFRelease(valueRef);
     }
 
     static void setStateCallback(void* const ptr, const char* const key, const char* const value)

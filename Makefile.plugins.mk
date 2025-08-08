@@ -9,8 +9,8 @@
 # extra useful variables to define before including this file:
 # - DPF_BUILD_DIR: where to place temporary build files
 # - DPF_TARGET_DIR: where to place final binary files
-# - UI_TYPE: one of cairo, opengl, opengl3 or external, with opengl being default
-#            ("generic" is also allowed if only using image widgets)
+# - UI_TYPE: one of cairo, gles2, gles3, opengl, opengl3 or external, with opengl being default
+#            ("generic" is also allowed if only using basic DPF classes like image widgets)
 
 # override the "all" target after including this file to define which plugin formats to build, like so:
 # all: au clap jack lv2_sep vst2 vst3
@@ -55,6 +55,10 @@ ifeq ($(UI_TYPE),)
 else ifeq ($(UI_TYPE),cairo)
 else ifeq ($(UI_TYPE),external)
 else ifeq ($(UI_TYPE),generic)
+else ifeq ($(UI_TYPE),gles2)
+USE_GLES2 = true
+else ifeq ($(UI_TYPE),gles3)
+USE_GLES3 = true
 else ifeq ($(UI_TYPE),opengl)
 else ifeq ($(UI_TYPE),opengl3)
 USE_OPENGL3 = true
@@ -227,6 +231,30 @@ HAVE_DGL   = false
 endif
 endif
 
+ifeq ($(UI_TYPE),gles2)
+ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES2
+DGL_FLAGS += $(OPENGL_FLAGS)
+DGL_LIBS  += $(OPENGL_LIBS)
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-gles2.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
+ifeq ($(UI_TYPE),gles3)
+ifeq ($(HAVE_OPENGL),true)
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3 -DDGL_USE_GLES -DDGL_USE_GLES3
+DGL_FLAGS += $(OPENGL_FLAGS)
+DGL_LIBS  += $(OPENGL_LIBS)
+DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-gles3.a
+HAVE_DGL   = true
+else
+HAVE_DGL   = false
+endif
+endif
+
 ifeq ($(UI_TYPE),opengl)
 ifeq ($(HAVE_OPENGL),true)
 DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL
@@ -241,7 +269,7 @@ endif
 
 ifeq ($(UI_TYPE),opengl3)
 ifeq ($(HAVE_OPENGL),true)
-DGL_FLAGS += -DDGL_OPENGL -DDGL_USE_OPENGL3 -DHAVE_DGL
+DGL_FLAGS += -DDGL_OPENGL -DHAVE_DGL -DDGL_USE_OPENGL3
 DGL_FLAGS += $(OPENGL_FLAGS)
 DGL_LIBS  += $(OPENGL_LIBS)
 DGL_LIB    = $(DGL_BUILD_DIR)/libdgl-opengl3.a
@@ -287,7 +315,7 @@ HAVE_DGL   = false
 endif
 endif
 
-ifeq ($(HAVE_DGL)$(LINUX)$(USE_WEB_VIEW),truetruetrue)
+ifeq ($(HAVE_DGL)$(LINUX)$(UI_TYPE),truetruewebview)
 DGL_LIB_SHARED = $(shell $(CC) -print-file-name=Scrt1.o)
 endif
 
@@ -500,6 +528,12 @@ DGL_POSSIBLE_DEPS = \
 $(DGL_BUILD_DIR)/libdgl-cairo.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl cairo
 
+$(DGL_BUILD_DIR)/libdgl-gles2.a: $(DGL_POSSIBLE_DEPS)
+	$(MAKE) -C $(DPF_PATH)/dgl gles2
+
+$(DGL_BUILD_DIR)/libdgl-gles3.a: $(DGL_POSSIBLE_DEPS)
+	$(MAKE) -C $(DPF_PATH)/dgl gles3
+
 $(DGL_BUILD_DIR)/libdgl-opengl.a: $(DGL_POSSIBLE_DEPS)
 	$(MAKE) -C $(DPF_PATH)/dgl opengl
 
@@ -514,10 +548,20 @@ $(DGL_BUILD_DIR)/libdgl-vulkan.a: $(DGL_POSSIBLE_DEPS)
 
 # ---------------------------------------------------------------------------------------------------------------------
 
+$(BUILD_DIR)/DistrhoPluginMain_%_single_obj.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_DSP_DEPENDENCIES)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoPluginMain.cpp ($*)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -DDISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT=1 -c -o $@
+
 $(BUILD_DIR)/DistrhoPluginMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoPluginMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_DSP_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
 	@echo "Compiling DistrhoPluginMain.cpp ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -c -o $@
+
+$(BUILD_DIR)/DistrhoUIMain_%_single_obj.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
+	-@mkdir -p $(BUILD_DIR)
+	@echo "Compiling DistrhoUIMain.cpp ($*)"
+	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -DDISTRHO_PLUGIN_TARGET_$* -DDISTRHO_PLUGIN_AND_UI_IN_SINGLE_OBJECT=1 -c -o $@
 
 $(BUILD_DIR)/DistrhoUIMain_%.cpp.o: $(DPF_PATH)/distrho/DistrhoUIMain.cpp $(EXTRA_DEPENDENCIES) $(EXTRA_UI_DEPENDENCIES)
 	-@mkdir -p $(BUILD_DIR)
@@ -534,9 +578,9 @@ $(BUILD_DIR)/DistrhoUI_win32.cpp.o: $(DPF_PATH)/distrho/DistrhoUI_win32.cpp $(EX
 	@echo "Compiling DistrhoUI_win32.cpp ($*)"
 	$(SILENT)$(CXX) $< $(BUILD_CXX_FLAGS) -std=gnu++17 -c -o $@
 
-$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: BUILD_CXX_FLAGS += $(JACK_FLAGS)
-
 $(BUILD_DIR)/DistrhoPluginMain_AU.cpp.o: BUILD_CXX_FLAGS += -ObjC++
+
+$(BUILD_DIR)/DistrhoPluginMain_JACK.cpp.o: BUILD_CXX_FLAGS += $(JACK_FLAGS)
 
 $(BUILD_DIR)/DistrhoUIMain_AU.cpp.o: BUILD_CXX_FLAGS += -ObjC++
 
@@ -591,7 +635,7 @@ lv2_dsp: $(lv2_dsp)
 lv2_sep: $(lv2_dsp) $(lv2_ui)
 
 ifeq ($(HAVE_DGL),true)
-$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
+$(lv2): $(OBJS_DSP) $(OBJS_UI) $(BUILD_DIR)/DistrhoPluginMain_LV2_single_obj.cpp.o $(BUILD_DIR)/DistrhoUIMain_LV2_single_obj.cpp.o $(DGL_LIB) $(DGL_LIB_SHARED)
 else
 $(lv2): $(OBJS_DSP) $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.o
 endif
@@ -845,6 +889,7 @@ endif
 -include $(BUILD_DIR)/DistrhoPluginMain_LADSPA.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_LV2.cpp.d
+-include $(BUILD_DIR)/DistrhoPluginMain_LV2_single_obj.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoPluginMain_CLAP.cpp.d
@@ -856,6 +901,7 @@ endif
 -include $(BUILD_DIR)/DistrhoUIMain_JACK.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_DSSI.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_LV2.cpp.d
+-include $(BUILD_DIR)/DistrhoUIMain_LV2_single_obj.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST2.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_VST3.cpp.d
 -include $(BUILD_DIR)/DistrhoUIMain_CLAP.cpp.d

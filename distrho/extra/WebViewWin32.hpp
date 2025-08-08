@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -26,24 +26,41 @@ START_NAMESPACE_DISTRHO
 
 class WebView;
 
-WebView* webview_choc_create(const WebViewOptions& opts);
+END_NAMESPACE_DISTRHO
+
+#ifdef WEB_VIEW_DGL_NAMESPACE
+START_NAMESPACE_DGL
+using DISTRHO_NAMESPACE::WebView;
+#else
+START_NAMESPACE_DISTRHO
+#endif
+
+WebView* webview_choc_create(const WEB_VIEW_NAMESPACE::WebViewOptions& opts);
 void webview_choc_destroy(WebView*);
 void* webview_choc_handle(WebView*);
 void webview_choc_eval(WebView*, const char* js);
 void webview_choc_navigate(WebView*, const char* url);
 
+#ifdef WEB_VIEW_DGL_NAMESPACE
+END_NAMESPACE_DGL
+#else
 END_NAMESPACE_DISTRHO
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
 #ifdef DISTRHO_WEB_VIEW_INCLUDE_IMPLEMENTATION
 
-# define WC_ERR_INVALID_CHARS 0
+# define WC_ERR_INVALID_CHARS 0x80
 # include "choc/choc_WebView.h"
 
+#ifdef WEB_VIEW_DGL_NAMESPACE
+START_NAMESPACE_DGL
+#else
 START_NAMESPACE_DISTRHO
+#endif
 
-WebView* webview_choc_create(const WebViewOptions& opts)
+WebView* webview_choc_create(const WEB_VIEW_NAMESPACE::WebViewOptions& opts)
 {
     WebView::Options wopts;
     wopts.acceptsFirstMouseClick = true;
@@ -52,7 +69,7 @@ WebView* webview_choc_create(const WebViewOptions& opts)
     std::unique_ptr<WebView> webview = std::make_unique<WebView>(wopts);
     DISTRHO_SAFE_ASSERT_RETURN(webview->loadedOK(), nullptr);
 
-    if (const WebViewMessageCallback callback = opts.callback)
+    if (const WEB_VIEW_NAMESPACE::WebViewMessageCallback callback = opts.callback)
     {
         webview->addInitScript("function postMessage(m){window.chrome.webview.postMessage(m);}");
 
@@ -94,7 +111,11 @@ void webview_choc_navigate(WebView* const webview, const char* const url)
     webview->navigate(url);
 }
 
+#ifdef WEB_VIEW_DGL_NAMESPACE
+END_NAMESPACE_DGL
+#else
 END_NAMESPACE_DISTRHO
+#endif
 
 #endif // DISTRHO_WEB_VIEW_INCLUDE_IMPLEMENTATION
 

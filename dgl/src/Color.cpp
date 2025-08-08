@@ -172,6 +172,14 @@ Color Color::invert() const noexcept
     return color;
 }
 
+Color Color::asGrayscale() const noexcept
+{
+    Color color(*this);
+    // values taken from https://goodcalculators.com/rgb-to-grayscale-conversion-calculator/
+    color.red = color.green = color.blue = 0.299f * color.red + 0.587f * color.green + 0.114f * color.blue;
+    return color;
+}
+
 Color Color::fromHSL(float hue, float saturation, float lightness, float alpha)
 {
     float m1, m2;

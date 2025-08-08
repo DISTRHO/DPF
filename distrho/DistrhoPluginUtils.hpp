@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2024 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -39,12 +39,35 @@ const char* getBinaryFilename();
 
 /**
    Get a string representation of the current plugin format we are building against.@n
-   This can be "JACK/Standalone", "LADSPA", "DSSI", "LV2", "VST2" or "VST3".@n
+   This can be "AudioUnit", "JACK/Standalone", "LADSPA", "DSSI", "LV2", "VST2", "VST3" or "CLAP".@n
    This string is purely informational and must not be used to tweak plugin behaviour.
 
    @note DO NOT CHANGE PLUGIN BEHAVIOUR BASED ON PLUGIN FORMAT.
 */
 const char* getPluginFormatName() noexcept;
+
+/**
+   List of supported OS-specific directories to be used for getSpecialDir.
+*/
+enum SpecialDir {
+    /** The user "home" directory */
+    kSpecialDirHome,
+    /** Directory intended to store persistent configuration data (in general) */
+    kSpecialDirConfig,
+    /** Directory intended to store persistent configuration data for the current plugin */
+    kSpecialDirConfigForPlugin,
+    /** Directory intended to store "documents" (in general) */
+    kSpecialDirDocuments,
+    /** Directory intended to store "documents" for the current plugin */
+    kSpecialDirDocumentsForPlugin,
+};
+
+/**
+   Get an OS-specific directory.@n
+   Calling this function will ensure the dictory exists on the filesystem.@n
+   The returned path always includes a final OS separator.
+*/
+const char* getSpecialDir(SpecialDir dir);
 
 /**
    Get the path to where resources are stored within the plugin bundle.@n
@@ -62,7 +85,13 @@ const char* getPluginFormatName() noexcept;
    The other non-mentioned formats do not support bundles.@n
 
    @note For CLAP and VST2 on non-macOS systems, this assumes you have your plugin inside a dedicated directory
-         rather than only shipping with the binary (e.g. <myplugin.vst>/myplugin.dll)
+         rather than only shipping with the binary, like so:
+         @code
+         + myplugin.vst/
+           - myplugin.dll
+           + resources/
+             - image1.png
+        @endcode
 */
 const char* getResourcePath(const char* bundlePath) noexcept;
 

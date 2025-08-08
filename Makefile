@@ -12,6 +12,7 @@ all: dgl examples gen
 
 # needed for some example plugins
 export USE_FILE_BROWSER = true
+export USE_WEB_VIEW = true
 
 ifneq ($(CROSS_COMPILING),true)
 CAN_GENERATE_TTL = true
