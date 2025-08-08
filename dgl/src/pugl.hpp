@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2023 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -121,8 +121,8 @@ void puglWin32ShowCentered(PuglView* view);
 // X11 specific, update world without triggering exposure events
 PuglStatus puglX11UpdateWithoutExposures(PuglWorld* world);
 
-// X11 specific, set dialog window type and pid hints
-void puglX11SetWindowTypeAndPID(const PuglView* view, bool isStandalone);
+// X11 specific, set dialog window type
+void puglX11SetWindowType(const PuglView* view, bool isStandalone);
 
 #endif
 

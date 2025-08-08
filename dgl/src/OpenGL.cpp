@@ -1087,9 +1087,9 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
         gl3context.pos = glGetAttribLocation(program, "pos");
     }
 
-    const PuglRect rect = puglGetFrame(view);
-    gl3context.w = static_cast<uint>(rect.width + 0.5);
-    gl3context.h = static_cast<uint>(rect.height + 0.5);
+    const PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
+    gl3context.w = size.width;
+    gl3context.h = size.height;
 
     glUseProgram(gl3context.prog);
    #endif
