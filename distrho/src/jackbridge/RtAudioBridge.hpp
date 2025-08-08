@@ -33,7 +33,7 @@
 # define RTAUDIO_API_TYPE WINDOWS_WASAPI
 # define RTMIDI_API_TYPE WINDOWS_MM
 #else
-# if defined(HAVE_PULSEAUDIO)
+# if defined(HAVE_PULSEAUDIO) && !defined(DPF_JACK_STANDALONE_SKIP_PULSEAUDIO_FALLBACK)
 #  define __LINUX_PULSE__
 #  define RTAUDIO_API_TYPE LINUX_PULSE
 # elif defined(HAVE_ALSA)
@@ -391,6 +391,28 @@ struct RtAudioBridge : NativeBridge {
 
         const ScopedDenormalDisable sdd;
         self->jackProcessCallback(numFrames, self->jackProcessArg);
+
+       #if DISTRHO_PLUGIN_WANT_MIDI_OUTPUT
+        if (self->midiOutBuffer.isDataAvailableForReading())
+        {
+            static_assert(kMaxMIDIInputMessageSize + 1u == 4, "change code if bumping this value");
+            uint8_t data[4] = {};
+
+            while (self->midiOutBuffer.isDataAvailableForReading() &&
+                    self->midiOutBuffer.readCustomData(data, ARRAY_SIZE(data)))
+            {
+                // offset not used in RtMidiOut
+                self->midiOutBuffer.readUInt();
+
+                for (std::vector<RtMidiOut>::iterator it = self->midiOuts.begin(), end = self->midiOuts.end(); it != end; ++it)
+                {
+                    static_cast<RtMidiOut&>(*it).sendMessage(data + 1, data[0]);
+                }
+            }
+
+            self->midiOutBuffer.flush();
+        }
+       #endif
 
         return 0;
     }

@@ -951,7 +951,7 @@ jack_client_t* jackbridge_client_open(const char* client_name, uint32_t options,
         return kValidClient;
     delete nativeBridge;
    #endif
-    
+
    #if defined(HAVE_RTAUDIO) && defined(RTAUDIO_API_TYPE)
     nativeBridge = new RtAudioBridge;
     if (nativeBridge->open(client_name))

@@ -494,7 +494,7 @@ struct WebBridge : NativeBridge {
                     }, offset, bytes[0], bytes[1], bytes[2], bytes[3], timestamp);
                 }
 
-                self->midiOutBuffer.clearData();
+                self->midiOutBuffer.flush();
             }
            #endif
         }
