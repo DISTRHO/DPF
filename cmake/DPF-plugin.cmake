@@ -104,6 +104,12 @@ include(CMakeParseArguments)
 #   `NO_SHARED_RESOURCES`
 #       do not build DPF shared resources (fonts, etc)
 #
+#   `FORCE_NATIVE_AUDIO_FALLBACK`
+#       force the JACK/Standalone format to use native audio fallback instead of JACK
+#
+#   `SKIP_NATIVE_AUDIO_FALLBACK`
+#       force the JACK/Standalone format to always use JACK, skipping native audio fallback
+#
 #   `USE_FILE_BROWSER`
 #       enable file browser dialog APIs
 #
@@ -111,7 +117,7 @@ include(CMakeParseArguments)
 #       enable web browser view APIs
 #
 function(dpf_add_plugin NAME)
-  set(options MONOLITHIC NO_SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
+  set(options MONOLITHIC NO_SHARED_RESOURCES FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK USE_FILE_BROWSER USE_WEB_VIEW)
   set(oneValueArgs MODGUI_CLASS_NAME UI_TYPE)
   set(multiValueArgs FILES_COMMON FILES_DSP FILES_UI TARGETS)
   cmake_parse_arguments(_dpf_plugin "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
@@ -231,7 +237,7 @@ function(dpf_add_plugin NAME)
   ###
   foreach(_target ${_dpf_plugin_TARGETS})
     if(_target STREQUAL "jack")
-      dpf__build_jack("${NAME}" "${_dgl_has_ui}")
+      dpf__build_jack("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_FORCE_NATIVE_AUDIO_FALLBACK}" "${_dpf_plugin_SKIP_NATIVE_AUDIO_FALLBACK}")
     elseif(_target STREQUAL "ladspa")
       dpf__build_ladspa("${NAME}")
     elseif(_target STREQUAL "dssi")
@@ -387,7 +393,7 @@ endfunction()
 #
 # Add build rules for a JACK/Standalone program.
 #
-function(dpf__build_jack NAME HAS_UI)
+function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
@@ -398,8 +404,14 @@ function(dpf__build_jack NAME HAS_UI)
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
 
-  target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
-  target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
+  if(NOT FORCE_NATIVE_AUDIO_FALLBACK)
+    target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
+    target_compile_definitions("${NAME}-jack" PRIVATE "HAVE_GETTIMEOFDAY")
+  endif()
+
+  if(SKIP_NATIVE_AUDIO_FALLBACK)
+    return()
+  endif()
 
   find_package(PkgConfig QUIET)
   if(PKG_CONFIG_FOUND)
