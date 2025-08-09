@@ -25,6 +25,8 @@
 # USE_NANOVG_FBO=false
 # USE_NANOVG_FREETYPE=false
 # USE_FILE_BROWSER=true
+# USE_GLES2=false
+# USE_GLES3=false
 # USE_WEB_VIEW=false
 
 # STATIC_BUILD=true
@@ -465,7 +467,7 @@ endif
 else ifeq ($(WASM),true)
 
 # wasm builds cannot work using regular desktop OpenGL
-ifeq (,$(USE_GLES2)$(USE_GLES3))
+ifeq (,$(findstring true,$(USE_GLES2)$(USE_GLES3)))
 USE_GLES2 = true
 endif
 
@@ -538,14 +540,14 @@ else ifeq ($(MACOS),true)
 OPENGL_FLAGS = -DGL_SILENCE_DEPRECATION=1 -Wno-deprecated-declarations
 OPENGL_LIBS  = -framework OpenGL
 else ifeq ($(WASM),true)
-ifeq ($(USE_GLES2),true)
-OPENGL_LIBS  = -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
+OPENGL_FLAGS =
+ifeq ($(USE_GLES3),true)
+OPENGL_LIBS  = -sMIN_WEBGL_VERSION=3 -sMAX_WEBGL_VERSION=3
 else
-ifneq ($(USE_GLES3),true)
-OPENGL_LIBS  =  -sLEGACY_GL_EMULATION -sGL_UNSAFE_OPTS=0
-endif
+OPENGL_LIBS  = -sMIN_WEBGL_VERSION=2 -sMAX_WEBGL_VERSION=2
 endif
 else ifeq ($(WINDOWS),true)
+OPENGL_FLAGS =
 OPENGL_LIBS  = -lopengl32
 else
 OPENGL_FLAGS = $(shell $(PKG_CONFIG) --cflags gl x11)
@@ -575,7 +577,7 @@ DGL_FLAGS   += -DHAVE_VULKAN
 VULKAN_FLAGS  = $(shell $(PKG_CONFIG) --cflags vulkan)
 VULKAN_LIBS   = $(shell $(PKG_CONFIG) --libs vulkan)
 
-ifneq ($(WINDOWS),true)
+ifneq ($(HAIKU_OR_MACOS_OR_WASM_OR_WINDOWS),true)
 VULKAN_LIBS  += -ldl
 endif
 

@@ -406,12 +406,14 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
     DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
 
     const ImageFormat imageFormat = image.getFormat();
-    GLint intformat = GL_RGBA;
+    GLint intformat;
 
-   #ifdef DGL_USE_GLES2
-    // GLESv2 does not support BGR
+   #ifdef DGL_USE_GLES
+    // GLES does not support BGR
     DISTRHO_SAFE_ASSERT_RETURN(imageFormat != kImageFormatBGR && imageFormat != kImageFormatBGRA,);
    #endif
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
     switch (imageFormat)
     {
@@ -420,27 +422,28 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
         intformat = GL_RGB;
         break;
     case kImageFormatGrayscale:
-       #if defined(DGL_USE_GLES)
-        intformat = GL_R8;
-       #elif defined(DGL_USE_OPENGL3)
-        intformat = GL_RED;
-       #else
+       #ifdef DGL_USE_GLES2
         intformat = GL_LUMINANCE;
+       #else
+        intformat = GL_RED;
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
        #endif
         break;
     default:
+        intformat = GL_RGBA;
         break;
     }
-
-    glBindTexture(GL_TEXTURE_2D, textureId);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
+   #ifndef DGL_USE_GLES
     static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
     glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+   #endif
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -572,8 +575,10 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
 
+       #ifndef DGL_USE_GLES
         static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
         glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+       #endif
 
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -740,8 +745,14 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
                 "uniform vec4 color;"
                 "uniform sampler2D stex;"
                 "uniform bool texok;"
+               #ifdef DGL_USE_GLES3
+                "in vec2 vtex;"
+                "out vec4 FragColor;"
+                "void main() { FragColor = texok ? texture2D(stex, vtex) : color; }";
+               #else
                 "varying vec2 vtex;"
                 "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
+               #endif
 
             glShaderSource(fragment, 1, &src, nullptr);
             glCompileShader(fragment);
@@ -752,9 +763,15 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 
         {
             static constexpr const char* const src = DGL_SHADER_HEADER
+               #ifdef DGL_USE_GLES3
+                "in vec4 pos;"
+                "in vec2 tex;"
+                "out vec2 vtex;"
+               #else
                 "attribute vec4 pos;"
                 "attribute vec2 tex;"
                 "varying vec2 vtex;"
+               #endif
                 "void main() { gl_Position = pos; vtex = tex; }";
 
             glShaderSource(vertex, 1, &src, nullptr);

@@ -31,16 +31,18 @@ ImageFormat asDISTRHOImageFormat(const GLenum format)
 {
     switch (format)
     {
-   #if defined(DGL_USE_OPENGL3)
+   #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
     case GL_RED:
    #else
     case GL_LUMINANCE:
    #endif
         return kImageFormatGrayscale;
+   #ifndef DGL_USE_GLES
     case GL_BGR:
         return kImageFormatBGR;
     case GL_BGRA:
         return kImageFormatBGRA;
+   #endif
     case GL_RGB:
         return kImageFormatRGB;
     case GL_RGBA:
@@ -58,22 +60,30 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
-       #if defined(DGL_USE_OPENGL3)
+       #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
         return GL_RED;
        #else
         return GL_LUMINANCE;
        #endif
     case kImageFormatBGR:
+       #ifndef DGL_USE_GLES
         return GL_BGR;
+       #else
+        return 0;
+       #endif
     case kImageFormatBGRA:
+       #ifndef DGL_USE_GLES
         return GL_BGRA;
+       #else
+        return 0;
+       #endif
     case kImageFormatRGB:
         return GL_RGB;
     case kImageFormatRGBA:
         return GL_RGBA;
     }
 
-    return 0x0;
+    return 0;
 }
 
 // --------------------------------------------------------------------------------------------------------------------
