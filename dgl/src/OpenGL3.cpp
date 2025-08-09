@@ -59,6 +59,33 @@ START_NAMESPACE_DGL
 #endif
 
 // --------------------------------------------------------------------------------------------------------------------
+// Load OpenGL3 symbols on Windows
+
+#if defined(DISTRHO_OS_WINDOWS)
+# include <windows.h>
+# define DGL_EXT(PROC, func) static PROC func;
+DGL_EXT(PFNGLACTIVETEXTUREPROC,            glActiveTexture)
+DGL_EXT(PFNGLATTACHSHADERPROC,             glAttachShader)
+DGL_EXT(PFNGLCOMPILESHADERPROC,            glCompileShader)
+DGL_EXT(PFNGLCREATEPROGRAMPROC,            glCreateProgram)
+DGL_EXT(PFNGLCREATESHADERPROC,             glCreateShader)
+DGL_EXT(PFNGLDISABLEVERTEXATTRIBARRAYPROC, glDisableVertexAttribArray)
+DGL_EXT(PFNGLENABLEVERTEXATTRIBARRAYPROC,  glEnableVertexAttribArray)
+DGL_EXT(PFNGLGETATTRIBLOCATIONPROC,        glGetAttribLocation)
+DGL_EXT(PFNGLGETPROGRAMIVPROC,             glGetProgramiv)
+DGL_EXT(PFNGLGETSHADERIVPROC,              glGetShaderiv)
+DGL_EXT(PFNGLGETSHADERINFOLOGPROC,         glGetShaderInfoLog)
+DGL_EXT(PFNGLGETUNIFORMLOCATIONPROC,       glGetUniformLocation)
+DGL_EXT(PFNGLLINKPROGRAMPROC,              glLinkProgram)
+DGL_EXT(PFNGLSHADERSOURCEPROC,             glShaderSource)
+DGL_EXT(PFNGLUNIFORM1IPROC,                glUniform1i)
+DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
+DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
+DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+# undef DGL_EXT
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
 
 struct OpenGL3GraphicsContext : GraphicsContext
 {
@@ -639,13 +666,51 @@ static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& 
 
 const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 {
-    GraphicsContext& context = reinterpret_cast<GraphicsContext&>(graphicsContext);
+    const OpenGL3GraphicsContext& gl3context = reinterpret_cast<const OpenGL3GraphicsContext&>(graphicsContext);
 
-    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+#if defined(DISTRHO_OS_WINDOWS)
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wcast-function-type"
+# endif
+    static bool needsInit = true;
+# define DGL_EXT(PROC, func) \
+      if (needsInit) func = (PROC) wglGetProcAddress ( #func ); \
+      DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, contextCreationFail(gl3context));
+# define DGL_EXT2(PROC, func, fallback) \
+      if (needsInit) { \
+        func = (PROC) wglGetProcAddress ( #func ); \
+        if (func == nullptr) func = (PROC) wglGetProcAddress ( #fallback ); \
+      } DISTRHO_SAFE_ASSERT_RETURN(func != nullptr, contextCreationFail(gl3context));
+DGL_EXT(PFNGLACTIVETEXTUREPROC,            glActiveTexture)
+DGL_EXT(PFNGLATTACHSHADERPROC,             glAttachShader)
+DGL_EXT(PFNGLCOMPILESHADERPROC,            glCompileShader)
+DGL_EXT(PFNGLCREATEPROGRAMPROC,            glCreateProgram)
+DGL_EXT(PFNGLCREATESHADERPROC,             glCreateShader)
+DGL_EXT(PFNGLDISABLEVERTEXATTRIBARRAYPROC, glDisableVertexAttribArray)
+DGL_EXT(PFNGLENABLEVERTEXATTRIBARRAYPROC,  glEnableVertexAttribArray)
+DGL_EXT(PFNGLGETATTRIBLOCATIONPROC,        glGetAttribLocation)
+DGL_EXT(PFNGLGETPROGRAMIVPROC,             glGetProgramiv)
+DGL_EXT(PFNGLGETSHADERIVPROC,              glGetShaderiv)
+DGL_EXT(PFNGLGETSHADERINFOLOGPROC,         glGetShaderInfoLog)
+DGL_EXT(PFNGLGETUNIFORMLOCATIONPROC,       glGetUniformLocation)
+DGL_EXT(PFNGLLINKPROGRAMPROC,              glLinkProgram)
+DGL_EXT(PFNGLSHADERSOURCEPROC,             glShaderSource)
+DGL_EXT(PFNGLUNIFORM1IPROC,                glUniform1i)
+DGL_EXT(PFNGLUNIFORM4FVPROC,               glUniform4fv)
+DGL_EXT(PFNGLUSEPROGRAMPROC,               glUseProgram)
+DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
+# undef DGL_EXT
+# undef DGL_EXT2
+    needsInit = false;
+# if defined(__GNUC__) && (__GNUC__ >= 9)
+#  pragma GCC diagnostic pop
+# endif
+#endif
 
     // previous context creation failed
     if (gl3context.prog == -1)
-        return context;
+        return gl3context;
 
     // create new context
     if (gl3context.prog == 0)
@@ -719,7 +784,7 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 
     glUseProgram(gl3context.prog);
 
-    return context;
+    return gl3context;
 }
 
 // --------------------------------------------------------------------------------------------------------------------

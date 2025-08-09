@@ -816,7 +816,7 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 #if NANOVG_GLES2
 		// GLES2 cannot handle GL_BGR, do local conversion to GL_RGB
 		tex->data = (uint8_t*)malloc(sizeof(uint8_t) * 3 * w * h);
-		for (uint32_t i=0; i<w*h; ++i)
+		for (int i = 0; i < w * h; ++i)
 		{
 			tex->data[i*3+0] = data[i*3+2];
 			tex->data[i*3+1] = data[i*3+1];
@@ -832,7 +832,7 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 #if NANOVG_GLES2
 		// GLES2 cannot handle GL_BGRA, do local conversion to GL_RGBA
 		tex->data = (uint8_t*)malloc(sizeof(uint8_t) * 4 * w * h);
-		for (uint32_t i=0; i<w*h; ++i)
+		for (int i = 0; i < w * h; ++i)
 		{
 			tex->data[i*3+0] = data[i*3+3];
 			tex->data[i*3+1] = data[i*3+2];
