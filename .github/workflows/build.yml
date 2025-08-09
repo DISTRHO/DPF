@@ -118,32 +118,32 @@ jobs:
         CXXFLAGS: -Werror
       run: |
         make clean >/dev/null
-        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=generic
+        env UI_TYPE=generic make -j ${{ env.JOBS }} -C examples/Parameters jack
     - name: With UI_TYPE=gles2
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror
       run: |
         make clean >/dev/null
-        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=gles2
+        env UI_TYPE=gles2 make -j ${{ env.JOBS }} -C examples/Parameters jack
     - name: With UI_TYPE=gles3
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror
       run: |
         make clean >/dev/null
-        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=gles3
+        env UI_TYPE=gles3 make -j ${{ env.JOBS }} -C examples/Parameters jack
     - name: With UI_TYPE=opengl
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror
       run: |
         make clean >/dev/null
-        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=opengl
+        env UI_TYPE=opengl make -j ${{ env.JOBS }} -C examples/Parameters jack
     - name: With UI_TYPE=opengl3
       env:
         CFLAGS: -Werror
         CXXFLAGS: -Werror
       run: |
         make clean >/dev/null
-        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=opengl3
+        env UI_TYPE=opengl3 make -j ${{ env.JOBS }} -C examples/Parameters jack
