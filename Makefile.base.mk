@@ -20,16 +20,12 @@
 #  Tweak `nvgTextBreakLines` to allow space characters
 #  FIXME proper details
 
-# NVG_FONT_TEXTURE_FLAGS=0
-# FILE_BROWSER_DISABLED=true
-# WINDOWS_ICON_ID=0
-# USE_GLES2=true
-# USE_GLES3=true
-# USE_OPENGL3=true
-# USE_NANOVG_FBO=true
-# USE_NANOVG_FREETYPE=true
+# NVG_FONT_TEXTURE_FLAGS=
+# WINDOWS_ICON_ID=
+# USE_NANOVG_FBO=false
+# USE_NANOVG_FREETYPE=false
 # USE_FILE_BROWSER=true
-# USE_WEB_VIEW=true
+# USE_WEB_VIEW=false
 
 # STATIC_BUILD=true
 #  Tweak build to be able to generate fully static builds (e.g. skip use of libdl)
@@ -486,11 +482,9 @@ endif
 
 else
 
-ifneq ($(FILE_BROWSER_DISABLED),true)
-ifeq ($(HAVE_DBUS),true)
+ifeq ($(USE_FILEBROWSER)$(HAVE_DBUS),truetrue)
 DGL_FLAGS       += $(shell $(PKG_CONFIG) --cflags dbus-1) -DHAVE_DBUS
 DGL_SYSTEM_LIBS += $(shell $(PKG_CONFIG) --libs dbus-1)
-endif
 endif
 
 ifeq ($(HAVE_X11),true)
