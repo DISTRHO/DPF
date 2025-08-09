@@ -31,7 +31,7 @@ ImageFormat asDISTRHOImageFormat(const GLenum format)
 {
     switch (format)
     {
-   #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
+   #if defined(DGL_USE_OPENGL3)
     case GL_RED:
    #else
     case GL_LUMINANCE:
@@ -58,7 +58,7 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
-       #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
+       #if defined(DGL_USE_OPENGL3)
         return GL_RED;
        #else
         return GL_LUMINANCE;

@@ -48,6 +48,15 @@ START_NAMESPACE_DGL
 #if defined(DGL_USE_GLES2) && defined(DGL_USE_GLES3)
 # error Build config error, both GLESv2 and GLESv3 requested at the same time
 #endif
+#if defined(DGL_USE_GLES2) && !defined(DGL_USE_GLES)
+# error Build config error, DGL_USE_GLES2 is defined but DGL_USE_GLES is not
+#endif
+#if defined(DGL_USE_GLES3) && !defined(DGL_USE_GLES)
+# error Build config error, DGL_USE_GLES3 is defined but DGL_USE_GLES is not
+#endif
+#if defined(DGL_USE_GLES) && !(defined(DGL_USE_GLES2) || defined(DGL_USE_GLES3))
+# error Build config error, DGL_USE_GLES is defined which requires either DGL_USE_GLES2 or DGL_USE_GLES3
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 
@@ -384,7 +393,7 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
         intformat = GL_RGB;
         break;
     case kImageFormatGrayscale:
-       #if defined(DGL_USE_GLES3)
+       #if defined(DGL_USE_GLES)
         intformat = GL_R8;
        #elif defined(DGL_USE_OPENGL3)
         intformat = GL_RED;
@@ -422,18 +431,8 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-// static void drawOpenGLImage(const GraphicsContext& context,
-//                             const OpenGLImage& image,
-//                             const Point<int>& pos,
-//                             const GLuint textureId,
-//                             bool& setupCalled)
-// {
-// }
-
 void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
 {
-    // drawOpenGLImage(context, *this, pos, textureId, setupCalled);
-
     if (textureId == 0 || isInvalid())
         return;
 
