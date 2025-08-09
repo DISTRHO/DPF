@@ -1,6 +1,6 @@
 /*
  * DISTRHO Plugin Framework (DPF)
- * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any purpose with
  * or without fee is hereby granted, provided that the above copyright notice and this
@@ -42,11 +42,11 @@ ImageFormat asDISTRHOImageFormat(const GLenum format)
 {
     switch (format)
     {
-#ifdef DGL_USE_OPENGL3
+   #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
     case GL_RED:
-#else
+   #else
     case GL_LUMINANCE:
-#endif
+   #endif
         return kImageFormatGrayscale;
     case GL_BGR:
         return kImageFormatBGR;
@@ -69,11 +69,11 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
     case kImageFormatNull:
         break;
     case kImageFormatGrayscale:
-#ifdef DGL_USE_OPENGL3
+       #if defined(DGL_USE_OPENGL3) && !defined(DGL_USE_GLES2)
         return GL_RED;
-#else
+       #else
         return GL_LUMINANCE;
-#endif
+       #endif
     case kImageFormatBGR:
         return GL_BGR;
     case kImageFormatBGRA:

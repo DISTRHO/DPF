@@ -846,7 +846,7 @@ static int glnvg__renderCreateTexture(void* uptr, int type, int w, int h, int im
 #endif
 		break;
 	case NVG_TEXTURE_RGB:
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		break;
 	case NVG_TEXTURE_RGBA:
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);

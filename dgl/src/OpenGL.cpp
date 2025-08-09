@@ -42,7 +42,7 @@ START_NAMESPACE_DGL
 
 struct OpenGL3GraphicsContext : GraphicsContext
 {
-    mutable int prog, color, pos;
+    mutable int prog, color, pos, tex, texok;
     mutable uint w, h;
 };
 
@@ -525,7 +525,37 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 {
     DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
 
+    const ImageFormat imageFormat = image.getFormat();
+    GLint intformat = GL_RGBA;
+
+   #ifdef DGL_USE_GLES2
+    // GLESv2 does not support BGR
+    DISTRHO_SAFE_ASSERT_RETURN(imageFormat != kImageFormatBGR && imageFormat != kImageFormatBGRA,);
+   #endif
+
+   #ifdef DGL_USE_OPENGL3
+    switch (imageFormat)
+    {
+    case kImageFormatBGR:
+    case kImageFormatRGB:
+        intformat = GL_RGB;
+        break;
+    case kImageFormatGrayscale:
+       #if defined(DGL_USE_GLES3)
+        intformat = GL_R8;
+       #elif defined(DGL_USE_OPENGL3)
+        intformat = GL_RED;
+       #else
+        intformat = GL_LUMINANCE;
+       #endif
+        break;
+    default:
+        break;
+    }
+   #else
     glEnable(GL_TEXTURE_2D);
+   #endif
+
     glBindTexture(GL_TEXTURE_2D, textureId);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -538,14 +568,22 @@ static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 intformat,
                  static_cast<GLsizei>(image.getWidth()),
                  static_cast<GLsizei>(image.getHeight()),
                  0,
-                 asOpenGLImageFormat(image.getFormat()), GL_UNSIGNED_BYTE, image.getRawData());
+                 asOpenGLImageFormat(imageFormat),
+                 GL_UNSIGNED_BYTE,
+                 image.getRawData());
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+   #ifdef DGL_USE_COMPAT_OPENGL
     glDisable(GL_TEXTURE_2D);
+   #endif
 }
 
 #ifdef DGL_USE_COMPAT_OPENGL
@@ -611,28 +649,31 @@ static void drawOpenGLImage(const GraphicsContext& context,
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
-    // TODO implement this
-
     const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glUniform4fv(gl3context.color, 1, color);
-
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, textureId);
 
     const GLfloat x = (static_cast<double>(pos.getX()) / gl3context.w) * 2 - 1;
     const GLfloat y = (static_cast<double>(pos.getY()) / gl3context.h) * -2 + 1;
     const GLfloat w = (static_cast<double>(image.getWidth()) / gl3context.w) * 2;
     const GLfloat h = (static_cast<double>(image.getHeight()) / gl3context.h) * -2;
 
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glUniform1i(gl3context.texok, 1);
+
     const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
     glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
     glEnableVertexAttribArray(gl3context.pos);
 
+    const GLfloat vtex[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
+    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, vtex);
+    glEnableVertexAttribArray(gl3context.tex);
+
     const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
     glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
 
+    glUniform1i(gl3context.texok, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
    #else
     drawOpenGLImage(image, pos, textureId, setupCalled);
 
@@ -1054,7 +1095,10 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
             static constexpr const char* const src = DGL_SHADER_HEADER
                 "precision mediump float;"
                 "uniform vec4 color;"
-                "void main() { gl_FragColor = color; }";
+                "uniform sampler2D stex;"
+                "uniform bool texok;"
+                "varying vec2 vtex;"
+                "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
 
             glShaderSource(fragment, 1, &src, nullptr);
             glCompileShader(fragment);
@@ -1066,7 +1110,9 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
         {
             static constexpr const char* const src = DGL_SHADER_HEADER
                 "attribute vec4 pos;"
-                "void main() { gl_Position = pos; }";
+                "attribute vec2 tex;"
+                "varying vec2 vtex;"
+                "void main() { gl_Position = pos; vtex = tex; }";
 
             glShaderSource(vertex, 1, &src, nullptr);
             glCompileShader(vertex);
@@ -1084,7 +1130,9 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
 
         gl3context.prog = program;
         gl3context.color = glGetUniformLocation(program, "color");
+        gl3context.texok = glGetUniformLocation(program, "texok");
         gl3context.pos = glGetAttribLocation(program, "pos");
+        gl3context.tex = glGetAttribLocation(program, "tex");
     }
 
     const PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
