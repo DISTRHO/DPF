@@ -237,7 +237,11 @@ function(dpf_add_plugin NAME)
   ###
   foreach(_target ${_dpf_plugin_TARGETS})
     if(_target STREQUAL "jack")
-      dpf__build_jack("${NAME}" "${_dgl_has_ui}" "${_dpf_plugin_FORCE_NATIVE_AUDIO_FALLBACK}" "${_dpf_plugin_SKIP_NATIVE_AUDIO_FALLBACK}")
+      dpf__build_jack("${NAME}"
+                      "${_dgl_has_ui}"
+                      "${_dpf_plugin_FORCE_NATIVE_AUDIO_FALLBACK}"
+                      "${_dpf_plugin_SKIP_NATIVE_AUDIO_FALLBACK}"
+                      "${_dpf_plugin_USE_FILE_BROWSER}")
     elseif(_target STREQUAL "ladspa")
       dpf__build_ladspa("${NAME}")
     elseif(_target STREQUAL "dssi")
@@ -352,8 +356,15 @@ function(dpf_add_executable NAME)
   dpf__add_executable("${NAME}" ${_no_srcs})
   target_include_directories("${NAME}" PUBLIC "${DPF_ROOT_DIR}/distrho")
 
+  if(EMSCRIPTEN)
+    target_link_options("${NAME}" PRIVATE -sMAIN_MODULE)
+  endif()
+
   if(_dpf_plugin_USE_FILE_BROWSER)
     target_compile_definitions("${NAME}" PUBLIC "DGL_USE_FILE_BROWSER")
+    if(EMSCRIPTEN)
+      target_link_options("${NAME}" PRIVATE -sEXPORTED_RUNTIME_METHODS=FS,cwrap)
+    endif()
   endif()
 
   if(_dpf_plugin_USE_WEB_VIEW)
@@ -393,7 +404,7 @@ endfunction()
 #
 # Add build rules for a JACK/Standalone program.
 #
-function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK)
+function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUDIO_FALLBACK USE_FILE_BROWSER)
   dpf__create_dummy_source_list(_no_srcs)
 
   dpf__add_executable("${NAME}-jack" ${_no_srcs})
@@ -403,6 +414,15 @@ function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUD
   set_target_properties("${NAME}-jack" PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
     OUTPUT_NAME "${NAME}")
+
+  if(EMSCRIPTEN)
+    configure_file("${DPF_ROOT_DIR}/utils/emscripten.html.in"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.html" @ONLY)
+    target_link_options("${NAME}-jack"
+      PRIVATE
+        -sMAIN_MODULE
+        $<$<BOOL:${USE_FILE_BROWSER}>:-sEXPORTED_RUNTIME_METHODS=FS,cwrap>)
+  endif()
 
   if(NOT FORCE_NATIVE_AUDIO_FALLBACK)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_JACK")
@@ -1536,9 +1556,7 @@ endfunction()
 function(dpf__add_executable NAME)
   add_executable("${NAME}" ${ARGN})
   dpf__set_target_defaults("${NAME}")
-  if(EMSCRIPTEN)
-    set_property(TARGET "${NAME}" PROPERTY SUFFIX ".html")
-  elseif(MINGW)
+  if(MINGW)
     target_link_libraries("${NAME}" PRIVATE "-static")
   endif()
 endfunction()
