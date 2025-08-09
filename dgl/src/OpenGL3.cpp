@@ -1,0 +1,710 @@
+/*
+ * DISTRHO Plugin Framework (DPF)
+ * Copyright (C) 2012-2025 Filipe Coelho <falktx@falktx.com>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with
+ * or without fee is hereby granted, provided that the above copyright notice and this
+ * permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN
+ * NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifdef _MSC_VER
+// instantiated template classes whose methods are defined elsewhere
+# pragma warning(disable:4661)
+#endif
+
+#include "../OpenGL.hpp"
+#include "../Color.hpp"
+#include "../ImageWidgets.hpp"
+
+// #include "SubWidgetPrivateData.hpp"
+// #include "TopLevelWidgetPrivateData.hpp"
+// #include "WidgetPrivateData.hpp"
+#include "WindowPrivateData.hpp"
+
+// templated classes
+#include "ImageBaseWidgets.cpp"
+
+START_NAMESPACE_DGL
+
+// --------------------------------------------------------------------------------------------------------------------
+// Check for correct build config
+
+#ifndef DGL_OPENGL
+# error Build config error, OpenGL was NOT requested while building OpenGL3 code
+#endif
+#ifndef DGL_USE_OPENGL3
+# error Build config error, OpenGL3 not requested while building OpenGL3 code
+#endif
+#ifdef DGL_CAIRO
+# error Build config error, Cairo requested while building OpenGL3 code
+#endif
+#ifdef DGL_VULKAN
+# error Build config error, Vulkan requested while building OpenGL3 code
+#endif
+#if defined(DGL_USE_GLES2) && defined(DGL_USE_GLES3)
+# error Build config error, both GLESv2 and GLESv3 requested at the same time
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+
+struct OpenGL3GraphicsContext : GraphicsContext
+{
+    mutable int prog, color, pos, tex, texok;
+    mutable uint w, h;
+};
+
+// --------------------------------------------------------------------------------------------------------------------
+
+static void notImplemented(const char* const name)
+{
+    d_stderr2("OpenGL3 function not implemented: %s", name);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// Color
+
+void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
+{
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+    const GLfloat color[4] = { red, green, blue, includeAlpha ? alpha : 1.f };
+    glUniform4fv(gl3context.color, 1, color);
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// Line
+
+template<typename T>
+void Line<T>::draw(const GraphicsContext& context, const T width)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
+
+    glLineWidth(static_cast<GLfloat>(width));
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.w) * 2 - 1;
+    const GLfloat y1 = (static_cast<double>(posStart.y) / gl3context.h) * -2 + 1;
+    const GLfloat x2 = (static_cast<double>(posEnd.x) / gl3context.w) * 2 - 1;
+    const GLfloat y2 = (static_cast<double>(posEnd.y) / gl3context.h) * -2 + 1;
+
+    const GLfloat vertices[] = { x1, y1, x2, y2, };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    const GLubyte order[] = { 0, 1 };
+    glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+}
+
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
+template<typename T>
+void Line<T>::draw()
+{
+    notImplemented("Line::draw");
+}
+#endif
+
+template class Line<double>;
+template class Line<float>;
+template class Line<int>;
+template class Line<uint>;
+template class Line<short>;
+template class Line<ushort>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// Circle
+
+template<typename T>
+static void drawCircle(const GraphicsContext& context,
+                       const Point<T>& pos,
+                       const uint numSegments,
+                       const float size,
+                       const float sin,
+                       const float cos,
+                       const bool outline)
+{
+    #define MAX_CIRCLE_SEGMENTS 512
+    DISTRHO_SAFE_ASSERT_RETURN(numSegments >= 3 && size > 0.0f,);
+    DISTRHO_SAFE_ASSERT_RETURN(numSegments <= MAX_CIRCLE_SEGMENTS,);
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    const double origx = static_cast<double>(pos.getX());
+    const double origy = static_cast<double>(pos.getY());
+    double t;
+    double x = size;
+    double y = 0.0;
+
+    GLfloat vertices[(MAX_CIRCLE_SEGMENTS + 1) * 2];
+    for (uint i = 0; i < numSegments; ++i)
+    {
+        vertices[i * 2 + 0] = ((x + origx) / gl3context.w) * 2 - 1;
+        vertices[i * 2 + 1] = ((y + origy) / gl3context.h) * -2 + 1;
+
+        t = x;
+        x = cos * x - sin * y;
+        y = sin * t + cos * y;
+    }
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    if (outline)
+    {
+        GLushort order[MAX_CIRCLE_SEGMENTS * 2];
+        for (uint i = 0; i < numSegments; ++i)
+        {
+            order[i * 2 + 0] = i;
+            order[i * 2 + 1] = i + 1;
+        }
+        order[numSegments * 2 - 1] = 0;
+        glDrawElements(GL_LINES, numSegments * 2, GL_UNSIGNED_SHORT, order);
+    }
+    else
+    {
+        // center position
+        vertices[numSegments * 2 + 0] = (origx / gl3context.w) * 2 - 1;
+        vertices[numSegments * 2 + 1] = (origy / gl3context.h) * -2 + 1;
+
+        GLushort order[MAX_CIRCLE_SEGMENTS * 3];
+        for (uint i = 0; i < numSegments; ++i)
+        {
+            order[i * 3 + 0] = i;
+            order[i * 3 + 1] = i + 1;
+            order[i * 3 + 2] = numSegments;
+        }
+        order[numSegments * 3 - 2] = 0;
+
+        glDrawElements(GL_TRIANGLES, numSegments * 3, GL_UNSIGNED_SHORT, order);
+    }
+}
+
+template<typename T>
+void Circle<T>::draw(const GraphicsContext& context)
+{
+    drawCircle<T>(context, fPos, fNumSegments, fSize, fSin, fCos, false);
+}
+
+template<typename T>
+void Circle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawCircle<T>(context, fPos, fNumSegments, fSize, fSin, fCos, true);
+}
+
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
+template<typename T>
+void Circle<T>::draw()
+{
+    notImplemented("Circle::draw");
+}
+
+template<typename T>
+void Circle<T>::drawOutline()
+{
+    notImplemented("Circle::drawOutline");
+}
+#endif
+
+template class Circle<double>;
+template class Circle<float>;
+template class Circle<int>;
+template class Circle<uint>;
+template class Circle<short>;
+template class Circle<ushort>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// Triangle
+
+template<typename T>
+static void drawTriangle(const GraphicsContext& context,
+                         const Point<T>& pos1,
+                         const Point<T>& pos2,
+                         const Point<T>& pos3,
+                         const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+    const GLfloat x1 = (static_cast<double>(pos1.getX()) / gl3context.w) * 2 - 1;
+    const GLfloat y1 = (static_cast<double>(pos1.getY()) / gl3context.h) * -2 + 1;
+    const GLfloat x2 = (static_cast<double>(pos2.getX()) / gl3context.w) * 2 - 1;
+    const GLfloat y2 = (static_cast<double>(pos2.getY()) / gl3context.h) * -2 + 1;
+    const GLfloat x3 = (static_cast<double>(pos3.getX()) / gl3context.w) * 2 - 1;
+    const GLfloat y3 = (static_cast<double>(pos3.getY()) / gl3context.h) * -2 + 1;
+
+    const GLfloat vertices[] = { x1, y1, x2, y2, x3, y3 };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    if (outline)
+    {
+        const GLubyte order[] = { 0, 1, 1, 2, 2, 0 };
+        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    }
+    else
+    {
+        glDrawArrays(GL_TRIANGLES, 0, 3);
+    }
+}
+
+template<typename T>
+void Triangle<T>::draw(const GraphicsContext& context)
+{
+    drawTriangle<T>(context, pos1, pos2, pos3, false);
+}
+
+template<typename T>
+void Triangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawTriangle<T>(context, pos1, pos2, pos3, true);
+}
+
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
+template<typename T>
+void Triangle<T>::draw()
+{
+    notImplemented("Triangle::draw");
+}
+
+template<typename T>
+void Triangle<T>::drawOutline()
+{
+    notImplemented("Triangle::drawOutline");
+}
+#endif
+
+template class Triangle<double>;
+template class Triangle<float>;
+template class Triangle<int>;
+template class Triangle<uint>;
+template class Triangle<short>;
+template class Triangle<ushort>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// Rectangle
+
+template<typename T>
+static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& rect, const bool outline)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+    const GLfloat x = (static_cast<double>(rect.getX()) / gl3context.w) * 2 - 1;
+    const GLfloat y = (static_cast<double>(rect.getY()) / gl3context.h) * -2 + 1;
+    const GLfloat w = (static_cast<double>(rect.getWidth()) / gl3context.w) * 2;
+    const GLfloat h = (static_cast<double>(rect.getHeight()) / gl3context.h) * -2;
+
+    const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    if (outline)
+    {
+        const GLubyte order[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    }
+    else
+    {
+        const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+        glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    }
+}
+
+template<typename T>
+void Rectangle<T>::draw(const GraphicsContext& context)
+{
+    drawRectangle<T>(context, *this, false);
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(lineWidth != 0,);
+
+    glLineWidth(static_cast<GLfloat>(lineWidth));
+    drawRectangle<T>(context, *this, true);
+}
+
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
+template<typename T>
+void Rectangle<T>::draw()
+{
+    notImplemented("Rectangle::draw");
+}
+
+template<typename T>
+void Rectangle<T>::drawOutline()
+{
+    notImplemented("Rectangle::drawOutline");
+}
+#endif
+
+template class Rectangle<double>;
+template class Rectangle<float>;
+template class Rectangle<int>;
+template class Rectangle<uint>;
+template class Rectangle<short>;
+template class Rectangle<ushort>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// OpenGLImage
+
+static void setupOpenGLImage(const OpenGLImage& image, GLuint textureId)
+{
+    DISTRHO_SAFE_ASSERT_RETURN(image.isValid(),);
+
+    const ImageFormat imageFormat = image.getFormat();
+    GLint intformat = GL_RGBA;
+
+   #ifdef DGL_USE_GLES2
+    // GLESv2 does not support BGR
+    DISTRHO_SAFE_ASSERT_RETURN(imageFormat != kImageFormatBGR && imageFormat != kImageFormatBGRA,);
+   #endif
+
+    switch (imageFormat)
+    {
+    case kImageFormatBGR:
+    case kImageFormatRGB:
+        intformat = GL_RGB;
+        break;
+    case kImageFormatGrayscale:
+       #if defined(DGL_USE_GLES3)
+        intformat = GL_R8;
+       #elif defined(DGL_USE_OPENGL3)
+        intformat = GL_RED;
+       #else
+        intformat = GL_LUMINANCE;
+       #endif
+        break;
+    default:
+        break;
+    }
+
+    glBindTexture(GL_TEXTURE_2D, textureId);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+    static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 intformat,
+                 static_cast<GLsizei>(image.getWidth()),
+                 static_cast<GLsizei>(image.getHeight()),
+                 0,
+                 asOpenGLImageFormat(imageFormat),
+                 GL_UNSIGNED_BYTE,
+                 image.getRawData());
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+// static void drawOpenGLImage(const GraphicsContext& context,
+//                             const OpenGLImage& image,
+//                             const Point<int>& pos,
+//                             const GLuint textureId,
+//                             bool& setupCalled)
+// {
+// }
+
+void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
+{
+    // drawOpenGLImage(context, *this, pos, textureId, setupCalled);
+
+    if (textureId == 0 || isInvalid())
+        return;
+
+    if (! setupCalled)
+    {
+        setupOpenGLImage(*this, textureId);
+        setupCalled = true;
+    }
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glUniform4fv(gl3context.color, 1, color);
+
+    const GLfloat x = (static_cast<double>(pos.getX()) / gl3context.w) * 2 - 1;
+    const GLfloat y = (static_cast<double>(pos.getY()) / gl3context.h) * -2 + 1;
+    const GLfloat w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
+    const GLfloat h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glUniform1i(gl3context.texok, 1);
+
+    const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    const GLfloat vtex[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
+    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, vtex);
+    glEnableVertexAttribArray(gl3context.tex);
+
+    const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+
+    glUniform1i(gl3context.texok, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
+void OpenGLImage::draw()
+{
+    notImplemented("OpenGLImage::draw");
+}
+
+void OpenGLImage::drawAt(const int x, const int y)
+{
+    notImplemented("OpenGLImage::drawAt");
+}
+
+void OpenGLImage::drawAt(const Point<int>& pos)
+{
+    notImplemented("OpenGLImage::drawAt");
+}
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// ImageBaseAboutWindow
+
+#if 0
+template <>
+void ImageBaseAboutWindow<OpenGLImage>::onDisplay()
+{
+const GraphicsContext& context(getGraphicsContext());
+img.draw(context);
+}
+#endif
+
+template class ImageBaseAboutWindow<OpenGLImage>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// ImageBaseButton
+
+template class ImageBaseButton<OpenGLImage>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// ImageBaseKnob
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::init()
+{
+    glTextureId = 0;
+    glGenTextures(1, &glTextureId);
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::PrivateData::cleanup()
+{
+    if (glTextureId == 0)
+        return;
+
+    glDeleteTextures(1, &glTextureId);
+    glTextureId = 0;
+}
+
+template <>
+void ImageBaseKnob<OpenGLImage>::onDisplay()
+{
+    const GraphicsContext& context(getGraphicsContext());
+    const float normValue = getNormalizedValue();
+
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, pData->glTextureId);
+
+    if (! pData->isReady)
+    {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        static const float trans[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, trans);
+
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        uint imageDataOffset = 0;
+
+        if (pData->rotationAngle == 0)
+        {
+            DISTRHO_SAFE_ASSERT_RETURN(pData->imgLayerCount > 0,);
+            DISTRHO_SAFE_ASSERT_RETURN(normValue >= 0.0f,);
+
+            const uint& v1(pData->isImgVertical ? pData->imgLayerWidth : pData->imgLayerHeight);
+            const uint& v2(pData->isImgVertical ? pData->imgLayerHeight : pData->imgLayerWidth);
+
+            // TODO kImageFormatGreyscale
+            const uint layerDataSize   = v1 * v2 * ((pData->image.getFormat() == kImageFormatBGRA ||
+                                                     pData->image.getFormat() == kImageFormatRGBA) ? 4 : 3);
+            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount-1));
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
+                     static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
+                     asOpenGLImageFormat(pData->image.getFormat()), GL_UNSIGNED_BYTE, pData->image.getRawData() + imageDataOffset);
+
+        pData->isReady = true;
+    }
+
+    const int w = static_cast<int>(getWidth());
+    const int h = static_cast<int>(getHeight());
+
+    if (pData->rotationAngle != 0)
+    {
+#ifdef DGL_USE_COMPAT_OPENGL
+        glPushMatrix();
+#endif
+
+        const int w2 = w/2;
+        const int h2 = h/2;
+
+#ifdef DGL_USE_COMPAT_OPENGL
+        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
+        glRotatef(normValue*static_cast<float>(pData->rotationAngle), 0.0f, 0.0f, 1.0f);
+#endif
+
+        Rectangle<int>(-w2, -h2, w, h).draw(context);
+
+#ifdef DGL_USE_COMPAT_OPENGL
+        glPopMatrix();
+#endif
+    }
+    else
+    {
+        Rectangle<int>(0, 0, w, h).draw(context);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glDisable(GL_TEXTURE_2D);
+}
+
+template class ImageBaseKnob<OpenGLImage>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// ImageBaseSlider
+
+template class ImageBaseSlider<OpenGLImage>;
+
+// --------------------------------------------------------------------------------------------------------------------
+// ImageBaseSwitch
+
+template class ImageBaseSwitch<OpenGLImage>;
+
+// --------------------------------------------------------------------------------------------------------------------
+
+static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& gl3context)
+{
+    gl3context.prog = -1;
+    return gl3context;
+}
+
+const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
+{
+    GraphicsContext& context = reinterpret_cast<GraphicsContext&>(graphicsContext);
+
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    // previous context creation failed
+    if (gl3context.prog == -1)
+        return context;
+
+    // create new context
+    if (gl3context.prog == 0)
+    {
+        int status;
+
+        const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
+        DISTRHO_SAFE_ASSERT_RETURN(fragment != 0, contextCreationFail(gl3context));
+
+        const GLuint vertex = glCreateShader(GL_VERTEX_SHADER);
+        DISTRHO_SAFE_ASSERT_RETURN(vertex != 0, contextCreationFail(gl3context));
+
+        const GLuint program = glCreateProgram();
+        DISTRHO_SAFE_ASSERT_RETURN(program != 0, contextCreationFail(gl3context));
+
+       #if defined(DGL_USE_GLES2)
+        #define DGL_SHADER_HEADER "#version 100\n"
+       #elif defined(DGL_USE_GLES3)
+        #define DGL_SHADER_HEADER "#version 300 es\n"
+       #else
+        #define DGL_SHADER_HEADER "#version 150 core\n"
+       #endif
+
+        {
+            static constexpr const char* const src = DGL_SHADER_HEADER
+                "precision mediump float;"
+                "uniform vec4 color;"
+                "uniform sampler2D stex;"
+                "uniform bool texok;"
+                "varying vec2 vtex;"
+                "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
+
+            glShaderSource(fragment, 1, &src, nullptr);
+            glCompileShader(fragment);
+
+            glGetShaderiv(fragment, GL_COMPILE_STATUS, &status);
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+        }
+
+        {
+            static constexpr const char* const src = DGL_SHADER_HEADER
+                "attribute vec4 pos;"
+                "attribute vec2 tex;"
+                "varying vec2 vtex;"
+                "void main() { gl_Position = pos; vtex = tex; }";
+
+            glShaderSource(vertex, 1, &src, nullptr);
+            glCompileShader(vertex);
+
+            glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+        }
+
+        glAttachShader(program, fragment);
+        glAttachShader(program, vertex);
+        glLinkProgram(program);
+
+        glGetProgramiv(program, GL_LINK_STATUS, &status);
+        DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+
+        gl3context.prog = program;
+        gl3context.color = glGetUniformLocation(program, "color");
+        gl3context.texok = glGetUniformLocation(program, "texok");
+        gl3context.pos = glGetAttribLocation(program, "pos");
+        gl3context.tex = glGetAttribLocation(program, "tex");
+    }
+
+    const PuglArea size = puglGetSizeHint(view, PUGL_CURRENT_SIZE);
+    gl3context.w = size.width;
+    gl3context.h = size.height;
+
+    glUseProgram(gl3context.prog);
+
+    return context;
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+
+END_NAMESPACE_DGL

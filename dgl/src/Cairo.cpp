@@ -32,16 +32,38 @@
 // templated classes
 #include "ImageBaseWidgets.cpp"
 
+// --------------------------------------------------------------------------------------------------------------------
+// Check for correct build config
+
+#ifndef DGL_CAIRO
+# error Build config error, Cairo was NOT requested while building Cairo code
+#endif
+#ifdef DGL_OPENGL
+# error Build config error, OpenGL requested while building Cairo code
+#endif
+#ifdef DGL_VULKAN
+# error Build config error, Vulkan requested while building Cairo code
+#endif
+#ifdef DGL_USE_GLES2
+# error Build config error, GLESv2 requested while building Cairo code
+#endif
+#ifdef DGL_USE_GLES3
+# error Build config error, GLESv3 requested while building Cairo code
+#endif
+#ifdef DGL_USE_OPENGL3
+# error Build config error, OpenGL3 requested while building Cairo code
+#endif
+
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static void notImplemented(const char* const name)
 {
     d_stderr2("Cairo function not implemented: %s", name);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Color
 
 void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
@@ -54,7 +76,7 @@ void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
         cairo_set_source_rgb(handle, red, green, blue);
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 // Line
 
 template<typename T>
@@ -71,11 +93,13 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
     cairo_stroke(handle);
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Line<T>::draw()
 {
     notImplemented("Line::draw");
 }
+#endif
 
 template class Line<double>;
 template class Line<float>;
@@ -145,6 +169,7 @@ void Circle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
     drawCircle<T>(handle, fPos, fNumSegments, fSize, fSin, fCos, true);
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Circle<T>::draw()
 {
@@ -156,6 +181,7 @@ void Circle<T>::drawOutline()
 {
     notImplemented("Circle::drawOutline");
 }
+#endif
 
 template class Circle<double>;
 template class Circle<float>;
@@ -206,6 +232,7 @@ void Triangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth)
     drawTriangle<T>(handle, pos1, pos2, pos3, true);
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Triangle<T>::draw()
 {
@@ -217,6 +244,7 @@ void Triangle<T>::drawOutline()
 {
     notImplemented("Triangle::drawOutline");
 }
+#endif
 
 template class Triangle<double>;
 template class Triangle<float>;
@@ -261,6 +289,7 @@ void Rectangle<T>::drawOutline(const GraphicsContext& context, const T lineWidth
     drawRectangle(handle, *this, true);
 }
 
+#ifdef DGL_ALLOW_DEPRECATED_METHODS
 template<typename T>
 void Rectangle<T>::draw()
 {
@@ -272,6 +301,7 @@ void Rectangle<T>::drawOutline()
 {
     notImplemented("Rectangle::drawOutline");
 }
+#endif
 
 template class Rectangle<double>;
 template class Rectangle<float>;

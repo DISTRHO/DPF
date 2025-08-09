@@ -9,7 +9,7 @@
 # extra useful variables to define before including this file:
 # - DPF_BUILD_DIR: where to place temporary build files
 # - DPF_TARGET_DIR: where to place final binary files
-# - UI_TYPE: one of cairo, gles2, gles3, opengl, opengl3 or external, with opengl being default
+# - UI_TYPE: one of cairo, external, gles2, gles3, opengl, opengl3 or webview, with opengl being default
 #            ("generic" is also allowed if only using basic DPF classes like image widgets)
 
 # override the "all" target after including this file to define which plugin formats to build, like so:

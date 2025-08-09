@@ -73,6 +73,7 @@ endif
 
 OBJS_gles2 = $(OBJS_common) \
 	$(BUILD_DIR)/dgl/OpenGL.cpp.gles2.o \
+	$(BUILD_DIR)/dgl/OpenGL3.cpp.gles2.o \
 	$(BUILD_DIR)/dgl/NanoVG.cpp.gles2.o
 
 ifeq ($(MACOS),true)
@@ -85,6 +86,7 @@ endif
 
 OBJS_gles3 = $(OBJS_common) \
 	$(BUILD_DIR)/dgl/OpenGL.cpp.gles3.o \
+	$(BUILD_DIR)/dgl/OpenGL3.cpp.gles3.o \
 	$(BUILD_DIR)/dgl/NanoVG.cpp.gles3.o
 
 ifeq ($(MACOS),true)
@@ -97,6 +99,7 @@ endif
 
 OBJS_opengl = $(OBJS_common) \
 	$(BUILD_DIR)/dgl/OpenGL.cpp.opengl.o \
+	$(BUILD_DIR)/dgl/OpenGL2.cpp.opengl.o \
 	$(BUILD_DIR)/dgl/NanoVG.cpp.opengl.o
 
 ifeq ($(MACOS),true)
@@ -109,6 +112,7 @@ endif
 
 OBJS_opengl3 = $(OBJS_common) \
 	$(BUILD_DIR)/dgl/OpenGL.cpp.opengl3.o \
+	$(BUILD_DIR)/dgl/OpenGL3.cpp.opengl3.o \
 	$(BUILD_DIR)/dgl/NanoVG.cpp.opengl3.o
 
 ifeq ($(MACOS),true)
@@ -146,7 +150,10 @@ TARGETS += $(BUILD_DIR)/libdgl-cairo.a
 endif
 
 ifeq ($(HAVE_OPENGL),true)
+TARGETS += $(BUILD_DIR)/libdgl-gles2.a
+TARGETS += $(BUILD_DIR)/libdgl-gles3.a
 TARGETS += $(BUILD_DIR)/libdgl-opengl.a
+TARGETS += $(BUILD_DIR)/libdgl-opengl3.a
 endif
 
 ifeq ($(HAVE_STUB),true)

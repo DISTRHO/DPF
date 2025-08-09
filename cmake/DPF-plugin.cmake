@@ -1003,6 +1003,7 @@ function(dpf__add_dgl_gles2 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-gles2 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
@@ -1101,6 +1102,7 @@ function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-gles3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
@@ -1194,6 +1196,7 @@ function(dpf__add_dgl_opengl SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL2.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-opengl PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")
@@ -1289,6 +1292,7 @@ function(dpf__add_dgl_opengl3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
     "${DPF_ROOT_DIR}/dgl/src/Window.cpp"
     "${DPF_ROOT_DIR}/dgl/src/WindowPrivateData.cpp"
     "${DPF_ROOT_DIR}/dgl/src/OpenGL.cpp"
+    "${DPF_ROOT_DIR}/dgl/src/OpenGL3.cpp"
     "${DPF_ROOT_DIR}/dgl/src/NanoVG.cpp")
   if(SHARED_RESOURCES)
     target_sources(dgl-opengl3 PRIVATE "${DPF_ROOT_DIR}/dgl/src/Resources.cpp")

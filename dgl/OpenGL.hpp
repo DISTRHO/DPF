@@ -24,18 +24,7 @@
 
 START_NAMESPACE_DGL
 
-// -----------------------------------------------------------------------
-
-/**
-   OpenGL Graphics context.
- */
-struct OpenGLGraphicsContext : GraphicsContext
-{
-#ifdef DGL_USE_OPENGL3
-#endif
-};
-
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 static inline
 ImageFormat asDISTRHOImageFormat(const GLenum format)
@@ -87,7 +76,7 @@ GLenum asOpenGLImageFormat(const ImageFormat format)
     return 0x0;
 }
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 /**
    OpenGL Image class.
@@ -157,6 +146,7 @@ public:
     inline void drawAt(const GraphicsContext& context, int x, int y)
     { drawAt(context, Point<int>(x, y)); }
 
+   #ifdef DGL_ALLOW_DEPRECATED_METHODS
    /**
       Constructor using raw image data, specifying an OpenGL image format.
       @note @a rawData must remain valid for the lifetime of this Image.
@@ -200,6 +190,7 @@ public:
     */
     DISTRHO_DEPRECATED
     GLenum getType() const noexcept { return GL_UNSIGNED_BYTE; }
+   #endif // DGL_ALLOW_DEPRECATED_METHODS
 
 private:
     bool setupCalled;
@@ -207,7 +198,7 @@ private:
     GLuint textureId;
 };
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 typedef ImageBaseAboutWindow<OpenGLImage> OpenGLImageAboutWindow;
 typedef ImageBaseButton<OpenGLImage> OpenGLImageButton;
@@ -215,7 +206,7 @@ typedef ImageBaseKnob<OpenGLImage> OpenGLImageKnob;
 typedef ImageBaseSlider<OpenGLImage> OpenGLImageSlider;
 typedef ImageBaseSwitch<OpenGLImage> OpenGLImageSwitch;
 
-// -----------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------------------------------
 
 END_NAMESPACE_DGL
 

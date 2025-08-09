@@ -98,13 +98,6 @@ jobs:
       run: |
         make clean >/dev/null
         make -j ${{ env.JOBS }}
-    - name: With OpenGL 3.x
-      env:
-        CFLAGS: -Werror
-        CXXFLAGS: -Werror
-      run: |
-        make clean >/dev/null
-        make -j ${{ env.JOBS }} USE_OPENGL3=true
     - name: Without Cairo
       env:
         CFLAGS: -Werror
@@ -119,3 +112,38 @@ jobs:
       run: |
         make clean >/dev/null
         make -j ${{ env.JOBS }} HAVE_OPENGL=false
+    - name: With UI_TYPE=generic
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=generic
+    - name: With UI_TYPE=gles2
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=gles2
+    - name: With UI_TYPE=gles3
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=gles3
+    - name: With UI_TYPE=opengl
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=opengl
+    - name: With UI_TYPE=opengl3
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        make -j ${{ env.JOBS }} -C examples/Parameters UI_TYPE=opengl3
