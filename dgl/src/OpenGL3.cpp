@@ -106,6 +106,10 @@ static void notImplemented(const char* const name)
 void Color::setFor(const GraphicsContext& context, const bool includeAlpha)
 {
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
+
     const GLfloat color[4] = { red, green, blue, includeAlpha ? alpha : 1.f };
     glUniform4fv(gl3context.color, 1, color);
 }
@@ -118,14 +122,17 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
 {
     DISTRHO_SAFE_ASSERT_RETURN(width != 0,);
 
-    glLineWidth(static_cast<GLfloat>(width));
-
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
 
     const GLfloat x1 = (static_cast<double>(posStart.x) / gl3context.w) * 2 - 1;
     const GLfloat y1 = (static_cast<double>(posStart.y) / gl3context.h) * -2 + 1;
     const GLfloat x2 = (static_cast<double>(posEnd.x) / gl3context.w) * 2 - 1;
     const GLfloat y2 = (static_cast<double>(posEnd.y) / gl3context.h) * -2 + 1;
+
+    glLineWidth(static_cast<GLfloat>(width));
 
     const GLfloat vertices[] = { x1, y1, x2, y2, };
     glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
@@ -169,6 +176,9 @@ static void drawCircle(const GraphicsContext& context,
     DISTRHO_SAFE_ASSERT_RETURN(numSegments <= MAX_CIRCLE_SEGMENTS,);
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
 
     const double origx = static_cast<double>(pos.getX());
     const double origy = static_cast<double>(pos.getY());
@@ -270,6 +280,10 @@ static void drawTriangle(const GraphicsContext& context,
     DISTRHO_SAFE_ASSERT_RETURN(pos1 != pos2 && pos1 != pos3,);
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
+
     const GLfloat x1 = (static_cast<double>(pos1.getX()) / gl3context.w) * 2 - 1;
     const GLfloat y1 = (static_cast<double>(pos1.getY()) / gl3context.h) * -2 + 1;
     const GLfloat x2 = (static_cast<double>(pos2.getX()) / gl3context.w) * 2 - 1;
@@ -339,6 +353,10 @@ static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& re
     DISTRHO_SAFE_ASSERT_RETURN(rect.isValid(),);
 
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
+
     const GLfloat x = (static_cast<double>(rect.getX()) / gl3context.w) * 2 - 1;
     const GLfloat y = (static_cast<double>(rect.getY()) / gl3context.h) * -2 + 1;
     const GLfloat w = (static_cast<double>(rect.getWidth()) / gl3context.w) * 2;
@@ -466,13 +484,16 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
     if (textureId == 0 || isInvalid())
         return;
 
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
+
+    if (gl3context.prog == -1)
+        return;
+
     if (! setupCalled)
     {
         setupOpenGLImage(*this, textureId);
         setupCalled = true;
     }
-
-    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(context);
 
     const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     glUniform4fv(gl3context.color, 1, color);
@@ -563,6 +584,10 @@ template <>
 void ImageBaseKnob<OpenGLImage>::onDisplay()
 {
     const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(getGraphicsContext());
+
+    if (gl3context.prog == -1)
+        return;
+
     const ImageFormat imageFormat = pData->image.getFormat();
     const float normValue = getNormalizedValue();
 
