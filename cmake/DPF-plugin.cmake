@@ -428,6 +428,7 @@ function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUD
 
   if(APPLE OR WIN32)
     target_compile_definitions("${NAME}" PUBLIC "HAVE_RTAUDIO")
+  elseif(EMSCRIPTEN)
   else()
     find_package(Threads)
     pkg_check_modules(ALSA "alsa")
@@ -1146,6 +1147,11 @@ function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-gles3 PRIVATE dgl-system-libs)
+  target_link_options(dgl-gles2
+    INTERFACE
+      $<$<BOOL:${EMSCRIPTEN}>:-sMIN_WEBGL_VERSION=3>
+      $<$<BOOL:${EMSCRIPTEN}>:-sMAX_WEBGL_VERSION=3>
+  )
 
   add_library(dgl-gles3-definitions INTERFACE)
   target_compile_definitions(dgl-gles3-definitions
@@ -1530,7 +1536,9 @@ endfunction()
 function(dpf__add_executable NAME)
   add_executable("${NAME}" ${ARGN})
   dpf__set_target_defaults("${NAME}")
-  if(MINGW)
+  if(EMSCRIPTEN)
+    set_property(TARGET "${NAME}" PROPERTY SUFFIX ".html")
+  elseif(MINGW)
     target_link_libraries("${NAME}" PRIVATE "-static")
   endif()
 endfunction()

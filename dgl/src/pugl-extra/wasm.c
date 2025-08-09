@@ -729,7 +729,8 @@ puglRealize(PuglView* const view)
   const char* const className = view->world->strings[PUGL_CLASS_NAME];
   d_stdout("className is %s", className);
 
-  PuglViewSize defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
+  PuglPoint defaultPos = view->positionHints[PUGL_DEFAULT_POSITION];
+  PuglArea defaultSize = view->sizeHints[PUGL_DEFAULT_SIZE];
   if (!defaultSize.width || !defaultSize.height) {
     return PUGL_BAD_CONFIGURATION;
   }
@@ -747,8 +748,8 @@ puglRealize(PuglView* const view)
   puglDispatchSimpleEvent(view, PUGL_REALIZE);
 
   PuglEvent event        = {{PUGL_CONFIGURE, 0}};
-  event.configure.x      = view->defaultX;
-  event.configure.y      = view->defaultY;
+  event.configure.x      = defaultPos.x;
+  event.configure.y      = defaultPos.y;
   event.configure.width  = defaultSize.width;
   event.configure.height = defaultSize.height;
   puglDispatchEvent(view, &event);
@@ -794,7 +795,7 @@ puglShow(PuglView* const view, PuglShowCommand)
 {
   view->impl->visible = true;
   view->impl->needsRepaint = true;
-  return puglPostRedisplay(view);
+  return puglObscureView(view);
 }
 
 PuglStatus
@@ -884,15 +885,23 @@ puglUpdate(PuglWorld* const world, const double timeout)
 }
 
 PuglStatus
-puglPostRedisplay(PuglView* const view)
+puglObscureView(PuglView* const view)
 {
   view->impl->needsRepaint = true;
   return PUGL_SUCCESS;
 }
 
 PuglStatus
-puglPostRedisplayRect(PuglView* const view, const PuglRect rect)
+puglObscureRegion(PuglView*      view,
+                  const int      x,
+                  const int      y,
+                  const unsigned width,
+                  const unsigned height)
 {
+  if (!puglIsValidPosition(x, y) || !puglIsValidSize(width, height)) {
+    return PUGL_BAD_PARAMETER;
+  }
+
   view->impl->needsRepaint = true;
   return PUGL_FAILURE;
 }
@@ -920,12 +929,10 @@ puglViewStringChanged(PuglView*, const PuglStringHint key, const char* const val
 PuglStatus
 puglSetSizeHint(PuglView* const    view,
                 const PuglSizeHint hint,
-                const PuglSpan     width,
-                const PuglSpan     height)
+                const unsigned     width,
+                const unsigned     height)
 {
-  view->sizeHints[hint].width  = width;
-  view->sizeHints[hint].height = height;
-  return PUGL_SUCCESS;
+  return puglStoreSizeHint(view, hint, width, height);
 }
 
 static EM_BOOL
@@ -1154,22 +1161,23 @@ puglSetTransientParent(PuglView* const view, const PuglNativeView parent)
 }
 
 PuglStatus
-puglSetPosition(PuglView* const view, const int x, const int y)
+puglSetPositionHint(PuglView* const        view,
+                    const PuglPositionHint hint,
+                    const int              x,
+                    const int              y)
 {
-  printf("TODO: %s %d\n", __func__, __LINE__);
-
-  if (x > INT16_MAX || y > INT16_MAX) {
+  if (x <= INT16_MIN || x > INT16_MAX || y <= INT16_MIN || y > INT16_MAX) {
     return PUGL_BAD_PARAMETER;
   }
 
-  if (!view->impl->created) {
-    // Set defaults to be used when realized
-    view->defaultX = x;
-    view->defaultY = y;
+  view->positionHints[hint].x = (PuglCoord)x;
+  view->positionHints[hint].y = (PuglCoord)y;
+
+  if (!view->impl->created || hint != PUGL_CURRENT_POSITION) {
     return PUGL_SUCCESS;
   }
 
-  view->lastConfigure.x = (PuglCoord)x;
-  view->lastConfigure.y = (PuglCoord)y;
-  return puglPostRedisplay(view);
+  view->lastConfigure.x = x;
+  view->lastConfigure.y = y;
+  return puglObscureView(view);
 }
