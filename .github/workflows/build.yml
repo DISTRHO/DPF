@@ -112,6 +112,13 @@ jobs:
       run: |
         make clean >/dev/null
         make -j ${{ env.JOBS }} HAVE_OPENGL=false
+    - name: With UI_TYPE=cairo
+      env:
+        CFLAGS: -Werror
+        CXXFLAGS: -Werror
+      run: |
+        make clean >/dev/null
+        env UI_TYPE=cairo make -j ${{ env.JOBS }} -C examples/Parameters jack
     - name: With UI_TYPE=generic
       env:
         CFLAGS: -Werror
