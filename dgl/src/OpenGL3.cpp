@@ -23,9 +23,6 @@
 #include "../Color.hpp"
 #include "../ImageWidgets.hpp"
 
-// #include "SubWidgetPrivateData.hpp"
-// #include "TopLevelWidgetPrivateData.hpp"
-// #include "WidgetPrivateData.hpp"
 #include "WindowPrivateData.hpp"
 
 // templated classes
@@ -100,6 +97,8 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
 
     const GLubyte order[] = { 0, 1 };
     glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+
+    glDisableVertexAttribArray(gl3context.pos);
 }
 
 #ifdef DGL_ALLOW_DEPRECATED_METHODS
@@ -182,6 +181,8 @@ static void drawCircle(const GraphicsContext& context,
 
         glDrawElements(GL_TRIANGLES, numSegments * 3, GL_UNSIGNED_SHORT, order);
     }
+
+    glDisableVertexAttribArray(gl3context.pos);
 }
 
 template<typename T>
@@ -253,6 +254,8 @@ static void drawTriangle(const GraphicsContext& context,
     {
         glDrawArrays(GL_TRIANGLES, 0, 3);
     }
+
+    glDisableVertexAttribArray(gl3context.pos);
 }
 
 template<typename T>
@@ -319,6 +322,8 @@ static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& re
         const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
         glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
     }
+
+    glDisableVertexAttribArray(gl3context.pos);
 }
 
 template<typename T>
@@ -463,6 +468,8 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
     const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
     glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
 
+    glDisableVertexAttribArray(gl3context.tex);
+    glDisableVertexAttribArray(gl3context.pos);
     glUniform1i(gl3context.texok, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -614,8 +621,19 @@ template class ImageBaseSwitch<OpenGLImage>;
 
 // --------------------------------------------------------------------------------------------------------------------
 
-static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& gl3context)
+static const GraphicsContext& contextCreationFail(const OpenGL3GraphicsContext& gl3context, GLuint shaderErr = 0)
 {
+    if (shaderErr != 0)
+    {
+        GLint len = 0;
+        glGetShaderiv(shaderErr, GL_INFO_LOG_LENGTH, &len);
+
+        std::vector<GLchar> errorLog(len);
+        glGetShaderInfoLog(shaderErr, len, &len, errorLog.data());
+
+        d_stderr2("OpenGL3 shader compilation error: %s", errorLog.data());
+    }
+
     gl3context.prog = -1;
     return gl3context;
 }
@@ -665,7 +683,7 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
             glCompileShader(fragment);
 
             glGetShaderiv(fragment, GL_COMPILE_STATUS, &status);
-            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context, fragment));
         }
 
         {
@@ -679,7 +697,7 @@ const GraphicsContext& Window::PrivateData::getGraphicsContext() const noexcept
             glCompileShader(vertex);
 
             glGetShaderiv(vertex, GL_COMPILE_STATUS, &status);
-            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
+            DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context, vertex));
         }
 
         glAttachShader(program, fragment);
