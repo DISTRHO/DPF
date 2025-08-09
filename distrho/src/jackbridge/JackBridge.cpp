@@ -467,28 +467,36 @@ struct JackBridge {
          #endif
     {
       #ifdef HAVE_JACK
-       #if defined(DISTRHO_OS_MAC)
-        const char* const filename = "libjack.dylib";
-       #elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
-        const char* const filename = "libjack64.dll";
-       #elif defined(DISTRHO_OS_WINDOWS)
-        const char* const filename = "libjack.dll";
-       #else
-        const char* const filename = "libjack.so.0";
-       #endif
+        static constexpr const char* const filenames[] = {
+           #if defined(DISTRHO_OS_MAC)
+            "libjack.0.dylib",
+            "/usr/local/lib/libjack.0.dylib",
+           #elif defined(DISTRHO_OS_WINDOWS) && defined(_WIN64)
+            "libjack64.dll",
+           #elif defined(DISTRHO_OS_WINDOWS)
+            "libjack.dll",
+           #else
+            "libjack.so.0",
+           #endif
+        };
 
         USE_NAMESPACE_DISTRHO
 
-        lib = lib_open(filename);
+        for (uint i = 0; i < ARRAY_SIZE(filenames); ++i)
+        {
+            lib = lib_open(filenames[i]);
+
+            if (lib != nullptr)
+            {
+                d_stdout("%s loaded successfully!", filenames[i]);
+                break;
+            }
+        }
 
         if (lib == nullptr)
         {
-            d_stderr("Failed to load JACK DLL, reason:\n%s", lib_error(filename));
+            d_stderr("Failed to load JACK DLL, reason:\n%s", lib_error(filenames[0]));
             return;
-        }
-        else
-        {
-            d_stdout("%s loaded successfully!", filename);
         }
 
         #define JOIN(a, b) a ## b
