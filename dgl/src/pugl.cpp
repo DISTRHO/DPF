@@ -254,6 +254,10 @@ void puglSetMatchingBackendForCurrentBuild(PuglView* const view)
         puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_ES_API);
         puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_CORE_PROFILE);
         puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 2);
+       #elif defined(DGL_USE_GLES3)
+        puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_ES_API);
+        puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_CORE_PROFILE);
+        puglSetViewHint(view, PUGL_CONTEXT_VERSION_MAJOR, 3);
        #elif defined(DGL_USE_OPENGL3)
         puglSetViewHint(view, PUGL_CONTEXT_API, PUGL_OPENGL_API);
         puglSetViewHint(view, PUGL_CONTEXT_PROFILE, PUGL_OPENGL_CORE_PROFILE);
