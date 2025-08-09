@@ -562,14 +562,46 @@ void ImageBaseKnob<OpenGLImage>::PrivateData::cleanup()
 template <>
 void ImageBaseKnob<OpenGLImage>::onDisplay()
 {
-    const GraphicsContext& context(getGraphicsContext());
+    const OpenGL3GraphicsContext& gl3context = static_cast<const OpenGL3GraphicsContext&>(getGraphicsContext());
+    const ImageFormat imageFormat = pData->image.getFormat();
     const float normValue = getNormalizedValue();
 
-    glEnable(GL_TEXTURE_2D);
+   #ifdef DGL_USE_GLES
+    // GLES does not support BGR
+    DISTRHO_SAFE_ASSERT_RETURN(imageFormat != kImageFormatBGR && imageFormat != kImageFormatBGRA,);
+   #endif
+
+    const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    glUniform4fv(gl3context.color, 1, color);
+
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, pData->glTextureId);
+    glUniform1i(gl3context.texok, 1);
 
     if (! pData->isReady)
     {
+        GLint intformat;
+
+        switch (imageFormat)
+        {
+        case kImageFormatBGR:
+        case kImageFormatRGB:
+            intformat = GL_RGB;
+            break;
+        case kImageFormatGrayscale:
+           #ifdef DGL_USE_GLES2
+            intformat = GL_LUMINANCE;
+           #else
+            intformat = GL_RED;
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_G, GL_RED);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
+           #endif
+            break;
+        default:
+            intformat = GL_RGBA;
+            break;
+        }
+
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
@@ -594,48 +626,57 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
             const uint& v2(pData->isImgVertical ? pData->imgLayerHeight : pData->imgLayerWidth);
 
             // TODO kImageFormatGreyscale
-            const uint layerDataSize   = v1 * v2 * ((pData->image.getFormat() == kImageFormatBGRA ||
-                                                     pData->image.getFormat() == kImageFormatRGBA) ? 4 : 3);
-            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount-1));
+            const uint layerDataSize   = v1 * v2 * ((imageFormat == kImageFormatBGRA ||
+                                                     imageFormat == kImageFormatRGBA) ? 4 : 3);
+            /*      */ imageDataOffset = layerDataSize * uint(normValue * float(pData->imgLayerCount - 1));
         }
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA,
-                     static_cast<GLsizei>(getWidth()), static_cast<GLsizei>(getHeight()), 0,
-                     asOpenGLImageFormat(pData->image.getFormat()), GL_UNSIGNED_BYTE, pData->image.getRawData() + imageDataOffset);
+        glTexImage2D(GL_TEXTURE_2D,
+                     0,
+                     intformat,
+                     static_cast<GLsizei>(getWidth()),
+                     static_cast<GLsizei>(getHeight()),
+                     0,
+                     asOpenGLImageFormat(imageFormat),
+                     GL_UNSIGNED_BYTE,
+                     pData->image.getRawData() + imageDataOffset);
 
         pData->isReady = true;
     }
 
-    const int w = static_cast<int>(getWidth());
-    const int h = static_cast<int>(getHeight());
+    GLfloat x, y, w, h;
 
     if (pData->rotationAngle != 0)
     {
-#ifdef DGL_USE_COMPAT_OPENGL
-        glPushMatrix();
-#endif
-
-        const int w2 = w/2;
-        const int h2 = h/2;
-
-#ifdef DGL_USE_COMPAT_OPENGL
-        glTranslatef(static_cast<float>(w2), static_cast<float>(h2), 0.0f);
-        glRotatef(normValue*static_cast<float>(pData->rotationAngle), 0.0f, 0.0f, 1.0f);
-#endif
-
-        Rectangle<int>(-w2, -h2, w, h).draw(context);
-
-#ifdef DGL_USE_COMPAT_OPENGL
-        glPopMatrix();
-#endif
+        // TODO
+        x = -1;
+        y = 1;
+        w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
+        h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
     }
     else
     {
-        Rectangle<int>(0, 0, w, h).draw(context);
+        x = -1;
+        y = 1;
+        w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
+        h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
     }
 
+    const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glEnableVertexAttribArray(gl3context.pos);
+
+    const GLfloat vtex[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
+    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, vtex);
+    glEnableVertexAttribArray(gl3context.tex);
+
+    const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+
+    glDisableVertexAttribArray(gl3context.tex);
+    glDisableVertexAttribArray(gl3context.pos);
+    glUniform1i(gl3context.texok, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
-    glDisable(GL_TEXTURE_2D);
 }
 
 template class ImageBaseKnob<OpenGLImage>;
