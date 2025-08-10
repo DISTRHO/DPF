@@ -357,7 +357,9 @@ function(dpf_add_executable NAME)
   target_include_directories("${NAME}" PUBLIC "${DPF_ROOT_DIR}/distrho")
 
   if(EMSCRIPTEN)
-    target_link_options("${NAME}" PRIVATE -sMAIN_MODULE)
+    target_link_options("${NAME}"
+      PRIVATE
+        -sEXPORTED_RUNTIME_METHODS=dynCall)
   endif()
 
   if(_dpf_plugin_USE_FILE_BROWSER)
@@ -420,7 +422,7 @@ function(dpf__build_jack NAME HAS_UI FORCE_NATIVE_AUDIO_FALLBACK SKIP_NATIVE_AUD
       "${PROJECT_BINARY_DIR}/bin/${NAME}.html" @ONLY)
     target_link_options("${NAME}-jack"
       PRIVATE
-        -sMAIN_MODULE
+        -sEXPORTED_RUNTIME_METHODS=dynCall
         $<$<BOOL:${USE_FILE_BROWSER}>:-sEXPORTED_RUNTIME_METHODS=FS,cwrap>)
   endif()
 
