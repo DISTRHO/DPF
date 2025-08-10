@@ -355,8 +355,13 @@ function(dpf_add_executable NAME)
   dpf__create_dummy_source_list(_no_srcs)
   dpf__add_executable("${NAME}" ${_no_srcs})
   target_include_directories("${NAME}" PUBLIC "${DPF_ROOT_DIR}/distrho")
+  set_target_properties("${NAME}" PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin/$<0:>"
+    OUTPUT_NAME "${NAME}")
 
   if(EMSCRIPTEN)
+    configure_file("${DPF_ROOT_DIR}/utils/emscripten.html.in"
+      "${PROJECT_BINARY_DIR}/bin/${NAME}.html" @ONLY)
     target_link_options("${NAME}"
       PRIVATE
         -sEXPORTED_RUNTIME_METHODS=dynCall)
