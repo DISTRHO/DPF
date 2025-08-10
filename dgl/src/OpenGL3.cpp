@@ -89,7 +89,7 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
 
 struct OpenGL3GraphicsContext : GraphicsContext
 {
-    mutable int prog, color, pos, tex, texok;
+    mutable int prog, obuf, vbuf, color, pos, tex, texok;
     mutable uint w, h;
 };
 
@@ -135,13 +135,20 @@ void Line<T>::draw(const GraphicsContext& context, const T width)
     glLineWidth(static_cast<GLfloat>(width));
 
     const GLfloat vertices[] = { x1, y1, x2, y2, };
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     const GLubyte order[] = { 0, 1 };
-    glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
+    glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(gl3context.pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 #ifdef DGL_ALLOW_DEPRECATED_METHODS
@@ -196,8 +203,12 @@ static void drawCircle(const GraphicsContext& context,
         x = cos * x - sin * y;
         y = sin * t + cos * y;
     }
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * (numSegments + 1), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
 
     if (outline)
     {
@@ -208,7 +219,9 @@ static void drawCircle(const GraphicsContext& context,
             order[i * 2 + 1] = i + 1;
         }
         order[numSegments * 2 - 1] = 0;
-        glDrawElements(GL_LINES, numSegments * 2, GL_UNSIGNED_SHORT, order);
+
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * numSegments * 2, order, GL_DYNAMIC_DRAW);
+        glDrawElements(GL_LINES, numSegments * 2, GL_UNSIGNED_SHORT, nullptr);
     }
     else
     {
@@ -225,10 +238,13 @@ static void drawCircle(const GraphicsContext& context,
         }
         order[numSegments * 3 - 2] = 0;
 
-        glDrawElements(GL_TRIANGLES, numSegments * 3, GL_UNSIGNED_SHORT, order);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLushort) * numSegments * 3, order, GL_DYNAMIC_DRAW);
+        glDrawElements(GL_TRIANGLES, numSegments * 3, GL_UNSIGNED_SHORT, nullptr);
     }
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(gl3context.pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 template<typename T>
@@ -292,13 +308,19 @@ static void drawTriangle(const GraphicsContext& context,
     const GLfloat y3 = (static_cast<double>(pos3.getY()) / gl3context.h) * -2 + 1;
 
     const GLfloat vertices[] = { x1, y1, x2, y2, x3, y3 };
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     if (outline)
     {
-        const GLubyte order[] = { 0, 1, 1, 2, 2, 0 };
-        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+        static constexpr const GLubyte order[] = { 0, 1, 1, 2, 2, 0 };
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
+        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
     else
     {
@@ -306,6 +328,7 @@ static void drawTriangle(const GraphicsContext& context,
     }
 
     glDisableVertexAttribArray(gl3context.pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 template<typename T>
@@ -363,21 +386,29 @@ static void drawRectangle(const GraphicsContext& context, const Rectangle<T>& re
     const GLfloat h = (static_cast<double>(rect.getHeight()) / gl3context.h) * -2;
 
     const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
 
     if (outline)
     {
-        const GLubyte order[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
-        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+        static constexpr const GLubyte order[] = { 0, 1, 1, 2, 2, 3, 3, 0 };
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
+        glDrawElements(GL_LINES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
     }
     else
     {
-        const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
-        glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+        static constexpr const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
     }
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(gl3context.pos);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 template<typename T>
@@ -495,9 +526,6 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
         setupCalled = true;
     }
 
-    const GLfloat color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    glUniform4fv(gl3context.color, 1, color);
-
     const GLfloat x = (static_cast<double>(pos.getX()) / gl3context.w) * 2 - 1;
     const GLfloat y = (static_cast<double>(pos.getY()) / gl3context.h) * -2 + 1;
     const GLfloat w = (static_cast<double>(getWidth()) / gl3context.w) * 2;
@@ -507,20 +535,28 @@ void OpenGLImage::drawAt(const GraphicsContext& context, const Point<int>& pos)
     glBindTexture(GL_TEXTURE_2D, textureId);
     glUniform1i(gl3context.texok, 1);
 
-    const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    const GLfloat vertices[] = {
+        x, y, x, y + h, x + w, y + h, x + w, y,
+        0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f,
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
-
-    const GLfloat vtex[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
-    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, vtex);
     glEnableVertexAttribArray(gl3context.tex);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
 
-    const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
-    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    static constexpr const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
+    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(gl3context.tex);
     glDisableVertexAttribArray(gl3context.pos);
     glUniform1i(gl3context.texok, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -687,20 +723,28 @@ void ImageBaseKnob<OpenGLImage>::onDisplay()
         h = (static_cast<double>(getHeight()) / gl3context.h) * -2;
     }
 
-    const GLfloat vertices[] = { x, y, x, y + h, x + w, y + h, x + w, y };
-    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, vertices);
+    const GLfloat vertices[] = {
+        x, y, x, y + h, x + w, y + h, x + w, y,
+        0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f,
+    };
+    glBindBuffer(GL_ARRAY_BUFFER, gl3context.vbuf);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STREAM_DRAW);
     glEnableVertexAttribArray(gl3context.pos);
-
-    const GLfloat vtex[] = { 0.f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f };
-    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, vtex);
     glEnableVertexAttribArray(gl3context.tex);
+    glVertexAttribPointer(gl3context.pos, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glVertexAttribPointer(gl3context.tex, 2, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<void*>(sizeof(GLfloat) * 8));
 
-    const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
-    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, order);
+    static constexpr const GLubyte order[] = { 0, 1, 2, 0, 2, 3 };
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gl3context.obuf);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(order), order, GL_STATIC_DRAW);
 
+    glDrawElements(GL_TRIANGLES, ARRAY_SIZE(order), GL_UNSIGNED_BYTE, nullptr);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glDisableVertexAttribArray(gl3context.tex);
     glDisableVertexAttribArray(gl3context.pos);
     glUniform1i(gl3context.texok, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
@@ -787,6 +831,13 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
     if (gl3context.prog == 0)
     {
         int status;
+        GLuint obuffer, vbuffer;
+
+        glGenBuffers(1, &obuffer);
+        DISTRHO_SAFE_ASSERT_RETURN(obuffer != 0, contextCreationFail(gl3context));
+
+        glGenBuffers(1, &vbuffer);
+        DISTRHO_SAFE_ASSERT_RETURN(vbuffer != 0, contextCreationFail(gl3context));
 
         const GLuint fragment = glCreateShader(GL_FRAGMENT_SHADER);
         DISTRHO_SAFE_ASSERT_RETURN(fragment != 0, contextCreationFail(gl3context));
@@ -814,7 +865,7 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
                #ifdef DGL_USE_GLES3
                 "in vec2 vtex;"
                 "out vec4 FragColor;"
-                "void main() { FragColor = texok ? texture2D(stex, vtex) : color; }";
+                "void main() { FragColor = texok ? texture(stex, vtex) : color; }";
                #else
                 "varying vec2 vtex;"
                 "void main() { gl_FragColor = texok ? texture2D(stex, vtex) : color; }";
@@ -855,6 +906,8 @@ DGL_EXT(PFNGLVERTEXATTRIBPOINTERPROC,      glVertexAttribPointer)
         DISTRHO_SAFE_ASSERT_RETURN(status != 0, contextCreationFail(gl3context));
 
         gl3context.prog = program;
+        gl3context.obuf = obuffer;
+        gl3context.vbuf = vbuffer;
         gl3context.color = glGetUniformLocation(program, "color");
         gl3context.texok = glGetUniformLocation(program, "texok");
         gl3context.pos = glGetAttribLocation(program, "pos");

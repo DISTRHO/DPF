@@ -1167,7 +1167,7 @@ function(dpf__add_dgl_gles3 SHARED_RESOURCES USE_FILE_BROWSER USE_WEB_VIEW)
 
   dpf__add_dgl_system_libs()
   target_link_libraries(dgl-gles3 PRIVATE dgl-system-libs)
-  target_link_options(dgl-gles2
+  target_link_options(dgl-gles3
     INTERFACE
       $<$<BOOL:${EMSCRIPTEN}>:-sMIN_WEBGL_VERSION=3>
       $<$<BOOL:${EMSCRIPTEN}>:-sMAX_WEBGL_VERSION=3>

@@ -3,7 +3,6 @@
 
 dpf_add_plugin(d_parameters
   TARGETS jack ladspa dssi lv2 vst2 vst3 clap
-  UI_TYPE gles2
   FILES_DSP
      ExamplePluginParameters.cpp
   FILES_UI
